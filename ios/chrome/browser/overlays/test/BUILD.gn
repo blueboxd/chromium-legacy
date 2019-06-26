@@ -5,8 +5,8 @@
 source_set("test") {
   testonly = true
   sources = [
-    "fake_overlay_presenter_ui_delegate.cc",
-    "fake_overlay_presenter_ui_delegate.h",
+    "fake_overlay_presentation_context.cc",
+    "fake_overlay_presentation_context.h",
     "fake_overlay_user_data.cc",
     "fake_overlay_user_data.h",
   ]

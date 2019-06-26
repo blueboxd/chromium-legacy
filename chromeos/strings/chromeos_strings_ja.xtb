@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">画面からはサポートできる内容が見つかりませんでした。
 マイクをタップして質問してみてください。</translation>
 <translation id="5222676887888702881">ログアウト</translation>
+<translation id="5317780077021120954">保存</translation>
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>
 <translation id="54609108002486618">管理</translation>
 <translation id="5733345267661125295">早急に新しいパスワードを選択してください</translation>
@@ -23,6 +24,7 @@
 <translation id="6574601967010742428">デバイスの管理者によりアクティビティが監視される可能性があります。</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{現在のパスワードは有効期限が切れています。}=1{現在のパスワードは 1 日以内に有効期限が切れます。}other{現在のパスワードは # 日以内に有効期限が切れます。}}</translation>
 <translation id="7658239707568436148">キャンセル</translation>
+<translation id="7690294790491645610">新しいパスワードの確認入力</translation>
 <translation id="808894953321890993">パスワードの変更</translation>
 <translation id="9111102763498581341">ロック解除</translation>
 </translationbundle>

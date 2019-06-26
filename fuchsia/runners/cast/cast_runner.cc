@@ -29,6 +29,8 @@ struct CastRunner::PendingComponent {
   std::unique_ptr<ApiBindingsClient> bindings_manager;
   fidl::InterfaceRequest<fuchsia::sys::ComponentController> controller_request;
   chromium::cast::ApplicationConfig app_config;
+  fuchsia::web::AdditionalHeadersProviderPtr headers_provider;
+  base::Optional<std::vector<fuchsia::net::http::Header>> headers;
 };
 
 void CastRunner::StartComponent(
@@ -78,6 +80,28 @@ void CastRunner::StartComponent(
       base::BindOnce(&CastRunner::MaybeStartComponent, base::Unretained(this),
                      base::Unretained(pending_component.get())));
 
+  // Get AdditionalHeadersProvider from the Agent.
+  fidl::InterfaceHandle<fuchsia::web::AdditionalHeadersProvider>
+      additional_headers_provider;
+  pending_component->agent_manager->ConnectToAgentService(
+      kAgentComponentUrl, additional_headers_provider.NewRequest());
+  pending_component->headers_provider = additional_headers_provider.Bind();
+  pending_component->headers_provider.set_error_handler(
+      [this, pending_component = pending_component.get()](zx_status_t error) {
+        if (pending_component->headers.has_value())
+          return;
+        pending_component->headers = {};
+        MaybeStartComponent(pending_component);
+      });
+  pending_component->headers_provider->GetHeaders(
+      [this, pending_component = pending_component.get()](
+          std::vector<fuchsia::net::http::Header> headers, zx_time_t expiry) {
+        pending_component->headers =
+            base::Optional<std::vector<fuchsia::net::http::Header>>(
+                std::move(headers));
+        MaybeStartComponent(pending_component);
+      });
+
   const std::string cast_app_id(cast_url.GetContent());
   pending_component->app_config_manager->GetConfig(
       cast_app_id, [this, pending_component = pending_component.get()](
@@ -114,14 +138,12 @@ void CastRunner::GetConfigCallback(
 }
 
 void CastRunner::MaybeStartComponent(PendingComponent* pending_component) {
-  // Called after the completion of GetConfigCallback() or
-  // ApiBindingsClient::OnBindingsReceived().
-  if (pending_component->app_config.IsEmpty() ||
-      !pending_component->bindings_manager->HasBindings()) {
-    // Don't proceed unless both the application config and API bindings are
-    // received.
+  if (pending_component->app_config.IsEmpty())
     return;
-  }
+  if (!pending_component->bindings_manager->HasBindings())
+    return;
+  if (!pending_component->headers.has_value())
+    return;
 
   // Create a component based on the returned configuration, and pass it the
   // fields stashed in PendingComponent.
@@ -132,8 +154,10 @@ void CastRunner::MaybeStartComponent(PendingComponent* pending_component) {
       std::move(pending_component->startup_context),
       std::move(pending_component->controller_request),
       std::move(pending_component->agent_manager));
+  std::vector<fuchsia::net::http::Header> additional_headers =
+      pending_component->headers.value();
   pending_components_.erase(pending_component);
 
-  component->LoadUrl(std::move(cast_app_url));
+  component->LoadUrl(std::move(cast_app_url), std::move(additional_headers));
   RegisterComponent(std::move(component));
 }

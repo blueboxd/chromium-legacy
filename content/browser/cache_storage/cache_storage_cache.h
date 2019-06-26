@@ -54,7 +54,12 @@ class CONTENT_EXPORT CacheStorageCache {
   // The stream index for a cache Entry. This cannot be extended without changes
   // in the Entry implementation. INDEX_SIDE_DATA is used for storing any
   // additional data, such as response side blobs or request bodies.
-  enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
+  enum EntryIndex {
+    INDEX_INVALID = -1,
+    INDEX_HEADERS = 0,
+    INDEX_RESPONSE_BODY,
+    INDEX_SIDE_DATA
+  };
 
   // Create a handle that will hold the CacheStorageCache alive. Client code
   // should hold one of these handles while waiting for operation callbacks to

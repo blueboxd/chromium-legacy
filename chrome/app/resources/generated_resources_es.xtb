@@ -915,7 +915,6 @@
 <translation id="236117173274098341">Optimizar</translation>
 <translation id="236141728043665931">Bloquear siempre el acceso al micrófono</translation>
 <translation id="2365507699358342471">Este sitio web puede ver el texto y las imágenes que se hayan copiado en el portapapeles.</translation>
-<translation id="2367199180085172140">Añadir sistema de archivos compartidos</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2369105924912929484">Alternar contenido de la página convertida</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
@@ -3296,7 +3295,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6026047032548434446">¿Quieres instalar la aplicación?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: dispositivo USB conectado</translation>
 <translation id="6029027682598229313">Se ha completado la instalación de Linux.</translation>
-<translation id="6029292188939175871">eliminar [<ph name="FINGERPRINT_NAME" />], botón</translation>
 <translation id="6029587122245504742">Velocidad mínima</translation>
 <translation id="6032912588568283682">Sistema de archivos</translation>
 <translation id="6038929619733116134">Bloquear si el sitio web muestra anuncios invasivos o engañosos</translation>
@@ -4597,7 +4595,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7973962044839454485">Se ha producido un error en la autenticación de PPP porque la contraseña o el nombre de usuario son incorrectos</translation>
 <translation id="7974566588408714340">Intentar de nuevo con <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Reajuste</translation>
-<translation id="79766959863778284">Servicio de dispositivo aislado XR</translation>
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7978450511781612192">Se cerrará la sesión en tus cuentas de Google. Tus marcadores, historial, contraseñas y otros elementos dejarán de sincronizarse.</translation>
 <translation id="7979036127916589816">Error de sincronización</translation>
@@ -5366,7 +5363,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9138978632494473300">Añadir accesos directos a las siguientes ubicaciones:</translation>
 <translation id="9140067245205650184">Estás usando una marca de función no admitida (<ph name="BAD_FLAG" />), lo que afectará a la estabilidad y la seguridad.</translation>
 <translation id="9143298529634201539">¿Quieres eliminar la sugerencia?</translation>
-<translation id="9147304170847707004">Método de autenticación</translation>
 <translation id="9147392381910171771">&amp;Opciones</translation>
 <translation id="9148058034647219655">Salir</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>

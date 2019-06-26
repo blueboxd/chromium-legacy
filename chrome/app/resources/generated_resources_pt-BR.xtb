@@ -915,7 +915,6 @@
 <translation id="236117173274098341">Otimizar</translation>
 <translation id="236141728043665931">Sempre bloquear o acesso ao microfone</translation>
 <translation id="2365507699358342471">Este site pode ver textos e imagens copiados para a área de transferência.</translation>
-<translation id="2367199180085172140">Adicionar compartilhamento de arquivos</translation>
 <translation id="2367972762794486313">Mostrar aplicativos</translation>
 <translation id="2369105924912929484">Alternar conteúdo da página extraído</translation>
 <translation id="2371076942591664043">Abrir quando estiver &amp;concluído</translation>
@@ -3300,7 +3299,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6026047032548434446">Instalar app?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - Dispositivo USB conectado</translation>
 <translation id="6029027682598229313">A instalação do Linux foi concluída.</translation>
-<translation id="6029292188939175871">botão excluir [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="6029587122245504742">Mais lenta</translation>
 <translation id="6032912588568283682">Sistema de arquivos</translation>
 <translation id="6038929619733116134">Bloquear se o site mostrar anúncios invasivos ou enganosos</translation>
@@ -4602,7 +4600,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7973962044839454485">Falha da autenticação PPC devido a senha ou nome de usuário incorreto</translation>
 <translation id="7974566588408714340">Tentar novamente usando <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Overscan</translation>
-<translation id="79766959863778284">Serviço de dispositivo isolado XR</translation>
 <translation id="7978412674231730200">Chave privada</translation>
 <translation id="7978450511781612192">Isso desconectará você das suas Contas do Google. Seus favoritos, histórico, senhas e outras configurações não serão mais sincronizados.</translation>
 <translation id="7979036127916589816">Erro de sincronização</translation>
@@ -5372,7 +5369,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9138978632494473300">Adiciona atalhos aos seguintes lugares:</translation>
 <translation id="9140067245205650184">Sinalizador de recurso incompatível usado: <ph name="BAD_FLAG" />. Estabilidade e segurança afetadas.</translation>
 <translation id="9143298529634201539">Remover sugestão?</translation>
-<translation id="9147304170847707004">Método de autenticação</translation>
 <translation id="9147392381910171771">&amp;Opções</translation>
 <translation id="9148058034647219655">Sair</translation>
 <translation id="9148126808321036104">Faça login novamente</translation>
@@ -5431,7 +5427,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="939598580284253335">Inserir senha</translation>
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="942532530371314860">O app <ph name="APP_NAME" /> está compartilhando áudio e uma guia do Chrome.</translation>
-<translation id="945166830402967374">Entre em contato com o administrador do dispositivo da sua organização</translation>
+<translation id="945166830402967374">Entre em contato com o administrador de dispositivos da sua organização</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="947329552760389097">&amp;Inspecionar elementos</translation>
 <translation id="952992212772159698">Desativado</translation>

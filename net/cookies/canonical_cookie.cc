@@ -492,39 +492,6 @@ bool CanonicalCookie::PartialCompare(const CanonicalCookie& other) const {
   return PartialCookieOrdering(*this, other) < 0;
 }
 
-bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
-  // Do the partial comparison first.
-  int diff = PartialCookieOrdering(*this, other);
-  if (diff != 0)
-    return diff < 0;
-
-  DCHECK(IsEquivalent(other));
-
-  // Compare other fields.
-  diff = Value().compare(other.Value());
-  if (diff != 0)
-    return diff < 0;
-
-  if (CreationDate() != other.CreationDate())
-    return CreationDate() < other.CreationDate();
-
-  if (ExpiryDate() != other.ExpiryDate())
-    return ExpiryDate() < other.ExpiryDate();
-
-  if (LastAccessDate() != other.LastAccessDate())
-    return LastAccessDate() < other.LastAccessDate();
-
-  if (IsSecure() != other.IsSecure())
-    return IsSecure();
-
-  if (IsHttpOnly() != other.IsHttpOnly())
-    return IsHttpOnly();
-
-  // TODO(chlily): This should also compare the SameSite attribute.
-
-  return Priority() < other.Priority();
-}
-
 bool CanonicalCookie::IsCanonical() const {
   // Not checking domain or path against ParsedCookie as it may have
   // come purely from the URL.

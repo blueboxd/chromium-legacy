@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Na zaslonu ne mogu pronaći ništa u vezi s čime mogu pružiti pomoć.
 Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="5222676887888702881">Odjava</translation>
+<translation id="5317780077021120954">Spremi</translation>
 <translation id="5457599981699367932">Pregledavaj kao gost</translation>
 <translation id="54609108002486618">Upravljani</translation>
 <translation id="5733345267661125295">Odaberite novu zaporku sada</translation>
@@ -23,6 +24,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="6574601967010742428">Administrator uređaja možda može nadzirati vašu aktivnost.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Vaša je trenutačna zaporka istekla!}=1{Vaša trenutačna zaporka isteći će za manje od jednog dana!}one{Vaša trenutačna zaporka isteći će za manje od # dana!}few{Vaša trenutačna zaporka isteći će za manje od # dana!}other{Vaša trenutačna zaporka isteći će za manje od # dana!}}</translation>
 <translation id="7658239707568436148">Odustani</translation>
+<translation id="7690294790491645610">Potvrdite novu zaporku</translation>
 <translation id="808894953321890993">Promjena zaporke</translation>
 <translation id="9111102763498581341">Otključaj</translation>
 </translationbundle>

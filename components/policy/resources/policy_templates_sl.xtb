@@ -2550,7 +2550,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5578571772998293651">Omogočanje povratnih informacij uporabnikov.
         Če je ta pravilnik onemogočen, uporabniki ne morejo pošiljati povratnih informacij Googlu.
 
-        Če pravilnik ni nastavljen ali je omogočen, lahko uporabniki pošiljajo povratne informacij Googlu v »Meni -&gt; Pomoč -&gt; Prijava težave« ali s kombinacijo tipk.</translation>
+        Če pravilnik ni nastavljen ali je omogočen, lahko uporabniki pošiljajo povratne informacije Googlu v »Meni -&gt; Pomoč -&gt; Prijava težave« ali s kombinacijo tipk.</translation>
 <translation id="5581292529942108810">Konfiguriranje pravilnikov o razširitvi za poročanje za Chrome. 
 
       Ta pravilnik se uporablja samo, ko je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>

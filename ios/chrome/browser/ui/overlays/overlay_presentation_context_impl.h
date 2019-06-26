@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_PRESENTER_UI_DELEGATE_IMPL_H_
-#define IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_PRESENTER_UI_DELEGATE_IMPL_H_
+#ifndef IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_PRESENTATION_CONTEXT_IMPL_H_
+#define IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_PRESENTATION_CONTEXT_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
 #import "ios/chrome/browser/main/browser_observer.h"
-#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#include "ios/chrome/browser/overlays/public/overlay_modality.h"
+#import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/overlays/public/overlay_user_data.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_ui_state.h"
@@ -16,27 +17,27 @@
 @class OverlayRequestCoordinatorFactory;
 @class OverlayContainerCoordinator;
 
-// Implementation of OverlayPresenter::UIDelegate.  An instance of this class
+// Implementation of OverlayPresentationContext.  An instance of this class
 // exists for every OverlayModality for each Browser.  This delegate is scoped
 // to the Browser because it needs to store state even when a Browser's UI is
 // not on screen.  When a Browser's UI is shown, the OverlayContainerCoordinator
 // for each of its OverlayModalities will supply itself to the delegate, which
 // will then present the UI using the container coordinator's presentation
 // context.
-class OverlayPresenterUIDelegateImpl : public OverlayPresenter::UIDelegate {
+class OverlayPresentationContextImpl : public OverlayPresentationContext {
  public:
-  ~OverlayPresenterUIDelegateImpl() override;
+  ~OverlayPresentationContextImpl() override;
 
   // Container that stores the UI delegate for each modality.  Usage example:
   //
-  // OverlayPresenterUIDelegateImpl::Container::FromUserData(browser)->
-  //     UIDelegateForModality(OverlayModality::kWebContentArea);
+  // OverlayPresentationContextImpl::Container::FromUserData(browser)->
+  //     PresentationContextForModality(OverlayModality::kWebContentArea);
   class Container : public OverlayUserData<Container> {
    public:
     ~Container() override;
 
-    // Returns the OverlayPresenterUIDelegateImpl for |modality|.
-    OverlayPresenterUIDelegateImpl* UIDelegateForModality(
+    // Returns the OverlayPresentationContextImpl for |modality|.
+    OverlayPresentationContextImpl* PresentationContextForModality(
         OverlayModality modality);
 
    private:
@@ -44,7 +45,7 @@ class OverlayPresenterUIDelegateImpl : public OverlayPresenter::UIDelegate {
     explicit Container(Browser* browser);
 
     Browser* browser_ = nullptr;
-    std::map<OverlayModality, std::unique_ptr<OverlayPresenterUIDelegateImpl>>
+    std::map<OverlayModality, std::unique_ptr<OverlayPresentationContextImpl>>
         ui_delegates_;
   };
 
@@ -54,7 +55,7 @@ class OverlayPresenterUIDelegateImpl : public OverlayPresenter::UIDelegate {
   OverlayContainerCoordinator* coordinator() const { return coordinator_; }
   void SetCoordinator(OverlayContainerCoordinator* coordinator);
 
-  // OverlayPresenter::UIDelegate:
+  // OverlayPresentationContext:
   void ShowOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request,
                      OverlayDismissalCallback dismissal_callback) override;
@@ -64,7 +65,7 @@ class OverlayPresenterUIDelegateImpl : public OverlayPresenter::UIDelegate {
                        OverlayRequest* request) override;
 
  private:
-  OverlayPresenterUIDelegateImpl(Browser* browser, OverlayModality modality);
+  OverlayPresentationContextImpl(Browser* browser, OverlayModality modality);
 
   // Setter for |request_|.  Setting to a new value will attempt to
   // present the UI for |request|.
@@ -102,14 +103,14 @@ class OverlayPresenterUIDelegateImpl : public OverlayPresenter::UIDelegate {
   // Helper object that listens for UI dismissal events.
   class OverlayDismissalHelper : public OverlayUIDismissalDelegate {
    public:
-    OverlayDismissalHelper(OverlayPresenterUIDelegateImpl* ui_delegate);
+    OverlayDismissalHelper(OverlayPresentationContextImpl* ui_delegate);
     ~OverlayDismissalHelper() override;
 
     // OverlayUIDismissalDelegate:
     void OverlayUIDidFinishDismissal(OverlayRequest* request) override;
 
    private:
-    OverlayPresenterUIDelegateImpl* ui_delegate_ = nullptr;
+    OverlayPresentationContextImpl* ui_delegate_ = nullptr;
   };
 
   // The presenter whose UI is being handled by this delegate.
@@ -131,7 +132,7 @@ class OverlayPresenterUIDelegateImpl : public OverlayPresenter::UIDelegate {
   // Map storing the UI state for each OverlayRequest.
   std::map<OverlayRequest*, std::unique_ptr<OverlayRequestUIState>> states_;
   // Weak pointer factory.
-  base::WeakPtrFactory<OverlayPresenterUIDelegateImpl> weak_factory_;
+  base::WeakPtrFactory<OverlayPresentationContextImpl> weak_factory_;
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_PRESENTER_UI_DELEGATE_IMPL_H_
+#endif  // IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_PRESENTATION_CONTEXT_IMPL_H_

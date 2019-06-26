@@ -172,8 +172,7 @@ RootView::RootView(Widget* widget)
 RootView::~RootView() {
   // If we have children remove them explicitly so to make sure a remove
   // notification is sent for each one of them.
-  if (!children().empty())
-    RemoveAllChildViews(true);
+  RemoveAllChildViews(true);
 }
 
 // Tree operations -------------------------------------------------------------

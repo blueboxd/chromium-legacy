@@ -38,10 +38,9 @@ class GeometryStructTraitsTest
     std::move(callback).Run(p);
   }
 
-  void EchoPoint3F(::gfx::mojom::blink::Point3FPtr p,
+  void EchoPoint3F(const WebFloatPoint3D& p,
                    EchoPoint3FCallback callback) override {
-    // The type map is not specified.
-    NOTREACHED();
+    std::move(callback).Run(p);
   }
 
   void EchoSize(const WebSize& s, EchoSizeCallback callback) override {
@@ -84,16 +83,14 @@ class GeometryStructTraitsTest
     NOTREACHED();
   }
 
-  void EchoVector3dF(gfx::mojom::blink::Vector3dFPtr,
-                     EchoVector3dFCallback) override {
-    // The type map is not specified.
-    NOTREACHED();
+  void EchoVector3dF(const gfx::Vector3dF& v,
+                     EchoVector3dFCallback callback) override {
+    std::move(callback).Run(v);
   }
 
-  void EchoQuaternion(gfx::mojom::blink::QuaternionPtr,
-                      EchoQuaternionCallback) override {
-    // The type map is not specified.
-    NOTREACHED();
+  void EchoQuaternion(const gfx::Quaternion& q,
+                      EchoQuaternionCallback callback) override {
+    std::move(callback).Run(q);
   }
 
   mojo::BindingSet<gfx::mojom::blink::GeometryTraitsTestService>
@@ -133,6 +130,17 @@ TEST_F(GeometryStructTraitsTest, PointF) {
   gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
   WebFloatPoint output;
   proxy->EchoPointF(input, &output);
+  EXPECT_EQ(input, output);
+}
+
+TEST_F(GeometryStructTraitsTest, Point3D) {
+  const float kX = 1.234;
+  const float kY = 5.678;
+  const float kZ = 9.098;
+  WebFloatPoint3D input(kX, kY, kZ);
+  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  WebFloatPoint3D output;
+  proxy->EchoPoint3F(input, &output);
   EXPECT_EQ(input, output);
 }
 

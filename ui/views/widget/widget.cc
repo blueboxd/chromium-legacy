@@ -1529,6 +1529,10 @@ void Widget::DestroyRootView() {
     focus_manager_->SetFocusedView(nullptr);
   NotifyWillRemoveView(root_view_.get());
   non_client_view_ = nullptr;
+  // Remove all children before the unique_ptr reset so that
+  // GetWidget()->GetRootView() doesn't return nullptr while the views hierarchy
+  // is being torn down.
+  root_view_->RemoveAllChildViews(true);
   root_view_.reset();
 }
 

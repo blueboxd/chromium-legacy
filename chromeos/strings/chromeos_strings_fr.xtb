@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Je ne parviens pas à détecter d'éléments sur votre écran pour lesquels je peux vous aider.
 Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
+<translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
 <translation id="54609108002486618">Géré</translation>
 <translation id="5733345267661125295">Veuillez choisir bientôt un nouveau mot de passe</translation>
@@ -23,6 +24,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="6574601967010742428">Il est possible que l'administrateur de l'appareil puisse surveiller votre activité.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Votre mot de passe actuel est arrivé à expiration !}=1{Votre mot de passe actuel arrive à expiration dans moins d'un jour !}one{Votre mot de passe actuel arrive à expiration dans moins de # jour !}other{Votre mot de passe actuel arrive à expiration dans moins de # jours !}}</translation>
 <translation id="7658239707568436148">Annuler</translation>
+<translation id="7690294790491645610">Confirmer le nouveau mot de passe</translation>
 <translation id="808894953321890993">Modifier le mot de passe</translation>
 <translation id="9111102763498581341">Déverrouiller</translation>
 </translationbundle>

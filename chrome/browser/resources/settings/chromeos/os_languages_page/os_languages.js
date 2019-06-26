@@ -17,29 +17,11 @@ cr.exportPath('settings');
 
 const MoveType = chrome.languageSettingsPrivate.MoveType;
 
-// Translate server treats some language codes the same.
-// See also: components/translate/core/common/translate_util.cc.
-const kLanguageCodeToTranslateCode = {
-  'nb': 'no',
-  'fil': 'tl',
-  'zh-HK': 'zh-TW',
-  'zh-MO': 'zh-TW',
-  'zh-SG': 'zh-CN',
-};
-
-// Some ISO 639 language codes have been renamed, e.g. "he" to "iw", but
-// Translate still uses the old versions. TODO(michaelpg): Chrome does too.
-// Follow up with Translate owners to understand the right thing to do.
-const kTranslateLanguageSynonyms = {
-  'he': 'iw',
-  'jv': 'jw',
-};
-
 // The fake language name used for ARC IMEs. The value must be in sync with the
 // one in ui/base/ime/chromeos/extension_ime_util.h.
 const kArcImeLanguage = '_arc_ime_language_';
 
-const preferredLanguagesPrefName = 'settings.language.preferred_languages';
+const kPreferredLanguagesPrefName = 'settings.language.preferred_languages';
 
 /**
  * Singleton element that generates the languages model on start-up and
@@ -140,9 +122,7 @@ Polymer({
     // |languages| property.
     'prospectiveUILanguageChanged_(prefs.intl.app_locale.value, languages)',
     'preferredLanguagesPrefChanged_(' +
-        'prefs.' + preferredLanguagesPrefName + '.value, languages)',
-    'translateLanguagesPrefChanged_(' +
-        'prefs.translate_blocked_languages.value.*, languages)',
+        'prefs.' + kPreferredLanguagesPrefName + '.value, languages)',
     'updateRemovableLanguages_(' +
         'prefs.intl.app_locale.value, languages.enabled)',
     'updateRemovableLanguages_(' +
@@ -182,28 +162,23 @@ Polymer({
 
     // Wait until prefs are initialized before creating the model, so we can
     // include information about enabled languages.
-    promises[0] = CrSettingsPrefs.initialized;
+    promises.push(CrSettingsPrefs.initialized);
 
     // Get the language list.
-    promises[1] = new Promise(resolve => {
+    promises.push(new Promise(resolve => {
       this.languageSettingsPrivate_.getLanguageList(resolve);
-    });
+    }));
 
-    // Get the translate target language.
-    promises[2] = new Promise(resolve => {
-      this.languageSettingsPrivate_.getTranslateTargetLanguage(resolve);
-    });
-
-    promises[3] = new Promise(resolve => {
+    promises.push(new Promise(resolve => {
       this.languageSettingsPrivate_.getInputMethodLists(function(lists) {
         resolve(
             lists.componentExtensionImes.concat(lists.thirdPartyExtensionImes));
       });
-    });
+    }));
 
-    promises[4] = new Promise(resolve => {
+    promises.push(new Promise(resolve => {
       this.inputMethodPrivate_.getCurrentInputMethod(resolve);
-    });
+    }));
 
     // Fetch the starting UI language, which affects which actions should be
     // enabled.
@@ -220,7 +195,9 @@ Polymer({
         return;
       }
 
-      this.createModel_(results[1], results[2], results[3], results[4]);
+      // Skip results[0].
+      const [, languages, inputMethods, currentInputMethod] = results;
+      this.createModel_(languages, inputMethods, currentInputMethod);
       this.resolver_.resolve();
     });
 
@@ -268,8 +245,8 @@ Polymer({
       return;
     }
 
-    const enabledLanguageStates = this.getEnabledLanguageStates_(
-        this.languages.translateTarget, this.languages.prospectiveUILanguage);
+    const enabledLanguageStates =
+        this.getEnabledLanguageStates_(this.languages.prospectiveUILanguage);
 
     // Recreate the enabled language set before updating languages.enabled.
     this.enabledLanguageSet_.clear();
@@ -278,41 +255,12 @@ Polymer({
     }
 
     this.set('languages.enabled', enabledLanguageStates);
-
-    // Update translate target language.
-    new Promise(resolve => {
-      this.languageSettingsPrivate_.getTranslateTargetLanguage(resolve);
-    }).then(result => {
-      this.set('languages.translateTarget', result);
-    });
-  },
-
-  /** @private */
-  translateLanguagesPrefChanged_: function() {
-    if (this.prefs == undefined || this.languages == undefined) {
-      return;
-    }
-
-    const translateBlockedPref = this.getPref('translate_blocked_languages');
-    const translateBlockedSet = this.makeSetFromArray_(
-        /** @type {!Array<string>} */ (translateBlockedPref.value));
-
-    for (let i = 0; i < this.languages.enabled.length; i++) {
-      const language = this.languages.enabled[i].language;
-      const translateEnabled = this.isTranslateEnabled_(
-          language.code, !!language.supportsTranslate, translateBlockedSet,
-          this.languages.translateTarget, this.languages.prospectiveUILanguage);
-      this.set(
-          'languages.enabled.' + i + '.translateEnabled', translateEnabled);
-    }
   },
 
   /**
    * Constructs the languages model.
    * @param {!Array<!chrome.languageSettingsPrivate.Language>}
    *     supportedLanguages
-   * @param {string} translateTarget Language code of the default translate
-   *     target language.
    * @param {!Array<!chrome.languageSettingsPrivate.InputMethod>}
    *     supportedInputMethods Input methods.
    * @param {string} currentInputMethodId ID of the currently used
@@ -320,8 +268,7 @@ Polymer({
    * @private
    */
   createModel_: function(
-      supportedLanguages, translateTarget, supportedInputMethods,
-      currentInputMethodId) {
+      supportedLanguages, supportedInputMethods, currentInputMethodId) {
     // Populate the hash map of supported languages.
     for (let i = 0; i < supportedLanguages.length; i++) {
       const language = supportedLanguages[i];
@@ -341,7 +288,7 @@ Polymer({
 
     // Create a list of enabled languages from the supported languages.
     const enabledLanguageStates =
-        this.getEnabledLanguageStates_(translateTarget, prospectiveUILanguage);
+        this.getEnabledLanguageStates_(prospectiveUILanguage);
     // Populate the hash set of enabled languages.
     for (let l = 0; l < enabledLanguageStates.length; l++) {
       this.enabledLanguageSet_.add(enabledLanguageStates[l].language.code);
@@ -350,7 +297,6 @@ Polymer({
     const model = /** @type {!LanguagesModel} */ ({
       supported: supportedLanguages,
       enabled: enabledLanguageStates,
-      translateTarget: translateTarget,
     });
 
     model.prospectiveUILanguage = prospectiveUILanguage;
@@ -399,22 +345,16 @@ Polymer({
   /**
    * Returns a list of LanguageStates for each enabled language in the supported
    * languages list.
-   * @param {string} translateTarget Language code of the default translate
-   *     target language.
    * @param {(string|undefined)} prospectiveUILanguage Prospective UI display
    *     language.
    * @return {!Array<!LanguageState>}
    * @private
    */
-  getEnabledLanguageStates_: function(translateTarget, prospectiveUILanguage) {
+  getEnabledLanguageStates_: function(prospectiveUILanguage) {
     assert(CrSettingsPrefs.isInitialized);
 
-    const pref = this.getPref(preferredLanguagesPrefName);
+    const pref = this.getPref(kPreferredLanguagesPrefName);
     const enabledLanguageCodes = pref.value.split(',');
-
-    const translateBlockedPref = this.getPref('translate_blocked_languages');
-    const translateBlockedSet = this.makeSetFromArray_(
-        /** @type {!Array<string>} */ (translateBlockedPref.value));
 
     const enabledLanguageStates = [];
     for (let i = 0; i < enabledLanguageCodes.length; i++) {
@@ -426,35 +366,12 @@ Polymer({
       }
       const languageState = /** @type {LanguageState} */ ({});
       languageState.language = language;
-      languageState.translateEnabled = this.isTranslateEnabled_(
-          code, !!language.supportsTranslate, translateBlockedSet,
-          translateTarget, prospectiveUILanguage);
+      // TODO(crbug.com/967965): Skip this field and don't use LanguageState.
+      // Just return an array of string language codes.
+      languageState.translateEnabled = false;
       enabledLanguageStates.push(languageState);
     }
     return enabledLanguageStates;
-  },
-
-  /**
-   * True iff we translate pages that are in the given language.
-   * @param {string} code Language code.
-   * @param {boolean} supportsTranslate If translation supports the given
-   *     language.
-   * @param {!Set<string>} translateBlockedSet Set of languages for which
-   *     translation is blocked.
-   * @param {string} translateTarget Language code of the default translate
-   *     target language.
-   * @param {(string|undefined)} prospectiveUILanguage Prospective UI display
-   *     language.
-   * @return {boolean}
-   * @private
-   */
-  isTranslateEnabled_: function(
-      code, supportsTranslate, translateBlockedSet, translateTarget,
-      prospectiveUILanguage) {
-    const translateCode = this.convertLanguageCodeForTranslate(code);
-    return supportsTranslate && !translateBlockedSet.has(translateCode) &&
-        translateCode != translateTarget &&
-        (!prospectiveUILanguage || code != prospectiveUILanguage);
   },
 
   /**
@@ -545,6 +462,8 @@ Polymer({
   // LanguageHelper implementation.
   // TODO(michaelpg): replace duplicate docs with @override once b/24294625
   // is fixed.
+  // TODO(crbug.com/967965): Introduce a smaller interface class for use by the
+  // OS add language dialog and don't implement LanguageHelper.
 
   /** @return {!Promise} */
   whenReady: function() {
@@ -630,13 +549,13 @@ Polymer({
   },
 
   /**
+   * TODO(crbug.com/967965): Stop implementing the LanguageHelper interface and
+   * remove this method.
    * @param {!LanguageState} languageState
    * @return {boolean}
    */
   isOnlyTranslateBlockedLanguage: function(languageState) {
-    return !languageState.translateEnabled &&
-        this.languages.enabled.filter(lang => !lang.translateEnabled).length ==
-        1;
+    assertNotReached();
   },
 
   /**
@@ -651,11 +570,6 @@ Polymer({
 
     // Cannot disable the only enabled language.
     if (this.languages.enabled.length == 1) {
-      return false;
-    }
-
-    // Cannot disable the last translate blocked language.
-    if (this.isOnlyTranslateBlockedLanguage(languageState)) {
       return false;
     }
 
@@ -722,46 +636,36 @@ Polymer({
   /**
    * Enables translate for the given language by removing the translate
    * language from the blocked languages preference.
+   * TODO(crbug.com/967965): Stop implementing the LanguageHelper interface and
+   * remove this method.
    * @param {string} languageCode
    */
   enableTranslateLanguage: function(languageCode) {
-    this.languageSettingsPrivate_.setEnableTranslationForLanguage(
-        languageCode, true);
+    assertNotReached();
   },
 
   /**
    * Disables translate for the given language by adding the translate
    * language to the blocked languages preference.
+   * TODO(crbug.com/967965): Stop implementing the LanguageHelper interface and
+   * remove this method.
    * @param {string} languageCode
    */
   disableTranslateLanguage: function(languageCode) {
-    this.languageSettingsPrivate_.setEnableTranslationForLanguage(
-        languageCode, false);
+    assertNotReached();
   },
 
   /**
    * Converts the language code for translate. There are some differences
    * between the language set the Translate server uses and that for
    * Accept-Language.
+   * TODO(crbug.com/967965): Stop implementing the LanguageHelper interface and
+   * remove this method.
    * @param {string} languageCode
    * @return {string} The converted language code.
    */
   convertLanguageCodeForTranslate: function(languageCode) {
-    if (languageCode in kLanguageCodeToTranslateCode) {
-      return kLanguageCodeToTranslateCode[languageCode];
-    }
-
-    const main = languageCode.split('-')[0];
-    if (main == 'zh') {
-      // In Translate, general Chinese is not used, and the sub code is
-      // necessary as a language code for the Translate server.
-      return languageCode;
-    }
-    if (main in kTranslateLanguageSynonyms) {
-      return kTranslateLanguageSynonyms[main];
-    }
-
-    return main;
+    assertNotReached();
   },
 
   /**

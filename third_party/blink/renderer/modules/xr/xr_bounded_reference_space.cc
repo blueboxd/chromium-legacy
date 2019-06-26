@@ -54,7 +54,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
 
       for (const auto& bound : *(display_info->stageParameters->bounds)) {
         FloatPoint3D p =
-            bounds_transform.MapPoint(FloatPoint3D(bound->x, 0.0, bound->z));
+            bounds_transform.MapPoint(FloatPoint3D(bound.x, 0.0, bound.z));
         bounds_geometry_.push_back(
             DOMPointReadOnly::Create(p.X(), p.Y(), p.Z(), 1.0));
       }

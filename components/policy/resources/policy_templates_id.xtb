@@ -1556,7 +1556,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Setiap entri cantuman berisi kamus yang harus menyertakan ID ekstensi dalam bidang 'extension-id', dan URL pembaruannya dalam bidang 'update-url'.</translation>
 <translation id="3874773863217952418">Aktifkan Tap untuk Menelusuri</translation>
 <translation id="3877517141460819966">Mode autentikasi faktor kedua yang terintegrasi</translation>
-<translation id="3879208481373875102">Konfigurasikan daftar Aplikasi Web yang diinstal otomatis</translation>
+<translation id="3879208481373875102">Konfigurasi daftar Aplikasi Web yang diinstal otomatis</translation>
 <translation id="388237772682176890">Kebijakan ini sudah tidak digunakan di M53 dan dihapus di M54, karena dukungan SPDY/3.1 telah dihapus.
 
       Menonaktifkan penggunaan protokol SPDY di <ph name="PRODUCT_NAME" />.
@@ -2456,9 +2456,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak disetel, atau disetel ke false, sertifikat server yang tidak menyertakan ekstensi subjectAlternativeName yang berisi nama DNS atau alamat IP tidak akan dipercaya.</translation>
 <translation id="5578571772998293651">Izinkan masukan pengguna.
-        Kalau kebijakan disetel ke false, pengguna tidak bisa mengirim masukan ke Google.
+        Jika kebijakan disetel ke false, pengguna tidak dapat mengirim masukan ke Google.
 
-        Kalau kebijakan tidak disetel atau disetel ke true, pengguna bisa mengirim masukan ke Google melalui Menu-&gt;Bantuan-&gt;Laporkan Masalah atau kombinasi kunci.</translation>
+        Jika kebijakan tidak disetel atau disetel ke true, pengguna dapat mengirim masukan ke Google melalui Menu-&gt;Bantuan-&gt;Laporkan Masalah atau kombinasi kunci.</translation>
 <translation id="5581292529942108810">Konfigurasi kebijakan terkait Ekstensi Pelaporan Chrome.
 
       Kebijakan ini hanya berlaku jika <ph name="CHROME_REPORTING_EXTENSION_NAME" /> diaktifkan, dan mesin didaftarkan ke <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -4186,9 +4186,9 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           Penangan protokol yang didaftarkan oleh kebijakan digabung dengan penangan protokol yang didaftarkan oleh pengguna dan keduanya tersedia untuk digunakan. Pengguna dapat mengganti penangan protokol yang dipasang oleh kebijakan dengan memasang penangan default baru, namun pengguna tidak dapat membuang penangan protokol yang didaftarkan oleh kebijakan.</translation>
 <translation id="91196902572559194">Kebijakan ini memberikan izin kepada Asisten Google untuk mendengarkan frasa aktivasi suara.
 
-      Kalau kebijakan ini diaktifkan, Asisten Google akan mendengarkan frasa aktivasi suara.
-      Kalau kebijakan ini dinonaktifkan, Asisten Google tidak akan mendengarkan frasa aktivasi suara.
-      Kalau kebijakan tidak disetel, pengguna bisa memutuskan apakah akan mengizinkan Asisten Google mendengarkan frasa aktivasi suara.
+      Jika kebijakan ini diaktifkan, Asisten Google akan mendengarkan frasa aktivasi suara.
+      Jika kebijakan ini dinonaktifkan, Asisten Google tidak akan mendengarkan frasa aktivasi suara.
+      Jika kebijakan tidak disetel, pengguna dapat memutuskan apakah akan mengizinkan Asisten Google mendengarkan frasa aktivasi suara.
       </translation>
 <translation id="9123211093995421438">Penerapan jumlah minimum rollback milestone <ph name="PRODUCT_OS_NAME" /> akan diizinkan mulai versi yang stabil kapan saja.
 

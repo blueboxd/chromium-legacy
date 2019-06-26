@@ -16,6 +16,10 @@
 
 class CollectedCookiesViewsTest : public InProcessBrowserTest {
  public:
+  CollectedCookiesViewsTest() = default;
+  ~CollectedCookiesViewsTest() override = default;
+
+  // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -27,10 +31,11 @@ class CollectedCookiesViewsTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(
         browser(), embedded_test_server()->GetURL("/cookie1.html"));
 
-    // Spawn a cookies dialog.  Note that |cookies_dialog_| will delete itself
-    // automatically when it closes.
-    cookies_dialog_ = new CollectedCookiesViews(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    // Spawn a cookies dialog.
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    CollectedCookiesViews::CreateAndShowForWebContents(web_contents);
+    cookies_dialog_ = static_cast<CollectedCookiesViews*>(
+        web_contents->GetUserData(CollectedCookiesViews::UserDataKey()));
   }
 
   // Closing dialog with modified data will shows infobar.
@@ -47,6 +52,8 @@ class CollectedCookiesViewsTest : public InProcessBrowserTest {
 
  private:
   CollectedCookiesViews* cookies_dialog_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(CollectedCookiesViewsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(CollectedCookiesViewsTest, CloseDialog) {

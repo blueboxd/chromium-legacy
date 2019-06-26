@@ -372,15 +372,11 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
 
-  ray_mojo->origin = gfx::mojom::blink::Point3F::New();
-  ray_mojo->origin->x = ray->origin()->x();
-  ray_mojo->origin->y = ray->origin()->y();
-  ray_mojo->origin->z = ray->origin()->z();
+  ray_mojo->origin = WebFloatPoint3D(ray->origin()->x(), ray->origin()->y(),
+                                     ray->origin()->z());
 
-  ray_mojo->direction = gfx::mojom::blink::Vector3dF::New();
-  ray_mojo->direction->x = ray->direction()->x();
-  ray_mojo->direction->y = ray->direction()->y();
-  ray_mojo->direction->z = ray->direction()->z();
+  ray_mojo->direction = {ray->direction()->x(), ray->direction()->y(),
+                         ray->direction()->z()};
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();

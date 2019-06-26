@@ -45,6 +45,24 @@ std::vector<SiteDataFeatureProto*> GetAllFeaturesFromProto(
   return ret;
 }
 
+const char* FeatureTypeToFeatureName(
+    const LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures feature) {
+  switch (feature) {
+    case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+        kFaviconUpdate:
+      return "FaviconUpdateInBackground";
+    case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+        kTitleUpdate:
+      return "TitleUpdateInBackground";
+    case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+        kAudioUsage:
+      return "AudioUsageInBackground";
+    case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+        kNotificationUsageUsage:
+      return "NotificationsUsageInBackground";
+  }
+}
+
 }  // namespace
 
 void LocalSiteCharacteristicsDataImpl::NotifySiteLoaded() {
@@ -139,24 +157,24 @@ void LocalSiteCharacteristicsDataImpl::RegisterDataLoadedCallback(
 void LocalSiteCharacteristicsDataImpl::NotifyUpdatesFaviconInBackground() {
   NotifyFeatureUsage(
       site_characteristics_.mutable_updates_favicon_in_background(),
-      "FaviconUpdateInBackground");
+      TrackedBackgroundFeatures::kFaviconUpdate);
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUpdatesTitleInBackground() {
   NotifyFeatureUsage(
       site_characteristics_.mutable_updates_title_in_background(),
-      "TitleUpdateInBackground");
+      TrackedBackgroundFeatures::kTitleUpdate);
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUsesAudioInBackground() {
   NotifyFeatureUsage(site_characteristics_.mutable_uses_audio_in_background(),
-                     "AudioUsageInBackground");
+                     TrackedBackgroundFeatures::kAudioUsage);
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
   NotifyFeatureUsage(
       site_characteristics_.mutable_uses_notifications_in_background(),
-      "NotificationsUsageInBackground");
+      TrackedBackgroundFeatures::kNotificationUsageUsage);
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyLoadTimePerformanceMeasurement(
@@ -179,6 +197,15 @@ void LocalSiteCharacteristicsDataImpl::ExpireAllObservationWindowsForTesting() {
                 params.notifications_usage_observation_window});
   for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
     IncrementFeatureObservationDuration(iter, longest_observation_window);
+}
+
+void LocalSiteCharacteristicsDataImpl::RegisterFeatureUsageCallbackForTesting(
+    const TrackedBackgroundFeatures feature_type,
+    base::OnceClosure callback) {
+  DCHECK(
+      !feature_usage_callback_for_testing_[static_cast<size_t>(feature_type)]);
+  feature_usage_callback_for_testing_[static_cast<size_t>(feature_type)] =
+      std::move(callback);
 }
 
 LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
@@ -310,7 +337,7 @@ LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
 
 void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
     SiteDataFeatureProto* feature_proto,
-    const char* feature_name) {
+    const TrackedBackgroundFeatures feature_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsLoaded());
   DCHECK_GT(loaded_tabs_in_background_count_, 0U);
@@ -321,7 +348,7 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
     base::UmaHistogramCustomTimes(
         base::StringPrintf(
             "ResourceCoordinator.LocalDB.ObservationTimeBeforeFirstUse.%s",
-            feature_name),
+            FeatureTypeToFeatureName(feature_type)),
         InternalRepresentationToTimeDelta(
             feature_proto->observation_duration()),
         base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(1), 100);
@@ -330,6 +357,12 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
   feature_proto->Clear();
   feature_proto->set_use_timestamp(
       TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
+
+  if (feature_usage_callback_for_testing_[static_cast<size_t>(feature_type)]) {
+    std::move(
+        feature_usage_callback_for_testing_[static_cast<size_t>(feature_type)])
+        .Run();
+  }
 }
 
 void LocalSiteCharacteristicsDataImpl::OnInitCallback(

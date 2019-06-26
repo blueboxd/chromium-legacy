@@ -5,8 +5,6 @@
 #include "content/browser/background_fetch/storage/cache_entry_handler_impl.h"
 
 #include "base/guid.h"
-#include "storage/browser/blob/blob_impl.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace content {
@@ -42,30 +40,11 @@ std::unique_ptr<PutContext> CacheEntryHandlerImpl::CreatePutContext(
       response_blob_size, std::move(request_blob), request_blob_size, trace_id);
 }
 
-void CacheEntryHandlerImpl::PopulateBody(
-    scoped_refptr<DiskCacheBlobEntry> blob_entry,
-    const blink::mojom::SerializedBlobPtr& blob,
-    CacheStorageCache::EntryIndex index) {
-  disk_cache::Entry* entry = blob_entry->disk_cache_entry().get();
-  DCHECK(entry);
-
-  blob->size = entry->GetDataSize(index);
-  blob->uuid = base::GenerateGUID();
-
-  auto blob_data = std::make_unique<storage::BlobDataBuilder>(blob->uuid);
-  auto handle = MakeDataHandle(std::move(blob_entry), index);
-  blob_data->AppendReadableDataHandle(std::move(handle));
-
-  auto blob_handle = blob_context_->AddFinishedBlob(std::move(blob_data));
-  storage::BlobImpl::Create(std::move(blob_handle), MakeRequest(&blob->blob));
-}
-
 void CacheEntryHandlerImpl::PopulateResponseBody(
     scoped_refptr<DiskCacheBlobEntry> blob_entry,
     blink::mojom::FetchAPIResponse* response) {
-  response->blob = blink::mojom::SerializedBlob::New();
-  PopulateBody(std::move(blob_entry), response->blob,
-               CacheStorageCache::INDEX_RESPONSE_BODY);
+  response->blob =
+      CreateBlob(std::move(blob_entry), CacheStorageCache::INDEX_RESPONSE_BODY);
 }
 
 void CacheEntryHandlerImpl::PopulateRequestBody(
@@ -77,9 +56,8 @@ void CacheEntryHandlerImpl::PopulateRequestBody(
     return;
   }
 
-  request->blob = blink::mojom::SerializedBlob::New();
-  PopulateBody(std::move(blob_entry), request->blob,
-               CacheStorageCache::INDEX_SIDE_DATA);
+  request->blob =
+      CreateBlob(std::move(blob_entry), CacheStorageCache::INDEX_SIDE_DATA);
 }
 
 base::WeakPtr<CacheStorageCacheEntryHandler>

@@ -45,8 +45,9 @@ class WebComponent : public fuchsia::sys::ComponentController,
 
   ~WebComponent() override;
 
-  // Navigates this component's Frame to |url|.
-  void LoadUrl(const GURL& url);
+  // Navigates this component's Frame to |url| and passes |extra_headers|.
+  void LoadUrl(const GURL& url,
+               std::vector<fuchsia::net::http::Header> extra_headers);
 
   fuchsia::web::Frame* frame() const { return frame_.get(); }
 

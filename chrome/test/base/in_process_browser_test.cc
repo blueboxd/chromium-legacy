@@ -212,7 +212,7 @@ void InProcessBrowserTest::SetUp() {
   SetUpDefaultCommandLine(command_line);
 
   // Create a temporary user data directory if required.
-  ASSERT_TRUE(CreateUserDataDirectory())
+  ASSERT_TRUE(test_launcher_utils::CreateUserDataDir(&temp_user_data_dir_))
       << "Could not create user data directory.";
 
   // Allow subclasses the opportunity to make changes to the default user data
@@ -310,23 +310,6 @@ void InProcessBrowserTest::SetUpDefaultCommandLine(
   // TODO(pkotwicz): Investigate if we can remove this switch.
   if (exit_when_last_browser_closes_)
     command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
-}
-
-bool InProcessBrowserTest::CreateUserDataDirectory() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::FilePath user_data_dir =
-      command_line->GetSwitchValuePath(switches::kUserDataDir);
-  if (user_data_dir.empty()) {
-    if (temp_user_data_dir_.CreateUniqueTempDir() &&
-        temp_user_data_dir_.IsValid()) {
-      user_data_dir = temp_user_data_dir_.GetPath();
-    } else {
-      LOG(ERROR) << "Could not create temporary user data directory \""
-                 << temp_user_data_dir_.GetPath().value() << "\".";
-      return false;
-    }
-  }
-  return test_launcher_utils::OverrideUserDataDir(user_data_dir);
 }
 
 void InProcessBrowserTest::TearDown() {

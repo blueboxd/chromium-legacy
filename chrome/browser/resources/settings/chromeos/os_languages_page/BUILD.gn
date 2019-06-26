@@ -41,7 +41,7 @@ js_library("os_languages_page") {
     ":os_languages",
     "../..:lifetime_browser_proxy",
     "../..:route",
-    "../../langauges_page:languages_types",
+    "../../languages_page:languages_types",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",

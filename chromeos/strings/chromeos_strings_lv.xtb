@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Ekrānā neredzu neko, ar ko varētu palīdzēt.
 Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
+<translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5457599981699367932">Pārlūkot kā viesim</translation>
 <translation id="54609108002486618">Pārvaldītais</translation>
 <translation id="5733345267661125295">Lūdzu, izvēlieties jaunu paroli jau tagad.</translation>
@@ -23,6 +24,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6574601967010742428">Jūsu darbības var pārraudzīt ierīces pārvaldnieks.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Jūsu pašreizējai parolei ir beidzies derīguma termiņš.}=1{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā vienas dienas.}zero{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienām.}one{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienas.}other{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienām.}}</translation>
 <translation id="7658239707568436148">Atcelt</translation>
+<translation id="7690294790491645610">Apstipriniet jauno paroli</translation>
 <translation id="808894953321890993">Mainīt paroli</translation>
 <translation id="9111102763498581341">Atbloķēt</translation>
 </translationbundle>

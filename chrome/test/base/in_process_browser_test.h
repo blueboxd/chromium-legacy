@@ -258,10 +258,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
  private:
   void Initialize();
 
-  // Creates a user data directory for the test if one is needed. Returns true
-  // if successful.
-  virtual bool CreateUserDataDirectory() WARN_UNUSED_RESULT;
-
   // Quits all open browsers and waits until there are no more browsers.
   void QuitBrowsers();
 

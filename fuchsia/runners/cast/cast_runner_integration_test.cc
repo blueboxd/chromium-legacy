@@ -14,17 +14,21 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "fuchsia/base/agent_impl.h"
 #include "fuchsia/base/fake_component_context.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
+#include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
 #include "fuchsia/runners/cast/test_api_bindings.h"
 #include "fuchsia/runners/common/web_component.h"
 #include "fuchsia/runners/common/web_content_runner.h"
 #include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace castrunner {
@@ -39,6 +43,35 @@ void ComponentErrorHandler(zx_status_t status) {
   ADD_FAILURE();
 }
 
+std::vector<uint8_t> StringToUnsignedVector(base::StringPiece str) {
+  const uint8_t* raw_data = reinterpret_cast<const uint8_t*>(str.data());
+  return std::vector<uint8_t>(raw_data, raw_data + str.length());
+}
+
+class FakeAdditionalHeadersProvider
+    : public fuchsia::web::AdditionalHeadersProvider {
+ public:
+  FakeAdditionalHeadersProvider(base::fuchsia::ServiceDirectory* directory)
+      : binding_(directory, this) {}
+  ~FakeAdditionalHeadersProvider() override = default;
+
+ private:
+  void GetHeaders(GetHeadersCallback callback) override {
+    std::vector<fuchsia::net::http::Header> headers;
+    fuchsia::net::http::Header header;
+    header.name = StringToUnsignedVector("Test");
+    header.value = StringToUnsignedVector("Value");
+    headers.push_back(std::move(header));
+    callback(std::move(headers), 0);
+  }
+
+  const base::fuchsia::ScopedServiceBinding<
+      fuchsia::web::AdditionalHeadersProvider>
+      binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeAdditionalHeadersProvider);
+};
+
 class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
  public:
   FakeComponentState(
@@ -46,7 +79,10 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       chromium::cast::ApplicationConfigManager* app_config_manager,
       chromium::cast::ApiBindings* bindings_manager)
       : ComponentStateBase(component_url),
-        app_config_binding_(service_directory(), app_config_manager) {
+        app_config_binding_(service_directory(), app_config_manager),
+        additional_headers_provider_(
+            std::make_unique<FakeAdditionalHeadersProvider>(
+                service_directory())) {
     if (bindings_manager) {
       bindings_manager_binding_ = std::make_unique<
           base::fuchsia::ScopedServiceBinding<chromium::cast::ApiBindings>>(
@@ -69,6 +105,7 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
   std::unique_ptr<
       base::fuchsia::ScopedServiceBinding<chromium::cast::ApiBindings>>
       bindings_manager_binding_;
+  std::unique_ptr<FakeAdditionalHeadersProvider> additional_headers_provider_;
   base::OnceClosure on_delete_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeComponentState);
@@ -295,6 +332,61 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
   cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
   run_loop.Run();
   EXPECT_FALSE(web_component.has_value());
+}
+
+TEST_F(CastRunnerIntegrationTest, AdditionalHeadersProvider) {
+  const char kEchoAppId[] = "00000000";
+  const char kEchoAppPath[] = "/echoheader?Test";
+  const GURL echo_app_url = test_server_.GetURL(kEchoAppPath);
+  app_config_manager_.AddAppMapping(kEchoAppId, echo_app_url);
+
+  // Launch the test-app component.
+  fuchsia::sys::ComponentControllerPtr component_controller =
+      StartCastComponent(base::StringPrintf("cast:%s", kEchoAppId));
+  component_controller.set_error_handler(&ComponentErrorHandler);
+
+  WebComponent* web_component = nullptr;
+  {
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<WebComponent*> web_component_receiver(
+        run_loop.QuitClosure());
+    cast_runner_->GetWebComponentForTest(
+        web_component_receiver.GetReceiveCallback());
+    run_loop.Run();
+    ASSERT_NE(*web_component_receiver, nullptr);
+    web_component = *web_component_receiver;
+  }
+
+  // Bind a TestNavigationListener to the Frame.
+  cr_fuchsia::TestNavigationListener navigation_listener;
+  fidl::Binding<fuchsia::web::NavigationEventListener>
+      navigation_listener_binding(&navigation_listener);
+  web_component->frame()->SetNavigationEventListener(
+      navigation_listener_binding.NewBinding());
+  navigation_listener.RunUntilUrlEquals(echo_app_url);
+
+  // Check the header was properly set.
+  {
+    base::RunLoop run_loop;
+    web_component->frame()->ExecuteJavaScript(
+        {echo_app_url.GetOrigin().spec()},
+        cr_fuchsia::MemBufferFromString("document.body.innerText"),
+        [&](fuchsia::web::Frame_ExecuteJavaScript_Result result) {
+          ASSERT_TRUE(result.is_response());
+          std::string result_json;
+          ASSERT_TRUE(cr_fuchsia::StringFromMemBuffer(result.response().result,
+                                                      &result_json));
+          EXPECT_EQ(result_json, "\"Value\"");
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+
+  // Shutdown the component and wait for the teardown of its state.
+  base::RunLoop run_loop;
+  component_state_->set_on_delete(run_loop.QuitClosure());
+  component_controller.Unbind();
+  run_loop.Run();
 }
 
 }  // namespace castrunner

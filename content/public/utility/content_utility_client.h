@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -41,6 +42,17 @@ class CONTENT_EXPORT ContentUtilityClient {
   virtual bool HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request);
+
+  // Allows the embedder to handle an incoming service interface request to run
+  // a service on the IO thread. |*receiver| is always valid when this called,
+  // and the embedder is free to take ownership if handling the request. If the
+  // embedder does not wish to handle this request on the I/O thread, it must
+  // not modify |*receiver|.
+  virtual void RunIOThreadService(mojo::GenericPendingReceiver* receiver);
+
+  // Allows the embedder to handle an incoming service interface request to run
+  // a service on the main thread. |receiver| is always valid when this called.
+  virtual void RunMainThreadService(mojo::GenericPendingReceiver receiver);
 
   virtual void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) {}

@@ -66,6 +66,14 @@ class LocalSiteCharacteristicsDataImpl
         LocalSiteCharacteristicsDataImpl* impl) = 0;
   };
 
+  enum class TrackedBackgroundFeatures {
+    kFaviconUpdate,
+    kTitleUpdate,
+    kAudioUsage,
+    kNotificationUsageUsage,
+    kMaxValue = kNotificationUsageUsage,
+  };
+
   // Must be called when a load event is received for this site, this can be
   // invoked several times if instances of this class are shared between
   // multiple tabs.
@@ -153,6 +161,10 @@ class LocalSiteCharacteristicsDataImpl
 
   bool fully_initialized_for_testing() const { return fully_initialized_; }
 
+  void RegisterFeatureUsageCallbackForTesting(
+      const TrackedBackgroundFeatures feature_type,
+      base::OnceClosure callback);
+
  protected:
   friend class base::RefCounted<LocalSiteCharacteristicsDataImpl>;
   friend class resource_coordinator::LocalSiteCharacteristicsDataStore;
@@ -219,7 +231,7 @@ class LocalSiteCharacteristicsDataImpl
   // Helper function to update a given |SiteDataFeatureProto| when a
   // feature gets used.
   void NotifyFeatureUsage(SiteDataFeatureProto* feature_proto,
-                          const char* feature_name);
+                          const TrackedBackgroundFeatures feature_type);
 
   bool IsLoaded() const { return loaded_tabs_count_ > 0U; }
 
@@ -288,6 +300,9 @@ class LocalSiteCharacteristicsDataImpl
   // A collection of callbacks to be invoked when this object becomes fully
   // initialized.
   std::vector<base::OnceClosure> data_loaded_callbacks_;
+
+  base::OnceClosure feature_usage_callback_for_testing_[static_cast<size_t>(
+      TrackedBackgroundFeatures::kMaxValue) + 1];
 
   SEQUENCE_CHECKER(sequence_checker_);
 

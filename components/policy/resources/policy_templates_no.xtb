@@ -2497,9 +2497,9 @@ Verdiene for denne regelen og DeviceWebUsbAllowDevicesForUrls-regelen slås samm
 
       Hvis denne innstillingen ikke angis, eller hvis den angis som «false» (usann), klareres ikke tjenersertifikater som mangler en subjectAlternativeName-utvidelse og har enten et DNS-navn eller en IP-adresse.</translation>
 <translation id="5578571772998293651">Tillat brukertilbakemeldinger.
-        Hvis regelen er satt til «false» (usann), kan brukere ikke sende tilbakemeldinger til Google.
+        Hvis regelen er satt til «false» (usann), kan ikke brukerne sende tilbakemeldinger til Google.
 
-        Hvis regelen er satt til «true» (sann) eller ikke er angitt, kan brukere sende tilbakemeldinger til Google via Meny-&gt;Hjelp-&gt;Rapportér et problem eller en tastekombinasjon.</translation>
+        Hvis regelen er satt til «true» (sann) eller ikke er angitt, kan brukerne sende tilbakemeldinger til Google via Meny-&gt;Hjelp-&gt;Rapportér et problem eller en tastekombinasjon.</translation>
 <translation id="5581292529942108810">Konfigurer regler knyttet til Chrome Reporting Extension.
 
       Disse reglene gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>

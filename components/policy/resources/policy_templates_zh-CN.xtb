@@ -1515,7 +1515,7 @@
       每个列表条目都包含一个字典，其“extension-id”字段必须包含扩展程序 ID，而其“update-url”字段必须包含更新网址。</translation>
 <translation id="3874773863217952418">启用“点按搜索”</translation>
 <translation id="3877517141460819966">集成的双重身份验证模式</translation>
-<translation id="3879208481373875102">配置强制安装的网络应用的列表</translation>
+<translation id="3879208481373875102">配置强制安装的 Web 应用的列表</translation>
 <translation id="388237772682176890">我们在 M53 中弃用了此政策，并在 M54 中移除了此政策（因为 SPDY/3.1 已不再受支持）。
 
       禁止在 <ph name="PRODUCT_NAME" /> 中使用 SPDY 协议。

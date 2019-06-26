@@ -2486,7 +2486,7 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 <translation id="5578571772998293651">Salli käyttäjäpalaute.
         Jos käytännön arvo on epätosi, käyttäjät eivät voi lähettää palautetta Googlelle.
 
-        Jos käytännölle ei ole määritetty arvoa tai sen arvo on tosi, käyttäjät voivat lähettää Googlelle palautetta valitsemalla Valikko-&gt;Ohje-&gt;Ilmoita ongelmasta tai näppäinyhdistelmällä.</translation>
+        Jos käytännölle ei ole määritetty arvoa tai sen arvo on tosi, käyttäjät voivat lähettää Googlelle palautetta valitsemalla Valikko &gt; Ohje &gt; Ilmoita ongelmasta tai näppäinyhdistelmällä.</translation>
 <translation id="5581292529942108810">Määritä Chromen ilmoituslaajennukseen liittyvät käytännöt.
 
       Käytäntö on voimassa vain, kun <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on käytössä ja koneella on käytössä <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>

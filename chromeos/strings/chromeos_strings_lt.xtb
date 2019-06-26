@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Ekrane nieko nerasta, dėl ko galėtume jums padėti.
 Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
+<translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5457599981699367932">Naršyti kaip svečiui</translation>
 <translation id="54609108002486618">Valdoma</translation>
 <translation id="5733345267661125295">Naują slaptažodį pasirinkite dabar</translation>
@@ -23,6 +24,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="6574601967010742428">Įrenginio administratorius gali stebėti jūsų veiklą.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Jūsų dabartinis slaptažodis nebegalioja!}=1{Jūsų dabartinis slaptažodis baigs galioti po mažiau nei vienos dienos!}one{Jūsų dabartinis slaptažodis baigs galioti po mažiau nei # dienos!}few{Jūsų dabartinis slaptažodis baigs galioti po mažiau nei # dienų!}many{Jūsų dabartinis slaptažodis baigs galioti po mažiau nei # dienos!}other{Jūsų dabartinis slaptažodis baigs galioti po mažiau nei # dienų!}}</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
+<translation id="7690294790491645610">Patvirtinkite naują slaptažodį</translation>
 <translation id="808894953321890993">Keisti slaptažodį</translation>
 <translation id="9111102763498581341">Atrakinti</translation>
 </translationbundle>

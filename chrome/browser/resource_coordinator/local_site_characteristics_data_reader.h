@@ -38,7 +38,7 @@ class LocalSiteCharacteristicsDataReader
   bool DataLoaded() const override;
   void RegisterDataLoadedCallback(base::OnceClosure&& callback) override;
 
-  const internal::LocalSiteCharacteristicsDataImpl* impl_for_testing() const {
+  internal::LocalSiteCharacteristicsDataImpl* impl_for_testing() const {
     return impl_.get();
   }
 

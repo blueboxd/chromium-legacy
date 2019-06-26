@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/overlays/test/fake_overlay_presenter_ui_delegate.h"
+#include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 
-FakeOverlayPresenterUIDelegate::FakeOverlayPresenterUIDelegate() = default;
-FakeOverlayPresenterUIDelegate::~FakeOverlayPresenterUIDelegate() = default;
+FakeOverlayPresentationContext::FakeOverlayPresentationContext() = default;
+FakeOverlayPresentationContext::~FakeOverlayPresentationContext() = default;
 
-FakeOverlayPresenterUIDelegate::PresentationState
-FakeOverlayPresenterUIDelegate::GetPresentationState(OverlayRequest* request) {
+FakeOverlayPresentationContext::PresentationState
+FakeOverlayPresentationContext::GetPresentationState(OverlayRequest* request) {
   return presentation_states_[request];
 }
 
-void FakeOverlayPresenterUIDelegate::SimulateDismissalForRequest(
+void FakeOverlayPresentationContext::SimulateDismissalForRequest(
     OverlayRequest* request,
     OverlayDismissalReason reason) {
   DCHECK_EQ(PresentationState::kPresented, presentation_states_[request]);
@@ -34,7 +34,7 @@ void FakeOverlayPresenterUIDelegate::SimulateDismissalForRequest(
   std::move(overlay_callbacks_[request]).Run(reason);
 }
 
-void FakeOverlayPresenterUIDelegate::ShowOverlayUI(
+void FakeOverlayPresentationContext::ShowOverlayUI(
     OverlayPresenter* presenter,
     OverlayRequest* request,
     OverlayDismissalCallback dismissal_callback) {
@@ -42,12 +42,12 @@ void FakeOverlayPresenterUIDelegate::ShowOverlayUI(
   overlay_callbacks_[request] = std::move(dismissal_callback);
 }
 
-void FakeOverlayPresenterUIDelegate::HideOverlayUI(OverlayPresenter* presenter,
+void FakeOverlayPresentationContext::HideOverlayUI(OverlayPresenter* presenter,
                                                    OverlayRequest* request) {
   SimulateDismissalForRequest(request, OverlayDismissalReason::kHiding);
 }
 
-void FakeOverlayPresenterUIDelegate::CancelOverlayUI(
+void FakeOverlayPresentationContext::CancelOverlayUI(
     OverlayPresenter* presenter,
     OverlayRequest* request) {
   PresentationState& state = presentation_states_[request];

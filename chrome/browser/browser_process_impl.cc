@@ -36,7 +36,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/battery/battery_metrics.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
@@ -399,8 +398,6 @@ void BrowserProcessImpl::StartTearDown() {
 #endif  // !defined(OS_CHROMEOS)
     profile_manager_.reset();
   }
-
-  child_process_watcher_.reset();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   media_file_system_registry_.reset();
@@ -1153,8 +1150,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
           ->GetConnector()
           ->Clone());
 #endif
-
-  child_process_watcher_ = std::make_unique<ChromeChildProcessWatcher>();
 
   CacheDefaultWebClientState();
 

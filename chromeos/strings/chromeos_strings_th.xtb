@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">ฉันไม่พบสิ่งที่จะช่วยได้ในหน้าจอ
 ลองแตะไมโครโฟนเพื่อถามเรื่องอะไรก็ได้</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
+<translation id="5317780077021120954">บันทึก</translation>
 <translation id="5457599981699367932">ท่องเว็บในฐานะผู้มาเยือน</translation>
 <translation id="54609108002486618">มีการจัดการ</translation>
 <translation id="5733345267661125295">โปรดเลือกรหัสผ่านใหม่ตอนนี้</translation>
@@ -23,6 +24,7 @@
 <translation id="6574601967010742428">ผู้ดูแลระบบของอุปกรณ์อาจมีสิทธิ์ตรวจสอบกิจกรรมของคุณได้</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{รหัสผ่านปัจจุบันของคุณหมดอายุแล้ว}=1{รหัสผ่านปัจจุบันของคุณจะหมดอายุในไม่ถึง 1 วัน}other{รหัสผ่านปัจจุบันของคุณจะหมดอายุในไม่ถึง # วัน}}</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
+<translation id="7690294790491645610">ยืนยันรหัสผ่านใหม่</translation>
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
 <translation id="9111102763498581341">ปลดล็อก</translation>
 </translationbundle>

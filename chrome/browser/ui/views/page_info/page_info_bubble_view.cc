@@ -1039,7 +1039,7 @@ void PageInfoBubbleView::HandleMoreInfoRequestAsync(int view_id) {
       // Count how often the Collected Cookies dialog is opened.
       presenter_->RecordPageInfoAction(
           PageInfo::PAGE_INFO_COOKIES_DIALOG_OPENED);
-      new CollectedCookiesViews(web_contents());
+      CollectedCookiesViews::CreateAndShowForWebContents(web_contents());
       break;
     case PageInfoBubbleView::
         VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER: {

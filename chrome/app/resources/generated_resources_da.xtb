@@ -912,7 +912,6 @@
 <translation id="236117173274098341">Optimer</translation>
 <translation id="236141728043665931">Bloker altid mikrofonadgang</translation>
 <translation id="2365507699358342471">Dette website kan se tekst og billeder, der er kopieret til udklipsholderen.</translation>
-<translation id="2367199180085172140">Tilføj fildeling</translation>
 <translation id="2367972762794486313">Vis apps</translation>
 <translation id="2369105924912929484">Slå destilleret sideindhold til eller fra</translation>
 <translation id="2371076942591664043">Åbn når &amp;færdigt</translation>
@@ -3297,7 +3296,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6026047032548434446">Vil du installere appen?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – en USB-enhed er forbundet</translation>
 <translation id="6029027682598229313">Installationen af Linux er fuldført.</translation>
-<translation id="6029292188939175871">slet [<ph name="FINGERPRINT_NAME" />], knap</translation>
 <translation id="6029587122245504742">Langsomst</translation>
 <translation id="6032912588568283682">Filsystem</translation>
 <translation id="6038929619733116134">Bloker, hvis websitet viser påtrængende eller vildledende annoncer</translation>
@@ -4598,7 +4596,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7973962044839454485">PPP-godkendelsen mislykkedes på grund af forkert brugernavn eller adgangskode</translation>
 <translation id="7974566588408714340">Prøv igen ved hjælp af <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Overscan</translation>
-<translation id="79766959863778284">XR Isolated Device Service</translation>
 <translation id="7978412674231730200">Privat nøgle</translation>
 <translation id="7978450511781612192">Dermed logges du ud af dine Google-konti. Dine bogmærker, din historik, dine adgangskoder m.m. synkroniseres ikke længere.</translation>
 <translation id="7979036127916589816">Synkroniseringsfejl</translation>
@@ -5368,7 +5365,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9138978632494473300">Føj genveje til følgende steder:</translation>
 <translation id="9140067245205650184">Du benytter en ikke-understøttet funktionsmarkering: <ph name="BAD_FLAG" />. Det går ud over stabiliteten og sikkerheden.</translation>
 <translation id="9143298529634201539">Vil du fjerne forslaget?</translation>
-<translation id="9147304170847707004">Godkendelsesmetode</translation>
 <translation id="9147392381910171771">&amp;Valgmuligheder</translation>
 <translation id="9148058034647219655">Afslut</translation>
 <translation id="9148126808321036104">Log ind igen</translation>

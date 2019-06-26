@@ -492,6 +492,7 @@ mojom("mojo_bindings") {
     "render_message_filter.mojom",
     "renderer.mojom",
     "renderer_host.mojom",
+    "service_control.mojom",
     "widget.mojom",
   ]
 

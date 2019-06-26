@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">No he trobat res a la pantalla amb què et pugui ajudar.
 Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
+<translation id="5317780077021120954">Desa</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="54609108002486618">Gestionat</translation>
 <translation id="5733345267661125295">Tria ja una contrasenya nova</translation>
@@ -23,6 +24,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6574601967010742428">Pot ser que l'administrador del dispositiu pugui supervisar la teva activitat.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{La teva contrasenya actual ha caducat.}=1{La teva contrasenya actual caducarà d'aquí a menys d'un dia.}other{La teva contrasenya actual caducarà d'aquí a menys de # dies.}}</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="7690294790491645610">Confirma la contrasenya nova</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
 <translation id="9111102763498581341">Desbloqueja</translation>
 </translationbundle>

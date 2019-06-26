@@ -359,8 +359,25 @@ DEBIAN_PACKAGES="\
 "
 
 DEBIAN_PACKAGES_AMD64="
+  lib32asan3
+  lib32atomic1
+  lib32cilkrts5
+  lib32gcc1
+  lib32gcc-6-dev
+  lib32gomp1
+  lib32itm1
+  lib32mpx2
+  lib32quadmath0
+  lib32stdc++6
+  lib32stdc++-6-dev
+  lib32ubsan0
+  lib32z1
+  lib32z1-dev
+  libc6-i386
+  libicu63
   liblsan0
   libtsan0
+  libzstd1
 "
 
 DEBIAN_PACKAGES_X86="

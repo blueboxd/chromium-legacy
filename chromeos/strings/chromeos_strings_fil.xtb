@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Wala akong makitang kahit ano sa iyong screen kung saan ako makakatulong.
 Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
+<translation id="5317780077021120954">I-save</translation>
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
 <translation id="5733345267661125295">Pumili ng bagong password ngayon</translation>
@@ -23,6 +24,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="6574601967010742428">Maaaring masubaybayan ng administrator ng device ang iyong aktibidad.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Nag-expire na ang iyong kasalukuyang password!}=1{Mag-e-expire sa loob ng wala pang isang araw ang iyong kasalukuyang password!}one{Mag-e-expire sa loob ng wala pang # araw ang iyong kasalukuyang password!}other{Mag-e-expire sa loob ng wala pang # na araw ang iyong kasalukuyang password!}}</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
+<translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="808894953321890993">Palitan ang password</translation>
 <translation id="9111102763498581341">I-unlock</translation>
 </translationbundle>

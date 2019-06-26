@@ -122,7 +122,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
 <translation id="1141767714195601945">Mit dieser Richtlinie werden Befehlszeilenparameter für Chrome vom Internet Explorer festgelegt.
 
-      Wenn das Add-in "Unterstützung für ältere Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
 
       Wenn diese Richtlinie nicht konfiguriert ist, gibt Internet Explorer die URL nur als Befehlszeilenparameter an Chrome weiter.
 
@@ -1617,7 +1617,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
       Wird "false" festgelegt oder die Richtlinie nicht konfiguriert, werden keine
       Pakete gesendet.</translation>
 <translation id="3950239119790560549">Zeitbeschränkungen aktualisieren</translation>
-<translation id="3956686688560604829">Richtlinie "SiteList" von Internet Explorer zur Unterstützung für ältere Browser verwenden.</translation>
+<translation id="3956686688560604829">Richtlinie "SiteList" von Internet Explorer zur Unterstützung älterer Browser verwenden.</translation>
 <translation id="3958586912393694012">Verwendung von Smart Lock erlauben</translation>
 <translation id="3963602271515417124">Bei Festlegung auf "true" ist die Remote-Bestätigung für das Gerät erlaubt. Ein Zertifikat wird automatisch erstellt und auf den Device Management Server hochgeladen.
 
@@ -1630,7 +1630,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME" /> gespeichert werden. Bei Einstellung auf "true" werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME" /> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
-<translation id="398475542699441679">Mit dieser Richtlinie wird festgelegt, ob die Unterstützung für ältere Browser aktiviert wird.
+<translation id="398475542699441679">Mit dieser Richtlinie wird festgelegt, ob die Unterstützung älterer Browser aktiviert wird.
 
       Wenn die Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, versucht Chrome nicht, bestimmte URLs in einem alternativen Browser zu starten.
 
@@ -2471,7 +2471,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5578571772998293651">Hiermit wird Nutzerfeedback zugelassen.
         Wenn die Richtlinie auf "false" gesetzt ist, können Nutzer kein Feedback an Google senden.
 
-        Ist sie nicht konfiguriert oder aber auf "true" gesetzt, dann können Nutzer über das Menü &gt; "Hilfe" &gt; "Problem melden" Feedback an Google senden.</translation>
+        Ist sie nicht konfiguriert oder auf "true" gesetzt, dann können Nutzer über das Menü &gt; "Hilfe" &gt; "Problem melden" oder die entsprechende Tastenkombination Feedback an Google senden.</translation>
 <translation id="5581292529942108810">Richtlinien für die Chrome Reporting Extension konfigurieren.
 
 Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
@@ -4209,7 +4209,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="9112897538922695510">Damit können Sie eine Liste mit Protokoll-Handlern registrieren, wobei dies lediglich eine empfohlene Richtlinie sein kann. Für die Eigenschaft |protocol| sollte ein Schema wie "mailto" und für die Eigenschaft |url| das URL-Muster der Anwendung festgelegt werden, die das Schema verwaltet. Das Muster kann "%s" enthalten, was später durch die jeweilige URL ersetzt wird.
 
           Die von der Richtlinie registrierten Protokoll-Handler werden mit den Protokoll-Handlern zusammengeführt, die vom Nutzer registriert wurden, und können gemeinsam verwendet werden. Der Nutzer kann die durch die Richtlinie installierten Protokoll-Handler durch Installieren eines neuen standardmäßigen Handlers überschreiben. Ein von der Richtlinie registrierter Protokoll-Handler kann jedoch nicht entfernt werden.</translation>
-<translation id="91196902572559194">Mit dieser Richtlinie wird Google Assistant die Berechtigung erteilt, bei Gesprächen zuzuhören, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+<translation id="91196902572559194">Mit dieser Richtlinie erhält Google Assistant die Berechtigung, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
 
       Wenn die Richtlinie aktiviert ist, hört Google Assistant bei Gesprächen zu, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
       Wenn die Richtlinie deaktiviert ist, hört Google Assistant nicht bei Gesprächen zu, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
@@ -4268,7 +4268,7 @@ Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialog
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="926146562923985266">Mit dieser Richtlinie wird der Befehl konfiguriert, mit dem URLs in <ph name="PRODUCT_NAME" /> geöffnet werden, wenn von Internet Explorer dorthin gewechselt wird.
 
-      Wenn das Add-in "Unterstützung für ältere Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keinerlei Wirkung.
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keinerlei Wirkung.
 
       Wenn diese Richtlinie nicht konfiguriert ist, erkennt Internet Explorer den ausführbaren Pfad von <ph name="PRODUCT_NAME" /> automatisch, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
 

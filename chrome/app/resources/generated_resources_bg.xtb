@@ -912,7 +912,6 @@
 <translation id="236117173274098341">Оптимизиране</translation>
 <translation id="236141728043665931">Достъпът до микрофона да се блокира винаги</translation>
 <translation id="2365507699358342471">Този сайт може да преглежда текста и изображенията, копирани в буферната памет.</translation>
-<translation id="2367199180085172140">Добавяне на споделяне на файл</translation>
 <translation id="2367972762794486313">Показване на приложенията</translation>
 <translation id="2369105924912929484">Превключване на функцията за извеждане на основното съдържание на страниците</translation>
 <translation id="2371076942591664043">Отваряне &amp;след изтегляне</translation>
@@ -3299,7 +3298,6 @@
 <translation id="6026047032548434446">Да се инсталира ли приложението?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – установена е връзка с USB устройство</translation>
 <translation id="6029027682598229313">Инсталирането на Linux завърши.</translation>
-<translation id="6029292188939175871">изтриване на [<ph name="FINGERPRINT_NAME" />], бутон</translation>
 <translation id="6029587122245504742">Най-бавна</translation>
 <translation id="6032912588568283682">Файлова система</translation>
 <translation id="6038929619733116134">Блокиране, ако на сайта се показват натрапчиви или подвеждащи реклами</translation>
@@ -4600,7 +4598,6 @@
 <translation id="7973962044839454485">Удостоверяването през PPP не бе успешно поради неправилно потребителско име или парола</translation>
 <translation id="7974566588408714340">Нов опит посредством <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Допълнителна област</translation>
-<translation id="79766959863778284">Услуга за изолирани устройства за XR</translation>
 <translation id="7978412674231730200">Личен ключ</translation>
 <translation id="7978450511781612192">Така ще излезете от профилите си в Google. Вашите отметки, история, пароли и др. повече няма да се синхронизират.</translation>
 <translation id="7979036127916589816">Грешка при синхронизирането</translation>
@@ -5369,7 +5366,6 @@
 <translation id="9138978632494473300">Добавяне на преки пътища към следните места:</translation>
 <translation id="9140067245205650184">Използвате неподдържан флаг за функция: <ph name="BAD_FLAG" />. Стабилността и сигурността ще пострадат.</translation>
 <translation id="9143298529634201539">Да се премахне ли предложението?</translation>
-<translation id="9147304170847707004">Метод за удостоверяване</translation>
 <translation id="9147392381910171771">&amp;Опции</translation>
 <translation id="9148058034647219655">Изход</translation>
 <translation id="9148126808321036104">Влезте отново</translation>

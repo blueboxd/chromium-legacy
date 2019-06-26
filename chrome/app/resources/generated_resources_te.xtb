@@ -915,7 +915,6 @@
 <translation id="236117173274098341">ఆప్టిమైజ్ చేయండి</translation>
 <translation id="236141728043665931">ఎల్లప్పుడూ మైక్రోఫోన్ యాక్సెస్‌ను బ్లాక్ చేయి</translation>
 <translation id="2365507699358342471">క్లిప్‌బోర్డ్‌కు కాపీ చేసిన వచనం మరియు చిత్రాలను ఈ సైట్ చూడగలదు.</translation>
-<translation id="2367199180085172140">ఫైల్ షేర్‌ని జోడించండి</translation>
 <translation id="2367972762794486313">అనువర్తనాలను చూపు</translation>
 <translation id="2369105924912929484">వర్గీకృత పేజీ కంటెంట్‌లను టోగుల్ చేయండి</translation>
 <translation id="2371076942591664043">&amp;పూర్తవగానే తెరువు</translation>
@@ -3298,7 +3297,6 @@
 <translation id="6026047032548434446">యాప్‌ను ఇన్‌స్టాల్ చేయాలా?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB పరికరం కనెక్ట్ చేయబడింది</translation>
 <translation id="6029027682598229313">Linuxను ఇన్‌స్టాల్ చేయడం పూర్తయింది.</translation>
-<translation id="6029292188939175871">తొలగించు [<ph name="FINGERPRINT_NAME" />], బటన్</translation>
 <translation id="6029587122245504742">అత్యంత నెమ్మది</translation>
 <translation id="6032912588568283682">ఫైల్ సిస్టమ్</translation>
 <translation id="6038929619733116134">సైట్ అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపినట్లయితే బ్లాక్ చేయండి</translation>
@@ -4598,7 +4596,6 @@
 <translation id="7973962044839454485">వినియోగదారు పేరు లేదా పాస్‌వర్డ్ తప్పు అయినందున PPP ప్రామాణీకరణ విఫలమైంది</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" />ని ఉపయోగించి మళ్లీ ప్రయత్నించు</translation>
 <translation id="7974936243149753750">ఓవర్‌స్కాన్ సర్దుబాటు</translation>
-<translation id="79766959863778284">XR విడిగా ఉంచబడిన పరికర సేవ</translation>
 <translation id="7978412674231730200">వ్యక్తిగత కీ</translation>
 <translation id="7978450511781612192">ఇది మిమ్మల్ని మీ Google ఖాతాల నుండి సైన్ అవుట్ చేస్తుంది. మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు మరిన్ని ఇకపై సమకాలీకరించబడవు.</translation>
 <translation id="7979036127916589816">సింక్ ఎర్రర్</translation>
@@ -5365,7 +5362,6 @@
 <translation id="9138978632494473300">కింది స్థలాలకు షార్ట్‌కట్‌లను జోడించండి:</translation>
 <translation id="9140067245205650184">మీరు మద్దతు లేని ఫీచర్ ఫ్లాగ్‌ను ఉపయోగిస్తున్నారు: <ph name="BAD_FLAG" />. స్థిరత్వం మరియు భద్రతలలో ఇబ్బందులు ఏర్పడతాయి.</translation>
 <translation id="9143298529634201539">సూచనను తీసివేయాలా?</translation>
-<translation id="9147304170847707004">ప్రమాణీకరణ పద్ధతి</translation>
 <translation id="9147392381910171771">&amp;ఐచ్ఛికాలు</translation>
 <translation id="9148058034647219655">నిష్క్రమించు</translation>
 <translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చేయండి</translation>
@@ -5424,7 +5420,7 @@
 <translation id="939598580284253335">రహస్య పదబంధాన్ని నమోదు చేయండి</translation>
 <translation id="939736085109172342">క్రొత్త  ఫోల్డర్</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> ఒక Chrome ట్యాబ్‌ను మరియు ఆడియోను భాగస్వామ్యం చేస్తోంది.</translation>
-<translation id="945166830402967374">మీ సంస్థ నిర్వాహకులను సంప్రదించండి</translation>
+<translation id="945166830402967374">మీ సంస్థ యొక్క పరికరం నిర్వాహకులను సంప్రదించండి</translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>
 <translation id="947329552760389097">&amp;మూలకాలను పర్యవేక్షించు</translation>
 <translation id="952992212772159698">సక్రియం చెయ్యబడలేదు</translation>

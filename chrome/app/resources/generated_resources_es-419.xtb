@@ -912,7 +912,6 @@
 <translation id="236117173274098341">Optimizar</translation>
 <translation id="236141728043665931">Bloquear siempre el acceso al micrófono</translation>
 <translation id="2365507699358342471">Este sitio puede ver el texto y las imágenes que se copiaron en el portapapeles.</translation>
-<translation id="2367199180085172140">Agregar archivos compartidos</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2369105924912929484">Activar o desactivar el contenido simplificado de la página</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
@@ -3296,7 +3295,6 @@
 <translation id="6026047032548434446">¿Deseas instalar la app?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: Se conectó el dispositivo USB</translation>
 <translation id="6029027682598229313">Se completó la instalación de Linux.</translation>
-<translation id="6029292188939175871">borrar [<ph name="FINGERPRINT_NAME" />], botón</translation>
 <translation id="6029587122245504742">Más lento</translation>
 <translation id="6032912588568283682">Sistema de archivos</translation>
 <translation id="6038929619733116134">Bloquear si el sitio muestra anuncios intrusivos o engañosos</translation>
@@ -4597,7 +4595,6 @@
 <translation id="7973962044839454485">Falló la autenticación de PPP debido a un nombre de usuario o una contraseña incorrectos.</translation>
 <translation id="7974566588408714340">Volver a intentarlo con <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Desajuste de dimensiones</translation>
-<translation id="79766959863778284">Servicio de dispositivos aislados XR</translation>
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7978450511781612192">Con esta acción, saldrás de tus cuentas de Google. Ya no se sincronizarán tus favoritos, historial ni contraseñas, entre otros datos.</translation>
 <translation id="7979036127916589816">Error de sincronización</translation>
@@ -5367,7 +5364,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9138978632494473300">Agregar accesos directos a los siguientes lugares:</translation>
 <translation id="9140067245205650184">Estás usando una marca de función no compatible: <ph name="BAD_FLAG" />. Esto afectará la estabilidad y la seguridad.</translation>
 <translation id="9143298529634201539">¿Quieres quitar la sugerencia?</translation>
-<translation id="9147304170847707004">Método de autenticación</translation>
 <translation id="9147392381910171771">&amp;Opciones</translation>
 <translation id="9148058034647219655">Salir</translation>
 <translation id="9148126808321036104">Accede nuevamente</translation>

@@ -915,7 +915,6 @@
 <translation id="236117173274098341">최적화</translation>
 <translation id="236141728043665931">마이크 액세스 항상 차단</translation>
 <translation id="2365507699358342471">이 사이트는 클립보드에 복사된 텍스트와 이미지에 액세스할 수 있습니다.</translation>
-<translation id="2367199180085172140">파일 공유 추가</translation>
 <translation id="2367972762794486313">앱 표시</translation>
 <translation id="2369105924912929484">추출된 페이지 콘텐츠 전환</translation>
 <translation id="2371076942591664043">완료되면 열기(&amp;D)</translation>
@@ -2786,7 +2785,7 @@
 <translation id="5255859108402770436">다시 로그인</translation>
 <translation id="5256861893479663409">모든 사이트에서</translation>
 <translation id="5258992782919386492">이 기기에 설치</translation>
-<translation id="5260334392110301220">스마트 인용문</translation>
+<translation id="5260334392110301220">스마트 인용</translation>
 <translation id="5260508466980570042">이메일 또는 비밀번호를 확인할 수 없습니다. 다시 시도해 주세요.</translation>
 <translation id="5261683757250193089">웹 스토어에서 열기</translation>
 <translation id="5264148714798105376">1분 정도 소요될 수 있습니다.</translation>
@@ -2821,7 +2820,7 @@
 <translation id="5301751748813680278">게스트로 로그인 중</translation>
 <translation id="5301954838959518834">확인</translation>
 <translation id="5302048478445481009">언어</translation>
-<translation id="5302932258331363306">대체 항목 표시</translation>
+<translation id="5302932258331363306">텍스트 대치</translation>
 <translation id="5305688511332277257">설치된 인증서 없음</translation>
 <translation id="5307030433605830021">지원되지 않는 소스</translation>
 <translation id="5308380583665731573">연결</translation>
@@ -3297,7 +3296,6 @@
 <translation id="6026047032548434446">앱을 설치하시겠습니까?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB 기기 연결됨</translation>
 <translation id="6029027682598229313">Linux 설치가 완료되었습니다.</translation>
-<translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] 삭제, 버튼</translation>
 <translation id="6029587122245504742">가장 느리게</translation>
 <translation id="6032912588568283682">파일 시스템</translation>
 <translation id="6038929619733116134">사이트에서 방해가 되거나 사용자를 현혹하는 광고를 표시하는 경우 광고를 차단합니다.</translation>
@@ -4598,7 +4596,6 @@
 <translation id="7973962044839454485">사용자 이름 또는 비밀번호가 잘못되어 PPP 인증에 실패했습니다.</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" />을(를) 사용하여 다시 시도</translation>
 <translation id="7974936243149753750">오버스캔</translation>
-<translation id="79766959863778284">XR 격리된 기기 서비스</translation>
 <translation id="7978412674231730200">비공개 키</translation>
 <translation id="7978450511781612192">Google 계정에서 로그아웃됩니다. 북마크, 방문 기록, 비밀번호 등이 더 이상 동기화되지 않습니다.</translation>
 <translation id="7979036127916589816">동기화 오류</translation>
@@ -5367,7 +5364,6 @@
 <translation id="9138978632494473300">다음 위치에 바로가기 추가:</translation>
 <translation id="9140067245205650184">지원되지 않는 기능 플래그(<ph name="BAD_FLAG" />)를 사용 중이므로 안정성과 보안에 문제가 발생합니다.</translation>
 <translation id="9143298529634201539">추천을 삭제하시겠습니까?</translation>
-<translation id="9147304170847707004">인증 방법</translation>
 <translation id="9147392381910171771">옵션(&amp;O)</translation>
 <translation id="9148058034647219655">나가기</translation>
 <translation id="9148126808321036104">다시 로그인</translation>

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_view_controller.h"
-#import "ios/chrome/browser/ui/overlays/overlay_presenter_ui_delegate_impl.h"
+#import "ios/chrome/browser/ui/overlays/overlay_presentation_context_impl.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,7 +22,7 @@
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 // The UI delegate that is used to drive presentation for this container.
-@property(nonatomic, readonly) OverlayPresenterUIDelegateImpl* UIDelegate;
+@property(nonatomic, readonly) OverlayPresentationContextImpl* UIDelegate;
 @end
 
 @implementation OverlayContainerCoordinator
@@ -32,11 +32,11 @@
                                   modality:(OverlayModality)modality {
   if (self = [super initWithBaseViewController:viewController
                                        browser:browser]) {
-    OverlayPresenterUIDelegateImpl::Container::CreateForUserData(browser,
+    OverlayPresentationContextImpl::Container::CreateForUserData(browser,
                                                                  browser);
     _UIDelegate =
-        OverlayPresenterUIDelegateImpl::Container::FromUserData(browser)
-            ->UIDelegateForModality(modality);
+        OverlayPresentationContextImpl::Container::FromUserData(browser)
+            ->PresentationContextForModality(modality);
     DCHECK(_UIDelegate);
   }
   return self;

@@ -914,7 +914,6 @@
 <translation id="236117173274098341">Оптимизировать</translation>
 <translation id="236141728043665931">Всегда блокировать доступ к микрофону</translation>
 <translation id="2365507699358342471">У этого сайта есть доступ к тексту и изображениям, скопированным в буфер обмена</translation>
-<translation id="2367199180085172140">Добавить файл в общий доступ.</translation>
 <translation id="2367972762794486313">Показать сервисы</translation>
 <translation id="2369105924912929484">Переключиться на сжатый вид страницы</translation>
 <translation id="2371076942591664043">Открыть по &amp;завершении</translation>
@@ -3299,7 +3298,6 @@
 <translation id="6026047032548434446">Установить приложение?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: подключено USB-устройство</translation>
 <translation id="6029027682598229313">Установка Linux завершена.</translation>
-<translation id="6029292188939175871">Кнопка удалить [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="6029587122245504742">Минимальная</translation>
 <translation id="6032912588568283682">Файловая система</translation>
 <translation id="6038929619733116134">Блокировать, если сайт показывает навязчивую или вводящую в заблуждение рекламу.</translation>
@@ -3918,7 +3916,7 @@
 <translation id="6985235333261347343">Агент восстановления ключей Microsoft</translation>
 <translation id="698524779381350301">Автоматически разрешать доступ к следующим сайтам</translation>
 <translation id="6985607387932385770">Принтеры</translation>
-<translation id="6990778048354947307">Темная тема</translation>
+<translation id="6990778048354947307">Тёмная тема</translation>
 <translation id="6991665348624301627">Выбор места назначения</translation>
 <translation id="6992554835374084304">Включите расширенную проверку правописания</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – Журнал активности</translation>
@@ -4600,7 +4598,6 @@
 <translation id="7973962044839454485">Не удалось выполнить аутентификацию PPP: неверное имя пользователя или пароль</translation>
 <translation id="7974566588408714340">Подключиться через <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Каемка экрана</translation>
-<translation id="79766959863778284">XR Isolated Device Service</translation>
 <translation id="7978412674231730200">Закрытый ключ</translation>
 <translation id="7978450511781612192">Вы выйдете из аккаунта Google. Закладки, история, пароли и другие параметры перестанут синхронизироваться с ним.</translation>
 <translation id="7979036127916589816">Ошибка синхронизации</translation>
@@ -5368,7 +5365,6 @@
 <translation id="9138978632494473300">Куда добавить ярлыки:</translation>
 <translation id="9140067245205650184">Вы используете неподдерживаемый флаг функции: <ph name="BAD_FLAG" />. Стабильность и безопасность будут нарушены.</translation>
 <translation id="9143298529634201539">Удалить подсказку?</translation>
-<translation id="9147304170847707004">Метод аутентификации</translation>
 <translation id="9147392381910171771">&amp;Параметры</translation>
 <translation id="9148058034647219655">Выйти</translation>
 <translation id="9148126808321036104">Повторите вход</translation>

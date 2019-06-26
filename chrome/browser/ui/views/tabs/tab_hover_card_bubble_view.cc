@@ -280,13 +280,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   set_margins(gfx::Insets());
 
   // Inset the tab hover cards anchor rect to bring the card closer to the tab.
-#if defined(OS_LINUX)
-  // TODO(crbug/978134): Once Linux/CrOS widget transparency is solved, remove
-  // this case.
-  constexpr gfx::Insets kTabHoverCardAnchorInsets(0, 0);
-#else
   constexpr gfx::Insets kTabHoverCardAnchorInsets(2, 0);
-#endif
   set_anchor_view_insets(kTabHoverCardAnchorInsets);
 
   // Set so that when hovering over a tab in a inactive window that window will

@@ -246,7 +246,7 @@ namespace {
 
 bool CompareCanonicalCookies(const net::CanonicalCookie& c1,
                              const net::CanonicalCookie& c2) {
-  return c1.FullCompare(c2);
+  return c1.PartialCompare(c2);
 }
 
 }  // anonymous namespace

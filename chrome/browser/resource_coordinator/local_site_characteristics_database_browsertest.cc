@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -70,13 +71,17 @@ base::TimeDelta GetLongestGracePeriod() {
                    params.audio_usage_grace_period});
 }
 
+// Returns the LocalSiteCharacteristicsDataImpl that backs |reader|.
+internal::LocalSiteCharacteristicsDataImpl* GetImplFromReader(
+    SiteCharacteristicsDataReader* reader) {
+  return static_cast<LocalSiteCharacteristicsDataReader*>(reader)
+      ->impl_for_testing();
+}
+
 // Returns the SiteDataProto that backs |reader|.
 const SiteDataProto* GetSiteDataProtoFromReader(
     SiteCharacteristicsDataReader* reader) {
-  const internal::LocalSiteCharacteristicsDataImpl* impl =
-      static_cast<LocalSiteCharacteristicsDataReader*>(reader)
-          ->impl_for_testing();
-  return &impl->site_characteristics_for_testing();
+  return &GetImplFromReader(reader)->site_characteristics_for_testing();
 }
 
 }  // namespace
@@ -138,12 +143,13 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     EXPECT_TRUE(data_store);
     std::unique_ptr<SiteCharacteristicsDataReader> reader =
         data_store->GetReaderForOrigin(origin);
+    base::RunLoop run_loop;
+    reader->RegisterDataLoadedCallback(run_loop.QuitClosure());
+    run_loop.Run();
 
     const internal::LocalSiteCharacteristicsDataImpl* impl =
-        static_cast<LocalSiteCharacteristicsDataReader*>(reader.get())
-            ->impl_for_testing();
-    while (!impl->fully_initialized_for_testing())
-      base::RunLoop().RunUntilIdle();
+        GetImplFromReader(reader.get());
+    EXPECT_TRUE(impl->fully_initialized_for_testing());
     return reader;
   }
 
@@ -162,15 +168,17 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
   void TestFeatureUsageDetection(
       performance_manager::SiteFeatureUsage (
           SiteCharacteristicsDataReader::*feature_detection_method)() const,
+      internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures
+          feature_type,
       base::RepeatingClosure triggering_closure,
       base::RepeatingClosure allowing_closure = base::DoNothing::Repeatedly()) {
     // Test that feature usage is tracked correctly before the expiration of its
     // observation window.
-    TestFeatureUsageDetectionImpl(feature_detection_method, allowing_closure,
-                                  triggering_closure, false);
+    TestFeatureUsageDetectionImpl(feature_detection_method, feature_type,
+                                  allowing_closure, triggering_closure, false);
     // Test that feature usage is tracked correctly after the expiration of its
     // observation window.
-    TestFeatureUsageDetectionImpl(feature_detection_method,
+    TestFeatureUsageDetectionImpl(feature_detection_method, feature_type,
                                   std::move(allowing_closure),
                                   std::move(triggering_closure), true);
   }
@@ -207,7 +215,6 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     content::WebContents* active_webcontents = GetActiveWebContents();
     active_webcontents->WasShown();
     PlayAudioInActiveWebContents();
-
     // Wait for the audio to start playing.
     while (!active_webcontents->WasEverAudible())
       base::RunLoop().RunUntilIdle();
@@ -245,6 +252,8 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
   void TestFeatureUsageDetectionImpl(
       performance_manager::SiteFeatureUsage (
           SiteCharacteristicsDataReader::*feature_detection_method)() const,
+      const internal::LocalSiteCharacteristicsDataImpl::
+          TrackedBackgroundFeatures feature_type,
       base::OnceClosure allowing_closure,
       base::RepeatingClosure triggering_closure,
       bool wait_for_observation_window_to_expire);
@@ -260,6 +269,8 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
 void LocalSiteCharacteristicsDatabaseTest::TestFeatureUsageDetectionImpl(
     performance_manager::SiteFeatureUsage (
         SiteCharacteristicsDataReader::*feature_detection_method)() const,
+    const internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures
+        feature_type,
     base::OnceClosure allowing_closure,
     base::RepeatingClosure triggering_closure,
     bool wait_for_observation_window_to_expire) {
@@ -302,13 +313,18 @@ void LocalSiteCharacteristicsDatabaseTest::TestFeatureUsageDetectionImpl(
               (reader.get()->*feature_detection_method)());
   }
 
+  base::RunLoop run_loop;
+  GetImplFromReader(reader.get())
+      ->RegisterFeatureUsageCallbackForTesting(feature_type,
+                                               run_loop.QuitClosure());
+
   // Cause the feature to be used.
   triggering_closure.Run();
 
-  while ((reader.get()->*feature_detection_method)() !=
-         performance_manager::SiteFeatureUsage::kSiteFeatureInUse) {
-    base::RunLoop().RunUntilIdle();
-  }
+  run_loop.Run();
+
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+            (reader.get()->*feature_detection_method)());
 
   // Advance the clock, make sure that the feature usage status doesn't
   // change.
@@ -395,6 +411,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
                        AudioFeatureUsage) {
   TestFeatureUsageDetection(
       &SiteCharacteristicsDataReader::UsesAudioInBackground,
+      internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+          kAudioUsage,
       base::BindRepeating(
           &LocalSiteCharacteristicsDatabaseTest::PlayAudioInActiveWebContents,
           base::Unretained(this)),
@@ -411,6 +429,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
                        DISABLED_NotificationFeatureUsage) {
   TestFeatureUsageDetection(
       &SiteCharacteristicsDataReader::UsesNotificationsInBackground,
+      internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+          kNotificationUsageUsage,
       base::BindRepeating(
           &LocalSiteCharacteristicsDatabaseTest::
               TriggerNonPersistentNotificationInActiveWebContents,
@@ -424,6 +444,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
                        TitleUpdateFeatureUsage) {
   TestFeatureUsageDetection(
       &SiteCharacteristicsDataReader::UpdatesTitleInBackground,
+      internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+          kTitleUpdate,
       base::BindRepeating(
           &LocalSiteCharacteristicsDatabaseTest::ChangeTitleOfActiveWebContents,
           base::Unretained(this)),
@@ -438,6 +460,8 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
                        FaviconUpdateFeatureUsage) {
   TestFeatureUsageDetection(
       &SiteCharacteristicsDataReader::UpdatesFaviconInBackground,
+      internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
+          kFaviconUpdate,
       base::BindRepeating(&LocalSiteCharacteristicsDatabaseTest::
                               ChangeFaviconOfActiveWebContents,
                           base::Unretained(this)),
@@ -472,8 +496,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
   }
 
   const internal::LocalSiteCharacteristicsDataImpl* impl =
-      static_cast<LocalSiteCharacteristicsDataReader*>(test_reader.get())
-          ->impl_for_testing();
+      GetImplFromReader(test_reader.get());
   EXPECT_TRUE(impl);
   EXPECT_EQ(3U, impl->loaded_tabs_count_for_testing());
   EXPECT_EQ(3U, impl->loaded_tabs_in_background_count_for_testing());
@@ -521,13 +544,19 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
 
   test_clock().Advance(GetLongestGracePeriod());
 
+  base::RunLoop run_loop;
+  GetImplFromReader(reader.get())
+      ->RegisterFeatureUsageCallbackForTesting(
+          internal::LocalSiteCharacteristicsDataImpl::
+              TrackedBackgroundFeatures::kTitleUpdate,
+          run_loop.QuitClosure());
+
   // Cause the "title update in background" feature to be used.
   ChangeTitleOfActiveWebContents();
 
-  while (reader->UpdatesTitleInBackground() !=
-         performance_manager::SiteFeatureUsage::kSiteFeatureInUse) {
-    base::RunLoop().RunUntilIdle();
-  }
+  run_loop.Run();
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+            reader->UpdatesTitleInBackground());
 }
 
 IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
@@ -562,13 +591,19 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, PRE_ClearHistory) {
 
   test_clock().Advance(GetLongestGracePeriod());
 
+  base::RunLoop run_loop;
+  GetImplFromReader(reader.get())
+      ->RegisterFeatureUsageCallbackForTesting(
+          internal::LocalSiteCharacteristicsDataImpl::
+              TrackedBackgroundFeatures::kTitleUpdate,
+          run_loop.QuitClosure());
+
   // Cause the "title update in background" feature to be used.
   ChangeTitleOfActiveWebContents();
 
-  while (reader->UpdatesTitleInBackground() !=
-         performance_manager::SiteFeatureUsage::kSiteFeatureInUse) {
-    base::RunLoop().RunUntilIdle();
-  }
+  run_loop.Run();
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+            reader->UpdatesTitleInBackground());
 
   HistoryServiceFactory::GetForProfile(browser()->profile(),
                                        ServiceAccessType::IMPLICIT_ACCESS)

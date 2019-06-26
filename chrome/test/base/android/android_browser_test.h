@@ -5,6 +5,9 @@
 #ifndef CHROME_TEST_BASE_ANDROID_ANDROID_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_ANDROID_ANDROID_BROWSER_TEST_H_
 
+#include "base/macros.h"
+#include "base/files/scoped_temp_dir.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 
 class AndroidBrowserTest : public content::BrowserTestBase {
@@ -23,6 +26,13 @@ class AndroidBrowserTest : public content::BrowserTestBase {
   void SetUp() override;
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override;
+
+ private:
+  // Temporary user data directory. Used only when a user data directory is not
+  // specified in the command line.
+  base::ScopedTempDir temp_user_data_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(AndroidBrowserTest);
 };
 
 #endif  // CHROME_TEST_BASE_ANDROID_ANDROID_BROWSER_TEST_H_

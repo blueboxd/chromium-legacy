@@ -21,12 +21,6 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
-// Asynchronously echos the given |string| via "echo" Mojo service and logs the
-// response. Logs are accessible via +logs method.
-void MojoEchoAndLogString(NSString* string) {
-  [ServiceManagerTestAppInterface echoAndLogString:string];
-}
-
 // Asynchronously logs instance group name via "user_id" Mojo service. Logs are
 // accessible via +logs method.
 void MojoLogInstanceGroup() {
@@ -69,21 +63,6 @@ NSString* GetInstanceGroup() {
 - (void)tearDown {
   MojoClearLogs();
   [super tearDown];
-}
-
-// Tests that it is possible to connect to an all-users embedded service that
-// was registered by web_shell.
-- (void)testConnectionToAllUsersEmbeddedService {
-  NSString* const kTestInput = @"Livingston, I presume";
-  MojoEchoAndLogString(kTestInput);
-
-  // Wait for log to appear.
-  bool has_log = WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
-    return MojoGetLogs().count == 1;
-  });
-  GREYAssert(has_log, @"No log appeared");
-  GREYAssertEqualObjects(MojoGetLogs().firstObject, kTestInput,
-                         @"echo service returned incorrect string");
 }
 
 // Tests that it is possible to connect to a per-user embedded service that

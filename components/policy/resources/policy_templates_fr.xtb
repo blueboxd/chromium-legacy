@@ -4358,9 +4358,9 @@ indique uniquement les imprimantes qui peuvent être choisies.
           Les gestionnaires de protocoles inscrits via la règle sont fusionnés avec ceux inscrits par l'utilisateur, et tous sont disponibles. L'utilisateur peut remplacer les gestionnaires de protocoles installés via la règle en installant un nouveau gestionnaire par défaut, mais il ne peut pas supprimer un gestionnaire de protocoles inscrit via la règle.</translation>
 <translation id="91196902572559194">Cette règle autorise l'Assistant Google à écouter l'expression servant à activer les commandes vocales.
 
-      Si cette règle est activée, l'Assistant Google écoute l'expression d'activation des commandes vocales.
+      Si cette règle est activée, l'Assistant Google écoute l'expression servant à activer les commandes vocales.
       Si elle est désactivée, l'Assistant Google n'écoute pas cette expression.
-      Si cette règle n'est pas définie, les utilisateurs peuvent décider d'autoriser ou non l'Assistant Google à écouter l'expression d'activation des commandes vocales.
+      Si cette règle n'est pas définie, les utilisateurs peuvent décider d'autoriser ou non l'Assistant Google à écouter l'expression servant à activer les commandes vocales.
       </translation>
 <translation id="9123211093995421438">Spécifie le nombre minimal de versions intermédiaires <ph name="PRODUCT_OS_NAME" /> autorisées pour le rollback à partir de la version stable.
 

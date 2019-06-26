@@ -344,7 +344,7 @@ NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext() {
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     NGInlineChildLayoutContext* inline_child_layout_context) {
-  LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
+  const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
   child_available_size_ =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
 
@@ -528,16 +528,12 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // To save space of the stack when we recurse into children, the rest of this
   // function is continued within |FinishLayout|. However it should be read as
   // one function.
-  return FinishLayout(&previous_inflow_position, border_box_size,
-                      container_builder_.Borders(),
-                      container_builder_.Scrollbar());
+  return FinishLayout(&previous_inflow_position);
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
-    NGPreviousInflowPosition* previous_inflow_position,
-    LogicalSize border_box_size,
-    const NGBoxStrut& borders,
-    const NGBoxStrut& scrollbars) {
+    NGPreviousInflowPosition* previous_inflow_position) {
+  LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
   NGMarginStrut end_margin_strut = previous_inflow_position->margin_strut;
 
   // If the current layout is a new formatting context, we need to encapsulate
@@ -676,7 +672,9 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   // layout.
   if (!container_builder_.AdjoiningFloatTypes() ||
       ConstraintSpace().ForcedBfcBlockOffset()) {
-    NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders + scrollbars,
+    NGBoxStrut borders_and_scrollbars =
+        container_builder_.Borders() + container_builder_.Scrollbar();
+    NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_and_scrollbars,
                           &container_builder_)
         .Run();
   }

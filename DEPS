@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '751252e3724b07062858af91e72dadb6379244ff',
+  'dawn_revision': 'ebcf0d31c012ef603503aa9e5a7a6c600c26feda',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -811,7 +811,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7bf0ecb40e23d6b6eec2aab01dfcec9fb5bb9a1f',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '2b2367291125b0ffb4c6ab836520307fe0c8a69d',
       'condition': 'checkout_linux',
   },
 
@@ -836,7 +836,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6e269a0babac6408ae3fd0beec0a5acef20bf802',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '1ff9ce92d17a1e05e44b0e20f50f262a6f7738a7',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),

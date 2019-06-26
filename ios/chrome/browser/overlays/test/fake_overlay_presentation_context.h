@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_OVERLAYS_TEST_FAKE_OVERLAY_PRESENTER_UI_DELEGATE_H_
-#define IOS_CHROME_BROWSER_OVERLAYS_TEST_FAKE_OVERLAY_PRESENTER_UI_DELEGATE_H_
+#ifndef IOS_CHROME_BROWSER_OVERLAYS_TEST_FAKE_OVERLAY_PRESENTATION_CONTEXT_H_
+#define IOS_CHROME_BROWSER_OVERLAYS_TEST_FAKE_OVERLAY_PRESENTATION_CONTEXT_H_
 
 #include <map>
 
-#include "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#include "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 
 // Fake implementation of OverlayUIDelegate used for testing.
-class FakeOverlayPresenterUIDelegate : public OverlayPresenter::UIDelegate {
+class FakeOverlayPresentationContext : public OverlayPresentationContext {
  public:
-  FakeOverlayPresenterUIDelegate();
-  ~FakeOverlayPresenterUIDelegate() override;
+  FakeOverlayPresentationContext();
+  ~FakeOverlayPresentationContext() override;
 
   // Enum describing the state of the overlay UI.
   enum class PresentationState {
@@ -52,4 +52,4 @@ class FakeOverlayPresenterUIDelegate : public OverlayPresenter::UIDelegate {
   std::map<OverlayRequest*, OverlayDismissalCallback> overlay_callbacks_;
 };
 
-#endif  // IOS_CHROME_BROWSER_OVERLAYS_TEST_FAKE_OVERLAY_PRESENTER_UI_DELEGATE_H_
+#endif  // IOS_CHROME_BROWSER_OVERLAYS_TEST_FAKE_OVERLAY_PRESENTATION_CONTEXT_H_

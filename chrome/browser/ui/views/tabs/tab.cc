@@ -536,12 +536,10 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
 void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
 #if defined(OS_LINUX)
   // Move the hit test area for hovering up so that it is not overlapped by tab
-  // hover cards when they are shown. Also see the adjustment made in
-  // abHoverCardBubbleView::TabHoverCardBubbleView(); the two adjustments should
-  // add to a net six pixels.
+  // hover cards when they are shown.
   // TODO(crbug/978134): Once Linux/CrOS widget transparency is solved, remove
   // this case.
-  constexpr int kHoverCardOverlap = 4;
+  constexpr int kHoverCardOverlap = 6;
   if (event.location().y() >= height() - kHoverCardOverlap)
     return;
 #endif

@@ -328,7 +328,6 @@ jumbo_static_library("content_shell_lib") {
     "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
-    "//services/test/echo/public/cpp:manifest",
     "//services/test/echo/public/mojom",
     "//skia",
     "//skia:test_fonts",

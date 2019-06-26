@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Ma ei leia teie ekraanilt midagi, mille puhul saaksin aidata.
 Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5222676887888702881">Logi välja</translation>
+<translation id="5317780077021120954">Salvesta</translation>
 <translation id="5457599981699367932">Sirvi külalisena</translation>
 <translation id="54609108002486618">Hallatud</translation>
 <translation id="5733345267661125295">Valige nüüd uus parool</translation>
@@ -23,6 +24,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="6574601967010742428">Seadme haldur võib saada teie tegevust jälgida.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Teie praegune parool on aegunud.}=1{Teie praegune parool aegub vähem kui ühe päeva pärast.}other{Teie praegune parool aegub vähem kui # päeva pärast.}}</translation>
 <translation id="7658239707568436148">Tühista</translation>
+<translation id="7690294790491645610">Kinnitage uus parool</translation>
 <translation id="808894953321890993">Muuda parooli</translation>
 <translation id="9111102763498581341">Ava lukk</translation>
 </translationbundle>

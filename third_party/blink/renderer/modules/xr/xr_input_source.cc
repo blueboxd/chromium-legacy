@@ -16,10 +16,9 @@ namespace blink {
 
 namespace {
 std::unique_ptr<TransformationMatrix> TryGetTransformationMatrix(
-    const gfx::mojom::blink::TransformPtr& transform) {
-  if (transform && transform->matrix.has_value()) {
-    return std::make_unique<TransformationMatrix>(
-        WTFFloatVectorToTransformationMatrix(transform->matrix.value()));
+    const base::Optional<gfx::Transform>& transform) {
+  if (transform) {
+    return std::make_unique<TransformationMatrix>(transform->matrix());
   }
 
   return nullptr;

@@ -12,11 +12,6 @@
 // cases will properly synchronize the UI for Earl Grey tests.
 @interface ServiceManagerTestAppInterface : NSObject
 
-// Asynchronously echos the given |string| via "echo" Mojo service and logs the
-// response. Logs are accessible via +logs method. eDO does not support
-// asynchronous communication, but clients can poll +logs for echoed string.
-+ (void)echoAndLogString:(NSString*)string;
-
 // Asynchronously logs instance group name via "user_id" Mojo service. Logs are
 // accessible via +logs method. eDO does not support asynchronous communication,
 // but clients can poll +logs to get instance group.

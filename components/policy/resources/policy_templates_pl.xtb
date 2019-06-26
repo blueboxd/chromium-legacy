@@ -2460,9 +2460,9 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 
       Jeśli ta zasada nie jest skonfigurowana lub jest wyłączona, certyfikaty serwera, które nie mają rozszerzenia subjectAlternativeName zawierającego nazwę DNS lub adres IP, nie będą uważane za zaufane.</translation>
 <translation id="5578571772998293651">Zezwalaj na przesyłanie opinii użytkowników.
-        Jeśli ta zasada ma ustawienie Fałsz, użytkownicy nie mogą przesyłać opinii do Google.
+        Jeśli ta zasada ma wartość Fałsz, użytkownicy nie mogą przesyłać opinii do Google.
 
-        Jeśli ta zasada jest nieskonfigurowana lub ma ustawienie Prawda, użytkownicy mogą przesyłać opinie do Google, klikając kolejno Menu &gt;Pomoc-&gt;Zgłoś problem lub naciskając odpowiednią kombinację klawiszy.</translation>
+        Jeśli ta zasada jest nieskonfigurowana lub ma wartość Prawda, użytkownicy mogą przesyłać opinie do Google, klikając kolejno Menu &gt;Pomoc-&gt;Zgłoś problem lub naciskając odpowiednią kombinację klawiszy.</translation>
 <translation id="5581292529942108810">Konfigurowanie zasad związanych z Rozszerzeniem zgłaszającym informacje o Chrome.
 
       Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>

@@ -230,50 +230,6 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
   Portal* portal_ = nullptr;
 };
 
-// The PortalAdoptionObserver observes calls to AdoptPortal on
-// RenderFrameHostImpl. This observer should be used to wait for a single
-// call to AdoptPortal.
-class PortalAdoptionObserver : public mojom::FrameHostInterceptorForTesting {
- public:
-  explicit PortalAdoptionObserver(RenderFrameHostImpl* render_frame_host_impl)
-      : render_frame_host_impl_(render_frame_host_impl) {
-    render_frame_host_impl_->frame_host_binding_for_testing()
-        .SwapImplForTesting(this);
-  }
-
-  ~PortalAdoptionObserver() override {}
-
-  FrameHost* GetForwardingInterface() override {
-    return render_frame_host_impl_;
-  }
-
-  void AdoptPortal(const base::UnguessableToken& portal_token,
-                   AdoptPortalCallback callback) override {
-    Portal* portal = Portal::FromToken(portal_token);
-    DCHECK(portal);
-    RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
-    std::move(callback).Run(proxy_host->GetRoutingID(),
-                            portal->GetDevToolsFrameToken());
-    portal_adopted_ = true;
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
-  void WaitUntilPortalAdopted() {
-    if (portal_adopted_)
-      return;
-    base::RunLoop run_loop;
-    run_loop_ = &run_loop;
-    run_loop.Run();
-    run_loop_ = nullptr;
-  }
-
- private:
-  RenderFrameHostImpl* render_frame_host_impl_;
-  base::RunLoop* run_loop_ = nullptr;
-  bool portal_adopted_ = false;
-};
-
 class PortalBrowserTest : public ContentBrowserTest {
  protected:
   PortalBrowserTest() {}
@@ -451,13 +407,13 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ReactivatePredecessor) {
                      "});"));
 
   {
-    PortalAdoptionObserver adoption_observer(portal_frame);
+    PortalCreatedObserver adoption_observer(portal_frame);
     EXPECT_TRUE(ExecJs(main_frame,
                        "portal.activate().then(() => { "
                        "  document.body.removeChild(portal); "
                        "});"));
     portal_interceptor->WaitForActivate();
-    adoption_observer.WaitUntilPortalAdopted();
+    adoption_observer.WaitUntilPortalCreated();
   }
   // After activation, the shell's WebContents should be the previous portal's
   // WebContents.

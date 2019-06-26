@@ -221,13 +221,6 @@ class NET_EXPORT CanonicalCookie {
   // are identical for PartialCompare().
   bool PartialCompare(const CanonicalCookie& other) const;
 
-  // TODO(chlily): Remove this. There should not be multiple cookies for which
-  // PartialCompare disagrees. This is only used in tests.
-  // Returns true if the cookie is less than |other|, considering all fields.
-  // FullCompare() is consistent with PartialCompare(): cookies sorted using
-  // FullCompare() are also sorted with respect to PartialCompare().
-  bool FullCompare(const CanonicalCookie& other) const;
-
   // Return whether this object is a valid CanonicalCookie().  Invalid
   // cookies may be constructed by the detailed constructor.
   // A cookie is considered canonical if-and-only-if:

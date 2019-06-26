@@ -15,7 +15,6 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -31,8 +30,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -265,25 +263,29 @@ class InfobarView : public views::View {
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, public:
 
-CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      allowed_label_(NULL),
-      blocked_label_(NULL),
-      allowed_cookies_tree_(NULL),
-      blocked_cookies_tree_(NULL),
-      block_allowed_button_(NULL),
-      delete_allowed_button_(NULL),
-      allow_blocked_button_(NULL),
-      for_session_blocked_button_(NULL),
-      cookie_info_view_(NULL),
-      infobar_(NULL),
-      status_changed_(false) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-                 content::Source<TabSpecificContentSettings>(content_settings));
-  constrained_window::ShowWebModalDialogViews(this, web_contents);
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);
+CollectedCookiesViews::~CollectedCookiesViews() {
+  if (!destroying_) {
+    // The owning WebContents is being destroyed before the Widget. Close the
+    // widget pronto.
+    destroying_ = true;
+    GetWidget()->CloseNow();
+  }
+
+  allowed_cookies_tree_->SetModel(nullptr);
+  blocked_cookies_tree_->SetModel(nullptr);
+}
+
+// static
+void CollectedCookiesViews::CreateAndShowForWebContents(
+    content::WebContents* web_contents) {
+  CollectedCookiesViews* instance = FromWebContents(web_contents);
+  if (instance) {
+    web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)
+        ->FocusTopmostDialog();
+    return;
+  }
+
+  CreateForWebContents(web_contents);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -322,6 +324,15 @@ ui::ModalType CollectedCookiesViews::GetModalType() const {
 
 bool CollectedCookiesViews::ShouldShowCloseButton() const {
   return false;
+}
+
+void CollectedCookiesViews::DeleteDelegate() {
+  if (!destroying_) {
+    // The associated Widget is being destroyed before the owning WebContents.
+    // Tell the owner to delete |this|.
+    destroying_ = true;
+    web_contents_->RemoveUserData(UserDataKey());
+  }
 }
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateExtraView() {
@@ -386,9 +397,10 @@ void CollectedCookiesViews::ViewHierarchyChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, private:
 
-CollectedCookiesViews::~CollectedCookiesViews() {
-  allowed_cookies_tree_->SetModel(NULL);
-  blocked_cookies_tree_->SetModel(NULL);
+CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
+    : web_contents_(web_contents) {
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);
 }
 
 void CollectedCookiesViews::Init() {
@@ -686,13 +698,4 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
   tree_view->SchedulePaint();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CollectedCookiesViews, content::NotificationObserver implementation:
-
-void CollectedCookiesViews::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN, type);
-  GetWidget()->Close();
-}
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CollectedCookiesViews)

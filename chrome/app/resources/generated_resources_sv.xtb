@@ -914,7 +914,6 @@
 <translation id="236117173274098341">Optimera</translation>
 <translation id="236141728043665931">Blockera alltid mikrofonåtkomsten</translation>
 <translation id="2365507699358342471">Den här webbplatsen får tillgång till text och bilder som kopierats till Urklipp.</translation>
-<translation id="2367199180085172140">Lägg till File Share</translation>
 <translation id="2367972762794486313">Visa appar</translation>
 <translation id="2369105924912929484">Aktivera/inaktivera destillerat sidinnehåll</translation>
 <translation id="2371076942591664043">Öppna när nedladdning är &amp;klar</translation>
@@ -3298,7 +3297,6 @@
 <translation id="6026047032548434446">Vill du installera appen?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – ansluten till USB-enhet</translation>
 <translation id="6029027682598229313">Linux-installationen är klar.</translation>
-<translation id="6029292188939175871">radera [<ph name="FINGERPRINT_NAME" />], knapp</translation>
 <translation id="6029587122245504742">Långsammast</translation>
 <translation id="6032912588568283682">Filsystem</translation>
 <translation id="6038929619733116134">Blockera om påträngande eller vilseledande annonser visas på webbplatsen</translation>
@@ -4599,7 +4597,6 @@
 <translation id="7973962044839454485">PPP-autentisering misslyckades på grund av felaktigt användarnamn eller lösenord</translation>
 <translation id="7974566588408714340">Försök igen med <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Överskanning</translation>
-<translation id="79766959863778284">XR Isolated Device Service</translation>
 <translation id="7978412674231730200">Privat nyckel</translation>
 <translation id="7978450511781612192">Du loggas ut från dina Google-konton. Bokmärken, historik, lösenord och annan information synkroniseras inte längre.</translation>
 <translation id="7979036127916589816">Synkroniseringsfel</translation>
@@ -5368,7 +5365,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9138978632494473300">Lägg till genvägar till följande platser:</translation>
 <translation id="9140067245205650184">Du använder en funktionsflagga som inte stöds: <ph name="BAD_FLAG" />. Detta påverkar stabilitet och säkerhet negativt.</translation>
 <translation id="9143298529634201539">Vill du ta bort förslaget?</translation>
-<translation id="9147304170847707004">Autentiseringsmetod</translation>
 <translation id="9147392381910171771">&amp;Alternativ</translation>
 <translation id="9148058034647219655">Avsluta</translation>
 <translation id="9148126808321036104">Logga in igen</translation>

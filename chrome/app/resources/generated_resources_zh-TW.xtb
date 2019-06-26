@@ -915,7 +915,6 @@
 <translation id="236117173274098341">最佳化</translation>
 <translation id="236141728043665931">一律封鎖存取麥克風</translation>
 <translation id="2365507699358342471">這個網站可以讀取已複製到剪貼簿的文字和圖片。</translation>
-<translation id="2367199180085172140">新增檔案共用</translation>
 <translation id="2367972762794486313">顯示應用程式</translation>
 <translation id="2369105924912929484">切換摘要網頁內容</translation>
 <translation id="2371076942591664043">完成後開啟(&amp;D)</translation>
@@ -3297,7 +3296,6 @@
 <translation id="6026047032548434446">要安裝應用程式嗎？</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - 已連接 USB 裝置</translation>
 <translation id="6029027682598229313">Linux 安裝完成。</translation>
-<translation id="6029292188939175871">刪除[<ph name="FINGERPRINT_NAME" />]，按鈕</translation>
 <translation id="6029587122245504742">最慢</translation>
 <translation id="6032912588568283682">檔案系統</translation>
 <translation id="6038929619733116134">封鎖干擾性或誤導性的網站廣告</translation>
@@ -4597,7 +4595,6 @@
 <translation id="7973962044839454485">使用者名稱或密碼錯誤，導致 PPP 驗證失敗</translation>
 <translation id="7974566588408714340">使用「<ph name="EXTENSIONNAME" />」重試</translation>
 <translation id="7974936243149753750">遮視區域</translation>
-<translation id="79766959863778284">XR 獨立裝置服務</translation>
 <translation id="7978412674231730200">秘密金鑰</translation>
 <translation id="7978450511781612192">你將登出自己的 Google 帳戶。你的書籤、歷史記錄、密碼和其他設定將不再保持同步。</translation>
 <translation id="7979036127916589816">同步功能發生錯誤</translation>
@@ -5365,7 +5362,6 @@
 <translation id="9138978632494473300">在以下位置新增捷徑：</translation>
 <translation id="9140067245205650184">你正在使用不受支援的功能標幟：<ph name="BAD_FLAG" />。這可能會危及穩定性與安全性。</translation>
 <translation id="9143298529634201539">要移除建議嗎？</translation>
-<translation id="9147304170847707004">驗證方式</translation>
 <translation id="9147392381910171771">選項 (&amp;O)</translation>
 <translation id="9148058034647219655">結束</translation>
 <translation id="9148126808321036104">重新登入</translation>

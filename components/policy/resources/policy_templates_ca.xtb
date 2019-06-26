@@ -3842,7 +3842,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 
       Si la política s'activa, l'Assistent de Google escoltarà la frase d'activació per veu.
       Si la política es desactiva, l'Assistent de Google no escoltarà la frase d'activació per veu.
-      Si la política no s'estableix, els usuaris podran decidir si volen permetre que l'Assistent de Google escolti la frase d'activació per veu.
+      Si la política no s'estableix, els usuaris podran decidir si permeten que l'Assistent de Google escolti la frase d'activació per veu.
       </translation>
 <translation id="9123211093995421438">Especifica el nombre mínim de fites del sistema operatiu <ph name="PRODUCT_OS_NAME" /> que es permeten per a la reversió feta a partir de la versió estable en qualsevol moment.
 

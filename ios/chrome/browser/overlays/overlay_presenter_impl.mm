@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
@@ -62,7 +64,7 @@ OverlayPresenterImpl::OverlayPresenterImpl(Browser* browser,
 OverlayPresenterImpl::~OverlayPresenterImpl() {
   // The presenter should be disconnected from WebStateList changes before
   // destruction.
-  DCHECK(!ui_delegate_);
+  DCHECK(!presentation_context_);
   DCHECK(!web_state_list_);
 
   for (auto& observer : observers_) {
@@ -74,29 +76,29 @@ OverlayPresenterImpl::~OverlayPresenterImpl() {
 
 #pragma mark OverlayPresenter
 
-void OverlayPresenterImpl::SetUIDelegate(UIDelegate* ui_delegate) {
-  // When the UI delegate is reset, the presenter will begin showing overlays in
-  // the new delegate's presentation context.  Cancel overlay state from the
-  // previous delegate since this Browser's overlays will no longer be presented
+void OverlayPresenterImpl::SetPresentationContext(
+    OverlayPresentationContext* presentation_context) {
+  // When the presentation context is reset, the presenter will begin showing
+  // overlays in the new presentation context.  Cancel overlay state from the
+  // previous context since this Browser's overlays will no longer be presented
   // there.
-  if (ui_delegate_)
+  if (presentation_context_)
     CancelAllOverlayUI();
 
-  ui_delegate_ = ui_delegate;
+  presentation_context_ = presentation_context;
 
   // Reset |presenting| since it was tracking the status for the previous
   // delegate's presentation context.
   presenting_ = false;
-  if (ui_delegate_)
+  if (presentation_context_)
     PresentOverlayForActiveRequest();
 }
 
-void OverlayPresenterImpl::AddObserver(OverlayPresenter::Observer* observer) {
+void OverlayPresenterImpl::AddObserver(OverlayPresenterObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void OverlayPresenterImpl::RemoveObserver(
-    OverlayPresenter::Observer* observer) {
+void OverlayPresenterImpl::RemoveObserver(OverlayPresenterObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -124,7 +126,7 @@ void OverlayPresenterImpl::SetActiveWebState(
   detaching_active_web_state_ = false;
 
   // Early return if there's no UI delegate, since presentation cannot occur.
-  if (!ui_delegate_)
+  if (!presentation_context_)
     return;
 
   // If not already presenting, immediately show the next overlay.
@@ -143,7 +145,7 @@ void OverlayPresenterImpl::SetActiveWebState(
   } else {
     // For WebState activations, the overlay UI for the previously active
     // WebState should be hidden, as it may be shown again upon reactivating.
-    ui_delegate_->HideOverlayUI(this, previously_active_request);
+    presentation_context_->HideOverlayUI(this, previously_active_request);
   }
 }
 
@@ -177,7 +179,7 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   DCHECK(!presenting_);
 
   // Overlays cannot be shown without a UI delegate.
-  if (!ui_delegate_)
+  if (!presentation_context_)
     return;
 
   // No presentation is necessary if there is no active reqeust.
@@ -195,12 +197,13 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   // Present the overlay UI via the UI delegate.
   OverlayDismissalCallback dismissal_callback = base::BindOnce(
       &OverlayPresenterImpl::OverlayWasDismissed, weak_factory_.GetWeakPtr(),
-      ui_delegate_, request, GetActiveQueue()->GetWeakPtr());
-  ui_delegate_->ShowOverlayUI(this, request, std::move(dismissal_callback));
+      presentation_context_, request, GetActiveQueue()->GetWeakPtr());
+  presentation_context_->ShowOverlayUI(this, request,
+                                       std::move(dismissal_callback));
 }
 
 void OverlayPresenterImpl::OverlayWasDismissed(
-    UIDelegate* ui_delegate,
+    OverlayPresentationContext* presentation_context,
     OverlayRequest* request,
     base::WeakPtr<OverlayRequestQueueImpl> queue,
     OverlayDismissalReason reason) {
@@ -208,7 +211,7 @@ void OverlayPresenterImpl::OverlayWasDismissed(
   // be cancelled and dismissed.  The presenter is now using the new UI
   // delegate's presentation context, so this dismissal should not trigger
   // presentation logic.
-  if (ui_delegate_ != ui_delegate)
+  if (presentation_context_ != presentation_context)
     return;
 
   // Pop the request for overlays dismissed by the user.  The check against the
@@ -239,9 +242,9 @@ void OverlayPresenterImpl::OverlayWasDismissed(
 #pragma mark Cancellation helpers
 
 void OverlayPresenterImpl::CancelOverlayUIForRequest(OverlayRequest* request) {
-  if (!ui_delegate_ || !request)
+  if (!presentation_context_ || !request)
     return;
-  ui_delegate_->CancelOverlayUI(this, request);
+  presentation_context_->CancelOverlayUI(this, request);
 }
 
 void OverlayPresenterImpl::CancelAllOverlayUI() {
@@ -255,7 +258,7 @@ void OverlayPresenterImpl::CancelAllOverlayUI() {
 #pragma mark BrowserObserver
 
 void OverlayPresenterImpl::BrowserDestroyed(Browser* browser) {
-  SetUIDelegate(nullptr);
+  SetPresentationContext(nullptr);
   SetActiveWebState(nullptr, CHANGE_REASON_NONE);
 
   for (int i = 0; i < web_state_list_->count(); ++i) {

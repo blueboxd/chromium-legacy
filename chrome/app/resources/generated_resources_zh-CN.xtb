@@ -912,7 +912,6 @@
 <translation id="236117173274098341">优化</translation>
 <translation id="236141728043665931">始终禁止使用麦克风</translation>
 <translation id="2365507699358342471">此页面可以查看复制到剪贴板的文字和图片。</translation>
-<translation id="2367199180085172140">添加文件共享</translation>
 <translation id="2367972762794486313">显示应用</translation>
 <translation id="2369105924912929484">切换已提取的网页内容</translation>
 <translation id="2371076942591664043">完成时打开(&amp;D)</translation>
@@ -1099,7 +1098,7 @@
 <translation id="2649045351178520408">Base64 编码 ASCII，证书链</translation>
 <translation id="2653033005692233957">搜索失败</translation>
 <translation id="2653266418988778031">如果您删除了某个证书授权中心 (CA) 证书，则浏览器不会再信任该 CA 颁发的任何证书。</translation>
-<translation id="2653275834716714682">替换文字</translation>
+<translation id="2653275834716714682">文本替换</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="265390580714150011">字段值</translation>
 <translation id="2654166010170466751">允许网站安装付款处理程序</translation>
@@ -2815,7 +2814,7 @@
 <translation id="5301751748813680278">以访客身份登录。</translation>
 <translation id="5301954838959518834">知道了</translation>
 <translation id="5302048478445481009">语言</translation>
-<translation id="5302932258331363306">显示替换项目</translation>
+<translation id="5302932258331363306">显示替换</translation>
 <translation id="5305688511332277257">未安装任何证书</translation>
 <translation id="5307030433605830021">来源不受支持</translation>
 <translation id="5308380583665731573">连接</translation>
@@ -3291,7 +3290,6 @@
 <translation id="6026047032548434446">安装应用？</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - 已连接 USB 设备</translation>
 <translation id="6029027682598229313">Linux 已安装完毕。</translation>
-<translation id="6029292188939175871">删除[<ph name="FINGERPRINT_NAME" />]，按钮</translation>
 <translation id="6029587122245504742">最慢</translation>
 <translation id="6032912588568283682">文件系统</translation>
 <translation id="6038929619733116134">屏蔽会展示侵扰性或误导性广告的网站</translation>
@@ -4590,7 +4588,6 @@
 <translation id="7973962044839454485">用户名或密码不正确，导致 PPP 身份验证失败</translation>
 <translation id="7974566588408714340">使用“<ph name="EXTENSIONNAME" />”重试</translation>
 <translation id="7974936243149753750">过扫描</translation>
-<translation id="79766959863778284">XR 隔离设备服务</translation>
 <translation id="7978412674231730200">私有密钥</translation>
 <translation id="7978450511781612192">执行此操作会使您退出 Google 帐号。您的书签、历史记录、密码及其他设置将不再保持同步。</translation>
 <translation id="7979036127916589816">同步错误</translation>
@@ -5156,7 +5153,7 @@
 <translation id="8827752199525959199">更多操作，<ph name="USERNAME" /> 在 <ph name="DOMAIN" /> 上的密码</translation>
 <translation id="882854468542856424">不允许任何网站发现附近的蓝牙设备</translation>
 <translation id="8828933418460119530">DNS 名称</translation>
-<translation id="883062543841130884">替换项目</translation>
+<translation id="883062543841130884">替换</translation>
 <translation id="8830796635868321089">无法使用当前代理设置来检查更新，请调整您的<ph name="PROXY_SETTINGS_LINK_START" />代理设置<ph name="PROXY_SETTINGS_LINK_END" />。</translation>
 <translation id="8831664945713891930">打开扩展程序设置</translation>
 <translation id="8834039744648160717">网络配置由 <ph name="USER_EMAIL" /> 控制。</translation>
@@ -5358,7 +5355,6 @@
 <translation id="9138978632494473300">在以下位置添加快捷方式：</translation>
 <translation id="9140067245205650184">您使用的是不受支持的功能标记：<ph name="BAD_FLAG" />。稳定性和安全性会有所下降。</translation>
 <translation id="9143298529634201539">要移除推荐内容吗？</translation>
-<translation id="9147304170847707004">身份验证方法</translation>
 <translation id="9147392381910171771">选项(&amp;O)</translation>
 <translation id="9148058034647219655">退出</translation>
 <translation id="9148126808321036104">重新登录</translation>

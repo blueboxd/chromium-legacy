@@ -23,6 +23,7 @@ class SequencedTaskRunner;
 }
 
 namespace storage {
+class BlobStorageContext;
 class QuotaManagerProxy;
 }
 
@@ -102,8 +103,11 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
 
   void ShutdownOnTaskRunner();
 
-  void SetBlobParametersForCacheOnTaskRunner(
+  void GetBlobStorageContextWeakPtrOnIOThread(
       ChromeBlobStorageContext* blob_storage_context);
+
+  void SetBlobParametersForCacheOnTaskRunner(
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
   void CreateQuotaClientsOnIOThread(
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);

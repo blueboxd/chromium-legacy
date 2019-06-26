@@ -32,19 +32,20 @@ scheduling logic for that request's corresponding overlay UI.
 OverlayPresenter drives the presentation of the UI for OverlayRequests added to
 queues for WebStates in a Browser.
 
-#### OverlayPresenter::UIDelegate
+#### OverlayPresentationContext
 
-Clients must provide a UI delegate to a Browser's OverlayPresenter that handles
-the presentation of overlay UI for that presenter's modality and Browser.
+Clients must provide a presentation context to a Browser's OverlayPresenter that
+handles the presentation of overlay UI for that presenter's modality and
+Browser.
 
-#### OverlayPresenter::Observer
+#### OverlayPresenterObserver
 
 Objects that care about the presentation and dismissal of overlay UI by the
 presenter should add themselves as observers to the presenter.  This can be used
 to respond to update UI for UI presentation, for example to update the location
 bar text while a dialog is displayed.
 
-## Setting up OverlayPresenterr:
+## Setting up OverlayPresenter:
 
 Multiple OverlayPresenters may be active for a single Browser to manage overlay
 UI at different levels of modality (i.e. modal over WebState content area, modal

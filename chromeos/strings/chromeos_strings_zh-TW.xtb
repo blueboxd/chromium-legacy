@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">系統在你的畫面上找不到任何能提供協助的內容。
 請輕觸麥克風圖示，直接說出你的問題。</translation>
 <translation id="5222676887888702881">登出</translation>
+<translation id="5317780077021120954">儲存</translation>
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>
 <translation id="54609108002486618">受管理</translation>
 <translation id="5733345267661125295">請立即選擇新的密碼</translation>
@@ -23,6 +24,7 @@
 <translation id="6574601967010742428">裝置管理員或許可監控你的活動。</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{目前的密碼已過期！}=1{目前的密碼將於 1 天內過期！}other{目前的密碼將於 # 天內過期！}}</translation>
 <translation id="7658239707568436148">取消</translation>
+<translation id="7690294790491645610">確認新密碼</translation>
 <translation id="808894953321890993">變更密碼</translation>
 <translation id="9111102763498581341">解除鎖定</translation>
 </translationbundle>

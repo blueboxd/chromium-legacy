@@ -891,11 +891,6 @@ void ContentSettingCookiesBubbleModel::CommitChanges() {
 }
 
 void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-      content::Source<TabSpecificContentSettings>(
-          TabSpecificContentSettings::FromWebContents(web_contents())),
-      content::NotificationService::NoDetails());
   delegate()->ShowCollectedCookiesDialog(web_contents());
 }
 

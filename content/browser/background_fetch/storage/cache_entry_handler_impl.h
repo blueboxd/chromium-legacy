@@ -30,10 +30,6 @@ class CacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
                            blink::mojom::FetchAPIRequest* request) override;
 
  private:
-  void PopulateBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
-                    const blink::mojom::SerializedBlobPtr& blob,
-                    CacheStorageCache::EntryIndex index);
-
   base::WeakPtr<CacheStorageCacheEntryHandler> GetWeakPtr() override;
 
   base::WeakPtrFactory<CacheEntryHandlerImpl> weak_ptr_factory_;

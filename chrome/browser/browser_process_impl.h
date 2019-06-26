@@ -36,7 +36,6 @@
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
 class BatteryMetrics;
-class ChromeChildProcessWatcher;
 class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
 class DevToolsAutoOpener;
@@ -392,8 +391,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
-
-  std::unique_ptr<ChromeChildProcessWatcher> child_process_watcher_;
 
   shell_integration::DefaultWebClientState cached_default_web_client_state_ =
       shell_integration::UNKNOWN_DEFAULT;

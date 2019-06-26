@@ -464,7 +464,7 @@ LegacyCacheStorageCache::CreateMemoryCache(
   LegacyCacheStorageCache* cache = new LegacyCacheStorageCache(
       origin, owner, cache_name, base::FilePath(), cache_storage,
       std::move(scheduler_task_runner), std::move(quota_manager_proxy),
-      blob_context, 0 /* cache_size */, 0 /* cache_padding */,
+      std::move(blob_context), 0 /* cache_size */, 0 /* cache_padding */,
       std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
@@ -488,7 +488,8 @@ LegacyCacheStorageCache::CreatePersistentCache(
   LegacyCacheStorageCache* cache = new LegacyCacheStorageCache(
       origin, owner, cache_name, path, cache_storage,
       std::move(scheduler_task_runner), std::move(quota_manager_proxy),
-      blob_context, cache_size, cache_padding, std::move(cache_padding_key));
+      std::move(blob_context), cache_size, cache_padding,
+      std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
   return base::WrapUnique(cache);
@@ -925,7 +926,6 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
       cache_storage_(cache_storage),
       scheduler_task_runner_(std::move(scheduler_task_runner)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
-      blob_storage_context_(blob_context),
       scheduler_(new CacheStorageScheduler(CacheStorageSchedulerClient::kCache,
                                            scheduler_task_runner_)),
       cache_size_(cache_size),
@@ -934,8 +934,9 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
       max_query_size_bytes_(kMaxQueryCacheResultBytes),
       cache_observer_(nullptr),
       cache_entry_handler_(
-          CacheStorageCacheEntryHandler::CreateCacheEntryHandler(owner,
-                                                                 blob_context)),
+          CacheStorageCacheEntryHandler::CreateCacheEntryHandler(
+              owner,
+              std::move(blob_context))),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
   DCHECK(!origin_.opaque());
@@ -1189,14 +1190,6 @@ void LegacyCacheStorageCache::QueryCacheDidReadMetadata(
     }
     if (blob_entry->disk_cache_entry()->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
       QueryCacheOpenNextEntry(std::move(query_cache_context));
-      return;
-    }
-
-    if (!blob_storage_context_) {
-      std::move(query_cache_context->callback)
-          .Run(MakeErrorStorage(
-                   ErrorStorageType::kQueryCacheDidReadMetadataNullBlobContext),
-               nullptr);
       return;
     }
 

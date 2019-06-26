@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -91,6 +92,23 @@ void RemoveCommandLineSwitch(const base::CommandLine& in_command_line,
 
     out_command_line->AppendSwitchNative(switch_name, i->second);
   }
+}
+
+bool CreateUserDataDir(base::ScopedTempDir* temp_dir) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::FilePath user_data_dir =
+      command_line->GetSwitchValuePath(switches::kUserDataDir);
+  if (user_data_dir.empty()) {
+    DCHECK(temp_dir);
+    if (temp_dir->CreateUniqueTempDir() && temp_dir->IsValid()) {
+      user_data_dir = temp_dir->GetPath();
+    } else {
+      LOG(ERROR) << "Could not create temporary user data directory \""
+                 << temp_dir->GetPath().value() << "\".";
+      return false;
+    }
+  }
+  return OverrideUserDataDir(user_data_dir);
 }
 
 bool OverrideUserDataDir(const base::FilePath& user_data_dir) {

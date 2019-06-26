@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/overlays/overlay_presenter_ui_delegate_impl.h"
+#import "ios/chrome/browser/ui/overlays/overlay_presentation_context_impl.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory.h"
 
@@ -14,31 +15,31 @@
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - OverlayPresenterUIDelegateImpl::Container
+#pragma mark - OverlayPresentationContextImpl::Container
 
-OVERLAY_USER_DATA_SETUP_IMPL(OverlayPresenterUIDelegateImpl::Container);
+OVERLAY_USER_DATA_SETUP_IMPL(OverlayPresentationContextImpl::Container);
 
-OverlayPresenterUIDelegateImpl::Container::Container(Browser* browser)
+OverlayPresentationContextImpl::Container::Container(Browser* browser)
     : browser_(browser) {
   DCHECK(browser_);
 }
 
-OverlayPresenterUIDelegateImpl::Container::~Container() = default;
+OverlayPresentationContextImpl::Container::~Container() = default;
 
-OverlayPresenterUIDelegateImpl*
-OverlayPresenterUIDelegateImpl::Container::UIDelegateForModality(
+OverlayPresentationContextImpl*
+OverlayPresentationContextImpl::Container::PresentationContextForModality(
     OverlayModality modality) {
   auto& ui_delegate = ui_delegates_[modality];
   if (!ui_delegate) {
     ui_delegate = base::WrapUnique(
-        new OverlayPresenterUIDelegateImpl(browser_, modality));
+        new OverlayPresentationContextImpl(browser_, modality));
   }
   return ui_delegate.get();
 }
 
-#pragma mark - OverlayPresenterUIDelegateImpl
+#pragma mark - OverlayPresentationContextImpl
 
-OverlayPresenterUIDelegateImpl::OverlayPresenterUIDelegateImpl(
+OverlayPresentationContextImpl::OverlayPresentationContextImpl(
     Browser* browser,
     OverlayModality modality)
     : presenter_(OverlayPresenter::FromBrowser(browser, modality)),
@@ -50,14 +51,14 @@ OverlayPresenterUIDelegateImpl::OverlayPresenterUIDelegateImpl(
       weak_factory_(this) {
   DCHECK(presenter_);
   DCHECK(coordinator_factory_);
-  presenter_->SetUIDelegate(this);
+  presenter_->SetPresentationContext(this);
 }
 
-OverlayPresenterUIDelegateImpl::~OverlayPresenterUIDelegateImpl() = default;
+OverlayPresentationContextImpl::~OverlayPresentationContextImpl() = default;
 
 #pragma mark Public
 
-void OverlayPresenterUIDelegateImpl::SetCoordinator(
+void OverlayPresentationContextImpl::SetCoordinator(
     OverlayContainerCoordinator* coordinator) {
   if (coordinator_ == coordinator)
     return;
@@ -72,9 +73,9 @@ void OverlayPresenterUIDelegateImpl::SetCoordinator(
   ShowUIForPresentedRequest();
 }
 
-#pragma mark OverlayPresenter::UIDelegate
+#pragma mark OverlayPresentationContext
 
-void OverlayPresenterUIDelegateImpl::ShowOverlayUI(
+void OverlayPresentationContextImpl::ShowOverlayUI(
     OverlayPresenter* presenter,
     OverlayRequest* request,
     OverlayDismissalCallback dismissal_callback) {
@@ -88,7 +89,7 @@ void OverlayPresenterUIDelegateImpl::ShowOverlayUI(
   SetRequest(request);
 }
 
-void OverlayPresenterUIDelegateImpl::HideOverlayUI(OverlayPresenter* presenter,
+void OverlayPresentationContextImpl::HideOverlayUI(OverlayPresenter* presenter,
                                                    OverlayRequest* request) {
   DCHECK_EQ(presenter_, presenter);
   DCHECK_EQ(request_, request);
@@ -107,7 +108,7 @@ void OverlayPresenterUIDelegateImpl::HideOverlayUI(OverlayPresenter* presenter,
   }
 }
 
-void OverlayPresenterUIDelegateImpl::CancelOverlayUI(
+void OverlayPresentationContextImpl::CancelOverlayUI(
     OverlayPresenter* presenter,
     OverlayRequest* request) {
   DCHECK_EQ(presenter_, presenter);
@@ -136,7 +137,7 @@ void OverlayPresenterUIDelegateImpl::CancelOverlayUI(
 
 #pragma mark Accesors
 
-void OverlayPresenterUIDelegateImpl::SetRequest(OverlayRequest* request) {
+void OverlayPresentationContextImpl::SetRequest(OverlayRequest* request) {
   if (request_ == request)
     return;
   if (request_) {
@@ -164,14 +165,14 @@ void OverlayPresenterUIDelegateImpl::SetRequest(OverlayRequest* request) {
   ShowUIForPresentedRequest();
 }
 
-OverlayRequestUIState* OverlayPresenterUIDelegateImpl::GetRequestUIState(
+OverlayRequestUIState* OverlayPresentationContextImpl::GetRequestUIState(
     OverlayRequest* request) {
   return request ? states_[request].get() : nullptr;
 }
 
 #pragma mark Presentation and Dismissal helpers
 
-void OverlayPresenterUIDelegateImpl::ShowUIForPresentedRequest() {
+void OverlayPresentationContextImpl::ShowUIForPresentedRequest() {
   OverlayRequestUIState* state = GetRequestUIState(request_);
   if (!state || !coordinator_)
     return;
@@ -192,7 +193,7 @@ void OverlayPresenterUIDelegateImpl::ShowUIForPresentedRequest() {
   state->OverlayUIWasPresented();
 }
 
-void OverlayPresenterUIDelegateImpl::DismissPresentedUI(
+void OverlayPresentationContextImpl::DismissPresentedUI(
     OverlayDismissalReason reason) {
   OverlayRequestUIState* state = GetRequestUIState(request_);
   DCHECK(state);
@@ -204,7 +205,7 @@ void OverlayPresenterUIDelegateImpl::DismissPresentedUI(
       stopAnimated:reason == OverlayDismissalReason::kUserInteraction];
 }
 
-void OverlayPresenterUIDelegateImpl::OverlayUIWasDismissed() {
+void OverlayPresentationContextImpl::OverlayUIWasDismissed() {
   DCHECK(request_);
   // Overlays are dismissed without animation when the container coordinator is
   // reset, but the state should not be notified of these dismissals since the
@@ -215,7 +216,7 @@ void OverlayPresenterUIDelegateImpl::OverlayUIWasDismissed() {
   NotifyStateOfDismissal();
 }
 
-void OverlayPresenterUIDelegateImpl::NotifyStateOfDismissal() {
+void OverlayPresentationContextImpl::NotifyStateOfDismissal() {
   DCHECK(request_);
   DCHECK(GetRequestUIState(request_)->has_callback());
   // If there is another request in the active WebState's OverlayRequestQueue,
@@ -231,7 +232,7 @@ void OverlayPresenterUIDelegateImpl::NotifyStateOfDismissal() {
 
 #pragma mark BrowserShutdownHelper
 
-OverlayPresenterUIDelegateImpl::BrowserShutdownHelper::BrowserShutdownHelper(
+OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserShutdownHelper(
     Browser* browser,
     OverlayPresenter* presenter)
     : presenter_(presenter) {
@@ -239,27 +240,27 @@ OverlayPresenterUIDelegateImpl::BrowserShutdownHelper::BrowserShutdownHelper(
   browser->AddObserver(this);
 }
 
-OverlayPresenterUIDelegateImpl::BrowserShutdownHelper::
+OverlayPresentationContextImpl::BrowserShutdownHelper::
     ~BrowserShutdownHelper() = default;
 
-void OverlayPresenterUIDelegateImpl::BrowserShutdownHelper::BrowserDestroyed(
+void OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserDestroyed(
     Browser* browser) {
-  presenter_->SetUIDelegate(nullptr);
+  presenter_->SetPresentationContext(nullptr);
   browser->RemoveObserver(this);
 }
 
 #pragma mark OverlayDismissalHelper
 
-OverlayPresenterUIDelegateImpl::OverlayDismissalHelper::OverlayDismissalHelper(
-    OverlayPresenterUIDelegateImpl* ui_delegate)
+OverlayPresentationContextImpl::OverlayDismissalHelper::OverlayDismissalHelper(
+    OverlayPresentationContextImpl* ui_delegate)
     : ui_delegate_(ui_delegate) {
   DCHECK(ui_delegate_);
 }
 
-OverlayPresenterUIDelegateImpl::OverlayDismissalHelper::
+OverlayPresentationContextImpl::OverlayDismissalHelper::
     ~OverlayDismissalHelper() = default;
 
-void OverlayPresenterUIDelegateImpl::OverlayDismissalHelper::
+void OverlayPresentationContextImpl::OverlayDismissalHelper::
     OverlayUIDidFinishDismissal(OverlayRequest* request) {
   DCHECK(request);
   DCHECK_EQ(ui_delegate_->request_, request);

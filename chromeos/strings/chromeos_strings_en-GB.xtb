@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">I can't find anything on your screen that I can help with.
 Try tapping the mic to ask me anything.</translation>
 <translation id="5222676887888702881">Sign out</translation>
+<translation id="5317780077021120954">Save</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="54609108002486618">Managed</translation>
 <translation id="5733345267661125295">Please choose a new password now</translation>
@@ -23,6 +24,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6574601967010742428">The device administrator may be able to monitor your activity.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Your current password has expired.}=1{Your current password will expire in less than one day.}other{Your current password will expire in less than # days.}}</translation>
 <translation id="7658239707568436148">Cancel</translation>
+<translation id="7690294790491645610">Confirm new password</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="9111102763498581341">Unlock</translation>
 </translationbundle>

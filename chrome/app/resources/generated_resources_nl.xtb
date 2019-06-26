@@ -915,7 +915,6 @@
 <translation id="236117173274098341">Optimaliseren</translation>
 <translation id="236141728043665931">Microfoontoegang altijd blokkeren</translation>
 <translation id="2365507699358342471">Deze site kan tekst en afbeeldingen bekijken die naar het klembord zijn gekopieerd.</translation>
-<translation id="2367199180085172140">File Share toevoegen</translation>
 <translation id="2367972762794486313">Apps weergeven</translation>
 <translation id="2369105924912929484">Afgeleide paginacontent in-/uitschakelen</translation>
 <translation id="2371076942591664043">Openen wanneer geree&amp;d</translation>
@@ -2416,7 +2415,7 @@
 <translation id="4662788913887017617">Deze bladwijzer delen met je iPhone</translation>
 <translation id="4663373278480897665">Camera toegestaan</translation>
 <translation id="4664482161435122549">Fout bij exporteren van PKCS #12</translation>
-<translation id="4664736447097490764">Bewerk het Kerberos-configuratiebestand hier.</translation>
+<translation id="4664736447097490764">Bewerk hier het Kerberos-configuratiebestand.</translation>
 <translation id="4665014895760275686">Fabrikant</translation>
 <translation id="4665446389743427678">Alle gegevens die zijn opgeslagen door <ph name="SITE" />, worden verwijderd.</translation>
 <translation id="4668721319092543482">Klik om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
@@ -3299,7 +3298,6 @@
 <translation id="6026047032548434446">App installeren?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: USB-apparaat verbonden</translation>
 <translation id="6029027682598229313">Linux-installatie is voltooid.</translation>
-<translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] verwijderen, knop</translation>
 <translation id="6029587122245504742">Langzaamst</translation>
 <translation id="6032912588568283682">Bestandssysteem</translation>
 <translation id="6038929619733116134">Blokkeren als site opdringerige of misleidende advertenties weergeeft</translation>
@@ -4354,7 +4352,7 @@
 <translation id="7647403192093989392">Geen recente activiteiten</translation>
 <translation id="7648142322539582331">Maak verbinding met internet om ouderlijk toezicht in te stellen</translation>
 <translation id="7648992873808071793">Bestanden op dit apparaat bewaren</translation>
-<translation id="7649070708921625228">Help</translation>
+<translation id="7649070708921625228">Hulp</translation>
 <translation id="7650511557061837441">'<ph name="TRIGGERING_EXTENSION_NAME" />' wil '<ph name="EXTENSION_NAME" />' verwijderen.</translation>
 <translation id="7652808307838961528">Persoon bewerken: <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Apps, extensies en gebruikersscripts kunnen niet worden toegevoegd vanaf deze website</translation>
@@ -4599,7 +4597,6 @@
 <translation id="7973962044839454485">PPP-verificatie mislukt wegens een onjuiste gebruikersnaam of wachtwoord</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> opnieuw proberen te gebruiken</translation>
 <translation id="7974936243149753750">Overscan</translation>
-<translation id="79766959863778284">Geïsoleerde XR-apparaatservice</translation>
 <translation id="7978412674231730200">Privésleutel</translation>
 <translation id="7978450511781612192">Hiermee word je uitgelogd van je Google-accounts. Onder meer je bladwijzers, geschiedenis en wachtwoorden worden niet meer gesynchroniseerd.</translation>
 <translation id="7979036127916589816">Synchronisatiefout</translation>
@@ -5369,7 +5366,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9138978632494473300">Snelle links toevoegen op de volgende locaties:</translation>
 <translation id="9140067245205650184">Je gebruikt een niet-ondersteunde functiemarkering: <ph name="BAD_FLAG" />. De stabiliteit en beveiliging zullen hieronder lijden.</translation>
 <translation id="9143298529634201539">Suggestie verwijderen?</translation>
-<translation id="9147304170847707004">Verificatiemethode</translation>
 <translation id="9147392381910171771">&amp;Opties</translation>
 <translation id="9148058034647219655">Sluiten</translation>
 <translation id="9148126808321036104">Opnieuw inloggen</translation>

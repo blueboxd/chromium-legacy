@@ -14,7 +14,6 @@
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 #import "ios/web/shell/web_usage_controller.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/test/echo/public/mojom/echo.mojom.h"
 #include "services/test/user_id/public/mojom/user_id.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,22 +23,6 @@
 using web::shell_test_util::GetCurrentWebState;
 
 @implementation ServiceManagerTestAppInterface
-
-+ (void)echoAndLogString:(NSString*)string {
-  // Connect to the echo service once and bind an Echo instance.
-  static echo::mojom::EchoPtr echo;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    web::ServiceManagerConnection::Get()->GetConnector()->BindInterface(
-        "echo", mojo::MakeRequest(&echo));
-  });
-
-  std::string UTF8String = base::SysNSStringToUTF8(string);
-  echo->EchoString(UTF8String, base::BindOnce(^(const std::string& UTF8Reply) {
-                     NSString* reply = base::SysUTF8ToNSString(UTF8Reply);
-                     [[self mutableLogs] addObject:reply];
-                   }));
-}
 
 + (void)logInstanceGroup {
   // Connect to the user ID service once and bind a UserId instance.

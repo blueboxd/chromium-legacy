@@ -915,7 +915,6 @@
 <translation id="236117173274098341">Optymalizuj</translation>
 <translation id="236141728043665931">Zawsze blokuj dostęp do mikrofonu</translation>
 <translation id="2365507699358342471">Ta witryna ma dostęp do tekstu i obrazów skopiowanych do schowka.</translation>
-<translation id="2367199180085172140">Dodaj udział plików</translation>
 <translation id="2367972762794486313">Pokaż aplikacje</translation>
 <translation id="2369105924912929484">Przełącz wydestylowaną zawartość strony</translation>
 <translation id="2371076942591664043">Otwórz po &amp;zakończeniu</translation>
@@ -3299,7 +3298,6 @@
 <translation id="6026047032548434446">Zainstalować aplikację?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – połączono z urządzeniem USB</translation>
 <translation id="6029027682598229313">Instalacja Linuksa została ukończona.</translation>
-<translation id="6029292188939175871">usuń odcisk palca [<ph name="FINGERPRINT_NAME" />], przycisk</translation>
 <translation id="6029587122245504742">Najwolniej</translation>
 <translation id="6032912588568283682">System plików</translation>
 <translation id="6038929619733116134">Blokuj, jeśli na stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>
@@ -4600,7 +4598,6 @@
 <translation id="7973962044839454485">Uwierzytelnianie PPP nie powiodło się z powodu nieprawidłowej nazwy użytkownika lub hasła</translation>
 <translation id="7974566588408714340">Ponów za pomocą rozszerzenia <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Nadmiarowość obrazu</translation>
-<translation id="79766959863778284">Usługa izolowanego urządzenia XR</translation>
 <translation id="7978412674231730200">Klucz prywatny</translation>
 <translation id="7978450511781612192">Spowoduje to wylogowanie Cię z Twoich kont Google. Twoje zakładki, historia, hasła i inne dane przestaną być synchronizowane.</translation>
 <translation id="7979036127916589816">Błąd synchronizacji</translation>
@@ -5370,7 +5367,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9138978632494473300">Dodaj skróty do tych miejsc:</translation>
 <translation id="9140067245205650184">Korzystasz z nieobsługiwanej flagi funkcji: <ph name="BAD_FLAG" />. Ma to negatywny wpływ na stabilność i zabezpieczenia.</translation>
 <translation id="9143298529634201539">Usunąć sugestię?</translation>
-<translation id="9147304170847707004">Metoda uwierzytelniania</translation>
 <translation id="9147392381910171771">&amp;Opcje</translation>
 <translation id="9148058034647219655">Zakończ</translation>
 <translation id="9148126808321036104">Zaloguj się ponownie</translation>

@@ -12,6 +12,7 @@
 
 namespace base {
 class CommandLine;
+class ScopedTempDir;
 }
 
 // A set of utilities for test code that launches separate processes.
@@ -34,9 +35,12 @@ void RemoveCommandLineSwitch(const base::CommandLine& in_command_line,
                              const std::string& switch_to_remove,
                              base::CommandLine* out_command_line);
 
+// Creates and overrides the current process' user data dir.
+bool CreateUserDataDir(base::ScopedTempDir* temp_dir) WARN_UNUSED_RESULT;
+
 // Overrides the current process' user data dir.
-bool OverrideUserDataDir(
-    const base::FilePath& user_data_dir) WARN_UNUSED_RESULT;
+bool OverrideUserDataDir(const base::FilePath& user_data_dir)
+    WARN_UNUSED_RESULT;
 
 }  // namespace test_launcher_utils
 

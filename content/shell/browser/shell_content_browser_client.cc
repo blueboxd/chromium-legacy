@@ -58,8 +58,6 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/test/echo/public/cpp/manifest.h"
-#include "services/test/echo/public/mojom/echo.mojom.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -163,7 +161,6 @@ const service_manager::Manifest& GetContentBrowserOverlayManifest() {
                   mojom::FakeBluetoothChooserFactory,
                   mojom::WebTestBluetoothFakeAdapterSetter,
                   bluetooth::mojom::FakeBluetooth>())
-          .RequireCapability(echo::mojom::kServiceName, "echo")
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               service_manager::Manifest::InterfaceList<
@@ -324,12 +321,6 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetContentUtilityOverlayManifest();
 
   return base::nullopt;
-}
-
-std::vector<service_manager::Manifest>
-ShellContentBrowserClient::GetExtraServiceManifests() {
-  return std::vector<service_manager::Manifest>{echo::GetManifest(
-      service_manager::Manifest::ExecutionMode::kOutOfProcessBuiltin)};
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

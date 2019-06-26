@@ -915,7 +915,6 @@
 <translation id="236117173274098341">Optimizează</translation>
 <translation id="236141728043665931">Blocați întotdeauna accesul la microfon</translation>
 <translation id="2365507699358342471">Acest site poate să vadă textul și imaginile copiate în clipboard.</translation>
-<translation id="2367199180085172140">Adaugă un dispozitiv de stocare în rețea</translation>
 <translation id="2367972762794486313">Afișați aplicații</translation>
 <translation id="2369105924912929484">Comută conținutul paginii convertite</translation>
 <translation id="2371076942591664043">Deschide când s-a &amp;descărcat</translation>
@@ -3299,7 +3298,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6026047032548434446">Instalezi aplicația?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – dispozitivul USB a fost conectat</translation>
 <translation id="6029027682598229313">Instalarea Linux s-a finalizat.</translation>
-<translation id="6029292188939175871">șterge [<ph name="FINGERPRINT_NAME" />], buton</translation>
 <translation id="6029587122245504742">Cea mai lentă</translation>
 <translation id="6032912588568283682">Sistem de fișiere</translation>
 <translation id="6038929619733116134">Blochează dacă site-ul afișează anunțuri deranjante sau înșelătoare</translation>
@@ -4600,7 +4598,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7973962044839454485">Autentificarea PPP nu a reușit, din cauza unui nume de utilizator sau a unei parole greșite</translation>
 <translation id="7974566588408714340">Reîncearcă folosind <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Suprascanare</translation>
-<translation id="79766959863778284">Serviciul de dispozitive izolate XR</translation>
 <translation id="7978412674231730200">Cheie privată</translation>
 <translation id="7978450511781612192">Astfel, te vei deconecta de la Conturile Google. Marcajele, istoricul, parolele și alte setări nu vor mai fi sincronizate.</translation>
 <translation id="7979036127916589816">Eroare de sincronizare</translation>
@@ -5369,7 +5366,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9138978632494473300">Adaugă comenzi rapide către următoarele locații:</translation>
 <translation id="9140067245205650184">Folosești un semnalizator de funcție neacceptat: <ph name="BAD_FLAG" />. Stabilitatea și securitatea vor fi afectate.</translation>
 <translation id="9143298529634201539">Elimini sugestia?</translation>
-<translation id="9147304170847707004">Metodă de autentificare</translation>
 <translation id="9147392381910171771">&amp;Opțiuni</translation>
 <translation id="9148058034647219655">Ieși</translation>
 <translation id="9148126808321036104">Conectează-te din nou</translation>

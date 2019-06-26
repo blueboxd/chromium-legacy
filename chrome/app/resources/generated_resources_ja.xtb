@@ -915,7 +915,6 @@
 <translation id="236117173274098341">最適化</translation>
 <translation id="236141728043665931">マイクのアクセスを常にブロックする</translation>
 <translation id="2365507699358342471">このサイトでは、クリップボードにコピーされているテキストや画像へのアクセスが許可されています。</translation>
-<translation id="2367199180085172140">ファイル共有を追加</translation>
 <translation id="2367972762794486313">アプリを表示</translation>
 <translation id="2369105924912929484">抽出されたページのコンテンツを切り替える</translation>
 <translation id="2371076942591664043">ダウンロードしたら開く(&amp;D)</translation>
@@ -3299,7 +3298,6 @@
 <translation id="6026047032548434446">アプリをインストールしますか？</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB デバイスに接続されています</translation>
 <translation id="6029027682598229313">Linux のインストールが完了しました。</translation>
-<translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] を削除するボタン</translation>
 <translation id="6029587122245504742">最も遅い</translation>
 <translation id="6032912588568283682">ファイル システム</translation>
 <translation id="6038929619733116134">煩わしい広告や誤解を招く広告が表示されるサイトの場合にブロックします</translation>
@@ -4601,7 +4599,6 @@
 <translation id="7973962044839454485">ユーザー名またはパスワードが正しくないため、PPP 認証に失敗しました</translation>
 <translation id="7974566588408714340">「<ph name="EXTENSIONNAME" />」で再試行</translation>
 <translation id="7974936243149753750">オーバースキャン</translation>
-<translation id="79766959863778284">XR 分離デバイスサービス</translation>
 <translation id="7978412674231730200">秘密鍵</translation>
 <translation id="7978450511781612192">この操作を行うと Google アカウントからログアウトし、ブックマーク、履歴、パスワードなどの設定は同期されなくなります。</translation>
 <translation id="7979036127916589816">同期エラー</translation>
@@ -5370,7 +5367,6 @@
 <translation id="9138978632494473300">ショートカットを次の場所に追加:</translation>
 <translation id="9140067245205650184">サポートされていない機能フラグ <ph name="BAD_FLAG" /> が使用されています。これにより、安全性とセキュリティが損なわれます。</translation>
 <translation id="9143298529634201539">候補を削除しますか？</translation>
-<translation id="9147304170847707004">認証方法</translation>
 <translation id="9147392381910171771">オプション(&amp;O)</translation>
 <translation id="9148058034647219655">終了</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>

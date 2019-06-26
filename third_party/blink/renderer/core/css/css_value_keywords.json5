@@ -1107,8 +1107,13 @@
     "ray",
     "sides",
 
+    // math functions
+    // https://drafts.csswg.org/css-values-4/#math
     "calc",
     "-webkit-calc",
+    "min",
+    "max",
+    "clamp",
 
     // scroll-snap-type
     // none

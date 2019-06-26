@@ -208,10 +208,6 @@ enum NotificationType {
 
   // Content Settings --------------------------------------------------------
 
-  // Sent when the collect cookies dialog is shown. The source is a
-  // TabSpecificContentSettings object, there are no details.
-  NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-
   // Sent when content settings change for a tab. The source is a
   // content::WebContents object, the details are None.
   NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,

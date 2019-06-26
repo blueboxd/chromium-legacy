@@ -345,6 +345,11 @@
       name: "CSSColorScheme",
     },
     {
+      // CSS min(), max() and clamp()
+      // https://drafts.csswg.org/css-values-4/#comp-func
+      name: "CSSComparisonFunctions",
+    },
+    {
       name: "CSSFocusVisible",
       status: "experimental",
     },

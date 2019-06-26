@@ -74,7 +74,9 @@ WebComponent::~WebComponent() {
                                             termination_reason_);
 }
 
-void WebComponent::LoadUrl(const GURL& url) {
+void WebComponent::LoadUrl(
+    const GURL& url,
+    std::vector<fuchsia::net::http::Header> extra_headers) {
   DCHECK(url.is_valid());
   fuchsia::web::NavigationControllerPtr navigation_controller;
   frame()->GetNavigationController(navigation_controller.NewRequest());
@@ -84,6 +86,8 @@ void WebComponent::LoadUrl(const GURL& url) {
   // content.
   fuchsia::web::LoadUrlParams params;
   params.set_was_user_activated(true);
+  if (!extra_headers.empty())
+    params.set_headers(std::move(extra_headers));
 
   navigation_controller->LoadUrl(
       url.spec(), std::move(params),

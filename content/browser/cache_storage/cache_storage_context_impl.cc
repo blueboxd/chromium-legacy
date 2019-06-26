@@ -105,11 +105,15 @@ scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {
 void CacheStorageContextImpl::SetBlobParametersForCache(
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  task_runner_->PostTask(
-      FROM_HERE,
+  if (!blob_storage_context)
+    return;
+  // We can only get a WeakPtr to the BlobStorageContext on the IO thread.
+  // Bounce there first before setting the context on the manager.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
-          base::RetainedRef(blob_storage_context)));
+          &CacheStorageContextImpl::GetBlobStorageContextWeakPtrOnIOThread,
+          this, base::RetainedRef(blob_storage_context)));
 }
 
 void CacheStorageContextImpl::GetAllOriginsInfo(
@@ -223,14 +227,22 @@ void CacheStorageContextImpl::ShutdownOnTaskRunner() {
   cache_manager_ = nullptr;
 }
 
-void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(
+void CacheStorageContextImpl::GetBlobStorageContextWeakPtrOnIOThread(
     ChromeBlobStorageContext* blob_storage_context) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(blob_storage_context);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
+          blob_storage_context->context()->AsWeakPtr()));
+}
 
-  if (cache_manager_ && blob_storage_context) {
-    cache_manager_->SetBlobParametersForCache(
-        blob_storage_context->context()->AsWeakPtr());
-  }
+void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(
+    base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (cache_manager_)
+    cache_manager_->SetBlobParametersForCache(blob_storage_context);
 }
 
 void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(

@@ -305,7 +305,7 @@ because of significant shared logic.
 
 The code used by the bots that generate the coverage data lives (among other
 places) in the
-[clang coverage recipe module](https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/clang_coverage/).
+[code coverage recipe module](https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/code_coverage/).
 
 ### Why is coverage for X not reported or unreasonably low, even though there is a test for X?
 

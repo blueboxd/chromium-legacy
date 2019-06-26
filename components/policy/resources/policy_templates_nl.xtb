@@ -2533,7 +2533,7 @@
 <translation id="5578571772998293651">Sta gebruikersfeedback toe.
         Als het beleid is ingesteld op 'false', kunnen gebruikers geen feedback sturen naar Google.
 
-        Als het beleid is niet is ingesteld of is ingesteld op 'true', kunnen gebruikers feedback naar Google sturen via Menu -&gt; Help -&gt; Een probleem melden, of hier een toetsencombinatie voor gebruiken.</translation>
+        Als het beleid niet is ingesteld of is ingesteld op 'true', kunnen gebruikers feedback naar Google sturen via Menu -&gt; Hulp -&gt; Een probleem melden, of hier een toetsencombinatie voor gebruiken.</translation>
 <translation id="5581292529942108810">Aan Chrome Reporting Extension gerelateerde beleidsregels.
 
       Dit beleid is alleen effectief wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>

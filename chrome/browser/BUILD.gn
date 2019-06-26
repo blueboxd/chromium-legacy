@@ -280,8 +280,6 @@ jumbo_split_static_library("browser") {
     "chrome_browser_main_mac.mm",
     "chrome_browser_main_win.cc",
     "chrome_browser_main_win.h",
-    "chrome_child_process_watcher.cc",
-    "chrome_child_process_watcher.h",
     "chrome_content_browser_client.cc",
     "chrome_content_browser_client.h",
     "chrome_content_browser_client_parts.h",

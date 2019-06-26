@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Tôi không tìm thấy nội dung nào trên màn hình để có thể trợ giúp cho bạn.
 Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="5317780077021120954">Lưu</translation>
 <translation id="5457599981699367932">Duyệt với tư cách Khách</translation>
 <translation id="54609108002486618">Được quản lý</translation>
 <translation id="5733345267661125295">Vui lòng chọn một mật khẩu mới ngay bây giờ</translation>
@@ -23,6 +24,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6574601967010742428">Quản trị viên thiết bị có thể theo dõi hoạt động của bạn.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Mật khẩu hiện tại của bạn đã hết hạn!}=1{Còn chưa đến 1 ngày nữa là mật khẩu hiện tại của bạn sẽ hết hạn!}other{Còn chưa đến # ngày nữa là mật khẩu hiện tại của bạn sẽ hết hạn!}}</translation>
 <translation id="7658239707568436148">Hủy</translation>
+<translation id="7690294790491645610">Xác nhận mật khẩu mới</translation>
 <translation id="808894953321890993">Đổi mật khẩu</translation>
 <translation id="9111102763498581341">Mở khóa</translation>
 </translationbundle>

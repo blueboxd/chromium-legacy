@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
+#import "ios/chrome/browser/overlays/public/overlay_dismissal_callback.h"
 #import "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_user_data.h"
@@ -45,9 +46,10 @@ class OverlayPresenterImpl : public BrowserObserver,
   };
 
   // OverlayPresenter:
-  void SetUIDelegate(UIDelegate* delegate) override;
-  void AddObserver(OverlayPresenter::Observer* observer) override;
-  void RemoveObserver(OverlayPresenter::Observer* observer) override;
+  void SetPresentationContext(
+      OverlayPresentationContext* presentation_context) override;
+  void AddObserver(OverlayPresenterObserver* observer) override;
+  void RemoveObserver(OverlayPresenterObserver* observer) override;
 
  private:
   // Private constructor used by the container.
@@ -75,11 +77,11 @@ class OverlayPresenterImpl : public BrowserObserver,
   // only be called when |presenting_| is false.
   void PresentOverlayForActiveRequest();
 
-  // Notifies this object that |ui_delegate| has finished dismissing the
-  // overlay UI corresponding with |request| in |queue| for |reason|.  This
-  // function is called when the OverlayDismissalCallback provided to the UI
-  // delegate is executed.
-  void OverlayWasDismissed(UIDelegate* ui_delegate,
+  // Notifies this object that the UI for |request| has finished being dismissed
+  // in |presentation_context| in for |reason|.  |queue| is |request|'s queue.
+  // This function is called when the OverlayDismissalCallback provided to
+  // |presentation_context| is executed.
+  void OverlayWasDismissed(OverlayPresentationContext* presentation_context,
                            OverlayRequest* request,
                            base::WeakPtr<OverlayRequestQueueImpl> queue,
                            OverlayDismissalReason reason);
@@ -127,8 +129,8 @@ class OverlayPresenterImpl : public BrowserObserver,
   OverlayModality modality_;
   WebStateList* web_state_list_ = nullptr;
   web::WebState* active_web_state_ = nullptr;
-  UIDelegate* ui_delegate_ = nullptr;
-  base::ObserverList<OverlayPresenter::Observer,
+  OverlayPresentationContext* presentation_context_ = nullptr;
+  base::ObserverList<OverlayPresenterObserver,
                      /* check_empty= */ true>
       observers_;
   base::WeakPtrFactory<OverlayPresenterImpl> weak_factory_;

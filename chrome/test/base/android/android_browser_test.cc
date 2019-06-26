@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/android/android_browser_test.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/test/base/test_launcher_utils.h"
@@ -16,6 +17,7 @@ void AndroidBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   SetUpCommandLine(command_line);
   SetUpDefaultCommandLine(command_line);
+  ASSERT_TRUE(test_launcher_utils::CreateUserDataDir(&temp_user_data_dir_));
 
   BrowserTestBase::SetUp();
 }

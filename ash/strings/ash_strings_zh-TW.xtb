@@ -114,7 +114,7 @@
 <translation id="2582112259361606227">重新啟動即可更新</translation>
 <translation id="2597972630681408282">夜燈功能：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已鎖定</translation>
-<translation id="2651765386227849097">這個裝置已停用 Google 助理。</translation>
+<translation id="2651765386227849097">這個裝置上的 Google 助理已停用。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2658778018866295321">按住並拖曳</translation>
 <translation id="2700493154570097719">設定鍵盤</translation>
@@ -301,7 +301,7 @@
 <translation id="5648021990716966815">麥克風插孔</translation>
 <translation id="5669267381087807207">啟用中</translation>
 <translation id="5673434351075758678">同步處理設定後，「<ph name="FROM_LOCALE" />」已變更為「<ph name="TO_LOCALE" />」。</translation>
-<translation id="5682642926269496722">Google 助理不適用於目前的使用者帳戶。</translation>
+<translation id="5682642926269496722">Google 助理不支援目前的使用者帳戶。</translation>
 <translation id="5691772641933328258">指紋辨識失敗</translation>
 <translation id="5710450975648804523">「零打擾」模式已開啟</translation>
 <translation id="574392208103952083">中</translation>
@@ -335,7 +335,7 @@
 <translation id="6064337552080329342">很抱歉！系統無法驗證你的密碼，請再試一次。</translation>
 <translation id="607652042414456612">你的電腦已開放附近的藍牙裝置搜尋，顯示名稱為「<ph name="NAME" />」，位址則是 <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">正在為「<ph name="POWER_SOURCE" />」充電</translation>
-<translation id="612734058257491180">Google 助理不適用於訪客工作階段。</translation>
+<translation id="612734058257491180">Google 助理不支援訪客工作階段。</translation>
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6164005077879661055">將這位受監管的使用者移除後，系統即會永久刪除所有與該使用者相關的檔案和本機資料。管理員仍可前往 <ph name="MANAGEMENT_URL" /> 查看這位受監管使用者的網頁瀏覽記錄和設定。</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>

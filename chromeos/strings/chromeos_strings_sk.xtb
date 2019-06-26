@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Na obrazovke nie je nič, s čím by som mohol pomôcť.
 Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
+<translation id="5317780077021120954">Uložiť</translation>
 <translation id="5457599981699367932">Prehliadať ako hosť</translation>
 <translation id="54609108002486618">Spravovaný</translation>
 <translation id="5733345267661125295">Vyberte nové heslo</translation>
@@ -23,6 +24,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6574601967010742428">Správca zariadenia môže sledovať vašu aktivitu.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Platnosť vášho aktuálneho hesla vypršala.}=1{Platnosť vášho aktuálneho hesla vyprší za menej ako deň.}few{Platnosť vášho aktuálneho hesla vyprší za menej ako # dni.}many{Platnosť vášho aktuálneho hesla vyprší za menej ako # dňa.}other{Platnosť vášho aktuálneho hesla vyprší za menej ako # dní.}}</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
+<translation id="7690294790491645610">Potvrďte nové heslo</translation>
 <translation id="808894953321890993">Zmeniť heslo</translation>
 <translation id="9111102763498581341">Odomknúť</translation>
 </translationbundle>

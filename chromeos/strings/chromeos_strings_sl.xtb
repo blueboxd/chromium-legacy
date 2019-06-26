@@ -15,6 +15,7 @@
 <translation id="5212543919916444558">Na zaslonu ni ničesar uporabnega.
 Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="5222676887888702881">Odjava</translation>
+<translation id="5317780077021120954">Shrani</translation>
 <translation id="5457599981699367932">Brskajte kot gost</translation>
 <translation id="54609108002486618">Upravljan</translation>
 <translation id="5733345267661125295">Izberite novo geslo</translation>
@@ -23,6 +24,7 @@ Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="6574601967010742428">Upravitelj naprave lahko morda nadzira vašo dejavnost.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Trenutno geslo je poteklo.}=1{Trenutno geslo poteče čez manj kot en dan.}one{Trenutno geslo poteče čez manj kot # dan.}two{Trenutno geslo poteče čez manj kot # dneva.}few{Trenutno geslo poteče čez manj kot # dni.}other{Trenutno geslo poteče čez manj kot # dni.}}</translation>
 <translation id="7658239707568436148">Prekliči</translation>
+<translation id="7690294790491645610">Potrdite novo geslo</translation>
 <translation id="808894953321890993">Sprememba gesla</translation>
 <translation id="9111102763498581341">Odkleni</translation>
 </translationbundle>

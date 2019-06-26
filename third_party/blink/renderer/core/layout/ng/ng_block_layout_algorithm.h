@@ -66,11 +66,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   inline scoped_refptr<const NGLayoutResult> Layout(
       NGInlineChildLayoutContext* inline_child_layout_context);
 
-  scoped_refptr<const NGLayoutResult> FinishLayout(
-      NGPreviousInflowPosition*,
-      LogicalSize border_box_size,
-      const NGBoxStrut& borders,
-      const NGBoxStrut& scrollbars);
+  scoped_refptr<const NGLayoutResult> FinishLayout(NGPreviousInflowPosition*);
 
   // Return the BFC block offset of this block.
   LayoutUnit BfcBlockOffset() const {

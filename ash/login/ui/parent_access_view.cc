@@ -112,6 +112,9 @@ base::string16 GetTitle(ParentAccessRequestReason reason) {
     case ParentAccessRequestReason::kChangeTime:
       title_id = IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME;
       break;
+    case ParentAccessRequestReason::kChangeTimezone:
+      title_id = IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIMEZONE;
+      break;
   }
   return l10n_util::GetStringUTF16(title_id);
 }
@@ -123,6 +126,7 @@ base::string16 GetDescription(ParentAccessRequestReason reason) {
       description_id = IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION;
       break;
     case ParentAccessRequestReason::kChangeTime:
+    case ParentAccessRequestReason::kChangeTimezone:
       description_id = IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION;
       break;
   }

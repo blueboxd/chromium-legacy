@@ -463,12 +463,9 @@ extern const char kWebRtcEventLogCollectionAllowed[];
 extern const char kHasSeenWelcomePage[];
 #endif
 
-#if defined(OS_WIN)
-extern const char kHasSeenWin10PromoPage[];
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 extern const char kNaviOnboardGroup[];
-#endif  // defined(GOOGLE_CHROME_BUILD)
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.

@@ -508,7 +508,7 @@ is defined by [automation.idl], which must be kept synchronized with
 [ax_enums.idl].
 
 [AccessibilityHostMsg_EventParams]: https://cs.chromium.org/chromium/src/content/common/accessibility_messages.h?sq=package:chromium&l=75
-[AutomationInternalCustomBindings]: https://cs.chromium.org/chromium/src/chrome/renderer/extensions/automation_internal_custom_bindings.h
+[AutomationInternalCustomBindings]: https://cs.chromium.org/chromium/src/extensions/renderer/api/automation/automation_internal_custom_bindings.h
 [AXContentNodeData]: https://cs.chromium.org/chromium/src/content/common/ax_content_node_data.h
 [AXLayoutObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_layout_object.h
 [AXNodeObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_node_object.h
@@ -529,7 +529,7 @@ is defined by [automation.idl], which must be kept synchronized with
 [ui::AXNodeData]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_node_data.h
 [WebAXObject]: https://cs.chromium.org/chromium/src/third_party/blink/public/web/web_ax_object.h
 [automation API]: https://cs.chromium.org/chromium/src/chrome/renderer/resources/extensions/automation
-[automation.idl]: https://cs.chromium.org/chromium/src/chrome/common/extensions/api/automation.idl
+[automation.idl]: https://cs.chromium.org/chromium/src/extensions/common/api/automation.idl
 [ax_enums.idl]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_enums.idl
 [chrome.automation API]: https://developer.chrome.com/extensions/automation
 [webui-js]: https://cs.chromium.org/chromium/src/ui/webui/resources/js/cr/ui/

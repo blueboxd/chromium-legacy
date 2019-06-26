@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
 #include "components/account_id/account_id.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -32,6 +33,27 @@
 namespace ash {
 
 namespace {
+
+// Struct containing the correct title and description that are displayed when
+// the dialog is instantiated with a given ParentAccessRequestReason.
+struct ViewModifiersTestData {
+  ParentAccessRequestReason reason;
+  // The title string id.
+  int title;
+  // The description string id.
+  int description;
+};
+
+const ViewModifiersTestData kViewModifiersTestData[] = {
+    {ParentAccessRequestReason::kUnlockTimeLimits,
+     IDS_ASH_LOGIN_PARENT_ACCESS_TITLE,
+     IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION},
+    {ParentAccessRequestReason::kChangeTime,
+     IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME,
+     IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION},
+    {ParentAccessRequestReason::kChangeTimezone,
+     IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIMEZONE,
+     IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION}};
 
 class ParentAccessViewTest : public LoginTestBase {
  protected:
@@ -89,31 +111,26 @@ class ParentAccessViewTest : public LoginTestBase {
   DISALLOW_COPY_AND_ASSIGN(ParentAccessViewTest);
 };
 
+class ParentAccessViewModifiersTest
+    : public ParentAccessViewTest,
+      public ::testing::WithParamInterface<ViewModifiersTestData> {};
+
 }  // namespace
 
-// Tests that title and description are correctly set when reason is unlock time
-// limits.
-TEST_F(ParentAccessViewTest, UnlockTimeLimitsStrings) {
-  StartView(ParentAccessRequestReason::kUnlockTimeLimits);
+// Tests that title and description are correctly set.
+TEST_P(ParentAccessViewModifiersTest, CheckStrings) {
+  const ViewModifiersTestData& test_data = GetParam();
+  StartView(test_data.reason);
   ParentAccessView::TestApi test_api(view_);
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE),
+  EXPECT_EQ(l10n_util::GetStringUTF16(test_data.title),
             test_api.title_label()->GetText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION),
+  EXPECT_EQ(l10n_util::GetStringUTF16(test_data.description),
             test_api.description_label()->GetText());
 }
 
-// Tests that title and description are correctly set when reason is change
-// time.
-TEST_F(ParentAccessViewTest, ChangeTimeStrings) {
-  StartView(ParentAccessRequestReason::kChangeTime);
-  ParentAccessView::TestApi test_api(view_);
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME),
-      test_api.title_label()->GetText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION),
-            test_api.description_label()->GetText());
-}
+INSTANTIATE_TEST_SUITE_P(,
+                         ParentAccessViewModifiersTest,
+                         testing::ValuesIn(kViewModifiersTestData));
 
 // Tests that back button works.
 TEST_F(ParentAccessViewTest, BackButton) {

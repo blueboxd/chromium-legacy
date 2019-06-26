@@ -69,7 +69,6 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
@@ -190,6 +189,7 @@
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/deprecated/crw_native_content_holder.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
+#import "ios/web/public/deprecated/crw_web_controller_util.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web/public/url_scheme_util.h"
@@ -734,8 +734,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // is notified that the webState has changed.
 - (void)webStateSelected:(web::WebState*)webState
            notifyToolbar:(BOOL)notifyToolbar;
-// Returns the native controller being used by |tab|'s web controller.
-- (id)nativeControllerForTab:(Tab*)tab;
+// Returns the native controller being used by |web_state|'s web controller.
+- (id)nativeControllerForWebState:(web::WebState*)webState;
 
 // Voice Search
 // ------------
@@ -2770,13 +2770,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(self);
   }
 
-  // TODO(crbug.com/960950): Remove this once webController is moved out of tab.
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-
   // Install the proper CRWWebController delegates.
-  [tab.webController nativeContentHolder].nativeProvider = self;
-  tab.webController.swipeRecognizerProvider = self.sideSwipeController;
-  tab.webState->SetDelegate(_webStateDelegate.get());
+  web_deprecated::SetNativeProvider(webState, self);
+  web_deprecated::SetSwipeRecognizerProvider(webState,
+                                             self.sideSwipeController);
+  webState->SetDelegate(_webStateDelegate.get());
   SadTabTabHelper::FromWebState(webState)->SetDelegate(_sadTabCoordinator);
   NetExportTabHelper::CreateForWebState(webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(webState, self);
@@ -2825,11 +2823,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
   }
 
-  // TODO(crbug.com/960950): Remove this once webController is moved out of tab.
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-
-  [tab.webController nativeContentHolder].nativeProvider = nil;
-  tab.webController.swipeRecognizerProvider = nil;
+  web_deprecated::SetNativeProvider(webState, nil);
+  web_deprecated::SetSwipeRecognizerProvider(webState, nil);
   webState->SetDelegate(nullptr);
   if (AccountConsistencyService* accountConsistencyService =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
@@ -2866,9 +2861,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (id)nativeControllerForTab:(Tab*)tab {
-  id nativeController =
-      [tab.webController nativeContentHolder].nativeController;
+- (id)nativeControllerForWebState:(web::WebState*)webState {
+  id nativeController = web_deprecated::GetNativeController(webState);
   return nativeController ? nativeController : _temporaryNativeController;
 }
 
@@ -3042,9 +3036,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
     willUpdateSnapshotForWebState:(web::WebState*)webState {
   DCHECK(webState);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
-  id nativeController = [self nativeControllerForTab:tab];
+  id nativeController = [self nativeControllerForWebState:webState];
   if ([nativeController respondsToSelector:@selector(willUpdateSnapshot)]) {
     [nativeController willUpdateSnapshot];
   }
@@ -3732,10 +3724,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // be used as the native controller key.
   // TODO(crbug.com/498568): To reduce complexity here, refactor the flow so
   // that native controllers vended here always correspond to the current tab.
-  Tab* currentTab = self.tabModel.currentTab;
   if (!self.currentWebState ||
       self.currentWebState->GetLastCommittedURL() != url ||
-      [[currentTab.webController nativeContentHolder].nativeController
+      [web_deprecated::GetNativeController(self.currentWebState)
           isKindOfClass:[nativeController class]]) {
     _temporaryNativeController = nativeController;
   }

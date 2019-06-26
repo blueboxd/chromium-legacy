@@ -460,6 +460,11 @@ const char kBookmarkAppCreationLaunchType[] =
 // Deprecated 6/2019
 const char kMediaCacheSize[] = "browser.media_cache_size";
 
+#if defined(OS_WIN)
+// Deprecated 6/2019
+const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
+#endif  // defined(OS_WIN)
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -669,9 +674,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ThirdPartyConflictsManager::RegisterLocalStatePrefs(registry);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
+  registry->RegisterBooleanPref(kHasSeenWin10PromoPage, false);  // DEPRECATED
   registry->RegisterBooleanPref(kResetHasSeenWin10PromoPage, false);
   registry->RegisterStringPref(kLastWelcomedOSVersion, std::string());
-#endif
+#endif  // defined(OS_WIN)
 
   // Obsolete. See MigrateObsoleteBrowserPrefs().
   registry->RegisterIntegerPref(metrics::prefs::kStabilityExecutionPhase, 0);
@@ -1005,6 +1011,11 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Added 12/2018
   local_state->ClearPref(prefs::kCarrierDealPromoShown);
 #endif
+
+#if defined(OS_WIN)
+  // Added 6/2019.
+  local_state->ClearPref(kHasSeenWin10PromoPage);
+#endif  // defined(OS_WIN)
 }
 
 // This method should be periodically pruned of year+ old migrations.

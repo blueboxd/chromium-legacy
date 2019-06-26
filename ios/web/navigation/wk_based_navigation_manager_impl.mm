@@ -781,6 +781,17 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
       last_committed_web_view_item_->SetUntrusted();
     }
     last_committed_web_view_item_->SetURL(document_url);
+    // Don't expose internal restore session URL's.
+    GURL virtual_url;
+    if (wk_navigation_util::IsRestoreSessionUrl(document_url) &&
+        wk_navigation_util::ExtractTargetURL(document_url, &virtual_url)) {
+      if (wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
+        last_committed_web_view_item_->SetVirtualURL(
+            wk_navigation_util::ExtractUrlFromPlaceholderUrl(virtual_url));
+      } else {
+        last_committed_web_view_item_->SetVirtualURL(virtual_url);
+      }
+    }
     last_committed_web_view_item_->SetTimestamp(
         time_smoother_.GetSmoothedTime(base::Time::Now()));
     return last_committed_web_view_item_.get();

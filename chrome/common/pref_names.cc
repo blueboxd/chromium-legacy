@@ -1408,17 +1408,12 @@ const char kWebRtcEventLogCollectionAllowed[] = "webrtc.event_logs_collection";
 const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
 #endif
 
-#if defined(OS_WIN)
-// Whether or not this profile has been shown the Win10 promo page.
-const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
-
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // Put the user into an onboarding group that's decided when they go through
 // the first run onboarding experience. Only users in a group will have their
 // finch group pinged to keep track of them for the experiment.
 const char kNaviOnboardGroup[] = "browser.navi_onboard_group";
-#endif  // defined(GOOGLE_CHROME_BUILD)
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation

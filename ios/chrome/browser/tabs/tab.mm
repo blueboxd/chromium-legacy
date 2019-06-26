@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_private.h"
 
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -70,18 +69,6 @@
   _webStateImpl->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
   _webStateImpl = nullptr;
-}
-
-@end
-
-#pragma mark - TestingSupport
-
-@implementation Tab (TestingSupport)
-
-// TODO(crbug.com/620465): this require the Tab's WebState to be a WebStateImpl,
-// remove this helper once this is no longer true (and fix the unit tests).
-- (CRWWebController*)webController {
-  return _webStateImpl ? _webStateImpl->GetWebController() : nil;
 }
 
 @end

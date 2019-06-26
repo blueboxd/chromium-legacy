@@ -26,9 +26,9 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
-#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_holder.h"
+#import "ios/web/public/deprecated/crw_web_controller_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -277,9 +277,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   std::unique_ptr<web::WebState> webState = std::move(webState_);
   DCHECK(![self isWebStatePrerendered:webState.get()]);
 
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState.get());
-  [tab.webController nativeContentHolder].nativeProvider = nil;
-
+  web_deprecated::SetNativeProvider(webState.get(), nil);
   webState->RemoveObserver(webStateObserver_.get());
   breakpad::StopMonitoringURLsForWebState(webState.get());
   webState->SetDelegate(nullptr);
@@ -401,10 +399,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
       std::make_unique<web::WebStatePolicyDeciderBridge>(webState_.get(), self);
   AttachTabHelpers(webState_.get(), /*for_prerender=*/true);
 
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  DCHECK(tab);
-
-  [tab.webController nativeContentHolder].nativeProvider = nil;
+  web_deprecated::SetNativeProvider(webState_.get(), nil);
 
   webState_->SetDelegate(webStateDelegate_.get());
   webState_->AddObserver(webStateObserver_.get());
@@ -448,8 +443,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   UMA_HISTOGRAM_ENUMERATION(kPrerenderFinalStatusHistogramName, reason,
                             PRERENDER_FINAL_STATUS_MAX);
 
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  [tab.webController nativeContentHolder].nativeProvider = nil;
+  web_deprecated::SetNativeProvider(webState_.get(), nil);
   webState_->RemoveObserver(webStateObserver_.get());
   breakpad::StopMonitoringURLsForWebState(webState_.get());
   webState_->SetDelegate(nullptr);

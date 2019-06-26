@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 #import "ios/chrome/browser/ui/open_in/open_in_controller_testing.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"

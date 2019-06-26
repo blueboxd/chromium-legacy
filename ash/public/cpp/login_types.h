@@ -292,8 +292,10 @@ struct ASH_PUBLIC_EXPORT AuthDisabledData {
 enum class ParentAccessRequestReason {
   // Unlock a Chromebook that is locked due to a Time Limit policy.
   kUnlockTimeLimits,
-  // Change time or timezone of the Chromebook.
+  // Update values on the date time dialog.
   kChangeTime,
+  // Update values on the timezone settings page.
+  kChangeTimezone,
 };
 
 }  // namespace ash

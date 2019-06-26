@@ -130,12 +130,6 @@ bool IsWindows10OrNewer() {
 void DisableWelcomePages(const std::vector<Profile*>& profiles) {
   for (Profile* profile : profiles)
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-
-#if defined(OS_WIN)
-  // TODO(hcarmona): deprecate this pref.
-  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
-                                               true);
-#endif
 }
 
 Browser* OpenNewBrowser(Profile* profile) {

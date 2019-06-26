@@ -165,7 +165,7 @@ void DateTimeHandler::HandleShowParentAccessForTimeZone(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
       base::BindRepeating(&DateTimeHandler::OnParentAccessValidation,
                           weak_ptr_factory_.GetWeakPtr()),
-      ash::ParentAccessRequestReason::kChangeTime);
+      ash::ParentAccessRequestReason::kChangeTimezone);
 }
 
 void DateTimeHandler::OnParentAccessValidation(bool success) {

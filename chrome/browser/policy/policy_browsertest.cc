@@ -4250,12 +4250,6 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage,
                                                true);
 
-#if defined(OS_WIN)
-  // Do not show the Windows 10 promo page.
-  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
-                                               true);
-#endif
-
   // Open some tabs to verify if they are restored after the browser restarts.
   // Most policy settings override this, except kPrefValueLast which enforces
   // a restore.

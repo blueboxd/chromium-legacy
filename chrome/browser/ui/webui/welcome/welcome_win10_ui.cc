@@ -71,10 +71,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 
 WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui) {
-  // Remember that the Win10 promo page has been shown.
-  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
-                                               true);
-
   // Determine which variation to show.
   bool is_first_run = !UrlContainsKeyValueInQuery(url, "text", "faster");
 

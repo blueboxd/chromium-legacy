@@ -322,7 +322,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::SimplifiedLayout() {
   if (!box_->NeedsLayout())
     return previous_result;
 
-  DCHECK(box_->NeedsSimplifiedLayoutOnly());
+  DCHECK(box_->NeedsSimplifiedLayoutOnly() ||
+         box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
 
   // Perform layout on ourselves using the previous constraint space.
   const NGConstraintSpace space(

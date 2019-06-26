@@ -437,8 +437,6 @@ class CC_EXPORT LayerImpl {
   // PopulateScaledSharedQuadStateQuadState() for more details.
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
-  void UpdatePropertyTreeForAnimationIfNeeded(ElementId element_id);
-
   float GetIdealContentsScale() const;
 
   void NoteLayerPropertyChanged();

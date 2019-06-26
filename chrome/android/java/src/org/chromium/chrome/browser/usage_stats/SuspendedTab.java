@@ -83,6 +83,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         } else {
             attachView();
         }
+        mTab.updateAccessibilityVisibility();
 
         TabContentManager tabContentManager = mTab.getActivity().getTabContentManager();
         if (tabContentManager != null) {
@@ -103,6 +104,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         if (webContents != null) {
             webContents.onShow();
         }
+        mTab.updateAccessibilityVisibility();
 
         mView = null;
         mFqdn = null;

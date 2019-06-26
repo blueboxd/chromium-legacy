@@ -84,6 +84,11 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
 }
 
 scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
+  // Since simplified layout's |Layout()| function deals with laying out
+  // children, we can early out if we are display-locked.
+  if (Node().LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return container_builder_.ToBoxFragment();
+
   const auto previous_child_fragments =
       To<NGPhysicalBoxFragment>(previous_result_.PhysicalFragment()).Children();
 

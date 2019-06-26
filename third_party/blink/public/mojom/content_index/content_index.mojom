@@ -15,6 +15,7 @@ enum ContentIndexError {
   STORAGE_ERROR,
 };
 
+// These values are persisted, do not change or create gaps.
 enum ContentCategory {
   // "homepage"
   HOME_PAGE = 1,
@@ -38,6 +39,10 @@ struct ContentDescription {
   url.mojom.Url launch_url;
 };
 
+// The |service_worker_registration_id| comes from an untrusted renderer but
+// the origin it's validated against is trusted.
+// TODO(crbug.com/976962): Register interfaces that are exposed only on
+// Service Workers.
 interface ContentIndexService {
   Add(int64 service_worker_registration_id,
       ContentDescription description,

@@ -14,8 +14,12 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace chromeos {
 
@@ -36,10 +40,18 @@ class ImeServiceConnector : public ime::mojom::PlatformAccessProvider {
   void SetupImeService(
       mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver);
 
+  void OnFileDownloadComplete(DownloadImeFileToCallback client_callback,
+                              base::FilePath path);
+
  private:
   void OnPlatformAccessConnectionLost();
 
   Profile* profile_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // The current request in progress, or NULL.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // There is 1:1 mapping from the instance IDs to IME services running out of
   // process.

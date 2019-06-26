@@ -1493,6 +1493,7 @@ test("content_unittests") {
     "../browser/cocoa/system_hotkey_map_unittest.mm",
     "../browser/code_cache/generated_code_cache_unittest.cc",
     "../browser/compositor/reflector_impl_unittest.cc",
+    "../browser/content_index/content_index_database_unittest.cc",
     "../browser/cookie_store/cookie_store_manager_unittest.cc",
     "../browser/devtools/devtools_background_services_context_impl_unittest.cc",
     "../browser/devtools/devtools_http_handler_unittest.cc",

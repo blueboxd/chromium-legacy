@@ -74,6 +74,11 @@ class ImeService : public service_manager::Service,
   // happen when the input engine client exits or crashes.
   void OnConnectionLost();
 
+  // Callback used when a file download finishes by the |SimpleURLLoader|.
+  // On failure, |file| will be empty.
+  void SimpleDownloadFinished(SimpleDownloadCallback callback,
+                              const base::FilePath& file);
+
   service_manager::ServiceBinding service_binding_;
 
   // For the duration of this service lifetime, there should be only one

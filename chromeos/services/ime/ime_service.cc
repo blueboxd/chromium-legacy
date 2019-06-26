@@ -20,6 +20,16 @@
 namespace chromeos {
 namespace ime {
 
+namespace {
+
+enum SimpleDownloadError {
+  SIMPLE_DOWNLOAD_ERROR_OK = 0,
+  SIMPLE_DOWNLOAD_ERROR_FAILED = -1,
+  SIMPLE_DOWNLOAD_ERROR_ABORTED = -2,
+};
+
+}  // namespace
+
 ImeService::ImeService(
     mojo::PendingReceiver<service_manager::mojom::Service> receiver)
     : service_binding_(this, std::move(receiver)) {}
@@ -87,11 +97,21 @@ void ImeService::OnConnectionLost() {
   }
 }
 
+void ImeService::SimpleDownloadFinished(SimpleDownloadCallback callback,
+                                        const base::FilePath& file) {
+  if (file.empty()) {
+    callback(SIMPLE_DOWNLOAD_ERROR_FAILED, "");
+  } else {
+    callback(SIMPLE_DOWNLOAD_ERROR_OK, file.MaybeAsASCII().c_str());
+  }
+}
+
 const char* ImeService::GetImeBundleDir() {
   return "";
 }
 
 const char* ImeService::GetImeGlobalDir() {
+  // Global IME data dir will not be supported yet.
   return "";
 }
 
@@ -102,14 +122,26 @@ const char* ImeService::GetImeUserHomeDir() {
 int ImeService::SimpleDownloadToFile(const char* url,
                                      const char* file_path,
                                      SimpleDownloadCallback callback) {
-  // TODO(https://crbug.com/837156): Create a download with PlatformAccess
-  // Mojo remote. Make sure the parent of |file_path| is ImeUserHomeDir.
+  if (!platform_access_.is_bound()) {
+    callback(SIMPLE_DOWNLOAD_ERROR_ABORTED, "");
+  } else {
+    GURL download_url(url);
+    // |file_path| must be relative.
+    base::FilePath relative_file_path(file_path);
+
+    platform_access_->DownloadImeFileTo(
+        download_url, relative_file_path,
+        base::BindOnce(&ImeService::SimpleDownloadFinished,
+                       base::Unretained(this), std::move(callback)));
+  }
+
+  // For |SimpleDownloadToFile|, always returns 0.
   return 0;
 }
 
 ImeCrosDownloader* ImeService::GetDownloader() {
-  // TODO(https://crbug.com/837156): Create a ImeCrosDownloader based on its
-  // specification in interfaces. The caller should free it after use.
+  // TODO(https://crbug.com/837156): Create an ImeCrosDownloader based on its
+  // specification defined in interfaces. The caller should free it after use.
   return nullptr;
 }
 

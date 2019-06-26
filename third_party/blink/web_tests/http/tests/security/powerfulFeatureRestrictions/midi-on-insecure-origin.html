@@ -7,12 +7,8 @@
 if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
 } else {
-  promise_test(() => {
-    return navigator.requestMIDIAccess().then(() => {
-      assert_unreached('requestMIDIAccess should fail, but succeeded.');
-    }, error => {
-      assert_equals(error.message, 'An attempt was made to break through the security policy of the user agent.');
-    });
-  }, 'requestMIDIAccess on insecure origin');
+  test(t => {
+    assert_false('requestMIDIAccess' in navigator, 'navigator.requestMIDIAccess should not be present');
+  }, 'navigator.requestMIDIAccess requires a secure context');
 }
 </script>

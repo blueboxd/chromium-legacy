@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_SERVICE_IMPL_H_
 
+#include "base/memory/scoped_refptr.h"
+#include "content/browser/content_index/content_index_database.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 
@@ -14,6 +16,7 @@ class Origin;
 
 namespace content {
 
+class ServiceWorkerContextWrapper;
 class RenderProcessHost;
 
 class CONTENT_EXPORT ContentIndexServiceImpl
@@ -23,7 +26,9 @@ class CONTENT_EXPORT ContentIndexServiceImpl
                      RenderProcessHost* render_process_host,
                      const url::Origin& origin);
 
-  ContentIndexServiceImpl();
+  ContentIndexServiceImpl(
+      const url::Origin& origin,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~ContentIndexServiceImpl() override;
 
   // blink::mojom::ContentIndexService implementation.
@@ -38,6 +43,8 @@ class CONTENT_EXPORT ContentIndexServiceImpl
                        GetDescriptionsCallback callback) override;
 
  private:
+  ContentIndexDatabase content_index_database_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentIndexServiceImpl);
 };
 

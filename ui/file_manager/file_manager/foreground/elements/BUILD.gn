@@ -20,6 +20,7 @@ js_type_check("closure_compile_module") {
   deps = [
     ":files_format_dialog",
     ":files_icon_button",
+    ":files_message",
     ":files_metadata_box",
     ":files_metadata_entry",
     ":files_quick_view",
@@ -46,6 +47,21 @@ js_library("files_icon_button") {
   deps = [
     "//third_party/polymer/v1_0/components-chromium/iron-behaviors:iron-button-state-extracted",
     "//third_party/polymer/v1_0/components-chromium/iron-behaviors:iron-control-state-extracted",
+  ]
+}
+
+js_library("files_message") {
+  deps = [
+    "//ui/webui/resources/cr_elements/cr_button:cr_button",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
+    "//ui/webui/resources/js:assert",
+  ]
+}
+
+js_unittest("files_message_unittest") {
+  deps = [
+    ":files_message",
+    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
@@ -102,6 +118,7 @@ js_unittest("files_toast_unittest") {
 
 js_unit_tests("unit_tests") {
   deps = [
+    ":files_message_unittest",
     ":files_toast_unittest",
   ]
 }

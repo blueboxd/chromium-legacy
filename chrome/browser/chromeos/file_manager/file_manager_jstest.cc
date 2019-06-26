@@ -163,6 +163,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
   RunGeneratedTest("/foreground/js/providers_model_unittest.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesMessage) {
+  RunGeneratedTest("/foreground/elements/files_message_unittest.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesToast) {
   RunGeneratedTest("/foreground/elements/files_toast_unittest.html");
 }

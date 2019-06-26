@@ -31,6 +31,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -38,8 +39,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
-#include "ash/system/status_area_widget.h"
-#include "ash/system/status_area_widget_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -885,18 +884,8 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     return;
   }
 
-  // The logic here seems backwards, but is actually correct. For instance if
-  // the ShelfView's internal focus cycling logic attemmpts to focus the first
-  // child (e.g. app list button) after hitting Tab, we intercept that and
-  // instead, advance through to the status area.
-  if ((reverse && button == FindLastFocusableChild()) ||
-      (!reverse && button == FindFirstFocusableChild())) {
-    StatusAreaWidget* status_area_widget =
-        Shelf::ForWindow(GetWidget()->GetNativeWindow())->GetStatusAreaWidget();
-    status_area_widget->status_area_widget_delegate()
-        ->set_default_last_focusable_child(reverse);
-    Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
-  }
+  if (ShouldFocusOut(reverse, button))
+    shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kShelfView);
 }
 
 int64_t ShelfView::GetDisplayId() const {
@@ -1638,6 +1627,15 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
   }
   NOTREACHED();
   return false;
+}
+
+bool ShelfView::ShouldFocusOut(bool reverse, views::View* button) {
+  // The logic here seems backwards, but is actually correct. For instance if
+  // the ShelfView's internal focus cycling logic attemmpts to focus the first
+  // child (e.g. app list button) after hitting Tab, we intercept that and
+  // instead, advance through to the status area.
+  return (reverse && button == FindLastFocusableChild()) ||
+         (!reverse && button == FindFirstFocusableChild());
 }
 
 std::pair<int, int> ShelfView::GetDragRange(int index) {

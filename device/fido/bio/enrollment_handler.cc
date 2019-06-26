@@ -27,43 +27,38 @@ BioEnrollmentHandler::BioEnrollmentHandler(
 }
 
 BioEnrollmentHandler::~BioEnrollmentHandler() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void BioEnrollmentHandler::GetModality(ResponseCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(authenticator_);
   authenticator_->GetModality(std::move(callback));
 }
 
 void BioEnrollmentHandler::GetSensorInfo(ResponseCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(authenticator_);
   authenticator_->GetSensorInfo(std::move(callback));
 }
 
 void BioEnrollmentHandler::EnrollTemplate(ResponseCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-  DCHECK(!enroll_callback_);
-
-  enroll_callback_ = std::move(callback);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->BioEnrollFingerprint(
       *pin_token_response_,
-      base::BindRepeating(&BioEnrollmentHandler::OnEnrollTemplate,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&BioEnrollmentHandler::OnEnrollTemplate,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BioEnrollmentHandler::Cancel(StatusCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->BioEnrollCancel(
       base::BindOnce(&BioEnrollmentHandler::OnCancel,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BioEnrollmentHandler::EnumerateTemplates(ResponseCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->BioEnrollEnumerate(
       *pin_token_response_,
       base::BindOnce(&BioEnrollmentHandler::OnEnumerateTemplates,
@@ -73,8 +68,7 @@ void BioEnrollmentHandler::EnumerateTemplates(ResponseCallback callback) {
 void BioEnrollmentHandler::RenameTemplate(std::vector<uint8_t> id,
                                           std::string name,
                                           StatusCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->BioEnrollRename(
       *pin_token_response_, std::move(id), std::move(name),
       base::BindOnce(&BioEnrollmentHandler::OnRenameTemplate,
@@ -83,8 +77,7 @@ void BioEnrollmentHandler::RenameTemplate(std::vector<uint8_t> id,
 
 void BioEnrollmentHandler::DeleteTemplate(std::vector<uint8_t> id,
                                           StatusCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->BioEnrollDelete(
       *pin_token_response_, std::move(id),
       base::BindOnce(&BioEnrollmentHandler::OnDeleteTemplate,
@@ -92,7 +85,7 @@ void BioEnrollmentHandler::DeleteTemplate(std::vector<uint8_t> id,
 }
 
 void BioEnrollmentHandler::DispatchRequest(FidoAuthenticator* authenticator) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator->GetTouch(base::BindOnce(&BioEnrollmentHandler::OnTouch,
                                          weak_factory_.GetWeakPtr(),
                                          authenticator));
@@ -101,7 +94,7 @@ void BioEnrollmentHandler::DispatchRequest(FidoAuthenticator* authenticator) {
 void BioEnrollmentHandler::AuthenticatorRemoved(
     FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   FidoRequestHandlerBase::AuthenticatorRemoved(discovery, authenticator);
   if (authenticator_ != authenticator) {
     return;
@@ -138,7 +131,7 @@ void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
 void BioEnrollmentHandler::OnRetriesResponse(
     CtapDeviceResponseCode code,
     base::Optional<pin::RetriesResponse> response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!response || code != CtapDeviceResponseCode::kSuccess) {
     FIDO_LOG(DEBUG) << "OnRetriesResponse failed: " << static_cast<int>(code);
     std::move(error_callback_)
@@ -157,8 +150,7 @@ void BioEnrollmentHandler::OnRetriesResponse(
 }
 
 void BioEnrollmentHandler::OnHavePIN(std::string pin) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->GetEphemeralKey(
       base::BindOnce(&BioEnrollmentHandler::OnHaveEphemeralKey,
                      weak_factory_.GetWeakPtr(), std::move(pin)));
@@ -211,22 +203,22 @@ void BioEnrollmentHandler::OnHavePINToken(
 }
 
 void BioEnrollmentHandler::OnEnrollTemplate(
+    ResponseCallback callback,
     CtapDeviceResponseCode code,
     base::Optional<BioEnrollmentResponse> response) {
   if (code != CtapDeviceResponseCode::kSuccess) {
     // Response is not valid if operation was not successful.
-    std::move(enroll_callback_).Run(code, base::nullopt);
+    std::move(callback).Run(code, base::nullopt);
     return;
   }
   if (!response || !response->last_status || !response->remaining_samples) {
-    std::move(enroll_callback_)
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                            base::nullopt);
     return;
   }
   FIDO_LOG(DEBUG) << "Finished bio enrollment with code "
                   << static_cast<int>(code);
-  std::move(enroll_callback_).Run(code, std::move(response));
-  // TODO(noviv): Test calling OnEnrollTemplate multiple times.
+  std::move(callback).Run(code, std::move(response));
 }
 
 void BioEnrollmentHandler::OnCancel(StatusCallback callback,

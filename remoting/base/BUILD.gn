@@ -174,6 +174,7 @@ source_set("unit_tests") {
     "buffered_socket_writer_unittest.cc",
     "capabilities_unittest.cc",
     "compound_buffer_unittest.cc",
+    "leaky_bucket_unittest.cc",
     "oauth_token_getter_proxy_unittest.cc",
     "rate_counter_unittest.cc",
     "result_unittest.cc",

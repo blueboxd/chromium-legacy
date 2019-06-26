@@ -561,6 +561,8 @@ component("ash") {
     "shelf/shelf_control_button.h",
     "shelf/shelf_controller.cc",
     "shelf/shelf_controller.h",
+    "shelf/shelf_focus_cycler.cc",
+    "shelf/shelf_focus_cycler.h",
     "shelf/shelf_layout_manager.cc",
     "shelf/shelf_layout_manager.h",
     "shelf/shelf_layout_manager_observer.h",

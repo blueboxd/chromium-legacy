@@ -15,6 +15,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_widget.h"
@@ -60,7 +61,8 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
 
 Shelf::Shelf()
     : shelf_locking_manager_(this),
-      bezel_event_handler_(std::make_unique<ShelfBezelEventHandler>(this)) {}
+      bezel_event_handler_(std::make_unique<ShelfBezelEventHandler>(this)),
+      shelf_focus_cycler_(std::make_unique<ShelfFocusCycler>(this)) {}
 
 Shelf::~Shelf() = default;
 

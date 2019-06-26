@@ -65,7 +65,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
                           base::Optional<pin::KeyAgreementResponse>);
   void OnHavePINToken(CtapDeviceResponseCode,
                       base::Optional<pin::TokenResponse>);
-  void OnEnrollTemplate(CtapDeviceResponseCode,
+  void OnEnrollTemplate(ResponseCallback,
+                        CtapDeviceResponseCode,
                         base::Optional<BioEnrollmentResponse>);
   void OnCancel(StatusCallback,
                 CtapDeviceResponseCode,
@@ -80,13 +81,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
                         CtapDeviceResponseCode,
                         base::Optional<BioEnrollmentResponse>);
 
-  SEQUENCE_CHECKER(sequence_checker);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   FidoAuthenticator* authenticator_ = nullptr;
   base::OnceClosure ready_callback_;
   ErrorCallback error_callback_;
   GetPINCallback get_pin_callback_;
-  ResponseCallback enroll_callback_;
   base::Optional<pin::TokenResponse> pin_token_response_;
   base::WeakPtrFactory<BioEnrollmentHandler> weak_factory_;
 

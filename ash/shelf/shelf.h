@@ -31,6 +31,7 @@ namespace ash {
 
 enum class AnimationChangeType;
 class ShelfBezelEventHandler;
+class ShelfFocusCycler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
 class ShelfLockingManager;
@@ -174,6 +175,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   ShelfAutoHideBehavior auto_hide_behavior() const {
     return auto_hide_behavior_;
   }
+
+  ShelfFocusCycler* shelf_focus_cycler() { return shelf_focus_cycler_.get(); }
+
   void set_is_tablet_mode_animation_running(bool value) {
     is_tablet_mode_animation_running_ = value;
   }
@@ -219,6 +223,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Forwards touch gestures on a bezel sensor to the shelf.
   std::unique_ptr<ShelfBezelEventHandler> bezel_event_handler_;
+
+  // Hands focus off to different parts of the shelf.
+  std::unique_ptr<ShelfFocusCycler> shelf_focus_cycler_;
 
   // True while the animation to enter or exit tablet mode is running. Sometimes
   // this value is true when the shelf movements are not actually animating

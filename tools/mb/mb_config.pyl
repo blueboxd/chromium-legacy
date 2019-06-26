@@ -13,6 +13,15 @@
   # config names (where each config name is a key in the 'configs' dict,
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
+    'chrome': {
+      'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
+      'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
+      'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
+      'linux-google-rel': 'official_goma',
+      'mac-google-rel': 'official_goma',
+      'win-google-rel': 'official_goma_x86',
+    },
+
     'chromeos.chrome': {
       'chrome-tot-chromeos-amd64-generic': 'cros_chrome_sdk',
       'Chrome4CROS Packages': 'chromeos_with_codecs_release_bot',
@@ -78,6 +87,7 @@
       'x86 Emulator Tester': 'android_debug_static_bot_x86',
     },
 
+    # TODO(bpastene): Remove 'chromium.chrome' when it's been switched to 'chrome'
     'chromium.chrome': {
       'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
       'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',

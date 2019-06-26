@@ -294,6 +294,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns the main shelf. This can be called on either the main shelf
   // or the overflow shelf.
   ShelfView* main_shelf() { return main_shelf_ ? main_shelf_ : this; }
+
   // Returns the overflow shelf. This can be called on either the main shelf
   // or the overflow shelf. Returns nullptr if the overflow shelf isn't visible.
   ShelfView* overflow_shelf() {
@@ -424,6 +425,9 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Returns true if |typea| and |typeb| should be in the same drag range.
   bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;
+
+  // Returns true if focus should move out of the ShelfView view tree.
+  bool ShouldFocusOut(bool reverse, views::View* button);
 
   // Returns the range (in the model) the item at the specified index can be
   // dragged to.

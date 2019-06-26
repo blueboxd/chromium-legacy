@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
@@ -65,6 +66,10 @@ void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
 }
 
 bool StatusAreaWidgetDelegate::ShouldFocusOut(bool reverse) {
+  // Never bring the focus out if it's not a views-based shelf as it is visually
+  // not on par with the status widget.
+  if (!ShelfWidget::IsUsingViewsShelf())
+    return false;
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   return (reverse && focused_view == GetFirstFocusableChild()) ||
          (!reverse && focused_view == GetLastFocusableChild());

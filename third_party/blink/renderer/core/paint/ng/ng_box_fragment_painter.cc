@@ -986,6 +986,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
                                        const HitTestLocation& hit_test_location,
                                        const PhysicalOffset& physical_offset,
                                        HitTestAction action) {
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   const PhysicalSize& size = box_fragment_.Size();
   const ComputedStyle& style = box_fragment_.Style();
 
@@ -1039,6 +1040,10 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
       bounds_rect = box_fragment_.SelfInkOverflow();
       bounds_rect.Move(physical_offset);
     }
+    // TODO(kojii): Don't have good explanation why only inline box needs to
+    // snap, but matches to legacy and fixes crbug.com/976606.
+    if (fragment.IsInlineBox())
+      bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
     if (hit_test_location.Intersects(bounds_rect)) {
       Node* node = box_fragment_.NodeForHitTest();
       if (!result.InnerNode() && node) {

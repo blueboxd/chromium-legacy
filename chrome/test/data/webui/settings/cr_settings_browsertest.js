@@ -1547,7 +1547,14 @@ CrSettingsSecurityKeysSubpageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSecurityKeysSubpageTest', 'All', function() {
+// Disabling on Mac due to deterministic failures on some bots.
+// https://crbug.com/978792
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_All3 DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All3 All');
+GEN('#endif');
+TEST_F('CrSettingsSecurityKeysSubpageTest', 'MAYBE_All3', function() {
   mocha.run();
 });
 

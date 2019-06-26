@@ -33,17 +33,15 @@ namespace blink {
 {% for property in properties %}
 
 const StylePropertyShorthand& {{property.name.to_lower_camel_case()}}Shorthand() {
-  static const CSSProperty* {{property.name.to_lower_camel_case()}}Properties[] = {
+  static const CSSProperty* longhands[] = {
     {% for longhand_id in property.longhand_property_ids %}
     &Get{{longhand_id}}(),
     {% endfor %}
   };
 
-  static StylePropertyShorthand {{property.name.to_lower_camel_case()}}Longhands(
-    CSSPropertyID::{{property.enum_key}},
-    {{property.name.to_lower_camel_case()}}Properties,
-    base::size({{property.name.to_lower_camel_case()}}Properties));
-  return {{property.name.to_lower_camel_case()}}Longhands;
+  DEFINE_STATIC_LOCAL(const StylePropertyShorthand, shorthand,
+        (CSSPropertyID::{{property.enum_key}}, longhands, base::size(longhands)));
+  return shorthand;
 }
 {% endfor %}
 

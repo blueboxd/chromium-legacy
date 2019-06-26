@@ -975,9 +975,6 @@
       name: "NativeFileSystem",
     },
     {
-      name: "NativeStreams",
-    },
-    {
       name: "NavigatorContentUtils",
       // Android does not yet support NavigatorContentUtils.
       status: {"Android": "", "default": "stable"},

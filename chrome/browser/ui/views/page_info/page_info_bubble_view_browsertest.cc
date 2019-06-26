@@ -353,14 +353,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ShowBubble) {
             PageInfoBubbleView::GetShownBubbleType());
 }
 
-// Flaky on Windows (https://crbug.com/976791)
-#if defined(OS_WIN)
-#define MAYBE_ChromeURL DISABLED_ChromeURL
-#else
-#define MAYBE_ChromeURL ChromeURL
-#endif
-
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, MAYBE_ChromeURL) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeURL) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://settings"));
   OpenPageInfoBubble(browser());
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
@@ -583,15 +576,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_EvSecure) {
   ShowAndVerifyUi();
 }
 
-// Flaky on Windows (https://crbug.com/976927)
-#if defined(OS_WIN)
-#define MAYBE_InvokeUi_Internal DISABLED_InvokeUi_Internal
-#else
-#define MAYBE_InvokeUi_Internal InvokeUi_Internal
-#endif
-
 // Shows the Page Info bubble for an internal page, e.g. chrome://settings.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, MAYBE_InvokeUi_Internal) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_Internal) {
   ShowAndVerifyUi();
 }
 

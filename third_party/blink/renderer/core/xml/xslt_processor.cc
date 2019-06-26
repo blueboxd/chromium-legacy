@@ -26,12 +26,14 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/xml/document_xslt.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -89,7 +91,16 @@ Document* XSLTProcessor::CreateDocumentFromSource(
     // document in place. Document::Shutdown() tears down the LocalFrameView, so
     // remember whether or not there was one.
     bool has_view = frame->View();
-    old_document->Shutdown();
+    {
+      SubframeLoadingDisabler disabler(old_document);
+      IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
+          old_document);
+      frame->DetachChildren();
+      if (!frame->Client())
+        return nullptr;
+
+      old_document->Shutdown();
+    }
     // Re-create the LocalFrameView if needed.
     if (has_view)
       frame->Client()->TransitionToCommittedForNewPage();

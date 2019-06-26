@@ -148,10 +148,10 @@ class SyncEncryptionHandler {
   // Reads the nigori node, updates internal state as needed, and, if an
   // empty/stale nigori node is detected, overwrites the existing
   // nigori node. Upon completion, if the cryptographer is still ready
-  // attempts to re-encrypt all sync data.
+  // attempts to re-encrypt all sync data. Returns false in case of error.
   // Note: This method is expensive (it iterates through all encrypted types),
   // so should only be used sparingly (e.g. on startup).
-  virtual void Init() = 0;
+  virtual bool Init() = 0;
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted

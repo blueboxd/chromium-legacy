@@ -30,8 +30,9 @@ class NigoriHandler {
   virtual ~NigoriHandler();
 
   // Apply a nigori node update, updating the internal encryption state
-  // accordingly.
-  virtual void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
+  // accordingly. Returns true in case of success, or false if the update has
+  // been ignored.
+  virtual bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
                                  syncable::BaseTransaction* const trans) = 0;
 
   // Store the current encrypt everything/encrypted types state into |nigori|.

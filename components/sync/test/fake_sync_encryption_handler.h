@@ -35,7 +35,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   // SyncEncryptionHandler implementation.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void Init() override;
+  bool Init() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
@@ -48,7 +48,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   syncable::NigoriHandler* GetNigoriHandler() override;
 
   // NigoriHandler implemenation.
-  void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
+  bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
                          syncable::BaseTransaction* const trans) override;
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,

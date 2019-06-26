@@ -47,11 +47,12 @@ void ApplyNigoriUpdate(syncable::Directory* dir) {
 
   // We apply the nigori update regardless of whether there's a conflict or
   // not in order to preserve any new encrypted types or encryption keys.
-  // TODO(zea): consider having this return a bool reflecting whether it was a
-  // valid update or not, and in the case of invalid updates not overwrite the
-  // local data.
   const sync_pb::NigoriSpecifics& nigori = entry.GetServerSpecifics().nigori();
-  trans.directory()->GetNigoriHandler()->ApplyNigoriUpdate(nigori, &trans);
+  if (!trans.directory()->GetNigoriHandler()->ApplyNigoriUpdate(nigori,
+                                                                &trans)) {
+    // If the remote update is considered invalid, do not write to local data.
+    return;
+  }
 
   // Make sure any unsynced changes are properly encrypted as necessary.
   // We only perform this if the cryptographer is ready. If not, these are

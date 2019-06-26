@@ -436,7 +436,11 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
   DVLOG(1) << "Initilalizing Control Types";
 
   // Initialize encryption.
-  sync_manager_->GetEncryptionHandler()->Init();
+  if (!sync_manager_->GetEncryptionHandler()->Init()) {
+    host_.Call(FROM_HERE,
+               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
+    return;
+  }
 
   // Note: experiments are currently handled via SBH::AddExperimentalTypes,
   // which is called at the end of every sync cycle.

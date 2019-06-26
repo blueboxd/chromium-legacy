@@ -63,7 +63,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // SyncEncryptionHandler implementation.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void Init() override;
+  bool Init() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
@@ -75,7 +75,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
-  void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
+  bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
                          syncable::BaseTransaction* const trans) override;
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
@@ -184,6 +184,12 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
     kMaxValue = kInitialization
   };
 
+  // Enumeration of possible outcomes of ApplyNigoriUpdateImpl.
+  enum class ApplyNigoriUpdateResult {
+    kSuccess,
+    kRemoteMustBeCorrected,
+  };
+
   // Iterate over all encrypted types ensuring each entry is properly encrypted.
   void ReEncryptEverything(WriteTransaction* trans);
 
@@ -191,11 +197,10 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   //
   // Assumes |nigori| is already present in the Sync Directory.
   //
-  // Returns true on success, false if |nigori| was incompatible, and the
-  // nigori node must be corrected.
   // Note: must be called from within a transaction.
-  bool ApplyNigoriUpdateImpl(const sync_pb::NigoriSpecifics& nigori,
-                             syncable::BaseTransaction* const trans);
+  ApplyNigoriUpdateResult ApplyNigoriUpdateImpl(
+      const sync_pb::NigoriSpecifics& nigori,
+      syncable::BaseTransaction* const trans);
 
   // Wrapper around WriteEncryptionStateToNigori that creates a new write
   // transaction. Because this function can trigger a migration,

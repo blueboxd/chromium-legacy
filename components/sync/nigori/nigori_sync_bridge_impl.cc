@@ -277,7 +277,7 @@ void NigoriSyncBridgeImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void NigoriSyncBridgeImpl::Init() {
+bool NigoriSyncBridgeImpl::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Init() is called after the first sync cycle, so we can have
   // |encrypt_everything_| enabled even if we don't persist the local state.
@@ -297,6 +297,7 @@ void NigoriSyncBridgeImpl::Init() {
   // TODO(crbug.com/922900): notify observers about cryptographer change in
   // case UpdateLocalState() is not called in this function (i.e.
   // initialization implemented in constructor).
+  return true;
 }
 
 void NigoriSyncBridgeImpl::SetEncryptionPassphrase(

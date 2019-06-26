@@ -340,21 +340,28 @@ void SyncEncryptionHandlerImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SyncEncryptionHandlerImpl::Init() {
+bool SyncEncryptionHandlerImpl::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WriteTransaction trans(FROM_HERE, user_share_);
   WriteNode node(&trans);
 
-  if (node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK)
-    return;
-  if (ApplyNigoriUpdateImpl(node.GetNigoriSpecifics(),
-                            trans.GetWrappedTrans())) {
-    // If we have successfully updated, we also need to replace an UNSPECIFIED
-    // key derivation method in Nigori with PBKDF2. (If the update fails,
-    // WriteEncryptionStateToNigori will do this for us.)
-    ReplaceImplicitKeyDerivationMethodInNigori(&trans);
-  } else {
-    WriteEncryptionStateToNigori(&trans, NigoriMigrationTrigger::kInit);
+  if (node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK) {
+    // TODO(mastiz): This should be treated as error because it's a protocol
+    // violation if the server doesn't return the NIGORI root.
+    return true;
+  }
+
+  switch (ApplyNigoriUpdateImpl(node.GetNigoriSpecifics(),
+                                trans.GetWrappedTrans())) {
+    case ApplyNigoriUpdateResult::kSuccess:
+      // If we have successfully updated, we also need to replace an UNSPECIFIED
+      // key derivation method in Nigori with PBKDF2. (If the update fails,
+      // WriteEncryptionStateToNigori will do this for us.)
+      ReplaceImplicitKeyDerivationMethodInNigori(&trans);
+      break;
+    case ApplyNigoriUpdateResult::kRemoteMustBeCorrected:
+      WriteEncryptionStateToNigori(&trans, NigoriMigrationTrigger::kInit);
+      break;
   }
 
   PassphraseType passphrase_type = GetPassphraseType(trans.GetWrappedTrans());
@@ -433,6 +440,8 @@ void SyncEncryptionHandlerImpl::Init() {
   // sync from happening until the the passphrase is provided.
   if (UnlockVault(trans.GetWrappedTrans()).cryptographer.is_ready())
     ReEncryptEverything(&trans);
+
+  return true;
 }
 
 void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
@@ -760,36 +769,43 @@ syncable::NigoriHandler* SyncEncryptionHandlerImpl::GetNigoriHandler() {
 
 // Note: this is called from within a syncable transaction, so we need to post
 // tasks if we want to do any work that creates a new sync_api transaction.
-void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
+bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(trans);
-  if (ApplyNigoriUpdateImpl(nigori, trans)) {
-    // If we have successfully updated, we also need to replace an UNSPECIFIED
-    // key derivation method in Nigori with PBKDF2, for which we post a task.
-    // (If the update fails, RewriteNigori will do this for us.) Note that this
-    // check is redundant, but it is used to avoid the overhead of posting a
-    // task which will just do nothing.
-    if (ShouldSetExplicitCustomPassphraseKeyDerivationMethod(nigori)) {
+
+  switch (ApplyNigoriUpdateImpl(nigori, trans)) {
+    case ApplyNigoriUpdateResult::kSuccess:
+      // If we have successfully updated, we also need to replace an UNSPECIFIED
+      // key derivation method in Nigori with PBKDF2, for which we post a task.
+      // (If the update fails, RewriteNigori will do this for us.) Note that
+      // this check is redundant, but it is used to avoid the overhead of
+      // posting a task which will just do nothing.
+      if (ShouldSetExplicitCustomPassphraseKeyDerivationMethod(nigori)) {
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &SyncEncryptionHandlerImpl::
+                    ReplaceImplicitKeyDerivationMethodInNigoriWithTransaction,
+                weak_ptr_factory_.GetWeakPtr()));
+      }
+      break;
+    case ApplyNigoriUpdateResult::kRemoteMustBeCorrected:
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::BindOnce(
-              &SyncEncryptionHandlerImpl::
-                  ReplaceImplicitKeyDerivationMethodInNigoriWithTransaction,
-              weak_ptr_factory_.GetWeakPtr()));
-    }
-  } else {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&SyncEncryptionHandlerImpl::RewriteNigori,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  NigoriMigrationTrigger::kApplyNigoriUpdate));
+          base::BindOnce(&SyncEncryptionHandlerImpl::RewriteNigori,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         NigoriMigrationTrigger::kApplyNigoriUpdate));
+      break;
   }
 
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(
         &UnlockVaultMutable(trans)->cryptographer);
   }
+
+  return true;
 }
 
 void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
@@ -1009,7 +1025,8 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
   }
 }
 
-bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
+SyncEncryptionHandlerImpl::ApplyNigoriUpdateResult
+SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1171,9 +1188,9 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
       nigori.encrypt_everything() != encrypt_everything_ ||
       nigori_types_need_update || nigori_needs_new_keys) {
     DVLOG(1) << "Triggering nigori rewrite.";
-    return false;
+    return ApplyNigoriUpdateResult::kRemoteMustBeCorrected;
   }
-  return true;
+  return ApplyNigoriUpdateResult::kSuccess;
 }
 
 void SyncEncryptionHandlerImpl::RewriteNigori(

@@ -17,14 +17,15 @@ FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
       cryptographer_(&encryptor_) {}
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
 
-void FakeSyncEncryptionHandler::Init() {
+bool FakeSyncEncryptionHandler::Init() {
   // Set up a basic cryptographer.
   KeyParams keystore_params = {KeyDerivationParams::CreateForPbkdf2(),
                                "keystore_key"};
   cryptographer_.AddKey(keystore_params);
+  return true;
 }
 
-void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
+bool FakeSyncEncryptionHandler::ApplyNigoriUpdate(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
   if (nigori.encrypt_everything())
@@ -54,6 +55,8 @@ void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
                                     sync_pb::EncryptedData());
     }
   }
+
+  return true;
 }
 
 void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(

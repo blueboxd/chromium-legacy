@@ -32,6 +32,7 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void UpdateIcon();
   void UpdateText();
+  void SetSuppressAvatarButtonState(bool suppress_avatar_button_state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
@@ -83,6 +84,10 @@ class AvatarToolbarButton : public ToolbarButton,
 
   Browser* const browser_;
   Profile* const profile_;
+
+  // Indicates if the avatar icon should show text and update highlight color
+  // when sync state is not normal.
+  bool suppress_avatar_button_state_ = false;
 
 #if !defined(OS_CHROMEOS)
   AvatarButtonErrorController error_controller_;

@@ -19,7 +19,7 @@ const float OverviewGestureHandler::vertical_threshold_pixels_ = 300;
 // three-finger scroll.
 const float OverviewGestureHandler::horizontal_threshold_pixels_ = 330;
 
-OverviewGestureHandler::OverviewGestureHandler() : scroll_x_(0), scroll_y_(0) {}
+OverviewGestureHandler::OverviewGestureHandler() = default;
 
 OverviewGestureHandler::~OverviewGestureHandler() = default;
 

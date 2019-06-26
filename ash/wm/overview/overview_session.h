@@ -55,8 +55,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public ShellObserver,
                                    public SplitViewObserver {
  public:
-  enum Direction { LEFT, UP, RIGHT, DOWN };
-
   enum class OverviewTransition {
     kEnter,       // In the entering process of overview.
     kInOverview,  // Already in overview.
@@ -294,9 +292,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
 
-  // Helper function that moves the selection widget to |direction| on the
-  // corresponding window grid.
-  void Move(Direction direction, bool animate);
+  // Helper function that moves the selection widget to forward or backward on
+  // the corresponding window grid.
+  void Move(bool reverse);
 
   // Removes all observers that were registered during construction and/or
   // initialization.

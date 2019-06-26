@@ -3983,6 +3983,41 @@
       'monochrome_apk_checker': {},
     },
 
+    'navigation_loader_on_ui_gtests': {
+      'navigation_ui_browser_tests': {
+        'args': [
+          '--enable-features=NavigationLoaderOnUI',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_browser_tests.filter',
+        ],
+        'swarming': {
+          'shards': 15,
+        },
+        'test': 'browser_tests',
+      },
+      'navigation_ui_components_browsertests': {
+        'args': [
+          '--enable-features=NavigationLoaderOnUI',
+        ],
+        'test': 'components_browsertests',
+      },
+      'navigation_ui_content_browsertests': {
+        'args': [
+          '--enable-features=NavigationLoaderOnUI',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'test': 'content_browsertests',
+      },
+      'navigation_ui_extensions_browsertests': {
+        'args': [
+          '--enable-features=NavigationLoaderOnUI',
+        ],
+        'test': 'extensions_browsertests',
+      },
+    },
+
     # These tests will be run on the main waterfall.
     'network_service_android_gtests': {
       'network_service_out_of_process_chrome_public_test_apk': {
@@ -5296,12 +5331,14 @@
     ],
 
     'mojo_linux_gtests': [
+      'navigation_loader_on_ui_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
+      'navigation_loader_on_ui_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
     ],

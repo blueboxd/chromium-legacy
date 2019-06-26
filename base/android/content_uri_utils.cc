@@ -62,13 +62,13 @@ bool MaybeGetFileDisplayName(const FilePath& content_uri,
   return true;
 }
 
-void DeleteContentUri(const FilePath& content_uri) {
+bool DeleteContentUri(const FilePath& content_uri) {
   DCHECK(content_uri.IsContentUri());
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_uri =
       ConvertUTF8ToJavaString(env, content_uri.value());
 
-  Java_ContentUriUtils_delete(env, j_uri);
+  return Java_ContentUriUtils_delete(env, j_uri);
 }
 
 }  // namespace base

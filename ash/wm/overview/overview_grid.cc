@@ -102,20 +102,8 @@ constexpr char kOverviewExitSplitViewHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.SplitView";
 
 // Returns the vector for the fade in animation.
-gfx::Vector2d GetSlideVectorForFadeIn(OverviewSession::Direction direction,
-                                      const gfx::Rect& bounds) {
-  gfx::Vector2d vector;
-  switch (direction) {
-    case OverviewSession::UP:
-    case OverviewSession::LEFT:
-      vector.set_x(-bounds.width());
-      break;
-    case OverviewSession::DOWN:
-    case OverviewSession::RIGHT:
-      vector.set_x(bounds.width());
-      break;
-  }
-  return vector;
+gfx::Vector2d GetSlideVectorForFadeIn(bool reverse, const gfx::Rect& bounds) {
+  return gfx::Vector2d(bounds.width() * (reverse ? -1 : 1), 0);
 }
 
 template <const char* clamshell_single_name,
@@ -501,7 +489,7 @@ void OverviewGrid::PositionWindows(
     MoveSelectionWidgetToTarget(animate);
 }
 
-bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
+bool OverviewGrid::Move(bool reverse, bool animate) {
   if (empty())
     return true;
 
@@ -509,29 +497,14 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
   bool out_of_bounds = false;
   bool changed_selection_index = false;
   gfx::RectF old_bounds;
-  if (SelectedWindow()) {
+  if (SelectedWindow())
     old_bounds = SelectedWindow()->target_bounds();
-    // Make the old selected window header non-transparent first.
-    SelectedWindow()->set_selected(false);
-  }
 
   // TODO(dantonvu|sammiequon): Refactor this so OverviewSession controls and
   // owns |selection_widget_|. Also rename selection related names to
   // highlighted as selection can also mean something else in overview.
-
-  // [up] key is equivalent to [left] key and [down] key is equivalent to
-  // [right] key.
   if (!selection_widget_) {
-    switch (direction) {
-      case OverviewSession::UP:
-      case OverviewSession::LEFT:
-        selected_index_ = window_list_.size() - 1;
-        break;
-      case OverviewSession::DOWN:
-      case OverviewSession::RIGHT:
-        selected_index_ = 0;
-        break;
-    }
+    selected_index_ = reverse ? window_list_.size() - 1 : 0;
     changed_selection_index = true;
   }
 
@@ -540,25 +513,20 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
   // window but unable to move it.
   // TODO(sammiequon): Investigate if we can remove this call.
   if (overview_session()->NumWindowsTotal() == 1u) {
-    MoveSelectionWidget(direction, recreate_selection_widget, out_of_bounds,
+    MoveSelectionWidget(reverse, recreate_selection_widget, out_of_bounds,
                         animate);
     return true;
   }
 
   while (!changed_selection_index) {
-    switch (direction) {
-      case OverviewSession::UP:
-      case OverviewSession::LEFT:
-        if (selected_index_ == 0)
-          out_of_bounds = true;
-        --selected_index_;
-        break;
-      case OverviewSession::DOWN:
-      case OverviewSession::RIGHT:
-        if (selected_index_ >= window_list_.size() - 1)
-          out_of_bounds = true;
-        ++selected_index_;
-        break;
+    if (reverse) {
+      if (selected_index_ == 0)
+        out_of_bounds = true;
+      --selected_index_;
+    } else {
+      if (selected_index_ >= window_list_.size() - 1)
+        out_of_bounds = true;
+      ++selected_index_;
     }
     if (!out_of_bounds && SelectedWindow()) {
       if (SelectedWindow()->target_bounds().y() != old_bounds.y())
@@ -566,12 +534,8 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
     }
     changed_selection_index = true;
   }
-  MoveSelectionWidget(direction, recreate_selection_widget, out_of_bounds,
+  MoveSelectionWidget(reverse, recreate_selection_widget, out_of_bounds,
                       animate);
-
-  // Make the new selected window header fully transparent.
-  if (SelectedWindow())
-    SelectedWindow()->set_selected(true);
   return out_of_bounds;
 }
 
@@ -774,10 +738,8 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
       indicator_state == IndicatorState::kPreviewAreaRight) {
     // If the dragged window is currently dragged into preview window area,
     // clear the selection widget.
-    if (SelectedWindow()) {
-      SelectedWindow()->set_selected(false);
+    if (SelectedWindow())
       selection_widget_.reset();
-    }
 
     // Also clear ash::kIsDeferredTabDraggingTargetWindowKey key on the target
     // overview item so that it can't merge into this overview item if the
@@ -801,20 +763,16 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
     if (previous_selected_index != selected_index_)
       selection_widget_.reset();
 
-    const OverviewSession::Direction direction =
-        (selected_index_ - previous_selected_index > 0) ? OverviewSession::RIGHT
-                                                        : OverviewSession::LEFT;
-    MoveSelectionWidget(direction,
-                        /*recreate_selection_widget=*/true,
-                        /*out_of_bounds=*/false,
-                        /*animate=*/false);
+    MoveSelectionWidget(
+        /*reverse=*/(selected_index_ - previous_selected_index) <= 0,
+        /*recreate_selection_widget=*/true,
+        /*out_of_bounds=*/false,
+        /*animate=*/false);
     return;
   }
 
-  if (SelectedWindow()) {
-    SelectedWindow()->set_selected(false);
+  if (SelectedWindow())
     selection_widget_.reset();
-  }
 }
 
 void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
@@ -830,7 +788,6 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // not be selected and tab dragging might drag a tab window to merge it into a
   // browser window in overview.
   if (SelectedWindow()) {
-    SelectedWindow()->set_selected(false);
     selection_widget_.reset();
   } else if (should_drop_window_into_overview) {
     AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
@@ -905,7 +862,6 @@ void OverviewGrid::OnWindowDestroying(aura::Window* window) {
     bool send_focus_alert = selected_index_ == removed_index;
     if (selected_index_ >= removed_index && selected_index_ != 0)
       selected_index_--;
-    SelectedWindow()->set_selected(true);
     if (send_focus_alert)
       SelectedWindow()->SendAccessibleSelectionEvent();
   }
@@ -1399,7 +1355,7 @@ void OverviewGrid::MaybeInitDesksWidget() {
   desks_widget_->Show();
 }
 
-void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
+void OverviewGrid::InitSelectionWidget(bool reverse) {
   selection_widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -1428,7 +1384,7 @@ void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
       gfx::ToEnclosedRect(SelectedWindow()->target_bounds());
   ::wm::ConvertRectFromScreen(root_window_, &target_bounds);
   gfx::Vector2d fade_out_direction =
-      GetSlideVectorForFadeIn(direction, target_bounds);
+      GetSlideVectorForFadeIn(reverse, target_bounds);
   widget_window->SetBounds(target_bounds - fade_out_direction);
   widget_window->SetName("OverviewModeSelector");
 
@@ -1440,7 +1396,7 @@ void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
   selector_shadow_->SetContentBounds(gfx::Rect(target_bounds.size()));
 }
 
-void OverviewGrid::MoveSelectionWidget(OverviewSession::Direction direction,
+void OverviewGrid::MoveSelectionWidget(bool reverse,
                                        bool recreate_selection_widget,
                                        bool out_of_bounds,
                                        bool animate) {
@@ -1455,7 +1411,7 @@ void OverviewGrid::MoveSelectionWidget(OverviewSession::Direction direction,
       views::Widget* old_selection = selection_widget_.get();
       aura::Window* old_selection_window = old_selection->GetNativeWindow();
       gfx::Vector2d fade_out_direction =
-          GetSlideVectorForFadeIn(direction, old_selection_window->bounds());
+          GetSlideVectorForFadeIn(reverse, old_selection_window->bounds());
 
       ScopedOverviewAnimationSettings settings(
           OVERVIEW_ANIMATION_SELECTION_WINDOW, old_selection_window);
@@ -1478,7 +1434,8 @@ void OverviewGrid::MoveSelectionWidget(OverviewSession::Direction direction,
     return;
 
   if (!selection_widget_)
-    InitSelectionWidget(direction);
+    InitSelectionWidget(reverse);
+
   // Send an a11y alert so that if ChromeVox is enabled, the item label is
   // read.
   SelectedWindow()->SendAccessibleSelectionEvent();

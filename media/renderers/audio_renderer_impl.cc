@@ -1090,10 +1090,14 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
         algorithm_->IncreaseQueueCapacity();
         SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
       }
-    } else if (frames_written < frames_requested && !received_end_of_stream_) {
+    } else if (frames_written < frames_requested && !received_end_of_stream_ &&
+               state_ == kPlaying &&
+               buffering_state_ != BUFFERING_HAVE_NOTHING) {
       // If we only partially filled the request and should have more data, go
       // ahead and increase queue capacity to try and meet the next request.
+      // Trigger underflow to give us a chance to refill up to the new cap.
       algorithm_->IncreaseQueueCapacity();
+      SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
     }
 
     audio_clock_->WroteAudio(frames_written + frames_after_end_of_stream,

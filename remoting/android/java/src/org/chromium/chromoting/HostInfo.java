@@ -102,8 +102,11 @@ public class HostInfo {
         if (TextUtils.isEmpty(hostOfflineReason)) {
             return context.getString(R.string.host_offline_tooltip);
         }
-        return context.getString(
-                getHostOfflineReasonResourceId(hostOfflineReason.toLowerCase(Locale.ENGLISH)));
+        int resource_id =
+                getHostOfflineReasonResourceId(hostOfflineReason.toLowerCase(Locale.ENGLISH));
+        return resource_id == R.string.offline_reason_unknown
+                ? context.getString(resource_id, hostOfflineReason)
+                : context.getString(resource_id);
     }
 
     public ArrayList<String> getTokenUrlPatterns() {

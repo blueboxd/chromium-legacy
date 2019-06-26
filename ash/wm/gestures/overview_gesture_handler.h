@@ -30,14 +30,14 @@ class ASH_EXPORT OverviewGestureHandler {
   // The total distance scrolled with three fingers up to the point when an
   // action is triggered. When the action (enter / exit overview mode or move
   // selection in overview) is triggered those values are reset to zero.
-  float scroll_x_;
-  float scroll_y_;
+  float scroll_x_ = 0.f;
+  float scroll_y_ = 0.f;
 
   // The threshold before engaging overview with a touchpad three-finger scroll.
   static const float vertical_threshold_pixels_;
 
   // The threshold before moving selector horizontally when using a touchpad
-  // two or three-finger scroll.
+  // three-finger scroll.
   static const float horizontal_threshold_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGestureHandler);

@@ -172,21 +172,6 @@ class ServiceWorkerMetrics {
     base::TimeDelta thread_hop_time;
   };
 
-  // Records worker activities. Currently this only records
-  // StartHintPrecision histogram.
-  class ScopedEventRecorder {
-   public:
-    ScopedEventRecorder();
-    ~ScopedEventRecorder();
-
-    void RecordEventHandledStatus(EventType event);
-
-   private:
-    bool frame_fetch_event_fired_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedEventRecorder);
-  };
-
   // Converts an event type to a string. Used for tracing.
   static const char* EventTypeToString(EventType event_type);
 

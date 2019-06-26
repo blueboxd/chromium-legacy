@@ -837,6 +837,10 @@ TEST_F('PrintPreviewPreviewAreaTest', 'StateChanges', function() {
   this.runMochaTest(preview_area_test.TestNames.StateChanges);
 });
 
+TEST_F('PrintPreviewPreviewAreaTest', 'ViewportSizeChanges', function() {
+  this.runMochaTest(preview_area_test.TestNames.ViewportSizeChanges);
+});
+
 // eslint-disable-next-line no-var
 var PrintPreviewCustomMarginsTest = class extends PrintPreviewTest {
   /** @override */

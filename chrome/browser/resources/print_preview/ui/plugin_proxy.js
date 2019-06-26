@@ -160,6 +160,21 @@ cr.define('print_preview', function() {
           this.getPreviewUrl_(previewUid, pageIndex), index);
     }
 
+    /** @param {?Function} keyEventCallback */
+    setKeyEventCallback(keyEventCallback) {
+      this.plugin_.setKeyEventCallback(keyEventCallback);
+    }
+
+    /** @param {?Function} loadCallback */
+    setLoadCallback(loadCallback) {
+      this.plugin_.setLoadCallback(loadCallback);
+    }
+
+    /** @param {?Function} viewportChangedCallback */
+    setViewportChangedCallback(viewportChangedCallback) {
+      this.plugin_.setViewportChangedCallback(viewportChangedCallback);
+    }
+
     /** @param {boolean} darkMode Whether the page is in dark mode. */
     darkModeChanged(darkMode) {
       this.plugin_.darkModeChanged(darkMode);

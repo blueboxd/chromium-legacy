@@ -83,7 +83,6 @@ cr.define('restore_state_test', function() {
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
-      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
 
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {

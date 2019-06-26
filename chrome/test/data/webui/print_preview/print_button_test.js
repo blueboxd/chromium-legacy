@@ -49,7 +49,7 @@ cr.define('print_button_test', function() {
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
-      pluginProxy.setLoadCallback(() => {
+      pluginProxy.setPreloadCallback(() => {
         // Print before calling previewArea.onPluginLoad_. This simulates the
         // user clicking the print button while the preview is still loading,
         // since previewArea.onPluginLoad_() indicates to the UI that the
@@ -64,9 +64,6 @@ cr.define('print_button_test', function() {
           assertFalse(printButton.disabled);
           printButton.click();
         }
-
-        const previewArea = page.$.previewArea;
-        previewArea.onPluginLoad_(true);
       });
 
       previewHidden = false;

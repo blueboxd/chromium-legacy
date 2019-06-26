@@ -77,7 +77,6 @@ cr.define('invalid_settings_browsertest', function() {
       document.body.appendChild(page);
       page.$.documentInfo.init(true, 'title', false);
       const previewArea = page.$.previewArea;
-      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
     }
 
     /**

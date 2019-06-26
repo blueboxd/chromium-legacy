@@ -940,6 +940,27 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-features=NavigationLoaderOnUI",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_browser_tests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 15
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--enable-features=NetworkService,NetworkServiceInProcess"
         ],
         "merge": {
@@ -980,6 +1001,46 @@
       },
       {
         "args": [
+          "--enable-features=NavigationLoaderOnUI"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NavigationLoaderOnUI",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_content_browsertests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 2
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
           "--enable-features=NetworkService,NetworkServiceInProcess"
         ],
         "merge": {
@@ -997,6 +1058,25 @@
           "shards": 2
         },
         "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NavigationLoaderOnUI"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        },
+        "test": "extensions_browsertests"
       }
     ]
   },
@@ -1004,6 +1084,22 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-features=NavigationLoaderOnUI",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_browser_tests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 15
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--enable-features=NetworkService,NetworkServiceInProcess"
         ],
         "merge": {
@@ -1034,6 +1130,36 @@
       },
       {
         "args": [
+          "--enable-features=NavigationLoaderOnUI"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NavigationLoaderOnUI",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_content_browsertests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
           "--enable-features=NetworkService,NetworkServiceInProcess"
         ],
         "merge": {
@@ -1046,6 +1172,20 @@
           "shards": 2
         },
         "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NavigationLoaderOnUI"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "navigation_ui_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "merge": {

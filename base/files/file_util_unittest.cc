@@ -1425,6 +1425,33 @@ TEST_F(FileUtilTest, DeleteFile) {
   EXPECT_FALSE(PathExists(file_name));
 }
 
+#if defined(OS_ANDROID)
+TEST_F(FileUtilTest, DeleteContentUri) {
+  // Get the path to the test file.
+  FilePath data_dir;
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &data_dir));
+  data_dir = data_dir.Append(FPL("file_util"));
+  ASSERT_TRUE(PathExists(data_dir));
+  FilePath image_file = data_dir.Append(FPL("red.png"));
+  ASSERT_TRUE(PathExists(image_file));
+
+  // Make a copy (we don't want to delete the original red.png when deleting the
+  // content URI).
+  FilePath image_copy = data_dir.Append(FPL("redcopy.png"));
+  ASSERT_TRUE(CopyFile(image_file, image_copy));
+
+  // Insert the image into MediaStore and get a content URI.
+  FilePath uri_path = InsertImageIntoMediaStore(image_copy);
+  ASSERT_TRUE(uri_path.IsContentUri());
+  ASSERT_TRUE(PathExists(uri_path));
+
+  // Try deleting the content URI.
+  EXPECT_TRUE(DeleteFile(uri_path, false));
+  EXPECT_FALSE(PathExists(image_copy));
+  EXPECT_FALSE(PathExists(uri_path));
+}
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_WIN)
 // Tests that the Delete function works for wild cards, especially
 // with the recursion flag.  Also coincidentally tests PathExists.

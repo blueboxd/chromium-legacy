@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/test/bind_test_util.h"
+#include "content/browser/hid/hid_test_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_delegate.h"
 #include "content/public/common/content_client.h"
@@ -21,50 +22,6 @@ namespace {
 
 const char kTestUrl[] = "https://www.google.com";
 const char kTestGuid[] = "test-guid";
-
-class MockHidDelegate : public HidDelegate {
- public:
-  MockHidDelegate() = default;
-  ~MockHidDelegate() override = default;
-
-  std::unique_ptr<HidChooser> RunChooser(
-      RenderFrameHost* frame,
-      std::vector<blink::mojom::HidDeviceFilterPtr> filters,
-      HidChooser::Callback callback) override {
-    std::move(callback).Run(RunChooserInternal());
-    return nullptr;
-  }
-
-  MOCK_METHOD0(RunChooserInternal, device::mojom::HidDeviceInfoPtr());
-  MOCK_METHOD2(CanRequestDevicePermission,
-               bool(content::WebContents* web_contents,
-                    const url::Origin& requesting_origin));
-  MOCK_METHOD3(HasDevicePermission,
-               bool(content::WebContents* web_contents,
-                    const url::Origin& requesting_origin,
-                    const device::mojom::HidDeviceInfo& device));
-  MOCK_METHOD1(GetHidManager,
-               device::mojom::HidManager*(content::WebContents* web_contents));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockHidDelegate);
-};
-
-class HidTestContentBrowserClient : public ContentBrowserClient {
- public:
-  HidTestContentBrowserClient() = default;
-  ~HidTestContentBrowserClient() override = default;
-
-  MockHidDelegate& delegate() { return delegate_; }
-
-  // ContentBrowserClient:
-  HidDelegate* GetHidDelegate() override { return &delegate_; }
-
- private:
-  MockHidDelegate delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(HidTestContentBrowserClient);
-};
 
 class FakeHidConnectionClient : public device::mojom::HidConnectionClient {
  public:

@@ -65,6 +65,10 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
  private:
   bool FocusInactiveBubbleForIcon(PageActionIconView* icon_view);
 
+  // The avatar should not show Ui for paused state or error state when any icon
+  // in the toolbar page action icon container view is visible.
+  void UpdateAvatarIconStateUi();
+
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
   autofill::SaveCardIconView* save_card_icon_view_ = nullptr;

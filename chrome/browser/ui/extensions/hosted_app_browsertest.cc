@@ -900,9 +900,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
       OpenApplicationWindow(params, web_app_info.file_handler->action);
   navigation_observer.Wait();
 
-  EXPECT_EQ(0, content::EvalJs(
-                   web_contents,
-                   "getLaunchParams().then(params => params.files.length)"));
+  EXPECT_EQ(0, content::EvalJs(web_contents, "launchParams.files.length"));
 }
 
 #if !defined(OS_ANDROID)

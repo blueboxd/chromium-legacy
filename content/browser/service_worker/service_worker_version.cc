@@ -645,8 +645,6 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
   InflightRequest* request = inflight_requests_.Lookup(request_id);
   if (!request)
     return false;
-  if (event_recorder_)
-    event_recorder_->RecordEventHandledStatus(request->event_type);
   ServiceWorkerMetrics::RecordEventDuration(
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
@@ -1555,8 +1553,6 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
             "ServiceWorker", "ServiceWorkerVersion::StartWorker", trace_id,
             "Script", script_url_.spec(), "Purpose",
             ServiceWorkerMetrics::EventTypeToString(purpose));
-        DCHECK(!start_worker_first_purpose_);
-        start_worker_first_purpose_ = purpose;
         start_callbacks_.push_back(
             base::BindOnce(&ServiceWorkerVersion::RecordStartWorkerResult,
                            weak_factory_.GetWeakPtr(), purpose, prestart_status,
@@ -1584,22 +1580,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
   DCHECK(inflight_requests_.IsEmpty());
   DCHECK(request_timeouts_.empty());
-
-  // TODO(falken): Figure out why |start_worker_first_purpose_| can be null
-  // here. Probably there is a bug with restarting the worker in
-  // OnStoppedInternal, despite the comment below about not clearing it.
-  if (start_worker_first_purpose_) {
-    if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_) &&
-        *start_worker_first_purpose_ ==
-            ServiceWorkerMetrics::EventType::NAVIGATION_HINT) {
-      DCHECK(!event_recorder_);
-      event_recorder_ =
-          std::make_unique<ServiceWorkerMetrics::ScopedEventRecorder>();
-    }
-  }
-  // We don't clear |start_worker_first_purpose_| here but clear in
-  // FinishStartWorker. This is because StartWorkerInternal may be called
-  // again from OnStoppedInternal if StopWorker is called before OnStarted.
 
   StartTimeoutTimer();
   worker_is_idle_on_renderer_ = false;
@@ -1956,8 +1936,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   if (!in_dtor_)
     protect = this;
 
-  event_recorder_.reset();
-
   // |start_callbacks_| can be non-empty if a start worker request arrived while
   // the worker was stopping. The worker must be restarted to fulfill the
   // request.
@@ -2029,7 +2007,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
 void ServiceWorkerVersion::FinishStartWorker(
     blink::ServiceWorkerStatusCode status) {
-  start_worker_first_purpose_ = base::nullopt;
   RunCallbacks(this, &start_callbacks_, status);
 }
 

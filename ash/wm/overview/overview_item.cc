@@ -59,9 +59,6 @@ namespace {
 // Opacity for fading out during closing a window.
 constexpr float kClosingItemOpacity = 0.8f;
 
-// Opacity for the item header.
-constexpr float kHeaderOpacity = 0.1f;
-
 // Before closing a window animate both the window and the caption to shrink by
 // this fraction of size.
 constexpr float kPreCloseScale = 0.02f;
@@ -1085,11 +1082,9 @@ void OverviewItem::AnimateOpacity(float opacity,
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   transform_window_.SetOpacity(opacity);
 
-  const float header_opacity = selected_ ? 0.f : kHeaderOpacity * opacity;
-  aura::Window* widget_window = item_widget_->GetNativeWindow();
-  ScopedOverviewAnimationSettings animation_settings_label(animation_type,
-                                                           widget_window);
-  widget_window->layer()->SetOpacity(header_opacity);
+  ScopedOverviewAnimationSettings animation_settings_label(
+      animation_type, item_widget_->GetNativeWindow());
+  item_widget_->SetOpacity(opacity);
 
   if (cannot_snap_widget_) {
     aura::Window* cannot_snap_widget_window =

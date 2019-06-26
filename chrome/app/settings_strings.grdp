@@ -1601,7 +1601,7 @@
       Set up or manage network file shares.
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_SMB_SHARES_ADD_SHARE" desc="In SMB shares settings subpage, text for the link to add a new SMB share.">
-      Add File Share
+      Add file share
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL" desc="Title for the input that lets users specify the name of an SMB URL.">
       File share URL
@@ -1640,7 +1640,7 @@
       Invalid URL format. Server must be specified as a host name when SSO authentication is used.
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_AUTHENTICATION_METHOD" desc="Title for the input that lets users specify their authentication method for an SMB Share.">
-      Authentication Method
+      Authentication method
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_STANDARD_AUTHENTICATION" desc="Authentication method option indicating that fields for username and password should be shown to the user.">
       Standard

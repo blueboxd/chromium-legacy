@@ -9,6 +9,5 @@
     ImplementedAs=DOMWindowLaunchParams,
     RuntimeEnabled=FileHandling
 ] partial interface Window {
-    [CallWith=ScriptState]
-    Promise<LaunchParams> getLaunchParams();
+    readonly attribute LaunchParams launchParams;
 };

@@ -296,12 +296,14 @@ public abstract class ContentUriUtils {
 
     /**
      * Deletes a content uri from the system.
+     *
+     * @return True if the uri was deleted.
      */
     @CalledByNative
-    public static void delete(String uriString) {
+    public static boolean delete(String uriString) {
         assert isContentUri(uriString);
         Uri parsedUri = Uri.parse(uriString);
         ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
-        resolver.delete(parsedUri, null, null);
+        return resolver.delete(parsedUri, null, null) > 0;
     }
 }

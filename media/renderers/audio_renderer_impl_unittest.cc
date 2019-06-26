@@ -711,18 +711,58 @@ TEST_F(AudioRendererImplTest, Underflow_CapacityIncreasesBeforeHaveNothing) {
   EXPECT_GT(buffer_capacity().value, initial_capacity.value);
 }
 
-TEST_F(AudioRendererImplTest, CapacityAppropriateForHardware) {
-  // Verify that initial capacity is reasonable in normal case.
+TEST_F(AudioRendererImplTest, Underflow_OneCapacityIncreasePerUnderflow) {
   Initialize();
-  EXPECT_GT(buffer_capacity().value, hardware_params_.frames_per_buffer());
+  Preroll();
+  StartTicking();
 
-  // Verify in the no-config-changes-expected case.
-  ConfigureBasicRenderer(AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                         kChannelLayout,
-                                         kOutputSamplesPerSecond, 1024 * 15));
+  OutputFrames prev_capacity = buffer_capacity();
 
-  Initialize();
-  EXPECT_GT(buffer_capacity().value, hardware_params_.frames_per_buffer());
+  // Consume more than is available (partial read) to trigger underflow.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+  EXPECT_FALSE(ConsumeBufferedData(OutputFrames(frames_buffered().value + 1)));
+
+  // Verify first underflow triggers an increase to buffer capacity and
+  // signals HAVE_NOTHING.
+  EXPECT_GT(buffer_capacity().value, prev_capacity.value);
+  prev_capacity = buffer_capacity();
+  // Give HAVE_NOTHING a chance to post.
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Try reading again, this time with the queue totally empty. We should expect
+  // NO additional HAVE_NOTHING and NO increase to capacity because we still
+  // haven't refilled the queue since the previous underflow.
+  EXPECT_EQ(0, frames_buffered().value);
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING)).Times(0);
+  EXPECT_FALSE(ConsumeBufferedData(OutputFrames(1)));
+  EXPECT_EQ(buffer_capacity().value, prev_capacity.value);
+  // Give HAVE_NOTHING a chance to NOT post.
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Fill the buffer back up.
+  WaitForPendingRead();
+  DeliverRemainingAudio();
+  EXPECT_GT(frames_buffered().value, 0);
+
+  // Consume all available data without underflowing. Expect no buffer state
+  // change and no change to capacity.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING)).Times(0);
+  EXPECT_TRUE(ConsumeBufferedData(OutputFrames(frames_buffered().value)));
+  EXPECT_EQ(buffer_capacity().value, prev_capacity.value);
+  // Give HAVE_NOTHING a chance to NOT post.
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Now empty, trigger underflow attempting to read one frame. This should
+  // signal buffering state change and increase capacity.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+  EXPECT_FALSE(ConsumeBufferedData(OutputFrames(1)));
+  EXPECT_GT(buffer_capacity().value, prev_capacity.value);
+  // Give HAVE_NOTHING a chance to NOT post.
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(this);
 }
 
 // Verify that the proper reduced search space is configured for playback rate

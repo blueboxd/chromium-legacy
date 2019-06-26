@@ -60,7 +60,6 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
   HidChooserControllerTest() {}
 
   void SetUp() override {
-    OverrideChooserStrings();
     ChromeRenderViewHostTestHarness::SetUp();
 
     content::WebContentsTester* web_contents_tester =
@@ -72,27 +71,6 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
     hid_manager_.Bind(mojo::MakeRequest(&hid_manager_ptr));
     HidChooserContextFactory::GetForProfile(profile())->SetHidManagerForTesting(
         std::move(hid_manager_ptr));
-  }
-
-  void OverrideChooserStrings() {
-    // Release builds may strip out unused string resources when
-    // enable_resource_whitelist_generation is enabled. Manually override the
-    // strings needed by the chooser to ensure they are available for tests.
-    // TODO(mattreynolds): Remove these overrides once the strings are
-    // referenced from the Chrome binary.
-    auto& shared_resource_bundle = ui::ResourceBundle::GetSharedInstance();
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_HID_CHOOSER_PROMPT_ORIGIN,
-        base::ASCIIToUTF16("$1 wants to connect to a HID device"));
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME,
-        base::ASCIIToUTF16("\"$1\" wants to connect to a HID device"));
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_HID_CHOOSER_ITEM_WITHOUT_NAME,
-        base::ASCIIToUTF16("Unknown Device (Vendor: $1, Product: $2)"));
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_HID_CHOOSER_ITEM_WITH_NAME,
-        base::ASCIIToUTF16("$1 (Vendor: $2, Product: $3)"));
   }
 
   std::unique_ptr<HidChooserController> CreateHidChooserController(

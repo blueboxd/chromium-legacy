@@ -6,7 +6,7 @@ cr.define('preview_area_test', function() {
   /** @enum {string} */
   const TestNames = {
     StateChanges: 'state changes',
-    InvalidPrinter: 'invalid printer',
+    ViewportSizeChanges: 'viewport size changes',
   };
 
   const suiteName = 'PreviewAreaTest';
@@ -33,7 +33,6 @@ cr.define('preview_area_test', function() {
       model.setSetting('pages', [1, 2, 3]);
       previewArea = document.createElement('print-preview-preview-area');
       document.body.appendChild(previewArea);
-      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
       previewArea.settings = model.settings;
       test_util.fakeDataBind(model, previewArea, 'settings');
       previewArea.destination = new print_preview.Destination(
@@ -92,6 +91,39 @@ cr.define('preview_area_test', function() {
                 'correctly.  Check your printer or try selecting another ' +
                 'printer.',
             message.textContent.trim());
+      });
+    });
+
+    /** Validate preview area sets tabindex correctly based on viewport size. */
+    test(assert(TestNames.ViewportSizeChanges), function() {
+      // Simulate starting the preview.
+      const whenPreviewStarted = nativeLayer.whenCalled('getPreview');
+      previewArea.state = print_preview.State.READY;
+      previewArea.startPreview();
+
+      return whenPreviewStarted.then(() => {
+        assertEquals(
+            print_preview.PreviewAreaState.DISPLAY_PREVIEW,
+            previewArea.previewState);
+        assertTrue(previewArea.$$('.preview-area-overlay-layer')
+                       .classList.contains('invisible'));
+        const plugin = previewArea.$$('.preview-area-plugin');
+        assertEquals(null, plugin.getAttribute('tabindex'));
+
+        // This can be triggered at any time by a resizing of the viewport or
+        // change to the PDF viewer zoom.
+        // Plugin is too narrow to show zoom toolbar.
+        pluginProxy.triggerVisualStateChange(0, 0, 150, 150, 500);
+        assertEquals('-1', plugin.getAttribute('tabindex'));
+        // Plugin is large enough for zoom toolbar.
+        pluginProxy.triggerVisualStateChange(0, 0, 250, 400, 500);
+        assertEquals('0', plugin.getAttribute('tabindex'));
+        // Plugin is too short for zoom toolbar.
+        pluginProxy.triggerVisualStateChange(0, 0, 250, 400, 100);
+        assertEquals('-1', plugin.getAttribute('tabindex'));
+        // Plugin is large enough for zoom toolbar.
+        pluginProxy.triggerVisualStateChange(0, 0, 500, 800, 1000);
+        assertEquals('0', plugin.getAttribute('tabindex'));
       });
     });
   });

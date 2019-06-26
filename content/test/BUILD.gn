@@ -451,6 +451,15 @@ jumbo_static_library("test_support") {
     ]
   }
 
+  # HID support is not available without udev.
+  is_linux_without_udev = is_linux && !use_udev
+  if (!is_linux_without_udev && !is_android) {
+    sources += [
+      "../browser/hid/hid_test_utils.cc",
+      "../browser/hid/hid_test_utils.h",
+    ]
+  }
+
   if (enable_plugins) {
     deps += [
       "//content/ppapi_plugin",
@@ -1277,12 +1286,16 @@ test("content_browsertests") {
   # HID support is not available without udev.
   is_linux_without_udev = is_linux && !use_udev
   if (!is_linux_without_udev && !is_android) {
-    sources += [ "../browser/webauth/webauth_browsertest.cc" ]
+    sources += [
+      "../browser/hid/hid_browsertest.cc",
+      "../browser/webauth/webauth_browsertest.cc",
+    ]
     deps += [
       "//device/base",
       "//device/fido:fido",
       "//device/fido:mocks",
       "//device/fido:test_support",
+      "//services/device/public/cpp/hid:test_support",
     ]
   }
 

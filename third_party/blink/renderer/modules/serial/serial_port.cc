@@ -41,17 +41,58 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
                                            "The port is already open."));
   }
 
-  // TODO(crbug.com/884928): Implement full conversion of SerialOptions.
   auto mojo_options = device::mojom::blink::SerialConnectionOptions::New();
-  mojo_options->bitrate = options->baudrate();
-  mojo_options->data_bits = device::mojom::blink::SerialDataBits::EIGHT;
-  mojo_options->parity_bit = device::mojom::blink::SerialParityBit::NO_PARITY;
-  mojo_options->stop_bits = device::mojom::blink::SerialStopBits::ONE;
 
-  if (options->buffersize() <= 0) {
+  if (options->baudrate() == 0) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "Requested baud rate must be greater than zero."));
+  }
+  mojo_options->bitrate = options->baudrate();
+
+  switch (options->databits()) {
+    case 7:
+      mojo_options->data_bits = device::mojom::blink::SerialDataBits::SEVEN;
+      break;
+    case 8:
+      mojo_options->data_bits = device::mojom::blink::SerialDataBits::EIGHT;
+      break;
+    default:
+      return ScriptPromise::Reject(
+          script_state, V8ThrowException::CreateTypeError(
+                            script_state->GetIsolate(),
+                            "Requested number of data bits must be 7 or 8."));
+  }
+
+  if (options->parity() == "none") {
+    mojo_options->parity_bit = device::mojom::blink::SerialParityBit::NO_PARITY;
+  } else if (options->parity() == "even") {
+    mojo_options->parity_bit = device::mojom::blink::SerialParityBit::EVEN;
+  } else if (options->parity() == "odd") {
+    mojo_options->parity_bit = device::mojom::blink::SerialParityBit::ODD;
+  } else {
+    NOTREACHED();
+  }
+
+  switch (options->stopbits()) {
+    case 1:
+      mojo_options->stop_bits = device::mojom::blink::SerialStopBits::ONE;
+      break;
+    case 2:
+      mojo_options->stop_bits = device::mojom::blink::SerialStopBits::TWO;
+      break;
+    default:
+      return ScriptPromise::Reject(
+          script_state, V8ThrowException::CreateTypeError(
+                            script_state->GetIsolate(),
+                            "Requested number of stop bits must be 1 or 2."));
+  }
+
+  if (options->buffersize() == 0) {
     return ScriptPromise::Reject(
         script_state,
-        V8ThrowException::CreateRangeError(
+        V8ThrowException::CreateTypeError(
             script_state->GetIsolate(),
             String::Format(
                 "Requested buffer size (%d bytes) must be greater than zero.",
@@ -61,13 +102,16 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
   if (options->buffersize() > kMaxBufferSize) {
     return ScriptPromise::Reject(
         script_state,
-        V8ThrowException::CreateRangeError(
+        V8ThrowException::CreateTypeError(
             script_state->GetIsolate(),
             String::Format("Requested buffer size (%d bytes) is greater than "
                            "the maximum allowed (%d bytes).",
                            options->buffersize(), kMaxBufferSize)));
   }
   buffer_size_ = options->buffersize();
+
+  mojo_options->has_cts_flow_control = true;
+  mojo_options->cts_flow_control = options->rtscts();
 
   // Pipe handle pair for the ReadableStream.
   mojo::ScopedDataPipeConsumerHandle readable_pipe;

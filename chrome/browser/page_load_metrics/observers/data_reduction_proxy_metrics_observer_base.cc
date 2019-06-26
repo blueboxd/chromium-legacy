@@ -267,7 +267,6 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info,
     bool app_background_occurred) {
-  LOG(ERROR) << "send pingback";
   // TODO(ryansturm): Move to OnFirstBackgroundEvent to handle some fast
   // shutdown cases. crbug.com/618072
   if (!browser_context_ || !data_)

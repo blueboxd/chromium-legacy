@@ -637,7 +637,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_build_tools/aapt2',
-              'version': 'version:3.6.0-alpha03-5516695-cr0',
+              'version': 'j6U3mv7-KG3PSDtVvTwycWzjwvFR1_sSdA540AYxpucC',
           },
       ],
       'condition': 'checkout_android',
@@ -836,7 +836,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e45ed395ad55c6249b123804079903015603ff13',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '667fa910dad2fd97131a35a95bd125bf391adc50',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),

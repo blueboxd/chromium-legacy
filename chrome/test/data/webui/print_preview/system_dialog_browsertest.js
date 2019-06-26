@@ -43,7 +43,6 @@ cr.define('system_dialog_browsertest', function() {
       const page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
-      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
       sidebar = page.$$('print-preview-sidebar');
       return Promise
           .all([

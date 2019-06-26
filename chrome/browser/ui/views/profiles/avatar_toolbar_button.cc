@@ -142,12 +142,14 @@ void AvatarToolbarButton::UpdateText() {
     }
     text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                             incognito_window_count);
-  } else if (sync_state == SyncState::kError) {
+  } else if (!suppress_avatar_button_state_ &&
+             sync_state == SyncState::kError) {
     color = AdjustHighlightColorForContrast(
         GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
         gfx::kGoogleRed050, gfx::kGoogleRed900);
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
-  } else if (sync_state == SyncState::kPaused) {
+  } else if (!suppress_avatar_button_state_ &&
+             sync_state == SyncState::kPaused) {
     color = AdjustHighlightColorForContrast(
         GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
         gfx::kGoogleBlue050, gfx::kGoogleBlue900);
@@ -159,6 +161,13 @@ void AvatarToolbarButton::UpdateText() {
   SetHighlightColor(color);
   SetText(text);
   SetTooltipText(GetAvatarTooltipText());
+}
+
+void AvatarToolbarButton::SetSuppressAvatarButtonState(
+    bool suppress_avatar_button_state) {
+  DCHECK(!IsIncognito());
+  suppress_avatar_button_state_ = suppress_avatar_button_state;
+  UpdateText();
 }
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {

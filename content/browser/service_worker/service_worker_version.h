@@ -775,8 +775,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStoppedInternal(EmbeddedWorkerStatus old_status);
 
-  // Resets |start_worker_first_purpose_| and fires and clears all start
-  // callbacks.
+  // Fires and clears all start callbacks.
   void FinishStartWorker(blink::ServiceWorkerStatusCode status);
 
   // Removes any pending external request that has GUID of |request_uuid|.
@@ -945,16 +944,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   ServiceWorkerPingController ping_controller_;
 
-  // Used for recording worker activities while this service worker is running
-  // (i.e., after it starts up until it stops). Created only when the service
-  // worker is speculatively launched for navigation hints.
-  std::unique_ptr<ServiceWorkerMetrics::ScopedEventRecorder> event_recorder_;
-
   bool stop_when_devtools_detached_ = false;
-
-  // Keeps the first purpose of starting the worker for UMA. Cleared in
-  // FinishStartWorker().
-  base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
 
   // This is the set of features that were used up until installation of this
   // version completed, or used during the lifetime of |this|.

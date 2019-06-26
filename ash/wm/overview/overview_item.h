@@ -92,11 +92,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   void SetBounds(const gfx::RectF& target_bounds,
                  OverviewAnimationType animation_type);
 
-  // Activates or deactivates selection depending on |selected|.
-  // In selected state the item's caption is shown transparent and blends with
-  // the selection widget.
-  void set_selected(bool selected) { selected_ = selected; }
-
   // Sends an accessibility event indicating that this window became selected
   // so that it is highlighted and announced.
   void SendAccessibleSelectionEvent();
@@ -308,10 +303,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // the bounds update when calling ::wm::RecreateWindowLayers to copy
   // a window layer for display on another monitor.
   bool in_bounds_update_ = false;
-
-  // True when |this| item is visually selected. Item header is made transparent
-  // when the item is selected.
-  bool selected_ = false;
 
   // A widget stacked under the |transform_window_|. The widget has
   // |caption_container_view_| as its contents view. The widget is backed by a

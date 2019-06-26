@@ -13,8 +13,17 @@ cr.define('print_preview', function() {
       /** @type {?Function} The callback to call on load. */
       this.loadCallback_ = null;
 
+      /** @type {?Function} Callback to call before load. */
+      this.preloadCallback_ = null;
+
+      /** @type {?Function} The callback to call when the viewport changes. */
+      this.viewportChangedCallback_ = null;
+
       /** @type {boolean} Whether the plugin is compatible. */
       this.compatible_ = true;
+
+      /** @type {?HTMLDivElement} */
+      this.fakePlugin_ = null;
     }
 
     /** @param {boolean} Whether the PDF plugin should be compatible. */
@@ -23,11 +32,28 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!Function} loadCallback Callback to call when the preview
+     * @param {?Function} loadCallback Callback to call when the preview
      *     loads.
      */
     setLoadCallback(loadCallback) {
+      assert(!this.loadCallback_);
       this.loadCallback_ = loadCallback;
+    }
+
+    /**
+     * @param {?Function} preloadCallback Callback to call before the preview
+     *     loads.
+     */
+    setPreloadCallback(preloadCallback) {
+      this.preloadCallback_ = preloadCallback;
+    }
+
+    /** @param {?Function} keyEventCallback */
+    setKeyEventCallback(keyEventCallback) {}
+
+    /** @param {?Function} viewportChangedCallback */
+    setViewportChangedCallback(viewportChangedCallback) {
+      this.viewportChangedCallback_ = viewportChangedCallback;
     }
 
     /**
@@ -40,7 +66,7 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the plugin is ready. */
     pluginReady() {
-      return true;
+      return !!this.fakePlugin_;
     }
 
     /**
@@ -50,7 +76,14 @@ cr.define('print_preview', function() {
      * @return {?print_preview.PDFPlugin}
      */
     createPlugin(previewUid, index) {
-      return null;
+      if (!this.compatible_) {
+        return null;
+      }
+
+      this.fakePlugin_ = document.createElement('div');
+      this.fakePlugin_.classList.add('preview-area-plugin');
+      this.fakePlugin_.id = 'pdf-viewer';
+      return this.fakePlugin_;
     }
 
     /**
@@ -90,12 +123,29 @@ cr.define('print_preview', function() {
       this.methodCalled(
           'loadPreviewPage',
           {previewUid: previewUid, pageIndex: pageIndex, index: index});
+      if (this.preloadCallback_) {
+        this.preloadCallback_();
+      }
       if (this.loadCallback_) {
         this.loadCallback_(true);
       }
     }
 
     darkModeChanged(darkMode) {}
+
+    /**
+     * @param {number} pageX The horizontal offset for the page corner in
+     *     pixels.
+     * @param {number} pageY The vertical offset for the page corner in pixels.
+     * @param {number} pageWidth The page width in pixels.
+     * @param {number} viewportWidth The viewport width in pixels.
+     * @param {number} viewportHeight The viewport height in pixels.
+     * @private
+     */
+    triggerVisualStateChange(
+        pageX, pageY, pageWidth, viewportWidth, viewportHeight) {
+      this.viewportChangedCallback_.apply(this, arguments);
+    }
   }
 
   return {PDFPluginStub: PDFPluginStub};

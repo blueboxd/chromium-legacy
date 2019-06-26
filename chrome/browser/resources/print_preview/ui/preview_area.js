@@ -317,12 +317,12 @@ Polymer({
   onPreviewStart_: function(previewUid, index) {
     if (!this.pluginProxy_.pluginReady()) {
       const plugin = this.pluginProxy_.createPlugin(previewUid, index);
-      plugin.setKeyEventCallback(this.keyEventCallback_);
+      this.pluginProxy_.setKeyEventCallback(this.keyEventCallback_);
       this.$$('.preview-area-plugin-wrapper')
           .appendChild(
               /** @type {Node} */ (plugin));
-      plugin.setLoadCallback(this.onPluginLoad_.bind(this));
-      plugin.setViewportChangedCallback(
+      this.pluginProxy_.setLoadCallback(this.onPluginLoad_.bind(this));
+      this.pluginProxy_.setViewportChangedCallback(
           this.onPreviewVisualStateChange_.bind(this));
     }
 
@@ -365,6 +365,10 @@ Polymer({
    */
   onPreviewVisualStateChange_: function(
       pageX, pageY, pageWidth, viewportWidth, viewportHeight) {
+    // Ensure the PDF viewer isn't tabbable if the window is small enough that
+    // the zoom toolbar isn't displayed.
+    const tabindex = viewportWidth < 300 || viewportHeight < 200 ? '-1' : '0';
+    this.$$('.preview-area-plugin').setAttribute('tabindex', tabindex);
     this.$.marginControlContainer.updateTranslationTransform(
         new print_preview.Coordinate2d(pageX, pageY));
     this.$.marginControlContainer.updateScaleTransform(

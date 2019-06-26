@@ -73,6 +73,8 @@ void ToolbarPageActionIconContainerView::UpdateAllIcons() {
 
   if (avatar_)
     avatar_->UpdateIcon();
+
+  UpdateAvatarIconStateUi();
 }
 
 PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(
@@ -104,6 +106,8 @@ void ToolbarPageActionIconContainerView::UpdatePageActionIcon(
   PageActionIconView* icon = GetIconView(icon_type);
   if (icon)
     icon->Update();
+
+  UpdateAvatarIconStateUi();
 }
 
 void ToolbarPageActionIconContainerView::ExecutePageActionIconForTesting(
@@ -138,4 +142,20 @@ bool ToolbarPageActionIconContainerView::FocusInactiveBubbleForIcon(
     return true;
   }
   return false;
+}
+
+void ToolbarPageActionIconContainerView::UpdateAvatarIconStateUi() {
+  // If it is in Incognito window, the avatar button shows a text "Incognito"
+  // which should not be updated in any case.
+  if (browser_->profile()->IsIncognitoProfile())
+    return;
+
+  bool suppress_avatar_button_state = false;
+  for (PageActionIconView* icon_view : page_action_icons_) {
+    if (icon_view->GetVisible()) {
+      suppress_avatar_button_state = true;
+      break;
+    }
+  }
+  avatar_->SetSuppressAvatarButtonState(suppress_avatar_button_state);
 }

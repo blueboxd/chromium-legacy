@@ -6,16 +6,19 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_H_
 
 #include "services/device/public/mojom/hid.mojom-blink.h"
+#include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
+class ExecutionContext;
+class HIDDevice;
 class HIDDeviceRequestOptions;
+class ScriptPromiseResolver;
 class ScriptState;
 
 class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
@@ -26,25 +29,41 @@ class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
   explicit HID(ExecutionContext& context);
   ~HID() override;
 
-  // hid.idl
-  ScriptPromise getDevices(ScriptState*);
-  ScriptPromise requestDevice(ScriptState*, const HIDDeviceRequestOptions*);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
-
-  // EventTarget overrides.
+  // EventTarget:
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
+
+  // Web-exposed interfaces:
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
+  ScriptPromise getDevices(ScriptState*);
+  ScriptPromise requestDevice(ScriptState*, const HIDDeviceRequestOptions*);
 
   void Trace(blink::Visitor*) override;
 
  protected:
-  // EventTarget protected overrides.
+  // EventTarget:
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:
-  FeatureEnabledState GetFeatureEnabledState() const;
+  // Returns the HIDDevice matching |info| from |device_cache_|. If the device
+  // is not in the cache, a new device is created and added to the cache.
+  HIDDevice* GetOrCreateDevice(device::mojom::blink::HidDeviceInfoPtr info);
+
+  // Opens a connection to HidService, or does nothing if the connection is
+  // already open.
+  void EnsureServiceConnection();
+  void OnServiceConnectionError();
+  void FinishGetDevices(ScriptPromiseResolver*,
+                        Vector<device::mojom::blink::HidDeviceInfoPtr>);
+  void FinishRequestDevice(ScriptPromiseResolver*,
+                           device::mojom::blink::HidDeviceInfoPtr);
+
+  mojom::blink::HidServicePtr service_;
+  HeapHashSet<Member<ScriptPromiseResolver>> get_devices_promises_;
+  HeapHashSet<Member<ScriptPromiseResolver>> request_device_promises_;
+  HeapHashMap<String, WeakMember<HIDDevice>> device_cache_;
 };
 
 }  // namespace blink

@@ -16,13 +16,13 @@ serial_test(async (t, fake) => {
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
 
-  await port.open({ buffersize: 64 });
+  await port.open({ baudrate: 9600 });
   assert_throws('InvalidStateError', () => port.clearReadError());
 }, 'clearReadError() not allowed without a reported error');
 
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
-  await port.open({ buffersize: 64 });
+  await port.open({ baudrate: 9600 });
 
   fakePort.simulateParityError();
 
@@ -31,7 +31,7 @@ serial_test(async (t, fake) => {
 
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
-  await port.open({ buffersize: 64 });
+  await port.open({ baudrate: 9600 });
 
   fakePort.simulateParityError();
 

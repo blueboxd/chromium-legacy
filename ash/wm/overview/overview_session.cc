@@ -374,7 +374,7 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
     // If the grid which became empty was the one with the selected window, we
     // need to select a window on the newly selected grid.
     if (selected_grid_index_ == index - 1)
-      Move(LEFT, true);
+      Move(/*reverse=*/false);
   }
   if (grid_list_.empty())
     EndOverview();
@@ -383,9 +383,7 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
 }
 
 void OverviewSession::IncrementSelection(int increment) {
-  const Direction direction = increment > 0 ? RIGHT : LEFT;
-  for (int step = 0; step < abs(increment); ++step)
-    Move(direction, true);
+  Move(increment < 0);
 }
 
 bool OverviewSession::AcceptSelection() {
@@ -850,25 +848,25 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
         EndOverview();
       break;
     case ui::VKEY_UP:
-      num_key_presses_++;
-      Move(UP, true);
+      ++num_key_presses_;
+      Move(/*reverse=*/true);
       break;
     case ui::VKEY_DOWN:
-      num_key_presses_++;
-      Move(DOWN, true);
+      ++num_key_presses_;
+      Move(/*reverse=*/false);
       break;
     case ui::VKEY_RIGHT:
     case ui::VKEY_TAB:
       if (event->key_code() == ui::VKEY_RIGHT ||
           !(event->flags() & ui::EF_SHIFT_DOWN)) {
-        num_key_presses_++;
-        Move(RIGHT, true);
+        ++num_key_presses_;
+        Move(/*reverse=*/false);
         break;
       }
       FALLTHROUGH;
     case ui::VKEY_LEFT:
-      num_key_presses_++;
-      Move(LEFT, true);
+      ++num_key_presses_;
+      Move(/*reverse=*/true);
       break;
     case ui::VKEY_W:
       if (!(event->flags() & ui::EF_CONTROL_DOWN) ||
@@ -979,24 +977,23 @@ void OverviewSession::ResetFocusRestoreWindow(bool focus) {
   restore_focus_window_ = nullptr;
 }
 
-void OverviewSession::Move(Direction direction, bool animate) {
-  // Direction to move if moving past the end of a display.
-  int display_direction = (direction == RIGHT || direction == DOWN) ? 1 : -1;
-
+void OverviewSession::Move(bool reverse) {
   // If this is the first move and it's going backwards, start on the last
   // display.
-  if (display_direction == -1 && !grid_list_.empty() &&
+  if (reverse && !grid_list_.empty() &&
       !grid_list_[selected_grid_index_]->is_selecting()) {
     selected_grid_index_ = grid_list_.size() - 1;
   }
 
-  // Keep calling Move() on the grids until one of them reports no overflow or
+  // Keep calling |Move()| on the grids until one of them reports no overflow or
   // we made a full cycle on all the grids.
-  for (size_t i = 0; i <= grid_list_.size() &&
-                     grid_list_[selected_grid_index_]->Move(direction, animate);
-       i++) {
+  const int grid_index_change = reverse ? -1 : 1;
+  for (size_t i = 0;
+       i <= grid_list_.size() &&
+       grid_list_[selected_grid_index_]->Move(reverse, /*animate=*/true);
+       ++i) {
     selected_grid_index_ =
-        (selected_grid_index_ + display_direction + grid_list_.size()) %
+        (selected_grid_index_ + grid_index_change + grid_list_.size()) %
         grid_list_.size();
   }
 }

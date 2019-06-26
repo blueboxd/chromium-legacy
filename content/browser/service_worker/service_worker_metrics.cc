@@ -137,23 +137,6 @@ void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
 
 }  // namespace
 
-using ScopedEventRecorder = ServiceWorkerMetrics::ScopedEventRecorder;
-
-ScopedEventRecorder::ScopedEventRecorder() = default;
-
-ScopedEventRecorder::~ScopedEventRecorder() {
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.StartHintPrecision",
-                        frame_fetch_event_fired_);
-}
-
-void ScopedEventRecorder::RecordEventHandledStatus(
-    ServiceWorkerMetrics::EventType event) {
-  if (event == EventType::FETCH_MAIN_FRAME ||
-      event == EventType::FETCH_SUB_FRAME) {
-    frame_fetch_event_fired_ = true;
-  }
-}
-
 const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
   switch (event_type) {
     case EventType::ACTIVATE:

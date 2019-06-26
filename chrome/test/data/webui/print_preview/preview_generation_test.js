@@ -60,7 +60,6 @@ cr.define('preview_generation_test', function() {
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
-      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
       const documentInfo = page.$$('print-preview-document-info');
       documentInfo.documentSettings.pageCount = 3;
       documentInfo.margins = new print_preview.Margins(10, 10, 10, 10);

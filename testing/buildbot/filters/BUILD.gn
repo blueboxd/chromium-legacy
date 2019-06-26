@@ -30,6 +30,7 @@ source_set("browser_tests_filters") {
   data = [
     "//testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
+    "//testing/buildbot/filters/navigation_loader_on_ui_browser_tests.filter",
   ]
 }
 
@@ -61,6 +62,7 @@ source_set("content_browsertests_filters") {
     "//testing/buildbot/filters/skia_renderer.content_browsertests.filter",
     "//testing/buildbot/filters/vulkan.content_browsertests.filter",
     "//testing/buildbot/filters/gpu.skiarenderer_vulkan_content_browsertests.filter",
+    "//testing/buildbot/filters/navigation_loader_on_ui_content_browsertests.filter",
   ]
 }
 

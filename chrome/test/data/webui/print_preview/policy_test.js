@@ -35,7 +35,6 @@ cr.define('policy_tests', function() {
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
-      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
 
       // Wait for initialization to complete.
       return Promise

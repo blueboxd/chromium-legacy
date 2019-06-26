@@ -17,9 +17,6 @@
 namespace blink {
 
 class LocalDOMWindow;
-class ScriptPromiseResolver;
-class ExecutionContext;
-class ScriptPromiseResolver;
 class Visitor;
 
 class DOMWindowLaunchParams final
@@ -30,18 +27,16 @@ class DOMWindowLaunchParams final
  public:
   static const char kSupplementName[];
 
-  explicit DOMWindowLaunchParams(ExecutionContext*);
+  explicit DOMWindowLaunchParams();
   ~DOMWindowLaunchParams();
 
   // IDL Interface.
-  static ScriptPromise getLaunchParams(ScriptState*, LocalDOMWindow&);
-
-  ScriptPromise GetLaunchParams(ScriptState*);
+  static Member<LaunchParams> launchParams(LocalDOMWindow&);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  static DOMWindowLaunchParams* FromState(ScriptState*, LocalDOMWindow* window);
+  static DOMWindowLaunchParams* FromState(LocalDOMWindow* window);
 
   Member<LaunchParams> launch_params_;
 };

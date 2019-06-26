@@ -59,7 +59,7 @@ class FakeSerialPort {
   constructor() {}
 
   bind(request) {
-    assert_equals(undefined, this.binding);
+    assert_equals(this.binding, undefined, 'Port is still open');
     this.binding = new mojo.Binding(device.mojom.SerialPort,
                                     this, request);
     this.binding.setConnectionErrorHandler(() => {

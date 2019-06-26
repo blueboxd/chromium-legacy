@@ -791,11 +791,13 @@ void InstantService::UpdateCustomBackgroundColorAsync(
     const image_fetcher::RequestMetadata& metadata) {
   // Calculate the bitmap color asynchronously as it is slow (1-2 seconds for
   // the thumbnail). However, prefs should be updated on the main thread.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&GetBitmapMainColor, *fetched_image.ToSkBitmap()),
-      base::BindOnce(&InstantService::UpdateCustomBackgroundPrefsWithColor,
-                     weak_ptr_factory_.GetWeakPtr(), image_url));
+  if (!fetched_image.IsEmpty()) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&GetBitmapMainColor, *fetched_image.ToSkBitmap()),
+        base::BindOnce(&InstantService::UpdateCustomBackgroundPrefsWithColor,
+                       weak_ptr_factory_.GetWeakPtr(), image_url));
+  }
 }
 
 void InstantService::FetchCustomBackground(const GURL& image_url,

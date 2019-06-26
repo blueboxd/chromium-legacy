@@ -80,10 +80,14 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                        OverviewSession::OverviewTransition transition =
                            OverviewSession::OverviewTransition::kInOverview);
 
-  // Updates |selected_index_| according to the specified |direction| and calls
-  // MoveSelectionWidget(). Returns |true| if the new selection index is out of
-  // this window grid bounds.
-  bool Move(OverviewSession::Direction direction, bool animate);
+  // Updates |selected_index_| according to the specified direction and calls
+  // MoveSelectionWidget(). The default is to move forward (left to right)
+  // unless |reverse| is true. If we call this and we are the last item in the
+  // row (or first if |reverse|), we slide out the current highlight, as a new
+  // one slides into the next row. Returns |true| if the new selection index is
+  // out of this window grid bounds. Note: the default is always left to right
+  // even in RTL languages.
+  bool Move(bool reverse, bool animate);
 
   // Returns the target selected window, or NULL if there is none selected.
   OverviewItem* SelectedWindow() const;
@@ -327,10 +331,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void MaybeInitDesksWidget();
 
   // Internal function to initialize the selection widget.
-  void InitSelectionWidget(OverviewSession::Direction direction);
+  void InitSelectionWidget(bool reverse);
 
-  // Moves the selection widget to the specified |direction|.
-  void MoveSelectionWidget(OverviewSession::Direction direction,
+  // Moves the selection widget to the specified direction.
+  void MoveSelectionWidget(bool reverse,
                            bool recreate_selection_widget,
                            bool out_of_bounds,
                            bool animate);

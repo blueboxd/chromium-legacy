@@ -192,7 +192,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textActionButtonColorItem.text = @"Hello, you should do something.";
   textActionButtonColorItem.disableButtonIntrinsicWidth = YES;
   textActionButtonColorItem.buttonBackgroundColor = [UIColor lightGrayColor];
-  textActionButtonColorItem.buttonTextColor = [UIColor greenColor];
+  textActionButtonColorItem.buttonTextColor =
+    [UIColor colorNamed:@"settings_catalog_example_text"];
   textActionButtonColorItem.buttonText = @"Do something, different Colors";
   [model addItem:textActionButtonColorItem
       toSectionWithIdentifier:SectionIdentifierText];

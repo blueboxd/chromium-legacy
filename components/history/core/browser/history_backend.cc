@@ -235,6 +235,7 @@ HistoryBackend::~HistoryBackend() {
 void HistoryBackend::Init(
     bool force_fail,
     const HistoryDatabaseParams& history_database_params) {
+  TRACE_EVENT0("browser", "HistoryBackend::Init");
   // HistoryBackend is created on the UI thread by HistoryService, then the
   // HistoryBackend::Init() method is called on the DB thread. Create the
   // base::SupportsUserData on the DB thread since it is not thread-safe.
@@ -257,6 +258,7 @@ void HistoryBackend::Init(
 void HistoryBackend::SetOnBackendDestroyTask(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Closure& task) {
+  TRACE_EVENT0("browser", "HistoryBackend::SetOnBackendDestroyTask");
   if (!backend_destroy_task_.is_null())
     DLOG(WARNING) << "Setting more than one destroy task, overriding";
   backend_destroy_task_runner_ = std::move(task_runner);
@@ -264,6 +266,7 @@ void HistoryBackend::SetOnBackendDestroyTask(
 }
 
 void HistoryBackend::Closing() {
+  TRACE_EVENT0("browser", "HistoryBackend::Closing");
   // Any scheduled commit will have a reference to us, we must make it
   // release that reference before we can be destroyed.
   CancelScheduledCommit();
@@ -271,11 +274,13 @@ void HistoryBackend::Closing() {
 
 #if defined(OS_IOS)
 void HistoryBackend::PersistState() {
+  TRACE_EVENT0("browser", "HistoryBackend::PersistState");
   Commit();
 }
 #endif
 
 void HistoryBackend::ClearCachedDataForContextID(ContextID context_id) {
+  TRACE_EVENT0("browser", "HistoryBackend::ClearCachedDataForContextID");
   tracker_.ClearCachedDataForContextID(context_id);
 }
 
@@ -386,6 +391,7 @@ void HistoryBackend::UpdateWithPageEndTime(ContextID context_id,
                                            int nav_entry_id,
                                            const GURL& url,
                                            Time end_ts) {
+  TRACE_EVENT0("browser", "HistoryBackend::UpdateWithPageEndTime");
   // Will be filled with the URL ID and the visit ID of the last addition.
   VisitID visit_id = tracker_.GetLastVisit(context_id, nav_entry_id, url);
   UpdateVisitDuration(visit_id, end_ts);
@@ -450,6 +456,8 @@ OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
 }
 
 void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
+  TRACE_EVENT0("browser", "HistoryBackend::AddPage");
+
   if (!db_)
     return;
 
@@ -861,6 +869,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
 void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
                                          VisitSource visit_source) {
+  TRACE_EVENT0("browser", "HistoryBackend::AddPagesWithDetails");
+
   if (!db_)
     return;
 
@@ -920,6 +930,8 @@ bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) {
 
 void HistoryBackend::SetPageTitle(const GURL& url,
                                   const base::string16& title) {
+  TRACE_EVENT0("browser", "HistoryBackend::SetPageTitle");
+
   if (!db_)
     return;
 
@@ -963,6 +975,8 @@ void HistoryBackend::SetPageTitle(const GURL& url,
 
 void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
                                                const base::string16& title) {
+  TRACE_EVENT0("browser", "HistoryBackend::AddPageNoVisitForBookmark");
+
   if (!db_)
     return;
 
@@ -1118,6 +1132,8 @@ HistoryCountResult HistoryBackend::CountUniqueHostsVisitedLastMonth() {
 void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
                                                  KeywordID keyword_id,
                                                  const base::string16& term) {
+  TRACE_EVENT0("browser", "HistoryBackend::SetKeywordSearchTermsForURL");
+
   if (!db_)
     return;
 
@@ -1136,6 +1152,8 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
 }
 
 void HistoryBackend::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
+  TRACE_EVENT0("browser", "HistoryBackend::DeleteAllSearchTermsForKeyword");
+
   if (!db_)
     return;
 
@@ -1144,6 +1162,8 @@ void HistoryBackend::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
 }
 
 void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
+  TRACE_EVENT0("browser", "HistoryBackend::DeleteKeywordSearchTermForURL");
+
   if (!db_)
     return;
 
@@ -1158,6 +1178,8 @@ void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
 
 void HistoryBackend::DeleteMatchingURLsForKeyword(KeywordID keyword_id,
                                                   const base::string16& term) {
+  TRACE_EVENT0("browser", "HistoryBackend::DeleteMatchingURLsForKeyword");
+
   if (!db_)
     return;
 
@@ -1201,6 +1223,7 @@ std::vector<DownloadRow> HistoryBackend::QueryDownloads() {
 void HistoryBackend::UpdateDownload(
     const DownloadRow& data,
     bool should_commit_immediately) {
+  TRACE_EVENT0("browser", "HistoryBackend::UpdateDownload");
   if (!db_)
     return;
   db_->UpdateDownload(data);
@@ -1211,6 +1234,7 @@ void HistoryBackend::UpdateDownload(
 }
 
 bool HistoryBackend::CreateDownload(const DownloadRow& history_info) {
+  TRACE_EVENT0("browser", "HistoryBackend::CreateDownload");
   if (!db_)
     return false;
   bool success = db_->CreateDownload(history_info);
@@ -1227,6 +1251,7 @@ bool HistoryBackend::CreateDownload(const DownloadRow& history_info) {
 }
 
 void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
+  TRACE_EVENT0("browser", "HistoryBackend::RemoveDownloads");
   if (!db_)
     return;
   size_t downloads_count_before = db_->CountDownloads();
@@ -1622,6 +1647,8 @@ HistoryBackend::UpdateFaviconMappingsAndFetch(
 void HistoryBackend::DeleteFaviconMappings(
     const base::flat_set<GURL>& page_urls,
     favicon_base::IconType icon_type) {
+  TRACE_EVENT0("browser", "HistoryBackend::DeleteFaviconMappings");
+
   if (!thumbnail_db_ || !db_)
     return;
 
@@ -1643,6 +1670,8 @@ void HistoryBackend::MergeFavicon(
     favicon_base::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
+  TRACE_EVENT0("browser", "HistoryBackend::MergeFavicon");
+
   if (!thumbnail_db_ || !db_)
     return;
 
@@ -1799,6 +1828,7 @@ void HistoryBackend::SetFavicons(const base::flat_set<GURL>& page_urls,
                                  favicon_base::IconType icon_type,
                                  const GURL& icon_url,
                                  const std::vector<SkBitmap>& bitmaps) {
+  TRACE_EVENT0("browser", "HistoryBackend::SetFavicons");
   SetFaviconsImpl(page_urls, icon_type, icon_url, bitmaps,
                   FaviconBitmapType::ON_VISIT);
 }
@@ -1807,6 +1837,8 @@ void HistoryBackend::CloneFaviconMappingsForPages(
     const GURL& page_url_to_read,
     const favicon_base::IconTypeSet& icon_types,
     const base::flat_set<GURL>& page_urls_to_write) {
+  TRACE_EVENT0("browser", "HistoryBackend::CloneFaviconMappingsForPages");
+
   if (!db_ || !thumbnail_db_)
     return;
 
@@ -1885,6 +1917,8 @@ bool HistoryBackend::SetOnDemandFavicons(const GURL& page_url,
 }
 
 void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
+  TRACE_EVENT0("browser", "HistoryBackend::SetFaviconsOutOfDateForPage");
+
   std::vector<IconMapping> icon_mappings;
 
   if (!thumbnail_db_ ||
@@ -1898,6 +1932,8 @@ void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
 }
 
 void HistoryBackend::TouchOnDemandFavicon(const GURL& icon_url) {
+  TRACE_EVENT0("browser", "HistoryBackend::TouchOnDemandFavicon");
+
   if (!thumbnail_db_)
     return;
 
@@ -1907,6 +1943,8 @@ void HistoryBackend::TouchOnDemandFavicon(const GURL& icon_url) {
 
 void HistoryBackend::SetImportedFavicons(
     const favicon_base::FaviconUsageDataList& favicon_usage) {
+  TRACE_EVENT0("browser", "HistoryBackend::SetImportedFavicons");
+
   if (!db_ || !thumbnail_db_)
     return;
 
@@ -2421,6 +2459,8 @@ void HistoryBackend::ProcessDBTaskImpl() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
+  TRACE_EVENT0("browser", "HistoryBackend::DeleteURLs");
+
   expirer_.DeleteURLs(urls, base::Time::Max());
 
   db_->GetStartDate(&first_recorded_time_);
@@ -2430,6 +2470,8 @@ void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
 }
 
 void HistoryBackend::DeleteURL(const GURL& url) {
+  TRACE_EVENT0("browser", "HistoryBackend::DeleteURL");
+
   expirer_.DeleteURL(url, base::Time::Max());
 
   db_->GetStartDate(&first_recorded_time_);
@@ -2440,6 +2482,8 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 
 void HistoryBackend::DeleteURLsUntil(
     const std::vector<std::pair<GURL, base::Time>>& urls_and_timestamps) {
+  TRACE_EVENT0("browser", "HistoryBackend::DeleteURLsUntil");
+
   for (const auto& pair : urls_and_timestamps) {
     expirer_.DeleteURL(pair.first, pair.second);
   }
@@ -2551,6 +2595,8 @@ void HistoryBackend::ExpireHistoryBeforeForTesting(base::Time end_time) {
 }
 
 void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
+  TRACE_EVENT0("browser", "HistoryBackend::URLsNoLongerBookmarked");
+
   if (!db_)
     return;
 
@@ -2630,6 +2676,7 @@ void HistoryBackend::ProcessDBTask(
     std::unique_ptr<HistoryDBTask> task,
     scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
+  TRACE_EVENT0("browser", "HistoryBackend::ProcessDBTask");
   bool scheduled = !queued_history_db_tasks_.empty();
   queued_history_db_tasks_.push_back(std::make_unique<QueuedHistoryDBTask>(
       std::move(task), origin_loop, is_canceled));

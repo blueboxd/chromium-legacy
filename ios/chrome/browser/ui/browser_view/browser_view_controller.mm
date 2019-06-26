@@ -724,8 +724,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Tab creation and selection
 // --------------------------
-// Whether the given tab's URL is an application specific URL.
-- (BOOL)isTabNativePage:(Tab*)tab;
 // Add all delegates to the provided |webState|.
 - (void)installDelegatesForWebState:(web::WebState*)webState;
 // Remove delegates from the provided |webState|.
@@ -1569,15 +1567,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [self secondaryToolbarHeightWithInset];
   self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
-
-  // Native content pages depend on |self.view|'s safeArea.  If the BVC is
-  // presented underneath another view (such as the first time welcome view),
-  // the BVC has no safe area set during webController's layout initial, and
-  // won't automatically get another layout without forcing it here.
-  Tab* currentTab = self.tabModel.currentTab;
-  if ([self isTabNativePage:currentTab]) {
-    [currentTab.webController.view setNeedsLayout];
-  }
 
   // Update the tab strip placement.
   if (self.tabStripView) {
@@ -2756,17 +2745,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 #pragma mark - Private Methods: Tab creation and selection
-
-- (BOOL)isTabNativePage:(Tab*)tab {
-  web::WebState* webState = tab.webState;
-  if (!webState)
-    return NO;
-  web::NavigationItem* visibleItem =
-      webState->GetNavigationManager()->GetVisibleItem();
-  if (!visibleItem)
-    return NO;
-  return web::GetWebClient()->IsAppSpecificURL(visibleItem->GetURL());
-}
 
 - (void)installDelegatesForWebState:(web::WebState*)webState {
   // Unregistration happens when the WebState is removed from the WebStateList.

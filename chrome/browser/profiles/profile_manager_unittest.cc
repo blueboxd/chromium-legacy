@@ -900,7 +900,7 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
   ASSERT_TRUE(profile);
   EXPECT_FALSE(profile->IsOffTheRecord());
   PrefService* prefs = profile->GetPrefs();
-  EXPECT_EQ(IncognitoModePrefs::ENABLED,
+  EXPECT_EQ(IncognitoModePrefs::kDefaultAvailability,
             IncognitoModePrefs::GetAvailability(prefs));
 
   ASSERT_TRUE(profile->GetOffTheRecordProfile());

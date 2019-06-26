@@ -99,6 +99,8 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     safe_browsing_service->AddPrefService(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext())
             ->GetPrefs());
+    content::BrowserThread::RunAllPendingTasksOnThreadForTesting(
+        content::BrowserThread::IO);
   }
 
   void TearDown() override {

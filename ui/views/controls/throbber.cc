@@ -52,12 +52,16 @@ void Throbber::Stop() {
   SchedulePaint();
 }
 
+bool Throbber::GetChecked() const {
+  return checked_;
+}
+
 void Throbber::SetChecked(bool checked) {
   if (checked == checked_)
     return;
 
   checked_ = checked;
-  SchedulePaint();
+  OnPropertyChanged(&checked_, kPropertyEffectsPaint);
 }
 
 gfx::Size Throbber::CalculatePreferredSize() const {
@@ -88,6 +92,7 @@ bool Throbber::IsRunning() const {
 
 BEGIN_METADATA(Throbber)
 METADATA_PARENT_CLASS(View)
+ADD_PROPERTY_METADATA(Throbber, bool, Checked)
 END_METADATA()
 
 // Smoothed throbber ---------------------------------------------------------
@@ -128,12 +133,36 @@ void SmoothedThrobber::Stop() {
                     &SmoothedThrobber::StopDelayOver);
 }
 
+int SmoothedThrobber::GetStartDelayMs() const {
+  return start_delay_ms_;
+}
+
+void SmoothedThrobber::SetStartDelayMs(int start_delay_ms) {
+  if (start_delay_ms == start_delay_ms_)
+    return;
+  start_delay_ms_ = start_delay_ms;
+  OnPropertyChanged(&start_delay_ms_, kPropertyEffectsNone);
+}
+
+int SmoothedThrobber::GetStopDelayMs() const {
+  return stop_delay_ms_;
+}
+
+void SmoothedThrobber::SetStopDelayMs(int stop_delay_ms) {
+  if (stop_delay_ms == stop_delay_ms_)
+    return;
+  stop_delay_ms_ = stop_delay_ms;
+  OnPropertyChanged(&stop_delay_ms_, kPropertyEffectsNone);
+}
+
 void SmoothedThrobber::StopDelayOver() {
   Throbber::Stop();
 }
 
 BEGIN_METADATA(SmoothedThrobber)
 METADATA_PARENT_CLASS(Throbber)
+ADD_PROPERTY_METADATA(SmoothedThrobber, int, StartDelayMs)
+ADD_PROPERTY_METADATA(SmoothedThrobber, int, StopDelayMs)
 END_METADATA()
 
 }  // namespace views

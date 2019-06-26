@@ -25,7 +25,9 @@ class VIEWS_EXPORT Throbber : public View {
   virtual void Start();
   virtual void Stop();
 
-  // Stop spinning and, if checked is true, display a checkmark.
+  // Gets/Sets checked. For SetChecked, stop spinning and, if
+  // checked is true, display a checkmark.
+  bool GetChecked() const;
   void SetChecked(bool checked);
 
   // Overridden from View:
@@ -59,8 +61,11 @@ class VIEWS_EXPORT SmoothedThrobber : public Throbber {
   void Start() override;
   void Stop() override;
 
-  void set_start_delay_ms(int value) { start_delay_ms_ = value; }
-  void set_stop_delay_ms(int value) { stop_delay_ms_ = value; }
+  int GetStartDelayMs() const;
+  void SetStartDelayMs(int start_delay_ms);
+
+  int GetStopDelayMs() const;
+  void SetStopDelayMs(int stop_delay_ms);
 
  private:
   // Called when the startup-delay timer fires

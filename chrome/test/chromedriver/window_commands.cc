@@ -1387,8 +1387,8 @@ Status ExecutePerformActions(Session* session,
       std::vector<TouchEvent> touch_events;
       double x = 0;
       double y = 0;
-      bool has_touch_start = false;
-      int buttons = 0;
+      bool has_touch_start = input_state->FindKey("pressed")->GetInt() != 0;
+      int buttons = input_state->FindKey("pressed")->GetInt();
       std::string button_type;
       OriginType origin_type = kPointer;
       std::string element_id;

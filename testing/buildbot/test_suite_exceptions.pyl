@@ -69,6 +69,15 @@
       'Linux FYI Experimental Release (Intel HD 630)',
     ],
   },
+  'breakpad_unittests': {
+    'modifications': {
+      'android-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.breakpad_unittests.filter',
+        ],
+      },
+    },
+  },
   'browser_tests': {
     'remove_from': [
       # chromium.clang

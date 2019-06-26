@@ -123,14 +123,10 @@ class PlatformParentalControlsValue {
 }  // namespace
 #endif  // OS_WIN
 
-namespace {
-static constexpr IncognitoModePrefs::Availability kDefaultAvailability =
-#if defined(INCOGNITO_DEFAULT_DISABLED)
-    IncognitoModePrefs::DISABLED;
-#else
-    IncognitoModePrefs::ENABLED;
-#endif
-}  // namespace
+// static
+// Sadly, this is required until c++17.
+constexpr IncognitoModePrefs::Availability
+    IncognitoModePrefs::kDefaultAvailability;
 
 // static
 bool IncognitoModePrefs::IntToAvailability(int in_value,

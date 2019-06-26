@@ -303,6 +303,8 @@ class SafeBrowsingBlockingPageTestBase
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     safe_browsing_service->AddPrefService(profile->GetPrefs());
+    content::BrowserThread::RunAllPendingTasksOnThreadForTesting(
+        content::BrowserThread::IO);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // EventRouterFactory redirects incognito context to original profile.
     test_event_router_ =
@@ -1111,6 +1113,8 @@ class SafeBrowsingBlockingQuietPageTest
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
         safe_browsing_service);
     g_browser_process->safe_browsing_service()->Initialize();
+    content::BrowserThread::RunAllPendingTasksOnThreadForTesting(
+        content::BrowserThread::IO);
   }
 
   void TearDown() override {

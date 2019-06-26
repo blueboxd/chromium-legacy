@@ -3530,6 +3530,9 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   if (workarounds().rely_on_implicit_sync_for_swap_buffers)
     surface_->SetRelyOnImplicitSync();
 
+  if (workarounds().force_gl_flush_on_swap_buffers)
+    surface_->SetForceGlFlushOnSwapBuffers();
+
   // Create GPU Tracer for timing values.
   gpu_tracer_.reset(new GPUTracer(this));
 

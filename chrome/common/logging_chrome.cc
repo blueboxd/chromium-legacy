@@ -212,9 +212,10 @@ base::FilePath SetUpSymlinkIfNeeded(const base::FilePath& symlink_path,
     }
   }
   // If all went well, the symlink no longer exists.  Recreate it.
-  if (!base::CreateSymbolicLink(target_path, symlink_path)) {
+  base::FilePath relative_target_path = target_path.BaseName();
+  if (!base::CreateSymbolicLink(relative_target_path, symlink_path)) {
     DPLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
-                 << " pointing at " << target_path.value();
+                 << " pointing at " << relative_target_path.value();
   }
   return target_path;
 }

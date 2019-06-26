@@ -779,6 +779,52 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testActionsMouseDrag(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/drag.html'))
+    target = self._driver.FindElement('css selector', '#target')
+
+    # Move to center of target element and drag it to a new location.
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [
+          {'type': 'pointerMove', 'x': 100, 'y': 100},
+          {'type': 'pointerDown', 'button': 0},
+          {'type': 'pointerMove', 'x': 200, 'y': 250}
+      ],
+      'parameters': {'pointerType': 'mouse'},
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    rect = target.GetRect()
+    self.assertEquals(150, rect['x'])
+    self.assertEquals(200, rect['y'])
+
+    # Without releasing mouse button, should continue the drag.
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [
+          {'type': 'pointerMove', 'x': 30, 'y': 40, 'origin': 'pointer'}
+      ],
+      'parameters': {'pointerType': 'mouse'},
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    rect = target.GetRect()
+    self.assertEquals(180, rect['x'])
+    self.assertEquals(240, rect['y'])
+
+    # Releasing mouse button stops the drag.
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [
+          {'type': 'pointerUp', 'button': 0},
+          {'type': 'pointerMove', 'x': 50, 'y': 50, 'origin': 'pointer'}
+      ],
+      'parameters': {'pointerType': 'mouse'},
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    rect = target.GetRect()
+    self.assertEquals(180, rect['x'])
+    self.assertEquals(240, rect['y'])
+
   def testActionsTouchTap(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(

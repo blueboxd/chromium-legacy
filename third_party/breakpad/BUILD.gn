@@ -719,6 +719,7 @@ if (is_linux || is_android) {
 
     data_deps = [
       ":linux_dumper_unittest_helper",
+      "//testing/buildbot/filters:breakpad_unittests_filters",
     ]
 
     include_dirs = [

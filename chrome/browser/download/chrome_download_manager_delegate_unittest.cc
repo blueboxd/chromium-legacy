@@ -58,6 +58,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar.h"
@@ -1570,6 +1571,11 @@ TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
 
 TEST_F(ChromeDownloadManagerDelegateTest,
        RequestConfirmation_Android_WithLocationChangeEnabled) {
+#if defined(OS_ANDROID)
+  // We do not prompt for location in this case.
+  if (chrome::android::IsNoTouchModeEnabled())
+    return;
+#endif
   DeleteContents();
   SetContents(CreateTestWebContents());
 

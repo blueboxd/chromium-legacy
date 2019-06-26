@@ -61,8 +61,9 @@ WebAppMetrics::WebAppMetrics(Profile* profile)
   WebAppProvider* provider = WebAppProvider::Get(profile_);
   DCHECK(provider);
 
-  provider->SetRegistryReadyCallback(base::BindOnce(
-      &WebAppMetrics::CountUserInstalledApps, weak_ptr_factory_.GetWeakPtr()));
+  provider->on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(&WebAppMetrics::CountUserInstalledApps,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 WebAppMetrics::~WebAppMetrics() = default;

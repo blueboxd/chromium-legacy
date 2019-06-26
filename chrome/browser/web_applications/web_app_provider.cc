@@ -167,8 +167,7 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 }
 
 void WebAppProvider::OnRegistryReady() {
-  DCHECK(!registry_is_ready_);
-  registry_is_ready_ = true;
+  DCHECK(!on_registry_ready_.is_signaled());
 
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     web_app_policy_manager_->Start();
@@ -181,8 +180,7 @@ void WebAppProvider::OnRegistryReady() {
                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (registry_ready_callback_)
-    std::move(registry_ready_callback_).Run();
+  on_registry_ready_.Signal();
 }
 
 // static
@@ -235,16 +233,6 @@ void WebAppProvider::ProfileDestroyed() {
     pending_app_manager_->Shutdown();
 
   install_manager_->Shutdown();
-}
-
-void WebAppProvider::SetRegistryReadyCallback(base::OnceClosure callback) {
-  DCHECK(!registry_ready_callback_);
-  if (registry_is_ready_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
-  } else {
-    registry_ready_callback_ = std::move(callback);
-  }
 }
 
 void WebAppProvider::OnScanForExternalWebApps(

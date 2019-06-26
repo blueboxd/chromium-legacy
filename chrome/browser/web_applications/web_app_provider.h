@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -92,10 +92,10 @@ class WebAppProvider : public WebAppProviderBase,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Fires when app registry becomes ready.
-  // Consider to use base::ObserverList or base::OneShotEvent if many
-  // subscribers needed.
-  void SetRegistryReadyCallback(base::OnceClosure callback);
+  // Signals when app registry becomes ready.
+  const base::OneShotEvent& on_registry_ready() const {
+    return on_registry_ready_;
+  }
 
  protected:
   // Create extension-independent subsystems.
@@ -130,8 +130,7 @@ class WebAppProvider : public WebAppProviderBase,
 
   content::NotificationRegistrar notification_registrar_;
 
-  base::OnceClosure registry_ready_callback_;
-  bool registry_is_ready_ = false;
+  base::OneShotEvent on_registry_ready_;
 
   Profile* profile_;
 

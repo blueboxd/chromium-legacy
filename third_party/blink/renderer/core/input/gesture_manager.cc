@@ -65,7 +65,8 @@ void GestureManager::Trace(blink::Visitor* visitor) {
 
 HitTestRequest::HitTestRequestType GestureManager::GetHitTypeForGestureType(
     WebInputEvent::Type type) {
-  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent;
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kTouchEvent | HitTestRequest::kRetargetForInert;
   switch (type) {
     case WebInputEvent::kGestureShowPress:
     case WebInputEvent::kGestureTapUnconfirmed:

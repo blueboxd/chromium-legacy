@@ -55,7 +55,8 @@ Node* ParentNode(const Node& node) {
 
 HitTestResult HitTest(LayoutView* layout_view, const IntPoint& point_in_root) {
   HitTestRequest request(HitTestRequest::kReadOnly |
-                         HitTestRequest::kAllowChildFrameContent);
+                         HitTestRequest::kAllowChildFrameContent |
+                         HitTestRequest::kRetargetForInert);
   HitTestLocation location(point_in_root);
   HitTestResult result(request, location);
   layout_view->HitTest(location, result);

@@ -212,8 +212,9 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   if (!ContextMenuAllowedScope::IsContextMenuAllowed())
     return false;
 
-  HitTestRequest::HitTestRequestType type =
-      HitTestRequest::kReadOnly | HitTestRequest::kActive;
+  HitTestRequest::HitTestRequestType type = HitTestRequest::kReadOnly |
+                                            HitTestRequest::kActive |
+                                            HitTestRequest::kRetargetForInert;
   HitTestLocation location(point);
   HitTestResult result(type, location);
   if (frame)

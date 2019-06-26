@@ -1941,14 +1941,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool VisibleToHitTestRequest(const HitTestRequest& request) const {
     return StyleRef().Visibility() == EVisibility::kVisible &&
            (request.IgnorePointerEventsNone() ||
-            StyleRef().PointerEvents() != EPointerEvents::kNone) &&
-           !IsInert();
+            StyleRef().PointerEvents() != EPointerEvents::kNone);
   }
 
-  // Warning: inertness can change without causing relayout.
-  bool VisibleToHitTesting() const {
-    return StyleRef().VisibleToHitTesting() && !IsInert();
-  }
+  bool VisibleToHitTesting() const { return StyleRef().VisibleToHitTesting(); }
 
   // Map points and quads through elements, potentially via 3d transforms. You
   // should never need to call these directly; use localToAbsolute/

@@ -668,7 +668,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (!frame_->View())
     return WebInputEventResult::kNotHandled;
 
-  HitTestRequest request(HitTestRequest::kActive);
+  HitTestRequest request(HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   // Save the document point we generate in case the window coordinate is
   // invalidated by what happens when we dispatch the event.
   PhysicalOffset document_point = frame_->View()->ConvertFromRootFrame(
@@ -768,8 +769,10 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   // dragging if we keep the selection in case of mousedown. FireFox also has
   // the same behavior and it's more compatible with other browsers.
   GetSelectionController().InitializeSelectionState();
+
   HitTestResult hit_test_result = event_handling_util::HitTestResultInFrame(
-      frame_, HitTestLocation(document_point), HitTestRequest::kReadOnly);
+      frame_, HitTestLocation(document_point),
+      HitTestRequest::kReadOnly | HitTestRequest::kRetargetForInert);
   InputDeviceCapabilities* source_capabilities =
       frame_->GetDocument()
           ->domWindow()
@@ -801,7 +804,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (event_result == WebInputEventResult::kNotHandled) {
     if (ShouldRefetchEventTarget(mev)) {
       HitTestRequest read_only_request(HitTestRequest::kReadOnly |
-                                       HitTestRequest::kActive);
+                                       HitTestRequest::kActive |
+                                       HitTestRequest::kRetargetForInert);
       mev = frame_->GetDocument()->PerformMouseEventHitTest(
           read_only_request, document_point, mouse_event);
     }
@@ -918,7 +922,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     return WebInputEventResult::kHandledSystem;
   }
 
-  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kMove;
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kMove | HitTestRequest::kRetargetForInert;
   if (mouse_event_manager_->MousePressed()) {
     hit_type |= HitTestRequest::kActive;
   } else if (only_update_scrollbars) {
@@ -1081,7 +1086,8 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 
   // Mouse events simulated from touch should not hit-test again.
   DCHECK(!mouse_event.FromTouch());
-  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kRelease;
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kRelease | HitTestRequest::kRetargetForInert;
   HitTestRequest request(hit_type);
   MouseEventWithHitTestResults mev = GetMouseEventTarget(request, mouse_event);
   LocalFrame* subframe = event_handling_util::GetTargetSubframe(
@@ -1139,7 +1145,8 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
   if (!frame_->View())
     return event_result;
 
-  HitTestRequest request(HitTestRequest::kReadOnly);
+  HitTestRequest request(HitTestRequest::kReadOnly |
+                         HitTestRequest::kRetargetForInert);
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
@@ -1824,6 +1831,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // disabled). Note that we don't yet apply hover/active state here because
   // we need to resolve touch adjustment first so that we apply hover/active
   // it to the final adjusted node.
+  hit_type |= HitTestRequest::kRetargetForInert;
   hit_type |= HitTestRequest::kReadOnly;
   WebGestureEvent adjusted_event = gesture_event;
   LayoutSize hit_rect_size;
@@ -1938,7 +1946,8 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
 
   PhysicalOffset position_in_contents(
       v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame())));
-  HitTestRequest request(HitTestRequest::kActive);
+  HitTestRequest request(HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   MouseEventWithHitTestResults mev =
       frame_->GetDocument()->PerformMouseEventHitTest(
           request, position_in_contents, event);
@@ -2025,7 +2034,8 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
     target_node = doc;
 
   // Use the focused node as the target for hover and active.
-  HitTestRequest request(HitTestRequest::kActive);
+  HitTestRequest request(HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   HitTestLocation location(location_in_root_frame);
   HitTestResult result(request, location);
   result.SetInnerNode(target_node);
@@ -2111,7 +2121,8 @@ void EventHandler::HoverTimerFired(TimerBase*) {
 
   if (auto* layout_object = frame_->ContentLayoutObject()) {
     if (LocalFrameView* view = frame_->View()) {
-      HitTestRequest request(HitTestRequest::kMove);
+      HitTestRequest request(HitTestRequest::kMove |
+                             HitTestRequest::kRetargetForInert);
       HitTestLocation location(view->ViewportToFrame(
           mouse_event_manager_->LastKnownMousePositionInViewport()));
       HitTestResult result(request, location);
@@ -2129,7 +2140,8 @@ void EventHandler::ActiveIntervalTimerFired(TimerBase*) {
     // FIXME: Enable condition when http://crbug.com/226842 lands
     // m_lastDeferredTapElement.get() == m_frame->document()->activeElement()
     HitTestRequest request(HitTestRequest::kTouchEvent |
-                           HitTestRequest::kRelease);
+                           HitTestRequest::kRelease |
+                           HitTestRequest::kRetargetForInert);
     frame_->GetDocument()->UpdateHoverActiveState(
         request.Active(), !request.Move(), last_deferred_tap_element_.Get());
   }
@@ -2169,7 +2181,8 @@ void EventHandler::DragSourceEndedAt(const WebMouseEvent& event,
                                      DragOperation operation) {
   // Asides from routing the event to the correct frame, the hit test is also an
   // opportunity for Layer to update the :hover and :active pseudoclasses.
-  HitTestRequest request(HitTestRequest::kRelease);
+  HitTestRequest request(HitTestRequest::kRelease |
+                         HitTestRequest::kRetargetForInert);
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 

@@ -104,8 +104,9 @@ class CORE_EXPORT EventHandler final
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,
-      HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
-                                                    HitTestRequest::kActive,
+      HitTestRequest::HitTestRequestType hit_type =
+          HitTestRequest::kReadOnly | HitTestRequest::kActive |
+          HitTestRequest::kRetargetForInert,
       const LayoutObject* stop_node = nullptr,
       bool no_lifecycle_update = false);
 

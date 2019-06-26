@@ -64,6 +64,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     : hit_test_request_(other.hit_test_request_),
       cacheable_(other.cacheable_),
       inner_node_(other.InnerNode()),
+      inert_node_(other.InertNode()),
       inner_element_(other.InnerElement()),
       inner_possibly_pseudo_node_(other.inner_possibly_pseudo_node_),
       point_in_inner_node_frame_(other.point_in_inner_node_frame_),
@@ -90,7 +91,7 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other) {
 
 bool HitTestResult::EqualForCacheability(const HitTestResult& other) const {
   return hit_test_request_.EqualForCacheability(other.hit_test_request_) &&
-         inner_node_ == other.InnerNode() &&
+         inner_node_ == other.InnerNode() && inert_node_ == other.InertNode() &&
          inner_element_ == other.InnerElement() &&
          inner_possibly_pseudo_node_ == other.InnerPossiblyPseudoNode() &&
          point_in_inner_node_frame_ == other.point_in_inner_node_frame_ &&
@@ -107,6 +108,7 @@ void HitTestResult::CacheValues(const HitTestResult& other) {
 
 void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
   inner_node_ = other.InnerNode();
+  inert_node_ = other.InertNode();
   inner_element_ = other.InnerElement();
   inner_possibly_pseudo_node_ = other.InnerPossiblyPseudoNode();
   point_in_inner_node_frame_ = other.point_in_inner_node_frame_;
@@ -126,6 +128,7 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
 
 void HitTestResult::Trace(blink::Visitor* visitor) {
   visitor->Trace(inner_node_);
+  visitor->Trace(inert_node_);
   visitor->Trace(inner_element_);
   visitor->Trace(inner_possibly_pseudo_node_);
   visitor->Trace(inner_url_element_);
@@ -201,6 +204,21 @@ void HitTestResult::SetInnerNode(Node* n) {
     inner_element_ = nullptr;
     return;
   }
+
+  if (GetHitTestRequest().RetargetForInert()) {
+    if (n->IsInert()) {
+      if (!inert_node_)
+        inert_node_ = n;
+
+      return;
+    }
+
+    if (inert_node_ && n != inert_node_ &&
+        !n->IsShadowIncludingInclusiveAncestorOf(*inert_node_)) {
+      return;
+    }
+  }
+
   inner_possibly_pseudo_node_ = n;
   if (auto* pseudo_element = DynamicTo<PseudoElement>(n))
     n = pseudo_element->InnerNodeForHitTesting();
@@ -213,6 +231,14 @@ void HitTestResult::SetInnerNode(Node* n) {
     inner_element_ = ToElement(inner_node_);
   else
     inner_element_ = FlatTreeTraversal::ParentElement(*inner_node_);
+}
+
+void HitTestResult::SetInertNode(Node* n) {
+  // Don't overwrite an existing value for inert_node_
+  if (inert_node_)
+    DCHECK(n == inert_node_);
+
+  inert_node_ = n;
 }
 
 void HitTestResult::SetURLElement(Element* n) {
@@ -393,6 +419,10 @@ ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
     Node* node,
     const HitTestLocation& location,
     const PhysicalRect& rect) {
+  // If we are in the process of retargeting for `inert`, continue.
+  if (GetHitTestRequest().RetargetForInert() && InertNode() && !InnerNode())
+    return kContinueHitTesting;
+
   // If not a list-based test, stop testing because the hit has been found.
   if (!GetHitTestRequest().ListBased())
     return kStopHitTesting;
@@ -413,6 +443,10 @@ ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
     Node* node,
     const HitTestLocation& location,
     const Region& region) {
+  // If we are in the process of retargeting for `inert`, continue.
+  if (GetHitTestRequest().RetargetForInert() && InertNode() && !InnerNode())
+    return kContinueHitTesting;
+
   // If not a list-based test, stop testing because the hit has been found.
   if (!GetHitTestRequest().ListBased())
     return kStopHitTesting;
@@ -446,6 +480,9 @@ void HitTestResult::Append(const HitTestResult& other) {
     is_over_embedded_content_view_ = other.IsOverEmbeddedContentView();
     canvas_region_id_ = other.CanvasRegionId();
   }
+
+  if (!inert_node_ && other.InertNode())
+    SetInertNode(other.InertNode());
 
   if (other.list_based_test_result_) {
     NodeSet& set = MutableListBasedTestResult();

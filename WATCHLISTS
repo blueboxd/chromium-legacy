@@ -801,6 +801,9 @@
     'content_bluetooth': {
       'filepath': 'content/.*bluetooth'
     },
+    'content_index': {
+      'filepath': 'content_index',
+    },
     'content_loader': {
       'filepath': 'chrome/browser/loader|' \
                   'content/browser/loader|' \
@@ -2251,6 +2254,7 @@
     'compositor_animator': ['mdjones+watch@chromium.org'],
     'content_bluetooth': ['mattreynolds+watch@chromium.org',
                           'ortuno+watch@chromium.org'],
+    'content_index': ['rayankans+watch@chromium.org'],
     'content_loader': ['loading-reviews@chromium.org'],
     'content_renderer': ['mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',

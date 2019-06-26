@@ -1256,7 +1256,7 @@ bool Node::IsInert() const {
 
   DCHECK(!ChildNeedsDistributionRecalc());
 
-  if (this != GetDocument()) {
+  if (this != GetDocument() && this != GetDocument().documentElement()) {
     const Element* modal_element = GetDocument().ActiveModalDialog();
     if (!modal_element)
       modal_element = Fullscreen::FullscreenElementFrom(GetDocument());

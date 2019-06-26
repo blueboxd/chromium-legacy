@@ -1696,7 +1696,8 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 
-  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   HitTestLocation location(point);
   HitTestResult hit_test_result = HitTestResult(request, location);
   layer->HitTest(location, hit_test_result,

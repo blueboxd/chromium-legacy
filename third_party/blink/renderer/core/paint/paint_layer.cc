@@ -2187,6 +2187,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
       // to 'result' if we know we're frontmost.
       HitTestResult temp_result(result.GetHitTestRequest(),
                                 recursion_data.original_location);
+      temp_result.SetInertNode(result.InertNode());
       bool inside_fragment_foreground_rect = false;
 
       if (HitTestContentsForFragments(
@@ -2206,6 +2207,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
       } else if (inside_fragment_foreground_rect &&
                  result.GetHitTestRequest().ListBased()) {
         result.Append(temp_result);
+      } else if (result.GetHitTestRequest().RetargetForInert()) {
+        result.SetInertNode(temp_result.InertNode());
       }
     }
   }
@@ -2229,6 +2232,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   if (recursion_data.intersects_location && IsSelfPaintingLayer()) {
     HitTestResult temp_result(result.GetHitTestRequest(),
                               recursion_data.original_location);
+    temp_result.SetInertNode(result.InertNode());
     bool inside_fragment_background_rect = false;
     if (HitTestContentsForFragments(*layer_fragments, offset, temp_result,
                                     recursion_data.location, kHitTestSelf,
@@ -2240,6 +2244,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
       else
         result = temp_result;
       return this;
+    } else if (result.GetHitTestRequest().RetargetForInert()) {
+      result.SetInertNode(temp_result.InertNode());
     }
     if (inside_fragment_background_rect &&
         result.GetHitTestRequest().ListBased())
@@ -2453,6 +2459,7 @@ PaintLayer* PaintLayer::HitTestChildren(
     PaintLayer* hit_layer = nullptr;
     HitTestResult temp_result(result.GetHitTestRequest(),
                               recursion_data.original_location);
+    temp_result.SetInertNode(result.InertNode());
     hit_layer = child_layer->HitTestLayer(
         root_layer, this, temp_result, recursion_data, false, transform_state,
         z_offset_for_descendants);
@@ -2469,6 +2476,8 @@ PaintLayer* PaintLayer::HitTestChildren(
         result = temp_result;
       if (!depth_sort_descendants)
         break;
+    } else if (result.GetHitTestRequest().RetargetForInert()) {
+      result.SetInertNode(temp_result.InertNode());
     }
   }
 

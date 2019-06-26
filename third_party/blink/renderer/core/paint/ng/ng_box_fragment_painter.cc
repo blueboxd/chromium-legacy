@@ -58,8 +58,7 @@ bool FragmentVisibleToHitTestRequest(const NGPaintFragment& fragment,
                                      const HitTestRequest& request) {
   return fragment.Style().Visibility() == EVisibility::kVisible &&
          (request.IgnorePointerEventsNone() ||
-          fragment.Style().PointerEvents() != EPointerEvents::kNone) &&
-         !(fragment.GetNode() && fragment.GetNode()->IsInert());
+          fragment.Style().PointerEvents() != EPointerEvents::kNone);
 }
 
 // Hit tests inline ancestor elements of |fragment| who do not have their own

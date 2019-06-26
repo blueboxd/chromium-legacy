@@ -12,6 +12,7 @@
 #include "components/send_tab_to_self/send_tab_to_self_metrics.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace send_tab_to_self {
@@ -37,7 +38,12 @@ IOSSendTabToSelfInfoBarDelegate::GetIdentifier() const {
 }
 
 int IOSSendTabToSelfInfoBarDelegate::GetButtons() const {
-  return BUTTON_NONE;
+  return BUTTON_OK;
+}
+
+base::string16 IOSSendTabToSelfInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16(IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL);
 }
 
 int IOSSendTabToSelfInfoBarDelegate::GetIconId() const {
@@ -49,25 +55,13 @@ void IOSSendTabToSelfInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 IOSSendTabToSelfInfoBarDelegate::GetMessageText() const {
-  // The iOS confirm infobar controller requires the message to also include the
-  // link text.
-  return l10n_util::GetStringUTF16(IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE) +
-         base::UTF8ToUTF16(" ") +
-         l10n_util::GetStringUTF16(IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL);
+  return l10n_util::GetStringUTF16(IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE);
 }
 
-base::string16 IOSSendTabToSelfInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL);
-}
-
-GURL IOSSendTabToSelfInfoBarDelegate::GetLinkURL() const {
-  return entry_->GetURL();
-}
-
-bool IOSSendTabToSelfInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
+bool IOSSendTabToSelfInfoBarDelegate::Accept() {
   RecordNotificationHistogram(SendTabToSelfNotification::kOpened);
-  infobar()->owner()->OpenURL(GetLinkURL(), disposition);
+  infobar()->owner()->OpenURL(entry_->GetURL(),
+                              WindowOpenDisposition::CURRENT_TAB);
   return true;
 }
 

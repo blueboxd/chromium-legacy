@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/gclient_args.gni")
 import("//build/config/python.gni")
 
 if (enable_java_templates) {
@@ -87,8 +88,11 @@ python_library("test_runner_py") {
   ]
   data_deps = [
     ":devil_chromium_py",
-    "//third_party/android_platform/development/scripts:stack_py",
   ]
+  if (build_with_chromium) {
+    data_deps +=
+        [ "//third_party/android_platform/development/scripts:stack_py" ]
+  }
   if (is_asan) {
     data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
   }

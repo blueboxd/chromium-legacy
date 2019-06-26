@@ -214,7 +214,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // TableView.
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
-  self.searchController.dimsBackgroundDuringPresentation = NO;
+  self.searchController.obscuresBackgroundDuringPresentation = NO;
   self.searchController.searchBar.delegate = self;
   self.searchController.searchResultsUpdater = self;
   self.searchController.searchBar.backgroundColor = [UIColor clearColor];

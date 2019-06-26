@@ -314,7 +314,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // same TableView.
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
-  self.searchController.dimsBackgroundDuringPresentation = NO;
+  self.searchController.obscuresBackgroundDuringPresentation = NO;
   self.searchController.searchBar.userInteractionEnabled = NO;
   self.searchController.delegate = self;
   self.searchController.searchResultsUpdater = self;

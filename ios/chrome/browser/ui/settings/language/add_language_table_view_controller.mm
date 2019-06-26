@@ -92,7 +92,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Search controller.
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
-  self.searchController.dimsBackgroundDuringPresentation = NO;
+  self.searchController.obscuresBackgroundDuringPresentation = NO;
   self.searchController.searchResultsUpdater = self;
   self.searchController.searchBar.accessibilityIdentifier =
       kAddLanguageSearchControllerAccessibilityIdentifier;

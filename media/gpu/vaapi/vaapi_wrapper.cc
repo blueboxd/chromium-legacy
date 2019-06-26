@@ -1182,7 +1182,8 @@ bool VaapiWrapper::GetDecodeMinResolution(VAProfile va_profile,
                                                      &profile_info)) {
     return false;
   }
-  *min_size = profile_info.min_resolution;
+  *min_size = gfx::Size(std::max(1, profile_info.min_resolution.width()),
+                        std::max(1, profile_info.min_resolution.height()));
   return true;
 }
 

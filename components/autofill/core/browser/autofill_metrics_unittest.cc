@@ -8838,7 +8838,8 @@ TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_CreditCard) {
   const PopupType popup_type = PopupType::kCreditCards;
 
   base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type,
+                                                      /*off_the_record=*/false);
   histogram_tester.ExpectUniqueSample(
       "Autofill.SuggestionAcceptedIndex.CreditCard", index, 1);
 
@@ -8855,8 +8856,10 @@ TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Profile) {
   const PopupType popup_type2 = PopupType::kAddresses;
 
   base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1);
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
+                                                      /*off_the_record=*/false);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
+                                                      /*off_the_record=*/false);
   histogram_tester.ExpectUniqueSample(
       "Autofill.SuggestionAcceptedIndex.Profile", index, 2);
 
@@ -8873,8 +8876,10 @@ TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Other) {
   const PopupType popup_type2 = PopupType::kPasswords;
 
   base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1);
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
+                                                      /*off_the_record=*/false);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
+                                                      /*off_the_record=*/false);
 
   histogram_tester.ExpectUniqueSample("Autofill.SuggestionAcceptedIndex.Other",
                                       index, 2);

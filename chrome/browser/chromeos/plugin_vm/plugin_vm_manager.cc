@@ -4,23 +4,32 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace plugin_vm {
 
 namespace {
+
+constexpr char kInvalidLicenseNotificationId[] = "plugin-vm-invalid-license";
+constexpr char kInvalidLicenseNotifierId[] = "plugin-vm-invalid-license";
 
 class PluginVmManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -58,6 +67,28 @@ bool VmIsStopping(vm_tools::plugin_dispatcher::VmState state) {
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPING ||
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_RESETTING ||
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSING;
+}
+
+void ShowInvalidLicenseNotification(Profile* profile) {
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          kInvalidLicenseNotificationId,
+          l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_TITLE),
+          l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_MESSAGE),
+          l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kInvalidLicenseNotifierId),
+          {}, new message_center::NotificationDelegate(),
+          ash::kNotificationPluginVmIcon,
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
+  notification->SetSystemPriority();
+  NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 }  // namespace
@@ -228,7 +259,16 @@ void PluginVmManager::StartVm() {
 
 void PluginVmManager::OnStartVm(
     base::Optional<vm_tools::plugin_dispatcher::StartVmResponse> reply) {
-  if (!reply.has_value() || reply->error()) {
+  if (reply &&
+      reply->error() ==
+          vm_tools::plugin_dispatcher::VmErrorCode::VM_ERR_LIC_NOT_VALID) {
+    VLOG(1) << "Failed to start VM due to invalid license.";
+    ShowInvalidLicenseNotification(profile_);
+    LaunchFailed(PluginVmLaunchResult::kInvalidLicense);
+    return;
+  }
+
+  if (!reply || reply->error()) {
     LOG(ERROR) << "Failed to start VM.";
     LaunchFailed();
     return;
@@ -294,8 +334,8 @@ void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
   }
 }
 
-void PluginVmManager::LaunchFailed() {
-  RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+void PluginVmManager::LaunchFailed(PluginVmLaunchResult result) {
+  RecordPluginVmLaunchResultHistogram(result);
 
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();

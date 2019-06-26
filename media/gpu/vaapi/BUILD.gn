@@ -78,6 +78,7 @@ source_set("vaapi") {
   deps = [
     ":libva_stubs",
     "//base",
+    "//gpu/config",
     "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//media",

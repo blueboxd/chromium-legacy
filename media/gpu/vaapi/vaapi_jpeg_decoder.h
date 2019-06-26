@@ -32,6 +32,7 @@ class VaapiJpegDecoder : public VaapiImageDecoder {
   // VaapiImageDecoder implementation.
   scoped_refptr<VASurface> Decode(base::span<const uint8_t> encoded_image,
                                   VaapiImageDecodeStatus* status) override;
+  gpu::ImageDecodeAcceleratorType GetType() const override;
 
   // Get the decoded data from the last Decode() call as a ScopedVAImage. The
   // VAImage's format will be either |preferred_image_fourcc| if the conversion

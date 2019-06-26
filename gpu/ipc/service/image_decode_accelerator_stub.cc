@@ -167,14 +167,6 @@ void ImageDecodeAcceleratorStub::OnScheduleImageDecode(
     return;
   }
 
-  // TODO(andrescj): for now, reject requests that need mipmaps until we support
-  // generating mipmap chains.
-  if (decode_params.needs_mips) {
-    DLOG(ERROR) << "Generating mipmaps is not supported";
-    OnError();
-    return;
-  }
-
   // Start the actual decode.
   worker_->Decode(
       std::move(decode_params.encoded_data), decode_params.output_size,

@@ -47,7 +47,8 @@ class FormEventLoggerBase {
   void OnDidShowSuggestions(const FormStructure& form,
                             const AutofillField& field,
                             const base::TimeTicks& form_parsed_timestamp,
-                            AutofillSyncSigninState sync_state);
+                            AutofillSyncSigninState sync_state,
+                            bool off_the_record);
 
   void OnWillSubmitForm(AutofillSyncSigninState sync_state,
                         const FormStructure& form);

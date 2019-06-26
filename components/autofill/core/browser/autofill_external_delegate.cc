@@ -236,10 +236,10 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
     manager_->OnUserAcceptedCardsFromAccountOption();
   } else {
-    if (identifier > 0)  // Denotes an Autofill suggestion.
-      AutofillMetrics::LogAutofillSuggestionAcceptedIndex(position,
-                                                          popup_type_);
-
+    if (identifier > 0) {  // Denotes an Autofill suggestion.
+      AutofillMetrics::LogAutofillSuggestionAcceptedIndex(
+          position, popup_type_, driver_->IsIncognito());
+    }
     FillAutofillFormData(identifier, false);
   }
 

@@ -33,19 +33,23 @@ class VaapiJpegDecoder;
 class VaapiJpegDecodeAcceleratorWorker
     : public gpu::ImageDecodeAcceleratorWorker {
  public:
-  VaapiJpegDecodeAcceleratorWorker();
+  // Creates a VaapiJpegDecodeAcceleratorWorker and attempts to initialize the
+  // internal state. Returns nullptr if initialization fails.
+  static std::unique_ptr<VaapiJpegDecodeAcceleratorWorker> Create();
+
   ~VaapiJpegDecodeAcceleratorWorker() override;
 
-  // Returns true if the internal state was initialized correctly. If false,
-  // clients should not call Decode().
-  bool IsValid() const;
-
   // gpu::ImageDecodeAcceleratorWorker implementation.
+  std::vector<gpu::ImageDecodeAcceleratorSupportedProfile>
+  GetSupportedProfiles() override;
   void Decode(std::vector<uint8_t> encoded_data,
               const gfx::Size& output_size,
               CompletedDecodeCB decode_cb) override;
 
  private:
+  explicit VaapiJpegDecodeAcceleratorWorker(
+      std::unique_ptr<VaapiJpegDecoder> decoder);
+
   // We delegate the decoding to |decoder_| which is constructed on the ctor and
   // then used and destroyed on |decoder_task_runner_| (unless initialization
   // failed, in which case it doesn't matter where it's destroyed since no tasks

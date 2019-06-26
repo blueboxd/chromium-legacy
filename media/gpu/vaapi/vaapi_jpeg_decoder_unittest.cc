@@ -289,8 +289,7 @@ bool GetMinUnsupportedDimension(int min_surface_supported,
 // should return 48 because for a 4:2:0 image, both coded dimensions should be
 // multiples of 16.
 int GetMinSupportedDimension(int min_surface_supported) {
-  if (min_surface_supported == 0)
-    return k420MCUSize;
+  LOG_ASSERT(min_surface_supported > 0);
   return RoundUpToMultiple(min_surface_supported, k420MCUSize);
 }
 

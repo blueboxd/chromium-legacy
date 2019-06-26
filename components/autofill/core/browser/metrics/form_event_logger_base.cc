@@ -70,10 +70,11 @@ void FormEventLoggerBase::OnDidShowSuggestions(
     const FormStructure& form,
     const AutofillField& field,
     const base::TimeTicks& form_parsed_timestamp,
-    AutofillSyncSigninState sync_state) {
+    AutofillSyncSigninState sync_state,
+    bool off_the_record) {
   sync_state_ = sync_state;
-  form_interactions_ukm_logger_->LogSuggestionsShown(form, field,
-                                                     form_parsed_timestamp);
+  form_interactions_ukm_logger_->LogSuggestionsShown(
+      form, field, form_parsed_timestamp, off_the_record);
 
   Log(FORM_EVENT_SUGGESTIONS_SHOWN, form);
   if (!has_logged_suggestions_shown_) {

@@ -337,6 +337,10 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
                                          base::DoNothing() /* release_cb */);
 }
 
+gpu::ImageDecodeAcceleratorType VaapiJpegDecoder::GetType() const {
+  return gpu::ImageDecodeAcceleratorType::kJpeg;
+}
+
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
     uint32_t preferred_image_fourcc,
     VaapiImageDecodeStatus* status) {

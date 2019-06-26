@@ -41,6 +41,7 @@
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -147,6 +148,8 @@ class MockImageDecodeAcceleratorWorker : public ImageDecodeAcceleratorWorker {
   }
 
   MOCK_METHOD1(DoDecode, void(const gfx::Size&));
+  MOCK_METHOD0(GetSupportedProfiles,
+               std::vector<ImageDecodeAcceleratorSupportedProfile>());
 
  private:
   struct PendingDecode {

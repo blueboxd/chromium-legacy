@@ -30,7 +30,7 @@ void FakeVmPluginDispatcherClient::StartVm(
     DBusMethodCallback<StartVmResponse> callback) {
   start_vm_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), StartVmResponse()));
+      FROM_HERE, base::BindOnce(std::move(callback), start_vm_response_));
 }
 
 void FakeVmPluginDispatcherClient::ListVms(

@@ -830,7 +830,8 @@ class AutofillMetrics {
                                FormSignature form_signature);
     void LogSuggestionsShown(const FormStructure& form,
                              const AutofillField& field,
-                             const base::TimeTicks& form_parsed_timestamp);
+                             const base::TimeTicks& form_parsed_timestamp,
+                             bool off_the_record);
     void LogDidFillSuggestion(int record_type,
                               bool is_for_credit_card,
                               const FormStructure& form,
@@ -1161,7 +1162,8 @@ class AutofillMetrics {
 
   // Log the index of the selected Autofill suggestion in the popup.
   static void LogAutofillSuggestionAcceptedIndex(int index,
-                                                 PopupType popup_type);
+                                                 PopupType popup_type,
+                                                 bool off_the_record);
 
   // Logs that the user cleared the form.
   static void LogAutofillFormCleared();

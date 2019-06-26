@@ -22,7 +22,8 @@ extern const char kPluginVmSetupTimeHistogram[];
 enum class PluginVmLaunchResult {
   kSuccess = 0,
   kError = 1,
-  kMaxValue = kError,
+  kInvalidLicense = 2,
+  kMaxValue = kInvalidLicense,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

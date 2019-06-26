@@ -13,6 +13,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "gpu/config/gpu_info.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -64,6 +65,12 @@ class VaapiImageDecoder {
   virtual scoped_refptr<VASurface> Decode(
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status) = 0;
+
+  // Returns the type of image supported by this decoder.
+  virtual gpu::ImageDecodeAcceleratorType GetType() const = 0;
+
+  // Returns the image profile supported by this decoder.
+  gpu::ImageDecodeAcceleratorSupportedProfile GetSupportedProfile() const;
 
  protected:
   explicit VaapiImageDecoder(VAProfile va_profile);

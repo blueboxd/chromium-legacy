@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,6 +25,8 @@
 
 namespace plugin_vm {
 
+constexpr char kInvalidLicenseNotificationId[] = "plugin-vm-invalid-license";
+
 class PluginVmManagerTest : public testing::Test {
  public:
   PluginVmManagerTest() {
@@ -31,11 +34,14 @@ class PluginVmManagerTest : public testing::Test {
     testing_profile_ = std::make_unique<TestingProfile>();
     test_helper_ = std::make_unique<PluginVmTestHelper>(testing_profile_.get());
     plugin_vm_manager_ = PluginVmManager::GetForProfile(testing_profile_.get());
+    display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+        testing_profile_.get());
     histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   ~PluginVmManagerTest() override {
     histogram_tester_.reset();
+    display_service_.reset();
     test_helper_.reset();
     testing_profile_.reset();
     chromeos::DBusThreadManager::Shutdown();
@@ -58,6 +64,7 @@ class PluginVmManagerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<PluginVmTestHelper> test_helper_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   PluginVmManager* plugin_vm_manager_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
@@ -245,6 +252,31 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmFromSuspending) {
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+}
+
+TEST_F(PluginVmManagerTest, LaunchPluginVmInvalidLicense) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  // The PluginVmManager calls StartVm when the VM is not yet running.
+  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
+  list_vms_response.add_vm_info()->set_state(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+  VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+
+  vm_tools::plugin_dispatcher::StartVmResponse start_vm_response;
+  start_vm_response.set_error(
+      vm_tools::plugin_dispatcher::VmErrorCode::VM_ERR_LIC_NOT_VALID);
+  VmPluginDispatcherClient().set_start_vm_response(start_vm_response);
+
+  plugin_vm_manager_->LaunchPluginVm();
+  thread_bundle_.RunUntilIdle();
+  EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
+
+  EXPECT_TRUE(display_service_->GetNotification(kInvalidLicenseNotificationId));
+
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmLaunchResultHistogram, PluginVmLaunchResult::kInvalidLicense, 1);
 }
 
 }  // namespace plugin_vm

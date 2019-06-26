@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
 #include "base/task/post_task.h"
@@ -25,6 +26,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/dx_diag_node.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -36,10 +38,12 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
@@ -57,6 +61,10 @@
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
+#endif  // BUILDFLAG(USE_VAAPI)
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/gl/throw_uncaught_exception.h"
@@ -178,6 +186,14 @@ GpuServiceImpl::GpuServiceImpl(
   }
 #endif
 
+#if BUILDFLAG(USE_VAAPI)
+  if (base::FeatureList::IsEnabled(
+          features::kVaapiJpegImageDecodeAcceleration)) {
+    jpeg_decode_accelerator_worker_ =
+        media::VaapiJpegDecodeAcceleratorWorker::Create();
+  }
+#endif
+
 #if defined(OS_MACOSX)
   if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_METAL] ==
       gpu::kGpuFeatureStatusEnabled) {
@@ -220,6 +236,11 @@ GpuServiceImpl::~GpuServiceImpl() {
   owned_sync_point_manager_.reset();
   owned_shared_image_manager_.reset();
 
+  // The image decode accelerator worker must outlive the GPU channel manager so
+  // that it doesn't get any decode requests during/after destruction.
+  DCHECK(!gpu_channel_manager_);
+  jpeg_decode_accelerator_worker_.reset();
+
   // Signal this event before destroying the child process. That way all
   // background threads can cleanup. For example, in the renderer the
   // RenderThread instances will be able to notice shutdown before the render
@@ -242,6 +263,12 @@ void GpuServiceImpl::UpdateGPUInfo() {
               gpu_preferences_));
   gpu_info_.jpeg_decode_accelerator_supported =
       IsAcceleratedJpegDecodeSupported();
+
+  if (jpeg_decode_accelerator_worker_) {
+    gpu_info_.image_decode_accelerator_supported_profiles =
+        jpeg_decode_accelerator_worker_->GetSupportedProfiles();
+  }
+
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
@@ -304,7 +331,7 @@ void GpuServiceImpl::InitializeWithHost(
       scheduler_.get(), sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
-      nullptr /* image_decode_accelerator_worker */, vulkan_context_provider(),
+      jpeg_decode_accelerator_worker_.get(), vulkan_context_provider(),
       metal_context_provider_.get());
 
   media_gpu_channel_manager_.reset(

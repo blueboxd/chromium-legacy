@@ -4047,6 +4047,12 @@
   <message name="IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM" desc="Text shown in the launcher and shelf context menus for the Plugin VM app to shut it down.">
     Shut down
   </message>
+  <message name="IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to an invalid or missing license.">
+    Plugin VM requires a license
+  </message>
+  <message name="IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to an invalid or missing license.">
+    Contact the device admin for your organization
+  </message>
 
   <!-- Strings for Account Manager welcome screen -->
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the Chrome OS Account Manager Welcome screen.">

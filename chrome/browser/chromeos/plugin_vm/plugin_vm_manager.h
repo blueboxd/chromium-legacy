@@ -10,7 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
+#include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.pb.h"
 #include "chromeos/dbus/vm_plugin_dispatcher_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -59,7 +60,7 @@ class PluginVmManager : public KeyedService,
   void OnDefaultSharedDirExists(const base::FilePath& dir, bool exists);
 
   // Called when LaunchPluginVm() is unsuccessful.
-  void LaunchFailed();
+  void LaunchFailed(PluginVmLaunchResult result = PluginVmLaunchResult::kError);
 
   Profile* profile_;
   std::string owner_id_;

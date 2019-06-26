@@ -42,6 +42,7 @@ class ProtectedBufferManager;
 namespace gpu {
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
+class ImageDecodeAcceleratorWorker;
 class Scheduler;
 class SyncPointManager;
 class SharedImageManager;
@@ -323,6 +324,11 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // Callback that safely exits GPU process.
   base::OnceClosure exit_callback_;
   base::AtomicFlag is_exiting_;
+
+  // Used for performing hardware decode acceleration of JPEG images. This is
+  // shared by all the GPU channels.
+  std::unique_ptr<gpu::ImageDecodeAcceleratorWorker>
+      jpeg_decode_accelerator_worker_;
 
   base::Time start_time_;
 

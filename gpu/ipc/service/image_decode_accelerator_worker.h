@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/containers/span.h"
+#include "gpu/config/gpu_info.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -35,6 +36,14 @@ class ImageDecodeAcceleratorWorker {
 
   using CompletedDecodeCB =
       base::OnceCallback<void(std::unique_ptr<DecodeResult>)>;
+
+  // Returns the profiles supported by this worker. A worker is allowed to
+  // support multiple image types (e.g., JPEG and WebP), but only one
+  // ImageDecodeAcceleratorSupportedProfile should be returned per supported
+  // image type. If the supported profiles can't be computed, an empty vector is
+  // returned.
+  virtual std::vector<ImageDecodeAcceleratorSupportedProfile>
+  GetSupportedProfiles() = 0;
 
   // Enqueue a decode of |encoded_data|. The |decode_cb| is called
   // asynchronously when the decode completes passing as parameter DecodeResult

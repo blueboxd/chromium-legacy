@@ -350,6 +350,10 @@ viz_source_set("gpu_service_dependencies") {
     ]
   }
 
+  if (use_vaapi) {
+    deps += [ "//media/gpu/vaapi" ]
+  }
+
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }

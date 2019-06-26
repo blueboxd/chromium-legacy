@@ -110,8 +110,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                                    unsigned int rt_format);
 
   // Gets the minimum surface size allowed for decoding using |va_profile|.
-  // Returns true if the size can be obtained, false otherwise. If a dimension
-  // is not reported by the driver, the dimension is returned as 0.
+  // Returns true if the size can be obtained, false otherwise. The minimum
+  // dimension (width or height) returned is 1. Particularly, if a dimension is
+  // not reported by the driver, the dimension is returned as 1.
   static bool GetDecodeMinResolution(VAProfile va_profile, gfx::Size* min_size);
 
   // Gets the maximum surface size allowed for decoding using |va_profile|.

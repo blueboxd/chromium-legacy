@@ -60,6 +60,20 @@ bool ShouldRemoveHandlersNotInOS() {
 #endif
 }
 
+GURL TranslateUrl(
+    const ProtocolHandlerRegistry::ProtocolHandlerMap& handler_map,
+    const GURL& url) {
+  const ProtocolHandler& handler = LookupHandler(handler_map, url.scheme());
+  if (handler.IsEmpty())
+    return GURL();
+
+  GURL translated_url(handler.TranslateUrl(url));
+  if (!translated_url.is_valid())
+    return GURL();
+
+  return translated_url;
+}
+
 }  // namespace
 
 // IOThreadDelegate ------------------------------------------------------------
@@ -90,16 +104,7 @@ void ProtocolHandlerRegistry::IOThreadDelegate::SetDefault(
 GURL ProtocolHandlerRegistry::IOThreadDelegate::Translate(
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  ProtocolHandler handler = LookupHandler(default_handlers_, url.scheme());
-  if (handler.IsEmpty())
-    return GURL();
-
-  GURL translated_url(handler.TranslateUrl(url));
-  if (!translated_url.is_valid())
-    return GURL();
-
-  return translated_url;
+  return TranslateUrl(default_handlers_, url);
 }
 
 // Create a new job for the supplied |URLRequest| if a default handler
@@ -554,6 +559,11 @@ const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerFor(
     const std::string& scheme) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return LookupHandler(default_handlers_, scheme);
+}
+
+GURL ProtocolHandlerRegistry::Translate(const GURL& url) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return TranslateUrl(default_handlers_, url);
 }
 
 void ProtocolHandlerRegistry::Enable() {

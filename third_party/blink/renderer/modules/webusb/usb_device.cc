@@ -266,7 +266,7 @@ ScriptPromise USBDevice::claimInterface(ScriptState* script_state,
           DOMExceptionCode::kSecurityError,
           "The requested interface implements a protected class."));
     } else {
-      interface_state_change_in_progress_.insert(interface_index, true);
+      interface_state_change_in_progress_[interface_index] = true;
       device_requests_.insert(resolver);
       device_->ClaimInterface(
           interface_number,
@@ -299,7 +299,7 @@ ScriptPromise USBDevice::releaseInterface(ScriptState* script_state,
       // Mark this interface's endpoints unavailable while its state is
       // changing.
       SetEndpointsForInterface(interface_index, false);
-      interface_state_change_in_progress_.insert(interface_index, true);
+      interface_state_change_in_progress_[interface_index] = true;
       device_requests_.insert(resolver);
       device_->ReleaseInterface(
           interface_number,
@@ -331,7 +331,7 @@ ScriptPromise USBDevice::selectAlternateInterface(ScriptState* script_state,
       // Mark this old alternate interface's endpoints unavailable while
       // the change is in progress.
       SetEndpointsForInterface(interface_index, false);
-      interface_state_change_in_progress_.insert(interface_index, true);
+      interface_state_change_in_progress_[interface_index] = true;
       device_requests_.insert(resolver);
       device_->SetInterfaceAlternateSetting(
           interface_number, alternate_setting,
@@ -775,7 +775,7 @@ void USBDevice::AsyncClose(ScriptPromiseResolver* resolver) {
 void USBDevice::OnDeviceOpenedOrClosed(bool opened) {
   opened_ = opened;
   if (!opened_) {
-    claimed_interfaces_.Fill(0);
+    claimed_interfaces_.Fill(false);
     selected_alternates_.Fill(0);
     in_endpoints_.reset();
     out_endpoints_.reset();
@@ -806,9 +806,9 @@ void USBDevice::OnConfigurationSelected(bool success,
     wtf_size_t num_interfaces =
         Info().configurations[configuration_index_]->interfaces.size();
     claimed_interfaces_.resize(num_interfaces);
-    claimed_interfaces_.Fill(0);
+    claimed_interfaces_.Fill(false);
     interface_state_change_in_progress_.resize(num_interfaces);
-    interface_state_change_in_progress_.Fill(0);
+    interface_state_change_in_progress_.Fill(false);
     selected_alternates_.resize(num_interfaces);
     selected_alternates_.Fill(0);
     in_endpoints_.reset();
@@ -850,13 +850,13 @@ void USBDevice::AsyncReleaseInterface(wtf_size_t interface_index,
 void USBDevice::OnInterfaceClaimedOrUnclaimed(bool claimed,
                                               wtf_size_t interface_index) {
   if (claimed) {
-    claimed_interfaces_.insert(interface_index, true);
+    claimed_interfaces_[interface_index] = true;
   } else {
-    claimed_interfaces_.EraseAt(interface_index);
+    claimed_interfaces_[interface_index] = false;
     selected_alternates_[interface_index] = 0;
   }
   SetEndpointsForInterface(interface_index, claimed);
-  interface_state_change_in_progress_.EraseAt(interface_index);
+  interface_state_change_in_progress_[interface_index] = false;
 }
 
 void USBDevice::AsyncSelectAlternateInterface(wtf_size_t interface_index,
@@ -869,7 +869,7 @@ void USBDevice::AsyncSelectAlternateInterface(wtf_size_t interface_index,
   if (success)
     selected_alternates_[interface_index] = alternate_index;
   SetEndpointsForInterface(interface_index, success);
-  interface_state_change_in_progress_.EraseAt(interface_index);
+  interface_state_change_in_progress_[interface_index] = false;
 
   if (success) {
     resolver->Resolve();

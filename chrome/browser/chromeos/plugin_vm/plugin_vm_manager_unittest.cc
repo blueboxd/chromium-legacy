@@ -131,10 +131,11 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
                                         PluginVmLaunchResult::kSuccess, 1);
 }
 
-TEST_F(PluginVmManagerTest, OnStateChangedRunningStopped) {
+TEST_F(PluginVmManagerTest, OnStateChangedRunningStoppedSuspended) {
   test_helper_->AllowPluginVm();
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
 
+  // Signals for RUNNING, then STOPPED.
   vm_tools::plugin_dispatcher::VmStateChangedSignal state_changed_signal;
   state_changed_signal.set_owner_id(
       chromeos::ProfileHelper::GetUserIdHashFromProfile(
@@ -152,6 +153,19 @@ TEST_F(PluginVmManagerTest, OnStateChangedRunningStopped) {
 
   state_changed_signal.set_vm_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
+
+  // Signals for RUNNING, then SUSPENDED.
+  state_changed_signal.set_vm_state(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
+  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 1ul);
+
+  state_changed_signal.set_vm_state(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
   VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);

@@ -384,6 +384,12 @@ class DiskMountManagerImpl : public DiskMountManager,
                                   const std::string& mount_path,
                                   base::OnceClosure done_callback,
                                   MountError error_code) {
+    if (error_code == MOUNT_ERROR_PATH_NOT_MOUNTED ||
+        error_code == MOUNT_ERROR_INVALID_PATH) {
+      // The path was already unmounted by something else.
+      error_code = MOUNT_ERROR_NONE;
+    }
+
     if (error_code == MOUNT_ERROR_NONE) {
       // Do standard processing for Unmount event.
       OnUnmountPath(UnmountPathCallback(), mount_path, MOUNT_ERROR_NONE);
@@ -473,6 +479,12 @@ class DiskMountManagerImpl : public DiskMountManager,
       return;
     }
 
+    if (error_code == MOUNT_ERROR_PATH_NOT_MOUNTED ||
+        error_code == MOUNT_ERROR_INVALID_PATH) {
+      // The path was already unmounted by something else.
+      error_code = MOUNT_ERROR_NONE;
+    }
+
     NotifyMountStatusUpdate(
         UNMOUNTING, error_code,
         MountPointInfo(mount_points_it->second.source_path,
@@ -481,6 +493,7 @@ class DiskMountManagerImpl : public DiskMountManager,
                        mount_points_it->second.mount_condition));
 
     std::string path(mount_points_it->second.source_path);
+
     if (error_code == MOUNT_ERROR_NONE)
       mount_points_.erase(mount_points_it);
 

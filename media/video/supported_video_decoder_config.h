@@ -63,6 +63,11 @@ using SupportedVideoDecoderConfigMap =
     base::flat_map<VideoDecoderImplementation,
                    std::vector<SupportedVideoDecoderConfig>>;
 
+// Helper method to determine if |config| is supported by |supported_configs|.
+MEDIA_EXPORT bool IsVideoDecoderConfigSupported(
+    const std::vector<SupportedVideoDecoderConfig>& supported_configs,
+    const VideoDecoderConfig& config);
+
 }  // namespace media
 
 #endif  // MEDIA_VIDEO_SUPPORTED_VIDEO_DECODER_CONFIG_H_

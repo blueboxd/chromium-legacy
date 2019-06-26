@@ -146,9 +146,11 @@ void PluginVmManager::OnVmStateChanged(
         base::BindOnce(&PluginVmManager::OnGetVmInfoForSharing,
                        weak_ptr_factory_.GetWeakPtr()));
   } else if (vm_state_ ==
-             vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED) {
-    // When the VM_STATE_STOPPED signal is received, reset seneschal handle to
-    // indicate that it is no longer valid.
+                 vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED ||
+             vm_state_ ==
+                 vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED) {
+    // When the VM_STATE_STOPPED or VM_STATE_SUSPENDED signal is received, reset
+    // seneschal handle to indicate that it is no longer valid.
     seneschal_server_handle_ = 0;
   }
 }

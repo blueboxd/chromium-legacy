@@ -622,7 +622,7 @@ TEST_F(DiskMountManagerTest, Format_FailToUnmount) {
   // format the device.
 
   fake_cros_disks_client_->MakeUnmountFail(
-      chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED);
+      chromeos::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS);
   // Start test.
   DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
 
@@ -634,7 +634,8 @@ TEST_F(DiskMountManagerTest, Format_FailToUnmount) {
   ASSERT_EQ(2U, observer_->GetEventCount());
   const MountEvent& mount_event = observer_->GetMountEvent(0);
   EXPECT_EQ(DiskMountManager::UNMOUNTING, mount_event.event);
-  EXPECT_EQ(chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED, mount_event.error_code);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS,
+            mount_event.error_code);
   EXPECT_EQ(kDevice1MountPath, mount_event.mount_point.mount_path);
 
   EXPECT_EQ(FormatEvent(DiskMountManager::FORMAT_COMPLETED,
@@ -1526,6 +1527,36 @@ TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_FailFirst) {
   EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
             fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS, error_code);
+}
+
+TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_AlreadyUnmounted) {
+  base::RunLoop run_loop;
+
+  auto disk_sda =
+      Disk::Builder().SetDevicePath("/dev/sda").SetIsParent(true).Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda)));
+
+  auto disk_sda1 = Disk::Builder()
+                       .SetDevicePath("/dev/sda1")
+                       .SetMountPath("/mount/path1")
+                       .Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda1)));
+
+  // Fail the unmount with "not mounted".
+  fake_cros_disks_client_->MakeUnmountFail(
+      chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED);
+
+  MountError error_code = chromeos::MOUNT_ERROR_UNKNOWN;
+  DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      "/dev/sda",
+      base::BindOnce(&SaveUnmountResult, base::Unretained(&error_code),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, error_code);
 }
 
 }  // namespace

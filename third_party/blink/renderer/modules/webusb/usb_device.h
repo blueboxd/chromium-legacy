@@ -176,9 +176,15 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   bool opened_;
   bool device_state_change_in_progress_;
   wtf_size_t configuration_index_;
+
+  // These vectors have one entry for each interface in the currently selected
+  // configured. Use the index returned by FindInterfaceIndex().
   WTF::Vector<bool> claimed_interfaces_;
   WTF::Vector<bool> interface_state_change_in_progress_;
   WTF::Vector<wtf_size_t> selected_alternates_;
+
+  // These bit sets have one entry for each endpoint. Index using the endpoint
+  // number (lower 4 bits of the endpoint address).
   std::bitset<kEndpointsBitsNumber> in_endpoints_;
   std::bitset<kEndpointsBitsNumber> out_endpoints_;
 };

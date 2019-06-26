@@ -82,7 +82,7 @@ class ProtocolHandlerRegistry : public KeyedService {
     // Should be called only from the IO thread.
     void SetDefault(const ProtocolHandler& handler);
 
-    // Returns a translated url if |url| is handled by a protocol handler,
+    // Returns a translated URL if |url| is handled by a protocol handler,
     // otherwise it returns an empty URL.
     GURL Translate(const GURL& url) const;
 
@@ -215,6 +215,10 @@ class ProtocolHandlerRegistry : public KeyedService {
   // Returns the default handler for this protocol, or an empty handler if none
   // exists.
   const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
+
+  // Returns a translated URL if |url| is handled by a protocol handler,
+  // otherwise it returns an empty URL.
+  GURL Translate(const GURL& url) const;
 
   // Puts this registry in the enabled state - registered protocol handlers
   // will handle requests.

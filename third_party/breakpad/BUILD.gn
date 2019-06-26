@@ -821,9 +821,7 @@ if (is_linux || is_android) {
 
 if (is_win) {
   if (current_toolchain == host_toolchain) {
-    executable("dump_syms") {
-      # TODO(scottmg) using this with VS2015 may break the crash server.
-      # https://crbug.com/696671
+    static_library("common_windows") {
       include_dirs = [
         "$visual_studio_path/DIA SDK/include",
         "breakpad/src",
@@ -834,13 +832,38 @@ if (is_win) {
         "breakpad/src/common/windows/dia_util.h",
         "breakpad/src/common/windows/guid_string.cc",
         "breakpad/src/common/windows/guid_string.h",
+        "breakpad/src/common/windows/http_upload.cc",
+        "breakpad/src/common/windows/http_upload.h",
+        "breakpad/src/common/windows/module_info.h",
         "breakpad/src/common/windows/omap.cc",
         "breakpad/src/common/windows/omap.h",
+        "breakpad/src/common/windows/omap_internal.h",
         "breakpad/src/common/windows/pdb_source_line_writer.cc",
         "breakpad/src/common/windows/pdb_source_line_writer.h",
+        "breakpad/src/common/windows/pe_source_line_writer.cc",
+        "breakpad/src/common/windows/pe_source_line_writer.h",
+        "breakpad/src/common/windows/pe_util.cc",
+        "breakpad/src/common/windows/pe_util.h",
         "breakpad/src/common/windows/string_utils-inl.h",
         "breakpad/src/common/windows/string_utils.cc",
+        "breakpad/src/common/windows/symbol_collector_client.cc",
+        "breakpad/src/common/windows/symbol_collector_client.h",
+      ]
+    }
+    executable("dump_syms") {
+      # TODO(scottmg) using this with VS2015 may break the crash server.
+      # https://crbug.com/696671
+      include_dirs = [
+        "$visual_studio_path/DIA SDK/include",
+        "breakpad/src",
+      ]
+
+      sources = [
         "breakpad/src/tools/windows/dump_syms/dump_syms.cc",
+      ]
+
+      deps = [
+        "//third_party/breakpad:common_windows",
       ]
 
       lib_dirs = []

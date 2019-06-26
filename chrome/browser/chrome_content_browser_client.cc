@@ -4627,11 +4627,11 @@ base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
 
 namespace {
 // TODO(jam): move this to a separate file.
+template <class HandlerRegistry>
 class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
  public:
   explicit ProtocolHandlerThrottle(
-      const scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>&
-          protocol_handler_registry)
+      const HandlerRegistry& protocol_handler_registry)
       : protocol_handler_registry_(protocol_handler_registry) {}
   ~ProtocolHandlerThrottle() override = default;
 
@@ -4657,8 +4657,7 @@ class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
       *url = translated_url;
   }
 
-  scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
-      protocol_handler_registry_;
+  HandlerRegistry protocol_handler_registry_;
 };
 }  // namespace
 
@@ -4755,8 +4754,10 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
         is_off_the_record, std::move(dynamic_params)));
 
-    result.push_back(std::make_unique<ProtocolHandlerThrottle>(
-        io_data->protocol_handler_registry_io_thread_delegate()));
+    result.push_back(
+        std::make_unique<ProtocolHandlerThrottle<
+            scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>>>(
+            io_data->protocol_handler_registry_io_thread_delegate()));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -4813,6 +4814,11 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
           ->GetClientDataHeader(is_signed_in)};
   result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       is_off_the_record, std::move(dynamic_params)));
+
+  result.push_back(
+      std::make_unique<ProtocolHandlerThrottle<ProtocolHandlerRegistry*>>(
+          ProtocolHandlerRegistryFactory::GetForBrowserContext(
+              browser_context)));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(

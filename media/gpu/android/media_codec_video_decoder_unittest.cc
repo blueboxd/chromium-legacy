@@ -25,6 +25,7 @@
 #include "media/gpu/android/mock_device_info.h"
 #include "media/gpu/android/mock_texture_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
+#include "media/video/supported_video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::test::RunCallback;
@@ -307,6 +308,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
 };
 
 // Tests which only work for a single codec.
+class MediaCodecVideoDecoderAV1Test : public MediaCodecVideoDecoderTest {};
 class MediaCodecVideoDecoderH264Test : public MediaCodecVideoDecoderTest {};
 class MediaCodecVideoDecoderVp8Test : public MediaCodecVideoDecoderTest {};
 class MediaCodecVideoDecoderVp9Test : public MediaCodecVideoDecoderTest {};
@@ -320,10 +322,14 @@ TEST_P(MediaCodecVideoDecoderH264Test, H264IsSupported) {
 }
 
 TEST_P(MediaCodecVideoDecoderVp8Test, SmallVp8IsRejected) {
-  ASSERT_FALSE(Initialize(TestVideoConfig::Normal()));
+  auto configs = MediaCodecVideoDecoder::GetSupportedConfigs();
+  auto small_vp8_config = TestVideoConfig::Normal();
+  for (const auto& c : configs)
+    ASSERT_FALSE(c.Matches(small_vp8_config));
 }
 
-TEST_P(MediaCodecVideoDecoderH264Test, Av1IsSupported) {
+TEST_P(MediaCodecVideoDecoderAV1Test, Av1IsSupported) {
+  EXPECT_CALL(*device_info_, IsAv1DecoderAvailable()).WillOnce(Return(true));
   ASSERT_TRUE(Initialize(TestVideoConfig::Normal(kCodecAV1)));
 }
 

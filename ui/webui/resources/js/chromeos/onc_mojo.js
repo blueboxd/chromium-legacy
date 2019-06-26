@@ -59,6 +59,26 @@ class OncMojo {
   }
 
   /**
+   * @param {!chromeos.networkConfig.mojom.ConnectionStateType} value
+   * @return {boolean}
+   */
+  static connectionStateIsConnected(value) {
+    const ConnectionStateType =
+        chromeos.networkConfig.mojom.ConnectionStateType;
+    switch (value) {
+      case ConnectionStateType.kOnline:
+      case ConnectionStateType.kConnected:
+      case ConnectionStateType.kPortal:
+        return true;
+      case ConnectionStateType.kConnecting:
+      case ConnectionStateType.kNotConnected:
+        return false;
+    }
+    assertNotReached();
+    return false;
+  }
+
+  /**
    * @param {!chromeos.networkConfig.mojom.DeviceStateType} value
    * @return {string}
    */

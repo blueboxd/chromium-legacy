@@ -760,6 +760,28 @@ suite('EditPrinterDialog', function() {
 
     dialog = document.createElement('settings-cups-edit-printer-dialog');
 
+    dialog.activePrinter = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: '',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: '',
+      printerQueue: '',
+      printerStatus: '',
+    };
+
     dialog.pendingPrinter_ = {
       ppdManufacturer: '',
       ppdModel: '',
@@ -781,6 +803,8 @@ suite('EditPrinterDialog', function() {
       printerQueue: '',
       printerStatus: '',
     };
+
+    dialog.isOnline_ = true;
 
     document.body.appendChild(dialog);
   });
@@ -1278,6 +1302,57 @@ suite('EditPrinterDialog', function() {
         .then(function() {
           // Check that the EULA text is shown again.
           assertFalse(urlElement.hidden);
+        });
+  });
+
+  test('OfflineEdit', function() {
+    dialog.pendingPrinter_ = {
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerProtocol: 'usb',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+
+    // Initializing activePrinter will set |needsReconfigured_| to true. Reset
+    // it so that any changes afterwards mimic user input.
+    dialog.needsReconfigured_ = false;
+
+    // Simulate offline.
+    dialog.isOnline_ = false;
+
+    const expectedName = 'editedName';
+    const nameField = dialog.$$('.printer-name-input');
+    assertTrue(!!nameField);
+    nameField.value = expectedName;
+    nameField.fire('input');
+
+    Polymer.dom.flush();
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertFalse(saveButton.disabled);
+
+    clickSaveButton(dialog);
+
+    return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter')
+        .then(function() {
+          assertEquals(expectedName, dialog.activePrinter.printerName);
         });
   });
 });

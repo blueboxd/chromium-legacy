@@ -66,7 +66,11 @@ if (is_chromeos) {
 
   js_library("cups_edit_printer_dialog") {
     deps = [
+      "//chrome/browser/chromeos/kiosk_next_home/mojom:mojom_js_library_for_compile",
+      "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
       "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
+      "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
+      "//ui/webui/resources/js/chromeos:onc_mojo",
     ]
   }
 

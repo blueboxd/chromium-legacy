@@ -12,6 +12,7 @@ Polymer({
 
   behaviors: [
     CrScrollableBehavior,
+    CrNetworkListenerBehavior,
   ],
 
   properties: {
@@ -101,6 +102,12 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /** @private */
+    isOnline_: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   observers: [
@@ -109,11 +116,24 @@ Polymer({
     'onModelChanged_(pendingPrinter_.ppdModel)',
   ],
 
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  networkConfigProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
+  },
+
   /** @override */
   attached: function() {
     // Create a copy of activePrinter so that we can modify its fields.
     this.pendingPrinter_ = /** @type{CupsPrinterInfo} */
         (Object.assign({}, this.activePrinter));
+
+    this.refreshNetworks_();
+
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getPrinterPpdManufacturerAndModel(this.pendingPrinter_.printerId)
         .then(
@@ -124,6 +144,18 @@ Polymer({
         .then(this.manufacturerListChanged_.bind(this));
     this.userPPD_ =
         settings.printing.getBaseName(this.pendingPrinter_.printerPPDPath);
+  },
+
+  /**
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
+   * @private
+   */
+  onActiveNetworksChanged: function(networks) {
+    this.isOnline_ = networks.some(function(network) {
+      return OncMojo.connectionStateIsConnected(network.connectionState);
+    });
   },
 
   /**
@@ -169,16 +201,20 @@ Polymer({
   /** @private */
   onSaveTap_: function() {
     this.updateActivePrinter_();
-    if (this.needsReconfigured_) {
-      settings.CupsPrintersBrowserProxyImpl.getInstance()
-          .reconfigureCupsPrinter(this.activePrinter)
-          .then(this.onPrinterEdited_.bind(this));
-    } else {
+    if (!this.needsReconfigured_ || !this.isOnline_) {
+      // If we don't need to reconfigure or we are offline, just update the
+      // printer name.
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .updateCupsPrinter(
               this.activePrinter.printerId, this.activePrinter.printerName)
           .then(this.onPrinterEdited_.bind(this));
+    } else {
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .reconfigureCupsPrinter(this.activePrinter)
+          .then(this.onPrinterEdited_.bind(this));
     }
+
+    this.$$('add-printer-dialog').close();
   },
 
   /**
@@ -237,7 +273,8 @@ Polymer({
    * @private
    */
   canSavePrinter_: function() {
-    return this.printerInfoChanged_ && this.isPrinterValid();
+    return this.printerInfoChanged_ &&
+        (this.isPrinterValid() || !this.isOnline_);
   },
 
   /**
@@ -337,7 +374,7 @@ Polymer({
     this.userPPD_ = settings.printing.getBaseName(path);
   },
 
-  /*
+  /**
    * Returns true if the printer has valid name, address, and PPD.
    * @return {boolean}
    */
@@ -348,15 +385,48 @@ Polymer({
             this.pendingPrinter_.printerPPDPath);
   },
 
-  /*
+
+  /**
    * Helper function to copy over modified fields to activePrinter.
    * @private
    */
   updateActivePrinter_: function() {
+    if (!this.isOnline_) {
+      // If we are not online, only copy over the printerName.
+      this.activePrinter.printerName = this.pendingPrinter_.printerName;
+      return;
+    }
+
     this.activePrinter =
         /** @type{CupsPrinterInfo} */ (Object.assign({}, this.pendingPrinter_));
     // Set ppdModel since there is an observer that clears ppdmodel's value when
     // ppdManufacturer changes.
     this.activePrinter.ppdModel = this.pendingPrinter_.ppdModel;
   },
+
+  /**
+   * Callback function when networks change.
+   * @private
+   */
+  refreshNetworks_: function() {
+    this.networkConfigProxy_
+        .getNetworkStateList({
+          filter: chromeos.networkConfig.mojom.FilterType.kActive,
+          networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
+          limit: chromeos.networkConfig.mojom.kNoLimit,
+        })
+        .then((responseParams) => {
+          this.onActiveNetworksChanged(responseParams.result);
+        });
+  },
+
+  /**
+   * Returns true if the printer protocol select field should be enabled.
+   * @return {boolean}
+   * @private
+   */
+  protocolSelectEnabled: function() {
+    return this.isOnline_ && this.networkProtocolActive_;
+  },
+
 });

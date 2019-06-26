@@ -1380,13 +1380,14 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
       }
     } else {
       CSSPrimitiveValue* center =
-          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
+          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
       if (!center)
         break;
       if (horizontal_size)
         return nullptr;
       horizontal_size = center;
-      center = ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
+      center =
+          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
       if (center) {
         vertical_size = center;
         ++i;

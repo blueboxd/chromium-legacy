@@ -182,19 +182,6 @@ class TestSignPart(unittest.TestCase):
             '[KEYCHAIN]', '--options', 'restrict,library', '$W/Test.app'
         ])
 
-    def test_sign_part_with_resource_rules(self, run_command):
-        part = model.CodeSignedProduct(
-            'Test.app',
-            'test.signing.app',
-            resource_rules='rules.plist',
-            identifier_requirement=False)
-        signing.sign_part(self.paths, self.config, part)
-        run_command.assert_called_once_with([
-            'codesign', '--sign', '[IDENTITY]', '--timestamp', '--keychain',
-            '[KEYCHAIN]', '--resource-rules',
-            '$I/Product Packaging/rules.plist', '$W/Test.app'
-        ])
-
     def test_sign_part_with_entitlements(self, run_command):
         part = model.CodeSignedProduct(
             'Test.app',

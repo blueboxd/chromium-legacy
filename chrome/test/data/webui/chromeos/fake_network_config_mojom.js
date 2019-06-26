@@ -39,6 +39,22 @@ class FakeNetworkConfig {
   }
 
   /**
+   * @return {!Promise<{result:
+   *     !Array<!chromeos.networkConfig.mojom.DeviceStateProperties>}>}
+   */
+  getDeviceStateList() {
+    return new Promise(resolve => {
+      this.extensionApi_.getDeviceStates(devices => {
+        let result = [];
+        devices.forEach(device => {
+          result.push(this.deviceToMojo_(device));
+        });
+        resolve({result: result});
+      });
+    });
+  }
+
+  /**
    * @param {!chromeos.networkConfig.mojom.NetworkType} type
    * @param {boolean} enabled
    * @return {!Promise<{success: boolean}>}
@@ -50,5 +66,22 @@ class FakeNetworkConfig {
       this.extensionApi_.disableNetworkType(OncMojo.getNetworkTypeString(type));
     }
     return Promise.resolve(true);
+  }
+
+  /** @param { !chromeos.networkConfig.mojom.NetworkType } type */
+  requestNetworkScan(type) {
+    this.extensionApi_.requestNetworkScan();
+  }
+
+  /**
+   * @param {!chrome.networkingPrivate.DeviceStateProperties} device
+   * @return {!chromeos.networkConfig.mojom.DeviceStateProperties}
+   * @private
+   */
+  deviceToMojo_(device) {
+    return {
+      deviceState: OncMojo.getDeviceStateTypeFromString(device.State),
+      type: OncMojo.getNetworkTypeFromString(device.Type),
+    };
   }
 }

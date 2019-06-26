@@ -41,7 +41,6 @@ _java_target_whitelist = [
 # Targets that match the whitelist but are not actually java targets.
 _java_target_blacklist = [ "*:*_unpack_aar" ]
 
-_default_proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
 _r8_path = "//third_party/r8/lib/r8.jar"
 
 _dexdump_path = "$android_sdk_build_tools/dexdump"

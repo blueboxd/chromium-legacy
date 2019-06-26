@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -111,7 +112,7 @@
     <template is="dom-if" if="[[deviceIsEnabled_(deviceState)]]">
       <div id="networkListDiv" class="layout vertical flex">
         <!-- VPN only header for built-in VPNs. -->
-        <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
+        <template is="dom-if" if="[[matchesType_('VPN', deviceState)]]">
           <div class="vpn-header layout horizontal center">
             <div class="flex settings-box-text">$i18n{networkVpnBuiltin}</div>
             <cr-icon-button class="icon-add-circle"
@@ -157,7 +158,7 @@
           class="no-networks">
         </div>
 
-        <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
+        <template is="dom-if" if="[[matchesType_('VPN', deviceState)]]">
           <!-- Third party VPNs. -->
           <template is="dom-repeat" items="[[thirdPartyVpnProviders]]">
             <div id="[[item.ProviderName]]"

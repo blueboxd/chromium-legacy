@@ -4,6 +4,8 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+
 group("closure_compile") {
   deps = [
     ":js_resources",

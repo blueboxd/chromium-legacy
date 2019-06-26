@@ -184,11 +184,6 @@ def sign_part(paths, config, part):
         command.extend(['--keychain', config.keychain])
     if part.options:
         command.extend(['--options', ','.join(part.options)])
-    if part.resource_rules:
-        command.extend([
-            '--resource-rules',
-            os.path.join(paths.packaging_dir(config), part.resource_rules)
-        ])
     if part.entitlements:
         command.extend(
             ['--entitlements',

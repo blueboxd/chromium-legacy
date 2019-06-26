@@ -205,6 +205,9 @@ const char kChromeUICellularSetupUrl[] = "chrome://cellular-setup";
 const char kChromeUICertificateManagerDialogURL[] =
     "chrome://certificate-manager/";
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
+const char kChromeUIConfirmPasswordChangeHost[] = "confirm-password-change";
+const char kChromeUIConfirmPasswordChangeUrl[] =
+    "chrome://confirm-password-change";
 const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
 const char kChromeUIDiscoverURL[] = "chrome://oobe/discover";

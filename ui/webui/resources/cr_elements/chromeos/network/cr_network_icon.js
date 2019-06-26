@@ -22,7 +22,7 @@ Polymer({
     /**
      * If set, the device state for the network type. Otherwise it defaults to
      * null rather than undefined so that it does not block computed bindings.
-     * @type {?CrOnc.DeviceStateProperties}
+     * @type {?OncMojo.DeviceStateProperties}
      */
     deviceState: {
       type: Object,
@@ -75,9 +75,10 @@ Polymer({
         'cellular-' :
         'wifi-';
     if (!this.isListItem && !this.networkState.GUID) {
-      const deviceState = this.deviceState;
-      if (!deviceState || deviceState.State == 'Enabled' ||
-          deviceState.State == 'Enabling') {
+      const mojom = chromeos.networkConfig.mojom;
+      const device = this.deviceState;
+      if (!device || device.deviceState == mojom.DeviceStateType.kEnabled ||
+          device.deviceState == mojom.DeviceStateType.kEnabling) {
         return prefix + 'no-network';
       }
       return prefix + 'off';

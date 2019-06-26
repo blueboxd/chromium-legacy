@@ -19,7 +19,6 @@ class CodeSignedProduct(object):
                  requirements=None,
                  identifier_requirement=True,
                  sign_with_identifier=False,
-                 resource_rules=None,
                  entitlements=None,
                  verify_options=None):
         """A build product to be codesigned.
@@ -43,9 +42,6 @@ class CodeSignedProduct(object):
             sign_with_identifier: If True, then the identifier will be specified
                 when running the `codesign` command. If False, `codesign` will
                 infer the identifier itself.
-            resource_rules: A file in |Paths.packaging_dir| to specify for
-                `codesign --resource-rules`. macOS has deprecated resource rules
-                and this should not be used for new products.
             entitlements: File name of the entitlements file to sign the product
                 with. The file should reside in the |Paths.packaging_dir|.
             verify_options: Flags to pass to `codesign --verify`, from
@@ -59,7 +55,6 @@ class CodeSignedProduct(object):
         self.requirements = requirements
         self.identifier_requirement = identifier_requirement
         self.sign_with_identifier = sign_with_identifier
-        self.resource_rules = resource_rules
         self.entitlements = entitlements
         if not VerifyOptions.valid(verify_options):
             raise ValueError('Invalid VerifyOptions: {}'.format(verify_options))

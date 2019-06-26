@@ -27,6 +27,7 @@ if (is_chromeos) {
     deps = [
       ":cr_onc_types",
       "//ui/webui/resources/js:assert",
+      "//ui/webui/resources/js/chromeos:onc_mojo",
     ]
   }
 

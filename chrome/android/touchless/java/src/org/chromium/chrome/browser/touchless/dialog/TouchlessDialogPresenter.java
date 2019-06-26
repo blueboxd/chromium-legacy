@@ -135,6 +135,8 @@ public class TouchlessDialogPresenter extends Presenter {
             PropertyModel model, Pair<ViewGroup, ModelListAdapter> view, PropertyKey propertyKey) {
         ViewGroup dialogView = view.first;
         ModelListAdapter optionsAdapter = view.second;
+        assert !model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY);
+        assert propertyKey != ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY;
         // TODO(mdjones): If the default buttons are used assert no list items and convert the
         //                buttons to list items.
         if (TouchlessDialogProperties.IS_FULLSCREEN == propertyKey) {

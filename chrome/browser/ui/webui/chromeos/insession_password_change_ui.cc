@@ -12,12 +12,14 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/insession_password_change_handler_chromeos.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -131,5 +133,44 @@ InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
 }
 
 InSessionPasswordChangeUI::~InSessionPasswordChangeUI() = default;
+
+InSessionConfirmPasswordChangeUI::InSessionConfirmPasswordChangeUI(
+    content::WebUI* web_ui)
+    : ui::WebDialogUI(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  CHECK(profile->GetPrefs()->GetBoolean(
+      prefs::kSamlInSessionPasswordChangeEnabled));
+  content::WebUIDataSource* source = content::WebUIDataSource::Create(
+      chrome::kChromeUIConfirmPasswordChangeHost);
+
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      {"title", IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_TITLE},
+      {"bothPasswordsPrompt",
+       IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_BOTH_PASSWORDS_PROMPT},
+      {"oldPasswordPrompt",
+       IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_OLD_PASSWORD_PROMPT},
+      {"newPasswordPrompt",
+       IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_NEW_PASSWORD_PROMPT},
+      {"oldPassword", IDS_PASSWORD_CHANGE_OLD_PASSWORD_LABEL},
+      {"newPassword", IDS_PASSWORD_CHANGE_NEW_PASSWORD_LABEL},
+      {"confirmNewPassword", IDS_PASSWORD_CHANGE_CONFIRM_NEW_PASSWORD_LABEL},
+      {"matchError", IDS_PASSWORD_CHANGE_PASSWORDS_DONT_MATCH},
+      {"save", IDS_PASSWORD_CHANGE_CONFIRM_SAVE_BUTTON}};
+
+  AddLocalizedStringsBulk(source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
+
+  source->SetJsonPath("strings.js");
+  source->SetDefaultResource(IDR_CONFIRM_PASSWORD_CHANGE_HTML);
+  source->AddResourcePath("confirm_password_change.js",
+                          IDR_CONFIRM_PASSWORD_CHANGE_JS);
+
+  // TODO(https://crbug.com/930109): Add JS and message handler to handle tap
+  // on the save button, errors, etc.
+
+  content::WebUIDataSource::Add(profile, source);
+}
+
+InSessionConfirmPasswordChangeUI::~InSessionConfirmPasswordChangeUI() = default;
 
 }  // namespace chromeos

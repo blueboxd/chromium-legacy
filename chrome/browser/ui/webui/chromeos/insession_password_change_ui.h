@@ -39,6 +39,16 @@ class InSessionPasswordChangeUI : public ui::WebDialogUI {
   DISALLOW_COPY_AND_ASSIGN(InSessionPasswordChangeUI);
 };
 
+// For chrome:://confirm-password-change
+class InSessionConfirmPasswordChangeUI : public ui::WebDialogUI {
+ public:
+  explicit InSessionConfirmPasswordChangeUI(content::WebUI* web_ui);
+  ~InSessionConfirmPasswordChangeUI() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InSessionConfirmPasswordChangeUI);
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_INSESSION_PASSWORD_CHANGE_UI_H_

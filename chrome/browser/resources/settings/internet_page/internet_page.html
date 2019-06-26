@@ -50,7 +50,7 @@
           <template is="dom-if" if="[[addConnectionExpanded_]]">
             <div class="list-frame vertical-list">
               <template is="dom-if"
-                  if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
+                  if="[[deviceIsEnabled_(deviceStates, 'WiFi')]]">
                 <div actionable class="list-item" on-click="onAddWiFiTap_">
                   <div class="start settings-box-text">
                     $i18n{internetAddWiFi}
@@ -127,7 +127,7 @@
           <settings-internet-subpage
               default-network="[[defaultNetwork]]"
               device-state="[[getDeviceState_(subpageType_, deviceStates)]]"
-              tether-device-state="[[get('Tether', deviceStates)]]"
+              tether-device-state="[[getTetherDeviceState_(deviceStates)]]"
               global-policy="[[globalPolicy_]]"
               third-party-vpn-providers="[[thirdPartyVpnProviders_]]"
               arc-vpn-providers="[[arcVpnProviders_]]"

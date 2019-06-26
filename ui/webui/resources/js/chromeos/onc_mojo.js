@@ -103,6 +103,30 @@ class OncMojo {
   }
 
   /**
+   * @param {string} value
+   * @return {!chromeos.networkConfig.mojom.DeviceStateType}
+   */
+  static getDeviceStateTypeFromString(value) {
+    const DeviceStateType = chromeos.networkConfig.mojom.DeviceStateType;
+    switch (value) {
+      case 'Uninitialized':
+        return DeviceStateType.kUninitialized;
+      case 'Disabled':
+        return DeviceStateType.kDisabled;
+      case 'Enabling':
+        return DeviceStateType.kEnabling;
+      case 'Enabled':
+        return DeviceStateType.kEnabled;
+      case 'Prohibited':
+        return DeviceStateType.kProhibited;
+      case 'Unavailable':
+        return DeviceStateType.kUnavailable;
+    }
+    assertNotReached();
+    return DeviceStateType.kUnavailable;
+  }
+
+  /**
    * @param {!chromeos.networkConfig.mojom.NetworkType} value
    * @return {string}
    */
@@ -158,7 +182,7 @@ class OncMojo {
       case 'WiMAX':
         return NetworkType.kWiMAX;
     }
-    assertNotReached();
+    assertNotReached('Unexpected value: ' + value);
     return NetworkType.kAll;
   }
 
@@ -245,6 +269,8 @@ class OncMojo {
     return value;
   }
 }
+
+// Convenience types for commonly used chromeos.networkConfig.mojom types.
 
 /** @typedef {chromeos.networkConfig.mojom.DeviceStateProperties} */
 OncMojo.DeviceStateProperties;

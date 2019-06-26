@@ -31,7 +31,7 @@ Polymer({
 
     /**
      * The device state for tethering.
-     * @private {?CrOnc.DeviceStateProperties|undefined}
+     * @private {?OncMojo.DeviceStateProperties|undefined}
      */
     deviceState_: Object,
 
@@ -63,6 +63,21 @@ Polymer({
             loadTimeData.getBoolean('showTechnologyBadge');
       }
     },
+  },
+
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   */
+  networkConfigProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
   },
 
   /** @override */
@@ -112,7 +127,7 @@ Polymer({
   },
 
   /**
-   * Retrieves device states (CrOnc.DeviceStateProperties) and sets
+   * Retrieves device states (OncMojo.DeviceStateProperties) and sets
    * this.deviceState_ to the retrieved Instant Tethering state (or undefined if
    * there is none) in its callback. Note that the function
    * chrome.networkingPrivate.getDevicePolicy() retrieves at most one object per
@@ -121,11 +136,18 @@ Polymer({
    * @private
    */
   updateTetherDeviceState_: function() {
-    this.networkingPrivate_.getDeviceStates(deviceStates => {
-      this.deviceState_ =
-          deviceStates.find(
-              deviceState => deviceState.Type == CrOnc.Type.TETHER) ||
-          {Type: CrOnc.Type.TETHER, State: CrOnc.DeviceState.DISABLED};
+    this.networkConfigProxy_.getDeviceStateList().then(response => {
+      const kTether = chromeos.networkConfig.mojom.NetworkType.kTether;
+      const deviceStates = response.result;
+      const deviceState =
+          deviceStates.find(deviceState => deviceState.type == kTether);
+      this.deviceState_ = deviceState || {
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kDisabled,
+        managedNetworkAvailable: false,
+        scanning: false,
+        simAbsent: false,
+        type: kTether,
+      };
     });
   },
 

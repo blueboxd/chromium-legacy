@@ -202,6 +202,35 @@ Try tapping the mic to ask me anything.
         Change password
       </message>
 
+      <!-- In-session password change -->
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_TITLE" desc="Title for the dialog where a user corrects and confirms their old and new passwords in order to complete a password change">
+        Confirm change
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_BOTH_PASSWORDS_PROMPT" desc="Text on the password-change confirmation dialog explaining that the user has to enter both their old and new passwords again to finish the password change.">
+        To finish, enter your old and new passwords
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_OLD_PASSWORD_PROMPT" desc="Text on the password-change confirmation dialog explaining that the user has to enter their old password again to finish the password change.">
+        To finish, enter your old password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_NEW_PASSWORD_PROMPT" desc="Text on the password-change confirmation dialog explaining that the user has to enter their new password again to finish the password change.">
+        To finish, enter your new password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_OLD_PASSWORD_LABEL" desc="Label for a box where the user enters their old password">
+        Old password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_NEW_PASSWORD_LABEL" desc="Label for a box where the user enters their new password">
+        New password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_NEW_PASSWORD_LABEL" desc="Label for the second box where the user enters their new password again, to ensure they don't mistype it">
+        Confirm new password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_SAVE_BUTTON" desc="Text on a button that confirms the change to the password and saves the new password in place of the old one">
+        Save
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_PASSWORDS_DONT_MATCH" desc="Error text in the case that the user entered their new password twice into two different boxes as required, but the two entries do not match">
+        Passwords do not match
+      </message>
+
       <message name="IDS_IME_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process providing the input methods.">
         Chrome OS Input Method Service
       </message>

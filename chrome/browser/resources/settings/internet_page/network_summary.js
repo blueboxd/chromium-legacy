@@ -9,17 +9,6 @@
 
 /**
  * @typedef {{
- *   Ethernet: (!CrOnc.DeviceStateProperties|undefined),
- *   WiFi: (!CrOnc.DeviceStateProperties|undefined),
- *   Cellular: (!CrOnc.DeviceStateProperties|undefined),
- *   WiMAX: (!CrOnc.DeviceStateProperties|undefined),
- *   VPN: (!CrOnc.DeviceStateProperties|undefined)
- * }}
- */
-let DeviceStateObject;
-
-/**
- * @typedef {{
  *   Ethernet: (Array<!CrOnc.NetworkStateProperties>|undefined),
  *   WiFi: (Array<!CrOnc.NetworkStateProperties>|undefined),
  *   Cellular: (Array<!CrOnc.NetworkStateProperties>|undefined),
@@ -58,14 +47,17 @@ Polymer({
      * The device state for each network device type. We initialize this to
      * include a disabled WiFi type since WiFi is always present. This reduces
      * the amount of visual change on first load.
-     * @private {!DeviceStateObject}
+     * @private {!Object<!OncMojo.DeviceStateProperties>}
      */
     deviceStates: {
       type: Object,
       value: function() {
-        return {
-          WiFi: {Type: CrOnc.Type.WI_FI, State: CrOnc.DeviceState.DISABLED},
+        const result = {};
+        result[chromeos.networkConfig.mojom.NetworkType.kWiFi] = {
+          deviceState: chromeos.networkConfig.mojom.DeviceStateType.kDisabled,
+          type: chromeos.networkConfig.mojom.NetworkType.kWiFi,
         };
+        return result;
       },
       notify: true,
     },
@@ -95,10 +87,25 @@ Polymer({
   },
 
   /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   */
+  networkConfigProxy_: null,
+
+  /**
    * Set of GUIDs identifying active networks, one for each type.
    * @private {?Set<string>}
    */
   activeNetworkIds_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
+  },
 
   /** @override */
   attached: function() {
@@ -177,9 +184,9 @@ Polymer({
    */
   getNetworkLists_: function() {
     // First get the device states.
-    this.networkingPrivate.getDeviceStates(deviceStates => {
+    this.networkConfigProxy_.getDeviceStateList().then(response => {
       // Second get the network states.
-      this.getNetworkStates_(deviceStates);
+      this.getNetworkStates_(response.result);
     });
   },
 
@@ -187,17 +194,17 @@ Polymer({
    * Requests the list of network states from Chrome. Updates
    * activeNetworkStates and networkStateLists once the results are returned
    * from Chrome.
-   * @param {!Array<!CrOnc.DeviceStateProperties>} deviceStates
+   * @param {!Array<!OncMojo.DeviceStateProperties>} deviceStateList
    * @private
    */
-  getNetworkStates_: function(deviceStates) {
+  getNetworkStates_: function(deviceStateList) {
     const filter = {
       networkType: CrOnc.Type.ALL,
       visible: true,
       configured: false
     };
     this.networkingPrivate.getNetworks(filter, networkStates => {
-      this.updateNetworkStates_(networkStates, deviceStates);
+      this.updateNetworkStates_(networkStates, deviceStateList);
     });
   },
 
@@ -205,13 +212,14 @@ Polymer({
    * Called after network states are received from getNetworks.
    * @param {!Array<!CrOnc.NetworkStateProperties>} networkStates The state
    *     properties for all visible networks.
-   * @param {!Array<!CrOnc.DeviceStateProperties>} deviceStates
+   * @param {!Array<!OncMojo.DeviceStateProperties>} deviceStateList
    * @private
    */
-  updateNetworkStates_: function(networkStates, deviceStates) {
-    const newDeviceStates = /** @type {!DeviceStateObject} */ ({});
-    for (const state of deviceStates) {
-      newDeviceStates[state.Type] = state;
+  updateNetworkStates_: function(networkStates, deviceStateList) {
+    const mojom = chromeos.networkConfig.mojom;
+    const newDeviceStates = {};
+    for (const device of deviceStateList) {
+      newDeviceStates[device.type] = device;
     }
 
     // Clear any current networks.
@@ -245,9 +253,9 @@ Polymer({
 
     // Create a VPN entry in deviceStates if there are any VPN networks.
     if (newNetworkStateLists.VPN && newNetworkStateLists.VPN.length > 0) {
-      newDeviceStates.VPN = {
-        Type: CrOnc.Type.VPN,
-        State: CrOnc.DeviceState.ENABLED
+      newDeviceStates[mojom.NetworkType.kVPN] = {
+        type: mojom.NetworkType.kVPN,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
       };
     }
 
@@ -256,11 +264,15 @@ Polymer({
     const newActiveNetworkStates = [];
     this.activeNetworkIds_ = new Set;
     const orderedDeviceTypes = [
-      CrOnc.Type.ETHERNET, CrOnc.Type.WI_FI, CrOnc.Type.CELLULAR,
-      CrOnc.Type.TETHER, CrOnc.Type.WI_MAX, CrOnc.Type.VPN
+      mojom.NetworkType.kEthernet,
+      mojom.NetworkType.kWiFi,
+      mojom.NetworkType.kCellular,
+      mojom.NetworkType.kTether,
+      mojom.NetworkType.kWiMAX,
+      mojom.NetworkType.kVPN,
     ];
-    for (const type of orderedDeviceTypes) {
-      const device = newDeviceStates[type];
+    for (const deviceType of orderedDeviceTypes) {
+      const device = newDeviceStates[deviceType];
       if (!device) {
         continue;
       }  // The technology for this device type is unavailable.
@@ -268,7 +280,8 @@ Polymer({
       // If both 'Tether' and 'Cellular' technologies exist, merge the network
       // lists and do not add an active network for 'Tether' so that there is
       // only one 'Mobile data' section / subpage.
-      if (type == CrOnc.Type.TETHER && newDeviceStates[CrOnc.Type.CELLULAR]) {
+      if (deviceType == mojom.NetworkType.kTether &&
+          newDeviceStates[mojom.NetworkType.kCellular]) {
         newNetworkStateLists[CrOnc.Type.CELLULAR] =
             newNetworkStateLists[CrOnc.Type.CELLULAR].concat(
                 newNetworkStateLists[CrOnc.Type.TETHER]);
@@ -277,15 +290,16 @@ Polymer({
 
       // Note: The active state for 'Cellular' may be a Tether network if both
       // types are enabled but no Cellular network exists (edge case).
-      const state =
-          this.getActiveStateForType_(activeNetworkStatesByType, type);
-      if (state.Source === undefined &&
-          device.State == CrOnc.DeviceState.PROHIBITED) {
+      const networkState = this.getActiveStateForType_(
+          activeNetworkStatesByType, OncMojo.getNetworkTypeString(deviceType));
+      if (networkState.Source === undefined &&
+          device.deviceState ==
+              chromeos.networkConfig.mojom.DeviceStateType.kProhibited) {
         // Prohibited technologies are enforced by the device policy.
-        state.Source = CrOnc.Source.DEVICE_POLICY;
+        networkState.Source = CrOnc.Source.DEVICE_POLICY;
       }
-      newActiveNetworkStates.push(state);
-      this.activeNetworkIds_.add(state.GUID);
+      newActiveNetworkStates.push(networkState);
+      this.activeNetworkIds_.add(networkState.GUID);
     }
 
     this.deviceStates = newDeviceStates;
@@ -308,5 +322,14 @@ Polymer({
       activeState = activeStatesByType.get(CrOnc.Type.TETHER);
     }
     return activeState || {GUID: '', Type: type};
+  },
+
+  /**
+   * @param {string} type
+   * @param {!Object<!OncMojo.DeviceStateProperties>} deviceStates
+   * @return {!OncMojo.DeviceStateProperties|undefined}
+   */
+  getDeviceState_: function(type, deviceStates) {
+    return this.deviceStates[OncMojo.getNetworkTypeFromString(type)];
   },
 });

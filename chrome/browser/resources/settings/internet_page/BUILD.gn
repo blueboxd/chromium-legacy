@@ -100,6 +100,7 @@ js_library("internet_subpage") {
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
   externs_list = [ "$externs_path/networking_private.js" ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
@@ -124,6 +125,7 @@ js_library("network_summary") {
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior",
     "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
 }
@@ -134,6 +136,7 @@ js_library("network_summary_item") {
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
 }

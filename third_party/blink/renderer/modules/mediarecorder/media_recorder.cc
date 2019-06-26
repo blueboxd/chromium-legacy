@@ -294,7 +294,7 @@ void MediaRecorder::requestData(ExceptionState& exception_state) {
 
 bool MediaRecorder::isTypeSupported(ExecutionContext* context,
                                     const String& type) {
-  std::unique_ptr<MediaRecorderHandler> handler = MediaRecorderHandler::Create(
+  MediaRecorderHandler* handler = MediaRecorderHandler::Create(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!handler)
     return false;
@@ -321,9 +321,12 @@ void MediaRecorder::ContextDestroyed(ExecutionContext*) {
   if (stopped_)
     return;
 
+  WriteData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
+            WTF::CurrentTimeMS());
+
   stopped_ = true;
   stream_.Clear();
-  recorder_handler_.reset();
+  recorder_handler_ = nullptr;
 }
 
 void MediaRecorder::WriteData(const char* data,
@@ -399,6 +402,7 @@ void MediaRecorder::DispatchScheduledEvent() {
 
 void MediaRecorder::Trace(blink::Visitor* visitor) {
   visitor->Trace(stream_);
+  visitor->Trace(recorder_handler_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

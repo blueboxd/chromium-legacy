@@ -104,7 +104,7 @@ class MODULES_EXPORT MediaRecorder final
 
   std::unique_ptr<BlobData> blob_data_;
 
-  std::unique_ptr<MediaRecorderHandler> recorder_handler_;
+  Member<MediaRecorderHandler> recorder_handler_;
 
   HeapVector<Member<Event>> scheduled_events_;
 };

@@ -74,7 +74,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                                  public MediaRecorderHandlerClient {
  public:
   MediaRecorderHandlerTest()
-      : media_recorder_handler_(new MediaRecorderHandler(
+      : media_recorder_handler_(MediaRecorderHandler::Create(
             scheduler::GetSingleThreadTaskRunnerForTesting())),
         audio_source_(kTestAudioChannels,
                       440 /* freq */,
@@ -138,7 +138,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   MockMediaStreamRegistry registry_;
 
   // The Class under test. Needs to be scoped_ptr to force its destruction.
-  std::unique_ptr<MediaRecorderHandler> media_recorder_handler_;
+  Persistent<MediaRecorderHandler> media_recorder_handler_;
 
   // For generating test AudioBuses
   media::SineWaveAudioSource audio_source_;
@@ -222,9 +222,7 @@ TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   EXPECT_FALSE(hasVideoRecorders());
   EXPECT_FALSE(hasAudioRecorders());
 
-  // Expect a last call on destruction.
-  EXPECT_CALL(*this, WriteData(_, _, true, _)).Times(1);
-  media_recorder_handler_.reset();
+  media_recorder_handler_ = nullptr;
 }
 
 // Sends 2 opaque frames and 1 transparent frame and expects them as WebM
@@ -308,9 +306,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
 
   media_recorder_handler_->Stop();
 
-  // Expect a last call on destruction, with size 0 and |lastInSlice| true.
-  EXPECT_CALL(*this, WriteData(nullptr, 0, true, _)).Times(1);
-  media_recorder_handler_.reset();
+  media_recorder_handler_ = nullptr;
 }
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -378,9 +374,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
 
   media_recorder_handler_->Stop();
 
-  // Expect a last call on destruction, with size 0 and |lastInSlice| true.
-  EXPECT_CALL(*this, WriteData(nullptr, 0, true, _)).Times(1);
-  media_recorder_handler_.reset();
+  media_recorder_handler_ = nullptr;
 }
 
 // Starts up recording and forces a WebmMuxer's libwebm error.
@@ -428,9 +422,7 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     run_loop.Run();
   }
 
-  // Expect a last call on destruction, with size 0 and |lastInSlice| true.
-  EXPECT_CALL(*this, WriteData(nullptr, 0, true, _)).Times(1);
-  media_recorder_handler_.reset();
+  media_recorder_handler_ = nullptr;
 }
 
 // Checks the ActualMimeType() versus the expected.
@@ -454,9 +446,7 @@ TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
   EXPECT_EQ(media_recorder_handler_->ActualMimeType(),
             actual_mime_type.ToString());
 
-  // Expect a last call on destruction, with size 0 and |lastInSlice| true.
-  EXPECT_CALL(*this, WriteData(nullptr, 0, true, _)).Times(1);
-  media_recorder_handler_.reset();
+  media_recorder_handler_ = nullptr;
 }
 
 }  // namespace blink

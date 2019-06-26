@@ -737,7 +737,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
   }
 
   if (configuration->type() == "record") {
-    if (auto handler = MediaRecorderHandler::Create(
+    if (auto* handler = MediaRecorderHandler::Create(
             ExecutionContext::From(script_state)
                 ->GetTaskRunner(TaskType::kInternalMediaRealTime))) {
       handler->EncodingInfo(ToWebMediaConfiguration(configuration),

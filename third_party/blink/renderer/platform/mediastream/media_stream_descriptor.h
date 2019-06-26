@@ -87,10 +87,16 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   MediaStreamComponent* AudioComponent(unsigned index) const {
     return audio_components_[index].Get();
   }
+  const HeapVector<Member<MediaStreamComponent>>& AudioComponents() const {
+    return audio_components_;
+  }
 
   unsigned NumberOfVideoComponents() const { return video_components_.size(); }
   MediaStreamComponent* VideoComponent(unsigned index) const {
     return video_components_[index].Get();
+  }
+  const HeapVector<Member<MediaStreamComponent>>& VideoComponents() const {
+    return video_components_;
   }
 
   void AddComponent(MediaStreamComponent*);

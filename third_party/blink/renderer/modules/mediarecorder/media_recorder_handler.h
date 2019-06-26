@@ -12,11 +12,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_recorder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -29,6 +29,7 @@ class WebmMuxer;
 
 namespace blink {
 
+class MediaStreamDescriptor;
 struct WebMediaCapabilitiesInfo;
 struct WebMediaConfiguration;
 class MediaRecorderHandlerClient;
@@ -42,9 +43,10 @@ class MediaRecorderHandlerClient;
 // All methods are called on the same thread as construction and destruction,
 // i.e. the Main Render thread. (Note that a BindToCurrentLoop is used to
 // guarantee this, since VideoTrackRecorder sends back frames on IO thread.)
-class MODULES_EXPORT MediaRecorderHandler {
+class MODULES_EXPORT MediaRecorderHandler
+    : public GarbageCollectedFinalized<MediaRecorderHandler> {
  public:
-  static std::unique_ptr<MediaRecorderHandler> Create(
+  static MediaRecorderHandler* Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   explicit MediaRecorderHandler(
@@ -60,7 +62,7 @@ class MODULES_EXPORT MediaRecorderHandler {
   // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
   bool CanSupportMimeType(const String& type, const String& web_codecs);
   bool Initialize(MediaRecorderHandlerClient* client,
-                  const WebMediaStream& media_stream,
+                  MediaStreamDescriptor* media_stream,
                   const String& type,
                   const String& codecs,
                   int32_t audio_bits_per_second,
@@ -77,6 +79,9 @@ class MODULES_EXPORT MediaRecorderHandler {
   void EncodingInfo(const WebMediaConfiguration& configuration,
                     OnMediaCapabilitiesEncodingInfoCallback cb);
   String ActualMimeType();
+
+  EAGERLY_FINALIZE();
+  void Trace(blink::Visitor*);
 
  private:
   friend class MediaRecorderHandlerTest;
@@ -122,9 +127,10 @@ class MODULES_EXPORT MediaRecorderHandler {
   base::TimeTicks slice_origin_timestamp_;
 
   bool recording_;
-  WebMediaStream media_stream_;  // The MediaStream being recorded.
-  WebVector<WebMediaStreamTrack> video_tracks_;
-  WebVector<WebMediaStreamTrack> audio_tracks_;
+  // The MediaStream being recorded.
+  Member<MediaStreamDescriptor> media_stream_;
+  HeapVector<Member<MediaStreamComponent>> video_tracks_;
+  HeapVector<Member<MediaStreamComponent>> audio_tracks_;
 
   // |client_| is a weak pointer, and is valid for the lifetime of this object.
   MediaRecorderHandlerClient* client_;

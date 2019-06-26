@@ -11,26 +11,90 @@
 // granularity. See:
 // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-formalism
 
+// For details on each test, see the comments of the iframe file.
 async_test(t => {
-  var iframe = document.createElement('iframe');
+  let iframe = document.createElement('iframe');
   iframe.src =
     'http://127.0.0.1:8000/security/resources/agent-equality-same-origin.html';
 
   window.addEventListener(
     'message',
     t.step_func(evt => {
-      t.add_cleanup(() => { document.body.removeChild(iframe); });
-      assert_equals(evt.data.length, 3);
-      assert_equals(evt.data[0], evt.data[1]);
-      assert_equals(evt.data[0], evt.data[2]);
+      if (evt.data[0] !== 'same-origin test') {
+        return;
+      }
+      assert_equals(evt.data.length, 4);
+      assert_equals(evt.data[1], evt.data[2]);
+      assert_equals(evt.data[1], evt.data[3]);
       t.done();
-    }),
-    {'once': true});
+    }));
 
   document.body.appendChild(iframe);
+  t.add_cleanup(() => { document.body.removeChild(iframe); });
 }, 'Same-origin documents must share the same agent.');
 
-// TODO(yutak): Add more tests.
+async_test(t => {
+  let iframe = document.createElement('iframe');
+  iframe.src =
+    'http://127.0.0.1:8000/security/resources/agent-equality-cross-origin.html';
+
+  window.addEventListener(
+    'message',
+    t.step_func(evt => {
+      if (evt.data[0] !== 'cross-origin test') {
+        return;
+      }
+      assert_equals(evt.data.length, 3);
+      assert_not_equals(evt.data[1], evt.data[2]);
+      t.done();
+    }));
+
+  document.body.appendChild(iframe);
+  t.add_cleanup(() => { document.body.removeChild(iframe); });
+}, 'Cross-origin documents should receive a different agent.');
+
+async_test(t => {
+  let iframe = document.createElement('iframe');
+  iframe.src =
+    'http://127.0.0.1:8000/security/resources/agent-equality-skip-level-same-origin.html';
+
+  window.addEventListener(
+    'message',
+    t.step_func(evt => {
+      if (evt.data[0] !== 'skip-level same-origin test') {
+        return;
+      }
+      assert_equals(evt.data.length, 3);
+      assert_equals(evt.data[1], evt.data[2]);
+      t.done();
+    }));
+
+  document.body.appendChild(iframe);
+  t.add_cleanup(() => { document.body.removeChild(iframe); });
+}, 'Same-origin documents must share the same agent even if opened by cross-origin document.');
+
+async_test(t => {
+  let iframe = document.createElement('iframe');
+  iframe.src =
+    'http://127.0.0.1:8000/security/resources/agent-equality-same-origin-different-ports.html';
+
+  window.addEventListener(
+    'message',
+    t.step_func(evt => {
+      if (evt.data[0] !== 'same-origin different-ports test') {
+        return;
+      }
+      assert_equals(evt.data.length, 3);
+      assert_equals(evt.data[1], evt.data[2]);
+      t.done();
+    }));
+
+  document.body.appendChild(iframe);
+  t.add_cleanup(() => { document.body.removeChild(iframe); });
+}, 'Documents on same-origin-but-different-ports should receive the same agent.');
+
+// TODO(yutak): Add tests for https and other tricky cases (data:// URLs, or
+// iframe srcdoc etc.).
 </script>
 </body>
 </html>

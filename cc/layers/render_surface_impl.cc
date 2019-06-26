@@ -15,7 +15,6 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/damage_tracker.h"
-#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"

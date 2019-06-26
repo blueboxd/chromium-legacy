@@ -86,5 +86,4 @@ generate_jni("native_browser_test_jni_headers") {
   sources = [
     "java/src/org/chromium/native_test/NativeBrowserTest.java",
   ]
-  jni_package = "native_browser_test"
 }

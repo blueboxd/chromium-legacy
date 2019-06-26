@@ -5,11 +5,11 @@
 // Implementation of about_flags for iOS that sets flags based on experimental
 // settings.
 
-#include "ios/chrome/browser/about_flags.h"
+#include "ios/chrome/browser/flags/about_flags.h"
 
+#import <UIKit/UIKit.h>
 #include <stddef.h>
 #include <stdint.h>
-#import <UIKit/UIKit.h>
 
 #include "base/base_switches.h"
 #include "base/bind.h"

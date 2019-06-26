@@ -833,8 +833,9 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
     const extensions::Extension* extension,
     base::string16* error) const {
   if (account_type_ == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION) {
-    // Allow extension if it is an externally hosted component of Chrome.
-    if (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT) {
+    // Allow extension if it is a component of Chrome.
+    if (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT ||
+        extension->location() == extensions::Manifest::COMPONENT) {
       return true;
     }
 

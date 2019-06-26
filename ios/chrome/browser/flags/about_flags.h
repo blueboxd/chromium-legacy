@@ -5,8 +5,8 @@
 // Implementation of about_flags for iOS that sets flags based on experimental
 // settings.
 
-#ifndef IOS_CHROME_BROWSER_ABOUT_FLAGS_H_
-#define IOS_CHROME_BROWSER_ABOUT_FLAGS_H_
+#ifndef IOS_CHROME_BROWSER_FLAGS_ABOUT_FLAGS_H_
+#define IOS_CHROME_BROWSER_FLAGS_ABOUT_FLAGS_H_
 
 #include <stddef.h>
 #include <string>
@@ -17,7 +17,7 @@
 namespace base {
 class CommandLine;
 class ListValue;
-}
+}  // namespace base
 
 namespace flags_ui {
 class FlagsStorage;
@@ -62,4 +62,4 @@ const flags_ui::FeatureEntry* GetFeatureEntries(size_t* count);
 
 }  // namespace testing
 
-#endif  // IOS_CHROME_BROWSER_ABOUT_FLAGS_H_
+#endif  // IOS_CHROME_BROWSER_FLAGS_ABOUT_FLAGS_H_

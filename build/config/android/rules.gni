@@ -198,20 +198,8 @@ if (enable_java_templates) {
   # JNI target implementation. See generate_jni or generate_jar_jni for usage.
   template("generate_jni_impl") {
     set_sources_assignment_filter([])
-    forward_variables_from(invoker, [ "testonly" ])
 
     _jni_output_dir = "${target_gen_dir}/${target_name}"
-
-    # TODO(crbug.com/964169): Stop generating long output paths, remove the
-    # jni_package variable, and remove the config target below once includes
-    # have been updated to use full paths.
-    _use_long_paths = defined(invoker.jni_package)
-    if (_use_long_paths) {
-      _base_output_dir = "${target_gen_dir}/${target_name}"
-      _package_output_dir = "${_base_output_dir}/${invoker.jni_package}"
-      _jni_output_dir = "${_package_output_dir}/jni"
-    }
-
     if (defined(invoker.jni_generator_include)) {
       _jni_generator_include = invoker.jni_generator_include
       _jni_generator_include_deps = []
@@ -228,11 +216,21 @@ if (enable_java_templates) {
       ]
     }
 
-    _jni_target_name = "${target_name}__jni"
-    action_with_pydeps(_jni_target_name) {
+    action_with_pydeps(target_name) {
       # The sources aren't compiled so don't check their dependencies.
       check_includes = false
       script = "//base/android/jni_generator/jni_generator.py"
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "public_deps",
+                               "visibility",
+                               "testonly",
+                             ])
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
+      public_deps += _jni_generator_include_deps
       inputs = []
       args = [
         "--ptr_type=long",
@@ -293,32 +291,6 @@ if (enable_java_templates) {
         args += [ "--enable_tracing" ]
       }
     }
-
-    if (_use_long_paths) {
-      config("jni_includes_${target_name}") {
-        include_dirs = [
-          _base_output_dir,
-          _package_output_dir,
-        ]
-      }
-    }
-
-    group(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "public_deps",
-                               "visibility",
-                             ])
-      if (!defined(public_deps)) {
-        public_deps = []
-      }
-      public_deps += [ ":$_jni_target_name" ]
-      public_deps += _jni_generator_include_deps
-      if (_use_long_paths) {
-        public_configs = [ ":jni_includes_${target_name}" ]
-      }
-    }
   }
 
   # Declare a jni target
@@ -330,16 +302,18 @@ if (enable_java_templates) {
   #
   # Variables
   #   sources: list of .java files to generate jni for
-  #   jni_package: subdirectory path for generated bindings
   #   namespace: Specify the namespace for the generated header file.
+  #   deps, public_deps: As normal
   #
   # Example
+  #   # Target located in base/BUILD.gn.
   #   generate_jni("foo_jni") {
+  #     # Generates gen/base/foo_jni/Foo_jni.h
+  #     # To use: #include "base/foo_jni/Foo_jni.h"
   #     sources = [
   #       "android/java/src/org/chromium/foo/Foo.java",
-  #       "android/java/src/org/chromium/foo/FooUtil.java",
+  #       ...,
   #     ]
-  #     jni_package = "foo"
   #   }
   template("generate_jni") {
     generate_jni_impl(target_name) {
@@ -357,20 +331,20 @@ if (enable_java_templates) {
   # Variables
   #   classes: list of .class files in the jar to generate jni for. These should
   #     include the full path to the .class file.
-  #   jni_package: subdirectory path for generated bindings
   #   jar_file: the path to the .jar. If not provided, will default to the sdk's
   #     android.jar
   #   always_mangle: Mangle all generated method names. By default, the script
   #     only mangles methods that cause ambiguity due to method overload.
-  #
   #   deps, public_deps: As normal
   #
   # Example
+  #   # Target located in base/BUILD.gn.
   #   generate_jar_jni("foo_jni") {
+  #     # Generates gen/base/foo_jni/Runnable_jni.h
+  #     # To use: #include "base/foo_jni/Runnable_jni.h"
   #     classes = [
   #       "android/view/Foo.class",
   #     ]
-  #     jni_package = "foo"
   #   }
   template("generate_jar_jni") {
     generate_jni_impl(target_name) {

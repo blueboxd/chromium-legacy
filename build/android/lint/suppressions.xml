@@ -245,20 +245,6 @@ Still reading?
     <ignore path="AndroidManifest.xml"/>
   </issue>
   <issue id="Overdraw" severity="ignore"/>
-  <issue id="Override">
-    <!-- TODO(crbug.com/635567): Fix this properly. -->
-    <ignore regexp="org/chromium/content/browser/input/ThreadedInputConnection.class"/>
-    <!-- TODO(crbug.com/635567): Fix this properly. -->
-    <ignore regexp="com/android/webview/chromium/ContentSettingsAdapter.class"/>
-    <!-- TODO(crbug.com/635567): Fix this properly. -->
-    <ignore regexp="com/android/webview/chromium/ServiceWorkerControllerAdapter.class"/>
-    <!-- TODO(crbug.com/635567): Fix this properly. -->
-    <ignore regexp="com/android/webview/chromium/ServiceWorkerSettingsAdapter.class"/>
-    <!-- TODO(crbug.com/635567): Fix this properly. -->
-    <ignore regexp="org/chromium/chrome/browser/ChromeActivity.class"/>
-    <!-- TODO(crbug.com/635567): Fix this properly. -->
-    <ignore regexp="org/chromium/chrome/browser/ChromeTabbedActivity.class"/>
-  </issue>
   <issue id="PackageManagerGetSignatures">
     <ignore regexp="chrome/android/webapk/libs/client/src/org/chromium/webapk/lib/client/WebApkValidator.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/browserservices/OriginVerifier.java"/>

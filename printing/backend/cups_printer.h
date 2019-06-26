@@ -87,21 +87,23 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   bool ToPrinterInfo(PrinterBasicInfo* basic_info) const;
 
   // Start a print job.  Writes the id of the started job to |job_id|.  |job_id|
-  // is 0 if there is an error.  Check availability before using this operation.
-  // Usage on an unavailable printer is undefined.
+  // is 0 if there is an error.  If |username| is empty no username is sent.
+  // Check availability before using this operation. Usage on an unavailable
+  // printer is undefined.
   ipp_status_t CreateJob(int* job_id,
                          const std::string& title,
-                         const base::Optional<std::string>& username,
+                         base::StringPiece username,
                          const std::vector<cups_option_t>& options);
 
   // Add a document to a print job.  |job_id| must be non-zero and refer to a
   // job started with CreateJob.  |document_name| will be displayed in print
   // status.  |last_doc| should be true if this is the last document for this
-  // print job.  |options| should be IPP key value pairs for the Send-Document
-  // operation.
+  // print job.  If |username| is empty no username is sent.  |options| should
+  // be IPP key value pairs for the Send-Document operation.
   bool StartDocument(int job_id,
                      const std::string& document_name,
                      bool last_doc,
+                     base::StringPiece username,
                      const std::vector<cups_option_t>& options);
 
   // Add data to the current document started by StartDocument.  Calling this
@@ -113,8 +115,9 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   bool FinishDocument();
 
   // Close the job.  If the job is not closed, the documents will not be
-  // printed.  |job_id| should match the id from CreateJob.
-  ipp_status_t CloseJob(int job_id);
+  // printed.  |job_id| should match the id from CreateJob.  If |username| is
+  // empty no username is sent.
+  ipp_status_t CloseJob(int job_id, base::StringPiece username);
 
   // Cancel the print job |job_id|.  Returns true if the operation succeeded.
   // Returns false if it failed for any reason.

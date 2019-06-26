@@ -147,14 +147,14 @@ bool CupsPrinter::InitializeDestInfo() const {
 
 ipp_status_t CupsPrinter::CreateJob(int* job_id,
                                     const std::string& title,
-                                    const base::Optional<std::string>& username,
+                                    base::StringPiece username,
                                     const std::vector<cups_option_t>& options) {
   DCHECK(dest_info_) << "Verify availability before starting a print job";
 
   cups_option_t* data = const_cast<cups_option_t*>(
       options.data());  // createDestJob will not modify the data
-  if (username)
-    cupsSetUser(username->c_str());
+  if (!username.empty())
+    cupsSetUser(username.data());
 
   ipp_status_t create_status =
       cupsCreateDestJob(cups_http_, destination_.get(), dest_info_.get(),
@@ -166,9 +166,12 @@ ipp_status_t CupsPrinter::CreateJob(int* job_id,
 bool CupsPrinter::StartDocument(int job_id,
                                 const std::string& document_name,
                                 bool last_document,
+                                base::StringPiece username,
                                 const std::vector<cups_option_t>& options) {
   DCHECK(dest_info_);
   DCHECK(job_id);
+  if (!username.empty())
+    cupsSetUser(username.data());
 
   cups_option_t* data = const_cast<cups_option_t*>(
       options.data());  // createStartDestDocument will not modify the data
@@ -177,6 +180,7 @@ bool CupsPrinter::StartDocument(int job_id,
                             job_id, document_name.c_str(), CUPS_FORMAT_PDF,
                             options.size(), data, last_document ? 0 : 1);
 
+  cupsSetUser(nullptr);  // reset to default username ("anonymous")
   return start_doc_status == HTTP_CONTINUE;
 }
 
@@ -195,12 +199,16 @@ bool CupsPrinter::FinishDocument() {
   return status == IPP_STATUS_OK;
 }
 
-ipp_status_t CupsPrinter::CloseJob(int job_id) {
+ipp_status_t CupsPrinter::CloseJob(int job_id, base::StringPiece username) {
   DCHECK(dest_info_);
   DCHECK(job_id);
+  if (!username.empty())
+    cupsSetUser(username.data());
 
-  return cupsCloseDestJob(cups_http_, destination_.get(), dest_info_.get(),
-                          job_id);
+  ipp_status_t result = cupsCloseDestJob(cups_http_, destination_.get(),
+                                         dest_info_.get(), job_id);
+  cupsSetUser(nullptr);  // reset to default username ("anonymous")
+  return result;
 }
 
 bool CupsPrinter::CancelJob(int job_id) {

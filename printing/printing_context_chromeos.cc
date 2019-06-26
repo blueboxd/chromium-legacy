@@ -297,7 +297,7 @@ PrintingContext::Result PrintingContextChromeos::NewDocument(
   std::vector<ScopedCupsOption> cups_options = SettingsToCupsOptions(settings_);
 
   std::vector<cups_option_t> options;
-  base::Optional<std::string> username;
+  base::StringPiece username;
   const base::StringPiece requestingUserName(kIppRequestingUserName);
   for (const ScopedCupsOption& option : cups_options) {
     if (option->name == requestingUserName) {
@@ -320,7 +320,8 @@ PrintingContext::Result PrintingContextChromeos::NewDocument(
   }
 
   // we only send one document, so it's always the last one
-  if (!printer_->StartDocument(job_id_, converted_name, true, options)) {
+  if (!printer_->StartDocument(job_id_, converted_name, true, username,
+                               options)) {
     LOG(ERROR) << "Starting document failed";
     return OnError();
   }
@@ -361,7 +362,10 @@ PrintingContext::Result PrintingContextChromeos::DocumentDone() {
     return OnError();
   }
 
-  ipp_status_t job_status = printer_->CloseJob(job_id_);
+  ipp_status_t job_status =
+      printer_->CloseJob(job_id_, settings_.send_user_info()
+                                      ? base::StringPiece(settings_.username())
+                                      : base::StringPiece());
   job_id_ = 0;
 
   if (job_status != IPP_STATUS_OK) {

@@ -6,6 +6,7 @@
 import logging
 import multiprocessing
 import os
+import shutil
 import subprocess
 
 logging.basicConfig(
@@ -161,6 +162,17 @@ def _validate_and_convert_profraw(profraw_file, output_profdata_files,
                     profraw_file, output_profdata_file, error.output)
     invalid_profraw_files.append(profraw_file)
 
+
+def move_java_exec_files(input_dir, output_dir):
+  """Moves generated .exec files to output_dir.
+
+  Args:
+    input_dir (str): The path to traverse to find input files.
+    output_dir (str): Where to move input files to.
+  """
+  exec_input_file_paths = _get_profile_paths(input_dir, '.exec')
+  for input_file in exec_input_file_paths:
+    shutil.move(input_file, output_dir)
 
 def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
   """Merges the profiles produced by the shards using llvm-profdata.

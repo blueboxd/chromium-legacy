@@ -5,6 +5,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import unittest
@@ -225,6 +226,31 @@ class MergeProfilesTest(unittest.TestCase):
     self.assertIn('missing_shards', written)
     self.assertEqual(written['missing_shards'], [0])
 
+  def test_move_java_exec_files(self):
+    mock_input_dir_walk = [
+        ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
+        ('/b/some/path/0', [],
+         ['output.json', 'default-1.exec', 'default-2.exec']),
+        ('/b/some/path/1', [],
+         ['output.json', 'default-3.exec', 'default-4.exec']),
+    ]
+
+    with mock.patch.object(os, 'walk') as mock_walk:
+      mock_walk.return_value = mock_input_dir_walk
+      with mock.patch.object(shutil, 'move') as mock_exec_cmd:
+        merger.move_java_exec_files('/b/some/path', 'output/dir')
+        self.assertEqual(4, mock_exec_cmd.call_count)
+
+  def test_move_java_exec_files_if_there_is_no_file(self):
+    mock_input_dir_walk = [
+        ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
+    ]
+
+    with mock.patch.object(os, 'walk') as mock_walk:
+      mock_walk.return_value = mock_input_dir_walk
+      with mock.patch.object(shutil, 'move') as mock_exec_cmd:
+        merger.move_java_exec_files('/b/some/path', 'output/dir')
+        self.assertFalse(mock_exec_cmd.called)
 
 if __name__ == '__main__':
   unittest.main()

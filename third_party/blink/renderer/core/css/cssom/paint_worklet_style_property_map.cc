@@ -54,7 +54,7 @@ class PaintWorkletStylePropertyMapIterationSource final
   const HeapVector<PaintWorkletStylePropertyMap::StylePropertyMapEntry> values_;
 };
 
-void BuildNativeValues(const ComputedStyle& style,
+bool BuildNativeValues(const ComputedStyle& style,
                        Node* styled_node,
                        const Vector<CSSPropertyID>& native_properties,
                        PaintWorkletStylePropertyMap::CrossThreadData& data) {
@@ -70,14 +70,17 @@ void BuildNativeValues(const ComputedStyle& style,
             .CrossThreadStyleValueFromComputedStyle(
                 style, /* layout_object */ nullptr, styled_node,
                 /* allow_visited_style */ false);
+    if (value->GetType() == CrossThreadStyleValue::StyleValueType::kUnknownType)
+      return false;
     String key = CSSProperty::Get(property_id).GetPropertyNameString();
     if (!key.IsSafeToSendToAnotherThread())
       key = key.IsolatedCopy();
     data.Set(key, std::move(value));
   }
+  return true;
 }
 
-void BuildCustomValues(const Document& document,
+bool BuildCustomValues(const Document& document,
                        const ComputedStyle& style,
                        Node* styled_node,
                        const Vector<AtomicString>& custom_properties,
@@ -89,18 +92,21 @@ void BuildCustomValues(const Document& document,
         ref.GetProperty().CrossThreadStyleValueFromComputedStyle(
             style, /* layout_object */ nullptr, styled_node,
             /* allow_visited_style */ false);
+    if (value->GetType() == CrossThreadStyleValue::StyleValueType::kUnknownType)
+      return false;
     // Ensure that the String can be safely passed cross threads.
     String key = property_name.GetString();
     if (!key.IsSafeToSendToAnotherThread())
       key = key.IsolatedCopy();
     data.Set(key, std::move(value));
   }
+  return true;
 }
 
 }  // namespace
 
 // static
-PaintWorkletStylePropertyMap::CrossThreadData
+base::Optional<PaintWorkletStylePropertyMap::CrossThreadData>
 PaintWorkletStylePropertyMap::BuildCrossThreadData(
     const Document& document,
     const ComputedStyle& style,
@@ -111,8 +117,10 @@ PaintWorkletStylePropertyMap::BuildCrossThreadData(
   PaintWorkletStylePropertyMap::CrossThreadData data;
   data.ReserveCapacityForSize(native_properties.size() +
                               custom_properties.size());
-  BuildNativeValues(style, styled_node, native_properties, data);
-  BuildCustomValues(document, style, styled_node, custom_properties, data);
+  if (!BuildNativeValues(style, styled_node, native_properties, data))
+    return base::nullopt;
+  if (!BuildCustomValues(document, style, styled_node, custom_properties, data))
+    return base::nullopt;
   return data;
 }
 

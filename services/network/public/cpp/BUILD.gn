@@ -117,6 +117,7 @@ jumbo_component("cpp_base") {
     "net_ipc_param_traits.h",
     "network_ipc_param_traits.cc",
     "network_ipc_param_traits.h",
+    "network_isolation_key_mojom_traits.cc",
     "network_isolation_key_mojom_traits.h",
     "p2p_param_traits.cc",
     "p2p_param_traits.h",

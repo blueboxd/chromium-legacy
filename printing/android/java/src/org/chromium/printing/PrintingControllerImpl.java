@@ -213,7 +213,13 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
 
     @Override
     public void pdfWritingDone(int pageCount) {
-        if (mPrintingState == PRINTING_STATE_FINISHED) return;
+        if (mPrintingState == PRINTING_STATE_READY) {
+            assert pageCount
+                    == 0 : "There is no pending printing task, should only be a failure report";
+        }
+
+        if (mPrintingState != PRINTING_STATE_STARTED_FROM_ONWRITE) return;
+
         mPrintingState = PRINTING_STATE_READY;
         closeFileDescriptor();
         if (pageCount > 0) {

@@ -93,6 +93,7 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   Member<Observer> paint_image_generator_observer_;
   Member<CSSStyleValueVector> parsed_input_arguments_;
   Vector<scoped_refptr<CSSVariableData>> argument_variable_data_;
+  bool paint_off_thread_;
 };
 
 template <>

@@ -27,6 +27,13 @@ class InputPredictorTest : public testing::Test {
                          const std::vector<double>& y,
                          const std::vector<double>& timestamp_ms);
 
+  void ValidatePredictor(const std::vector<double>& events_x,
+                         const std::vector<double>& events_y,
+                         const std::vector<double>& events_ts_ms,
+                         const std::vector<double>& prediction_ts_ms,
+                         const std::vector<double>& predicted_x,
+                         const std::vector<double>& predicted_y);
+
  protected:
   static constexpr double kEpsilon = 0.1;
 

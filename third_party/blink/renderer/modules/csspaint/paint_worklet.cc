@@ -101,8 +101,6 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
                                          const ImageResourceObserver& observer,
                                          const FloatSize& container_size,
                                          const CSSStyleValueVector* data) {
-  DCHECK(!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-
   if (!document_definition_map_.Contains(name))
     return nullptr;
 
@@ -234,10 +232,13 @@ bool PaintWorklet::NeedsToCreateGlobalScope() {
 
 WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  // It does not matter which thread creates its global scopes first, here we
-  // choose to have the worker thread global scopes created first.
+  // The main thread global scopes must be created first so that they are at the
+  // front of the vector.  This is because SelectNewGlobalScope selects global
+  // scopes from the beginning of the vector.  If this code is changed to put
+  // the main thread global scopes at the end, then SelectNewGlobalScope must
+  // also be changed.
   if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled() ||
-      GetNumberOfGlobalScopes() >= kNumGlobalScopesPerThread) {
+      GetNumberOfGlobalScopes() < kNumGlobalScopesPerThread) {
     return MakeGarbageCollected<PaintWorkletGlobalScopeProxy>(
         To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
         GetNumberOfGlobalScopes() + 1);

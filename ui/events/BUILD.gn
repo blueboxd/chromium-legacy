@@ -508,6 +508,7 @@ if (!is_ios) {
       "blink/prediction/input_predictor_unittest_helpers.h",
       "blink/prediction/kalman_predictor_unittest.cc",
       "blink/prediction/least_squares_predictor_unittest.cc",
+      "blink/prediction/linear_predictor_unittest.cc",
       "blink/scroll_predictor_unittest.cc",
       "blink/web_input_event_traits_unittest.cc",
       "blink/web_input_event_unittest.cc",

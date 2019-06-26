@@ -14,8 +14,9 @@
 namespace mojo {
 
 template <>
-struct StructTraits<network::mojom::NetworkIsolationKeyDataView,
-                    net::NetworkIsolationKey> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::NetworkIsolationKeyDataView,
+                 net::NetworkIsolationKey> {
   static bool IsNull(const net::NetworkIsolationKey& input) {
     return input.IsEmpty();
   }
@@ -29,14 +30,13 @@ struct StructTraits<network::mojom::NetworkIsolationKeyDataView,
     return input.GetTopFrameOrigin();
   }
 
-  static bool Read(network::mojom::NetworkIsolationKeyDataView data,
-                   net::NetworkIsolationKey* out) {
-    base::Optional<url::Origin> top_frame_origin;
-    if (!data.ReadTopFrameOrigin(&top_frame_origin))
-      return false;
-    *out = net::NetworkIsolationKey(top_frame_origin);
-    return true;
+  static const base::Optional<url::Origin>& initiating_frame_origin(
+      const net::NetworkIsolationKey& input) {
+    return input.GetInitiatingFrameOrigin();
   }
+
+  static bool Read(network::mojom::NetworkIsolationKeyDataView data,
+                   net::NetworkIsolationKey* out);
 };
 
 }  // namespace mojo

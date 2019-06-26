@@ -20,7 +20,8 @@ namespace blink {
 CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
     : CSSImageGeneratorValue(kPaintClass),
       name_(name),
-      paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)) {}
+      paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)),
+      paint_off_thread_(true) {}
 
 CSSPaintValue::CSSPaintValue(
     CSSCustomIdentValue* name,
@@ -68,25 +69,31 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   // For Off-Thread PaintWorklet, we just collect the necessary inputs together
   // and defer the actual JavaScript call until much later (during cc Raster).
   if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    // TODO(crbug.com/946515): Break dependency on LayoutObject.
-    const LayoutObject& layout_object =
-        static_cast<const LayoutObject&>(client);
-    Vector<CSSPropertyID> native_properties =
-        generator_->NativeInvalidationProperties();
-    Vector<AtomicString> custom_properties =
-        generator_->CustomInvalidationProperties();
-    float zoom = layout_object.StyleRef().EffectiveZoom();
-    PaintWorkletStylePropertyMap::CrossThreadData style_data =
-        PaintWorkletStylePropertyMap::BuildCrossThreadData(
-            document, style, layout_object.GetNode(), native_properties,
-            custom_properties);
-    Vector<std::unique_ptr<CrossThreadStyleValue>> cross_thread_input_arguments;
-    BuildInputArgumentValues(cross_thread_input_arguments);
-    scoped_refptr<PaintWorkletInput> input =
-        base::MakeRefCounted<PaintWorkletInput>(
-            GetName(), target_size, zoom, generator_->WorkletId(),
-            std::move(style_data), std::move(cross_thread_input_arguments));
-    return PaintWorkletDeferredImage::Create(std::move(input), target_size);
+    if (paint_off_thread_) {
+      // TODO(crbug.com/946515): Break dependency on LayoutObject.
+      const LayoutObject& layout_object =
+          static_cast<const LayoutObject&>(client);
+      Vector<CSSPropertyID> native_properties =
+          generator_->NativeInvalidationProperties();
+      Vector<AtomicString> custom_properties =
+          generator_->CustomInvalidationProperties();
+      float zoom = layout_object.StyleRef().EffectiveZoom();
+      auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
+          document, style, layout_object.GetNode(), native_properties,
+          custom_properties);
+      paint_off_thread_ = style_data.has_value();
+      if (paint_off_thread_) {
+        Vector<std::unique_ptr<CrossThreadStyleValue>>
+            cross_thread_input_arguments;
+        BuildInputArgumentValues(cross_thread_input_arguments);
+        scoped_refptr<PaintWorkletInput> input =
+            base::MakeRefCounted<PaintWorkletInput>(
+                GetName(), target_size, zoom, generator_->WorkletId(),
+                std::move(style_data.value()),
+                std::move(cross_thread_input_arguments));
+        return PaintWorkletDeferredImage::Create(std::move(input), target_size);
+      }
+    }
   }
 
   return generator_->Paint(client, target_size, parsed_input_arguments_);

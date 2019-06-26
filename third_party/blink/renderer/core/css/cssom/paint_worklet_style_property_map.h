@@ -31,7 +31,7 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
       HashMap<String, std::unique_ptr<CrossThreadStyleValue>>;
   // Build the data that will be passed to the worklet thread to construct a
   // style map. Should be called on the main thread only.
-  static CrossThreadData BuildCrossThreadData(
+  static base::Optional<CrossThreadData> BuildCrossThreadData(
       const Document&,
       const ComputedStyle&,
       Node* styled_node,

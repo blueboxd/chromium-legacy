@@ -11,6 +11,7 @@
 #include "ui/events/blink/prediction/empty_predictor.h"
 #include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
+#include "ui/events/blink/prediction/linear_predictor.h"
 
 using blink::WebInputEvent;
 using blink::WebGestureEvent;
@@ -24,6 +25,8 @@ constexpr char kScrollPredictorTypeLsq[] = "lsq";
 constexpr char kScrollPredictorTypeKalman[] = "kalman";
 constexpr char kScrollPredictorTypeKalmanTimeFiltered[] =
     "kalman_time_filtered";
+constexpr char kScrollPredictorLinearFirst[] = "linearFirst";
+constexpr char kScrollPredictorLinearSecond[] = "linearSecond";
 
 }  // namespace
 
@@ -46,6 +49,12 @@ ScrollPredictor::ScrollPredictor(bool enable_resampling)
   else if (predictor_type == kScrollPredictorTypeKalmanTimeFiltered)
     predictor_ =
         std::make_unique<KalmanPredictor>(true /* enable_time_filtering */);
+  else if (predictor_type == kScrollPredictorLinearFirst)
+    predictor_ = std::make_unique<LinearPredictor>(
+        LinearPredictor::EquationOrder::kFirstOrder);
+  else if (predictor_type == kScrollPredictorLinearSecond)
+    predictor_ = std::make_unique<LinearPredictor>(
+        LinearPredictor::EquationOrder::kSecondOrder);
   else
     predictor_ = std::make_unique<EmptyPredictor>();
 }

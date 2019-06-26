@@ -4431,17 +4431,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/background-image-tiled.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/geometry-background-image-tiled-001.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
-crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Timeout ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-interpolation-004.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-interpolation-010.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-stylemap.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-value-003.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-value-007.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-value-009.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-value-018.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/style-background-image.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/style-before-pseudo.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/style-first-letter-pseudo.https.html [ Failure ]
 
 # Shared memory growth temporarily disabled.
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]

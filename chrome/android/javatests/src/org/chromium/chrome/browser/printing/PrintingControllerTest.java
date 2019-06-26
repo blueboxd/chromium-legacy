@@ -15,6 +15,7 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -377,6 +378,25 @@ public class PrintingControllerTest {
             onWriteHelper.waitForCallback("pdfWritingDone never called");
             callFinishOnUiThread(printingController);
         }
+    }
+
+    /**
+     * Regresstion test for crbug.com/974581. In some cases, native printing code will fail without
+     * starting a printing task in Java side. pdfWritingDone() will be called with |pageCount| = 0
+     * in this case. We don't need to do anything for this in Java side for now.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Printing"})
+    public void testPdfWritingDoneCalledWithoutInitailizePrintingTask() throws Throwable {
+        if (!ApiCompatibilityUtils.isPrintingSupported()) return;
+
+        mActivityTestRule.startMainActivityWithURL(URL);
+        final PrintingControllerImpl controller = createControllerOnUiThread();
+
+        // Calling pdfWritingDone() with |pageCount| = 0 before onWrite() was called. It shouldn't
+        // crash.
+        TestThreadUtils.runOnUiThreadBlocking(() -> controller.pdfWritingDone(0));
     }
 
     private PrintingControllerImpl createControllerOnUiThread() {

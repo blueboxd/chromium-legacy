@@ -21,7 +21,7 @@ class NET_EXPORT NetworkIsolationKey {
   // Full constructor.  When a request is initiated by the top frame, it must
   // also populate the initiating frame parameter when calling this constructor.
   explicit NetworkIsolationKey(
-      // TODO(crbug.com/963476): Make the arguments non-optional once all call
+      // TODO(crbug.com/950069): Make the arguments non-optional once all call
       // sites are updated to include the initiating_frame_origin.
       const base::Optional<url::Origin>& top_frame_origin,
       const base::Optional<url::Origin>& initiating_frame_origin =
@@ -76,13 +76,15 @@ class NET_EXPORT NetworkIsolationKey {
   const base::Optional<url::Origin>& GetTopFrameOrigin() const {
     return top_frame_origin_;
   }
+
+  const base::Optional<url::Origin>& GetInitiatingFrameOrigin() const {
+    return initiating_frame_origin_;
+  }
+
   // Returns true if all parts of the key are empty.
   bool IsEmpty() const;
 
  private:
-  // TODO(crbug.com/963476): Add use_initiating_frame_origin_ and
-  // initiating_frame_origin_ to network_isolation_key_mojom_traits.h.
-
   // Whether or not to use the initiating frame origin as part of the key.
   bool use_initiating_frame_origin_;
 

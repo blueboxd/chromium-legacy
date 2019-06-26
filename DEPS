@@ -158,7 +158,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '84b037e09b93799df8df4e07d1fbd6b784ac4f2d',
+  'swiftshader_revision': 'a0b3a02601da8c48012a4259d335be04d00818da',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -1364,7 +1364,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3472b9ae22ff26fb663d4e74721d0238dc7aa5be',
+    Var('webrtc_git') + '/src.git' + '@' + 'e8df48220589004f434c5aa99090d992b590290d',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',

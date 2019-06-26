@@ -4,8 +4,6 @@
 
 #include "ui/events/blink/prediction/least_squares_predictor.h"
 
-#include "base/trace_event/trace_event.h"
-
 namespace ui {
 
 namespace {

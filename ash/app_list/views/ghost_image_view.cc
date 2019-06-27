@@ -11,6 +11,7 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/app_list/views/app_list_item_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -28,7 +29,6 @@ constexpr int kRootGridGhostColor = gfx::kGoogleGrey200;
 constexpr int kInFolderGhostColor = gfx::kGoogleGrey700;
 constexpr base::TimeDelta kGhostFadeInOutLength =
     base::TimeDelta::FromMilliseconds(180);
-constexpr int kInnerFolderGhostIconRadius = 14;
 constexpr gfx::Tween::Type kGhostTween = gfx::Tween::FAST_OUT_SLOW_IN;
 constexpr int kAlphaGradient = 2;
 constexpr int kAlphaChannelFilter = 180;
@@ -43,35 +43,43 @@ constexpr int kGhostImagePadding = 5;
 
 }  // namespace
 
-GhostImageView::GhostImageView(AppListItemView* drag_view,
-                               bool is_folder,
-                               bool is_in_folder,
-                               const gfx::Rect& drop_target_bounds,
-                               int page)
+GhostImageView::GhostImageView(bool is_folder, bool is_in_folder, int page)
     : is_hiding_(false),
       is_in_folder_(is_in_folder),
       is_folder_(is_folder),
-      page_(page),
-      drop_target_bounds_(drop_target_bounds),
-      icon_bounds_(drag_view->GetIconBounds()) {
+      page_(page) {}
+
+GhostImageView::~GhostImageView() {
+  StopObservingImplicitAnimations();
+}
+
+void GhostImageView::Init(AppListItemView* drag_view,
+                          const gfx::Rect& drop_target_bounds) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetOpacity(0.0f);
   SetBoundsRect(drop_target_bounds);
+  icon_bounds_ = drag_view->GetIconBounds();
 
   if (is_folder_) {
     AppListFolderItem* folder_item =
         static_cast<AppListFolderItem*>(drag_view->item());
     num_items_ = std::min(FolderImage::kNumFolderTopItems,
                           folder_item->item_list()->item_count());
+
+    // Create an outline for each item within the folder icon.
+    for (size_t i = 0; i < num_items_.value(); i++) {
+      gfx::ImageSkia inner_icon_outline =
+          gfx::ImageSkiaOperations::CreateResizedImage(
+              folder_item->item_list()->item_at(i)->icon(),
+              skia::ImageOperations::RESIZE_BEST,
+              AppListConfig::instance().item_icon_in_folder_icon_size());
+      inner_folder_icon_outlines_.push_back(GetIconOutline(inner_icon_outline));
+    }
   } else {
     // Create outline of app icon and set |outline_| to it.
     outline_ = GetIconOutline(drag_view->GetIconImage());
   }
-}
-
-GhostImageView::~GhostImageView() {
-  StopObservingImplicitAnimations();
 }
 
 void GhostImageView::FadeOut() {
@@ -87,7 +95,7 @@ void GhostImageView::FadeIn() {
 
 void GhostImageView::SetTransitionOffset(
     const gfx::Vector2d& transition_offset) {
-  SetPosition(drop_target_bounds_.origin() + transition_offset);
+  SetPosition(bounds().origin() + transition_offset);
 }
 
 const char* GhostImageView::GetClassName() const {
@@ -138,9 +146,10 @@ void GhostImageView::OnPaint(gfx::Canvas* canvas) {
         FolderImage::GetTopIconsBounds(icon_bounds_, num_items_.value());
 
     // Draw ghost items within the ghost folder circle.
-    for (gfx::Rect bounds : top_icon_bounds) {
-      canvas->DrawCircle(gfx::PointF(bounds.CenterPoint()),
-                         kInnerFolderGhostIconRadius, circle_flags);
+    for (size_t i = 0; i < num_items_.value(); i++) {
+      canvas->DrawImageInt(inner_folder_icon_outlines_[i],
+                           top_icon_bounds[i].x() - kGhostImagePadding,
+                           top_icon_bounds[i].y() - kGhostImagePadding);
     }
   } else {
     canvas->DrawImageInt(outline_, icon_bounds_.x() - kGhostImagePadding,
@@ -162,6 +171,7 @@ gfx::ImageSkia GhostImageView::GetIconOutline(
     const gfx::ImageSkia& original_icon) {
   gfx::ImageSkia icon_outline;
 
+  original_icon.EnsureRepsForSupportedScales();
   for (gfx::ImageSkiaRep rep : original_icon.image_reps()) {
     // Only generate the outline for the ImageSkiaRep with the highest supported
     // scale.

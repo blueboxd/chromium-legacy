@@ -41,12 +41,14 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "media/base/audio_renderer_sink.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
+#include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/user_metrics_action.h"
@@ -77,6 +79,7 @@ class GpuMemoryBufferManager;
 }
 
 namespace media {
+struct AudioSinkParameters;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -626,6 +629,17 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
     return base::nullopt;
+  }
+
+  virtual scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
+      blink::WebAudioDeviceSourceType source_type,
+      blink::WebLocalFrame* web_frame,
+      const media::AudioSinkParameters& params) {
+    return nullptr;
+  }
+  virtual media::AudioLatency::LatencyType GetAudioSourceLatencyType(
+      blink::WebAudioDeviceSourceType source_type) {
+    return media::AudioLatency::LATENCY_PLAYBACK;
   }
 
   // WebWorker ----------------------------------------------------------

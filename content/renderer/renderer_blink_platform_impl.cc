@@ -713,6 +713,21 @@ RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
   return base::nullopt;
 }
 
+scoped_refptr<media::AudioRendererSink>
+RendererBlinkPlatformImpl::NewAudioRendererSink(
+    blink::WebAudioDeviceSourceType source_type,
+    blink::WebLocalFrame* web_frame,
+    const media::AudioSinkParameters& params) {
+  return AudioDeviceFactory::NewAudioRendererSink(
+      source_type, RenderFrame::GetRoutingIdForWebFrame(web_frame), params);
+}
+
+media::AudioLatency::LatencyType
+RendererBlinkPlatformImpl::GetAudioSourceLatencyType(
+    blink::WebAudioDeviceSourceType source_type) {
+  return AudioDeviceFactory::GetSourceLatencyType(source_type);
+}
+
 //------------------------------------------------------------------------------
 
 std::unique_ptr<blink::WebSpeechSynthesizer>

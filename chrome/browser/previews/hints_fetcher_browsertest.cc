@@ -363,18 +363,19 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
   // in each of the follow histograms as One Platform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
-                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
             1);
 
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
-      1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
 
   histogram_tester->ExpectBucketCount(
-      "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
   histogram_tester->ExpectBucketCount(
-      "Previews.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK, 1);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
@@ -383,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
   // Expect that the histogram for HintsFetcher to be 0 because the OnePlatform
   // is not enabled.
   histogram_tester->ExpectTotalCount(
-      "Previews.HintsFetcher.GetHintsRequest.HostCount", 0);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
 }
 
 // This test creates a new browser and seeds the Site Engagement Service with
@@ -410,12 +411,12 @@ IN_PROC_BROWSER_TEST_F(
   // for.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
-                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
             1);
 
   // Only the 2 HTTPS hosts should be requested hints for.
   histogram_tester->ExpectBucketCount(
-      "Previews.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -431,13 +432,13 @@ IN_PROC_BROWSER_TEST_F(
   // in each of the follow histograms as One Platform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
-                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
             1);
 
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
-      1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
 
   LoadHintsForUrl(https_url());
 
@@ -471,30 +472,35 @@ IN_PROC_BROWSER_TEST_P(
   // in each of the follow histograms as One Platform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
-                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
             1);
 
   // Wait until histograms have been updated before performing checks for
   // correct behavior based on the response.
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
-      1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
   if (response_type == HintsFetcherRemoteResponseType::kSuccessful) {
     histogram_tester->ExpectBucketCount(
-        "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK,
+        1);
     histogram_tester->ExpectBucketCount(
-        "Previews.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK, 1);
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+        1);
   } else if (response_type == HintsFetcherRemoteResponseType::kUnsuccessful) {
     histogram_tester->ExpectBucketCount(
-        "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_NOT_FOUND, 1);
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.Status",
+        net::HTTP_NOT_FOUND, 1);
   } else if (response_type == HintsFetcherRemoteResponseType::kMalformed) {
     // A malformed GetHintsResponse will still register as successful fetch with
     // respect to the network.
     histogram_tester->ExpectBucketCount(
-        "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK,
+        1);
     histogram_tester->ExpectBucketCount(
-        "Previews.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK, 1);
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+        1);
 
     LoadHintsForUrl(https_url());
 
@@ -538,13 +544,13 @@ IN_PROC_BROWSER_TEST_F(
   // in each of the follow histograms as OnePlatform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
-                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
             1);
 
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
-      1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
 
   LoadHintsForUrl(https_url());
 
@@ -610,17 +616,17 @@ IN_PROC_BROWSER_TEST_F(
   // in each of the follow histograms as OnePlatform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
-                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
             1);
 
   // There should be 2 sites in the engagement service.
   histogram_tester->ExpectBucketCount(
-      "Previews.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 
-  EXPECT_GE(
-      RetryForHistogramUntilCountReached(
-          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
-      1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
 
   LoadHintsForUrl(https_url());
 

@@ -3334,10 +3334,11 @@ void AppsGridView::CreateGhostImageView() {
   // GhostImageView that will fade in.
   last_ghost_view_ = current_ghost_view_;
 
-  current_ghost_view_ = new GhostImageView(
-      drag_view_, IsFolderItem(drag_view_->item()) /* is_folder */,
-      folder_delegate_, GetExpectedTileBounds(reorder_placeholder_),
-      reorder_placeholder_.page);
+  current_ghost_view_ =
+      new GhostImageView(IsFolderItem(drag_view_->item()) /* is_folder */,
+                         folder_delegate_, reorder_placeholder_.page);
+  current_ghost_view_->Init(drag_view_,
+                            GetExpectedTileBounds(reorder_placeholder_));
   AddChildView(current_ghost_view_);
   current_ghost_view_->FadeIn();
 }

@@ -34,4 +34,8 @@ GLImage::GetAHardwareBuffer() {
 }
 #endif
 
+bool GLImage::HasMutableState() const {
+  return true;
+}
+
 }  // namespace gl

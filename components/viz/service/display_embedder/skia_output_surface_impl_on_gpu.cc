@@ -455,6 +455,10 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
     return sync_token;
   }
 
+  void Flush() override {
+    // No need to flush in this implementation.
+  }
+
   // DirectContextProviderDelegate implementation.
   gpu::SharedImageManager* GetSharedImageManager() override {
     return shared_image_manager_;

@@ -20,26 +20,27 @@ namespace content {
 // any thread, but additional threading considerations are listed in the
 // comments of individual methods.
 //
-// The StreamTexture is an abstraction allowing Chrome to wrap a SurfaceTexture
+// The StreamTexture is an abstraction allowing Chrome to wrap a SurfaceOwner
 // living in the GPU process. It allows VideoFrames to be created from the
-// SurfaceTexture's texture, in the Renderer process.
+// SurfaceOwner's texture, in the Renderer process.
 //
 // The general idea behind our use of StreamTexture is as follows:
-// - We create a client GL texture in the Renderer process.
-// - We request the creation of a StreamTexture via the StreamTextureFactory,
-// passing the client texture ID. The call is sent to the GPU process via the
-// CommandBuffer. The "platform" GL texture reference associated with the client
-// texture ID is looked up in the TextureManager. A StreamTexture is then
-// created, wrapping a SurfaceTexture created from the texture reference. The
-// SurfaceTexture's OnFrameAvailable() callback is tied to StreamTexture's
-// OnFrameAvailable(), which fires an IPC accross the GPU channel.
+// - We request the creation of a StreamTexture via the StreamTextureFactory.
+// The call is sent to the GPU process via the CommandBuffer. A StreamTexture is
+// then created, wrapping a SurfaceOwner. The SurfaceOwner's
+// OnFrameAvailable() callback is tied to StreamTexture's OnFrameAvailable(),
+// which fires an IPC across the GPU channel.
 // - We create a StreamTextureProxy in the Renderer process which listens for
 // the IPC fired by the StreamTexture's OnFrameAvailable() callback.
 // - We bind the StreamTextureProxy's lifetime to the |compositor_task_runner_|.
-// - We wrap the client texture into a VideoFrame.
-// - When the SurfaceTexture's OnFrameAvailable() callback is fired (and routed
+// - We create a SharedImage mailbox representing the StreamTexture at a given
+// size.
+// - We create a VideoFrame which takes ownership of this SharedImage mailbox.
+// - When the SurfaceOwner's OnFrameAvailable() callback is fired (and routed
 // to the StreamTextureProxy living on the compositor thread), we notify
 // |client_| that a new frame is available, via the DidReceiveFrame() callback.
+// - When the StreamTextureProxy is destroyed, it delivers a notification over
+// the channel, cleaning up the StreamTexture ref in the GPU process.
 class CONTENT_EXPORT StreamTextureWrapperImpl
     : public media::StreamTextureWrapper {
  public:
@@ -100,17 +101,11 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   void InitializeOnMainThread(const base::RepeatingClosure& received_frame_cb,
                               const StreamTextureWrapperInitCB& init_cb);
 
-  void ReallocateVideoFrame(const gfx::Size& natural_size);
+  void ReallocateVideoFrame();
 
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame> video_frame);
 
   bool enable_texture_copy_;
-
-  // Client GL texture ID allocated to the StreamTexture.
-  unsigned texture_id_;
-
-  // GL texture mailbox for |texture_id_|.
-  gpu::Mailbox texture_mailbox_;
 
   // Object for calling back the compositor thread to repaint the video when a
   // frame is available. It should be bound to |compositor_task_runner_|.

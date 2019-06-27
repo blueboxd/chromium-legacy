@@ -33,6 +33,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/service/abstract_texture_impl_shared_context_state.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -54,6 +55,10 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
+
+#if defined(OS_ANDROID)
+#include "gpu/ipc/service/stream_texture_android.h"
+#endif  // defined(OS_ANDROID)
 
 namespace gpu {
 
@@ -400,6 +405,14 @@ GpuChannel::~GpuChannel() {
   // Clear stubs first because of dependencies.
   stubs_.clear();
 
+#if defined(OS_ANDROID)
+  // Release any references to this channel held by StreamTexture.
+  for (auto& stream_texture : stream_textures_) {
+    stream_texture.second->ReleaseChannel();
+  }
+  stream_textures_.clear();
+#endif  // OS_ANDROID
+
   // Destroy filter first to stop posting tasks to scheduler.
   filter_->Destroy();
 
@@ -548,6 +561,8 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateStreamTexture,
+                        OnCreateStreamTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -630,6 +645,16 @@ const CommandBufferStub* GpuChannel::GetOneStub() const {
       return stub;
   }
   return nullptr;
+}
+
+void GpuChannel::DestroyStreamTexture(int32_t stream_id) {
+  auto found = stream_textures_.find(stream_id);
+  if (found == stream_textures_.end()) {
+    LOG(ERROR) << "Trying to destroy a non-existent stream texture.";
+    return;
+  }
+  found->second->ReleaseChannel();
+  stream_textures_.erase(stream_id);
 }
 #endif
 
@@ -755,6 +780,28 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   }
 
   RemoveRoute(route_id);
+}
+
+void GpuChannel::OnCreateStreamTexture(int32_t stream_id, bool* succeeded) {
+#if defined(OS_ANDROID)
+  auto found = stream_textures_.find(stream_id);
+  if (found != stream_textures_.end()) {
+    LOG(ERROR)
+        << "Trying to create a StreamTexture with an existing stream_id.";
+    *succeeded = false;
+    return;
+  }
+  scoped_refptr<StreamTexture> stream_texture =
+      StreamTexture::Create(this, stream_id);
+  if (!stream_texture) {
+    *succeeded = false;
+    return;
+  }
+  stream_textures_.emplace(stream_id, std::move(stream_texture));
+  *succeeded = true;
+#else
+  *succeeded = false;
+#endif
 }
 
 void GpuChannel::CacheShader(const std::string& key,

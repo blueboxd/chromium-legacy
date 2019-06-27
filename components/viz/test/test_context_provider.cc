@@ -203,6 +203,10 @@ gpu::SyncToken TestSharedImageInterface::GenUnverifiedSyncToken() {
   return most_recent_generated_token_;
 }
 
+void TestSharedImageInterface::Flush() {
+  // No need to flush in this implementation.
+}
+
 bool TestSharedImageInterface::CheckSharedImageExists(
     const gpu::Mailbox& mailbox) const {
   return shared_images_.contains(mailbox);

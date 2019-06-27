@@ -1874,6 +1874,10 @@ void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
+  // Workaround for StreamTexture which must be re-copied on each access.
+  // TODO(ericrk): Remove this once SharedImage transition is complete.
+  if (info.image && !info.image->HasMutableState())
+    return;
   info.image_state = state;
 }
 

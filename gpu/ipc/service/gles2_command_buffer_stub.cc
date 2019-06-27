@@ -56,10 +56,6 @@
 #include "base/win/win_util.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "gpu/ipc/service/stream_texture_android.h"
-#endif
-
 namespace gpu {
 
 GLES2CommandBufferStub::GLES2CommandBufferStub(
@@ -440,8 +436,6 @@ bool GLES2CommandBufferStub::HandleMessage(const IPC::Message& message) {
                         OnReturnFrontBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateImage, OnCreateImage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyImage, OnDestroyImage);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateStreamTexture,
-                        OnCreateStreamTexture)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateGpuFenceFromHandle,
                         OnCreateGpuFenceFromHandle)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetGpuFenceHandle,
@@ -554,16 +548,6 @@ void GLES2CommandBufferStub::OnDestroyImage(int32_t id) {
   }
 
   image_manager->RemoveImage(id);
-}
-
-void GLES2CommandBufferStub::OnCreateStreamTexture(uint32_t texture_id,
-                                                   int32_t stream_id,
-                                                   bool* succeeded) {
-#if defined(OS_ANDROID)
-  *succeeded = StreamTexture::Create(this, texture_id, stream_id);
-#else
-  *succeeded = false;
-#endif
 }
 
 void GLES2CommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {

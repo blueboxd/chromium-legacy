@@ -7,6 +7,7 @@
 #include "base/unguessable_token.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -23,8 +24,15 @@ StreamTextureHost::StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel,
 }
 
 StreamTextureHost::~StreamTextureHost() {
-  if (channel_)
+  if (channel_) {
+    // We destroy the StreamTexture as a deferred message followed by a flush
+    // to ensure this is ordered correctly with regards to previous deferred
+    // messages, such as CreateSharedImage.
+    uint32_t flush_id = channel_->EnqueueDeferredMessage(
+        GpuStreamTextureMsg_Destroy(route_id_));
+    channel_->EnsureFlush(flush_id);
     channel_->RemoveRoute(route_id_);
+  }
 }
 
 bool StreamTextureHost::BindToCurrentThread(Listener* listener) {
@@ -58,17 +66,29 @@ void StreamTextureHost::OnFrameAvailable() {
     listener_->OnFrameAvailable();
 }
 
-void StreamTextureHost::SetStreamTextureSize(const gfx::Size& size) {
-  if (channel_)
-    channel_->Send(new GpuStreamTextureMsg_SetSize(route_id_, size));
-}
-
 void StreamTextureHost::ForwardStreamTextureForSurfaceRequest(
     const base::UnguessableToken& request_token) {
   if (channel_) {
     channel_->Send(new GpuStreamTextureMsg_ForwardForSurfaceRequest(
         route_id_, request_token));
   }
+}
+
+gpu::Mailbox StreamTextureHost::CreateSharedImage(const gfx::Size& size) {
+  if (!channel_)
+    return gpu::Mailbox();
+
+  auto mailbox = gpu::Mailbox::GenerateForSharedImage();
+  channel_->EnqueueDeferredMessage(GpuStreamTextureMsg_CreateSharedImage(
+      route_id_, mailbox, size, ++release_id_));
+  return mailbox;
+}
+
+gpu::SyncToken StreamTextureHost::GenUnverifiedSyncToken() {
+  return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
+                        gpu::CommandBufferIdFromChannelAndRoute(
+                            channel_->channel_id(), route_id_),
+                        release_id_);
 }
 
 }  // namespace content

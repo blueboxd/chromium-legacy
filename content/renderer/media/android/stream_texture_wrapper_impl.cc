@@ -8,21 +8,17 @@
 #include "base/callback.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "media/base/bind_to_current_loop.h"
-
-using gpu::gles2::GLES2Interface;
 
 namespace {
 // Non-member function to allow it to run even after this class is deleted.
-void OnReleaseTexture(scoped_refptr<content::StreamTextureFactory> factories,
-                      uint32_t texture_id,
-                      const gpu::SyncToken& sync_token) {
-  GLES2Interface* gl = factories->ContextGL();
-  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-  gl->DeleteTextures(1, &texture_id);
-  // Flush to ensure that the stream texture gets deleted in a timely fashion.
-  gl->ShallowFlushCHROMIUM();
+void OnReleaseVideoFrame(scoped_refptr<content::StreamTextureFactory> factories,
+                         gpu::Mailbox mailbox,
+                         const gpu::SyncToken& sync_token) {
+  gpu::SharedImageInterface* sii = factories->SharedImageInterface();
+  sii->DestroySharedImage(sync_token, mailbox);
+  sii->Flush();
 }
 }
 
@@ -33,21 +29,12 @@ StreamTextureWrapperImpl::StreamTextureWrapperImpl(
     scoped_refptr<StreamTextureFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : enable_texture_copy_(enable_texture_copy),
-      texture_id_(0),
       factory_(factory),
       main_task_runner_(main_task_runner),
       weak_factory_(this) {}
 
 StreamTextureWrapperImpl::~StreamTextureWrapperImpl() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  if (texture_id_) {
-    GLES2Interface* gl = factory_->ContextGL();
-    gl->DeleteTextures(1, &texture_id_);
-    // Flush to ensure that the stream texture gets deleted in a timely fashion.
-    gl->ShallowFlushCHROMIUM();
-  }
-
   SetCurrentFrameInternal(nullptr);
 }
 
@@ -64,37 +51,24 @@ scoped_refptr<media::VideoFrame> StreamTextureWrapperImpl::GetCurrentFrame() {
   return current_frame_;
 }
 
-void StreamTextureWrapperImpl::ReallocateVideoFrame(
-    const gfx::Size& natural_size) {
+void StreamTextureWrapperImpl::ReallocateVideoFrame() {
   DVLOG(2) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  GLES2Interface* gl = factory_->ContextGL();
-  GLuint texture_target = GL_TEXTURE_EXTERNAL_OES;
-  GLuint texture_id_ref =
-      gl->CreateAndConsumeTextureCHROMIUM(texture_mailbox_.name);
-  gl->Flush();
-
+  gpu::Mailbox mailbox;
   gpu::SyncToken texture_mailbox_sync_token;
-  if (texture_mailbox_sync_token.namespace_id() ==
-      gpu::CommandBufferNamespace::IN_PROCESS) {
-    // TODO(boliu): Remove this once Android WebView switches to IPC-based
-    // command buffer for video.
-    gl->GenSyncTokenCHROMIUM(texture_mailbox_sync_token.GetData());
-  } else {
-    gl->GenUnverifiedSyncTokenCHROMIUM(texture_mailbox_sync_token.GetData());
-  }
-
+  stream_texture_proxy_->CreateSharedImage(natural_size_, &mailbox,
+                                           &texture_mailbox_sync_token);
   gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
-      gpu::MailboxHolder(texture_mailbox_, texture_mailbox_sync_token,
-                         texture_target)};
+      gpu::MailboxHolder(mailbox, texture_mailbox_sync_token,
+                         GL_TEXTURE_EXTERNAL_OES)};
 
   scoped_refptr<media::VideoFrame> new_frame =
       media::VideoFrame::WrapNativeTextures(
           media::PIXEL_FORMAT_ARGB, holders,
           media::BindToCurrentLoop(
-              base::BindOnce(&OnReleaseTexture, factory_, texture_id_ref)),
-          natural_size, gfx::Rect(natural_size), natural_size,
+              base::BindOnce(&OnReleaseVideoFrame, factory_, mailbox)),
+          natural_size_, gfx::Rect(natural_size_), natural_size_,
           base::TimeDelta());
 
   if (enable_texture_copy_) {
@@ -140,9 +114,7 @@ void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
     return;
 
   natural_size_ = new_size;
-
-  ReallocateVideoFrame(new_size);
-  stream_texture_proxy_->SetStreamTextureSize(new_size);
+  ReallocateVideoFrame();
 }
 
 void StreamTextureWrapperImpl::Initialize(
@@ -175,14 +147,13 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
     return;
   }
 
-  stream_texture_proxy_ =
-      factory_->CreateProxy(&texture_id_, &texture_mailbox_);
+  stream_texture_proxy_ = factory_->CreateProxy();
   if (!stream_texture_proxy_) {
     init_cb.Run(false);
     return;
   }
 
-  ReallocateVideoFrame(natural_size_);
+  ReallocateVideoFrame();
 
   stream_texture_proxy_->BindToTaskRunner(received_frame_cb,
                                           compositor_task_runner_);

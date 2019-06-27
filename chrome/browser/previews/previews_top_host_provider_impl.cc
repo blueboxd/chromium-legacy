@@ -79,7 +79,8 @@ void PreviewsTopHostProviderImpl::InitializeHintsFetcherTopHostBlacklist() {
   }
 
   UMA_HISTOGRAM_COUNTS_1000(
-      "Previews.HintsFetcher.TopHostProvider.BlacklistSize.OnInitialize",
+      "OptimizationGuide.HintsFetcher.TopHostProvider.BlacklistSize."
+      "OnInitialize",
       top_host_blacklist->size());
 
   pref_service_->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
@@ -175,7 +176,8 @@ std::vector<std::string> PreviewsTopHostProviderImpl::GetTopHosts(
     top_host_blacklist =
         pref_service_->GetDictionary(kHintsFetcherTopHostBlacklist);
     UMA_HISTOGRAM_COUNTS_1000(
-        "Previews.HintsFetcher.TopHostProvider.BlacklistSize.OnRequest",
+        "OptimizationGuide.HintsFetcher.TopHostProvider.BlacklistSize."
+        "OnRequest",
         top_host_blacklist->size());
     // This check likely should not be needed as the process of removing hosts
     // from the blacklist should check and update the pref state.

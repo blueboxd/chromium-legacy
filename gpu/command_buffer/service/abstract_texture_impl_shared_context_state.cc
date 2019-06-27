@@ -87,7 +87,11 @@ void AbstractTextureImplOnSharedContext::SetParameteri(GLenum pname,
 void AbstractTextureImplOnSharedContext::BindStreamTextureImage(
     GLStreamTextureImage* image,
     GLuint service_id) {
-  NOTIMPLEMENTED();
+  const GLint level = 0;
+  const GLuint target = texture_->target();
+  texture_->SetLevelStreamTextureImage(
+      target, level, image, Texture::ImageState::UNBOUND, service_id);
+  texture_->SetLevelCleared(target, level, true);
 }
 
 void AbstractTextureImplOnSharedContext::BindImage(gl::GLImage* image,

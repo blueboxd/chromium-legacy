@@ -41,13 +41,13 @@ class WaitableEvent;
 }
 
 namespace gpu {
-
 class GpuChannelManager;
 class GpuChannelMessageFilter;
 class ImageDecodeAcceleratorStub;
 class ImageDecodeAcceleratorWorker;
 class Scheduler;
 class SharedImageStub;
+class StreamTexture;
 class SyncPointManager;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
@@ -159,6 +159,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
 
 #if defined(OS_ANDROID)
   const CommandBufferStub* GetOneStub() const;
+
+  // Called by StreamTexture to remove the GpuChannel's reference to the
+  // StreamTexture.
+  void DestroyStreamTexture(int32_t stream_id);
 #endif
 
   SharedImageStub* shared_image_stub() const {
@@ -189,6 +193,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
                              gpu::ContextResult* result,
                              gpu::Capabilities* capabilities);
   void OnDestroyCommandBuffer(int32_t route_id);
+  void OnCreateStreamTexture(int32_t stream_id, bool* succeeded);
   bool CreateSharedImageStub();
 
   std::unique_ptr<IPC::SyncChannel> sync_channel_;  // nullptr in tests.
@@ -239,6 +244,11 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
   std::unique_ptr<SharedImageStub> shared_image_stub_;
 
   const bool is_gpu_host_;
+
+#if defined(OS_ANDROID)
+  // Set of active StreamTextures.
+  base::flat_map<int32_t, scoped_refptr<StreamTexture>> stream_textures_;
+#endif
 
   // Member variables should appear before the WeakPtrFactory, to ensure that
   // any WeakPtrs to Controller are invalidated before its members variable's

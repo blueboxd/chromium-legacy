@@ -151,7 +151,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   const base::UnsafeSharedMemoryRegion& GetSharedStateRegion() const {
     return shared_state_shm_;
   }
-  uint32_t CreateStreamTexture(uint32_t texture_id);
 
  private:
   typedef std::map<int32_t, scoped_refptr<gpu::Buffer>> TransferBufferMap;

@@ -6,11 +6,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -71,63 +68,60 @@ void StreamTextureProxy::OnFrameAvailable() {
     received_frame_cb_.Run();
 }
 
-void StreamTextureProxy::SetStreamTextureSize(const gfx::Size& size) {
-  host_->SetStreamTextureSize(size);
-}
-
 void StreamTextureProxy::ForwardStreamTextureForSurfaceRequest(
     const base::UnguessableToken& request_token) {
   host_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
+void StreamTextureProxy::CreateSharedImage(
+    const gfx::Size& size,
+    gpu::Mailbox* mailbox,
+    gpu::SyncToken* unverified_sync_token) {
+  *mailbox = host_->CreateSharedImage(size);
+  if (!mailbox)
+    return;
+  *unverified_sync_token = host_->GenUnverifiedSyncToken();
+}
+
 // static
 scoped_refptr<StreamTextureFactory> StreamTextureFactory::Create(
-    scoped_refptr<viz::ContextProviderCommandBuffer> context_provider) {
-  return new StreamTextureFactory(std::move(context_provider));
+    scoped_refptr<gpu::GpuChannelHost> channel) {
+  return new StreamTextureFactory(std::move(channel));
 }
 
 StreamTextureFactory::StreamTextureFactory(
-    scoped_refptr<viz::ContextProviderCommandBuffer> context_provider)
-    : context_provider_(std::move(context_provider)),
-      channel_(context_provider_->GetCommandBufferProxy()->channel()) {
+    scoped_refptr<gpu::GpuChannelHost> channel)
+    : channel_(std::move(channel)) {
   DCHECK(channel_);
 }
 
-StreamTextureFactory::~StreamTextureFactory() {}
+StreamTextureFactory::~StreamTextureFactory() = default;
 
-ScopedStreamTextureProxy StreamTextureFactory::CreateProxy(
-    unsigned* texture_id,
-    gpu::Mailbox* texture_mailbox) {
-  int32_t route_id = CreateStreamTexture(texture_id, texture_mailbox);
+ScopedStreamTextureProxy StreamTextureFactory::CreateProxy() {
+  int32_t route_id = CreateStreamTexture();
   if (!route_id)
     return ScopedStreamTextureProxy();
   return ScopedStreamTextureProxy(new StreamTextureProxy(
       std::make_unique<StreamTextureHost>(channel_, route_id)));
 }
 
-unsigned StreamTextureFactory::CreateStreamTexture(
-    unsigned* texture_id,
-    gpu::Mailbox* texture_mailbox) {
-  GLuint route_id = 0;
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  gl->GenTextures(1, texture_id);
-  gl->ShallowFlushCHROMIUM();
-  route_id = context_provider_->GetCommandBufferProxy()->CreateStreamTexture(
-      *texture_id);
-  if (!route_id) {
-    gl->DeleteTextures(1, texture_id);
-    // Flush to ensure that the stream texture gets deleted in a timely fashion.
-    gl->ShallowFlushCHROMIUM();
-    *texture_id = 0;
-    *texture_mailbox = gpu::Mailbox();
-  } else {
-    gl->ProduceTextureDirectCHROMIUM(*texture_id, texture_mailbox->name);
-  }
-  return route_id;
+bool StreamTextureFactory::IsLost() const {
+  return channel_->IsLost();
 }
 
-gpu::gles2::GLES2Interface* StreamTextureFactory::ContextGL() {
-  return context_provider_->ContextGL();
+unsigned StreamTextureFactory::CreateStreamTexture() {
+  int32_t stream_id = channel_->GenerateRouteID();
+  bool succeeded = false;
+  channel_->Send(new GpuChannelMsg_CreateStreamTexture(stream_id, &succeeded));
+  if (!succeeded) {
+    DLOG(ERROR) << "GpuChannelMsg_CreateStreamTexture returned failure";
+    return 0;
+  }
+  return stream_id;
+}
+
+gpu::SharedImageInterface* StreamTextureFactory::SharedImageInterface() {
+  return channel_->shared_image_interface();
 }
 
 }  // namespace content

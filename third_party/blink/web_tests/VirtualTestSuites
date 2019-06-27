@@ -642,6 +642,96 @@
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/content-security-policy/inside-worker",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/content-security-policy/worker-src",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/fetch/",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/html/browsers/offline/appcache/workers/",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/classic-data-worker-fetch",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/module-data-worker-import",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/module-worker-top-level",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/worker-request",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/referrer-policy",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/resource-timing",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/service-workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/upgrade-insecure-requests",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/xhr",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "fast/workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "http/tests/origin_trials",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "http/tests/security/cors-rfc1918",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch", "--enable-blink-features=CorsRFC1918"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "http/tests/workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
     "prefix": "webrtc-wpt-plan-b",
     "base": "external/wpt/webrtc",
     "args": ["--disable-features=RTCUnifiedPlanByDefault"]

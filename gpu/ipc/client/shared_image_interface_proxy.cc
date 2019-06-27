@@ -246,6 +246,11 @@ SyncToken SharedImageInterfaceProxy::GenUnverifiedSyncToken() {
       next_release_id_);
 }
 
+void SharedImageInterfaceProxy::Flush() {
+  base::AutoLock lock(lock_);
+  host_->EnsureFlush(last_flush_id_);
+}
+
 bool SharedImageInterfaceProxy::GetSHMForPixelData(
     base::span<const uint8_t> pixel_data,
     size_t* shm_offset,

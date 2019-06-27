@@ -134,6 +134,9 @@ class SharedImageInterface {
   // Generates a verified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
   virtual SyncToken GenVerifiedSyncToken() = 0;
+
+  // Flush the SharedImageInterface, issuing any deferred IPCs.
+  virtual void Flush() = 0;
 };
 
 }  // namespace gpu

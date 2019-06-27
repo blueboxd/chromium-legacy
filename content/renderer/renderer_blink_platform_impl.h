@@ -158,6 +158,12 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& kind) override;
   void UpdateWebRTCAPICount(blink::WebRTCAPIName api_name) override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
+  scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
+      blink::WebAudioDeviceSourceType source_type,
+      blink::WebLocalFrame* web_frame,
+      const media::AudioSinkParameters& params) override;
+  media::AudioLatency::LatencyType GetAudioSourceLatencyType(
+      blink::WebAudioDeviceSourceType source_type) override;
 
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(

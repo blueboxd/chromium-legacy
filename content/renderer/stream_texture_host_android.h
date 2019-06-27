@@ -22,6 +22,8 @@ class Size;
 
 namespace gpu {
 class GpuChannelHost;
+struct Mailbox;
+struct SyncToken;
 }
 
 namespace content {
@@ -48,9 +50,10 @@ class StreamTextureHost : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
 
-  void SetStreamTextureSize(const gfx::Size& size);
   void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token);
+  gpu::Mailbox CreateSharedImage(const gfx::Size& size);
+  gpu::SyncToken GenUnverifiedSyncToken();
 
  private:
   // Message handlers:
@@ -59,6 +62,8 @@ class StreamTextureHost : public IPC::Listener {
   int32_t route_id_;
   Listener* listener_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
+  uint32_t release_id_ = 0;
+
   base::WeakPtrFactory<StreamTextureHost> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureHost);

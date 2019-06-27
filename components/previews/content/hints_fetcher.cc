@@ -110,8 +110,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   url_loader_->AttachStringForUpload(serialized_request,
                                      "application/x-protobuf");
 
-  UMA_HISTOGRAM_COUNTS_100("Previews.HintsFetcher.GetHintsRequest.HostCount",
-                           hosts.size());
+  UMA_HISTOGRAM_COUNTS_100(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", hosts.size());
 
   // |url_loader_| should not retry on 5xx errors since the server may already
   // be overloaded.  |url_loader_| should retry on network changes since the
@@ -135,12 +135,14 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
       get_hints_response =
           std::make_unique<optimization_guide::proto::GetHintsResponse>();
 
-  UMA_HISTOGRAM_ENUMERATION("Previews.HintsFetcher.GetHintsRequest.Status",
-                            static_cast<net::HttpStatusCode>(response_code),
-                            net::HTTP_VERSION_NOT_SUPPORTED);
+  UMA_HISTOGRAM_ENUMERATION(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status",
+      static_cast<net::HttpStatusCode>(response_code),
+      net::HTTP_VERSION_NOT_SUPPORTED);
   // Net error codes are negative but histogram enums must be positive.
-  base::UmaHistogramSparse("Previews.HintsFetcher.GetHintsRequest.NetErrorCode",
-                           -net_status);
+  base::UmaHistogramSparse(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode",
+      -net_status);
 
   if (net_status == net::OK && response_code == net::HTTP_OK &&
       get_hints_response->ParseFromString(get_hints_response_data)) {

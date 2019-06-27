@@ -44,6 +44,7 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
                           const Mailbox& mailbox) override;
   SyncToken GenVerifiedSyncToken() override;
   SyncToken GenUnverifiedSyncToken() override;
+  void Flush() override;
 
 #if defined(OS_WIN)
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,

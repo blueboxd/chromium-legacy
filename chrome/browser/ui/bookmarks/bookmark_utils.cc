@@ -34,8 +34,11 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -94,12 +97,33 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
   return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
 }
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_WIN) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS)
+// Image source that flips the supplied source image in RTL.
+class RTLFlipSource : public gfx::ImageSkiaSource {
+ public:
+  explicit RTLFlipSource(gfx::ImageSkia source) : source_(std::move(source)) {}
+  ~RTLFlipSource() override = default;
+
+  // gfx::ImageSkiaSource:
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
+    gfx::Canvas canvas(source_.size(), scale, false);
+    gfx::ScopedCanvas scoped_canvas(&canvas);
+    scoped_canvas.FlipIfRTL(source_.width());
+    canvas.DrawImageInt(source_, 0, 0);
+    return gfx::ImageSkiaRep(canvas.GetBitmap(), scale);
+  }
+
+ private:
+  const gfx::ImageSkia source_;
+};
+
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 gfx::ImageSkia GetFolderIcon(const gfx::VectorIcon& icon, SkColor text_color) {
   return gfx::CreateVectorIcon(icon,
                                color_utils::DeriveDefaultIconColor(text_color));
 }
-#endif
+#endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
+#endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace
 
@@ -295,41 +319,45 @@ bool IsValidBookmarkDropLocation(Profile* profile,
 #if defined(TOOLKIT_VIEWS)
 // TODO(bsep): vectorize the Windows versions: crbug.com/564112
 gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
+  gfx::ImageSkia folder;
 #if defined(OS_WIN)
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER);
 #elif defined(OS_MACOSX)
   int resource_id = color_utils::IsDark(text_color)
                         ? IDR_BOOKMARK_BAR_FOLDER
                         : IDR_BOOKMARK_BAR_FOLDER_WHITE;
-  return *ui::ResourceBundle::GetSharedInstance()
-              .GetNativeImageNamed(resource_id)
-              .ToImageSkia();
+  folder = *ui::ResourceBundle::GetSharedInstance()
+                .GetNativeImageNamed(resource_id)
+                .ToImageSkia();
 #else
-  return GetFolderIcon(ui::MaterialDesignController::touch_ui()
-                           ? vector_icons::kFolderTouchIcon
-                           : vector_icons::kFolderIcon,
-                       text_color);
+  folder = GetFolderIcon(ui::MaterialDesignController::touch_ui()
+                             ? vector_icons::kFolderTouchIcon
+                             : vector_icons::kFolderIcon,
+                         text_color);
 #endif
+  return gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size());
 }
 
 gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
+  gfx::ImageSkia folder;
 #if defined(OS_WIN)
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER_MANAGED);
 #elif defined(OS_MACOSX)
   int resource_id = color_utils::IsDark(text_color)
                         ? IDR_BOOKMARK_BAR_FOLDER_MANAGED
                         : IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE;
-  return *ui::ResourceBundle::GetSharedInstance()
-              .GetNativeImageNamed(resource_id)
-              .ToImageSkia();
+  folder = *ui::ResourceBundle::GetSharedInstance()
+                .GetNativeImageNamed(resource_id)
+                .ToImageSkia();
 #else
-  return GetFolderIcon(ui::MaterialDesignController::touch_ui()
-                           ? vector_icons::kFolderManagedTouchIcon
-                           : vector_icons::kFolderManagedIcon,
-                       text_color);
+  folder = GetFolderIcon(ui::MaterialDesignController::touch_ui()
+                             ? vector_icons::kFolderManagedTouchIcon
+                             : vector_icons::kFolderManagedIcon,
+                         text_color);
 #endif
+  return gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size());
 }
 #endif
 

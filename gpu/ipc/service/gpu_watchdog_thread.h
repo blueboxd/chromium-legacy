@@ -44,10 +44,14 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   virtual void OnBackgrounded() = 0;
   virtual void OnForegrounded() = 0;
 
+  // The watchdog starts armed to catch startup hangs, and needs to be disarmed
+  // once init is complete, before executing tasks.
+  virtual void OnInitComplete() = 0;
+
  protected:
   GpuWatchdogThread();
 
-  // Do not change this name. This is used for [GPU HANG] carsh reports
+  // Do not change this name. This is used for [GPU HANG] carsh reports.
   virtual void DeliberatelyTerminateToRecoverFromHang() = 0;
 
  private:
@@ -62,13 +66,14 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   static std::unique_ptr<GpuWatchdogThreadImplV1> Create(
       bool start_backgrounded);
 
+  // Implements GpuWatchdogThread.
   void AddPowerObserver() override;
+  void OnBackgrounded() override;
+  void OnForegrounded() override;
+  void OnInitComplete() override {}
 
   // gl::ProgressReporter implementation:
   void ReportProgress() override;
-
-  void OnBackgrounded() override;
-  void OnForegrounded() override;
 
  protected:
   void Init() override;

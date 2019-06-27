@@ -4,32 +4,33 @@
 
 #include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace gpu {
 
 namespace {
 #if defined(CYGPROFILE_INSTRUMENTATION)
-const int kGpuTimeoutInMs = 30000;
+const int kGpuTimeoutInSec = 30;
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-const int kGpuTimeoutInMs = 15000;
+const int kGpuTimeoutInSec = 15;
 #else
-const int kGpuTimeoutInMs = 10000;
+const int kGpuTimeoutInSec = 10;
 #endif
 }  // namespace
 
 GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2()
-    : timeout_(base::TimeDelta::FromMilliseconds(kGpuTimeoutInMs)),
+    : watchdog_timeout_(base::TimeDelta::FromSeconds(kGpuTimeoutInSec)),
       watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
-  Disarm();
-
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
+  Arm();
 }
 
 GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
@@ -43,8 +44,6 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
 // static
 std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     bool start_backgrounded) {
-  NOTREACHED();  // Not ready yet
-
   auto watchdog_thread = base::WrapUnique(new GpuWatchdogThreadImplV2);
   base::Thread::Options options;
   options.timer_slack = base::TIMER_SLACK_MAXIMUM;
@@ -65,9 +64,17 @@ void GpuWatchdogThreadImplV2::OnBackgrounded() {}
 
 void GpuWatchdogThreadImplV2::OnForegrounded() {}
 
-void GpuWatchdogThreadImplV2::ReportProgress() {}
+void GpuWatchdogThreadImplV2::ReportProgress() {
+  InProgress();
+}
 
-void GpuWatchdogThreadImplV2::Init() {}
+void GpuWatchdogThreadImplV2::Init() {
+  task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout,
+                     weak_factory_.GetWeakPtr()),
+      watchdog_timeout_);
+}
 
 void GpuWatchdogThreadImplV2::CleanUp() {
   weak_factory_.InvalidateWeakPtrs();
@@ -83,9 +90,54 @@ void GpuWatchdogThreadImplV2::DidProcessTask(
   Disarm();
 }
 
-void GpuWatchdogThreadImplV2::Arm() {}
+// Called from the gpu thread when gpu init has completed
+void GpuWatchdogThreadImplV2::OnInitComplete() {
+  Disarm();
+}
 
-void GpuWatchdogThreadImplV2::Disarm() {}
+void GpuWatchdogThreadImplV2::Arm() {
+  base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+
+  // Arm/Disarm are always called in sequence. Now it's an odd number.
+  DCHECK(base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1);
+}
+
+void GpuWatchdogThreadImplV2::Disarm() {
+  base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 1);
+
+  // Arm/Disarm are always called in sequence. Now it's an even number.
+  DCHECK(base::subtle::NoBarrier_Load(&arm_disarm_counter_) % 2 == 0);
+}
+
+void GpuWatchdogThreadImplV2::InProgress() {
+  // This is equivalent to Disarm() + Arm()
+  base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 2);
+
+  // Now it's an odd number.
+  DCHECK(base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1);
+}
+
+void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
+  base::subtle::Atomic32 arm_disarm_counter =
+      base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+
+  // disarmed is true if it's an even number
+  bool disarmed = arm_disarm_counter % 2 == 0;
+  bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
+  last_arm_disarm_counter_ = arm_disarm_counter;
+
+  if (disarmed || gpu_makes_progress) {
+    task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout,
+                       weak_factory_.GetWeakPtr()),
+        watchdog_timeout_);
+    return;
+  }
+
+  // Still armed without any progress. GPU possibly hangs.
+  DeliberatelyTerminateToRecoverFromHang();
+}
 
 void GpuWatchdogThreadImplV2::OnSuspend() {}
 
@@ -94,6 +146,11 @@ void GpuWatchdogThreadImplV2::OnResume() {}
 void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   // Store variables so they're available in crash dumps to help determine the
   // cause of any hang.
+
+#if defined(OS_WIN)
+  if (IsDebuggerPresent())
+    return;
+#endif
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0xdeadface;

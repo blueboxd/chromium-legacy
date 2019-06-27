@@ -419,6 +419,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
                         gpu_info_.sandboxed);
 
+  // Notify the gpu watchdog that the gpu init has completed So the watchdog
+  // can be disarmed.
+  if (watchdog_thread_)
+    watchdog_thread_->OnInitComplete();
+
   init_successful_ = true;
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();

@@ -17,16 +17,17 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
       bool start_backgrounded);
   ~GpuWatchdogThreadImplV2() override;
 
-  // Implements GpuWatchdogThread
+  // Implements GpuWatchdogThread.
   void AddPowerObserver() override;
   void OnBackgrounded() override;
   void OnForegrounded() override;
+  void OnInitComplete() override;
 
-  // Implements gl::ProgressReporter
+  // Implements gl::ProgressReporter.
   void ReportProgress() override;
 
  protected:
-  // Implements base::Thread
+  // Implements base::Thread.
   void Init() override;
   void CleanUp() override;
 
@@ -34,8 +35,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   GpuWatchdogThreadImplV2();
   void Arm();
   void Disarm();
+  void InProgress();
+  void OnWatchdogTimeout();
 
-  // Implements base::PowerObserver
+  // Implements base::PowerObserver.
   void OnSuspend() override;
   void OnResume() override;
 
@@ -43,10 +46,19 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
-  // Implements GpuWatchdogThread
+  // Implements GpuWatchdogThread.
   void DeliberatelyTerminateToRecoverFromHang() override;
 
-  base::TimeDelta timeout_;
+  // This counter is only written on the gpu thread, and read on the watchdog
+  // thread.
+  base::subtle::Atomic32 arm_disarm_counter_ = 0;
+  // The counter number read in the last OnWatchdogTimeout() on the watchdog
+  // thread.
+  int32_t last_arm_disarm_counter_ = 0;
+
+  // Timeout on the watchdog thread to check if gpu hangs
+  base::TimeDelta watchdog_timeout_;
+
   scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
 
   base::WeakPtrFactory<GpuWatchdogThreadImplV2> weak_factory_;

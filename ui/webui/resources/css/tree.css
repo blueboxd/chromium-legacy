@@ -119,7 +119,6 @@ html[dir=rtl] .tree-label {
       url(../../../views/resources/default_200_percent/common/folder_open.png) 2x);
 }
 
-<if expr="not is_macosx and not is_ios">
 html[dir=rtl] .tree-label,
 html[dir=rtl] .tree-row[may-have-children] > .tree-label {
   background-image: -webkit-image-set(
@@ -132,7 +131,6 @@ html[dir=rtl] .tree-item[expanded] > .tree-row > .tree-label {
      url(../../../views/resources/default_100_percent/common/folder_open_rtl.png) 1x,
      url(../../../views/resources/default_200_percent/common/folder_open_rtl.png) 2x);
 }
-</if>
 
 tree[icon-visibility=hidden] .tree-label {
   background-image: none !important;

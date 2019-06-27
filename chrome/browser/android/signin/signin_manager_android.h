@@ -10,7 +10,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -39,17 +38,6 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
                const base::android::JavaParamRef<jobject>& obj,
                jint signoutReason);
 
-  // Delete all data for this profile.
-  void WipeProfileData(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj,
-                       const base::android::JavaParamRef<jobject>& j_callback);
-
-  // Delete service worker caches for google.<eTLD>.
-  void WipeGoogleServiceWorkerCaches(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_callback);
-
   void LogInSignedInUser(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
@@ -72,19 +60,9 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
       const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
-  friend class SigninManagerAndroidTest;
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerAndroidTest,
-                           DeleteGoogleServiceWorkerCaches);
-
   ~SigninManagerAndroid() override;
 
-  void OnBrowsingDataRemoverDone();
-
   void OnSigninAllowedPrefChanged();
-
-  static void WipeData(Profile* profile,
-                       bool all_data,
-                       base::OnceClosure callback);
 
   Profile* profile_;
 
@@ -94,8 +72,6 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   PrefChangeRegistrar pref_change_registrar_;
 
   base::ThreadChecker thread_checker_;
-
-  base::WeakPtrFactory<SigninManagerAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManagerAndroid);
 };

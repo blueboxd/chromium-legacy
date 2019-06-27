@@ -38,22 +38,22 @@ const uint8_t kUsbPort = 0x01;
 
 class CrostiniManagerTest : public testing::Test {
  public:
-  void CreateDiskImageClientErrorCallback(
+  void CreateDiskImageFailureCallback(
       base::OnceClosure closure,
-      CrostiniResult result,
+      bool success,
       vm_tools::concierge::DiskImageStatus status,
       const base::FilePath& file_path) {
     EXPECT_FALSE(fake_concierge_client_->create_disk_image_called());
-    EXPECT_EQ(result, CrostiniResult::CLIENT_ERROR);
+    EXPECT_FALSE(success);
     EXPECT_EQ(status,
               vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN);
     std::move(closure).Run();
   }
 
-  void DestroyDiskImageClientErrorCallback(base::OnceClosure closure,
-                                           CrostiniResult result) {
+  void DestroyDiskImageFailureCallback(base::OnceClosure closure,
+                                       bool success) {
     EXPECT_FALSE(fake_concierge_client_->destroy_disk_image_called());
-    EXPECT_EQ(result, CrostiniResult::CLIENT_ERROR);
+    EXPECT_FALSE(success);
     std::move(closure).Run();
   }
 
@@ -65,10 +65,9 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void StartTerminaVmClientErrorCallback(base::OnceClosure closure,
-                                         CrostiniResult result) {
+  void StartTerminaVmFailureCallback(base::OnceClosure closure, bool success) {
     EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
-    EXPECT_EQ(result, CrostiniResult::CLIENT_ERROR);
+    EXPECT_FALSE(success);
     std::move(closure).Run();
   }
 
@@ -81,16 +80,18 @@ class CrostiniManagerTest : public testing::Test {
 
   void CreateDiskImageSuccessCallback(
       base::OnceClosure closure,
-      CrostiniResult result,
+      bool success,
       vm_tools::concierge::DiskImageStatus status,
       const base::FilePath& file_path) {
     EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+    EXPECT_TRUE(success);
     std::move(closure).Run();
   }
 
   void DestroyDiskImageSuccessCallback(base::OnceClosure closure,
-                                       CrostiniResult result) {
+                                       bool success) {
     EXPECT_TRUE(fake_concierge_client_->destroy_disk_image_called());
+    EXPECT_TRUE(success);
     std::move(closure).Run();
   }
 
@@ -101,14 +102,14 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void StartTerminaVmSuccessCallback(base::OnceClosure closure,
-                                     CrostiniResult result) {
+  void StartTerminaVmSuccessCallback(base::OnceClosure closure, bool success) {
     EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+    EXPECT_TRUE(success);
     std::move(closure).Run();
   }
 
   void OnStartTremplinRecordsRunningVmCallback(base::OnceClosure closure,
-                                               CrostiniResult result) {
+                                               bool success) {
     // Check that running_vms_ contains the running vm.
     EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
     std::move(closure).Run();
@@ -141,32 +142,32 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   void AttachUsbDeviceCallback(base::OnceClosure closure,
-                               CrostiniResult expected_result,
-                               uint8_t guest_port,
-                               CrostiniResult result) {
+                               bool expected_success,
+                               bool success,
+                               uint8_t guest_port) {
     EXPECT_TRUE(fake_concierge_client_->attach_usb_device_called());
-    EXPECT_EQ(expected_result, result);
+    EXPECT_EQ(expected_success, success);
     std::move(closure).Run();
   }
 
   void DetachUsbDeviceCallback(base::OnceClosure closure,
                                bool expected_called,
-                               CrostiniResult expected_result,
-                               CrostiniResult result) {
+                               bool expected_success,
+                               bool success) {
     EXPECT_EQ(fake_concierge_client_->detach_usb_device_called(),
               expected_called);
-    EXPECT_EQ(expected_result, result);
+    EXPECT_EQ(expected_success, success);
     std::move(closure).Run();
   }
 
   void ListUsbDevicesCallback(
       base::OnceClosure closure,
-      CrostiniResult expected_result,
+      bool expected_success,
       size_t expected_size,
-      CrostiniResult result,
+      bool success,
       std::vector<std::pair<std::string, uint8_t>> devices) {
     EXPECT_TRUE(fake_concierge_client_->list_usb_devices_called());
-    EXPECT_EQ(expected_result, result);
+    EXPECT_EQ(expected_success, success);
     EXPECT_EQ(devices.size(), expected_size);
     std::move(closure).Run();
   }
@@ -258,7 +259,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageNameError) {
 
   crostini_manager()->CreateDiskImage(
       disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT, kDiskSizeBytes,
-      base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
+      base::BindOnce(&CrostiniManagerTest::CreateDiskImageFailureCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
@@ -270,7 +271,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageStorageLocationError) {
       disk_path,
       vm_tools::concierge::StorageLocation_INT_MIN_SENTINEL_DO_NOT_USE_,
       kDiskSizeBytes,
-      base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
+      base::BindOnce(&CrostiniManagerTest::CreateDiskImageFailureCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
@@ -290,7 +291,7 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageNameError) {
 
   crostini_manager()->DestroyDiskImage(
       disk_path,
-      base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
+      base::BindOnce(&CrostiniManagerTest::DestroyDiskImageFailureCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
@@ -317,7 +318,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
 
   crostini_manager()->StartTerminaVm(
       "", disk_path,
-      base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
+      base::BindOnce(&CrostiniManagerTest::StartTerminaVmFailureCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
@@ -327,7 +328,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
 
   crostini_manager()->StartTerminaVm(
       kVmName, disk_path,
-      base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
+      base::BindOnce(&CrostiniManagerTest::StartTerminaVmFailureCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
@@ -486,7 +487,7 @@ TEST_F(CrostiniManagerTest, AttachUsbDeviceSuccess) {
       kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::SUCCESS));
+                     /*expected_success=*/true));
   run_loop()->Run();
   fake_usb_manager_.RemoveDevice(guid);
 }
@@ -503,7 +504,7 @@ TEST_F(CrostiniManagerTest, AttachUsbDeviceFailure) {
       kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::ATTACH_USB_FAILED));
+                     /*expected_success=*/false));
   run_loop()->Run();
   fake_usb_manager_.RemoveDevice(guid);
 }
@@ -525,13 +526,13 @@ TEST_F(CrostiniManagerTest, DetachUsbDeviceSuccess) {
       kVmName, fake_usb.Clone(), kUsbPort,
       base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(), true,
-                     CrostiniResult::SUCCESS));
+                     /*expected_success=*/true));
 
   crostini_manager()->AttachUsbDevice(
       kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), std::move(detach_usb),
-                     CrostiniResult::SUCCESS));
+                     /*expected_success=*/true));
   run_loop()->Run();
   fake_usb_manager_.RemoveDevice(guid);
 }
@@ -553,13 +554,13 @@ TEST_F(CrostiniManagerTest, DetachUsbDeviceFailure) {
       kVmName, fake_usb.Clone(), kUsbPort,
       base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(), true,
-                     CrostiniResult::DETACH_USB_FAILED));
+                     /*expected_success=*/false));
 
   crostini_manager()->AttachUsbDevice(
       kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), std::move(detach_usb),
-                     CrostiniResult::SUCCESS));
+                     /*expected_success=*/true));
   run_loop()->Run();
   fake_usb_manager_.RemoveDevice(guid);
 }
@@ -572,7 +573,7 @@ TEST_F(CrostiniManagerTest, ListUsbDeviceFailure) {
   crostini_manager()->ListUsbDevices(
       kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
                               base::Unretained(this), run_loop()->QuitClosure(),
-                              CrostiniResult::LIST_USB_FAILED, 0));
+                              /*expected_success=*/false, 0));
   run_loop()->Run();
 }
 
@@ -584,7 +585,7 @@ TEST_F(CrostiniManagerTest, ListUsbDeviceEmptySuccess) {
   crostini_manager()->ListUsbDevices(
       kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
                               base::Unretained(this), run_loop()->QuitClosure(),
-                              CrostiniResult::SUCCESS, 0));
+                              /*expected_success=*/true, 0));
   run_loop()->Run();
 }
 
@@ -601,7 +602,7 @@ TEST_F(CrostiniManagerTest, ListUsbDeviceOne) {
       kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::SUCCESS));
+                     /*expected_success=*/true));
   run_loop()->Run();
 
   vm_tools::concierge::ListUsbDeviceResponse response;
@@ -614,7 +615,7 @@ TEST_F(CrostiniManagerTest, ListUsbDeviceOne) {
   crostini_manager()->ListUsbDevices(
       kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
                               base::Unretained(this), run_loop2.QuitClosure(),
-                              CrostiniResult::SUCCESS, 1));
+                              /*expected_success=*/true, 1));
   run_loop2.Run();
 
   fake_usb_manager_.RemoveDevice(guid);
@@ -642,13 +643,13 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
-  void OnConciergeStarted(CrostiniResult result) override {
+  void OnConciergeStarted(bool success) override {
     if (abort_on_concierge_started_) {
       Abort();
     }
   }
 
-  void OnDiskImageCreated(CrostiniResult result,
+  void OnDiskImageCreated(bool success,
                           vm_tools::concierge::DiskImageStatus status,
                           int64_t disk_size_available) override {
     if (abort_on_disk_image_created_) {
@@ -656,7 +657,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
-  void OnVmStarted(CrostiniResult result) override {
+  void OnVmStarted(bool success) override {
     if (abort_on_vm_started_) {
       Abort();
     }
@@ -676,13 +677,13 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
-  void OnContainerSetup(CrostiniResult result) override {
+  void OnContainerSetup(bool success) override {
     if (abort_on_container_setup_) {
       Abort();
     }
   }
 
-  void OnSshKeysFetched(CrostiniResult result) override {
+  void OnSshKeysFetched(bool success) override {
     if (abort_on_ssh_keys_fetched_) {
       Abort();
     }

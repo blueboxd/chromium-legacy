@@ -78,10 +78,10 @@ void CrostiniRemover::StopVmFinished(CrostiniResult result) {
       base::BindOnce(&CrostiniRemover::DestroyDiskImageFinished, this));
 }
 
-void CrostiniRemover::DestroyDiskImageFinished(CrostiniResult result) {
+void CrostiniRemover::DestroyDiskImageFinished(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result != CrostiniResult::SUCCESS) {
-    std::move(callback_).Run(result);
+  if (!success) {
+    std::move(callback_).Run(CrostiniResult::DESTROY_DISK_IMAGE_FAILED);
     return;
   }
   // Only set kCrostiniEnabled to false once cleanup is completely finished.

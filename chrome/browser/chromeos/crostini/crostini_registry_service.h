@@ -206,7 +206,7 @@ class CrostiniRegistryService : public KeyedService {
   // Callback for when we request an icon from the container.
   void OnContainerAppIcon(const std::string& app_id,
                           ui::ScaleFactor scale_factor,
-                          CrostiniResult result,
+                          bool success,
                           const std::vector<Icon>& icons);
   // Callback for our internal call for saving out icon data.
   void OnIconInstalled(const std::string& app_id,

@@ -32,7 +32,7 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     ChromeSigninManagerDelegate(AndroidSyncSettings androidSyncSettings) {
         assert androidSyncSettings != null;
         mAndroidSyncSettings = androidSyncSettings;
-        mNativeChromeSigninManagerDelegate = ChromeSigninManagerDelegateJni.get().init(this);
+        mNativeChromeSigninManagerDelegate = ChromeSigninManagerDelegateJni.get().init();
     }
 
     @Override
@@ -89,23 +89,22 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     }
 
     @Override
-    public void disableSyncAndWipeData(@JCaller SigninManager signinManager,
-            long nativeSigninManagerAndroid, boolean isManagedOrForceWipe,
-            final Runnable wipeDataCallback) {
+    public void disableSyncAndWipeData(
+            boolean isManagedOrForceWipe, final Runnable wipeDataCallback) {
         mAndroidSyncSettings.updateAccount(null);
         if (isManagedOrForceWipe) {
-            SigninManagerJni.get().wipeProfileData(
-                    signinManager, nativeSigninManagerAndroid, wipeDataCallback);
+            ChromeSigninManagerDelegateJni.get().wipeProfileData(
+                    this, mNativeChromeSigninManagerDelegate, wipeDataCallback);
         } else {
-            SigninManagerJni.get().wipeGoogleServiceWorkerCaches(
-                    signinManager, nativeSigninManagerAndroid, wipeDataCallback);
+            ChromeSigninManagerDelegateJni.get().wipeGoogleServiceWorkerCaches(
+                    this, mNativeChromeSigninManagerDelegate, wipeDataCallback);
         }
     }
 
     // Native methods.
     @NativeMethods
     interface Natives {
-        long init(@JCaller ChromeSigninManagerDelegate self);
+        long init();
 
         void destroy(
                 @JCaller ChromeSigninManagerDelegate self, long nativeChromeSigninManagerDelegate);
@@ -122,5 +121,11 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
 
         String getManagementDomain(
                 @JCaller ChromeSigninManagerDelegate self, long nativeChromeSigninManagerDelegate);
+
+        void wipeProfileData(@JCaller ChromeSigninManagerDelegate self,
+                long nativeChromeSigninManagerDelegate, Runnable callback);
+
+        void wipeGoogleServiceWorkerCaches(@JCaller ChromeSigninManagerDelegate self,
+                long nativeChromeSigninManagerDelegate, Runnable callback);
     }
 }

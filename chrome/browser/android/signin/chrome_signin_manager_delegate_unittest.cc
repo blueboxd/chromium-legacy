@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "signin_manager_android.h"
+#include "chrome_signin_manager_delegate.h"
 
 #include <memory>
 #include <set>
@@ -50,11 +50,11 @@ std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
 
 }  // namespace
 
-class SigninManagerAndroidTest : public ::testing::Test {
+class ChromeSigninManagerDelegateTest : public ::testing::Test {
  public:
-  SigninManagerAndroidTest()
+  ChromeSigninManagerDelegateTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
-  ~SigninManagerAndroidTest() override {}
+  ~ChromeSigninManagerDelegateTest() override {}
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
@@ -92,8 +92,8 @@ class SigninManagerAndroidTest : public ::testing::Test {
   // Calls SigninManager::WipeData(|all_data|) and waits for its completion.
   void WipeData(bool all_data) {
     std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop());
-    SigninManagerAndroid::WipeData(profile(), all_data,
-                                   run_loop->QuitClosure());
+    ChromeSigninManagerDelegate::WipeData(profile(), all_data,
+                                          run_loop->QuitClosure());
     run_loop->Run();
   }
 
@@ -102,13 +102,14 @@ class SigninManagerAndroidTest : public ::testing::Test {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;  // Owned by |profile_manager_|.
 
-  DISALLOW_COPY_AND_ASSIGN(SigninManagerAndroidTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeSigninManagerDelegateTest);
 };
 
 // TODO(crbug.com/929456): This test does not actually test anything; the
 // CannedBrowsingDataCacheStorageHelper isn't hooked up to observe any
 // deletions. Disabled to allow refactoring of browsing data code.
-TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
+TEST_F(ChromeSigninManagerDelegateTest,
+       DISABLED_DeleteGoogleServiceWorkerCaches) {
   struct TestCase {
     std::string worker_url;
     bool should_be_deleted;
@@ -146,9 +147,9 @@ TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
 
   // Delete service workers and wait for completion.
   base::RunLoop run_loop;
-  SigninManagerAndroid::WipeData(profile(),
-                                 false /* only Google service worker caches */,
-                                 run_loop.QuitClosure());
+  ChromeSigninManagerDelegate::WipeData(
+      profile(), false /* only Google service worker caches */,
+      run_loop.QuitClosure());
   run_loop.Run();
 
   // Test whether the correct service worker caches were deleted.
@@ -167,7 +168,7 @@ TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
 }
 
 // Tests that wiping all data also deletes bookmarks.
-TEST_F(SigninManagerAndroidTest, DeleteBookmarksWhenWipingAllData) {
+TEST_F(ChromeSigninManagerDelegateTest, DeleteBookmarksWhenWipingAllData) {
   bookmarks::BookmarkModel* bookmark_model = AddTestBookmarks();
   ASSERT_GE(bookmark_model->bookmark_bar_node()->children().size(), 0u);
   WipeData(true);
@@ -175,7 +176,8 @@ TEST_F(SigninManagerAndroidTest, DeleteBookmarksWhenWipingAllData) {
 }
 
 // Tests that wiping Google service worker caches does not delete bookmarks.
-TEST_F(SigninManagerAndroidTest, DontDeleteBookmarksWhenDeletingSWCaches) {
+TEST_F(ChromeSigninManagerDelegateTest,
+       DontDeleteBookmarksWhenDeletingSWCaches) {
   bookmarks::BookmarkModel* bookmark_model = AddTestBookmarks();
   size_t num_bookmarks = bookmark_model->bookmark_bar_node()->children().size();
   ASSERT_GE(num_bookmarks, 0u);

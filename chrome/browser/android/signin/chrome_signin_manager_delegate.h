@@ -25,7 +25,7 @@ class Profile;
 // dependencies.
 class ChromeSigninManagerDelegate {
  public:
-  ChromeSigninManagerDelegate(JNIEnv* env, jobject obj);
+  explicit ChromeSigninManagerDelegate(JNIEnv* env);
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
@@ -49,7 +49,22 @@ class ChromeSigninManagerDelegate {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  // Delete all data for this profile.
+  void WipeProfileData(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jobject>& j_callback);
+
+  // Delete service worker caches for google.<eTLD>.
+  void WipeGoogleServiceWorkerCaches(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_callback);
+
  private:
+  friend class ChromeSigninManagerDelegateTest;
+  FRIEND_TEST_ALL_PREFIXES(ChromeSigninManagerDelegateTest,
+                           DeleteGoogleServiceWorkerCaches);
+
   struct ManagementCredentials {
     ManagementCredentials(const std::string& dm_token,
                           const std::string& client_id)
@@ -82,13 +97,15 @@ class ChromeSigninManagerDelegate {
                                base::OnceCallback<void()> policy_callback,
                                const ManagementCredentials& credentials);
 
+  static void WipeData(Profile* profile,
+                       bool all_data,
+                       base::OnceClosure callback);
+
   Profile* const profile_ = nullptr;
 
   identity::IdentityManager* const identity_manager_ = nullptr;
   policy::UserCloudPolicyManager* const user_cloud_policy_manager_ = nullptr;
   policy::UserPolicySigninService* const user_policy_signin_service_ = nullptr;
-  // A reference to the Java counterpart of this object.
-  const base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   base::WeakPtrFactory<ChromeSigninManagerDelegate> weak_factory_;
 };

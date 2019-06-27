@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.Callback;
-import org.chromium.base.annotations.JCaller;
 
 /**
  * Interface providing SigninManager access to dependencies that are not part of the SignIn
@@ -70,14 +69,9 @@ public interface SigninManagerDelegate {
     /**
      * Called AFTER native sign-out is complete, this method clears various
      * account and profile data associated with the previous signin and aborts sync.
-     * @param signinManager a reference on SigninManager used for the native calls
-     * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
-     *                                   calls
      * @param isManagedOrForceWipe if the account is managed or force wipe enabled, which triggers a
      *                            different cleanup flow
      * @param wipeDataCallback to be called once profile data cleanup is complete
      */
-    public void disableSyncAndWipeData(@JCaller SigninManager signinManager,
-            long nativeSigninManagerAndroid, boolean isManagedOrForceWipe,
-            Runnable wipeDataCallback);
+    public void disableSyncAndWipeData(boolean isManagedOrForceWipe, Runnable wipeDataCallback);
 }

@@ -645,7 +645,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         // http://crbug.com/589028
         ChromeSigninController.get().setSignedInAccountName(null);
         if (mSignOutState.mWipeDataHooks != null) mSignOutState.mWipeDataHooks.preWipeData();
-        mDelegate.disableSyncAndWipeData(this, mNativeSigninManagerAndroid,
+        mDelegate.disableSyncAndWipeData(
                 mSignOutState.mManagementDomain != null || mSignOutState.mForceWipeUserData,
                 this::onProfileDataWiped);
         mAccountTrackerService.invalidateAccountSeedStatus(true);
@@ -724,12 +724,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         void signOut(@JCaller SigninManager self, long nativeSigninManagerAndroid,
                 @SignoutReason int reason);
-
-        void wipeProfileData(
-                @JCaller SigninManager self, long nativeSigninManagerAndroid, Runnable callback);
-
-        void wipeGoogleServiceWorkerCaches(
-                @JCaller SigninManager self, long nativeSigninManagerAndroid, Runnable callback);
 
         void clearLastSignedInUser(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 

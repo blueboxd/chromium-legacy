@@ -392,7 +392,7 @@ void CrosUsbDetector::ConnectSharedDevicesOnVmStartup() {
 void CrosUsbDetector::AttachUsbDeviceToVm(
     const std::string& vm_name,
     const std::string& guid,
-    crostini::CrostiniManager::CrostiniResultCallback callback) {
+    base::OnceCallback<void(bool success)> callback) {
   auto it = available_device_info_.find(guid);
   if (it == available_device_info_.end()) {
     return;
@@ -420,12 +420,12 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
 void CrosUsbDetector::DetachUsbDeviceFromVm(
     const std::string& vm_name,
     const std::string& guid,
-    crostini::CrostiniManager::CrostiniResultCallback callback) {
+    base::OnceCallback<void(bool success)> callback) {
   const auto& it = available_device_info_.find(guid);
   if (it == available_device_info_.end()) {
     // If there wasn't an existing attachment, then removal is a no-op and
     // always succeeds
-    std::move(callback).Run(crostini::CrostiniResult::SUCCESS);
+    std::move(callback).Run(/*success=*/true);
     return;
   }
   const auto& device_info = it->second;
@@ -439,7 +439,7 @@ void CrosUsbDetector::DetachUsbDeviceFromVm(
   }
 
   if (!guest_port) {
-    std::move(callback).Run(crostini::CrostiniResult::SUCCESS);
+    std::move(callback).Run(/*success=*/true);
     return;
   }
   manager()->DetachUsbDevice(
@@ -459,11 +459,11 @@ void CrosUsbDetector::OnListAttachedDevices(
 void CrosUsbDetector::OnAttachUsbDeviceOpened(
     const std::string& vm_name,
     device::mojom::UsbDeviceInfoPtr device_info,
-    crostini::CrostiniManager::CrostiniResultCallback callback,
+    base::OnceCallback<void(bool success)> callback,
     base::File file) {
   if (!file.IsValid()) {
     LOG(ERROR) << "Permission broker refused access to USB device";
-    std::move(callback).Run(crostini::CrostiniResult::PERMISSION_BROKER_ERROR);
+    std::move(callback).Run(/*success=*/false);
     return;
   }
 
@@ -480,10 +480,10 @@ void CrosUsbDetector::OnAttachUsbDeviceOpened(
 void CrosUsbDetector::OnUsbDeviceAttachFinished(
     const std::string& vm_name,
     const std::string& guid,
-    crostini::CrostiniManager::CrostiniResultCallback callback,
-    uint8_t guest_port,
-    crostini::CrostiniResult result) {
-  if (result == crostini::CrostiniResult::SUCCESS) {
+    base::OnceCallback<void(bool success)> callback,
+    bool success,
+    uint8_t guest_port) {
+  if (success) {
     for (auto& device : shared_usb_devices_) {
       if (device.guid == guid) {
         device.guest_port = guest_port;
@@ -491,15 +491,15 @@ void CrosUsbDetector::OnUsbDeviceAttachFinished(
     }
   }
   SignalSharedUsbDeviceObservers();
-  std::move(callback).Run(result);
+  std::move(callback).Run(success);
 }
 
 void CrosUsbDetector::OnUsbDeviceDetachFinished(
     const std::string& vm_name,
     const std::string& guid,
-    crostini::CrostiniManager::CrostiniResultCallback callback,
+    base::OnceCallback<void(bool success)> callback,
     uint8_t guest_port,
-    crostini::CrostiniResult result) {
+    bool success) {
   for (auto& device : shared_usb_devices_) {
     if (device.guid == guid) {
       device.guest_port = base::nullopt;
@@ -508,7 +508,7 @@ void CrosUsbDetector::OnUsbDeviceDetachFinished(
     }
   }
   SignalSharedUsbDeviceObservers();
-  std::move(callback).Run(result);
+  std::move(callback).Run(success);
 }
 
 }  // namespace chromeos

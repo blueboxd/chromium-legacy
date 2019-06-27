@@ -88,14 +88,12 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device) override;
   void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device) override;
 
-  void AttachUsbDeviceToVm(
-      const std::string& vm_name,
-      const std::string& guid,
-      crostini::CrostiniManager::CrostiniResultCallback callback);
-  void DetachUsbDeviceFromVm(
-      const std::string& vm_name,
-      const std::string& guid,
-      crostini::CrostiniManager::CrostiniResultCallback callback);
+  void AttachUsbDeviceToVm(const std::string& vm_name,
+                           const std::string& guid,
+                           base::OnceCallback<void(bool success)> callback);
+  void DetachUsbDeviceFromVm(const std::string& vm_name,
+                             const std::string& guid,
+                             base::OnceCallback<void(bool success)> callback);
 
   void AddSharedUsbDeviceObserver(SharedUsbDeviceObserver* observer);
   void RemoveSharedUsbDeviceObserver(SharedUsbDeviceObserver* observer);
@@ -120,25 +118,24 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
       std::vector<device::mojom::UsbDeviceInfoPtr> devices);
 
   // Callback for AttachUsbDeviceToVm after opening a file handler.
-  void OnAttachUsbDeviceOpened(
-      const std::string& vm_name,
-      device::mojom::UsbDeviceInfoPtr device,
-      crostini::CrostiniManager::CrostiniResultCallback callback,
-      base::File file);
+  void OnAttachUsbDeviceOpened(const std::string& vm_name,
+                               device::mojom::UsbDeviceInfoPtr device,
+                               base::OnceCallback<void(bool success)> callback,
+                               base::File file);
 
   // Callbacks for when the USB device state has been updated.
   void OnUsbDeviceAttachFinished(
       const std::string& vm_name,
       const std::string& guid,
-      crostini::CrostiniManager::CrostiniResultCallback callback,
-      uint8_t guest_port,
-      crostini::CrostiniResult result);
+      base::OnceCallback<void(bool success)> callback,
+      bool success,
+      uint8_t guest_port);
   void OnUsbDeviceDetachFinished(
       const std::string& vm_name,
       const std::string& guid,
-      crostini::CrostiniManager::CrostiniResultCallback callback,
+      base::OnceCallback<void(bool success)> callback,
       uint8_t guest_port,
-      crostini::CrostiniResult result);
+      bool success);
 
   // Returns true when a device should show a notification when attached.
   bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);

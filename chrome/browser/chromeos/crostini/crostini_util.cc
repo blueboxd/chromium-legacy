@@ -93,9 +93,8 @@ void OnCrostiniRestarted(Profile* profile,
   std::move(callback).Run();
 }
 
-void OnContainerApplicationLaunched(const std::string& app_id,
-                                    crostini::CrostiniResult result) {
-  if (result != crostini::CrostiniResult::SUCCESS)
+void OnContainerApplicationLaunched(const std::string& app_id, bool success) {
+  if (!success)
     OnLaunchFailed(app_id);
 }
 

@@ -352,11 +352,9 @@ void CrostiniInstallerView::OnComponentLoaded(CrostiniResult result) {
   UpdateState(State::START_CONCIERGE);
 }
 
-void CrostiniInstallerView::OnConciergeStarted(CrostiniResult result) {
+void CrostiniInstallerView::OnConciergeStarted(bool success) {
   DCHECK_EQ(state_, State::START_CONCIERGE);
-  if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to install start Concierge with error code: "
-               << static_cast<int>(result);
+  if (!success) {
     HandleError(
         l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR),
         SetupResult::kErrorStartingConcierge);
@@ -367,20 +365,18 @@ void CrostiniInstallerView::OnConciergeStarted(CrostiniResult result) {
 }
 
 void CrostiniInstallerView::OnDiskImageCreated(
-    CrostiniResult result,
+    bool success,
     vm_tools::concierge::DiskImageStatus status,
     int64_t disk_size_available) {
   DCHECK_EQ(state_, State::CREATE_DISK_IMAGE);
   if (status == vm_tools::concierge::DiskImageStatus::DISK_STATUS_EXISTS) {
     do_cleanup_ = false;
-  } else if (result == CrostiniResult::SUCCESS) {
+  } else if (success) {
     // Record the max space for the disk image at creation time, measured in GiB
     base::UmaHistogramCustomCounts(kCrostiniDiskImageSizeHistogram,
                                    disk_size_available >> 30, 1, 1024, 64);
   }
-  if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to create disk imagewith error code: "
-               << static_cast<int>(result);
+  if (!success) {
     HandleError(l10n_util::GetStringUTF16(
                     IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR),
                 SetupResult::kErrorCreatingDiskImage);
@@ -390,11 +386,9 @@ void CrostiniInstallerView::OnDiskImageCreated(
   UpdateState(State::START_TERMINA_VM);
 }
 
-void CrostiniInstallerView::OnVmStarted(CrostiniResult result) {
+void CrostiniInstallerView::OnVmStarted(bool success) {
   DCHECK_EQ(state_, State::START_TERMINA_VM);
-  if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start Termina VM with error code: "
-               << static_cast<int>(result);
+  if (!success) {
     HandleError(l10n_util::GetStringUTF16(
                     IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR),
                 SetupResult::kErrorStartingTermina);
@@ -417,11 +411,11 @@ void CrostiniInstallerView::OnContainerCreated(CrostiniResult result) {
   UpdateState(State::SETUP_CONTAINER);
 }
 
-void CrostiniInstallerView::OnContainerSetup(CrostiniResult result) {
+void CrostiniInstallerView::OnContainerSetup(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::SETUP_CONTAINER);
 
-  if (result != CrostiniResult::SUCCESS) {
+  if (!success) {
     if (content::GetNetworkConnectionTracker()->IsOffline()) {
       LOG(ERROR) << "Network connection dropped while downloading container";
       const base::string16 device_type = ui::GetChromeOSDeviceName();
@@ -429,8 +423,6 @@ void CrostiniInstallerView::OnContainerSetup(CrostiniResult result) {
                       IDS_CROSTINI_INSTALLER_OFFLINE_ERROR, device_type),
                   SetupResult::kErrorOffline);
     } else {
-      LOG(ERROR) << "Failed to set up container with error code: "
-                 << static_cast<int>(result);
       HandleError(l10n_util::GetStringUTF16(
                       IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_ERROR),
                   SetupResult::kErrorSettingUpContainer);
@@ -457,13 +449,11 @@ void CrostiniInstallerView::OnContainerStarted(CrostiniResult result) {
   UpdateState(State::FETCH_SSH_KEYS);
 }
 
-void CrostiniInstallerView::OnSshKeysFetched(CrostiniResult result) {
+void CrostiniInstallerView::OnSshKeysFetched(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::FETCH_SSH_KEYS);
 
-  if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to fetch ssh keys with error code: "
-               << static_cast<int>(result);
+  if (!success) {
     HandleError(
         l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_ERROR),
         SetupResult::kErrorFetchingSshKeys);

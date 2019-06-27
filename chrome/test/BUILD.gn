@@ -2711,7 +2711,7 @@ test("unit_tests") {
     "../browser/android/preferences/pref_service_bridge_unittest.cc",
     "../browser/android/preferences/prefs_unittest.cc",
     "../browser/android/shortcut_info_unittest.cc",
-    "../browser/android/signin/signin_manager_android_unittest.cc",
+    "../browser/android/signin/chrome_signin_manager_delegate_unittest.cc",
     "../browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc",
     "../browser/android/usage_stats/usage_stats_database_unittest.cc",
     "../browser/android/webapk/webapk_icon_hasher_unittest.cc",

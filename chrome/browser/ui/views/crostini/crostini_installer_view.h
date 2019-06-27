@@ -85,16 +85,16 @@ class CrostiniInstallerView
 
   // crostini::CrostiniManager::RestartObserver
   void OnComponentLoaded(crostini::CrostiniResult result) override;
-  void OnConciergeStarted(crostini::CrostiniResult result) override;
-  void OnDiskImageCreated(crostini::CrostiniResult result,
+  void OnConciergeStarted(bool success) override;
+  void OnDiskImageCreated(bool success,
                           vm_tools::concierge::DiskImageStatus status,
                           int64_t disk_size_available) override;
-  void OnVmStarted(crostini::CrostiniResult result) override;
+  void OnVmStarted(bool success) override;
   void OnContainerDownloading(int32_t download_percent) override;
   void OnContainerCreated(crostini::CrostiniResult result) override;
-  void OnContainerSetup(crostini::CrostiniResult result) override;
+  void OnContainerSetup(bool success) override;
   void OnContainerStarted(crostini::CrostiniResult result) override;
-  void OnSshKeysFetched(crostini::CrostiniResult result) override;
+  void OnSshKeysFetched(bool success) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();
   void SetCloseCallbackForTesting(base::OnceClosure quit_closure);

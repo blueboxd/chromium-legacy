@@ -288,10 +288,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void PositionPendingFloats(LayoutUnit origin_block_offset);
 
   // Positions a list marker for the specified block content.
-  void PositionOrPropagateListMarker(const NGLayoutResult&, LogicalOffset*);
+  // Return false if it aborts when resolving BFC block offset for LI.
+  bool PositionOrPropagateListMarker(const NGLayoutResult&,
+                                     LogicalOffset*,
+                                     NGPreviousInflowPosition*);
 
   // Positions a list marker when the block does not have any line boxes.
-  void PositionListMarkerWithoutLineBoxes();
+  // Return false if it aborts when resolving BFC block offset for LI.
+  bool PositionListMarkerWithoutLineBoxes(NGPreviousInflowPosition*);
 
   // Calculates logical offset for the current fragment using either {@code
   // intrinsic_block_size_} when the fragment doesn't know it's offset or

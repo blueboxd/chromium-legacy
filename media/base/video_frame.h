@@ -664,10 +664,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   size_t shared_memory_offset_;
 
 #if defined(OS_LINUX)
+  class DmabufHolder;
+
   // Dmabufs for the frame, used when storage is STORAGE_DMABUFS. Size is either
   // equal or less than the number of planes of the frame. If it is less, then
   // the memory area represented by the last FD contains the remaining planes.
-  std::vector<base::ScopedFD> dmabuf_fds_;
+  // If a STORAGE_DMABUFS frame is wrapped into another, the wrapping frame
+  // will get an extra reference to the FDs (i.e. no duplication is involved).
+  // This makes it possible to test whether two VideoFrame instances point to
+  // the same DMABUF memory by testing for
+  // (&vf1->DmabufFds() == &vf2->DmabufFds()).
+  scoped_refptr<DmabufHolder> dmabuf_fds_;
 #endif
 
 #if defined(OS_MACOSX)

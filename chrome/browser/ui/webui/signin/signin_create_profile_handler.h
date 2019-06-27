@@ -34,7 +34,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
-                           ReturnDefaultProfileNameAndIcons);
+                           ReturnDefaultProfileIcons);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            ReturnSignedInProfiles);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
@@ -68,10 +68,6 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   // Callback for the "requestDefaultProfileIcons" message.
   // Sends the array of default profile icon URLs to WebUI.
   void RequestDefaultProfileIcons(const base::ListValue* args);
-
-  // Sends an object to WebUI of the form: { "name": profileName } after
-  // "requestDefaultProfileIcons" is fulfilled.
-  void SendNewProfileDefaults();
 
   // Asynchronously creates and initializes a new profile.
   // The arguments are as follows:

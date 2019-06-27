@@ -239,8 +239,8 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_kindOfClass([UILabel class]), nil)]
       performAction:grey_tap()];
 
-  [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
-      inRoot:SystemSelectionCallout()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
+      performAction:grey_tap()];
 
   if ([ChromeEarlGrey isIPadIdiom]) {
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]

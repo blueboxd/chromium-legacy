@@ -118,7 +118,7 @@ class ScriptExecutor : public ActionDelegate,
   void GetPaymentInformation(
       std::unique_ptr<PaymentRequestOptions> options) override;
   void GetFullCard(GetFullCardCallback callback) override;
-  void Prompt(std::unique_ptr<std::vector<Chip>> chips) override;
+  void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void CancelPrompt() override;
   void FillAddressForm(
       const autofill::AutofillProfile* profile,

@@ -64,6 +64,9 @@ void SigninCreateProfileHandler::GetLocalizedValues(
       "createProfileTitle",
       l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_TITLE));
   localized_strings->SetString(
+      "createProfileNamePlaceholder",
+      l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NAME_PLACEHOLDER));
+  localized_strings->SetString(
       "exitAndChildlockLabel",
       l10n_util::GetStringUTF16(
           IDS_PROFILES_PROFILE_SIGNOUT_BUTTON));
@@ -87,19 +90,6 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
   web_ui()->CallJavascriptFunctionUnsafe(
       "cr.webUIListenerCallback", base::Value("profile-icons-received"),
       *profiles::GetDefaultProfileAvatarIconsAndLabels());
-
-  SendNewProfileDefaults();
-}
-
-void SigninCreateProfileHandler::SendNewProfileDefaults() {
-  ProfileAttributesStorage& storage =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  base::DictionaryValue profile_info;
-  profile_info.SetString("name", storage.ChooseNameForNewProfile(0));
-
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIListenerCallback", base::Value("profile-defaults-received"),
-      profile_info);
 }
 
 void SigninCreateProfileHandler::CreateProfile(const base::ListValue* args) {

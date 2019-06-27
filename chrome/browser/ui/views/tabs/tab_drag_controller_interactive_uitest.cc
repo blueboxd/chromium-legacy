@@ -2183,8 +2183,9 @@ void DragToMinimizedOverviewWindowStep2(
 
 // Test that the dragged tabs should be able to merge into an overview window
 // that represents a minimized window.
+// TODO(https://crbug.com/979013) Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       DragToMinimizedOverviewWindow) {
+                       DISABLED_DragToMinimizedOverviewWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Create another browser.

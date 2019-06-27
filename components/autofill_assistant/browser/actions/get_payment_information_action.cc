@@ -17,7 +17,9 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
 
@@ -55,8 +57,17 @@ void GetPaymentInformationAction::InternalProcessAction(
       !get_payment_information.shipping_address_name().empty();
   payment_options->request_payment_method =
       get_payment_information.ask_for_payment();
-  payment_options->confirm_button_text =
-      get_payment_information.confirm_button_text();
+
+  std::string confirm_text = get_payment_information.confirm_button_text();
+  if (confirm_text.empty()) {
+    confirm_text =
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  }
+  payment_options->confirm_chip.set_text(confirm_text);
+  payment_options->confirm_chip.set_type(HIGHLIGHTED_ACTION);
+  payment_options->confirm_direct_action =
+      get_payment_information.confirm_direct_action();
+
   switch (get_payment_information.terms_and_conditions_state()) {
     case GetPaymentInformationProto::NOT_SELECTED:
       payment_options->initial_terms_and_conditions = NOT_SELECTED;

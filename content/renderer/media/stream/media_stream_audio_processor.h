@@ -49,7 +49,7 @@ using webrtc::AudioProcessorInterface;
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
 class CONTENT_EXPORT MediaStreamAudioProcessor
-    : public WebRtcPlayoutDataSource::Sink,
+    : public blink::WebRtcPlayoutDataSource::Sink,
       public AudioProcessorInterface,
       public AecDumpAgentImpl::Delegate {
  public:
@@ -59,8 +59,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   //
   // Threading note: The constructor assumes it is being run on the main render
   // thread.
-  MediaStreamAudioProcessor(const blink::AudioProcessingProperties& properties,
-                            WebRtcPlayoutDataSource* playout_data_source);
+  MediaStreamAudioProcessor(
+      const blink::AudioProcessingProperties& properties,
+      blink::WebRtcPlayoutDataSource* playout_data_source);
 
   // Called when the format of the capture data has changed.
   // Called on the main render thread. The caller is responsible for stopping
@@ -126,7 +127,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   FRIEND_TEST_ALL_PREFIXES(MediaStreamAudioProcessorTest,
                            GetAecDumpMessageFilter);
 
-  // WebRtcPlayoutDataSource::Sink implementation.
+  // blink::WebRtcPlayoutDataSource::Sink implementation.
   void OnPlayoutData(media::AudioBus* audio_bus,
                      int sample_rate,
                      int audio_delay_milliseconds) override;
@@ -182,9 +183,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   media::AudioParameters input_format_;
   media::AudioParameters output_format_;
 
-  // Raw pointer to the WebRtcPlayoutDataSource, which is valid for the
+  // Raw pointer to the blink::WebRtcPlayoutDataSource, which is valid for the
   // lifetime of RenderThread.
-  WebRtcPlayoutDataSource* playout_data_source_;
+  blink::WebRtcPlayoutDataSource* playout_data_source_;
 
   // Task runner for the main render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;

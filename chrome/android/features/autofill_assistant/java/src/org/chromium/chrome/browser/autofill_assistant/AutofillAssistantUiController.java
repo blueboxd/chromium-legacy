@@ -212,25 +212,18 @@ class AutofillAssistantUiController {
         }
     }
 
-    @CalledByNative
-    private void setSuggestions(int[] icons, String[] texts, boolean[] disabled) {
-        assert texts.length == icons.length;
-        assert texts.length == disabled.length;
-        List<AssistantChip> chips = new ArrayList<>();
-        for (int i = 0; i < texts.length; i++) {
-            final int suggestionIndex = i;
-            chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icons[i], texts[i],
-                    disabled[i], /* sticky= */ false,
-                    () -> safeNativeOnSuggestionSelected(suggestionIndex)));
-        }
-        AssistantCarouselModel model = getModel().getSuggestionsModel();
-        setChips(model, chips);
-    }
-
     /** Creates an empty list of chips. */
     @CalledByNative
     private static List<AssistantChip> createChipList() {
         return new ArrayList<>();
+    }
+
+    /** Adds a suggestion to the chip list, which executes the action {@code actionIndex}. */
+    @CalledByNative
+    private void addSuggestion(
+            List<AssistantChip> chips, String text, int actionIndex, int icon, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icon, text, disabled,
+                /* sticky= */ false, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -240,7 +233,7 @@ class AutofillAssistantUiController {
     private void addActionButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
             boolean disabled, boolean sticky) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                sticky, () -> safeNativeOnActionSelected(actionIndex)));
+                sticky, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -251,7 +244,7 @@ class AutofillAssistantUiController {
     private void addHighlightedActionButton(List<AssistantChip> chips, int icon, String text,
             int actionIndex, boolean disabled, boolean sticky) {
         chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky,
-                () -> safeNativeOnActionSelected(actionIndex)));
+                () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -280,6 +273,11 @@ class AutofillAssistantUiController {
         AssistantCarouselModel model = getModel().getActionsModel();
         setChips(model, chips);
         setHeaderChip(chips);
+    }
+
+    @CalledByNative
+    private void setSuggestions(List<AssistantChip> chips) {
+        setChips(getModel().getSuggestionsModel(), chips);
     }
 
     private void setHeaderChip(List<AssistantChip> chips) {
@@ -331,15 +329,10 @@ class AutofillAssistantUiController {
     private native void nativeOnFatalError(
             long nativeUiControllerAndroid, String message, @DropOutReason int reason);
 
-    private void safeNativeOnSuggestionSelected(int index) {
-        if (mNativeUiController != 0) nativeOnSuggestionSelected(mNativeUiController, index);
+    private void safeNativeOnUserActionSelected(int index) {
+        if (mNativeUiController != 0) nativeOnUserActionSelected(mNativeUiController, index);
     }
-    private native void nativeOnSuggestionSelected(long nativeUiControllerAndroid, int index);
-
-    private void safeNativeOnActionSelected(int index) {
-        if (mNativeUiController != 0) nativeOnActionSelected(mNativeUiController, index);
-    }
-    private native void nativeOnActionSelected(long nativeUiControllerAndroid, int index);
+    private native void nativeOnUserActionSelected(long nativeUiControllerAndroid, int index);
 
     private void safeNativeOnCancelButtonClicked(int index) {
         if (mNativeUiController != 0) nativeOnCancelButtonClicked(mNativeUiController, index);

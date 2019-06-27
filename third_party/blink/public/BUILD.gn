@@ -165,6 +165,7 @@ source_set("blink_headers") {
     "platform/modules/webrtc/peer_connection_remote_audio_source.h",
     "platform/modules/webrtc/track_observer.h",
     "platform/modules/webrtc/webrtc_logging.h",
+    "platform/modules/webrtc/webrtc_source.h",
     "platform/modules/webrtc/webrtc_video_frame_adapter.h",
     "platform/modules/webrtc/webrtc_video_utils.h",
     "platform/platform.h",

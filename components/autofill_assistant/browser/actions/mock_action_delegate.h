@@ -59,7 +59,8 @@ class MockActionDelegate : public ActionDelegate {
                     ClickAction::ClickType click_type,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD1(Prompt, void(std::unique_ptr<std::vector<Chip>> chips));
+  MOCK_METHOD1(Prompt,
+               void(std::unique_ptr<std::vector<UserAction>> user_actions));
   MOCK_METHOD0(CancelPrompt, void());
 
   void FillAddressForm(
@@ -161,7 +162,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(ClearInfoBox, void());
   MOCK_METHOD1(SetProgress, void(int progress));
   MOCK_METHOD1(SetProgressVisible, void(bool visible));
-  MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
+  MOCK_METHOD1(SetUserActions,
+               void(std::unique_ptr<std::vector<UserAction>> user_action));
   MOCK_METHOD1(SetResizeViewport, void(bool resize_viewport));
   MOCK_METHOD0(GetResizeViewport, bool());
   MOCK_METHOD1(SetPeekMode,

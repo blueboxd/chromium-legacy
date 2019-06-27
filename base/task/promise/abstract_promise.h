@@ -19,6 +19,236 @@
 namespace base {
 class TaskRunner;
 
+// AbstractPromise Memory Management.
+//
+// Consider a chain of promises: P1, P2 & P3
+//
+// Before resolve:
+// * P1 needs an external reference (such as a Promise<> handle or it has been
+//   posted) to keep it alive
+// * P2 is kept alive by P1
+// * P3 is kept alive by P2
+//
+//                                      ------------
+//  Key:                               |     P1     | P1 doesn't have an
+//  ═ Denotes a reference is held      |            | AdjacencyList
+//  ─ Denotes a raw pointer            | Dependants |
+//                                      -----|------
+//                                           |    ^
+//                          ╔════════════╗   |    |
+//                          ↓            ║   ↓    |
+//                    ------------    ---║--------|--
+//                   |     P2     |  | dependent_ |  |
+//                   |            |==|            |  | P2's AdjacencyList
+//                   | Dependants |  | prerequisite_ |
+//                    -----|------    ---------------
+//                         |    ^
+//        ╔════════════╗   |    |
+//        ↓            ║   ↓    |
+//  ------------    ---║--------|--
+// |     P3     |  | dependent_ |  |
+// |            |==|            |  | P3's AdjacencyList
+// | Dependants |  | prerequisite_ |
+//  ---|--------    ---------------
+//     |
+//     ↓
+//    null
+//
+//
+// After P1's executor runs, P2's |prerequisite_| link is upgraded by
+// OnResolveDispatchReadyDependents (which incirectly calls
+// RetainSettledPrerequisite) from a raw pointer to a reference. This is done to
+// ensure P1's |value_| is available when P2's executor runs.
+//
+//                                      ------------
+//                                     |     P1     | P1 doesn't have an
+//                                     |            | AdjacencyList
+//                                     | Dependants |
+//                                      -----|------
+//                                           |    ^
+//                          ╔════════════╗   |    ║
+//                          ↓            ║   ↓    ║
+//                    ------------    ---║--------║--
+//                   |     P2     |  | dependent_ ║  |
+//                   |            |==|            ║  | P2's AdjacencyList
+//                   | Dependants |  | prerequisite_ |
+//                    -----|------    ---------------
+//                         |    ^
+//        ╔════════════╗   |    |
+//        ↓            ║   ↓    |
+//  ------------    ---║--------|--
+// |     P3     |  | dependent_ |  |
+// |            |==|            |  | P3's AdjacencyList
+// | Dependants |  | prerequisite_ |
+//  ---|--------    ---------------
+//     |
+//     ↓
+//    null
+//
+//
+// After P2's executor runs, it's AdjacencyList is cleared. Unless there's
+// external references, at this stage P1 will be deleted. P3's |prerequisite_|
+// is from a raw pointer to a reference to ensure P2's |value_| is available
+// when P3's executor runs.
+//
+//                                      ------------
+//                                     |     P1     | P1 doesn't have an
+//                                     |            | AdjacencyList
+//                                     | Dependants |
+//                                      -----|------
+//                                           |
+//                                     null  |  null
+//                                       ^   ↓    ^
+//                    ------------    ---|--------|--
+//                   |     P2     |  | dependent_ |  |
+//                   |            |==|            |  | P2's AdjacencyList
+//                   | Dependants |  | prerequisite_ |
+//                    -----|------    ---------------
+//                         |    ^
+//        ╔════════════╗   |    ║
+//        ↓            ║   ↓    ║
+//  ------------    ---║--------║--
+// |     P3     |  | dependent_ ║  |
+// |            |==|            ║  | P3's AdjacencyList
+// | Dependants |  | prerequisite_ |
+//  ---|--------    ---------------
+//     |
+//     ↓
+//    null
+//
+// =============================================================================
+// Consider a promise P1 that is resolved with an unresolved promise P2, and P3
+// which depends on P1.
+//
+// 1) Initially P1 doesn't have an AdjacencyList and must be kept alive by an
+//    external reference.  P1 keeps P3 alive.
+//
+// 2) P1's executor resolves with P2 and P3 is modified to have P2 as a
+//    dependent instead of P1. P1 has a reference to P2, but it needs an
+//    external reference to keep alive.
+//
+// 3) When P2's executor runs, P3's executor is scheduled and P3's
+//    |prerequisite_| link to P2 is upgraded to a reference. So P3 keeps P2
+//    alive.
+//
+// 4) When P3's executor runs, its AdjacencyList is cleared. At this stage
+//    unless there are external referecnes P2 and P3 will be deleted.
+//
+//
+// 1.                   --------------
+//                     | P1  value_   |
+//                     |              | P1 doesn't have an AdjacencyList
+//                     | Dependants   |
+//                      ---|----------
+//                         |        ^
+//                         ↓        ║
+//      ------------    ------------║---
+//     | P3         |  | dependent_ ║   |
+//     |            |==|            ║   | P3's AdjacencyList
+//     | Dependants |  | prerequisite_  |
+//      ---|--------     ---------------
+//         |
+//         ↓
+//        null
+//
+// 2.                                  ------------
+//                                    |     P2     |
+//                            ╔══════>|            | P2 doesn't have an
+//                            ║       | Dependants | AdjacencyList
+//                            ║        -----|------
+//                            ║             |  ^
+//                      ------║-------      |  |
+//                     | P1  value_   |     |  |
+//                     |              |     |  |
+//                     | Dependants   |     |  |
+//                      --------------      |  |
+//               ╔═════════╗   ┌────────────┘  |
+//               ↓         ║   ↓    ┌──────────┘
+//      ------------    ---║--------|---
+//     | P3         |  | dependent_ |   |
+//     |            |==|            |   | P3's AdjacencyList
+//     | Dependants |  | prerequisite_  |
+//      ---|--------     ---------------
+//         |
+//         ↓
+//        null
+// 3.                                  ------------
+//                                    |     P2     |
+//                                    |            | P2 doesn't have an
+//                                    | Dependants | AdjacencyList
+//                                     -----|------
+//                                          |  ^
+//                                          |  ║
+//                                          |  ║
+//                                          |  ║
+//                                          |  ║
+//                                          |  ║
+//               ╔═════════╗   ┌────────────┘  ║
+//               ↓         ║   ↓    ╔══════════╝
+//      ------------    ---║--------║---
+//     | P3         |  | dependent_ ║   |
+//     |            |==|            ║   | P3's AdjacencyList
+//     | Dependants |  | prerequisite_  |
+//      ---|--------     ---------------
+//         |
+//         ↓
+//        null
+//
+//
+// 4.                                  ------------
+//                                    |     P2     |
+//                                    |            | P2 doesn't have an
+//                                    | Dependants | AdjacencyList
+//                                     ------------
+//
+//
+//
+//
+//
+//
+//
+//
+//      ------------
+//     | P3         |  P3 doesn't have an AdjacencyList anymore.
+//     |            |
+//     | Dependants |
+//      ---|--------
+//         |
+//         ↓
+//        null
+//
+// =============================================================================
+// Consider an all promise Pall with dependents P1, P2 & P3:
+//
+// Before resolve P1, P2 & P3 keep Pall alive. If say P2 rejects then Pall
+// keeps P2 alive, however all the dependents in Pall's AdjacencyList are
+// cleared. When there are no external references to P1, P2 & P3 then Pall
+// will get deleted too if it has no external references.
+//
+//                                Pall's AdjacencyList
+//  ------------             ----------------
+// |     P1     |           |                |
+// |            | <─────────── prerequisite_ |
+// | Dependants────────────>|  dependent_══════════════════╗
+//  ------------            |                |             ↓
+//                          |----------------|         ---------
+//  ------------            |                |        |         |
+// |     P2     | <─────────── prerequisite_ |        |  Pall   |
+// |            |           |  dependent_════════════>|         |
+// | Dependants────────────>|                |        |         |
+//  ------------            |                |         ---------
+//                          |----------------|             ^
+//  ------------            |                |             ║
+// |     P3     | <─────────── prerequisite_ |             ║
+// |            |           |  dependent_══════════════════╝
+// | Dependants────────────>|                |
+//  ------------             ----------------
+//
+//
+// In general a promise's AdjacencyList's only retains prerequisites after the
+// promise has resolved. It is necessary to retain the prerequisites because a
+// ThenOn or CatchOn can be added after the promise has resolved.
+
 // std::variant, std::tuple and other templates can't contain void but they can
 // contain the empty type Void. This is the same idea as std::monospace.
 struct Void {};
@@ -107,7 +337,7 @@ namespace internal {
 class BASE_EXPORT AbstractPromise
     : public RefCountedThreadSafe<AbstractPromise> {
  public:
-  struct AdjacencyList;
+  class AdjacencyList;
 
   template <typename ConstructType, typename DerivedExecutorType>
   struct ConstructWith {};
@@ -139,14 +369,22 @@ class BASE_EXPORT AbstractPromise
 
   const Location& from_here() const { return from_here_; }
 
+  bool IsSettled() const { return dependents_.IsSettled(); }
   bool IsCanceled() const;
+
+  // It's an error (result will be racy) to call these if unsettled.
   bool IsRejected() const { return dependents_.IsRejected(); }
   bool IsResolved() const { return dependents_.IsResolved(); }
-  bool IsSettled() const { return dependents_.IsSettled(); }
+
+  bool IsRejectedForTesting() const {
+    return dependents_.IsRejectedForTesting();
+  }
+  bool IsResolvedForTesting() const {
+    return dependents_.IsResolvedForTesting();
+  }
 
   bool IsResolvedWithPromise() const {
-    return value_.type() ==
-           TypeId::From<scoped_refptr<internal::AbstractPromise>>();
+    return value_.type() == TypeId::From<scoped_refptr<AbstractPromise>>();
   }
 
   const unique_any& value() const { return FindNonCurriedAncestor()->value_; }
@@ -180,18 +418,25 @@ class BASE_EXPORT AbstractPromise
         const_cast<const AbstractPromise*>(this)->FindNonCurriedAncestor());
   }
 
+  // Returns nullptr if there isn't a curried promise.
+  const AbstractPromise* GetCurriedPromise() const;
+
   // Sets the |value_| to |t|. The caller should call OnResolved() or
   // OnRejected() afterwards.
   template <typename T>
   void emplace(T&& t) {
     DCHECK(GetExecutor() != nullptr) << "Only valid to emplace once";
     value_ = std::forward<T>(t);
+    static_assert(!std::is_same<std::decay_t<T>, AbstractPromise*>::value,
+                  "Use scoped_refptr<AbstractPromise> instead");
   }
 
   template <typename T, typename... Args>
   void emplace(in_place_type_t<T>, Args&&... args) {
     DCHECK(GetExecutor() != nullptr) << "Only valid to emplace once";
     value_.emplace<T>(std::forward<Args>(args)...);
+    static_assert(!std::is_same<std::decay_t<T>, AbstractPromise*>::value,
+                  "Use scoped_refptr<AbstractPromise> instead");
   }
 
   // Unresolved promises have an executor which invokes one of the callbacks
@@ -368,25 +613,15 @@ class BASE_EXPORT AbstractPromise
   // scheduled for execution.
   void OnRejected();
 
-  struct BASE_EXPORT AdjacencyListNode {
-    AdjacencyListNode();
-    explicit AdjacencyListNode(scoped_refptr<AbstractPromise> prerequisite);
-    explicit AdjacencyListNode(AdjacencyListNode&& other) noexcept;
-    ~AdjacencyListNode();
-
-    scoped_refptr<AbstractPromise> prerequisite;
-    DependentList::Node dependent_node;
-  };
-
   // This is separate from AbstractPromise to reduce the memory footprint of
   // regular PostTask without promise chains.
-  struct BASE_EXPORT AdjacencyList {
+  class BASE_EXPORT AdjacencyList {
+   public:
     AdjacencyList();
-    explicit AdjacencyList(scoped_refptr<AbstractPromise> prerequisite);
-    explicit AdjacencyList(std::vector<AdjacencyListNode> prerequisite_list);
     ~AdjacencyList();
 
-    void ResetWithSingleDependency(scoped_refptr<AbstractPromise> prerequisite);
+    explicit AdjacencyList(AbstractPromise* prerequisite);
+    explicit AdjacencyList(std::vector<DependentList::Node> prerequisite_list);
 
     bool DecrementPrerequisiteCountAndCheckIfZero();
 
@@ -396,32 +631,52 @@ class BASE_EXPORT AbstractPromise
     // true iff called for the first time.
     bool MarkPrerequisiteAsSettling(AbstractPromise* settled_prerequisite);
 
-    std::vector<AdjacencyListNode> prerequisite_list;
+    // Invoked when this promise is notified that |canceled_prerequisite| is
+    // cancelled. Clears the reference to |canceled_prerequisite| in this
+    // AdjacencyList to ensure the it is not accessed later when Clear() is
+    // called.
+    void RemoveCanceledPrerequisite(AbstractPromise* canceled_prerequisite);
+
+    std::vector<DependentList::Node>* prerequisite_list() {
+      return &prerequisite_list_;
+    }
+
+    AbstractPromise* GetFirstSettledPrerequisite() const {
+      return reinterpret_cast<AbstractPromise*>(
+          first_settled_prerequisite_.load(std::memory_order_acquire));
+    }
+
+    void Clear();
+
+   private:
+    std::vector<DependentList::Node> prerequisite_list_;
 
     // PrerequisitePolicy::kAny waits for at most 1 resolve or N cancellations.
     // PrerequisitePolicy::kAll waits for N resolves or at most 1 cancellation.
     // PrerequisitePolicy::kNever doesn't use this.
-    std::atomic_int action_prerequisite_count;
+    std::atomic_int action_prerequisite_count_;
 
     // For PrerequisitePolicy::kAll the address of the first rejected
     // prerequisite if any.
     // For PrerequisitePolicy::kAll the address of the first rejected or
     // resolved rerequsite if any.
-    std::atomic<uintptr_t> first_settled_prerequisite{0};
+    std::atomic<uintptr_t> first_settled_prerequisite_{0};
   };
 
-  const std::vector<AdjacencyListNode>* prerequisite_list() const {
+  const std::vector<DependentList::Node>* prerequisite_list() const {
     if (!prerequisites_)
       return nullptr;
-    return &prerequisites_->prerequisite_list;
+    return prerequisites_->prerequisite_list();
   }
 
   // Returns the first and only prerequisite AbstractPromise.  It's an error to
   // call this if the number of prerequisites isn't exactly one.
   AbstractPromise* GetOnlyPrerequisite() const {
     DCHECK(prerequisites_);
-    DCHECK_EQ(prerequisites_->prerequisite_list.size(), 1u);
-    return prerequisites_->prerequisite_list[0].prerequisite.get();
+    const std::vector<DependentList::Node>* prerequisite_list =
+        prerequisites_->prerequisite_list();
+    DCHECK_EQ(prerequisite_list->size(), 1u);
+    return (*prerequisite_list)[0].prerequisite();
   }
 
   // For PrerequisitePolicy::kAll returns the first rejected prerequisite if
@@ -484,6 +739,9 @@ class BASE_EXPORT AbstractPromise
 
   NOINLINE ~AbstractPromise();
 
+  // Returns the curried promise if there is one or null otherwise.
+  AbstractPromise* GetCurriedPromise();
+
   // Returns the associated Executor if there is one.
   const Executor* GetExecutor() const;
 
@@ -514,7 +772,7 @@ class BASE_EXPORT AbstractPromise
 
   // Returns true if we are still potentially eligible to run despite the
   // cancellation.
-  bool OnPrerequisiteCancelled();
+  bool OnPrerequisiteCancelled(AbstractPromise* canceled_prerequisite);
 
   // This promise was resolved, post any dependent promises that are now ready
   // as a result.
@@ -524,6 +782,16 @@ class BASE_EXPORT AbstractPromise
   // as a result.
   void OnRejectDispatchReadyDependents();
 
+  // This promise was resolved with a curried promise, make any dependent
+  // promises depend on |non_curried_root| instead.
+  void OnResolveMakeDependantsUseCurriedPrerequisite(
+      AbstractPromise* non_curried_root);
+
+  // This promise was rejected with a curried promise, make any dependent
+  // promises depend on |non_curried_root| instead.
+  void OnRejectMakeDependantsUseCurriedPrerequisite(
+      AbstractPromise* non_curried_root);
+
   void DispatchPromise();
 
   // Reverses |list| so dependents can be dispatched in the order they where
@@ -531,9 +799,8 @@ class BASE_EXPORT AbstractPromise
   static DependentList::Node* NonThreadSafeReverseList(
       DependentList::Node* list);
 
-  // Finds the non-curried root, and if settled ready dependents are posted.
-  // Returns true if the non-curried root was settled.
-  bool DispatchIfNonCurriedRootSettled();
+  void ReplaceCurriedPrerequisite(AbstractPromise* curried_prerequisite,
+                                  AbstractPromise* replacement);
 
   scoped_refptr<TaskRunner> task_runner_;
 
@@ -545,6 +812,18 @@ class BASE_EXPORT AbstractPromise
   // * Rejected<T>
   // * scoped_refptr<AbstractPromise> (for curried promises - i.e. a promise
   //   which is resolved with a promise).
+  //
+  // The state transitions which occur during Execute() (which is once only) are
+  // like so:
+  //
+  //      ┌────────── Executor ─────────┐
+  //      |               |             │
+  //      |               |             │
+  //      ↓               |             ↓
+  // Resolved<T>          |        Rejected<T>
+  //                      ↓
+  //        scoped_refptr<AbstractPromise>
+  //
   unique_any value_;
 
 #if DCHECK_IS_ON()

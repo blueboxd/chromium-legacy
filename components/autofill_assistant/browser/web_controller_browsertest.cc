@@ -414,7 +414,15 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                           int initial_container_scroll_y) {
     EXPECT_TRUE(content::ExecJs(
         shell(), base::StringPrintf(
-                     R"(window.scrollTo(0, %d);
+                     R"(
+           // Make sure scrolling is necessary, no matter the screen height
+           let before = document.querySelector("#before_scroll_container");
+           before.style.height = window.innerHeight + "px";
+           let after = document.querySelector("#after_scroll_container");
+           after.style.height = window.innerHeight + "px";
+
+           // Initial scrolling position
+           window.scrollTo(0, %d);
            let container = document.querySelector("#scroll_container");
            container.scrollTo(0, %d);)",
                      initial_window_scroll_y, initial_container_scroll_y)));
@@ -861,16 +869,14 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
   EXPECT_EQ(true, content::EvalJs(shell(), checkVisibleScript));
 }
 
-// Disabled: https://crbug.com/970219
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       DISABLED_FocusElementWithScrollIntoViewNeeded) {
+                       FocusElementWithScrollIntoViewNeeded) {
   TestScrollIntoView(/* initial_window_scroll_y= */ 0,
                      /* initial_container_scroll_y=*/0);
 }
 
-// Disabled: https://crbug.com/970219
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       DISABLED_FocusElementWithScrollIntoViewNotNeeded) {
+                       FocusElementWithScrollIntoViewNotNeeded) {
   TestScrollIntoView(/* initial_window_scroll_y= */ 0,
                      /* initial_container_scroll_y=*/200);
 }

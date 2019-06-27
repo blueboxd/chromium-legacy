@@ -30,16 +30,7 @@ void AssertClientContext(const ClientContextProto& context) {
 
 TEST(ProtocolUtilsTest, ScriptMissingPath) {
   SupportedScriptProto script;
-  script.mutable_presentation()->set_name("missing path");
-  std::vector<std::unique_ptr<Script>> scripts;
-  ProtocolUtils::AddScript(script, &scripts);
-
-  EXPECT_THAT(scripts, IsEmpty());
-}
-
-TEST(ProtocolUtilsTest, ScriptMissingName) {
-  SupportedScriptProto script;
-  script.set_path("missing name");
+  script.mutable_presentation()->mutable_chip()->set_text("missing path");
   std::vector<std::unique_ptr<Script>> scripts;
   ProtocolUtils::AddScript(script, &scripts);
 
@@ -49,33 +40,13 @@ TEST(ProtocolUtilsTest, ScriptMissingName) {
 TEST(ProtocolUtilsTest, MinimalValidScript) {
   SupportedScriptProto script;
   script.set_path("path");
-  script.mutable_presentation()->set_name("name");
+  script.mutable_presentation()->mutable_chip()->set_text("name");
   std::vector<std::unique_ptr<Script>> scripts;
   ProtocolUtils::AddScript(script, &scripts);
 
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
-  EXPECT_EQ("name", scripts[0]->handle.chip.text());
-  EXPECT_NE(nullptr, scripts[0]->precondition);
-}
-
-TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
-  SupportedScriptProto script_proto;
-  script_proto.set_path("path");
-  auto* presentation = script_proto.mutable_presentation();
-  presentation->set_name("name");
-  presentation->set_autostart(true);
-  presentation->set_initial_prompt("prompt");
-  presentation->mutable_precondition()->add_domain("www.example.com");
-
-  std::vector<std::unique_ptr<Script>> scripts;
-  ProtocolUtils::AddScript(script_proto, &scripts);
-
-  ASSERT_THAT(scripts, SizeIs(1));
-  EXPECT_EQ("path", scripts[0]->handle.path);
-  EXPECT_EQ("name", scripts[0]->handle.chip.text());
-  EXPECT_EQ("prompt", scripts[0]->handle.initial_prompt);
-  EXPECT_TRUE(scripts[0]->handle.autostart);
+  EXPECT_EQ("name", scripts[0]->handle.chip.text);
   EXPECT_NE(nullptr, scripts[0]->precondition);
 }
 
@@ -92,7 +63,7 @@ TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
   ProtocolUtils::AddScript(script_proto, &scripts);
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
-  EXPECT_EQ("", scripts[0]->handle.chip.text());
+  EXPECT_EQ("", scripts[0]->handle.chip.text);
   EXPECT_TRUE(scripts[0]->handle.interrupt);
 }
 
@@ -186,12 +157,11 @@ TEST(ProtocolUtilsTest, AddScriptIgnoreInvalid) {
   EXPECT_TRUE(scripts.empty());
 }
 
-TEST(ProtocolUtilsTest, AddScriptValid) {
+TEST(ProtocolUtilsTest, AddScriptWithChip) {
   SupportedScriptProto script_proto;
   script_proto.set_path("path");
   auto* presentation = script_proto.mutable_presentation();
-  presentation->set_name("name");
-  presentation->set_autostart(true);
+  presentation->mutable_chip()->set_text("name");
   presentation->set_initial_prompt("prompt");
   presentation->mutable_precondition()->add_domain("www.example.com");
 
@@ -201,10 +171,60 @@ TEST(ProtocolUtilsTest, AddScriptValid) {
 
   EXPECT_NE(nullptr, script);
   EXPECT_EQ("path", script->handle.path);
-  EXPECT_EQ("name", script->handle.chip.text());
+  EXPECT_EQ("name", script->handle.chip.text);
   EXPECT_EQ("prompt", script->handle.initial_prompt);
+  EXPECT_FALSE(script->handle.autostart);
+  EXPECT_NE(nullptr, script->precondition);
+}
+
+TEST(ProtocolUtilsTest, AddScriptWithDirectAction) {
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
+  presentation->mutable_direct_action()->add_names("action_name");
+  presentation->mutable_precondition()->add_domain("www.example.com");
+
+  std::vector<std::unique_ptr<Script>> scripts;
+  ProtocolUtils::AddScript(script_proto, &scripts);
+  std::unique_ptr<Script> script = std::move(scripts[0]);
+
+  EXPECT_NE(nullptr, script);
+  EXPECT_EQ("path", script->handle.path);
+  EXPECT_THAT(script->handle.direct_action_names, ElementsAre("action_name"));
+  EXPECT_TRUE(script->handle.chip.empty());
+  EXPECT_FALSE(script->handle.autostart);
+  EXPECT_NE(nullptr, script->precondition);
+}
+
+TEST(ProtocolUtilsTest, AddAutostartableScript) {
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
+  presentation->mutable_chip()->set_text("name");
+  presentation->set_autostart(true);
+  presentation->mutable_precondition()->add_domain("www.example.com");
+
+  std::vector<std::unique_ptr<Script>> scripts;
+  ProtocolUtils::AddScript(script_proto, &scripts);
+  std::unique_ptr<Script> script = std::move(scripts[0]);
+
+  EXPECT_NE(nullptr, script);
+  EXPECT_EQ("path", script->handle.path);
+  EXPECT_TRUE(script->handle.chip.empty());
   EXPECT_TRUE(script->handle.autostart);
   EXPECT_NE(nullptr, script->precondition);
+}
+
+TEST(ProtocolUtilsTest, SkipAutostartableScriptWithoutName) {
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
+  presentation->set_autostart(true);
+  presentation->mutable_precondition()->add_domain("www.example.com");
+
+  std::vector<std::unique_ptr<Script>> scripts;
+  ProtocolUtils::AddScript(script_proto, &scripts);
+  EXPECT_THAT(scripts, IsEmpty());
 }
 
 TEST(ProtocolUtilsTest, ParseActionsParseError) {
@@ -265,7 +285,7 @@ TEST(ProtocolUtilsTest, ParseActionsUpdateScriptListFullFeatured) {
   auto* script_a = script_list->add_scripts();
   script_a->set_path("a");
   auto* presentation = script_a->mutable_presentation();
-  presentation->set_name("name");
+  presentation->mutable_chip()->set_text("name");
   presentation->mutable_precondition();
   // One invalid script.
   script_list->add_scripts();
@@ -283,7 +303,7 @@ TEST(ProtocolUtilsTest, ParseActionsUpdateScriptListFullFeatured) {
   EXPECT_TRUE(should_update_scripts);
   EXPECT_THAT(scripts, SizeIs(1));
   EXPECT_THAT("a", Eq(scripts[0]->handle.path));
-  EXPECT_THAT("name", Eq(scripts[0]->handle.chip.text()));
+  EXPECT_THAT("name", Eq(scripts[0]->handle.chip.text));
 }
 
 }  // namespace

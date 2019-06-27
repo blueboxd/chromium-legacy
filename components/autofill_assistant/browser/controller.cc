@@ -191,42 +191,18 @@ bool Controller::GetProgressVisible() const {
   return progress_visible_;
 }
 
-const std::vector<Chip>& Controller::GetSuggestions() const {
-  static const base::NoDestructor<std::vector<Chip>> no_suggestions_;
-  return suggestions_ ? *suggestions_ : *no_suggestions_;
+const std::vector<UserAction>& Controller::GetUserActions() const {
+  static const base::NoDestructor<std::vector<UserAction>> no_user_actions_;
+  return user_actions_ ? *user_actions_ : *no_user_actions_;
 }
 
-const std::vector<Chip>& Controller::GetActions() const {
-  static const base::NoDestructor<std::vector<Chip>> no_actions_;
-  return actions_ ? *actions_ : *no_actions_;
-}
-
-void Controller::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
-  // We split the chips into suggestions and actions, that are displayed in
-  // different carousels.
-  actions_.reset();
-  suggestions_.reset();
-
-  if (chips && !chips->empty()) {
-    for (auto iter = chips->begin(); iter != chips->end(); iter++) {
-      if (iter->type == SUGGESTION) {
-        if (!suggestions_) {
-          suggestions_ = std::make_unique<std::vector<Chip>>();
-        }
-
-        suggestions_->emplace_back(std::move(*iter));
-      } else {
-        if (!actions_) {
-          actions_ = std::make_unique<std::vector<Chip>>();
-        }
-
-        actions_->emplace_back(std::move(*iter));
-      }
-    }
+void Controller::SetUserActions(
+    std::unique_ptr<std::vector<UserAction>> user_actions) {
+  if (user_actions) {
+    SetDefaultChipType(user_actions.get());
   }
-
-  GetUiController()->OnSuggestionsChanged(GetSuggestions());
-  GetUiController()->OnActionsChanged(GetActions());
+  user_actions_ = std::move(user_actions);
+  GetUiController()->OnUserActionsChanged(GetUserActions());
 }
 
 bool Controller::IsNavigatingToNewDocument() {
@@ -249,28 +225,22 @@ void Controller::RemoveListener(ScriptExecutorDelegate::Listener* listener) {
     listeners_.erase(found);
 }
 
-void Controller::SelectSuggestion(int index) {
-  SelectChip(suggestions_.get(), index);
-}
-
-void Controller::SelectAction(int index) {
-  SelectChip(actions_.get(), index);
-}
-
-void Controller::SelectChip(std::vector<Chip>* chips, int chip_index) {
-  if (!chips || chip_index < 0 ||
-      static_cast<size_t>(chip_index) >= chips->size()) {
-    NOTREACHED() << "Invalid chip index: " << chip_index;
-    return;
+bool Controller::PerformUserAction(int index) {
+  if (!user_actions_ || index < 0 ||
+      static_cast<size_t>(index) >= user_actions_->size()) {
+    NOTREACHED() << "Invalid user action index: " << index;
+    return false;
   }
 
-  if (!(*chips)[chip_index].callback) {
-    return;
+  UserAction* user_action = &(*user_actions_)[index];
+  if (!user_action->enabled || !user_action->callback) {
+    return false;
   }
 
-  auto callback = std::move((*chips)[chip_index].callback);
-  SetChips(nullptr);
+  auto callback = std::move(user_action->callback);
+  SetUserActions(nullptr);
   std::move(callback).Run();
+  return true;
 }
 
 void Controller::SetResizeViewport(bool resize_viewport) {
@@ -431,7 +401,7 @@ void Controller::ReportNavigationStateChanged() {
 void Controller::EnterStoppedState() {
   ClearInfoBox();
   SetDetails(nullptr);
-  SetChips(nullptr);
+  SetUserActions(nullptr);
   SetPaymentRequestOptions(nullptr);
   EnterState(AutofillAssistantState::STOPPED);
 }
@@ -596,7 +566,7 @@ void Controller::ExecuteScript(const std::string& script_path,
   // Runnable scripts will be checked and reported if necessary after executing
   // the script.
   script_tracker_->ClearRunnableScripts();
-  SetChips(nullptr);
+  SetUserActions(nullptr);
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
   script_tracker()->ExecuteScript(
@@ -896,9 +866,10 @@ void Controller::SetTermsAndConditions(
 }
 
 void Controller::UpdatePaymentRequestActions() {
-  // TODO(crbug.com/806868): This method uses #SetChips(), which means that
-  // updating the PR actions will also clear the suggestions. We should update
-  // the actions only if there are use cases of PR + suggestions.
+  // TODO(crbug.com/806868): This method uses #SetUserActions(), which means
+  // that updating the PR action buttons will also clear the suggestions. We
+  // should update the action buttons only if there are use cases of PR +
+  // suggestions.
   if (!payment_request_options_ || !payment_request_info_) {
     return;
   }
@@ -919,26 +890,21 @@ void Controller::UpdatePaymentRequestActions() {
   bool terms_ok = payment_request_info_->terms_and_conditions != NOT_SELECTED ||
                   !payment_request_options_->request_terms_and_conditions;
 
-  bool continue_button_enabled =
+  bool confirm_button_enabled =
       contact_info_ok && shipping_address_ok && payment_method_ok && terms_ok;
 
-  auto chips = std::make_unique<std::vector<Chip>>();
-  chips->emplace_back();
-  if (!payment_request_options_->confirm_button_text.empty()) {
-    chips->back().text = payment_request_options_->confirm_button_text;
-  } else {
-    chips->back().text =
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
-  }
-  chips->back().type = HIGHLIGHTED_ACTION;
-  chips->back().disabled = !continue_button_enabled;
-  if (continue_button_enabled) {
-    chips->back().callback =
+  UserAction confirm(payment_request_options_->confirm_chip,
+                     payment_request_options_->confirm_direct_action);
+  confirm.enabled = confirm_button_enabled;
+  if (confirm_button_enabled) {
+    confirm.callback =
         base::BindOnce(&Controller::OnPaymentRequestContinueButtonClicked,
                        weak_ptr_factory_.GetWeakPtr());
   }
 
-  SetChips(std::move(chips));
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
+  user_actions->emplace_back(std::move(confirm));
+  SetUserActions(std::move(user_actions));
 }
 
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
@@ -1010,19 +976,21 @@ void Controller::OnRunnableScriptsChanged(
   }
 
   // Update the set of scripts in the UI.
-  auto chips = std::make_unique<std::vector<Chip>>();
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
   for (const auto& script : runnable_scripts) {
-    if (!script.autostart && (!script.chip.text().empty() ||
-                              script.chip.icon() != ChipIcon::NO_ICON)) {
-      chips->emplace_back(script.chip);
-      chips->back().callback =
-          base::BindOnce(&Controller::OnScriptSelected,
-                         weak_ptr_factory_.GetWeakPtr(), script.path);
-    }
-  }
-  SetDefaultChipType(chips.get());
+    UserAction user_action;
+    user_action.chip = script.chip;
+    user_action.direct_action_names = script.direct_action_names;
+    if (!user_action.has_triggers())
+      continue;
 
-  if (chips->empty() && state_ == AutofillAssistantState::STARTING) {
+    user_action.callback =
+        base::BindOnce(&Controller::OnScriptSelected,
+                       weak_ptr_factory_.GetWeakPtr(), script.path);
+    user_actions->emplace_back(std::move(user_action));
+  }
+
+  if (user_actions->empty() && state_ == AutofillAssistantState::STARTING) {
     // Continue waiting
     return;
   }
@@ -1035,7 +1003,7 @@ void Controller::OnRunnableScriptsChanged(
   } else {
     EnterState(AutofillAssistantState::PROMPT);
   }
-  SetChips(std::move(chips));
+  SetUserActions(std::move(user_actions));
 }
 
 void Controller::DidAttachInterstitialPage() {

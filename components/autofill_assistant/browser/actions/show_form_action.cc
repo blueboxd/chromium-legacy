@@ -44,28 +44,21 @@ void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
   *processed_action_proto_->mutable_form_result() = *form_result;
 
   // Show "Continue" chip.
-  // TODO(crbug.com/806868): Make this chip configurable.
-  auto chips = std::make_unique<std::vector<Chip>>();
-  bool form_is_valid = IsFormValid(proto_.show_form().form(), *form_result);
-
-  if (proto_.show_form().has_chip()) {
-    chips->emplace_back(proto_.show_form().chip());
-    SetDefaultChipType(chips.get());
-  } else {
-    chips->emplace_back();
-    chips->back().text =
+  UserAction user_action =
+      UserAction(proto_.show_form().chip(), proto_.show_form().direct_action());
+  if (user_action.chip.empty()) {
+    user_action.chip.text =
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
-    chips->back().type = HIGHLIGHTED_ACTION;
+    user_action.chip.type = HIGHLIGHTED_ACTION;
   }
+  user_action.enabled = IsFormValid(proto_.show_form().form(), *form_result);
+  user_action.callback =
+      base::BindOnce(&ShowFormAction::OnButtonClicked,
+                     weak_ptr_factory_.GetWeakPtr(), delegate);
 
-  chips->back().disabled = !form_is_valid;
-  if (form_is_valid) {
-    chips->back().callback =
-        base::BindOnce(&ShowFormAction::OnButtonClicked,
-                       weak_ptr_factory_.GetWeakPtr(), delegate);
-  }
-
-  delegate->Prompt(std::move(chips));
+  std::unique_ptr<std::vector<UserAction>> user_actions;
+  user_actions->emplace_back(std::move(user_action));
+  delegate->Prompt(std::move(user_actions));
 }
 
 bool ShowFormAction::IsFormValid(const FormProto& form,

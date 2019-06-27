@@ -10,6 +10,7 @@
 
 namespace web {
 class BrowserState;
+class WebState;
 }  // namespace web
 
 @protocol CRWContextMenuDelegate;
@@ -32,6 +33,12 @@ class BrowserState;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+// WebState associated with this controller.
+// When the |webState| is set, the WKWebView default context menu gesture
+// recognizer is overridden after each navigation. If it is never set, the
+// default gesture recognizer is only overridden in this object -init method.
+@property(nonatomic, assign) web::WebState* webState;
 
 // By default, this controller "hooks" long touches to suppress the system
 // default behavior (which shows the system context menu) and show its own

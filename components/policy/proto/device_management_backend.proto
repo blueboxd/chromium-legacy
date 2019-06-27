@@ -661,10 +661,9 @@ message PolicyFetchResponse {
   // See http://go/chrome-nac-server-design for more information.
   optional bytes new_public_key_verification_data_signature = 9;
 
-  // See PolicyFetchRequest.policy_type. This field is NOT signed by DMServer
-  // and is informational only. Client-side should verify and rely on the
-  // policy_type inside the signed policy_data.
-  optional string policy_type = 10;
+  // DEPRECATED! Client-side should verify and rely on the policy_type inside
+  // the signed policy_data.
+  optional string policy_type = 10 [deprecated = true];
 }
 
 // DEPRECATED: Protobuf used to generate the deprecated
@@ -1063,6 +1062,7 @@ message AppStatus {
 }
 
 // Chrome user profile level status.
+// Deprecated : Use ChromeUserProfileInfo instead.
 message ChromeUserProfileReport {
   // A string to uniquely identify this profile within the browser.
   optional string id = 1;
@@ -1109,6 +1109,14 @@ message ExtensionIcon {
   optional int32 size = 1;
   // The url of icon image.
   optional string url = 2;
+}
+
+// Extension information.
+message ExtensionRequest {
+  // ID of the installed app/extension for a Chrome app or extension.
+  optional string id = 1;
+  // User generated justification for why the extension should be installed.
+  optional string justification = 2;
 }
 
 // Extension information.
@@ -1286,6 +1294,9 @@ message ChromeUserProfileInfo {
   // A list of extensions installed in the browser.
   repeated Extension extensions = 5;
 
+  // A list of extensions requested for installation.
+  repeated ExtensionRequest extension_requests = 10;
+
   // A list of plugins installed in the browser.
   repeated Plugin plugins = 6;
 
@@ -1316,14 +1327,13 @@ message BrowserReport {
   optional string executable_path = 3;
 
   // Profile specific reports, one per profile.
-  // This field is replaced by ChromeUserProfileInfo and only used by old Chrome
-  // browser.
+  // Deprecated by ChromeUserProfileInfo and only used by old Chrome browser.
   repeated ChromeUserProfileReport chrome_user_profile_reports = 4;
 
   // A list of all Profiles that is created in the currently browser instance.
   // Only activated Profiles is able to upload full details while the idle ones
   // contain id and name only. Please note that some activated Profiles may not
-  // upload full details like idle one due to the limitatin of report size.
+  // upload full details like idle one due to the limitation of report size.
   // These details will be uploaded in the following reports.
   repeated ChromeUserProfileInfo profile_info_list = 6;
 }

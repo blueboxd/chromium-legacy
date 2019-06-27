@@ -394,7 +394,7 @@ void WebRtcAudioDeviceImpl::RemoveAudioCapturer(
 }
 
 void WebRtcAudioDeviceImpl::AddPlayoutSink(
-    WebRtcPlayoutDataSource::Sink* sink) {
+    blink::WebRtcPlayoutDataSource::Sink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
@@ -403,7 +403,7 @@ void WebRtcAudioDeviceImpl::AddPlayoutSink(
 }
 
 void WebRtcAudioDeviceImpl::RemovePlayoutSink(
-    WebRtcPlayoutDataSource::Sink* sink) {
+    blink::WebRtcPlayoutDataSource::Sink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);

@@ -100,7 +100,7 @@ interface DriveFsDelegate {
   OnHeartbeat();
 };
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 struct DriveFsConfiguration {
   string user_email;
 
@@ -114,6 +114,9 @@ struct DriveFsConfiguration {
   // directory.
   [MinVersion=3]
   string? lost_and_found_directory_name;
+
+  [MinVersion=4]
+  bool enable_experimental_mirroring = false;
 };
 
 enum AccessTokenStatus {

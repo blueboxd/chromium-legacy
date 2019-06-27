@@ -24,6 +24,7 @@
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
+#include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -85,7 +86,8 @@ class Controller : public ScriptExecutorDelegate,
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
-  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+  void SetUserActions(
+      std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetResizeViewport(bool resize_viewport) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   bool SetForm(std::unique_ptr<FormProto> form,
@@ -109,10 +111,8 @@ class Controller : public ScriptExecutorDelegate,
   const InfoBox* GetInfoBox() const override;
   int GetProgress() const override;
   bool GetProgressVisible() const override;
-  const std::vector<Chip>& GetSuggestions() const override;
-  void SelectSuggestion(int index) override;
-  const std::vector<Chip>& GetActions() const override;
-  void SelectAction(int index) override;
+  const std::vector<UserAction>& GetUserActions() const override;
+  bool PerformUserAction(int index) override;
   std::string GetDebugContext() override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
   const PaymentInformation* GetPaymentRequestInformation() const override;
@@ -212,7 +212,6 @@ class Controller : public ScriptExecutorDelegate,
                               const std::vector<RectF>& touchable_areas,
                               const std::vector<RectF>& restricted_areas);
 
-  void SelectChip(std::vector<Chip>* chips, int chip_index);
   void SetOverlayColors(std::unique_ptr<OverlayColors> colors);
   void ReportNavigationStateChanged();
 
@@ -287,11 +286,8 @@ class Controller : public ScriptExecutorDelegate,
   // Current visibility of the progress bar. It is initially visible.
   bool progress_visible_ = true;
 
-  // Current set of suggestions. May be null, but never empty.
-  std::unique_ptr<std::vector<Chip>> suggestions_;
-
-  // Current set of actions. May be null, but never empty.
-  std::unique_ptr<std::vector<Chip>> actions_;
+  // Current set of user actions. May be null, but never empty.
+  std::unique_ptr<std::vector<UserAction>> user_actions_;
 
   // Whether the viewport should be resized.
   bool resize_viewport_ = false;

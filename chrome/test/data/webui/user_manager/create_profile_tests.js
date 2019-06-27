@@ -23,7 +23,6 @@ cr.define('user_manager.create_profile_tests', function() {
 
         // Replace real proxy with mock proxy.
         signin.ProfileBrowserProxyImpl.instance_ = browserProxy;
-        browserProxy.setDefaultProfileInfo({name: 'profile name'});
         browserProxy.setIcons([
           {url: 'icon1.png', label: 'icon1'}, {url: 'icon2.png', label: 'icon2'}
         ]);
@@ -46,21 +45,21 @@ cr.define('user_manager.create_profile_tests', function() {
         });
       });
 
-      test('Name is non-empty by default', function() {
-        assertEquals('profile name', createProfileElement.$.nameInput.value);
+      test('Name is empty by default', function() {
+        assertEquals('', createProfileElement.$.nameInput.value);
       });
 
       test('Create button is disabled if name is empty or invalid', function() {
-        assertEquals('profile name', createProfileElement.$.nameInput.value);
-        assertFalse(createProfileElement.$.nameInput.invalid);
-        assertFalse(createProfileElement.$.save.disabled);
-
-        createProfileElement.$.nameInput.value = '';
+        assertEquals('', createProfileElement.$.nameInput.value);
         assertTrue(createProfileElement.$.save.disabled);
 
         createProfileElement.$.nameInput.value = ' ';
         assertTrue(createProfileElement.$.nameInput.invalid);
         assertTrue(createProfileElement.$.save.disabled);
+
+        createProfileElement.$.nameInput.value = 'profile name';
+        assertFalse(createProfileElement.$.nameInput.invalid);
+        assertFalse(createProfileElement.$.save.disabled);
       });
 
       test('Create a profile', function() {
@@ -68,6 +67,9 @@ cr.define('user_manager.create_profile_tests', function() {
         const createShortcutCheckbox =
             createProfileElement.$.createShortcutCheckbox;
         assertTrue(createShortcutCheckbox.clientHeight == 0);
+
+        // Enter a profile name.
+        createProfileElement.$.nameInput.value = 'profile name';
 
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
@@ -102,6 +104,9 @@ cr.define('user_manager.create_profile_tests', function() {
             }
           });
 
+          // Enter a profile name.
+          createProfileElement.$.nameInput.value = 'profile name';
+
           // Simulate clicking 'Create'.
           MockInteractions.tap(createProfileElement.$.save);
 
@@ -120,6 +125,9 @@ cr.define('user_manager.create_profile_tests', function() {
       });
 
       test('Create profile error', function() {
+        // Enter a profile name.
+        createProfileElement.$.nameInput.value = 'profile name';
+
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
 
@@ -183,7 +191,6 @@ cr.define('user_manager.create_profile_tests', function() {
         browserProxy = new TestProfileBrowserProxy();
         // Replace real proxy with mock proxy.
         signin.ProfileBrowserProxyImpl.instance_ = browserProxy;
-        browserProxy.setDefaultProfileInfo({name: 'profile name'});
         browserProxy.setIcons([{url: 'icon1.png', label: 'icon1'}]);
 
         // Enable profile shortcuts feature.
@@ -192,6 +199,8 @@ cr.define('user_manager.create_profile_tests', function() {
         });
 
         createProfileElement = createElement();
+        // Enter a profile name.
+        createProfileElement.$.nameInput.value = 'profile name';
 
         // Make sure DOM is up to date.
         Polymer.dom.flush();

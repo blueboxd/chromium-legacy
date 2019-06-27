@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/overlay_state.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
+#include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
 // Class implements UiController, Client and starts the Controller.
@@ -60,8 +61,7 @@ class UiControllerAndroid : public UiController {
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
   void WillShutdown(Metrics::DropOutReason reason) override;
-  void OnSuggestionsChanged(const std::vector<Chip>& suggestions) override;
-  void OnActionsChanged(const std::vector<Chip>& actions) override;
+  void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
   void OnPaymentRequestOptionsChanged(
       const PaymentRequestOptions* options) override;
   void OnPaymentRequestInformationChanged(
@@ -119,12 +119,9 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
-  void OnSuggestionSelected(JNIEnv* env,
+  void OnUserActionSelected(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& jcaller,
                             jint index);
-  void OnActionSelected(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& jcaller,
-                        jint index);
   void OnCancelButtonClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
@@ -165,7 +162,8 @@ class UiControllerAndroid : public UiController {
   std::string GetDebugContext();
   void DestroySelf();
   void Shutdown(Metrics::DropOutReason reason);
-  void UpdateActions();
+  void UpdateActions(const std::vector<UserAction>& GetUserActions);
+  void UpdateSuggestions(const std::vector<UserAction>& GetUserActions);
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.

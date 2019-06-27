@@ -104,6 +104,7 @@ public abstract class SigninFragmentBase
     private boolean mDestroyed;
     private boolean mIsSigninInProgress;
     private boolean mHasGmsError;
+    private boolean mRecordUndoSignin;
 
     private UserRecoverableErrorHandler.ModalDialog mGooglePlayServicesUpdateErrorHandler;
     private AlertDialog mGmsIsUpdatingDialog;
@@ -247,6 +248,9 @@ public abstract class SigninFragmentBase
         }
         mProfileDataCache = new ProfileDataCache(getActivity(),
                 getResources().getDimensionPixelSize(R.dimen.user_picture_size), badgeConfig);
+        // By default this is set to true so that when system back button is pressed user action
+        // is recorded in onDestroy().
+        mRecordUndoSignin = true;
     }
 
     @Override
@@ -258,6 +262,7 @@ public abstract class SigninFragmentBase
             mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ true);
             mConfirmSyncDataStateMachine = null;
         }
+        if (mRecordUndoSignin) RecordUserAction.record("Signin_Undo_Signin");
         mDestroyed = true;
     }
 
@@ -378,12 +383,15 @@ public abstract class SigninFragmentBase
     }
 
     private void onRefuseButtonClicked(View button) {
+        RecordUserAction.record("Signin_Undo_Signin");
+        mRecordUndoSignin = false;
         onSigninRefused();
     }
 
     private void onAcceptButtonClicked(View button) {
         if (!areControlsEnabled()) return;
         mIsSigninInProgress = true;
+        mRecordUndoSignin = false;
         RecordUserAction.record("Signin_Signin_WithDefaultSyncSettings");
 
         // Record the fact that the user consented to the consent text by clicking on a button

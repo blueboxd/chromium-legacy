@@ -103,8 +103,6 @@ Polymer({
     this.addWebUIListener('profile-icons-received', icons => {
       this.availableIcons_ = icons;
     });
-    this.addWebUIListener(
-        'profile-defaults-received', this.handleProfileDefaults_.bind(this));
 
     this.browserProxy_.getAvailableIcons();
   },
@@ -133,15 +131,6 @@ Polymer({
       this.hideMessage_();
       event.preventDefault();
     }
-  },
-
-  /**
-   * Handler for when the profile defaults are pushed from the browser.
-   * @param {!ProfileInfo} profileInfo Default Info for the new profile.
-   * @private
-   */
-  handleProfileDefaults_: function(profileInfo) {
-    this.profileName_ = profileInfo.name;
   },
 
   /**

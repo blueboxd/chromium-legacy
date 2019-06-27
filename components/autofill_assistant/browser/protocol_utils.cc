@@ -85,33 +85,33 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
                               std::vector<std::unique_ptr<Script>>* scripts) {
   auto script = std::make_unique<Script>();
   script->handle.path = script_proto.path();
+  if (script->handle.path.empty())
+    return;
 
   const auto& presentation = script_proto.presentation();
-  script->handle.interrupt = presentation.interrupt();
+  script->precondition = ScriptPrecondition::FromProto(
+      script_proto.path(), presentation.precondition());
+  if (!script->precondition)
+    return;
+
+  script->priority = presentation.priority();
   if (presentation.interrupt()) {
     script->handle.interrupt = true;
   } else {
     script->handle.autostart = presentation.autostart();
   }
-  script->handle.initial_prompt = presentation.initial_prompt();
-
-  if (presentation.has_chip()) {
-    script->handle.chip = presentation.chip();
+  if (script->handle.autostart) {
+    // Autostartable scripts without chip text must be skipped,
+    // but these chips must never be shown.
+    if (presentation.chip().text().empty()) {
+      return;
+    }
   } else {
-    script->handle.chip.set_text(presentation.name());
-    script->handle.chip.set_type(presentation.chip_type());
-    script->handle.chip.set_icon(presentation.chip_icon());
+    script->handle.initial_prompt = presentation.initial_prompt();
+    script->handle.chip = Chip(presentation.chip());
   }
-
-  script->precondition = ScriptPrecondition::FromProto(
-      script_proto.path(), presentation.precondition());
-  script->priority = presentation.priority();
-
-  if (script->handle.path.empty() || !script->precondition ||
-      (script->handle.chip.text().empty() &&
-       script->handle.chip.icon() == ChipIcon::NO_ICON &&
-       !script->handle.interrupt)) {
-    return;
+  for (const auto& name : presentation.direct_action().names()) {
+    script->handle.direct_action_names.emplace_back(name);
   }
   scripts->emplace_back(std::move(script));
 }

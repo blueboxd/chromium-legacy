@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -18,6 +17,7 @@
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
+#include "components/autofill_assistant/browser/user_action.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {
@@ -43,11 +43,9 @@ class UiController {
   // returned.
   virtual void WillShutdown(Metrics::DropOutReason reason);
 
-  // Report that the set of suggestions has changed.
-  virtual void OnSuggestionsChanged(const std::vector<Chip>& suggestions);
-
-  // Report that the set of actions has changed.
-  virtual void OnActionsChanged(const std::vector<Chip>& actions);
+  // Report that the set of user actions has changed.
+  virtual void OnUserActionsChanged(
+      const std::vector<UserAction>& user_actions);
 
   // Gets or clears request for payment information.
   virtual void OnPaymentRequestOptionsChanged(

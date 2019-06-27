@@ -120,10 +120,6 @@ message SupportedScriptProto {
   optional string path = 1;
 
   message PresentationProto {
-    // Script name.
-    // Deprecated, use chip.text instead.
-    optional string name = 1 [deprecated = true];
-
     // Precondition contains a set of conditions that must hold for a script to
     // be executed. No precondition means that a script can run in any case.
     optional ScriptPreconditionProto precondition = 3;
@@ -138,21 +134,13 @@ message SupportedScriptProto {
     // priority 1.
     optional int32 priority = 5;
 
-    // Describes the chip to be shown. The name of the chip is set by the
-    // name field.
-    // Deprecated, use chip.type instead.
-    optional ChipType chip_type = 10 [deprecated = true];
-
-    // An icon the should be shown next to the chip text.
-    // Deprecated, use chip.icon instead.
-    optional ChipIcon chip_icon = 11 [deprecated = true];
-
-    // The chip to display. This chip has precedence over name, chip_type and
-    // chip_icon. Not required if autostart is true.
+    // An optional chip to display.
     optional ChipProto chip = 12;
 
-    // When set to true this script can be run in 'autostart mode'. Chip won't
-    // be shown; name and chip_type are ignored.
+    // Optionally map this script to a direct action.
+    optional DirectActionProto direct_action = 13;
+
+    // When set to true this script can be run in 'autostart mode'.
     optional bool autostart = 8;
 
     // When set to true this script will be run from WaitForDom actions with
@@ -944,30 +932,19 @@ message PromptProto {
   // Display this message to the user.
   optional string message = 1;
 
-  // A choice that is made either directly by clicking on a chip or chip, or
-  // implicitly by making a change on the website that is then detected by
-  // looking for the existence of an element.
+  // A choice that can be triggered:
+  // - by clicking on a chip, if a chip is set
+  // - by triggering a direct action, if direct action names are set
+  // - indirectly, DOM change, if auto_select_if_element_exists if set
   //
   // One of these protos must is transmitted as-is back to the server as part of
   // ProcessedActionProto.
   message Choice {
-    // Localized text message to display. Not required if
-    // auto_select_if_element_exists is set.
-    // Deprecated, use chip.text instead.
-    optional string name = 2 [deprecated = true];
-
-    // Describes the chip to be shown. The name of the chip is set by the
-    // name field.
-    // Deprecated, use chip.type instead.
-    optional ChipType chip_type = 7 [deprecated = true];
-
-    // An icon the should be shown next to the chip text.
-    // Deprecated, use chip.icon instead.
-    optional ChipIcon chip_icon = 10 [deprecated = true];
-
-    // The chip to display. This chip has precedence over name, chip_type and
-    // chip_icon. Not required if auto_select_if_element_exists is set.
+    // The chip to display to the UI.
     optional ChipProto chip = 11;
+
+    // Map this choice to a direct action.
+    optional DirectActionProto direct_action = 12;
 
     // Auto-select this choice if the given element exist.
     optional ElementReferenceProto auto_select_if_element_exists = 4;
@@ -1033,6 +1010,8 @@ message GetPaymentInformationProto {
   optional TermsAndConditionsState terms_and_conditions_state = 8;
   // When 'false', hide the terms and conditions box in the UI.
   optional bool request_terms_and_conditions = 9 [default = true];
+  // Optionally allows confiriming through the given direct actions.
+  optional DirectActionProto confirm_direct_action = 10;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
@@ -1275,6 +1254,9 @@ message ShowFormProto {
   // The chip to display below the form. This chip will be enabled only if all
   // form inputs are valid.
   optional ChipProto chip = 2;
+
+  // Optionally allow confirming the prompt using given direct actions.
+  optional DirectActionProto direct_action = 3;
 }
 
 message FormProto {
@@ -1457,4 +1439,10 @@ message SelectionInputProto {
   // The minimum number of choices that should be selected to consider this
   // input valid.
   optional int32 min_selected_choices = 4 [default = 1];
+}
+
+// Defines a mapping to an Android Q direct action.
+message DirectActionProto {
+  // Map to direct actions with the given names.
+  repeated string names = 12;
 }

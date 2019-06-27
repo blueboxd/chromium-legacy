@@ -20,6 +20,7 @@ namespace {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::IsEmpty;
@@ -45,9 +46,10 @@ class PromptActionTest : public testing::Test {
           checker->Run(&mock_web_controller_);
         }));
     ON_CALL(mock_action_delegate_, Prompt(_))
-        .WillByDefault(Invoke([this](std::unique_ptr<std::vector<Chip>> chips) {
-          chips_ = std::move(chips);
-        }));
+        .WillByDefault(Invoke(
+            [this](std::unique_ptr<std::vector<UserAction>> user_actions) {
+              user_actions_ = std::move(user_actions);
+            }));
     prompt_proto_ = proto_.mutable_prompt();
   }
 
@@ -61,7 +63,7 @@ class PromptActionTest : public testing::Test {
   base::MockCallback<Action::ProcessActionCallback> callback_;
   ActionProto proto_;
   PromptProto* prompt_proto_;
-  std::unique_ptr<std::vector<Chip>> chips_;
+  std::unique_ptr<std::vector<UserAction>> user_actions_;
 };
 
 TEST_F(PromptActionTest, ChoicesMissing) {
@@ -80,20 +82,20 @@ TEST_F(PromptActionTest, SelectButtons) {
   ok_proto->set_server_payload("ok");
 
   auto* cancel_proto = prompt_proto_->add_choices();
-  cancel_proto->set_name("Cancel");
-  cancel_proto->set_chip_type(NORMAL_ACTION);
+  cancel_proto->mutable_chip()->set_text("Cancel");
+  cancel_proto->mutable_chip()->set_type(NORMAL_ACTION);
   cancel_proto->set_server_payload("cancel");
 
   PromptAction action(proto_);
   action.ProcessAction(&mock_action_delegate_, callback_.Get());
 
-  ASSERT_THAT(chips_, Pointee(SizeIs(2)));
+  ASSERT_THAT(user_actions_, Pointee(SizeIs(2)));
 
-  EXPECT_EQ("Ok", (*chips_)[0].text);
-  EXPECT_EQ(HIGHLIGHTED_ACTION, (*chips_)[0].type);
+  EXPECT_EQ("Ok", (*user_actions_)[0].chip.text);
+  EXPECT_EQ(HIGHLIGHTED_ACTION, (*user_actions_)[0].chip.type);
 
-  EXPECT_EQ("Cancel", (*chips_)[1].text);
-  EXPECT_EQ(NORMAL_ACTION, (*chips_)[1].type);
+  EXPECT_EQ("Cancel", (*user_actions_)[1].chip.text);
+  EXPECT_EQ(NORMAL_ACTION, (*user_actions_)[1].chip.type);
 
   EXPECT_CALL(
       callback_,
@@ -101,39 +103,64 @@ TEST_F(PromptActionTest, SelectButtons) {
           Property(&ProcessedActionProto::status, ACTION_APPLIED),
           Property(&ProcessedActionProto::prompt_choice,
                    Property(&PromptProto::Choice::server_payload, "ok"))))));
-  DCHECK((*chips_)[0].callback);
-  std::move((*chips_)[0].callback).Run();
+  DCHECK((*user_actions_)[0].callback);
+  std::move((*user_actions_)[0].callback).Run();
+}
+
+TEST_F(PromptActionTest, ReportDirectAction) {
+  // Ok has a chip and a direct action.
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_direct_action()->add_names("ok");
+  ok_proto->set_server_payload("ok");
+
+  // Maybe only has a mappings to direct actions.
+  auto* maybe_proto = prompt_proto_->add_choices();
+  maybe_proto->mutable_direct_action()->add_names("maybe");
+  maybe_proto->mutable_direct_action()->add_names("I_guess");
+  maybe_proto->set_server_payload("maybe");
+
+  PromptAction action(proto_);
+  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+
+  ASSERT_THAT(user_actions_, Pointee(SizeIs(2)));
+
+  EXPECT_THAT((*user_actions_)[0].direct_action_names, ElementsAre("ok"));
+  EXPECT_FALSE((*user_actions_)[0].chip.empty());
+  EXPECT_THAT((*user_actions_)[1].direct_action_names,
+              ElementsAre("maybe", "I_guess"));
+  EXPECT_TRUE((*user_actions_)[1].chip.empty());
 }
 
 TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
   auto* ok_proto = prompt_proto_->add_choices();
-  ok_proto->set_name("Ok");
-  ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
   ok_proto->add_show_only_if_element_exists()->add_selectors("element");
 
   PromptAction action(proto_);
   action.ProcessAction(&mock_action_delegate_, callback_.Get());
 
-  ASSERT_THAT(chips_, Pointee(IsEmpty()));
+  ASSERT_THAT(user_actions_, Pointee(IsEmpty()));
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(true));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
+  ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(false));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  ASSERT_THAT(chips_, Pointee(IsEmpty()));
+  ASSERT_THAT(user_actions_, Pointee(IsEmpty()));
 }
 
 TEST_F(PromptActionTest, DisabledUnlessElementExists) {
   auto* ok_proto = prompt_proto_->add_choices();
-  ok_proto->set_name("Ok");
-  ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
   ok_proto->set_allow_disabling(true);
   ok_proto->add_show_only_if_element_exists()->add_selectors("element");
@@ -145,15 +172,15 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(true));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
-  EXPECT_FALSE((*chips_)[0].disabled);
+  ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
+  EXPECT_TRUE((*user_actions_)[0].enabled);
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(false));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
-  EXPECT_TRUE((*chips_)[0].disabled);
+  ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
+  EXPECT_FALSE((*user_actions_)[0].enabled);
 }
 
 TEST_F(PromptActionTest, AutoSelect) {
@@ -164,7 +191,7 @@ TEST_F(PromptActionTest, AutoSelect) {
 
   PromptAction action(proto_);
   action.ProcessAction(&mock_action_delegate_, callback_.Get());
-  EXPECT_THAT(chips_, Pointee(SizeIs(0)));
+  EXPECT_THAT(user_actions_, Pointee(SizeIs(0)));
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
@@ -182,8 +209,8 @@ TEST_F(PromptActionTest, AutoSelect) {
 
 TEST_F(PromptActionTest, AutoSelectWithButton) {
   auto* ok_proto = prompt_proto_->add_choices();
-  ok_proto->set_name("Ok");
-  ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
 
   auto* choice_proto = prompt_proto_->add_choices();
@@ -194,7 +221,7 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
   PromptAction action(proto_);
   action.ProcessAction(&mock_action_delegate_, callback_.Get());
 
-  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
+  ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
@@ -210,8 +237,8 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
 
 TEST_F(PromptActionTest, Terminate) {
   auto* ok_proto = prompt_proto_->add_choices();
-  ok_proto->set_name("Ok");
-  ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
   {
     PromptAction action(proto_);
@@ -219,8 +246,8 @@ TEST_F(PromptActionTest, Terminate) {
   }
 
   // Chips pointing to a deleted action do nothing.
-  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
-  std::move((*chips_)[0].callback).Run();
+  ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
+  std::move((*user_actions_)[0].callback).Run();
 }
 
 }  // namespace

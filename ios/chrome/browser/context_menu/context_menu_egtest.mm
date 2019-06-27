@@ -37,7 +37,6 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextMenuCopyButton;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
-using chrome_test_util::SystemSelectionCallout;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 namespace {
@@ -310,8 +309,8 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       assertWithMatcher:grey_nil()];
 
   // Verify that system text selection callout is displayed.
-  [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
-      inRoot:SystemSelectionCallout()] assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
+      assertWithMatcher:grey_notNil()];
 
   // Verify that system touches were not cancelled.
   histogramTester.ExpectTotalCount("ContextMenu.CancelSystemTouches", 0,

@@ -141,8 +141,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnProgressVisibilityChanged(ui_delegate->GetProgressVisible());
     OnInfoBoxChanged(ui_delegate_->GetInfoBox());
     OnDetailsChanged(ui_delegate->GetDetails());
-    OnSuggestionsChanged(ui_delegate->GetSuggestions());
-    UpdateActions();
+    OnUserActionsChanged(ui_delegate_->GetUserActions());
     OnPaymentRequestOptionsChanged(ui_delegate->GetPaymentRequestOptions());
     OnPaymentRequestInformationChanged(
         ui_delegate->GetPaymentRequestInformation());
@@ -195,7 +194,7 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
 }
 
 void UiControllerAndroid::SetupForState() {
-  UpdateActions();
+  UpdateActions(ui_delegate_->GetUserActions());
   AutofillAssistantState state = ui_delegate_->GetState();
   switch (state) {
     case AutofillAssistantState::STARTING:
@@ -387,78 +386,79 @@ void UiControllerAndroid::SetVisible(bool visible) {
 
 // Suggestions and actions carousels related methods.
 
-void UiControllerAndroid::OnSuggestionsChanged(
-    const std::vector<Chip>& suggestions) {
+void UiControllerAndroid::UpdateSuggestions(
+    const std::vector<UserAction>& user_actions) {
   JNIEnv* env = AttachCurrentThread();
-  std::vector<int> icons(suggestions.size());
-  std::vector<std::string> texts(suggestions.size());
-  bool disabled[suggestions.size()];
-  for (size_t i = 0; i < suggestions.size(); i++) {
-    icons[i] = suggestions[i].icon;
-    texts[i] = suggestions[i].text;
-    disabled[i] = suggestions[i].disabled;
+  auto chips = Java_AutofillAssistantUiController_createChipList(env);
+  int user_action_count = static_cast<int>(user_actions.size());
+  for (int i = 0; i < user_action_count; i++) {
+    const auto& user_action = user_actions[i];
+    if (user_action.chip.type != SUGGESTION)
+      continue;
+
+    Java_AutofillAssistantUiController_addSuggestion(
+        env, java_object_, chips,
+        base::android::ConvertUTF8ToJavaString(env, user_action.chip.text), i,
+        user_action.chip.icon, !user_action.enabled);
   }
-  Java_AutofillAssistantUiController_setSuggestions(
-      env, java_object_, base::android::ToJavaIntArray(env, icons),
-      base::android::ToJavaArrayOfStrings(env, texts),
-      base::android::ToJavaBooleanArray(env, disabled, suggestions.size()));
+  Java_AutofillAssistantUiController_setSuggestions(env, java_object_, chips);
 }
 
-void UiControllerAndroid::UpdateActions() {
+void UiControllerAndroid::UpdateActions(
+    const std::vector<UserAction>& user_actions) {
   DCHECK(ui_delegate_);
 
   JNIEnv* env = AttachCurrentThread();
 
   bool has_close_or_cancel = false;
   auto chips = Java_AutofillAssistantUiController_createChipList(env);
-  const auto& actions = ui_delegate_->GetActions();
-  int action_count = static_cast<int>(actions.size());
-  for (int i = 0; i < action_count; i++) {
-    const auto& action = actions[i];
-    auto text = base::android::ConvertUTF8ToJavaString(env, action.text);
-    int icon = action.icon;
-    switch (action.type) {
+  int user_action_count = static_cast<int>(user_actions.size());
+  for (int i = 0; i < user_action_count; i++) {
+    const auto& action = user_actions[i];
+    const Chip& chip = action.chip;
+    switch (chip.type) {
+      default:  // Ignore actions with other chip types or with no chips.
+        break;
+
       case HIGHLIGHTED_ACTION:
         Java_AutofillAssistantUiController_addHighlightedActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled,
-            action.sticky);
+            env, java_object_, chips, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled, chip.sticky);
         break;
 
       case NORMAL_ACTION:
         Java_AutofillAssistantUiController_addActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled,
-            action.sticky);
+            env, java_object_, chips, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled, chip.sticky);
         break;
 
       case CANCEL_ACTION:
         // A Cancel button sneaks in an UNDO snackbar before executing the
         // action, while a close button behaves like a normal button.
         Java_AutofillAssistantUiController_addCancelButton(
-            env, java_object_, chips, icon, text, i, action.disabled,
-            action.sticky);
+            env, java_object_, chips, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled, chip.sticky);
         has_close_or_cancel = true;
         break;
 
       case CLOSE_ACTION:
         Java_AutofillAssistantUiController_addActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled,
-            action.sticky);
+            env, java_object_, chips, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled, chip.sticky);
         has_close_or_cancel = true;
         break;
 
       case DONE_ACTION:
         Java_AutofillAssistantUiController_addHighlightedActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled,
-            action.sticky);
+            env, java_object_, chips, chip.icon,
+            base::android::ConvertUTF8ToJavaString(env, chip.text), i,
+            !action.enabled, chip.sticky);
         has_close_or_cancel = true;
         break;
-
-      case SUGGESTION:         // Suggestions are handled separately.
-      case UNKNOWN_CHIP_TYPE:  // Ignore unknown types
-        break;
-
-        // Default intentionally left out to cause a compilation error when a
-        // new type is added.
     }
   }
 
@@ -479,24 +479,18 @@ void UiControllerAndroid::UpdateActions() {
   Java_AutofillAssistantUiController_setActions(env, java_object_, chips);
 }
 
-void UiControllerAndroid::OnActionsChanged(const std::vector<Chip>& actions) {
-  UpdateActions();
+void UiControllerAndroid::OnUserActionsChanged(
+    const std::vector<UserAction>& actions) {
+  UpdateActions(actions);
+  UpdateSuggestions(actions);
 }
 
-void UiControllerAndroid::OnSuggestionSelected(
+void UiControllerAndroid::OnUserActionSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jint index) {
   if (ui_delegate_)
-    ui_delegate_->SelectSuggestion(index);
-}
-
-void UiControllerAndroid::OnActionSelected(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    jint index) {
-  if (ui_delegate_)
-    ui_delegate_->SelectAction(index);
+    ui_delegate_->PerformUserAction(index);
 }
 
 void UiControllerAndroid::OnCancelButtonClicked(
@@ -522,7 +516,7 @@ void UiControllerAndroid::OnCancel(int action_index) {
     Shutdown(Metrics::SHEET_CLOSED);
     return;
   }
-  ui_delegate_->SelectAction(action_index);
+  ui_delegate_->PerformUserAction(action_index);
 }
 
 void UiControllerAndroid::OnCloseButtonClicked(

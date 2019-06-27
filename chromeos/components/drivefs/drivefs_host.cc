@@ -14,6 +14,7 @@
 #include "chromeos/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/drivefs_search.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -72,9 +73,12 @@ class DriveFsHost::MountState : public DriveFsSession,
       DriveFsHost::Delegate* delegate) {
     auto access_token = auth_delegate->GetCachedAccessToken();
     mojom::DriveFsConfigurationPtr config = {
-        base::in_place, auth_delegate->GetAccountId().GetUserEmail(),
-        std::move(access_token), auth_delegate->IsMetricsCollectionEnabled(),
-        delegate->GetLostAndFoundDirectoryName()};
+        base::in_place,
+        auth_delegate->GetAccountId().GetUserEmail(),
+        std::move(access_token),
+        auth_delegate->IsMetricsCollectionEnabled(),
+        delegate->GetLostAndFoundDirectoryName(),
+        base::FeatureList::IsEnabled(chromeos::features::kDriveFsMirroring)};
     return DriveFsConnection::Create(delegate->CreateMojoListener(),
                                      std::move(config));
   }

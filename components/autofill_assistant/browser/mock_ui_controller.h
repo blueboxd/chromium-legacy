@@ -25,9 +25,8 @@ class MockUiController : public UiController {
   MOCK_METHOD1(OnStatusMessageChanged, void(const std::string& message));
   MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
   MOCK_METHOD1(WillShutdown, void(Metrics::DropOutReason));
-  MOCK_METHOD1(OnSuggestionsChanged,
-               void(const std::vector<Chip>& suggestions));
-  MOCK_METHOD1(OnActionsChanged, void(const std::vector<Chip>& actions));
+  MOCK_METHOD1(OnUserActionsChanged,
+               void(const std::vector<UserAction>& user_actions));
   MOCK_METHOD1(OnPaymentRequestChanged,
                void(const PaymentRequestOptions* options));
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));

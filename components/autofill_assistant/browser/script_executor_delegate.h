@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/state.h"
+#include "components/autofill_assistant/browser/user_action.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -67,7 +67,8 @@ class ScriptExecutorDelegate {
       std::unique_ptr<PaymentRequestOptions> options) = 0;
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
-  virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
+  virtual void SetUserActions(
+      std::unique_ptr<std::vector<UserAction>> user_action) = 0;
   virtual bool GetResizeViewport() = 0;
   virtual void SetResizeViewport(bool resize_viewport) = 0;
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;

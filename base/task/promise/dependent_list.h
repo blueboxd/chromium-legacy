@@ -59,14 +59,68 @@ class BASE_EXPORT DependentList {
 
   // Align Node on an 8-byte boundary to ensure the first 3 bits are 0 and can
   // be used to store additional state (see static_asserts below).
-  struct BASE_EXPORT alignas(8) Node {
+  class BASE_EXPORT alignas(8) Node {
+   public:
     Node();
     explicit Node(Node&& other) noexcept;
-    Node& operator=(Node&& other) noexcept;
+
+    // Constructs a Node, |prerequisite| will not be retained unless
+    // RetainSettledPrerequisite is called.
+    Node(AbstractPromise* prerequisite,
+         scoped_refptr<AbstractPromise> dependent);
     ~Node();
 
-    scoped_refptr<AbstractPromise> dependent;
-    Node* next = nullptr;
+    // Caution this is not thread safe.
+    void Reset(AbstractPromise* prerequisite,
+               scoped_refptr<AbstractPromise> dependent);
+
+    // Expected prerequisite usage:
+    // 1. prerequisite = null on creation (or is constructed with a value)
+    // 2. (optional, once only) SetPrerequisite(value)
+    // 3. (maybe, once only) RetainSettledPrerequisite();
+    // 4. (maybe) ClearPrerequisite()
+    // 5. Destructor called
+
+    // Can be called on any thread.
+    void SetPrerequisite(AbstractPromise* prerequisite);
+
+    // Can be called on any thread.
+    AbstractPromise* prerequisite() const;
+
+    scoped_refptr<AbstractPromise>& dependent() { return dependent_; }
+
+    const scoped_refptr<AbstractPromise>& dependent() const {
+      return dependent_;
+    }
+
+    Node* next() const { return next_; }
+
+    // Calls AddRef on |prerequisite()| and marks the prerequisite as being
+    // retained. The |prerequisite()| will be released by Node's destructor or
+    // a call to ClearPrerequisite. Does nothing if called more than once.
+    // Can be called on any thread at any time. Can be called once only.
+    void RetainSettledPrerequisite();
+
+    // Calls Release() if the rerequsite was retained and then sets
+    // |prerequisite_| to zero. Can be called on any thread at any time. Can be
+    // called more than once.
+    void ClearPrerequisite();
+
+   private:
+    friend class DependentList;
+
+    void MarkAsRetained() { prerequisite_ |= kIsRetained; }
+
+    // An AbstractPromise* where the LSB is a flag which specified if it's
+    // retained or not.
+    // A reference for |prerequisite_| is acquired with an explicit call to
+    // AddRef() if it's resolved or rejected.
+    std::atomic<intptr_t> prerequisite_{0};
+
+    scoped_refptr<AbstractPromise> dependent_;
+    Node* next_ = nullptr;
+
+    static constexpr intptr_t kIsRetained = 1;
   };
 
   // Insert will only succeed if neither ResolveAndConsumeAllDependents nor
@@ -128,9 +182,17 @@ class BASE_EXPORT DependentList {
   //
   // ATTENTION: No guarantees are made as of whether the
   // (Resolve/Reject/Cancel)AndConsumeAllDependents method is still executing.
-  bool IsResolved() const;
-  bool IsRejected() const;
   bool IsCanceled() const;
+
+  // DCHECKs if not settled.
+  bool IsResolved() const;
+
+  // DCHECKs if not settled.
+  bool IsRejected() const;
+
+  // Like the above but doesn't DCHECK if unsettled.
+  bool IsResolvedForTesting() const;
+  bool IsRejectedForTesting() const;
 
  private:
   // The data for this class is:
@@ -223,6 +285,14 @@ class BASE_EXPORT DependentList {
   // Settles the list and consumes all previously inserted nodes. If the list is
   // already settled it does nothing and returns false, true otherwise.
   bool SettleAndDispatchAllDependents(State settled_state, Visitor* visitor);
+
+  static DependentList::Node* ReverseList(DependentList::Node* list);
+
+  // Goes through the list starting at |head| consuming node->dependent and
+  // passing it to the provided |visitor|.
+  static void DispatchAll(DependentList::Node* head,
+                          DependentList::Visitor* visitor,
+                          bool retain_prerequsites);
 
   std::atomic<uintptr_t> data_;
 };

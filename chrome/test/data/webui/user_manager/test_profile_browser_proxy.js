@@ -20,9 +20,6 @@ class TestProfileBrowserProxy extends TestBrowserProxy {
     /** @private {!Array<!AvatarIcon>} */
     this.icons_ = [];
 
-    /** @private {!ProfileInfo} */
-    this.defaultProfileInfo_ = {};
-
     /** @private {boolean} */
     this.allProfilesLocked_ = false;
   }
@@ -32,13 +29,6 @@ class TestProfileBrowserProxy extends TestBrowserProxy {
    */
   setIcons(icons) {
     this.icons_ = icons;
-  }
-
-  /**
-   * @param {!ProfileInfo} profileInfo
-   */
-  setDefaultProfileInfo(profileInfo) {
-    this.defaultProfileInfo_ = profileInfo;
   }
 
   /**
@@ -52,8 +42,6 @@ class TestProfileBrowserProxy extends TestBrowserProxy {
   getAvailableIcons() {
     this.methodCalled('getAvailableIcons');
     cr.webUIListenerCallback('profile-icons-received', this.icons_);
-    cr.webUIListenerCallback(
-        'profile-defaults-received', this.defaultProfileInfo_);
   }
 
   /** @override */

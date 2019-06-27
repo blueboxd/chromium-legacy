@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_not_impl.h"
 #include "ipc/ipc_platform_file.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::
@@ -77,50 +78,13 @@ class WebRtcAudioRendererSource {
   virtual ~WebRtcAudioRendererSource() {}
 };
 
-// TODO(xians): Merge this interface with WebRtcAudioRendererSource.
-// The reason why we could not do it today is that WebRtcAudioRendererSource
-// gets the data by pulling, while the data is pushed into
-// WebRtcPlayoutDataSource::Sink.
-class WebRtcPlayoutDataSource {
- public:
-  class Sink {
-   public:
-    // Callback to get the playout data.
-    // Called on the audio render thread.
-    // |audio_bus| must have buffer size |sample_rate/100| and 1-2 channels.
-    virtual void OnPlayoutData(media::AudioBus* audio_bus,
-                               int sample_rate,
-                               int audio_delay_milliseconds) = 0;
-
-    // Callback to notify the sink that the source has changed.
-    // Called on the main render thread.
-    virtual void OnPlayoutDataSourceChanged() = 0;
-
-    // Called to notify that the audio render thread has changed, and
-    // OnPlayoutData() will from now on be called on the new thread.
-    // Called on the new audio render thread.
-    virtual void OnRenderThreadChanged() = 0;
-
-   protected:
-    virtual ~Sink() {}
-  };
-
-  // Adds/Removes the sink of WebRtcAudioRendererSource to the ADM.
-  // These methods are used by the MediaStreamAudioProcesssor to get the
-  // rendered data for AEC.
-  virtual void AddPlayoutSink(Sink* sink) = 0;
-  virtual void RemovePlayoutSink(Sink* sink) = 0;
-
- protected:
-  virtual ~WebRtcPlayoutDataSource() {}
-};
-
 // Note that this class inherits from webrtc::AudioDeviceModule but due to
 // the high number of non-implemented methods, we move the cruft over to the
 // WebRtcAudioDeviceNotImpl.
-class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
-                                             public WebRtcAudioRendererSource,
-                                             public WebRtcPlayoutDataSource {
+class CONTENT_EXPORT WebRtcAudioDeviceImpl
+    : public WebRtcAudioDeviceNotImpl,
+      public WebRtcAudioRendererSource,
+      public blink::WebRtcPlayoutDataSource {
  public:
   // The maximum volume value WebRtc uses.
   static const int kMaxVolumeLevel = 255;
@@ -204,13 +168,13 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
   base::UnguessableToken GetAudioProcessingId() const override;
 
-  // WebRtcPlayoutDataSource implementation.
-  void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
-  void RemovePlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
+  // blink::WebRtcPlayoutDataSource implementation.
+  void AddPlayoutSink(blink::WebRtcPlayoutDataSource::Sink* sink) override;
+  void RemovePlayoutSink(blink::WebRtcPlayoutDataSource::Sink* sink) override;
 
  private:
   using CapturerList = std::list<ProcessedLocalAudioSource*>;
-  using PlayoutDataSinkList = std::list<WebRtcPlayoutDataSource::Sink*>;
+  using PlayoutDataSinkList = std::list<blink::WebRtcPlayoutDataSource::Sink*>;
 
   class RenderBuffer;
 
@@ -232,8 +196,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   // Provides access to the audio renderer in the browser process.
   scoped_refptr<WebRtcAudioRenderer> renderer_ GUARDED_BY(lock_);
 
-  // A list of raw pointer of WebRtcPlayoutDataSource::Sink objects which want
-  // to get the playout data, the sink need to call RemovePlayoutSink()
+  // A list of raw pointer of blink::WebRtcPlayoutDataSource::Sink objects which
+  // want to get the playout data, the sink need to call RemovePlayoutSink()
   // before it goes away.
   PlayoutDataSinkList playout_sinks_ GUARDED_BY(lock_);
 

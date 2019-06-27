@@ -1847,6 +1847,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         [[CRWContextMenuController alloc] initWithWebView:self.webView
                                              browserState:browserState
                                                  delegate:self];
+    self.UIHandler.contextMenuController.webState = self.webStateImpl;
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
     // resize the view to match the container view upon creation.

@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
+#include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
 
@@ -62,18 +63,14 @@ class UiDelegate {
   // Returns whether the progress bar is visible.
   virtual bool GetProgressVisible() const = 0;
 
-  // Returns the current set of suggestions.
-  virtual const std::vector<Chip>& GetSuggestions() const = 0;
+  // Returns the current set of user actions.
+  virtual const std::vector<UserAction>& GetUserActions() const = 0;
 
-  // Selects a suggestion, from the set of suggestions returned by
-  // GetSuggestions().
-  virtual void SelectSuggestion(int suggestion) = 0;
-
-  // Returns the current set of actions.
-  virtual const std::vector<Chip>& GetActions() const = 0;
-
-  // Selects an action, from the set of actions returned by GetActions().
-  virtual void SelectAction(int action) = 0;
+  // Performs an action, from the set of actions returned by GetUserAction().
+  //
+  // Returns true if the action was triggered, false if the index did not
+  // correspond to any enabled actions.
+  virtual bool PerformUserAction(int index) = 0;
 
   // If the controller is waiting for payment request information, this
   // field contains a non-null options describing the request.

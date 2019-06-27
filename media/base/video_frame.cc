@@ -187,6 +187,26 @@ static base::Optional<VideoFrameLayout> GetDefaultLayout(
   return VideoFrameLayout::CreateWithPlanes(format, coded_size, planes);
 }
 
+#if defined(OS_LINUX)
+// This class allows us to embed a vector<ScopedFD> into a scoped_refptr, and
+// thus to have several VideoFrames share the same set of DMABUF FDs.
+class VideoFrame::DmabufHolder
+    : public base::RefCountedThreadSafe<DmabufHolder> {
+ public:
+  DmabufHolder() = default;
+  DmabufHolder(std::vector<base::ScopedFD>&& fds) : fds_(std::move(fds)) {}
+
+  const std::vector<base::ScopedFD>& fds() const { return fds_; }
+  size_t size() const { return fds_.size(); }
+
+ private:
+  std::vector<base::ScopedFD> fds_;
+
+  friend class base::RefCountedThreadSafe<DmabufHolder>;
+  ~DmabufHolder() = default;
+};
+#endif  // defined(OS_LINUX)
+
 // static
 bool VideoFrame::IsValidConfig(VideoPixelFormat format,
                                StorageType storage_type,
@@ -525,7 +545,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
   memcpy(&frame->mailbox_holders_, mailbox_holders,
          sizeof(frame->mailbox_holders_));
   frame->mailbox_holders_release_cb_ = ReleaseMailboxCB();
-  frame->dmabuf_fds_ = std::move(dmabuf_fds);
+  frame->dmabuf_fds_ =
+      base::MakeRefCounted<DmabufHolder>(std::move(dmabuf_fds));
   DCHECK(frame->HasDmaBufs());
 
   return frame;
@@ -623,14 +644,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   }
 
 #if defined(OS_LINUX)
-  // If there are any |dmabuf_fds_| plugged in, we should duplicate them.
-  if (frame.storage_type() == STORAGE_DMABUFS) {
-    wrapping_frame->dmabuf_fds_ = DuplicateFDs(frame.dmabuf_fds_);
-    if (wrapping_frame->dmabuf_fds_.empty()) {
-      DLOG(ERROR) << __func__ << " Couldn't duplicate fds.";
-      return nullptr;
-    }
-  }
+  DCHECK(frame.dmabuf_fds_);
+  // If there are any |dmabuf_fds_| plugged in, we should refer them too.
+  wrapping_frame->dmabuf_fds_ = frame.dmabuf_fds_;
 #endif
 
   if (frame.storage_type() == STORAGE_SHMEM) {
@@ -949,11 +965,11 @@ size_t VideoFrame::shared_memory_offset() const {
 const std::vector<base::ScopedFD>& VideoFrame::DmabufFds() const {
   DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
 
-  return dmabuf_fds_;
+  return dmabuf_fds_->fds();
 }
 
 bool VideoFrame::HasDmaBufs() const {
-  return !dmabuf_fds_.empty();
+  return dmabuf_fds_->size() > 0;
 }
 #endif
 
@@ -1091,6 +1107,9 @@ VideoFrame::VideoFrame(const VideoFrameLayout& layout,
       visible_rect_(Intersection(visible_rect, gfx::Rect(layout.coded_size()))),
       natural_size_(natural_size),
       shared_memory_offset_(0),
+#if defined(OS_LINUX)
+      dmabuf_fds_(base::MakeRefCounted<DmabufHolder>()),
+#endif
       timestamp_(timestamp),
       unique_id_(g_unique_id_generator.GetNext()) {
   DCHECK(IsValidConfig(format(), storage_type, coded_size(), visible_rect_,

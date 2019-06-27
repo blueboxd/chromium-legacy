@@ -27,6 +27,7 @@ namespace autofill_assistant {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Contains;
@@ -41,6 +42,7 @@ using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
 using ::testing::Pointee;
+using ::testing::Property;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
@@ -126,7 +128,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
       const std::string& name_and_path) {
     SupportedScriptProto* script = response->add_scripts();
     script->set_path(name_and_path);
-    script->mutable_presentation()->set_name(name_and_path);
+    script->mutable_presentation()->mutable_chip()->set_text(name_and_path);
     return script;
   }
 
@@ -243,7 +245,7 @@ void NavigationStateChangeListener::OnNavigationStateChanged() {
   events.emplace_back(state);
 }
 
-TEST_F(ControllerTest, FetchAndRunScripts) {
+TEST_F(ControllerTest, FetchAndRunScriptsWithChip) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
   auto* script2 = AddRunnableScript(&script_response, "script2");
@@ -257,19 +259,57 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   // Offering the choices: script1 and script2
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
             controller_->GetState());
-  EXPECT_THAT(controller_->GetSuggestions(),
-              UnorderedElementsAre(Field(&Chip::text, StrEq("script1")),
-                                   Field(&Chip::text, StrEq("script2"))));
+  EXPECT_THAT(
+      controller_->GetUserActions(),
+      UnorderedElementsAre(
+          Field(&UserAction::chip, AllOf(Field(&Chip::text, StrEq("script1")),
+                                         Field(&Chip::type, SUGGESTION))),
+          Field(&UserAction::chip, AllOf(Field(&Chip::text, StrEq("script2")),
+                                         Field(&Chip::type, SUGGESTION)))));
 
   // Choose script2 and run it successfully.
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script2"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, ""));
-  controller_->SelectSuggestion(1);
+  EXPECT_TRUE(controller_->PerformUserAction(1));
 
   // Offering the remaining choice: script1 as script2 can only run once.
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
-  EXPECT_THAT(controller_->GetSuggestions(),
-              ElementsAre(Field(&Chip::text, StrEq("script1"))));
+  EXPECT_THAT(controller_->GetUserActions(),
+              ElementsAre(Field(&UserAction::chip,
+                                Field(&Chip::text, StrEq("script1")))));
+}
+
+TEST_F(ControllerTest, ReportDirectActions) {
+  SupportsScriptResponseProto script_response;
+
+  // script1 is available as a chip and a direct action.
+  auto* script1 = AddRunnableScript(&script_response, "script1");
+  script1->mutable_presentation()->mutable_direct_action()->add_names(
+      "action_1");
+
+  // script1 is available only as a direct action.
+  auto* script2 = AddRunnableScript(&script_response, "script2");
+  script2->mutable_presentation()->mutable_direct_action()->add_names(
+      "action_2");
+  script2->mutable_presentation()->clear_chip();
+
+  SetNextScriptResponse(script_response);
+
+  testing::InSequence seq;
+
+  Start("http://a.example.com/path");
+
+  // Offering the choices: script1 and script2
+  EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
+            controller_->GetState());
+  EXPECT_THAT(controller_->GetUserActions(),
+              UnorderedElementsAre(
+                  AllOf(Field(&UserAction::chip, Field(&Chip::text, "script1")),
+                        Field(&UserAction::direct_action_names,
+                              ElementsAre("action_1"))),
+                  AllOf(Field(&UserAction::chip, Property(&Chip::empty, true)),
+                        Field(&UserAction::direct_action_names,
+                              ElementsAre("action_2")))));
 }
 
 TEST_F(ControllerTest, NoScripts) {
@@ -310,14 +350,14 @@ TEST_F(ControllerTest, ReportPromptAndSuggestionsChanged) {
   AddRunnableScript(&script_response, "script2");
   SetNextScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(2)));
+  EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(2)));
   Start("http://a.example.com/path");
 
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
             controller_->GetState());
 }
 
-TEST_F(ControllerTest, ClearChipsWhenRunning) {
+TEST_F(ControllerTest, ClearUserActionsWhenRunning) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
   AddRunnableScript(&script_response, "script2");
@@ -328,15 +368,15 @@ TEST_F(ControllerTest, ClearChipsWhenRunning) {
   {
     testing::InSequence seq;
     // Discover 2 scripts, script1 and script2.
-    EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(2)));
+    EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(2)));
     // Set of chips is cleared while running script1.
-    EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(0)));
+    EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(0)));
     // This test doesn't specify what happens after that.
-    EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(_))
+    EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(_))
         .Times(AnyNumber());
   }
   Start("http://a.example.com/path");
-  controller_->SelectSuggestion(0);
+  EXPECT_TRUE(controller_->PerformUserAction(0));
 }
 
 TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
@@ -362,7 +402,7 @@ TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
 
   Start("http://a.example.com/path");
 
-  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(4));
+  EXPECT_THAT(controller_->GetUserActions(), SizeIs(4));
   // Script3, with higher priority (lower number), wins.
   EXPECT_EQ("script3 prompt", controller_->GetStatusMessage());
 }
@@ -380,11 +420,11 @@ TEST_F(ControllerTest, Stop) {
       .WillOnce(RunOnceCallback<5>(true, actions_response_str));
 
   Start();
-  ASSERT_THAT(controller_->GetSuggestions(), SizeIs(1));
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
 
   testing::InSequence seq;
   EXPECT_CALL(fake_client_, Shutdown(Metrics::SCRIPT_SHUTDOWN));
-  controller_->SelectSuggestion(0);
+  EXPECT_TRUE(controller_->PerformUserAction(0));
 
   // Simulates Client::Shutdown(SCRIPT_SHUTDOWN)
   EXPECT_CALL(mock_ui_controller_, WillShutdown(Metrics::SCRIPT_SHUTDOWN));
@@ -402,8 +442,9 @@ TEST_F(ControllerTest, Reset) {
         .WillRepeatedly(RunOnceCallback<2>(true, script_response_str));
 
     Start("http://a.example.com/path");
-    EXPECT_THAT(controller_->GetSuggestions(),
-                ElementsAre(Field(&Chip::text, StrEq("reset"))));
+    EXPECT_THAT(controller_->GetUserActions(),
+                ElementsAre(Field(&UserAction::chip,
+                                  Field(&Chip::text, StrEq("reset")))));
 
     // 2. Execute the "reset" script, which contains a reset action.
     ActionsResponseProto actions_response;
@@ -417,15 +458,16 @@ TEST_F(ControllerTest, Reset) {
         std::make_unique<autofill::CreditCard>());
     EXPECT_TRUE(controller_->GetClientMemory()->has_selected_card());
 
-    controller_->SelectSuggestion(0);
+    EXPECT_TRUE(controller_->PerformUserAction(0));
 
     // Resetting should have cleared the client memory
     EXPECT_FALSE(controller_->GetClientMemory()->has_selected_card());
 
     // The reset script should be available again, even though it's marked
     // RunOnce, as the script state should have been cleared as well.
-    EXPECT_THAT(controller_->GetSuggestions(),
-                ElementsAre(Field(&Chip::text, StrEq("reset"))));
+    EXPECT_THAT(controller_->GetUserActions(),
+                ElementsAre(Field(&UserAction::chip,
+                                  Field(&Chip::text, StrEq("reset")))));
 }
 
 TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
@@ -478,13 +520,13 @@ TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   RunOnce(autostart);
   SetRepeatedScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(0u)))
+  EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(0u)))
       .Times(AnyNumber());
-  EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(Gt(0u))))
+  EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(Gt(0u))))
       .Times(0);
 
   Start("http://a.example.com/path");
-  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(0));
+  EXPECT_THAT(controller_->GetUserActions(), SizeIs(0));
 }
 
 TEST_F(ControllerTest, InitialUrlLoads) {
@@ -555,8 +597,8 @@ TEST_F(ControllerTest, StateChanges) {
   // Run script1: State should become RUNNING, as there's another script, then
   // go back to prompt to propose that script.
   states_.clear();
-  ASSERT_THAT(controller_->GetSuggestions(), SizeIs(2));
-  controller_->SelectSuggestion(0);
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(2));
+  EXPECT_TRUE(controller_->PerformUserAction(0));
 
   EXPECT_EQ(AutofillAssistantState::PROMPT, GetUiDelegate()->GetState());
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
@@ -565,8 +607,8 @@ TEST_F(ControllerTest, StateChanges) {
   // Run script2: State should become STOPPED, as there are no more runnable
   // scripts.
   states_.clear();
-  ASSERT_THAT(controller_->GetSuggestions(), SizeIs(1));
-  controller_->SelectSuggestion(0);
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+  EXPECT_TRUE(controller_->PerformUserAction(0));
 
   EXPECT_EQ(AutofillAssistantState::STOPPED, GetUiDelegate()->GetState());
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
@@ -574,7 +616,7 @@ TEST_F(ControllerTest, StateChanges) {
                                    AutofillAssistantState::STOPPED));
 
   // The cancel button is removed.
-  EXPECT_TRUE(controller_->GetActions().empty());
+  EXPECT_TRUE(controller_->GetUserActions().empty());
 }
 
 TEST_F(ControllerTest, ShowUIWhenStarting) {
@@ -825,11 +867,11 @@ TEST_F(ControllerTest, WaitForNavigationActionTimesOut) {
                       RunOnceCallback<4>(true, "")));
 
   Start("http://a.example.com/path");
-  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(1));
+  EXPECT_THAT(controller_->GetUserActions(), SizeIs(1));
 
   // Start script, which waits for some navigation event to happen after the
   // expect_navigation action has run..
-  controller_->SelectSuggestion(0);
+  EXPECT_TRUE(controller_->PerformUserAction(0));
 
   // No navigation event happened within the action timeout and the script ends.
   EXPECT_THAT(processed_actions_capture, SizeIs(0));
@@ -858,11 +900,11 @@ TEST_F(ControllerTest, WaitForNavigationActionStartWithinTimeout) {
                       RunOnceCallback<4>(true, "")));
 
   Start("http://a.example.com/path");
-  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(1));
+  EXPECT_THAT(controller_->GetUserActions(), SizeIs(1));
 
   // Start script, which waits for some navigation event to happen after the
   // expect_navigation action has run..
-  controller_->SelectSuggestion(0);
+  EXPECT_TRUE(controller_->PerformUserAction(0));
 
   // Navigation starts, but does not end, within the timeout.
   EXPECT_THAT(processed_actions_capture, SizeIs(0));

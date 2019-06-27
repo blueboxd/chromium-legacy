@@ -44,7 +44,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
-  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+  void SetUserActions(
+      std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
   void SetResizeViewport(bool resize_viewport) override;
@@ -83,7 +84,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   InfoBox* GetInfoBox() { return info_box_.get(); }
 
-  std::vector<Chip>* GetChips() { return chips_.get(); }
+  std::vector<UserAction>* GetUserActions() { return user_actions_.get(); }
 
   PaymentRequestOptions* GetOptions() { return payment_request_options_.get(); }
 
@@ -110,7 +111,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::string status_message_;
   std::unique_ptr<Details> details_;
   std::unique_ptr<InfoBox> info_box_;
-  std::unique_ptr<std::vector<Chip>> chips_;
+  std::unique_ptr<std::vector<UserAction>> user_actions_;
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;

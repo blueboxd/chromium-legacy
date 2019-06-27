@@ -558,7 +558,8 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)systemSelectionCalloutCopyButton {
-  return grey_accessibilityLabel(@"Copy");
+  return grey_allOf(grey_accessibilityLabel(@"Copy"),
+                    [self systemSelectionCallout], nil);
 }
 
 + (id<GREYMatcher>)contextMenuCopyButton {

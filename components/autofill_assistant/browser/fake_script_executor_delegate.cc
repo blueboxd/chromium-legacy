@@ -83,9 +83,9 @@ void FakeScriptExecutorDelegate::SetProgress(int progress) {}
 
 void FakeScriptExecutorDelegate::SetProgressVisible(bool visible) {}
 
-void FakeScriptExecutorDelegate::SetChips(
-    std::unique_ptr<std::vector<Chip>> chips) {
-  chips_ = std::move(chips);
+void FakeScriptExecutorDelegate::SetUserActions(
+    std::unique_ptr<std::vector<UserAction>> user_actions) {
+  user_actions_ = std::move(user_actions);
 }
 
 void FakeScriptExecutorDelegate::SetPaymentRequestOptions(

@@ -129,6 +129,7 @@
     <div class="container">
       <div id="title-bar">$i18n{createProfileTitle}</div>
       <cr-input id="nameInput" value="{{profileName_}}" pattern=".*\S.*"
+          placeholder="$i18n{createProfileNamePlaceholder}"
           auto-validate spellcheck="false">
       </cr-input>
       <cr-profile-avatar-selector avatars="[[availableIcons_]]"

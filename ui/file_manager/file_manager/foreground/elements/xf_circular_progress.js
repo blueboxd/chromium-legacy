@@ -67,7 +67,7 @@ class CircularProgress extends HTMLElement {
                         stroke-width: 3px;
                     }
                     text {
-                        font: Roboto Bold 14pt;
+                        font: bold 14px Roboto;
                         fill: rgb(26, 115, 232);
                     }
                 </style>

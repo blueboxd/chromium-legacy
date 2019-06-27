@@ -271,7 +271,7 @@ class MediaStreamAudioFifo {
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::AudioProcessingProperties& properties,
-    WebRtcPlayoutDataSource* playout_data_source)
+    blink::WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       audio_delay_stats_reporter_(kBuffersPerSecond),
       playout_data_source_(playout_data_source),

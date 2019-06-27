@@ -25,6 +25,7 @@ component("drivefs") {
   deps = [
     "//base",
     "//chromeos/components/drivefs/mojom",
+    "//chromeos/constants",
     "//chromeos/dbus",
     "//chromeos/disks",
     "//components/account_id",

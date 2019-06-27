@@ -233,9 +233,10 @@ void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
   std::move(callback).Run(std::move(card), cvc);
 }
 
-void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
+void ScriptExecutor::Prompt(
+    std::unique_ptr<std::vector<UserAction>> user_actions) {
   if (touchable_element_area_) {
-    // SetChips reproduces the end-of-script appearance and behavior during
+    // Prompt() reproduces the end-of-script appearance and behavior during
     // script execution. This includes allowing access to touchable elements,
     // set through a previous call to the focus action with touchable_elements
     // set.
@@ -251,14 +252,17 @@ void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
 
   // We change the chips callback with a callback that cleans up the state
   // before calling the initial callback.
-  for (auto& chip : *chips) {
-    chip.callback = base::BindOnce(&ScriptExecutor::OnChosen,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   std::move(chip.callback));
+  for (auto& user_action : *user_actions) {
+    if (!user_action.callback)
+      continue;
+
+    user_action.callback = base::BindOnce(&ScriptExecutor::OnChosen,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          std::move(user_action.callback));
   }
 
   delegate_->EnterState(AutofillAssistantState::PROMPT);
-  delegate_->SetChips(std::move(chips));
+  delegate_->SetUserActions(std::move(user_actions));
 }
 
 void ScriptExecutor::CancelPrompt() {
@@ -266,7 +270,7 @@ void ScriptExecutor::CancelPrompt() {
   if (on_terminate_prompt_)
     std::move(on_terminate_prompt_);
 
-  delegate_->SetChips(nullptr);
+  delegate_->SetUserActions(nullptr);
   CleanUpAfterPrompt();
 }
 

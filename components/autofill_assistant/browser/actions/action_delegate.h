@@ -84,15 +84,16 @@ class ActionDelegate {
       ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
-  // Ask user to select one of the given suggestions.
+  // Have the UI enter the prompt mode and make the given actions available.
   //
   // While a prompt is in progress, the UI looks the same as it does between
   // scripts, even though we're in the middle of a script. This includes
   // allowing access to the touchable elements set previously, in the same
   // script.
-  virtual void Prompt(std::unique_ptr<std::vector<Chip>> chips) = 0;
+  virtual void Prompt(
+      std::unique_ptr<std::vector<UserAction>> user_actions) = 0;
 
-  // Remove all chips from the UI.
+  // Have the UI leave the prompt state and go back to its previous state.
   virtual void CancelPrompt() = 0;
 
   // Asks the user to provide the data used by UseAddressAction and
@@ -139,7 +140,7 @@ class ActionDelegate {
 
   // Sets selector of areas that can be manipulated:
   // - after the end of the script and before the beginning of the next script.
-  // - during the next call to SetChips()
+  // - during the next call to SetUserActions()
   // whichever comes first.
   virtual void SetTouchableElementArea(
       const ElementAreaProto& touchable_element_area) = 0;

@@ -29,12 +29,8 @@ class PanelButton extends HTMLElement {
    */
   static html_() {
     return `<style>
-              button {
-                background: none;
-                border: none;
-                height: 36px;
-                width: 36px;
-                position: relative;
+              cr-icon-button {
+                margin-inline-start: 0px;
               }
 
               :host([data-category='pause']) {
@@ -69,16 +65,18 @@ class PanelButton extends HTMLElement {
               }
 
               :host([data-category='expand']) {
-                  animation: setexpand 150ms forwards;
+                  animation: setexpand 200ms forwards;
               }
 
               :host([data-category='collapse']) {
-                  animation: setcollapse 150ms forwards;
+                  animation: setcollapse 200ms forwards;
+              }
+              :host {
+                  width: 36px;
+                  position: relative;
               }
             </style>
-            <button>
-                <paper-ripple class="circle" center></paper-ripple>
-            </button>`;
+            <cr-icon-button></cr-icon-button>`;
   }
 }
 

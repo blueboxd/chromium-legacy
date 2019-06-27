@@ -17,6 +17,7 @@
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/element_precondition.h"
+#include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
 
@@ -37,7 +38,7 @@ class PromptAction : public Action {
   void CheckPreconditions();
   void OnPreconditionResult(size_t choice_index, bool result);
   void OnPreconditionChecksDone();
-  void UpdateChips();
+  void UpdateUserActions();
   bool HasAutoSelect();
   void CheckAutoSelect();
   void OnAutoSelectElementExists(int choice_index, bool exists);
@@ -56,7 +57,7 @@ class PromptAction : public Action {
   std::vector<bool> precondition_results_;
 
   // true if something in precondition_results_ has changed, which means that
-  // the set of chips must be updated.
+  // the set of user actions must be updated.
   bool precondition_changed_ = false;
 
   // Batch element checker for preconditions.

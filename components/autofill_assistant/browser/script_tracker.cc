@@ -26,10 +26,9 @@ void SortScripts(std::vector<Script*>* scripts) {
               // Order of scripts with the same priority is arbitrary. Fallback
               // to ordering by name and path, arbitrarily, for the behavior to
               // be consistent across runs.
-              return std::tie(a->priority, a->handle.chip.text(),
-                              a->handle.path) < std::tie(b->priority,
-                                                         b->handle.chip.text(),
-                                                         a->handle.path);
+              return std::tie(a->priority, a->handle.chip.text,
+                              a->handle.path) <
+                     std::tie(b->priority, b->handle.chip.text, a->handle.path);
             });
 }
 
@@ -79,9 +78,8 @@ void ScriptTracker::CheckScripts() {
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
-    if (script->handle.chip.text().empty() &&
-        script->handle.chip.icon() == ChipIcon::NO_ICON &&
-        !script->handle.autostart)
+    if (script->handle.chip.empty() &&
+        script->handle.direct_action_names.empty() && !script->handle.autostart)
       continue;
 
     script->precondition->Check(
@@ -158,11 +156,16 @@ base::Value ScriptTracker::GetDebugContext() const {
   std::vector<base::Value> runnable_scripts_js;
   for (const auto& entry : runnable_scripts_) {
     base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
-    script_js.SetKey("name", base::Value(entry.chip.text()));
+    script_js.SetKey("name", base::Value(entry.chip.text));
     script_js.SetKey("path", base::Value(entry.path));
     script_js.SetKey("initial_prompt", base::Value(entry.initial_prompt));
     script_js.SetKey("autostart", base::Value(entry.autostart));
-    script_js.SetKey("chip_type", base::Value(entry.chip.type()));
+    script_js.SetKey("chip_type", base::Value(entry.chip.type));
+    std::vector<base::Value> direct_action_names;
+    for (const auto& name : entry.direct_action_names) {
+      direct_action_names.emplace_back(base::Value(name));
+    }
+    script_js.SetKey("direct_action_names", base::Value(direct_action_names));
     runnable_scripts_js.push_back(std::move(script_js));
   }
   dict.SetKey("runnable-scripts", base::Value(runnable_scripts_js));

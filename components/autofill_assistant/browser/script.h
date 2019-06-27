@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/script_precondition.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
@@ -19,7 +20,8 @@ struct ScriptHandle {
   ScriptHandle(const ScriptHandle& orig);
   ~ScriptHandle();
 
-  ChipProto chip;
+  Chip chip;
+  std::vector<std::string> direct_action_names;
   std::string path;
   std::string initial_prompt;
 

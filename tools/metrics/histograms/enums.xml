@@ -54782,6 +54782,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="HAD_PREVIOUS_EXCEPTION"/>
 </enum>
 
+<enum name="SSLHandshakeDetails">
+  <int value="0" label="TLS 1.2 (or earlier) full handshake (2-RTT)"/>
+  <int value="1" label="TLS 1.2 (or earlier) resumption (1-RTT)"/>
+  <int value="2" label="TLS 1.2 full handshake with False Start (1-RTT)"/>
+  <int value="3" label="TLS 1.3 full handshake (1-RTT, usually)"/>
+  <int value="4" label="TLS 1.3 resumption handshake (1-RTT, usually)"/>
+  <int value="5" label="TLS 1.3 0-RTT handshake (0-RTT)"/>
+</enum>
+
 <enum name="SSLHashAlgorithm">
   <obsolete>
     Removed June 2016.

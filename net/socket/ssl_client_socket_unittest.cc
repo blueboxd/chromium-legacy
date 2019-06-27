@@ -67,6 +67,7 @@
 #include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_handshake_details.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/ssl/test_ssl_private_key.h"
@@ -5509,6 +5510,136 @@ TEST_P(TLS13DowngradeMetricsTest, Metrics) {
                                   params.expect_downgrade_type, 1);
   } else {
     histograms.ExpectTotalCount("Net.SSLTLS13DowngradeTypeTLS13Experiment", 0);
+  }
+}
+
+struct SSLHandshakeDetailsParams {
+  bool alpn;
+  bool early_data;
+  uint16_t version;
+  SSLHandshakeDetails expected_initial;
+  SSLHandshakeDetails expected_resume;
+};
+
+const SSLHandshakeDetailsParams kSSLHandshakeDetailsParams[] = {
+    // TLS 1.0 and 1.1 never do False Start.
+    {false /* no ALPN */, false /* no early data */, SSL_PROTOCOL_VERSION_TLS1,
+     SSLHandshakeDetails::kTLS12Full, SSLHandshakeDetails::kTLS12Resume},
+    {false /* no ALPN */, false /* no early data */,
+     SSL_PROTOCOL_VERSION_TLS1_1, SSLHandshakeDetails::kTLS12Full,
+     SSLHandshakeDetails::kTLS12Resume},
+
+    // TLS 1.2 does False Start if ALPN is enabled.
+    {false /* no ALPN */, false /* no early data */,
+     SSL_PROTOCOL_VERSION_TLS1_2, SSLHandshakeDetails::kTLS12Full,
+     SSLHandshakeDetails::kTLS12Resume},
+    {true /* ALPN */, false /* no early data */, SSL_PROTOCOL_VERSION_TLS1_2,
+     SSLHandshakeDetails::kTLS12FalseStart, SSLHandshakeDetails::kTLS12Resume},
+
+    // TLS 1.3 supports full handshakes, resumption, and 0-RTT.
+    {false /* no ALPN */, false /* no early data */,
+     SSL_PROTOCOL_VERSION_TLS1_3, SSLHandshakeDetails::kTLS13Full,
+     SSLHandshakeDetails::kTLS13Resume},
+    {false /* no ALPN */, true /* early data */, SSL_PROTOCOL_VERSION_TLS1_3,
+     SSLHandshakeDetails::kTLS13Full, SSLHandshakeDetails::kTLS13Early},
+};
+
+class SSLHandshakeDetailsTest
+    : public SSLClientSocketTest,
+      public ::testing::WithParamInterface<SSLHandshakeDetailsParams> {};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SSLHandshakeDetailsTest,
+                         ::testing::ValuesIn(kSSLHandshakeDetailsParams));
+
+TEST_P(SSLHandshakeDetailsTest, Metrics) {
+  // Enable all test features in the server.
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  server_config.early_data_enabled = true;
+  server_config.alpn_protos = {kProtoHTTP11};
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLConfig client_config;
+  client_config.version_min = GetParam().version;
+  client_config.version_max = GetParam().version;
+  client_config.early_data_enabled = GetParam().early_data;
+  if (GetParam().alpn) {
+    client_config.alpn_protos = {kProtoHTTP11};
+  }
+
+  SSLVersion version;
+  switch (GetParam().version) {
+    case SSL_PROTOCOL_VERSION_TLS1:
+      version = SSL_CONNECTION_VERSION_TLS1;
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1_1:
+      version = SSL_CONNECTION_VERSION_TLS1_1;
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1_2:
+      version = SSL_CONNECTION_VERSION_TLS1_2;
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1_3:
+      version = SSL_CONNECTION_VERSION_TLS1_3;
+      break;
+    default:
+      FAIL() << GetParam().version;
+  }
+
+  // Make the initial connection.
+  {
+    base::HistogramTester histograms;
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsOk());
+
+    // Sanity-check the socket matches the test parameters.
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(version, SSLConnectionStatusToVersion(info.connection_status));
+    EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, info.handshake_type);
+    EXPECT_EQ(GetParam().alpn, sock_->WasAlpnNegotiated());
+
+    histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
+                                  GetParam().expected_initial, 1);
+
+    // Use the socket to ensure the session ticket has been picked up.
+    base::StringPiece request = "GET / HTTP/1.0\r\n\r\n";
+    TestCompletionCallback callback;
+    while (!request.empty()) {
+      auto request_buffer =
+          base::MakeRefCounted<StringIOBuffer>(request.as_string());
+      rv = callback.GetResult(
+          sock_->Write(request_buffer.get(), request_buffer->size(),
+                       callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
+      ASSERT_GT(rv, 0);
+      request = request.substr(rv);
+    }
+
+    auto response_buffer = base::MakeRefCounted<IOBuffer>(1024);
+    rv = callback.GetResult(
+        sock_->Read(response_buffer.get(), 1024, callback.callback()));
+    ASSERT_GT(rv, 0);
+  }
+
+  // Make a resumption connection.
+  {
+    base::HistogramTester histograms;
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsOk());
+
+    // Sanity-check the socket matches the test parameters.
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(version, SSLConnectionStatusToVersion(info.connection_status));
+    EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, info.handshake_type);
+    EXPECT_EQ(GetParam().alpn, sock_->WasAlpnNegotiated());
+
+    histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
+                                  GetParam().expected_resume, 1);
   }
 }
 

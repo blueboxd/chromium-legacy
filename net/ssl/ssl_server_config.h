@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "net/base/net_export.h"
+#include "net/socket/next_proto.h"
 #include "net/ssl/ssl_config.h"
 
 namespace net {
@@ -81,6 +82,11 @@ struct NET_EXPORT SSLServerConfig {
   // This field is meaningful only if client certificates are requested.
   // If a verifier is not provided then all certificates are accepted.
   ClientCertVerifier* client_cert_verifier;
+
+  // The list of application level protocols supported with ALPN (Application
+  // Layer Protocol Negotiation), in decreasing order of preference.  Protocols
+  // will be advertised in this order during TLS handshake.
+  NextProtoVector alpn_protos;
 };
 
 }  // namespace net

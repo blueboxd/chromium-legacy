@@ -123,7 +123,7 @@ struct NET_EXPORT SSLConfig {
   bool send_client_cert;
 
   // The list of application level protocols supported with ALPN (Application
-  // Layer Protocol Negotation), in decreasing order of preference.  Protocols
+  // Layer Protocol Negotiation), in decreasing order of preference.  Protocols
   // will be advertised in this order during TLS handshake.
   NextProtoVector alpn_protos;
 

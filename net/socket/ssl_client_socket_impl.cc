@@ -50,6 +50,7 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_handshake_details.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_key_logger.h"
 #include "net/ssl/ssl_private_key.h"
@@ -872,9 +873,7 @@ int SSLClientSocketImpl::Init() {
   if (!ssl_config_.alpn_protos.empty()) {
     std::vector<uint8_t> wire_protos =
         SerializeNextProtos(ssl_config_.alpn_protos);
-    SSL_set_alpn_protos(ssl_.get(),
-                        wire_protos.empty() ? nullptr : &wire_protos[0],
-                        wire_protos.size());
+    SSL_set_alpn_protos(ssl_.get(), wire_protos.data(), wire_protos.size());
   }
 
   SSL_enable_signed_cert_timestamps(ssl_.get());
@@ -1074,6 +1073,26 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
       }
     }
   }
+
+  SSLHandshakeDetails details;
+  if (SSL_version(ssl_.get()) < TLS1_3_VERSION) {
+    if (SSL_session_reused(ssl_.get())) {
+      details = SSLHandshakeDetails::kTLS12Resume;
+    } else if (SSL_in_false_start(ssl_.get())) {
+      details = SSLHandshakeDetails::kTLS12FalseStart;
+    } else {
+      details = SSLHandshakeDetails::kTLS12Full;
+    }
+  } else {
+    if (SSL_in_early_data(ssl_.get())) {
+      details = SSLHandshakeDetails::kTLS13Early;
+    } else if (SSL_session_reused(ssl_.get())) {
+      details = SSLHandshakeDetails::kTLS13Resume;
+    } else {
+      details = SSLHandshakeDetails::kTLS13Full;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.SSLHandshakeDetails", details);
 
   completed_connect_ = true;
   next_handshake_state_ = STATE_NONE;

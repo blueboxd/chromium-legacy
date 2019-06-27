@@ -26,18 +26,9 @@
 
       cr-input {
         --cr-input-background-color: white;
-        --cr-input-container: {
-          border-radius: 0;
-          height: 100%;
-        }
-        --cr-input-inner-container: {
-          height: 100%;
-        }
+        --cr-input-border-bottom: 1px solid var(--cr-secondary-text-color);
+        --cr-input-border-radius: 0;
         --cr-input-error-display: none;
-        --cr-input-input: {
-          height: 100%;
-          border-bottom: 1px solid var(--cr-secondary-text-color);
-        }
         --cr-input-padding-end: 0;
         --cr-input-padding-start: 0;
         --cr-input-padding-bottom: 2px;
@@ -48,7 +39,12 @@
         width: 160px;  /* Special width for search input. */
       }
 
-      cr-input::part(row-container) {
+      /* TODO(johntlee): Figure out a way to align the input without
+       * accessing all these parts. */
+      cr-input::part(row-container),
+      cr-input::part(input-container),
+      cr-input::part(inner-input-container),
+      cr-input::part(input) {
         height: 100%;
       }
 

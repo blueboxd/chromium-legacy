@@ -9728,7 +9728,7 @@ IN_PROC_BROWSER_TEST_F(
 // the url by canceling a main frame navigation.
 // See https://crbug.com/966914.
 // Failing on Linux CFI. http://crbug.com/974319
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
   DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
 #else

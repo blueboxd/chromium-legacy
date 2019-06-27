@@ -809,6 +809,11 @@ void OverviewItem::OnStartingAnimationComplete() {
   UpdateCannotSnapWarningVisibility();
 }
 
+void OverviewItem::StopWidgetAnimation() {
+  DCHECK(item_widget_.get());
+  item_widget_->GetNativeWindow()->layer()->GetAnimator()->StopAnimating();
+}
+
 void OverviewItem::SetOpacity(float opacity) {
   item_widget_->SetOpacity(opacity);
   transform_window_.SetOpacity(opacity);

@@ -74,7 +74,9 @@ public class VariationsSeedLoader {
     private static final long MAX_REQUEST_PERIOD_MILLIS = TimeUnit.HOURS.toMillis(1);
 
     // Block in finishVariationsInit() for at most this value waiting for the seed. If the timeout
-    // is exceeded, proceed with variations disabled.
+    // is exceeded, proceed with variations disabled, and record the event in the
+    // Variations.SeedLoadResult histogram's "Seed Load Timed Out" bucket. See the discussion on
+    // https://crbug.com/936172 about the trade-offs of increasing or decreasing this value.
     private static final long SEED_LOAD_TIMEOUT_MILLIS = 20;
 
     private SeedLoadAndUpdateRunnable mRunnable;

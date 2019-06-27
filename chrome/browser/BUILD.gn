@@ -319,6 +319,8 @@ jumbo_split_static_library("browser") {
     "component_updater/file_type_policies_component_installer.h",
     "component_updater/mei_preload_component_installer.cc",
     "component_updater/mei_preload_component_installer.h",
+    "component_updater/on_device_head_suggest_component_installer.cc",
+    "component_updater/on_device_head_suggest_component_installer.h",
     "component_updater/optimization_hints_component_installer.cc",
     "component_updater/optimization_hints_component_installer.h",
     "component_updater/origin_trials_component_installer.cc",

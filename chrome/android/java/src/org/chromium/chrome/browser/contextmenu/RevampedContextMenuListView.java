@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.ListView;
 
 import org.chromium.chrome.R;
@@ -32,11 +33,19 @@ public class RevampedContextMenuListView extends ListView {
      * @return The width of the context menu in pixels
      */
     private int calculateWidth() {
-        int windowWidthPx = getResources().getDisplayMetrics().widthPixels;
-        int maxWidth = getResources().getDimensionPixelSize(R.dimen.context_menu_max_width);
-        int lateralMargin =
+        final int windowWidthPx = getResources().getDisplayMetrics().widthPixels;
+        final int maxWidth = getResources().getDimensionPixelSize(R.dimen.context_menu_max_width);
+        final int lateralMargin =
                 getResources().getDimensionPixelSize(R.dimen.revamped_context_menu_lateral_margin);
 
-        return Math.min(maxWidth, windowWidthPx - 2 * lateralMargin);
+        // This ListView should be inside a FrameLayout with the popup_bg_tinted background. Since
+        // the background is a 9-patch, it gets some extra padding automatically, and we should
+        // take it into account when calculating the width here.
+        final View frame = ((View) getParent());
+        assert frame.getId() == R.id.context_menu_frame;
+        final int parentLateralPadding = frame.getPaddingLeft();
+
+        return Math.min(maxWidth - 2 * parentLateralPadding,
+                windowWidthPx - 2 * lateralMargin - 2 * parentLateralPadding);
     }
 }

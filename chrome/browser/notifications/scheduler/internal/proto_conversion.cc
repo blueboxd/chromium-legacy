@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace notifications {
 
@@ -174,8 +175,8 @@ SchedulerTaskTime FromSchedulerTaskTime(
 void NotificationDataToProto(NotificationData* notification_data,
                              proto::NotificationData* proto) {
   proto->set_id(notification_data->id);
-  proto->set_title(notification_data->title);
-  proto->set_message(notification_data->message);
+  proto->set_title(base::UTF16ToUTF8(notification_data->title));
+  proto->set_message(base::UTF16ToUTF8(notification_data->message));
   proto->set_url(notification_data->url);
 }
 
@@ -183,8 +184,8 @@ void NotificationDataToProto(NotificationData* notification_data,
 void NotificationDataFromProto(proto::NotificationData* proto,
                                NotificationData* notification_data) {
   notification_data->id = proto->id();
-  notification_data->title = proto->title();
-  notification_data->message = proto->message();
+  notification_data->title = base::UTF8ToUTF16(proto->title());
+  notification_data->message = base::UTF8ToUTF16(proto->message());
   notification_data->url = proto->url();
 }
 

@@ -16,22 +16,9 @@
 
       #pageselector {
         --cr-input-focus-color: transparent;
-        --cr-input-container: {
-          overflow: initial;
-        }
         --cr-input-error-display: none;
         --cr-input-background-color: transparent;
         --cr-input-color: white;
-        --cr-input-inner-container: {
-          margin-inline-end: -3px;
-        }
-        --cr-input-input: {
-          text-align: end;
-          caret-color: #fff;
-          border-radius: 2px;
-          box-sizing: content-box;
-          margin-inline-start: -3px;
-        }
         --cr-input-padding-end: 3px;
         --cr-input-padding-start: 3px;
         --cr-input-padding-bottom: 0;
@@ -39,6 +26,23 @@
         height: 100%;
         margin-inline-start: -3px;
         width: 1ch;
+      }
+
+      /* TODO(johntlee): Figure out a way to align the input without
+       * accessing all these parts. */
+      #pageselector::part(input-container) {
+        overflow: initial;
+      }
+
+      #pageselector::part(inner-input-container) {
+        margin-inline-end: -3px;
+      }
+
+      #pageselector::part(input) {
+        box-sizing: content-box;
+        caret-color: #fff;
+        margin-inline-start: -3px;
+        text-align: end;
       }
 
       #pageselector[focused_],

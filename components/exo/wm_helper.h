@@ -28,6 +28,7 @@ class ActivationChangeObserver;
 
 namespace display {
 class ManagedDisplayInfo;
+class ManagedDisplayMode;
 }
 
 namespace ui {
@@ -106,6 +107,9 @@ class WMHelper : public aura::client::DragDropDelegate {
       int64_t display_id) const = 0;
   virtual const std::vector<uint8_t>& GetDisplayIdentificationData(
       int64_t display_id) const = 0;
+  virtual bool GetActiveModeForDisplayId(
+      int64_t display_id,
+      display::ManagedDisplayMode* mode) const = 0;
 
   virtual aura::Window* GetPrimaryDisplayContainer(int container_id) = 0;
   virtual aura::Window* GetActiveWindow() const = 0;

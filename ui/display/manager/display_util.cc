@@ -62,6 +62,7 @@ bool WithinEpsilon(float a, float b) {
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
 std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
   switch (state) {
     case chromeos::DISPLAY_POWER_ALL_ON:
@@ -75,23 +76,6 @@ std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
     default:
       return "unknown (" + base::NumberToString(state) + ")";
   }
-}
-
-std::string MultipleDisplayStateToString(MultipleDisplayState state) {
-  switch (state) {
-    case MULTIPLE_DISPLAY_STATE_INVALID:
-      return "INVALID";
-    case MULTIPLE_DISPLAY_STATE_HEADLESS:
-      return "HEADLESS";
-    case MULTIPLE_DISPLAY_STATE_SINGLE:
-      return "SINGLE";
-    case MULTIPLE_DISPLAY_STATE_MULTI_MIRROR:
-      return "DUAL_MIRROR";
-    case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED:
-      return "MULTI_EXTENDED";
-  }
-  NOTREACHED() << "Unknown state " << state;
-  return "INVALID";
 }
 
 int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
@@ -114,6 +98,25 @@ int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
       num_on_displays++;
   }
   return num_on_displays;
+}
+
+#endif  // defined(OS_CHROMEOS)
+
+std::string MultipleDisplayStateToString(MultipleDisplayState state) {
+  switch (state) {
+    case MULTIPLE_DISPLAY_STATE_INVALID:
+      return "INVALID";
+    case MULTIPLE_DISPLAY_STATE_HEADLESS:
+      return "HEADLESS";
+    case MULTIPLE_DISPLAY_STATE_SINGLE:
+      return "SINGLE";
+    case MULTIPLE_DISPLAY_STATE_MULTI_MIRROR:
+      return "DUAL_MIRROR";
+    case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED:
+      return "MULTI_EXTENDED";
+  }
+  NOTREACHED() << "Unknown state " << state;
+  return "INVALID";
 }
 
 bool IsPhysicalDisplayType(DisplayConnectionType type) {

@@ -78,6 +78,9 @@ class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
       int64_t display_id) const override;
   const std::vector<uint8_t>& GetDisplayIdentificationData(
       int64_t display_id) const override;
+  bool GetActiveModeForDisplayId(
+      int64_t display_id,
+      display::ManagedDisplayMode* mode) const override;
 
   aura::Window* GetPrimaryDisplayContainer(int container_id) override;
   aura::Window* GetActiveWindow() const override;
@@ -122,6 +125,8 @@ class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
                                  uint32_t changed_metrics) override;
 
     const display::ManagedDisplayInfo& GetDisplayInfo(int64_t display_id) const;
+    bool GetActiveModeForDisplayId(int64_t display_id,
+                                   display::ManagedDisplayMode* mode) const;
 
    private:
     std::map<int64_t, display::ManagedDisplayInfo> display_info_;

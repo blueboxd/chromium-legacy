@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,8 +171,8 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
 
   // Test notification data.
   entry.notification_data.id = kGuid;
-  entry.notification_data.title = "title";
-  entry.notification_data.message = "message";
+  entry.notification_data.title = base::UTF8ToUTF16("title");
+  entry.notification_data.message = base::UTF8ToUTF16("message");
   entry.icon_uuid = "icon_uuid";
   entry.notification_data.url = "url";
   TestNotificationEntryConversion(&entry);

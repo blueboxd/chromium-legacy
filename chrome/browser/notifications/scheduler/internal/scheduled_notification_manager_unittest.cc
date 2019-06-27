@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/collection_store.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
@@ -136,7 +137,7 @@ TEST_F(ScheduledNotificationManagerTest, InitFailed) {
 TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   InitWithData(std::vector<NotificationEntry>());
   NotificationData notification_data;
-  notification_data.title = kTitle;
+  notification_data.title = base::UTF8ToUTF16(kTitle);
   ScheduleParams schedule_params;
   schedule_params.priority = ScheduleParams::Priority::kHigh;
   auto params = std::make_unique<NotificationParams>(
@@ -157,7 +158,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_NE(entry->create_time, base::Time());
 
   // TODO(xingliu): change these to compare with operator==.
-  EXPECT_EQ(entry->notification_data.title, kTitle);
+  EXPECT_EQ(base::UTF16ToUTF8(entry->notification_data.title), kTitle);
   EXPECT_EQ(entry->schedule_params.priority, ScheduleParams::Priority::kHigh);
 }
 

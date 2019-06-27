@@ -286,7 +286,7 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
         offer_fido_opt_in && offer_fido_opt_in->GetBool();
 
     const auto* dictionary_value = response.FindKeyOfType(
-        "request_options", base::Value::Type::DICTIONARY);
+        "fido_request_options", base::Value::Type::DICTIONARY);
     if (dictionary_value)
       unmask_details_.fido_request_options = dictionary_value->Clone();
 

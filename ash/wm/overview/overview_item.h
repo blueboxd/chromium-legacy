@@ -180,6 +180,9 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // if there was no starting animation.
   void OnStartingAnimationComplete();
 
+  // Stops the current animation of |item_widget_|.
+  void StopWidgetAnimation();
+
   // Changes the opacity of all the windows the item owns.
   void SetOpacity(float opacity);
   float GetOpacity();

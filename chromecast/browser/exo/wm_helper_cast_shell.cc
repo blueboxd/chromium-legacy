@@ -37,6 +37,13 @@ gfx::Rect GetNativeBounds(const display::Display& display) {
   }
 }
 
+std::vector<display::ManagedDisplayMode> GetDisplayModes(
+    const display::Display& display) {
+  display::ManagedDisplayMode mode(GetNativeBounds(display).size(), 60.f, false,
+                                   true, 1.f);
+  return std::vector<display::ManagedDisplayMode>(1, mode);
+}
+
 }  // namespace
 
 WMHelperCastShell::WMHelperCastShell(
@@ -126,6 +133,12 @@ const std::vector<uint8_t>& WMHelperCastShell::GetDisplayIdentificationData(
   return no_data;
 }
 
+bool WMHelperCastShell::GetActiveModeForDisplayId(
+    int64_t display_id,
+    display::ManagedDisplayMode* mode) const {
+  return display_observer_.GetActiveModeForDisplayId(display_id, mode);
+}
+
 aura::Window* WMHelperCastShell::GetPrimaryDisplayContainer(int container_id) {
   return cast_window_manager_aura_->GetRootWindow();
 }
@@ -210,6 +223,8 @@ void WMHelperCastShell::CastDisplayObserver::OnDisplayAdded(
   md.SetRotation(new_display.rotation(),
                  display::Display::RotationSource::ACTIVE);
   md.SetBounds(GetNativeBounds(new_display));
+  md.SetManagedDisplayModes(GetDisplayModes(new_display));
+  md.set_native(true);
   display_info_.emplace(new_display.id(), md);
 }
 
@@ -233,8 +248,25 @@ const display::ManagedDisplayInfo&
 WMHelperCastShell::CastDisplayObserver::GetDisplayInfo(
     int64_t display_id) const {
   auto iter = display_info_.find(display_id);
-  CHECK(iter != display_info_.end()) << display_id;
+  DCHECK(iter != display_info_.end())
+      << "Failed to find display " << display_id;
   return iter->second;
+}
+
+bool WMHelperCastShell::CastDisplayObserver::GetActiveModeForDisplayId(
+    int64_t display_id,
+    display::ManagedDisplayMode* mode) const {
+  auto iter = display_info_.find(display_id);
+  DCHECK(iter != display_info_.end())
+      << "Failed to find display " << display_id;
+  for (const auto& display_mode : iter->second.display_modes()) {
+    if (display_mode.native()) {
+      *mode = display_mode;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace exo

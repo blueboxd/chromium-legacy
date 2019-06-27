@@ -183,6 +183,8 @@ void ChromiumHttpConnection::Start() {
   auto factory =
       SharedURLLoaderFactory::Create(std::move(url_loader_factory_info_));
   if (handle_partial_response_) {
+    url_loader_->SetOnResponseStartedCallback(
+        base::BindOnce(&ChromiumHttpConnection::OnResponseStarted, this));
     url_loader_->DownloadAsStream(factory.get(), this);
   } else {
     url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -192,11 +194,21 @@ void ChromiumHttpConnection::Start() {
 }
 
 void ChromiumHttpConnection::Pause() {
-  NOTIMPLEMENTED();
+  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Pause);
+  is_paused_ = true;
 }
 
 void ChromiumHttpConnection::Resume() {
-  NOTIMPLEMENTED();
+  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Resume);
+  is_paused_ = false;
+
+  if (!partial_response_cache_.empty()) {
+    delegate_->OnPartialResponse(partial_response_cache_);
+    partial_response_cache_.clear();
+  }
+
+  if (on_resume_callback_)
+    std::move(on_resume_callback_).Run();
 }
 
 void ChromiumHttpConnection::Close() {
@@ -263,14 +275,18 @@ void ChromiumHttpConnection::StartReading(
 void ChromiumHttpConnection::OnDataReceived(base::StringPiece string_piece,
                                             base::OnceClosure resume) {
   DCHECK(handle_partial_response_);
-  if (enable_header_response_) {
-    // Cache the partial responses, we need to send the headers back before
-    // any |OnPartialResposne| to honor the API contract.
-    partial_response_cache_.emplace_back(string_piece.as_string());
+
+  if (is_paused_) {
+    // If the connection is paused, stop sending |OnPartialResponse|
+    // notification to the delegate and cache the response part.
+    on_resume_callback_ = std::move(resume);
+    DCHECK(partial_response_cache_.empty());
+    partial_response_cache_ = string_piece.as_string();
   } else {
+    DCHECK(partial_response_cache_.empty());
     delegate_->OnPartialResponse(string_piece.as_string());
+    std::move(resume).Run();
   }
-  std::move(resume).Run();
 }
 
 void ChromiumHttpConnection::OnComplete(bool success) {
@@ -286,12 +302,6 @@ void ChromiumHttpConnection::OnComplete(bool success) {
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
     raw_headers = url_loader_->ResponseInfo()->headers->raw_headers();
     response_code = url_loader_->ResponseInfo()->headers->response_code();
-  }
-
-  if (enable_header_response_) {
-    delegate_->OnHeaderResponse(raw_headers);
-    for (auto& partial_response : partial_response_cache_)
-      delegate_->OnPartialResponse(partial_response);
   }
 
   if (response_code != kResponseCodeInvalid) {
@@ -379,6 +389,16 @@ void ChromiumHttpConnection::OnURLLoadComplete(
           << response_code;
 
   delegate_->OnCompleteResponse(response_code, raw_headers, *response_body);
+}
+
+void ChromiumHttpConnection::OnResponseStarted(
+    const GURL& final_url,
+    const network::ResourceResponseHead& response_header) {
+  if (enable_header_response_ && response_header.headers) {
+    // Only propagate |OnHeaderResponse()| once before any |OnPartialResponse()|
+    // invoked to honor the API contract.
+    delegate_->OnHeaderResponse(response_header.headers->raw_headers());
+  }
 }
 
 }  // namespace assistant

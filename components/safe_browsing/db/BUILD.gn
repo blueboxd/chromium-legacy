@@ -438,6 +438,8 @@ static_library("allowlist_checker_client") {
   deps = [
     ":database_manager",
     "//base:base",
+    "//content/public/browser",
+    "//url:url",
   ]
 }
 

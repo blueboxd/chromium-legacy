@@ -77,6 +77,9 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
       int64_t display_id) const override;
   const std::vector<uint8_t>& GetDisplayIdentificationData(
       int64_t display_id) const override;
+  bool GetActiveModeForDisplayId(
+      int64_t display_id,
+      display::ManagedDisplayMode* mode) const override;
 
   aura::Window* GetPrimaryDisplayContainer(int container_id) override;
   aura::Window* GetActiveWindow() const override;

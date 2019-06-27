@@ -251,13 +251,9 @@ iron-selector#cast-mode-list {
 
 #sink-search-input {
   --cr-input-background-color: white;
-  --cr-input-container: {
-    border-radius: 0;
-  }
+  --cr-input-border-bottom: 1px solid var(--paper-grey-800);
+  --cr-input-border-radius: 0;
   --cr-input-error-display: none;
-  --cr-input-input: {
-    border-bottom: 1px solid var(--paper-grey-800);
-  }
   --cr-input-padding-end: 0;
   --cr-input-padding-start: 0;
   --cr-input-padding-bottom: 2px;

@@ -44,6 +44,7 @@
 #include "components/exo/wayland/wl_subcompositor.h"
 #include "components/exo/wayland/wp_presentation.h"
 #include "components/exo/wayland/wp_viewporter.h"
+#include "components/exo/wayland/zaura_shell.h"
 #include "components/exo/wayland/zcr_alpha_compositing.h"
 #include "components/exo/wayland/zcr_secure_output.h"
 #include "components/exo/wayland/zcr_stylus.h"
@@ -54,7 +55,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/exo/wayland/wl_shell.h"
-#include "components/exo/wayland/zaura_shell.h"
 #include "components/exo/wayland/zcr_cursor_shapes.h"
 #include "components/exo/wayland/zcr_gaming_input.h"
 #include "components/exo/wayland/zcr_keyboard_configuration.h"
@@ -136,11 +136,11 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(),
                    &zwp_linux_explicit_synchronization_v1_interface, 1,
                    display_, bind_linux_explicit_synchronization);
+  wl_global_create(wl_display_.get(), &zaura_shell_interface,
+                   kZAuraShellVersion, display_, bind_aura_shell);
 #if defined(OS_CHROMEOS)
   wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
                    bind_shell);
-  wl_global_create(wl_display_.get(), &zaura_shell_interface,
-                   kZAuraShellVersion, display_, bind_aura_shell);
   wl_global_create(wl_display_.get(), &zcr_cursor_shapes_v1_interface, 1,
                    display_, bind_cursor_shapes);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,

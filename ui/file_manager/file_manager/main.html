@@ -36,15 +36,11 @@
       <style>
         #search-box cr-input {
           --cr-input-background-color: transparent;
+          --cr-input-border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+          --cr-input-border-radius: 0;
           --cr-input-color: white;
           --cr-input-focus-color: white;
-          --cr-input-container: {
-            border-radius: 0;
-          }
           --cr-input-error-display: none;
-          --cr-input-input: {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-          }
           --cr-input-padding-end: 20px;
           --cr-input-padding-start: 0;
           --cr-input-placeholder-color: rgba(255, 255, 255, 0.5);
@@ -55,14 +51,9 @@
         }
 
         .dialog-footer cr-input {
-          --cr-input-container: {
-            border-radius: 0;
-          }
+          --cr-input-border-bottom: 1px solid var(--paper-grey-800);
+          --cr-input-border-radius: 0;
           --cr-input-error-display: none;
-          --cr-input-input: {
-            background-color: transparent;
-            border-bottom: 1px solid var(--paper-grey-800);
-          }
           --cr-input-padding-end: 0;
           --cr-input-padding-start: 0;
           --cr-input-padding-bottom: 2px;

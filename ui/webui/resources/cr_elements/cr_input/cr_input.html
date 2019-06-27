@@ -50,6 +50,10 @@
         color: var(--cr-input-error-color);
       }
 
+      #input {
+        border-bottom: var(--cr-input-border-bottom, none);
+      }
+
       #input::placeholder {
         color: var(--cr-input-placeholder-color);
       }
@@ -104,12 +108,12 @@
     </style>
     <div id="label" hidden="[[!label]]" aria-hidden="true">[[label]]</div>
     <div id="row-container" part="row-container">
-      <div id="input-container">
-        <!-- Only attributes that are named inconsistently between html and js
-             need to use attr$="", such as |tabindex| vs .tabIndex and
-             |readonly| vs .readOnly. -->
-        <div id="inner-input-container">
+      <div id="input-container" part="input-container">
+        <div id="inner-input-container" part="inner-input-container">
           <slot name="prefix"></slot>
+          <!-- Only attributes that are named inconsistently between html and js
+              need to use attr$="", such as |tabindex| vs .tabIndex and
+              |readonly| vs .readOnly. -->
           <input id="input" disabled="[[disabled]]" autofocus="[[autofocus]]"
               value="{{value::input}}" tabindex$="[[tabindex]]" type="[[type]]"
               readonly$="[[readonly]]" maxlength$="[[maxlength]]"
@@ -117,7 +121,7 @@
               minlength$="[[minlength]]"
               max="[[max]]" min="[[min]]" on-focus="onInputFocus_"
               on-blur="onInputBlur_" on-change="onInputChange_"
-              on-keydown="onInputKeydown_">
+              on-keydown="onInputKeydown_" part="input">
         </div>
         <div id="underline"></div>
       </div>

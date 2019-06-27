@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/proto_conversion.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
@@ -149,7 +150,7 @@ TEST_F(NotificationStoreTest, AddAndUpdate) {
   VerifyDataInDb(std::move(expected));
 
   // Update and verified the new data.
-  entry.notification_data.title = "test_title";
+  entry.notification_data.title = base::UTF8ToUTF16("test_title");
   expected = std::make_unique<DbEntries>();
   expected->emplace_back(entry);
   store()->Update(kGuid, entry,

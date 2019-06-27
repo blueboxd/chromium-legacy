@@ -32,7 +32,7 @@ namespace safe_browsing {
 
 // Value returned by some functions that check an allowlist and may or may not
 // have an immediate answer.
-enum class AsyncMatch {
+enum class AsyncMatch : int {
   // If a hash prefix on the allowlist matches any of the computed hashes for
   // the URL. In this case, the callback method on the client is called back
   // later with the result.

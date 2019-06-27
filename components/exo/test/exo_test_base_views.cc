@@ -47,6 +47,11 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
     static std::vector<uint8_t> no_data;
     return no_data;
   }
+  bool GetActiveModeForDisplayId(
+      int64_t display_id,
+      display::ManagedDisplayMode* mode) const override {
+    return false;
+  }
 
   aura::Window* GetPrimaryDisplayContainer(int container_id) override {
     return root_window_;

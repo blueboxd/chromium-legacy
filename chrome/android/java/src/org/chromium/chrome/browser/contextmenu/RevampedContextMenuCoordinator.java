@@ -143,7 +143,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
      * Returns the fully complete dialog based off the params and the itemGroups.
      *
      * @param activity Used to inflate the dialog.
-     * @param view The inflated view that contains the list view.
+     * @param view The inflated view, including the scrim, that contains the list view.
      * @param touchPointYPx The x-coordinate of the touch that triggered the context menu.
      * @param touchPointXPx The y-coordinate of the touch that triggered the context menu.
      * @return Returns a final dialog that does not have a background can be displayed using
@@ -151,11 +151,11 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
      */
     private ContextMenuDialog createContextMenuDialog(
             Activity activity, View view, float touchPointXPx, float touchPointYPx) {
-        View listView = view.findViewById(R.id.context_menu_list_view);
+        View frame = view.findViewById(R.id.context_menu_frame);
         // TODO(sinansahin): Refactor ContextMenuDialog as well.
         final ContextMenuDialog dialog =
                 new ContextMenuDialog(activity, R.style.Theme_Chromium_DialogWhenLarge,
-                        touchPointXPx, touchPointYPx, mTopContentOffsetPx, listView);
+                        touchPointXPx, touchPointYPx, mTopContentOffsetPx, frame);
         dialog.setContentView(view);
 
         return dialog;

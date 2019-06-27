@@ -150,6 +150,13 @@ const std::vector<uint8_t>& WMHelperChromeOS::GetDisplayIdentificationData(
   return no_data;
 }
 
+bool WMHelperChromeOS::GetActiveModeForDisplayId(
+    int64_t display_id,
+    display::ManagedDisplayMode* mode) const {
+  return ash::Shell::Get()->display_manager()->GetActiveModeForDisplayId(
+      display_id, mode);
+}
+
 aura::Window* WMHelperChromeOS::GetPrimaryDisplayContainer(int container_id) {
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                   container_id);

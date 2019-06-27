@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 
+using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 
 namespace {
@@ -71,8 +72,8 @@ void DisplayAgentAndroid::ShowNotification(
 
   auto java_notification_data = Java_DisplayAgent_Constructor(
       env, ConvertUTF8ToJavaString(env, notification_data->id),
-      ConvertUTF8ToJavaString(env, notification_data->title),
-      ConvertUTF8ToJavaString(env, notification_data->message),
+      ConvertUTF16ToJavaString(env, notification_data->title),
+      ConvertUTF16ToJavaString(env, notification_data->message),
       gfx::ConvertToJavaBitmap(&notification_data->icon));
 
   Java_DisplayAgent_showNotification(env, java_notification_data);

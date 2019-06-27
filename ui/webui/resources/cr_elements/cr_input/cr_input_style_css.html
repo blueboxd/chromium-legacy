@@ -40,20 +40,16 @@
 
       /* Input styling below. */
       #input-container {
-        border-radius: 4px;
+        border-radius: var(--cr-input-border-radius, 4px);
         overflow: hidden;
         position: relative;
         width: var(--cr-input-width, 100%);
-
-        @apply --cr-input-container;
       }
 
       #inner-input-container {
         background-color: var(--cr-input-background-color);
         box-sizing: border-box;
         padding: 0;
-
-        @apply --cr-input-inner-container;
       }
 
       #input {
@@ -86,7 +82,10 @@
         text-overflow: ellipsis;
         width: 100%;
 
-        @apply --cr-input-input;
+        /* Avoid using the mixin. Use ::part(input) instead.
+         * Necessary for backward compatibility with Polymer1/SDv0 (only used by
+         * OOBE). TODO(crbug.com/955194): Remove this once fixed.*/
+         @apply --cr-input-input;
       }
 
       /* Underline styling below. */

@@ -19,6 +19,9 @@ namespace wayland {
 
 constexpr uint32_t kZAuraShellVersion = 8;
 
+// Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
+// builds. On non-ChromeOS builds the protocol provides access to Aura windowing
+// system.
 void bind_aura_shell(wl_client* client,
                      void* data,
                      uint32_t version,

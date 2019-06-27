@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
@@ -38,8 +39,8 @@ void NotificationsInternalsUIMessageHandler::HandleScheduleNotification(
   notifications::ScheduleParams schedule_params;
   notifications::NotificationData data;
   data.url = args->GetList()[1].GetString();
-  data.title = args->GetList()[2].GetString();
-  data.message = args->GetList()[3].GetString();
+  data.title = base::UTF8ToUTF16(args->GetList()[2].GetString());
+  data.message = base::UTF8ToUTF16(args->GetList()[3].GetString());
   auto params = std::make_unique<notifications::NotificationParams>(
       notifications::SchedulerClientType::kWebUI, std::move(data),
       std::move(schedule_params));

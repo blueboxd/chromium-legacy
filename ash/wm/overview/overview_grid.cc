@@ -939,6 +939,7 @@ void OverviewGrid::OnScreenCopiedBeforeRotation() {
   for (auto& window : window_list()) {
     window->set_disable_mask(true);
     window->UpdateMaskAndShadow();
+    window->StopWidgetAnimation();
   }
 }
 

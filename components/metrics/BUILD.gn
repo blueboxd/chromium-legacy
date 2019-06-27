@@ -23,6 +23,8 @@ jumbo_static_library("metrics") {
     "data_use_tracker.h",
     "delegating_provider.cc",
     "delegating_provider.h",
+    "demographic_metrics_provider.cc",
+    "demographic_metrics_provider.h",
     "drive_metrics_provider.cc",
     "drive_metrics_provider.h",
     "drive_metrics_provider_android.cc",

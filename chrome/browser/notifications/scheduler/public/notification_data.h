@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace notifications {
@@ -14,7 +15,8 @@ namespace notifications {
 // Contains data used to display a scheduled notification. All fields will be
 // persisted to disk as protobuffer NotificationData. The clients of
 // notification scheduler can optionally use the texts or icon in this struct,
-// or use hard coded assets id.
+// or retrieving the hard coded assets and rewrites the data before notification
+// is shown.
 struct NotificationData {
   NotificationData();
   NotificationData(const NotificationData& other);
@@ -27,10 +29,10 @@ struct NotificationData {
   std::string id;
 
   // The title of the notification.
-  std::string title;
+  base::string16 title;
 
   // The body text of the notification.
-  std::string message;
+  base::string16 message;
 
   // The bitmap for the small icon.
   SkBitmap icon;

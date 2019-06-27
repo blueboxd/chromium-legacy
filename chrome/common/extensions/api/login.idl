@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.login</code> API to launch and exit user sessions.
 [platforms=("chromeos"),
- implemented_in="chrome/browser/chromeos/extensions/login/login_api.h"]
+ implemented_in="chrome/browser/chromeos/extensions/login_screen/login/login_api.h"]
 namespace login {
   callback VoidCallback = void ();
   callback BooleanCallback = void (boolean result);

@@ -28,4 +28,7 @@ const Feature kUseNativeThreadPool = {"UseNativeThreadPool",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const Feature kUseFiveMinutesThreadReclaimTime = {
+    "UseFiveMinutesThreadReclaimTime", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace base

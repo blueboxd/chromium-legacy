@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_LOGIN_API_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_LOGIN_API_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_LOGIN_API_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_LOGIN_API_H_
 
 #include "base/macros.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -89,4 +89,4 @@ class LoginFetchDataForNextLoginAttemptFunction
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_LOGIN_API_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_LOGIN_API_H_

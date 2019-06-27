@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
 
 #include <memory>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/extensions/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
 #include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
 #include "components/version_info/version_info.h"
 #include "extensions/test/extension_test_message_listener.h"

@@ -57,6 +57,16 @@ class NotificationResourcesLoaderTest : public PageTestBase {
 
   void DidFetchResources(NotificationResourcesLoader* loader) {
     resources_ = loader->GetResources();
+    std::move(resources_loaded_closure_).Run();
+  }
+
+  void StartAndWaitForResources(
+      const mojom::blink::NotificationData& notification_data) {
+    base::RunLoop run_loop;
+    resources_loaded_closure_ = run_loop.QuitClosure();
+    Loader()->Start(GetExecutionContext(), notification_data);
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    run_loop.Run();
   }
 
   // Registers a mocked url. When fetched, |fileName| will be loaded from the
@@ -79,6 +89,7 @@ class NotificationResourcesLoaderTest : public PageTestBase {
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 
  private:
+  base::OnceClosure resources_loaded_closure_;
   Persistent<NotificationResourcesLoader> loader_;
   mojom::blink::NotificationResourcesPtr resources_;
 };
@@ -100,9 +111,7 @@ TEST_F(NotificationResourcesLoaderTest, LoadMultipleResources) {
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), *notification_data);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-
+  StartAndWaitForResources(*notification_data);
   ASSERT_TRUE(Resources());
 
   ASSERT_FALSE(Resources()->image.drawsNothing());
@@ -135,9 +144,7 @@ TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), *notification_data);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-
+  StartAndWaitForResources(*notification_data);
   ASSERT_TRUE(Resources());
 
   ASSERT_FALSE(Resources()->icon.drawsNothing());
@@ -162,9 +169,7 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), *notification_data);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-
+  StartAndWaitForResources(*notification_data);
   ASSERT_TRUE(Resources());
 
   ASSERT_FALSE(Resources()->image.drawsNothing());
@@ -178,9 +183,7 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_2AspectRatio) {
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), *notification_data);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-
+  StartAndWaitForResources(*notification_data);
   ASSERT_TRUE(Resources());
 
   ASSERT_FALSE(Resources()->image.drawsNothing());
@@ -194,9 +197,7 @@ TEST_F(NotificationResourcesLoaderTest, EmptyDataYieldsEmptyResources) {
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), *notification_data);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-
+  StartAndWaitForResources(*notification_data);
   ASSERT_TRUE(Resources());
 
   ASSERT_TRUE(Resources()->image.drawsNothing());
@@ -217,9 +218,7 @@ TEST_F(NotificationResourcesLoaderTest, EmptyResourcesIfAllImagesFailToLoad) {
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), *notification_data);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-
+  StartAndWaitForResources(*notification_data);
   ASSERT_TRUE(Resources());
 
   // The test received resources but they are all empty. This ensures that a
@@ -238,9 +237,7 @@ TEST_F(NotificationResourcesLoaderTest, OneImageFailsToLoad) {
 
   ASSERT_FALSE(Resources());
 
-  Loader()->Start(GetExecutionContext(), *notification_data);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-
+  StartAndWaitForResources(*notification_data);
   ASSERT_TRUE(Resources());
 
   // The test received resources even though one image failed to load. This

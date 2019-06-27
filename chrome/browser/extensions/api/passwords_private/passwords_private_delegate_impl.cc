@@ -35,6 +35,9 @@
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/login/auth/password_visibility_utils.h"
+#include "components/user_manager/user.h"
 #endif
 
 namespace {
@@ -217,6 +220,13 @@ bool PasswordsPrivateDelegateImpl::OsReauthCall(
 #elif defined(OS_MACOSX)
   return password_manager_util_mac::AuthenticateUser(purpose);
 #elif defined(OS_CHROMEOS)
+  const bool user_cannot_manually_enter_password =
+      !chromeos::password_visibility::AccountHasUserFacingPassword(
+          chromeos::ProfileHelper::Get()
+              ->GetUserByProfile(profile_)
+              ->GetAccountId());
+  if (user_cannot_manually_enter_password)
+    return true;
   chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile_);
   const chromeos::quick_unlock::AuthToken* auth_token =

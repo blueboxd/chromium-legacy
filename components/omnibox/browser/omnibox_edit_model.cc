@@ -173,9 +173,6 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
       InternalSetUserText(display_text);
     }
   }
-
-  UMA_HISTOGRAM_BOOLEAN("Omnibox.SaveStateForTabSwitch.UserInputInProgress",
-                        user_input_in_progress_);
   return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
                keyword_mode_entry_method_, focus_state_, focus_source_, input_);
 }

@@ -23,6 +23,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -582,6 +584,8 @@ class DetachToBrowserTabDragControllerTest
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
 #if defined(OS_CHROMEOS)
   // The root window for the event generator.
@@ -612,6 +616,39 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   // The tab strip should no longer have capture because the drag was ended and
   // mouse/touch was released.
   EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
+}
+
+// Creates a browser with three tabs. The first two belong in the same Tab
+// Group. Dragging the second tab to after the third tab will result in a
+// removal of the dragged tab from its group.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragToUngroupTab) {
+  scoped_feature_list_.InitAndEnableFeature(features::kTabGroups);
+
+  AddTabAndResetBrowser(browser());
+  AddTabAndResetBrowser(browser());
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  TabGroupId group = model->AddToNewGroup({0, 1});
+  StopAnimating(tab_strip);
+
+  EXPECT_EQ(3, model->count());
+  EXPECT_EQ(2u, model->ListTabsInGroup(group).size());
+
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+
+  Tab* last_tab = tab_strip->tab_at(2);
+  gfx::Point tab_right_center = last_tab->GetLocalBounds().right_center();
+  views::View::ConvertPointToScreen(last_tab, &tab_right_center);
+  ASSERT_TRUE(DragInputTo(tab_right_center));
+  ASSERT_TRUE(ReleaseInput());
+
+  StopAnimating(tab_strip);
+
+  EXPECT_EQ("0 2 1", IDString(model));
+  EXPECT_EQ(1u, model->ListTabsInGroup(group).size());
+  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(2));
 }
 
 // Drags a tab within the window (without dragging the whole window) then

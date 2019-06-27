@@ -401,14 +401,17 @@ void GetPagesToServeURL(
     return;
   }
 
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  SimpleFactoryKey* key = profile->GetProfileKey();
+
   // If an int64 offline ID is present in the offline header, try to load that
   // particular version.
   if (!offline_header.id.empty()) {
     int64_t offline_id;
     if (base::StringToInt64(offline_header.id, &offline_id)) {
       OfflinePageModel* offline_page_model =
-          OfflinePageModelFactory::GetForBrowserContext(
-              web_contents->GetBrowserContext());
+          OfflinePageModelFactory::GetForKey(key);
       if (!offline_page_model) {
         FailedToFindOfflinePage(RequestResult::OFFLINE_PAGE_NOT_FOUND,
                                 network_state, job);
@@ -422,7 +425,7 @@ void GetPagesToServeURL(
   }
 
   OfflinePageUtils::SelectPagesForURL(
-      web_contents->GetBrowserContext(), url, tab_id,
+      key, url, tab_id,
       base::BindOnce(&SelectPagesForURLDone, url, offline_header, network_state,
                      job, web_contents_getter));
 }

@@ -52,6 +52,17 @@ const ui::Layer* GetRoot(const ui::Layer* layer) {
   return layer;
 }
 
+#if DCHECK_IS_ON()
+void CheckSnapped(float snapped_position) {
+  // The acceptable error epsilon should be small enough to detect visible
+  // artifacts as well as large enough to not cause false crashes when an
+  // uncommon device scale factor is applied.
+  const float kEplison = 0.003f;
+  float diff = std::abs(snapped_position - gfx::ToRoundedInt(snapped_position));
+  DCHECK_LT(diff, kEplison);
+}
+#endif
+
 }  // namespace
 
 namespace ui {
@@ -92,39 +103,86 @@ class Layer::LayerMirror : public LayerDelegate, LayerObserver {
   DISALLOW_COPY_AND_ASSIGN(LayerMirror);
 };
 
-Layer::Layer()
-    : type_(LAYER_TEXTURED),
-      compositor_(nullptr),
-      parent_(nullptr),
-      visible_(true),
-      fills_bounds_opaquely_(true),
-      fills_bounds_completely_(false),
-      background_blur_sigma_(0.0f),
-      layer_saturation_(0.0f),
-      layer_brightness_(0.0f),
-      layer_grayscale_(0.0f),
-      layer_inverted_(false),
-      layer_blur_sigma_(0.0f),
-      layer_mask_(nullptr),
-      layer_mask_back_link_(nullptr),
-      zoom_(1),
-      zoom_inset_(0),
-      delegate_(nullptr),
-      owner_(nullptr),
-      cc_layer_(nullptr),
-      device_scale_factor_(1.0f),
-      cache_render_surface_requests_(0),
-      deferred_paint_requests_(0),
-      backdrop_filter_quality_(1.0f),
-      trilinear_filtering_request_(0),
-      weak_ptr_factory_(this) {
-  CreateCcLayer();
-}
+// Manages the subpixel offset data for a given set of parameters (device
+// scale factor and DIP offset from parent layer).
+class Layer::SubpixelPositionOffsetCache {
+ public:
+  SubpixelPositionOffsetCache() = default;
+  ~SubpixelPositionOffsetCache() = default;
+
+  gfx::Vector2dF GetSubpixelOffset(float device_scale_factor,
+                                   const gfx::Point& origin,
+                                   const gfx::Transform& tm) const {
+    if (has_explicit_subpixel_offset_)
+      return offset_;
+
+    if (device_scale_factor <= 0)
+      return gfx::Vector2dF();
+
+    // Compute the effective offset (position + transform) from the parent.
+    gfx::PointF offset_from_parent(origin);
+    if (!tm.IsIdentity() && tm.Preserves2dAxisAlignment())
+      offset_from_parent += tm.To2dTranslation();
+
+    if (device_scale_factor == device_scale_factor_ &&
+        offset_from_parent == offset_from_parent_) {
+      return offset_;
+    }
+
+    // Compute subpixel offset for the given parameters.
+    gfx::PointF scaled_offset_from_parent(offset_from_parent);
+    scaled_offset_from_parent.Scale(device_scale_factor, device_scale_factor);
+    gfx::PointF snapped_offset_from_parent(
+        gfx::ToRoundedPoint(scaled_offset_from_parent));
+
+    gfx::Vector2dF offset =
+        snapped_offset_from_parent - scaled_offset_from_parent;
+    offset.Scale(1.f / device_scale_factor);
+
+    // Store key and value information for the cache.
+    offset_ = offset;
+    device_scale_factor_ = device_scale_factor;
+    offset_from_parent_ = offset_from_parent;
+
+#if DCHECK_IS_ON()
+    const gfx::PointF snapped_position = offset_from_parent_ + offset_;
+    CheckSnapped(snapped_position.x() * device_scale_factor);
+    CheckSnapped(snapped_position.y() * device_scale_factor);
+#endif
+    return offset_;
+  }
+
+  void SetExplicitSubpixelPositionOffset(const gfx::Vector2dF& offset) {
+    has_explicit_subpixel_offset_ = true;
+    offset_ = offset;
+  }
+
+  bool has_explicit_subpixel_offset() const {
+    return has_explicit_subpixel_offset_;
+  }
+
+ private:
+  // The subpixel offset value.
+  mutable gfx::Vector2dF offset_;
+
+  // The device scale factor for which the |offset_| was computed.
+  mutable float device_scale_factor_ = 1.f;
+
+  // The offset of the layer from its parent for which |offset_| was computed.
+  mutable gfx::PointF offset_from_parent_;
+
+  // True if the subpixel offset was computed and set by an external source.
+  bool has_explicit_subpixel_offset_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(SubpixelPositionOffsetCache);
+};
 
 Layer::Layer(LayerType type)
     : type_(type),
       compositor_(nullptr),
       parent_(nullptr),
+      subpixel_position_offset_(
+          std::make_unique<SubpixelPositionOffsetCache>()),
       visible_(true),
       fills_bounds_opaquely_(true),
       fills_bounds_completely_(false),
@@ -210,7 +268,8 @@ std::unique_ptr<Layer> Layer::Clone() const {
 
   clone->SetTransform(GetTargetTransform());
   clone->SetBounds(bounds_);
-  clone->SetSubpixelPositionOffset(subpixel_position_offset_);
+  if (subpixel_position_offset_->has_explicit_subpixel_offset())
+    clone->SetSubpixelPositionOffset(GetSubpixelOffset());
   clone->SetMasksToBounds(GetMasksToBounds());
   clone->SetOpacity(GetTargetOpacity());
   clone->SetVisible(GetTargetVisibility());
@@ -399,8 +458,13 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
 }
 
 void Layer::SetSubpixelPositionOffset(const gfx::Vector2dF& offset) {
-  subpixel_position_offset_ = offset;
+  subpixel_position_offset_->SetExplicitSubpixelPositionOffset(offset);
   RecomputePosition();
+}
+
+const gfx::Vector2dF Layer::GetSubpixelOffset() const {
+  return subpixel_position_offset_->GetSubpixelOffset(
+      device_scale_factor_, GetTargetBounds().origin(), GetTargetTransform());
 }
 
 gfx::Rect Layer::GetTargetBounds() const {
@@ -1275,7 +1339,8 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
   bounds_ = bounds;
 
   RecomputeDrawsContentAndUVRect();
-  RecomputePosition();
+  if (old_bounds.origin() != bounds_.origin())
+    RecomputePosition();
 
   if (delegate_)
     delegate_->OnLayerBoundsChanged(old_bounds, reason);
@@ -1301,6 +1366,11 @@ void Layer::SetTransformFromAnimation(const gfx::Transform& transform,
                                       PropertyChangeReason reason) {
   const gfx::Transform old_transform = this->transform();
   cc_layer_->SetTransform(transform);
+
+  // Skip recomputing position if the subpixel offset does not need updating
+  // which is the case if an explicit offset is set.
+  if (!subpixel_position_offset_->has_explicit_subpixel_offset())
+    RecomputePosition();
   if (delegate_)
     delegate_->OnLayerTransformed(old_transform, reason);
 }
@@ -1453,8 +1523,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
 }
 
 void Layer::RecomputePosition() {
-  cc_layer_->SetPosition(gfx::PointF(bounds_.origin()) +
-                         subpixel_position_offset_);
+  cc_layer_->SetPosition(gfx::PointF(bounds_.origin()) + GetSubpixelOffset());
 }
 
 void Layer::SetCompositorForAnimatorsInTree(Compositor* compositor) {

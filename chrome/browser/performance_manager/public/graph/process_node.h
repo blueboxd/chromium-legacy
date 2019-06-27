@@ -5,11 +5,19 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PROCESS_NODE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PROCESS_NODE_H_
 
+#include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/process/process.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
+
+namespace base {
+class Process;
+}  // namespace base
 
 namespace performance_manager {
 
+class FrameNode;
 class ProcessNodeObserver;
 
 // A process node follows the lifetime of a RenderProcessHost.
@@ -22,13 +30,67 @@ class ProcessNodeObserver;
 //    process fails to start, this state may not occur.
 // 3. Process died or failed to start, have exit status.
 // 4. Back to 2.
+//
+// It is only valid to access this object on the sequence of the graph that owns
+// it.
 class ProcessNode : public Node {
  public:
+  using FrameNodeVisitor = base::Callback<bool(const FrameNode*)>;
   using Observer = ProcessNodeObserver;
   class ObserverDefaultImpl;
 
   ProcessNode();
   ~ProcessNode() override;
+
+  // Returns the process ID associated with this process. Use this in preference
+  // to querying GetProcess.Pid(). It's always valid to access, but will return
+  // kNullProcessId if the process has yet started. It will also retain the
+  // process ID for a process that has exited (at least until the underlying
+  // RenderProcessHost gets reused in the case of a crash). Refrain from using
+  // this as a unique identifier as on some platforms PIDs are reused
+  // aggressively. See GetLaunchTime for more information.
+  virtual base::ProcessId GetProcessId() const = 0;
+
+  // Returns the base::Process backing this process. This will be an invalid
+  // process if it has not yet started, or if it has exited.
+  virtual const base::Process& GetProcess() const = 0;
+
+  // Returns the launch time associated with the process. Combined with the
+  // process ID this can be used as a unique identifier for the process.
+  virtual base::Time GetLaunchTime() const = 0;
+
+  // Returns the exit status of this process. This will be empty if the process
+  // has not yet exited.
+  virtual base::Optional<int32_t> GetExitStatus() const = 0;
+
+  // Visits the frame nodes that are hosted in this process. The iteration is
+  // halted if the visitor returns false.
+  virtual void VisitFrameNodes(const FrameNodeVisitor& visitor) const = 0;
+
+  // Returns the set of frame nodes that are hosted in this process. Note that
+  // calling this causes the set of nodes to be generated.
+  virtual base::flat_set<const FrameNode*> GetFrameNodes() const = 0;
+
+  // Returns the current expected task queuing duration in the process. This is
+  // measure of main thread latency. See
+  // ProcessNodeObserver::OnExpectedTaskQueueingDurationSample.
+  virtual base::TimeDelta GetExpectedTaskQueueingDuration() const = 0;
+
+  // Returns true if the main thread task load is low (below some threshold
+  // of usage). See ProcessNodeObserver::OnMainThreadTaskLoadIsLow.
+  virtual bool GetMainThreadTaskLoadIsLow() const = 0;
+
+  // Returns the current renderer process CPU usage. A value of 1.0 can mean 1
+  // core at 100%, or 2 cores at 50% each, for example.
+  virtual double GetCpuUsage() const = 0;
+
+  // Returns the cumulative CPU usage of the renderer process over its entire
+  // lifetime, expressed as CPU seconds.
+  virtual base::TimeDelta GetCumulativeCpuUsage() const = 0;
+
+  // Returns the most recently measured private memory footprint of the render
+  // process, in kilobytes.
+  virtual uint64_t GetPrivateFootprintKb() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessNode);

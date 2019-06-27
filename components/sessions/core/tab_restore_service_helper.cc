@@ -306,7 +306,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
           const Tab& tab = *window.tabs[tab_i];
           LiveTab* restored_tab = context->AddRestoredTab(
               tab.navigations, context->GetTabCount(),
-              tab.current_navigation_index, tab.extension_app_id,
+              tab.current_navigation_index, tab.extension_app_id, tab.group,
               static_cast<int>(tab_i) == window.selected_tab_index, tab.pinned,
               tab.from_last_session, tab.platform_data.get(),
               tab.user_agent_override);
@@ -538,6 +538,7 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
   if (context) {
     tab->browser_id = context->GetSessionID().id();
     tab->pinned = context->IsTabPinned(tab->tabstrip_index);
+    tab->group = context->GetTabGroupForTab(tab->tabstrip_index);
   }
 }
 
@@ -549,8 +550,9 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
   LiveTab* restored_tab;
   if (disposition == WindowOpenDisposition::CURRENT_TAB && context) {
     restored_tab = context->ReplaceRestoredTab(
-        tab.navigations, tab.current_navigation_index, tab.from_last_session,
-        tab.extension_app_id, tab.platform_data.get(), tab.user_agent_override);
+        tab.navigations, base::nullopt, tab.current_navigation_index,
+        tab.from_last_session, tab.extension_app_id, tab.platform_data.get(),
+        tab.user_agent_override);
   } else {
     // We only respect the tab's original browser if there's no disposition.
     if (disposition == WindowOpenDisposition::UNKNOWN && tab.browser_id) {
@@ -581,7 +583,7 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
 
     restored_tab = context->AddRestoredTab(
         tab.navigations, tab_index, tab.current_navigation_index,
-        tab.extension_app_id,
+        tab.extension_app_id, base::nullopt,
         disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB, tab.pinned,
         tab.from_last_session, tab.platform_data.get(),
         tab.user_agent_override);

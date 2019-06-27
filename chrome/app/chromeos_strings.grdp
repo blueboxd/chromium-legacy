@@ -1241,7 +1241,19 @@
     Dock has an issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE" desc="The message of the notification shown to inform the user that attached dock presents hardware failures.">
-    Try disconnecting and reconnecting your docking station cable. If that doesn't help, have your dock serviced.
+    Your dock needs to be serviced. Without a working fan your dock will shut down.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE" desc="The title of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
+    Display connected to the dock has an issue
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE" desc="The message of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
+    Your dock's HDMI port can't be used when the USB Type-C port is used for video output. Please use a different port for one of the displays.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE" desc="The title of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
+    Thunderbolt is not supported
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_MESSAGE" desc="The message of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
+    Your docking station will operate in USB Type-C compatible mode.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_LEARN_MORE" desc="Label on button in various Wilco notification.">
     Learn More
@@ -1753,6 +1765,9 @@
   <message name="IDS_NETWORK_TYPE_WIFI" desc="Label for WiFi networks.">
     Wi-Fi
   </message>
+  <message name="IDS_NETWORK_TYPE_METERED_WIFI" desc="Label for metered Wi-Fi networks (i.e., Wi-Fi networks which have resticted data usage such as a monthly limit).">
+    metered Wi-Fi
+  </message>
   <message name="IDS_NETWORK_TYPE_WIMAX" desc="Label for WiMAX networks.">
     WiMAX
   </message>
@@ -2202,8 +2217,8 @@
   <message name="IDS_UPGRADE_OFFLINE" desc="Status label: Currently offline">
     You are currently offline.
   </message>
-  <message name="IDS_UPGRADE_DISALLOWED" desc="Status label: Upgrade disallowed for the current network">
-    You are currently connected to the <ph name="NETWORK_TYPE">$1<ex>mobile</ex></ph> network.
+  <message name="IDS_UPGRADE_DISALLOWED" desc="Status label: Shown when an upgrade is disallowed for the current network to alert the user to what the current network type is.">
+    You're connected to a <ph name="NETWORK_TYPE">$1<ex>mobile</ex></ph> network.
   </message>
   <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED" desc="Status label: for updates you need to connect to an Ethernet, Wi-Fi or mobile data">
     To check for updates, please use Ethernet, Wi-Fi or mobile data.
@@ -2211,8 +2226,8 @@
   <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_DISALLOWED" desc="Status label: for updates you need to connect to an Ethernet or Wi-Fi">
     To check for updates, please use Ethernet or Wi-Fi.
   </message>
-  <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED_NOT_AUTOMATIC" desc="Status label: for automatic updates you need to connect to an Ethernet or Wi-Fi">
-    Automatic updates only happen over Ethernet or Wi-Fi.
+  <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED_NOT_AUTOMATIC" desc="Status label: Shown when the user is connected to a network type that does not support automatic updates (e.g., could be a mobile network with limited data per month). In this case, users can still attempt an update manually.">
+    Automatic updates don't download on this network type, but you can check for updates manually.
   </message>
 
   <!-- EOL Notification Strings -->

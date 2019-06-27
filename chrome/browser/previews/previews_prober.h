@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
+#include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -85,6 +86,7 @@ class PreviewsProber {
       const std::string& name,
       const GURL& url,
       HttpMethod http_method,
+      const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy);
   ~PreviewsProber();
@@ -106,6 +108,7 @@ class PreviewsProber {
       const std::string& name,
       const GURL& url,
       HttpMethod http_method,
+      const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
       const base::TickClock* tick_clock);
@@ -126,6 +129,10 @@ class PreviewsProber {
 
   // The HTTP method used for probing.
   const HttpMethod http_method_;
+
+  // Additional headers to send on every probe. These are subject to CORS
+  // checks.
+  const net::HttpRequestHeaders headers_;
 
   // The retry policy to use in this prober.
   const RetryPolicy retry_policy_;

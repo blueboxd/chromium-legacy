@@ -144,6 +144,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   RenderFrameHostImpl* frame_host_ = nullptr;
   base::flat_set<NavigationHandleImpl*> navigation_handles_;
   bool render_frame_alive_ = false;
+  void* active_file_chooser_interceptor_ = nullptr;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;

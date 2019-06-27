@@ -19,10 +19,6 @@ namespace prefs {
 const char kCrostiniEnabled[] = "crostini.enabled";
 const char kCrostiniMimeTypes[] = "crostini.mime_types";
 const char kCrostiniRegistry[] = "crostini.registry";
-// List of filesystem paths that are shared with the crostini container.
-// TODO(crbug.com/946273): Remove crostini.shared_paths and migration code after
-// M77.
-const char kCrostiniSharedPaths[] = "crostini.shared_paths";
 // List of USB devices with their system guid, a name/description and their
 // enabled state for use with Crostini.
 const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
@@ -49,17 +45,11 @@ const char kCrostiniLastLaunchTimeWindowStart[] =
 // The value of the last sample of the disk space used by Crostini.
 const char kCrostiniLastDiskSize[] = "crostini.last_disk_size";
 
-// Dictionary of filesystem paths mapped to the list of VMs that the paths are
-// shared with.
-const char kGuestOSPathsSharedToVms[] = "guest_os.paths_shared_to_vms";
-
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
   registry->RegisterDictionaryPref(kCrostiniMimeTypes);
   registry->RegisterDictionaryPref(kCrostiniRegistry);
-  registry->RegisterListPref(kCrostiniSharedPaths);
   registry->RegisterListPref(kCrostiniSharedUsbDevices);
-  registry->RegisterDictionaryPref(kGuestOSPathsSharedToVms);
 
   // Set a default value for crostini.containers to ensure that we track the
   // default container even if its creation predates this preference. This

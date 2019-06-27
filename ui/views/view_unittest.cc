@@ -4523,31 +4523,31 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
   v1->SetBoundsRect(gfx::Rect(1, 1, 10, 10));
   v11->SetPaintToLayer();
 
-  EXPECT_EQ("0.40 0.40", ToString(v11->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.40 0.40", ToString(v11->layer()->GetSubpixelOffset()));
 
   // Creating a layer in parent should update the child view's layer offset.
   v1->SetPaintToLayer();
-  EXPECT_EQ("-0.20 -0.20", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("-0.20 -0.20", ToString(v11->layer()->subpixel_position_offset()));
+  EXPECT_EQ("-0.20 -0.20", ToString(v1->layer()->GetSubpixelOffset()));
+  EXPECT_EQ("-0.20 -0.20", ToString(v11->layer()->GetSubpixelOffset()));
 
   // DSF change should get propagated and update offsets.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       1.5f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
-  EXPECT_EQ("0.33 0.33", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.33 0.33", ToString(v1->layer()->GetSubpixelOffset()));
+  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->GetSubpixelOffset()));
 
   // Deleting parent's layer should update the child view's layer's offset.
   v1->DestroyLayer();
-  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->GetSubpixelOffset()));
 
   // Setting parent view should update the child view's layer's offset.
   v1->SetBoundsRect(gfx::Rect(2, 2, 10, 10));
-  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->GetSubpixelOffset()));
 
   // Setting integral DSF should reset the offset.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
-  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->GetSubpixelOffset()));
 }
 
 TEST_F(ViewLayerTest, LayerBeneathTriggersPaintToLayer) {
@@ -4601,9 +4601,8 @@ TEST_F(ViewLayerTest, LayerBeneathAtFractionalScale) {
   view->AddLayerBeneathView(&layer);
 
   view->SetBoundsRect(gfx::Rect(1, 1, 10, 10));
-  EXPECT_NE(gfx::Vector2dF(), view->layer()->subpixel_position_offset());
-  EXPECT_EQ(view->layer()->subpixel_position_offset(),
-            layer.subpixel_position_offset());
+  EXPECT_NE(gfx::Vector2dF(), view->layer()->GetSubpixelOffset());
+  EXPECT_EQ(view->layer()->GetSubpixelOffset(), layer.GetSubpixelOffset());
 
   view->RemoveLayerBeneathView(&layer);
 }
@@ -4873,19 +4872,19 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   v1->SetBoundsRect(gfx::Rect(9, 9, 100, 100));
 
   PaintRecordingSizeTest(v3, gfx::Size(21, 8));  // Enclosing Rect = (21, 8)
-  EXPECT_EQ("-0.63 -0.25", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("-0.63 -0.25", ToString(v3->layer()->GetSubpixelOffset()));
 
   // Creating a layer in parent should update the child view's layer offset.
   v1->SetPaintToLayer();
-  EXPECT_EQ("-0.25 -0.25", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("-0.37 -0.00", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("-0.25 -0.25", ToString(v1->layer()->GetSubpixelOffset()));
+  EXPECT_EQ("-0.37 -0.00", ToString(v3->layer()->GetSubpixelOffset()));
 
   // DSF change should get propagated and update offsets.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       1.5f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
-  EXPECT_EQ("0.33 0.33", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("0.33 0.67", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.33 0.33", ToString(v1->layer()->GetSubpixelOffset()));
+  EXPECT_EQ("0.33 0.67", ToString(v3->layer()->GetSubpixelOffset()));
 
   v1->DestroyLayer();
   PaintRecordingSizeTest(v3, gfx::Size(20, 7));  // Enclosing Rect = (20, 8)
@@ -4894,23 +4893,23 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       1.33f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
-  EXPECT_EQ("0.02 0.02", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("0.05 -0.45", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.02 0.02", ToString(v1->layer()->GetSubpixelOffset()));
+  EXPECT_EQ("0.05 -0.45", ToString(v3->layer()->GetSubpixelOffset()));
 
   v1->DestroyLayer();
   PaintRecordingSizeTest(v3, gfx::Size(17, 7));  // Enclosing Rect = (18, 7)
 
   // Deleting parent's layer should update the child view's layer's offset.
-  EXPECT_EQ("0.08 -0.43", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.08 -0.43", ToString(v3->layer()->GetSubpixelOffset()));
 
   // Setting parent view should update the child view's layer's offset.
   v1->SetBoundsRect(gfx::Rect(3, 3, 10, 10));
-  EXPECT_EQ("0.06 -0.44", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.06 -0.44", ToString(v3->layer()->GetSubpixelOffset()));
 
   // Setting integral DSF should reset the offset.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
-  EXPECT_EQ("0.00 0.00", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.00 0.00", ToString(v3->layer()->GetSubpixelOffset()));
 }
 
 TEST_F(ViewLayerPixelCanvasTest, LayerBeneathOnPixelCanvas) {
@@ -4929,9 +4928,8 @@ TEST_F(ViewLayerPixelCanvasTest, LayerBeneathOnPixelCanvas) {
   view->AddLayerBeneathView(&layer);
 
   view->SetBoundsRect(gfx::Rect(1, 1, 10, 10));
-  EXPECT_NE(gfx::Vector2dF(), view->layer()->subpixel_position_offset());
-  EXPECT_EQ(view->layer()->subpixel_position_offset(),
-            layer.subpixel_position_offset());
+  EXPECT_NE(gfx::Vector2dF(), view->layer()->GetSubpixelOffset());
+  EXPECT_EQ(view->layer()->GetSubpixelOffset(), layer.GetSubpixelOffset());
 
   view->RemoveLayerBeneathView(&layer);
 }

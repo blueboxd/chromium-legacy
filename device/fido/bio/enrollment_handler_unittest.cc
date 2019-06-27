@@ -188,11 +188,10 @@ TEST_F(BioEnrollmentHandlerTest, EnrollMultiple) {
 
   BioEnrollmentResponse expected;
   expected.template_infos =
-      std::vector<std::pair<std::vector<uint8_t>, std::string>>{
-          {{1}, "Template1"},
-          {{2}, "Template2"},
-          {{3}, "Template3"},
-          {{4}, "Template4"}};
+      std::map<std::vector<uint8_t>, std::string>{{{1}, "Template1"},
+                                                  {{2}, "Template2"},
+                                                  {{3}, "Template3"},
+                                                  {{4}, "Template4"}};
   EXPECT_EQ(cb.value(), expected);
 }
 
@@ -291,8 +290,7 @@ TEST_F(BioEnrollmentHandlerTest, EnumerateOne) {
 
   BioEnrollmentResponse expected;
   expected.template_infos =
-      std::vector<std::pair<std::vector<uint8_t>, std::string>>{
-          {{1}, "Template1"}};
+      std::map<std::vector<uint8_t>, std::string>{{{1}, "Template1"}};
   EXPECT_EQ(cb1.value(), expected);
 }
 
@@ -341,8 +339,7 @@ TEST_F(BioEnrollmentHandlerTest, Rename) {
 
   BioEnrollmentResponse expected;
   expected.template_infos =
-      std::vector<std::pair<std::vector<uint8_t>, std::string>>{
-          {{1}, "OtherFingerprint1"}};
+      std::map<std::vector<uint8_t>, std::string>{{{1}, "OtherFingerprint1"}};
   EXPECT_EQ(cb3.value(), expected);
 }
 

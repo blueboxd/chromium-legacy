@@ -25,12 +25,15 @@ namespace chromeos {
 
 namespace {
 
+const char kNotifierWilco[] = "ash.wilco";
+
 const char kWilcoDtcSupportdNotificationIdBatteryAuth[] = "BatteryAuth";
 const char kWilcoDtcSupportdNotificationIdNonWilcoCharger[] = "NonWilcoCharger";
 const char kWilcoDtcSupportdNotificationIdIncompatibleDock[] =
     "IncompatibleDock";
 const char kWilcoDtcSupportdNotificationIdDockHardwareError[] = "DockError";
-const char kNotifierWilco[] = "ash.wilco";
+const char kWilcoDtcSupportdNotificationIdDockDisplay[] = "DockDisplay";
+const char kWilcoDtcSupportdNotificationIdDockThunderbolt[] = "DockThunderbolt";
 
 class WilcoDtcSupportdNotificationDelegate
     : public message_center::NotificationDelegate {
@@ -91,7 +94,7 @@ WilcoDtcSupportdNotificationController::ShowNonWilcoChargerNotification()
   DisplayNotification(kWilcoDtcSupportdNotificationIdNonWilcoCharger,
                       IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE,
                       IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE,
-                      message_center::SYSTEM_PRIORITY,
+                      message_center::DEFAULT_PRIORITY,
                       ash::kNotificationBatteryIcon,
                       message_center::SystemNotificationWarningLevel::WARNING,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
@@ -121,6 +124,31 @@ std::string WilcoDtcSupportdNotificationController::ShowDockErrorNotification()
                       message_center::SystemNotificationWarningLevel::NORMAL,
                       HelpAppLauncher::HelpTopic::HELP_WILCO);
   return kWilcoDtcSupportdNotificationIdDockHardwareError;
+}
+
+std::string
+WilcoDtcSupportdNotificationController::ShowDockDisplayNotification() const {
+  DisplayNotification(kWilcoDtcSupportdNotificationIdDockDisplay,
+                      IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE,
+                      IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE,
+                      message_center::DEFAULT_PRIORITY,
+                      ash::kNotificationSettingsIcon,
+                      message_center::SystemNotificationWarningLevel::NORMAL,
+                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+  return kWilcoDtcSupportdNotificationIdDockDisplay;
+}
+
+std::string
+WilcoDtcSupportdNotificationController::ShowDockThunderboltNotification()
+    const {
+  DisplayNotification(kWilcoDtcSupportdNotificationIdDockThunderbolt,
+                      IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE,
+                      IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_MESSAGE,
+                      message_center::DEFAULT_PRIORITY,
+                      ash::kNotificationSettingsIcon,
+                      message_center::SystemNotificationWarningLevel::NORMAL,
+                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+  return kWilcoDtcSupportdNotificationIdDockThunderbolt;
 }
 
 void WilcoDtcSupportdNotificationController::DisplayNotification(

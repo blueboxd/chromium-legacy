@@ -212,7 +212,7 @@ void PageAlmostIdleDecorator::UpdateLoadIdleStatePage(PageNodeImpl* page_node) {
 
 void PageAlmostIdleDecorator::UpdateLoadIdleStateProcess(
     ProcessNodeImpl* process_node) {
-  for (auto* frame_node : process_node->GetFrameNodes())
+  for (auto* frame_node : process_node->frame_nodes())
     UpdateLoadIdleStateFrame(frame_node);
 }
 

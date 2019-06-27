@@ -47,6 +47,7 @@
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/display_cutout/display_cutout_host_impl.h"
@@ -5469,6 +5470,11 @@ void WebContentsImpl::RunFileChooser(
   // Any explicit focusing of another window while this WebContents is in
   // fullscreen can be used to confuse the user, so drop fullscreen.
   ForSecurityDropFullscreen();
+
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  if (devtools_instrumentation::InterceptFileChooser(rfhi, &listener, params))
+    return;
 
   if (delegate_)
     delegate_->RunFileChooser(render_frame_host, std::move(listener), params);

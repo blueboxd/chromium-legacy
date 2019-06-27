@@ -1,29 +1,5 @@
 # These tests currently fail when run with --enable-features=NavigationLoaderOnUI
 
-# http://crbug.com/978556
--CaptivePortalBrowserTest.AbortLoad
--CaptivePortalBrowserTest.CloseLoginTab
--CaptivePortalBrowserTest.Disabled
--CaptivePortalBrowserTest.GoBack
--CaptivePortalBrowserTest.GoBackToTimeout
--CaptivePortalBrowserTest.HttpToHttpsRedirectLogin
--CaptivePortalBrowserTest.InternetConnected
--CaptivePortalBrowserTest.InterstitialTimerCertErrorAfterSlowLoad
--CaptivePortalBrowserTest.Login
--CaptivePortalBrowserTest.LoginExtraNavigations
--CaptivePortalBrowserTest.LoginFastTimeout
--CaptivePortalBrowserTest.LoginIncognito
--CaptivePortalBrowserTest.LoginSlow
--CaptivePortalBrowserTest.NavigateBrokenTab
--CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutSingleSite
--CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutThreeSites
--CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutTwoSites
--CaptivePortalBrowserTest.RedirectSSLCertError
--CaptivePortalBrowserTest.ReloadTimeout
--CaptivePortalBrowserTest.RequestFails
--CaptivePortalBrowserTest.Status511
--CaptivePortalBrowserTest.TwoBrokenTabs
-
 # http://crbug.com/824858
 -AppBannerManagerBrowserTest.ListedRelatedChromeAppInstalled
 -AppBannerManagerBrowserTest.PreferRelatedAppUnknown

@@ -61,7 +61,7 @@ class CastBrowserContext final : public content::BrowserContext {
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
   const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
-      const override;
+      override;
 
  private:
   class CastResourceContext;

@@ -94,6 +94,22 @@ void ImpressionHistoryTrackerImpl::GetClientStates(
   }
 }
 
+void ImpressionHistoryTrackerImpl::GetImpressionDetail(
+    SchedulerClientType type,
+    ImpressionDetail::ImpressionDetailCallback callback) {
+  DCHECK(initialized_);
+  auto it = client_states_.find(type);
+  if (it == client_states_.end())
+    return;
+
+  auto* state = it->second.get();
+  int num_notification_shown_today =
+      notifications::NotificationsShownToday(state);
+  ImpressionDetail detail(state->current_max_daily_show,
+                          num_notification_shown_today);
+  std::move(callback).Run(std::move(detail));
+}
+
 void ImpressionHistoryTrackerImpl::OnClick(const std::string& notification_id) {
   OnClickInternal(notification_id, true /*update_db*/);
 }

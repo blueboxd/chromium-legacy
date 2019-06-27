@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
@@ -57,6 +58,8 @@ class GraphImpl : public Graph {
   void RemovePageNodeObserver(PageNodeObserver* observer) override;
   void RemoveProcessNodeObserver(ProcessNodeObserver* observer) override;
   void RemoveSystemNodeObserver(SystemNodeObserver* observer) override;
+  void PassToGraph(std::unique_ptr<GraphOwned> graph_owned) override;
+  std::unique_ptr<GraphOwned> TakeFromGraph(GraphOwned* graph_owned) override;
   uintptr_t GetImplType() const override;
   const void* GetImpl() const override;
 
@@ -106,6 +109,9 @@ class GraphImpl : public Graph {
   // Allows explicitly invoking SystemNode destruction for testing.
   void ReleaseSystemNodeForTesting() { ReleaseSystemNode(); }
 
+  // Returns the number of objects in the |graph_owned_| map, for testing.
+  size_t GraphOwnedCountForTesting() const { return graph_owned_.size(); }
+
  protected:
   friend class NodeBase;
 
@@ -148,6 +154,10 @@ class GraphImpl : public Graph {
   std::vector<PageNodeObserver*> page_node_observers_;
   std::vector<ProcessNodeObserver*> process_node_observers_;
   std::vector<SystemNodeObserver*> system_node_observers_;
+
+  // Graph-owned objects. For now we only expect O(10) clients, hence the
+  // flat_map.
+  base::flat_map<GraphOwned*, std::unique_ptr<GraphOwned>> graph_owned_;
 
   // User data storage for the graph.
   friend class NodeAttachedDataMapHelper;

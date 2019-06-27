@@ -19,6 +19,7 @@
 #include "chrome/browser/notifications/scheduler/internal/collection_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
+#include "chrome/browser/notifications/scheduler/public/impression_detail.h"
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 
 namespace notifications {
@@ -59,6 +60,11 @@ class ImpressionHistoryTracker : public UserActionHandler {
       std::map<SchedulerClientType, const ClientState*>* client_states)
       const = 0;
 
+  // Queries the impression detail of a given |SchedulerClientType|.
+  virtual void GetImpressionDetail(
+      SchedulerClientType type,
+      ImpressionDetail::ImpressionDetailCallback callback) = 0;
+
   virtual ~ImpressionHistoryTracker() = default;
 
  protected:
@@ -86,6 +92,9 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   void AnalyzeImpressionHistory() override;
   void GetClientStates(std::map<SchedulerClientType, const ClientState*>*
                            client_states) const override;
+  void GetImpressionDetail(
+      SchedulerClientType type,
+      ImpressionDetail::ImpressionDetailCallback callback) override;
   void OnClick(const std::string& notification_id) override;
   void OnActionClick(const std::string& notification_id,
                      ActionButtonType button_type) override;

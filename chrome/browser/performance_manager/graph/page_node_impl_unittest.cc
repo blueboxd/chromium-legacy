@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
@@ -60,7 +61,7 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
       process_node.get(), page_node.get(), parent_frame.get(), 2);
 
   // Validate that all frames are tallied to the page.
-  EXPECT_EQ(3u, page_node->GetFrameNodes().size());
+  EXPECT_EQ(3u, GraphImplOperations::GetFrameNodes(page_node.get()).size());
 }
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
@@ -70,14 +71,15 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
                                               page_node.get(), nullptr, 0);
 
   // Ensure correct page-frame relationship has been established.
-  EXPECT_EQ(1u, page_node->GetFrameNodes().size());
-  EXPECT_TRUE(base::Contains(page_node->GetFrameNodes(), frame_node.get()));
+  auto frame_nodes = GraphImplOperations::GetFrameNodes(page_node.get());
+  EXPECT_EQ(1u, frame_nodes.size());
+  EXPECT_TRUE(base::Contains(frame_nodes, frame_node.get()));
   EXPECT_EQ(page_node.get(), frame_node->page_node());
 
   frame_node.reset();
 
   // Parent-child relationships should no longer exist.
-  EXPECT_EQ(0u, page_node->GetFrameNodes().size());
+  EXPECT_EQ(0u, GraphImplOperations::GetFrameNodes(page_node.get()).size());
 }
 
 TEST_F(PageNodeImplTest, CalculatePageCPUUsageForSinglePageInSingleProcess) {

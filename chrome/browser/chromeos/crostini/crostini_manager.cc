@@ -15,7 +15,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -24,9 +23,9 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -223,22 +222,8 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
 
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
-                       base::FilePath(kHomeDirectory)),
-        base::BindOnce(&CrostiniRestarter::CreateDiskImageAfterSizeCheck,
-                       this));
-  }
-
-  void CreateDiskImageAfterSizeCheck(int64_t free_disk_bytes) {
-    // Unlike other functions, this isn't called from a crostini_manager_
-    // function, so crostini_manager_ could have been deleted.
-    if (!crostini_manager_) {
-      return;
-    }
-
-    int64_t disk_size_available = (free_disk_bytes * 9) / 10;
+    // Allow concierge to choose an appropriate disk image size.
+    int64_t disk_size_available = 0;
     // If we have an already existing disk, CreateDiskImage will just return its
     // path so we can pass it to StartTerminaVm.
     crostini_manager_->CreateDiskImage(
@@ -1833,7 +1818,7 @@ void CrostiniManager::OnStartTerminaVm(
                               std::move(callback)));
 
   // Share folders from Downloads, etc with VM.
-  CrostiniSharePath::GetForProfile(profile_)->SharePersistedPaths(
+  guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePersistedPaths(
       vm_name, base::DoNothing());
 }
 

@@ -806,8 +806,16 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   // no store (and hence no ability to affect access time).
   CookieMonster* CreateMonsterForGC(int num_cookies) {
     CookieMonster* cm(new CookieMonster(nullptr, &net_log_));
+    base::Time creation_time = base::Time::Now();
     for (int i = 0; i < num_cookies; i++) {
-      SetCookie(cm, GURL(base::StringPrintf("http://h%05d.izzle", i)), "a=1");
+      std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
+          "a", "1", base::StringPrintf("h%05d.izzle", i), "/" /* path */,
+          creation_time, base::Time() /* expiration_time */,
+          creation_time /* last_access */, false /* secure */,
+          false /* http_only */, CookieSameSite::NO_RESTRICTION,
+          COOKIE_PRIORITY_DEFAULT));
+      cm->SetCanonicalCookieAsync(std::move(cc), "http", CookieOptions(),
+                                  CookieStore::SetCookiesCallback());
     }
     return cm;
   }
@@ -2084,75 +2092,78 @@ TEST_F(CookieMonsterTest, CookieListOrdering) {
   }
 }
 
-// This test and CookieMonstertest.TestGCTimes (in cookie_monster_perftest.cc)
-// are somewhat complementary twins.  This test is probing for whether
-// garbage collection always happens when it should (i.e. that we actually
-// get rid of cookies when we should).  The perftest is probing for
+// These garbage collection tests and CookieMonstertest.TestGCTimes (in
+// cookie_monster_perftest.cc) are somewhat complementary.  These tests probe
+// for whether garbage collection always happens when it should (i.e. that we
+// actually get rid of cookies when we should).  The perftest is probing for
 // whether garbage collection happens when it shouldn't.  See comments
 // before that test for more details.
 
-// Disabled on Windows, see crbug.com/126095
-#if defined(OS_WIN)
-#define MAYBE_GarbageCollectionTriggers DISABLED_GarbageCollectionTriggers
-#else
-#define MAYBE_GarbageCollectionTriggers GarbageCollectionTriggers
-#endif
+// Check to make sure that a whole lot of recent cookies doesn't get rid of
+// anything after garbage collection is checked for.
+TEST_F(CookieMonsterTest, GarbageCollectionKeepsRecentEphemeralCookies) {
+  std::unique_ptr<CookieMonster> cm(
+      CreateMonsterForGC(CookieMonster::kMaxCookies * 2 /* num_cookies */));
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2, GetAllCookies(cm.get()).size());
+  // Will trigger GC.
+  SetCookie(cm.get(), GURL("http://newdomain.com"), "b=2");
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2 + 1, GetAllCookies(cm.get()).size());
+}
 
-TEST_F(CookieMonsterTest, MAYBE_GarbageCollectionTriggers) {
-  // First we check to make sure that a whole lot of recent cookies
-  // doesn't get rid of anything after garbage collection is checked for.
-  {
-    std::unique_ptr<CookieMonster> cm(
-        CreateMonsterForGC(CookieMonster::kMaxCookies * 2));
-    EXPECT_EQ(CookieMonster::kMaxCookies * 2, GetAllCookies(cm.get()).size());
-    SetCookie(cm.get(), GURL("http://newdomain.com"), "b=2");
-    EXPECT_EQ(CookieMonster::kMaxCookies * 2 + 1,
-              GetAllCookies(cm.get()).size());
-  }
+// A whole lot of recent cookies; GC shouldn't happen.
+TEST_F(CookieMonsterTest, GarbageCollectionKeepsRecentCookies) {
+  std::unique_ptr<CookieMonster> cm = CreateMonsterFromStoreForGC(
+      CookieMonster::kMaxCookies * 2 /* num_cookies */, 0 /* num_old_cookies */,
+      0, 0, CookieMonster::kSafeFromGlobalPurgeDays * 2);
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2, GetAllCookies(cm.get()).size());
+  // Will trigger GC.
+  SetCookie(cm.get(), GURL("http://newdomain.com"), "b=2");
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2 + 1, GetAllCookies(cm.get()).size());
+}
 
-  // Now we explore a series of relationships between cookie last access
-  // time and size of store to make sure we only get rid of cookies when
-  // we really should.
-  const struct TestCase {
-    size_t num_cookies;
-    size_t num_old_cookies;
-    size_t expected_initial_cookies;
-    // Indexed by ExpiryAndKeyScheme
-    size_t expected_cookies_after_set;
-  } test_cases[] = {
-      {// A whole lot of recent cookies; gc shouldn't happen.
-       CookieMonster::kMaxCookies * 2,
-       0,
-       CookieMonster::kMaxCookies * 2,
-       CookieMonster::kMaxCookies * 2 + 1},
-      {// Some old cookies, but still overflowing max.
-       CookieMonster::kMaxCookies * 2,
-       CookieMonster::kMaxCookies / 2,
-       CookieMonster::kMaxCookies * 2,
-       CookieMonster::kMaxCookies * 2 - CookieMonster::kMaxCookies / 2 + 1},
-      {// Old cookies enough to bring us right down to our purge line.
-       CookieMonster::kMaxCookies * 2,
-       CookieMonster::kMaxCookies + CookieMonster::kPurgeCookies + 1,
-       CookieMonster::kMaxCookies * 2,
-       CookieMonster::kMaxCookies - CookieMonster::kPurgeCookies},
-      {// Old cookies enough to bring below our purge line (which we
-       // shouldn't do).
-       CookieMonster::kMaxCookies * 2,
-       CookieMonster::kMaxCookies * 3 / 2,
-       CookieMonster::kMaxCookies * 2,
-       CookieMonster::kMaxCookies - CookieMonster::kPurgeCookies}};
+// Test case where there are more than kMaxCookies - kPurgeCookies recent
+// cookies. All old cookies should be garbage collected, all recent cookies
+// kept.
+TEST_F(CookieMonsterTest, GarbageCollectionKeepsOnlyRecentCookies) {
+  std::unique_ptr<CookieMonster> cm = CreateMonsterFromStoreForGC(
+      CookieMonster::kMaxCookies * 2 /* num_cookies */,
+      CookieMonster::kMaxCookies / 2 /* num_old_cookies */, 0, 0,
+      CookieMonster::kSafeFromGlobalPurgeDays * 2);
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2, GetAllCookies(cm.get()).size());
+  // Will trigger GC.
+  SetCookie(cm.get(), GURL("http://newdomain.com"), "b=2");
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2 - CookieMonster::kMaxCookies / 2 + 1,
+            GetAllCookies(cm.get()).size());
+}
 
-  for (const auto& test_case : test_cases) {
-    std::unique_ptr<CookieMonster> cm = CreateMonsterFromStoreForGC(
-        test_case.num_cookies, test_case.num_old_cookies, 0, 0,
-        CookieMonster::kSafeFromGlobalPurgeDays * 2);
-    EXPECT_EQ(test_case.expected_initial_cookies,
-              GetAllCookies(cm.get()).size());
-    // Will trigger GC
-    SetCookie(cm.get(), GURL("http://newdomain.com"), "b=2");
-    EXPECT_EQ(test_case.expected_cookies_after_set,
-              GetAllCookies(cm.get()).size());
-  }
+// Test case where there are exactly kMaxCookies - kPurgeCookies recent cookies.
+// All old cookies should be deleted.
+TEST_F(CookieMonsterTest, GarbageCollectionExactlyAllOldCookiesDeleted) {
+  std::unique_ptr<CookieMonster> cm = CreateMonsterFromStoreForGC(
+      CookieMonster::kMaxCookies * 2 /* num_cookies */,
+      CookieMonster::kMaxCookies + CookieMonster::kPurgeCookies +
+          1 /* num_old_cookies */,
+      0, 0, CookieMonster::kSafeFromGlobalPurgeDays * 2);
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2, GetAllCookies(cm.get()).size());
+  // Will trigger GC.
+  SetCookie(cm.get(), GURL("http://newdomain.com"), "b=2");
+  EXPECT_EQ(CookieMonster::kMaxCookies - CookieMonster::kPurgeCookies,
+            GetAllCookies(cm.get()).size());
+}
+
+// Test case where there are less than kMaxCookies - kPurgeCookies recent
+// cookies. Enough old cookies should be deleted to reach kMaxCookies -
+// kPurgeCookies total cookies, but no more. Some old cookies should be kept.
+TEST_F(CookieMonsterTest, GarbageCollectionTriggers5) {
+  std::unique_ptr<CookieMonster> cm = CreateMonsterFromStoreForGC(
+      CookieMonster::kMaxCookies * 2 /* num_cookies */,
+      CookieMonster::kMaxCookies * 3 / 2 /* num_old_cookies */, 0, 0,
+      CookieMonster::kSafeFromGlobalPurgeDays * 2);
+  EXPECT_EQ(CookieMonster::kMaxCookies * 2, GetAllCookies(cm.get()).size());
+  // Will trigger GC.
+  SetCookie(cm.get(), GURL("http://newdomain.com"), "b=2");
+  EXPECT_EQ(CookieMonster::kMaxCookies - CookieMonster::kPurgeCookies,
+            GetAllCookies(cm.get()).size());
 }
 
 // Tests garbage collection when there are only secure cookies.

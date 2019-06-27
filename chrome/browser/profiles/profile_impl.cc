@@ -1278,7 +1278,7 @@ void ProfileImpl::SetCorsOriginAccessListForOrigin(
 }
 
 const content::SharedCorsOriginAccessList*
-ProfileImpl::GetSharedCorsOriginAccessList() const {
+ProfileImpl::GetSharedCorsOriginAccessList() {
   return shared_cors_origin_access_list_.get();
 }
 

@@ -10,6 +10,7 @@
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
+      "fuchsia.posix.socket.Provider",
       "fuchsia.process.Launcher",
       "fuchsia.sysmem.Allocator",
       "fuchsia.ui.input.ImeService",

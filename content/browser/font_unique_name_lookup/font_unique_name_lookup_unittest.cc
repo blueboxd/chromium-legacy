@@ -187,6 +187,19 @@ TEST_F(FontUniqueNameLookupTest, TestMatchFullFontName) {
   ASSERT_EQ(match_result->ttc_index, 0u);
 }
 
+TEST_F(FontUniqueNameLookupTest, DontMatchOtherNames) {
+  ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
+  blink::FontTableMatcher matcher(
+      font_unique_name_lookup_->DuplicateMemoryRegion().Map());
+  // Name id 9 is the designer field, which we must not match against.
+  auto match_result = matcher.MatchName("Christian Robertson");
+  ASSERT_FALSE(match_result);
+  // Name id 13 contains the license, which we also must not match.
+  match_result =
+      matcher.MatchName("Licensed under the Apache License, Version 2.0");
+  ASSERT_FALSE(match_result);
+}
+
 namespace {
 size_t GetNumTables(base::File& font_file) {
   font_file.Seek(base::File::FROM_BEGIN, 5);

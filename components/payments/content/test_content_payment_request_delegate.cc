@@ -49,6 +49,10 @@ bool TestContentPaymentRequestDelegate::IsBrowserWindowActive() const {
   return core_delegate_.IsBrowserWindowActive();
 }
 
+bool TestContentPaymentRequestDelegate::SkipUiForBasicCard() const {
+  return false;
+}
+
 autofill::PersonalDataManager*
 TestContentPaymentRequestDelegate::GetPersonalDataManager() {
   return core_delegate_.GetPersonalDataManager();

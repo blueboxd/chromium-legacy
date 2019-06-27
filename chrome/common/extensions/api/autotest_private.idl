@@ -37,10 +37,6 @@ namespace autotestPrivate {
   };
   callback LoginStatusCallback = void (LoginStatusDict status);
 
-  // |all_policies| will be the full list of policies as returned by the
-  // GetAllPolicyValuesAsArray function.
-  callback AllEnterprisePoliciesCallback = void (any all_policies);
-
   dictionary ExtensionInfoDict {
     DOMString id;
     DOMString version;
@@ -195,13 +191,6 @@ namespace autotestPrivate {
 
     // Get info about installed extensions.
     static void getExtensionsInfo(ExtensionsInfoCallback callback);
-
-    // Get state of the policies.
-    // Will contain device policies and policies from the active profile.
-    // The policy values are formatted as they would be for exporting in
-    // chrome://policy.
-    static void getAllEnterprisePolicies(
-        AllEnterprisePoliciesCallback callback);
 
     // Simulates a memory access bug for asan testing.
     static void simulateAsanMemoryBug();

@@ -870,7 +870,7 @@ void RootWindowController::InitLayoutManagers() {
   always_on_top_controller_ = std::make_unique<AlwaysOnTopController>(
       always_on_top_container, pip_container);
 
-  wm::WmSnapToPixelLayoutManager::InstallOnContainers(root);
+  wm::WmDefaultLayoutManager::InstallOnContainers(root);
 
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
@@ -940,7 +940,6 @@ void RootWindowController::CreateContainers() {
   aura::Window* app_list_tablet_mode_container =
       CreateContainer(kShellWindowId_HomeScreenContainer, "HomeScreenContainer",
                       non_lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(app_list_tablet_mode_container);
   app_list_tablet_mode_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
                                               true);
 
@@ -951,7 +950,6 @@ void RootWindowController::CreateContainers() {
     aura::Window* container = CreateContainer(
         id, desks_util::GetDeskContainerName(id), non_lock_screen_containers);
     ::wm::SetChildWindowVisibilityChangesAnimated(container);
-    wm::SetSnapsChildrenToPhysicalPixelBoundary(container);
     container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
     wm::SetChildrenUseExtendedHitRegionForWindow(container);
 
@@ -964,52 +962,44 @@ void RootWindowController::CreateContainers() {
       CreateContainer(kShellWindowId_AlwaysOnTopContainer,
                       "AlwaysOnTopContainer", non_lock_screen_containers);
   ::wm::SetChildWindowVisibilityChangesAnimated(always_on_top_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(always_on_top_container);
   always_on_top_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* app_list_container =
       CreateContainer(kShellWindowId_AppListContainer, "AppListContainer",
                       non_lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(app_list_container);
   app_list_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* pip_container = CreateContainer(
       kShellWindowId_PipContainer, "PipContainer", non_lock_screen_containers);
   ::wm::SetChildWindowVisibilityChangesAnimated(pip_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(pip_container);
   pip_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* arc_ime_parent_container = CreateContainer(
       kShellWindowId_ArcImeWindowParentContainer, "ArcImeWindowParentContainer",
       non_lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(arc_ime_parent_container);
   arc_ime_parent_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   arc_ime_parent_container->SetLayoutManager(
       new ArcVirtualKeyboardContainerLayoutManager(arc_ime_parent_container));
   aura::Window* arc_vk_container =
       CreateContainer(kShellWindowId_ArcVirtualKeyboardContainer,
                       "ArcVirtualKeyboardContainer", arc_ime_parent_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(arc_vk_container);
   arc_vk_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* shelf_container_parent = lock_screen_related_containers;
   aura::Window* shelf_container = CreateContainer(
       kShellWindowId_ShelfContainer, "ShelfContainer", shelf_container_parent);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(shelf_container);
   shelf_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   shelf_container->SetProperty(kLockedToRootKey, true);
 
   aura::Window* shelf_bubble_container =
       CreateContainer(kShellWindowId_ShelfBubbleContainer,
                       "ShelfBubbleContainer", non_lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(shelf_bubble_container);
   shelf_bubble_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   shelf_bubble_container->SetProperty(kLockedToRootKey, true);
 
   aura::Window* modal_container =
       CreateContainer(kShellWindowId_SystemModalContainer,
                       "SystemModalContainer", non_lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(modal_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(modal_container);
   modal_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   wm::SetChildrenUseExtendedHitRegionForWindow(modal_container);
@@ -1017,13 +1007,11 @@ void RootWindowController::CreateContainers() {
   aura::Window* lock_container =
       CreateContainer(kShellWindowId_LockScreenContainer, "LockScreenContainer",
                       lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(lock_container);
   lock_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* lock_action_handler_container =
       CreateContainer(kShellWindowId_LockActionHandlerContainer,
                       "LockActionHandlerContainer", lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(lock_action_handler_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(lock_action_handler_container);
   lock_action_handler_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
                                              true);
@@ -1031,7 +1019,6 @@ void RootWindowController::CreateContainers() {
   aura::Window* lock_modal_container =
       CreateContainer(kShellWindowId_LockSystemModalContainer,
                       "LockSystemModalContainer", lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(lock_modal_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(lock_modal_container);
   lock_modal_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   wm::SetChildrenUseExtendedHitRegionForWindow(lock_modal_container);
@@ -1039,21 +1026,18 @@ void RootWindowController::CreateContainers() {
   aura::Window* status_container =
       CreateContainer(kShellWindowId_StatusContainer, "StatusContainer",
                       lock_screen_related_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(status_container);
   status_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   status_container->SetProperty(kLockedToRootKey, true);
 
   aura::Window* power_menu_container =
       CreateContainer(kShellWindowId_PowerMenuContainer, "PowerMenuContainer",
                       lock_screen_related_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(power_menu_container);
   power_menu_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* settings_bubble_container =
       CreateContainer(kShellWindowId_SettingBubbleContainer,
                       "SettingBubbleContainer", lock_screen_related_containers);
   ::wm::SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(settings_bubble_container);
   settings_bubble_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   settings_bubble_container->SetProperty(kLockedToRootKey, true);
 
@@ -1070,8 +1054,6 @@ void RootWindowController::CreateContainers() {
   aura::Window* virtual_keyboard_parent_container = CreateContainer(
       kShellWindowId_ImeWindowParentContainer, "ImeWindowParentContainer",
       lock_screen_related_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(
-      virtual_keyboard_parent_container);
   virtual_keyboard_parent_container->SetProperty(
       ::wm::kUsesScreenCoordinatesKey, true);
   virtual_keyboard_parent_container->SetLayoutManager(
@@ -1080,7 +1062,6 @@ void RootWindowController::CreateContainers() {
   aura::Window* virtual_keyboard_container = CreateContainer(
       kShellWindowId_VirtualKeyboardContainer, "VirtualKeyboardContainer",
       virtual_keyboard_parent_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(virtual_keyboard_container);
   virtual_keyboard_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
                                           true);
   virtual_keyboard_container->SetLayoutManager(
@@ -1090,26 +1071,22 @@ void RootWindowController::CreateContainers() {
       CreateContainer(kShellWindowId_MenuContainer, "MenuContainer",
                       lock_screen_related_containers);
   ::wm::SetChildWindowVisibilityChangesAnimated(menu_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(menu_container);
   menu_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* autoclick_container = CreateContainer(
       kShellWindowId_AutoclickContainer, "AutoclickBubbleContainer",
       lock_screen_related_containers);
   autoclick_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(autoclick_container);
 
   aura::Window* drag_drop_container = CreateContainer(
       kShellWindowId_DragImageAndTooltipContainer,
       "DragImageAndTooltipContainer", lock_screen_related_containers);
   ::wm::SetChildWindowVisibilityChangesAnimated(drag_drop_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(drag_drop_container);
   drag_drop_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* overlay_container =
       CreateContainer(kShellWindowId_OverlayContainer, "OverlayContainer",
                       lock_screen_related_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(overlay_container);
   overlay_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   overlay_container->SetLayoutManager(
       new OverlayLayoutManager(overlay_container));  // Takes ownership.

@@ -118,7 +118,8 @@ public class PreferencesTest {
 
         // Set the second search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
+            SearchEnginePreference pref =
+                    (SearchEnginePreference) prefActivity.getMainFragmentCompat();
             pref.setValueForTesting("1");
 
             // Ensure that the second search engine in the list is selected.
@@ -240,13 +241,15 @@ public class PreferencesTest {
 
         // Set the first search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
+            SearchEnginePreference pref =
+                    (SearchEnginePreference) prefActivity.getMainFragmentCompat();
             pref.setValueForTesting("0");
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Ensure that the first search engine in the list is selected.
-            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
+            SearchEnginePreference pref =
+                    (SearchEnginePreference) prefActivity.getMainFragmentCompat();
             Assert.assertNotNull(pref);
             Assert.assertEquals("0", pref.getValueForTesting());
 

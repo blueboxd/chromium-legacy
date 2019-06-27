@@ -351,14 +351,6 @@ void MediaNotificationView::UpdateWithMediaArtwork(
   SchedulePaint();
 }
 
-void MediaNotificationView::UpdateWithMediaIcon(const gfx::ImageSkia& image) {
-  if (image.isNull()) {
-    header_row_->ClearAppIcon();
-  } else {
-    header_row_->SetAppIcon(image);
-  }
-}
-
 void MediaNotificationView::UpdateActionButtonsVisibility() {
   std::set<MediaSessionAction> visible_actions =
       CalculateVisibleActions(IsActuallyExpanded());

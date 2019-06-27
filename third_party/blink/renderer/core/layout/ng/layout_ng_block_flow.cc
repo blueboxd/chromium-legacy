@@ -45,7 +45,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
-  for (const NGOutOfFlowPositionedDescendant& descendant :
+  for (const auto& descendant :
        result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
 }
@@ -72,13 +72,15 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   container_builder.SetIsNewFormattingContext(
       container_node.CreatesNewFormattingContext());
 
-  // Compute ContainingBlock logical size.
-  // OverrideContainingBlockContentLogicalWidth/Height are used by e.g. grid
-  // layout. Override sizes are padding box size, not border box, so we must add
-  // borders and scrollbars to compensate.
-  NGBoxStrut border_scrollbar =
-      ComputeBorders(constraint_space, container_node) +
+  NGFragmentGeometry fragment_geometry;
+  fragment_geometry.border = ComputeBorders(constraint_space, container_node);
+  fragment_geometry.scrollbar =
       ComputeScrollbars(constraint_space, container_node);
+  fragment_geometry.padding =
+      ComputePadding(constraint_space, *container_style);
+
+  NGBoxStrut border_scrollbar =
+      fragment_geometry.border + fragment_geometry.scrollbar;
 
   // Calculate the border-box size of the object that's the containing block of
   // this out-of-flow positioned descendant. Note that this is not to be used as
@@ -104,16 +106,12 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     container_border_box_logical_height = container->LogicalHeight();
   }
 
-  NGFragmentGeometry fragment_geometry;
   fragment_geometry.border_box_size = {container_border_box_logical_width,
                                        container_border_box_logical_height};
-  fragment_geometry.border = ComputeBorders(constraint_space, container_node);
-  fragment_geometry.padding =
-      ComputePadding(constraint_space, *container_style);
   container_builder.SetInitialFragmentGeometry(fragment_geometry);
 
-  NGStaticPosition static_position =
-      LayoutBoxUtils::ComputeStaticPositionFromLegacy(*this);
+  NGLogicalStaticPosition static_position =
+      LayoutBoxUtils::ComputeStaticPositionFromLegacy(*this, border_scrollbar);
   // Set correct container for inline containing blocks.
   container_builder.AddOutOfFlowLegacyCandidate(
       NGBlockNode(this), static_position, ToLayoutInlineOrNull(css_container));
@@ -140,7 +138,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   scoped_refptr<const NGLayoutResult> result =
       container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.
-  for (const NGOutOfFlowPositionedDescendant& descendant :
+  for (const auto& descendant :
        result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
 

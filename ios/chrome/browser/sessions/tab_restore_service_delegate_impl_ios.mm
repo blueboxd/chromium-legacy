@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/sessions/core/session_types.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -70,6 +71,12 @@ bool TabRestoreServiceDelegateImplIOS::IsTabPinned(int index) const {
   return false;
 }
 
+base::Optional<base::Token> TabRestoreServiceDelegateImplIOS::GetTabGroupForTab(
+    int index) const {
+  // Not supported by iOS.
+  return base::nullopt;
+}
+
 const gfx::Rect TabRestoreServiceDelegateImplIOS::GetRestoredBounds() const {
   // Not supported by iOS.
   return gfx::Rect();
@@ -90,6 +97,7 @@ sessions::LiveTab* TabRestoreServiceDelegateImplIOS::AddRestoredTab(
     int tab_index,
     int selected_navigation,
     const std::string& extension_app_id,
+    base::Optional<base::Token> group,
     bool select,
     bool pin,
     bool from_last_session,
@@ -108,6 +116,7 @@ sessions::LiveTab* TabRestoreServiceDelegateImplIOS::AddRestoredTab(
 
 sessions::LiveTab* TabRestoreServiceDelegateImplIOS::ReplaceRestoredTab(
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
+    base::Optional<base::Token> group,
     int selected_navigation,
     bool from_last_session,
     const std::string& extension_app_id,

@@ -847,7 +847,14 @@ void DisplayLockContext::NotifyWillDisconnect() {
 
 void DisplayLockContext::ScheduleAnimation() {
   DCHECK(element_);
-  DCHECK(ConnectedToView());
+  // We could have posted a task to run ScheduleAnimation if we're updating.
+  // However, before that task runs, we could have disconnected the element
+  // already. If that's the case and we don't need to finalize update, then we
+  // can skip scheduling animation. If we do need to finalize update (ie reset
+  // update_budget_), then we should still schedule an animation just in case
+  // one was not scheduled.
+  if ((!ConnectedToView() && !update_budget_) || !document_->GetPage())
+    return;
 
   // Schedule an animation to perform the lifecycle phases.
   document_->GetPage()->Animator().ScheduleVisualUpdate(document_->GetFrame());

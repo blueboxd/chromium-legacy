@@ -18,7 +18,7 @@ namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
   void* break_token;
-  std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
+  std::unique_ptr<Vector<NGPhysicalOutOfFlowPositionedNode>>
       oof_positioned_descendants_;
   void* pointer;
   wtf_size_t size;
@@ -41,8 +41,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
       oof_positioned_descendants_(
           builder->oof_positioned_descendants_.IsEmpty()
               ? nullptr
-              : new Vector<NGOutOfFlowPositionedDescendant>(
-                    std::move(builder->oof_positioned_descendants_))),
+              : new Vector<NGPhysicalOutOfFlowPositionedNode>()),
       buffer_(buffer),
       num_children_(builder->children_.size()) {
   has_floating_descendants_ = builder->has_floating_descendants_;
@@ -50,6 +49,19 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
   may_have_descendant_above_block_start_ =
       builder->may_have_descendant_above_block_start_;
   depends_on_percentage_block_size_ = DependsOnPercentageBlockSize(*builder);
+
+  PhysicalSize size = Size();
+  if (oof_positioned_descendants_) {
+    oof_positioned_descendants_->ReserveCapacity(
+        builder->oof_positioned_descendants_.size());
+    for (const auto& descendant : builder->oof_positioned_descendants_) {
+      oof_positioned_descendants_->emplace_back(
+          descendant.node,
+          descendant.static_position.ConvertToPhysical(
+              builder->Style().GetWritingMode(), builder->Direction(), size),
+          descendant.inline_container);
+    }
+  }
 
   // Because flexible arrays need to be the last member in a class, we need to
   // have the buffer passed as a constructor argument and have the actual
@@ -59,7 +71,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     buffer[i].fragment = child.fragment.get();
     buffer[i].fragment->AddRef();
     buffer[i].offset = child.offset.ConvertToPhysical(
-        block_or_line_writing_mode, builder->Direction(), Size(),
+        block_or_line_writing_mode, builder->Direction(), size,
         child.fragment->Size());
     ++i;
   }

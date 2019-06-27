@@ -4,9 +4,11 @@
 
 #include "ui/display/manager/content_protection_manager.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "ui/display/manager/apply_content_protection_task.h"
 #include "ui/display/manager/display_layout_manager.h"
@@ -16,6 +18,13 @@
 #include "ui/display/types/display_snapshot.h"
 
 namespace display {
+
+namespace {
+
+// HDCP requires suppressing content within 2 seconds when authentication drops.
+constexpr auto kDisplaySecurityPollingPeriod = base::TimeDelta::FromSeconds(2);
+
+}  // namespace
 
 ContentProtectionManager::ContentProtectionManager(
     DisplayLayoutManager* layout_manager,
@@ -51,6 +60,17 @@ void ContentProtectionManager::UnregisterClient(ClientId client_id) {
       base::BindOnce(&ContentProtectionManager::OnContentProtectionApplied,
                      weak_ptr_factory_.GetWeakPtr(),
                      ApplyContentProtectionCallback(), base::nullopt)));
+
+  ToggleDisplaySecurityPolling();
+}
+
+void ContentProtectionManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+  QueueDisplaySecurityQueries();
+}
+
+void ContentProtectionManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ContentProtectionManager::QueryContentProtection(
@@ -95,6 +115,8 @@ void ContentProtectionManager::ApplyContentProtection(
       base::BindOnce(&ContentProtectionManager::OnContentProtectionApplied,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      client_id)));
+
+  ToggleDisplaySecurityPolling();
 }
 
 const DisplaySnapshot* ContentProtectionManager::GetDisplay(
@@ -150,6 +172,8 @@ void ContentProtectionManager::KillTasks() {
 
   // Fire failure callbacks.
   tasks_ = {};
+
+  ToggleDisplaySecurityPolling();
 }
 
 void ContentProtectionManager::OnContentProtectionQueried(
@@ -202,6 +226,76 @@ void ContentProtectionManager::OnDisplayModeChangeFailed(
     const DisplayConfigurator::DisplayStateList&,
     MultipleDisplayState) {
   KillTasks();
+}
+
+void ContentProtectionManager::ToggleDisplaySecurityPolling() {
+  const bool polling = security_timer_.IsRunning();
+
+  const auto protections = AggregateContentProtections();
+  const bool should_poll =
+      std::any_of(protections.begin(), protections.end(), [](const auto& pair) {
+        return pair.second != CONTENT_PROTECTION_METHOD_NONE;
+      });
+
+  if (polling && !should_poll) {
+    security_timer_.Stop();
+    QueueDisplaySecurityQueries();
+  } else if (!polling && should_poll) {
+    security_timer_.Start(
+        FROM_HERE, kDisplaySecurityPollingPeriod,
+        base::BindRepeating(
+            &ContentProtectionManager::QueueDisplaySecurityQueries,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+bool ContentProtectionManager::TriggerDisplaySecurityTimeoutForTesting() {
+  if (!security_timer_.IsRunning())
+    return false;
+
+  security_timer_.user_task().Run();
+  return true;
+}
+
+void ContentProtectionManager::QueueDisplaySecurityQueries() {
+  for (DisplaySnapshot* display : layout_manager_->GetDisplayStates()) {
+    int64_t display_id = display->display_id();
+
+    if (!IsPhysicalDisplayType(display->type())) {
+      NotifyDisplaySecurityObservers(display_id, /*secure=*/false);
+      continue;
+    }
+
+    QueueTask(std::make_unique<QueryContentProtectionTask>(
+        layout_manager_, native_display_delegate_, display_id,
+        base::BindOnce(&ContentProtectionManager::OnDisplaySecurityQueried,
+                       weak_ptr_factory_.GetWeakPtr(), display_id)));
+  }
+}
+
+void ContentProtectionManager::OnDisplaySecurityQueried(
+    int64_t display_id,
+    Task::Status status,
+    uint32_t connection_mask,
+    uint32_t protection_mask) {
+  if (GetDisplay(display_id)) {
+    // Internal display is secure if not mirrored on unsecure external display.
+    const bool secure = status == Task::Status::SUCCESS &&
+                        (protection_mask != CONTENT_PROTECTION_METHOD_NONE ||
+                         connection_mask == DISPLAY_CONNECTION_TYPE_INTERNAL);
+
+    NotifyDisplaySecurityObservers(display_id, secure);
+  }
+
+  if (status != Task::Status::KILLED)
+    DequeueTask();
+}
+
+void ContentProtectionManager::NotifyDisplaySecurityObservers(
+    int64_t display_id,
+    bool secure) {
+  for (Observer& observer : observers_)
+    observer.OnDisplaySecurityChanged(display_id, secure);
 }
 
 }  // namespace display

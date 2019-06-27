@@ -216,16 +216,12 @@ class PasswordSectionElementFactory {
 
     const dialog = this.document.createElement('passwords-export-dialog');
     this.document.body.appendChild(dialog);
-
     Polymer.dom.flush();
 
     if (cr.isChromeOS) {
-      dialog.tokenRequestManager =
-          new settings.BlockingRequestManager(function() {
-            // |this| is expected to be the BlockingRequestManager instance.
-            this.resolve();
-          });
+      dialog.tokenRequestManager = new settings.BlockingRequestManager();
     }
+
     return dialog;
   }
 }

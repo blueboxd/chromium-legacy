@@ -192,7 +192,7 @@ class RequestInterceptor {
   }
 
   ~RequestInterceptor() {
-    WaitForCleanUpOnIOThread(
+    WaitForCleanUpOnInterceptorThread(
         network::ResourceResponseHead(), "",
         network::URLLoaderCompletionStatus(net::ERR_NOT_IMPLEMENTED));
   }
@@ -211,8 +211,8 @@ class RequestInterceptor {
     }
 
     // Wait until IO cleanup completes.
-    WaitForCleanUpOnIOThread(test_client_.response_head(), body_,
-                             test_client_.completion_status());
+    WaitForCleanUpOnInterceptorThread(test_client_.response_head(), body_,
+                                      test_client_.completion_status());
 
     // Mark the request as completed (for DCHECK purposes).
     request_completed_ = true;
@@ -307,7 +307,6 @@ class RequestInterceptor {
   }
 
   bool InterceptorCallback(URLLoaderInterceptor::RequestParams* params) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(params);
 
     if (url_to_intercept_ != params->url_request.url)
@@ -317,6 +316,7 @@ class RequestInterceptor {
     if (request_intercepted_)
       return false;
     request_intercepted_ = true;
+    interceptor_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
     // Modify |params| if requested.
     if (request_initiator_to_inject_.has_value())
@@ -336,30 +336,32 @@ class RequestInterceptor {
     return false;
   }
 
-  void WaitForCleanUpOnIOThread(network::ResourceResponseHead response_head,
-                                std::string response_body,
-                                network::URLLoaderCompletionStatus status) {
+  void WaitForCleanUpOnInterceptorThread(
+      network::ResourceResponseHead response_head,
+      std::string response_body,
+      network::URLLoaderCompletionStatus status) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (io_cleanup_done_)
+    if (cleanup_done_)
       return;
 
-    base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&RequestInterceptor::CleanUpOnIOThread,
-                       base::Unretained(this), response_head, response_body,
-                       status),
-        run_loop.QuitClosure());
-    run_loop.Run();
+    if (interceptor_task_runner_) {
+      base::RunLoop run_loop;
+      interceptor_task_runner_->PostTaskAndReply(
+          FROM_HERE,
+          base::BindOnce(&RequestInterceptor::CleanUpOnInterceptorThread,
+                         base::Unretained(this), response_head, response_body,
+                         status),
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
 
-    io_cleanup_done_ = true;
+    cleanup_done_ = true;
   }
 
-  void CleanUpOnIOThread(network::ResourceResponseHead response_head,
-                         std::string response_body,
-                         network::URLLoaderCompletionStatus status) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  void CleanUpOnInterceptorThread(network::ResourceResponseHead response_head,
+                                  std::string response_body,
+                                  network::URLLoaderCompletionStatus status) {
     if (!request_intercepted_)
       return;
 
@@ -399,11 +401,12 @@ class RequestInterceptor {
   network::TestURLLoaderClient test_client_;
   std::string body_;
   bool request_completed_ = false;
-  bool io_cleanup_done_ = false;
+  bool cleanup_done_ = false;
 
-  // IO thread state:
+  // Interceptor thread state:
   network::mojom::URLLoaderClientPtr original_client_;
   bool request_intercepted_ = false;
+  scoped_refptr<base::SingleThreadTaskRunner> interceptor_task_runner_;
   network::mojom::URLLoaderClientPtr test_client_ptr_;
   std::unique_ptr<mojo::Binding<network::mojom::URLLoaderClient>>
       test_client_binding_;

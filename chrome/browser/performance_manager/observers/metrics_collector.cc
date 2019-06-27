@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
@@ -36,8 +37,11 @@ const int kDefaultFrequencyUkmEQTReported = 5u;
 // associated with a PageNode.
 size_t GetNumCoresidentTabs(const PageNodeImpl* page_node) {
   std::set<NodeBase*> coresident_tabs;
-  for (auto* process_node : page_node->GetAssociatedProcessNodes()) {
-    for (auto* associated_page_node : process_node->GetAssociatedPageNodes()) {
+  auto process_nodes =
+      GraphImplOperations::GetAssociatedProcessNodes(page_node);
+  for (auto* process_node : process_nodes) {
+    auto page_nodes = GraphImplOperations::GetAssociatedPageNodes(process_node);
+    for (auto* associated_page_node : page_nodes) {
       coresident_tabs.insert(associated_page_node);
     }
   }
@@ -129,7 +133,7 @@ void MetricsCollector::OnExpectedTaskQueueingDurationSample(
   // the process that was sampled.
   const base::TimeDelta& sample =
       process_node->expected_task_queueing_duration();
-  for (auto* frame_node : process_node->GetFrameNodes()) {
+  for (auto* frame_node : process_node->frame_nodes()) {
     if (!frame_node->IsMainFrame())
       continue;
     auto* page_node = frame_node->page_node();

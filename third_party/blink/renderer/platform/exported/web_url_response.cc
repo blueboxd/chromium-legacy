@@ -244,8 +244,7 @@ void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
 }
 
 void WebURLResponse::SetSecurityStyle(WebSecurityStyle security_style) {
-  resource_response_->SetSecurityStyle(
-      static_cast<ResourceResponse::SecurityStyle>(security_style));
+  resource_response_->SetSecurityStyle(security_style);
 }
 
 void WebURLResponse::SetSecurityDetails(

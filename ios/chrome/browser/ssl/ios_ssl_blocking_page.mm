@@ -30,39 +30,6 @@
 using security_interstitials::SSLErrorUI;
 
 namespace {
-// Events for UMA. Do not reorder or change!
-enum SSLExpirationAndDecision {
-  EXPIRED_AND_PROCEED,
-  EXPIRED_AND_DO_NOT_PROCEED,
-  NOT_EXPIRED_AND_PROCEED,
-  NOT_EXPIRED_AND_DO_NOT_PROCEED,
-  END_OF_SSL_EXPIRATION_AND_DECISION,
-};
-
-void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
-                                       bool proceed,
-                                       bool overridable) {
-  SSLExpirationAndDecision event;
-  if (expired_but_previously_allowed && proceed)
-    event = EXPIRED_AND_PROCEED;
-  else if (expired_but_previously_allowed && !proceed)
-    event = EXPIRED_AND_DO_NOT_PROCEED;
-  else if (!expired_but_previously_allowed && proceed)
-    event = NOT_EXPIRED_AND_PROCEED;
-  else
-    event = NOT_EXPIRED_AND_DO_NOT_PROCEED;
-
-  if (overridable) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "interstitial.ssl.expiration_and_decision.overridable", event,
-        END_OF_SSL_EXPIRATION_AND_DECISION);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "interstitial.ssl.expiration_and_decision.nonoverridable", event,
-        END_OF_SSL_EXPIRATION_AND_DECISION);
-  }
-}
-
 IOSChromeMetricsHelper* CreateMetricsHelper(web::WebState* web_state,
                                             const GURL& request_url,
                                             bool overridable) {
@@ -88,8 +55,6 @@ IOSSSLBlockingPage::IOSSSLBlockingPage(web::WebState* web_state,
       callback_(std::move(callback)),
       ssl_info_(ssl_info),
       overridable_(IsOverridable(options_mask)),
-      expired_but_previously_allowed_(
-          (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
       controller_(new IOSChromeControllerClient(
           web_state,
           base::WrapUnique(CreateMetricsHelper(web_state,
@@ -117,8 +82,6 @@ IOSSSLBlockingPage::~IOSSSLBlockingPage() {
   if (!callback_.is_null()) {
     // The page is closed without the user having chosen what to do, default to
     // deny.
-    RecordSSLExpirationPageEventState(expired_but_previously_allowed_, false,
-                                      overridable_);
     NotifyDenyCertificate();
   }
 }
@@ -148,18 +111,12 @@ void IOSSSLBlockingPage::CommandReceived(const std::string& command) {
 }
 
 void IOSSSLBlockingPage::OnProceed() {
-  RecordSSLExpirationPageEventState(expired_but_previously_allowed_, true,
-                                    overridable_);
-
   // Accepting the certificate resumes the loading of the page.
   DCHECK(!callback_.is_null());
   std::move(callback_).Run(true);
 }
 
 void IOSSSLBlockingPage::OnDontProceed() {
-  RecordSSLExpirationPageEventState(expired_but_previously_allowed_, false,
-                                    overridable_);
-
   NotifyDenyCertificate();
 }
 

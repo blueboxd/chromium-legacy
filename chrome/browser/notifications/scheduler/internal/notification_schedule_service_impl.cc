@@ -23,6 +23,17 @@ void NotificationScheduleServiceImpl::Schedule(
   scheduler_->Schedule(std::move(notification_params));
 }
 
+void NotificationScheduleServiceImpl::DeleteNotifications(
+    SchedulerClientType type) {
+  scheduler_->DeleteAllNotifications(type);
+}
+
+void NotificationScheduleServiceImpl::GetImpressionDetail(
+    SchedulerClientType type,
+    ImpressionDetail::ImpressionDetailCallback callback) {
+  scheduler_->GetImpressionDetail(type, std::move(callback));
+}
+
 NotificationBackgroundTaskScheduler::Handler*
 NotificationScheduleServiceImpl::GetBackgroundTaskSchedulerHandler() {
   return this;

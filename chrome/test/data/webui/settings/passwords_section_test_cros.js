@@ -12,13 +12,13 @@
 cr.define('settings_passwords_section_cros', function() {
   suite('PasswordsSection_Cros', function() {
     /**
-     * Promise resolved when a saved password is retrieved.
+     * Promise resolved when an auth token request is made.
      * @type {Promise}
      */
     let requestPromise = null;
 
     /**
-     * Promise resolved when an auth token request is made.
+     * Promise resolved when a saved password is retrieved.
      * @type {Promise}
      */
     let passwordPromise = null;
@@ -188,7 +188,7 @@ cr.define('settings_passwords_section_cros', function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager);
       assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
-      passwordsSection.tokenRequestManager_.request();
+      passwordsSection.tokenRequestManager_.request(fail);
       Polymer.dom.flush();
       assertTrue(!!passwordsSection.$$('settings-password-prompt-dialog'));
     });
@@ -212,6 +212,21 @@ cr.define('settings_passwords_section_cros', function() {
           // Make request that should be resolved.
           passwordsSection.tokenRequestManager_.request(done);
           passwordsSection.authToken_ = 'auth token';
+        });
+
+    test(
+        'user is not prompted for password if they cannot enter it',
+        function(done) {
+          loadTimeData.overrideValues({userCannotManuallyEnterPassword: true});
+          const passwordsSection = document.createElement('passwords-section');
+          document.body.appendChild(passwordsSection);
+          Polymer.dom.flush();
+          assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
+          passwordsSection.tokenRequestManager_.request(() => {
+            Polymer.dom.flush();
+            assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
+            done();
+          });
         });
   });
 });

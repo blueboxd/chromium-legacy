@@ -322,12 +322,14 @@ void OfflinePageTabHelper::TryLoadingOfflinePageOnNetError(
     return;
   }
 
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PageCriteria criteria;
   criteria.url = navigation_handle->GetURL();
   criteria.pages_for_tab_id = tab_id;
   criteria.maximum_matches = 1;
   OfflinePageUtils::SelectPagesWithCriteria(
-      web_contents()->GetBrowserContext(), criteria,
+      profile->GetProfileKey(), criteria,
       base::BindOnce(&OfflinePageTabHelper::SelectPagesForURLDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }

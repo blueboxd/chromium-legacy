@@ -26,6 +26,7 @@ ${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ sid main"
 KEYRING_FILE="${SCRIPT_DIR}/debian-archive-sid-stable.gpg"
 
 HAS_ARCH_AMD64=1
+HAS_ARCH_AMD64MULTILIB=1
 HAS_ARCH_I386=1
 HAS_ARCH_ARM=1
 HAS_ARCH_ARM64=1
@@ -160,7 +161,7 @@ DEBIAN_PACKAGES="\
   libhogweed4
   libice6
   libicu-le-hb0
-  libicu57
+  libicu63
   libicu60
   libidl-2-0
   libidn11
@@ -336,6 +337,7 @@ DEBIAN_PACKAGES="\
   libxtst6
   libxxf86vm-dev
   libxxf86vm1
+  libzstd1
   linux-libc-dev
   mesa-common-dev
   shared-mime-info
@@ -359,6 +361,12 @@ DEBIAN_PACKAGES="\
 "
 
 DEBIAN_PACKAGES_AMD64="
+  liblsan0
+  libtsan0
+"
+
+DEBIAN_PACKAGES_AMD64MULTILIB="
+  gcc-multilib
   lib32asan3
   lib32atomic1
   lib32cilkrts5
@@ -373,11 +381,9 @@ DEBIAN_PACKAGES_AMD64="
   lib32ubsan0
   lib32z1
   lib32z1-dev
+  libc6-dev-i386
+  libc6-dev-i386-cross
   libc6-i386
-  libicu63
-  liblsan0
-  libtsan0
-  libzstd1
 "
 
 DEBIAN_PACKAGES_X86="

@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -55,7 +55,7 @@ void PluginVmHandler::HandleRemovePluginVmSharedPath(
   std::string vm_name = args->GetList()[0].GetString();
   std::string path = args->GetList()[1].GetString();
 
-  crostini::CrostiniSharePath::GetForProfile(profile_)->UnsharePath(
+  guest_os::GuestOsSharePath::GetForProfile(profile_)->UnsharePath(
       vm_name, base::FilePath(path),
       /*unpersist=*/true,
       base::BindOnce(

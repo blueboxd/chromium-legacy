@@ -86,7 +86,6 @@ struct Session {
   bool w3c_compliant;
   bool quit;
   bool detach;
-  bool force_devtools_screenshot;
   std::unique_ptr<Chrome> chrome;
   std::string window;
   int sticky_modifiers;

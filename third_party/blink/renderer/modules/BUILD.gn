@@ -346,7 +346,6 @@ jumbo_source_set("unit_tests") {
     "mediastream/webaudio_media_stream_audio_sink_test.cc",
     "nfc/nfc_proxy_test.cc",
     "notifications/notification_data_test.cc",
-    "notifications/notification_image_loader_test.cc",
     "notifications/notification_resources_loader_test.cc",
     "payments/abort_test.cc",
     "payments/can_make_payment_test.cc",

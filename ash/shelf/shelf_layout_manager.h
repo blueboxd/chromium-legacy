@@ -19,7 +19,7 @@
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/wm_snap_to_pixel_layout_manager.h"
+#include "ash/wm/wm_default_layout_manager.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -61,7 +61,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public OverviewObserver,
                                       public ::wm::ActivationChangeObserver,
                                       public LockStateObserver,
-                                      public wm::WmSnapToPixelLayoutManager,
+                                      public wm::WmDefaultLayoutManager,
                                       public display::DisplayObserver,
                                       public SessionObserver,
                                       public WallpaperControllerObserver,
@@ -129,7 +129,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Cancel the drag if the shelf is in drag progress.
   void CancelDragOnShelfIfInProgress();
 
-  // wm::WmSnapToPixelLayoutManager:
+  // wm::WmDefaultLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;

@@ -2681,19 +2681,19 @@
       },
       'bf_cache_content_unittests': {
         'args': [
-          '--enable-features="BackForwardCache"',
+          '--enable-features=BackForwardCache',
         ],
         'test': 'content_unittests',
       },
       'bf_cache_unit_tests': {
         'args': [
-          '--enable-features="BackForwardCache"',
+          '--enable-features=BackForwardCache',
         ],
         'test': 'unit_tests',
       },
       'bf_cache_content_browsertests': {
         'args': [
-          '--enable-features="BackForwardCache"',
+          '--enable-features=BackForwardCache',
         ],
         'swarming': {
           'shards': 10,
@@ -2702,7 +2702,7 @@
       },
       'bf_cache_browser_tests': {
         'args': [
-          '--enable-features="BackForwardCache"',
+          '--enable-features=BackForwardCache',
         ],
         'swarming': {
           'shards': 10,

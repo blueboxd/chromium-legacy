@@ -16,6 +16,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offlinepages.DeletePageResult;
@@ -47,16 +48,27 @@ public class OfflinePageBridge {
 
     /**
      * Retrieves the OfflinePageBridge for the given profile, creating it the first time
-     * getForProfile is called for a given profile.  Must be called on the UI thread.
+     * getForProfile is called for the profile.  Must be called on the UI thread.
      *
      * @param profile The profile associated with the OfflinePageBridge to get.
      */
     public static OfflinePageBridge getForProfile(Profile profile) {
         ThreadUtils.assertOnUiThread();
 
-        return nativeGetOfflinePageBridgeForProfile(profile);
+        if (profile == null)
+            return null;
+
+        OfflinePageBridge bridge = nativeGetOfflinePageBridgeForProfileKey(profile.getProfileKey());
+
+        // TODO(crbug.com/978871): Storing Profile is a temporary hack during the transition
+        // of some members to RequestCoordinatorBridge.
+        if (bridge != null) {
+            bridge.mProfile = profile;
+        }
+        return bridge;
     }
 
+    private Profile mProfile;
     private long mNativeOfflinePageBridge;
     private boolean mIsNativeOfflinePageModelLoaded;
     private final ObserverList<OfflinePageModelObserver> mObservers =
@@ -211,35 +223,20 @@ public class OfflinePageBridge {
      * Gets all the URLs in the request queue.
      *
      * @return A list of {@link SavePageRequest} representing all the queued requests.
+     * @deprecated Use {@link
+     *         RequestCoordinatorBridge#getRequestsInQueue(Callback<SavePageRequest[]>)} instead.
      */
+    @Deprecated
     @VisibleForTesting
     public void getRequestsInQueue(Callback<SavePageRequest[]> callback) {
-        nativeGetRequestsInQueue(mNativeOfflinePageBridge, callback);
-    }
-
-    private static class RequestsRemovedCallback {
-        private Callback<List<RequestRemovedResult>> mCallback;
-
-        public RequestsRemovedCallback(Callback<List<RequestRemovedResult>> callback) {
-            mCallback = callback;
-        }
-
-        @CalledByNative("RequestsRemovedCallback")
-        public void onResult(long[] resultIds, int[] resultCodes) {
-            assert resultIds.length == resultCodes.length;
-
-            List<RequestRemovedResult> results = new ArrayList<>();
-            for (int i = 0; i < resultIds.length; i++) {
-                results.add(new RequestRemovedResult(resultIds[i], resultCodes[i]));
-            }
-
-            mCallback.onResult(results);
-        }
+        RequestCoordinatorBridge.getForProfile(mProfile).getRequestsInQueue(callback);
     }
 
     /**
      * Contains a result for a remove page request.
+     * @deprecated Use {@link RequestCoordinatorBridge.RequestRemovedResult} instead.
      */
+    @Deprecated
     public static class RequestRemovedResult {
         private long mRequestId;
         private int mUpdateRequestResult;
@@ -266,18 +263,24 @@ public class OfflinePageBridge {
      * The callback will be called with |null| in the case that the queue is unavailable.  This can
      * happen in incognito, for example.
      *
-     * @param requestIds The IDs of the requests to remove.
+     * @param requestIdList The IDs of the requests to remove.
      * @param callback Called when the removal is done, with the SavePageRequest objects that were
      *     actually removed.
+     * @deprecated Use {@link RequestCoordinatorBridge#removeRequestsFromQueue(List<Long>,
+     *         Callback<List<RequestCoordinatorBridge.RequestRemovedResult>>)} instead.
      */
+    @Deprecated
     public void removeRequestsFromQueue(
             List<Long> requestIdList, Callback<List<RequestRemovedResult>> callback) {
-        long[] requestIds = new long[requestIdList.size()];
-        for (int i = 0; i < requestIdList.size(); i++) {
-            requestIds[i] = requestIdList.get(i).longValue();
-        }
-        nativeRemoveRequestsFromQueue(
-                mNativeOfflinePageBridge, requestIds, new RequestsRemovedCallback(callback));
+        RequestCoordinatorBridge.getForProfile(mProfile).removeRequestsFromQueue(
+                requestIdList, (results) -> {
+                    List<RequestRemovedResult> transformedResults = new ArrayList<>(results.size());
+                    for (RequestCoordinatorBridge.RequestRemovedResult result : results) {
+                        transformedResults.add(new RequestRemovedResult(
+                                result.getRequestId(), result.getUpdateRequestResult()));
+                    }
+                    callback.onResult(transformedResults);
+                });
     }
 
     /**
@@ -355,7 +358,9 @@ public class OfflinePageBridge {
      *
      * @param url The given URL to save for later.
      * @param clientId The client ID for the offline page to be saved later.
+     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId)} instead.
      */
+    @Deprecated
     @VisibleForTesting
     public void savePageLater(String url, ClientId clientId) {
         savePageLater(url, clientId, true);
@@ -369,7 +374,10 @@ public class OfflinePageBridge {
      * @param clientId The client ID for the offline page to be saved later.
      * @param userRequested Whether this request should be prioritized because the user explicitly
      *     requested it.
+     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId, boolean)}
+     *         instead.
      */
+    @Deprecated
     public void savePageLater(final String url, final ClientId clientId, boolean userRequested) {
         savePageLater(url, clientId, userRequested, new OfflinePageOrigin());
     }
@@ -383,7 +391,10 @@ public class OfflinePageBridge {
      * @param userRequested Whether this request should be prioritized because the user explicitly
      *                      requested it.
      * @param origin The app that initiated the request.
+     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId, boolean,
+     *         OfflinePageOrigin)} instead.
      */
+    @Deprecated
     public void savePageLater(final String url, final ClientId clientId, boolean userRequested,
             OfflinePageOrigin origin) {
         savePageLater(url, clientId, userRequested, origin, null);
@@ -401,7 +412,10 @@ public class OfflinePageBridge {
      * @param callback Callback for whether the URL is successfully added to queue. Non-zero number
      *                 represents a failure reason (See offline_pages::AddRequestResult enum). 0 is
      * success.
+     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId, boolean,
+     *         OfflinePageOrigin, Callback<Integer>)} instead.
      */
+    @Deprecated
     public void savePageLater(final String url, final ClientId clientId, boolean userRequested,
             OfflinePageOrigin origin, Callback<Integer> callback) {
         Callback<Integer> wrapper = new Callback<Integer>() {
@@ -412,8 +426,8 @@ public class OfflinePageBridge {
                 }
             }
         };
-        nativeSavePageLater(mNativeOfflinePageBridge, wrapper, url, clientId.getNamespace(),
-                clientId.getId(), origin.encodeAsJsonString(), userRequested);
+        RequestCoordinatorBridge.getForProfile(mProfile).savePageLater(
+                url, clientId, userRequested, origin, callback);
     }
 
     /**
@@ -424,7 +438,10 @@ public class OfflinePageBridge {
      * @param namespace The namespace for the offline page to be saved later.
      * @param userRequested Whether this request should be prioritized because the user explicitly
      *                      requested it.
+     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, String, boolean)}
+     *         instead.
      */
+    @Deprecated
     public void savePageLater(final String url, final String namespace, boolean userRequested) {
         savePageLater(url, namespace, userRequested, new OfflinePageOrigin());
     }
@@ -438,7 +455,10 @@ public class OfflinePageBridge {
      * @param userRequested Whether this request should be prioritized because the user explicitly
      *                      requested it.
      * @param origin The app that initiated the request.
+     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, String, boolean,
+     *         OfflinePageOrigin)} instead.
      */
+    @Deprecated
     public void savePageLater(final String url, final String namespace, boolean userRequested,
             OfflinePageOrigin origin) {
         savePageLater(url, namespace, userRequested, origin, null);
@@ -456,8 +476,11 @@ public class OfflinePageBridge {
      * @param origin The app that initiated the request.
      * @param callback Callback to call whether the URL is successfully added to the queue. Non-zero
      *                 number represents failure reason (see offline_pages::AddRequestResult enum).
+     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, String, boolean,
+     *         OfflinePageOrigin, Callback<Integer>)} instead.
      * 0 is success.
      */
+    @Deprecated
     public void savePageLater(final String url, final String namespace, boolean userRequested,
             OfflinePageOrigin origin, Callback<Integer> callback) {
         ClientId clientId = ClientId.createGuidClientIdForNamespace(namespace);
@@ -805,18 +828,13 @@ public class OfflinePageBridge {
     }
 
     private static native boolean nativeCanSavePage(String url);
-    private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
+    private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfileKey(
+            ProfileKey profileKey);
     @VisibleForTesting
     native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
             final Callback<List<OfflinePageItem>> callback);
     private native void nativeWillCloseTab(long nativeOfflinePageBridge, WebContents webContents);
 
-    @VisibleForTesting
-    native void nativeGetRequestsInQueue(
-            long nativeOfflinePageBridge, Callback<SavePageRequest[]> callback);
-    @VisibleForTesting
-    native void nativeRemoveRequestsFromQueue(
-            long nativeOfflinePageBridge, long[] requestIds, RequestsRemovedCallback callback);
     @VisibleForTesting
     native void nativeGetPageByOfflineId(
             long nativeOfflinePageBridge, long offlineId, Callback<OfflinePageItem> callback);
@@ -848,9 +866,6 @@ public class OfflinePageBridge {
             Callback<OfflinePageItem> callback);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId, String origin);
-    private native void nativeSavePageLater(long nativeOfflinePageBridge,
-            Callback<Integer> callback, String url, String clientNamespace, String clientId,
-            String origin, boolean userRequested);
     private native String nativeGetOfflinePageHeaderForReload(
             long nativeOfflinePageBridge, WebContents webContents);
     private native boolean nativeIsShowingOfflinePreview(

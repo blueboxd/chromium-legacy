@@ -434,12 +434,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ASSERT_TRUE(app_browser->is_app());
 }
 
-// Disabled: crbug.com/230165, crbug.com/915339
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Disabled: crbug.com/230165, crbug.com/915339, crbug.com/979399
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_LaunchTabApp DISABLED_LaunchTabApp
 #else
 #define MAYBE_LaunchTabApp LaunchTabApp
 #endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(browser()->profile())

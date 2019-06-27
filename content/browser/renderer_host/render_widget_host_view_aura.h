@@ -494,10 +494,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
 
-  // Tracks whether SnapToPhysicalPixelBoundary() has been called.
-  bool has_snapped_to_boundary() { return has_snapped_to_boundary_; }
-  void ResetHasSnappedToBoundary() { has_snapped_to_boundary_ = false; }
-
   // Set the bounds of the window and handle size changes.  Assumes the caller
   // has already adjusted the origin of |rect| to conform to whatever coordinate
   // space is required by the aura::Window.
@@ -667,8 +663,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   gfx::Point last_mouse_move_location_;
 #endif
-
-  bool has_snapped_to_boundary_;
 
   // The last selection bounds reported to the view.
   gfx::SelectionBound selection_start_;

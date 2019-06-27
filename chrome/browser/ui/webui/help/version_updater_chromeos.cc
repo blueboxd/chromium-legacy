@@ -80,21 +80,19 @@ bool IsAutoUpdateDisabled() {
 }
 
 base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
-  const std::string type =
-      network->IsUsingMobileData() ? shill::kTypeCellular : network->type();
+  const std::string type = network->type();
+  if (chromeos::NetworkTypePattern::WiFi().MatchesType(type)) {
+    if (network->IsUsingMobileData())
+      return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_METERED_WIFI);
+    return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI);
+  }
   if (chromeos::NetworkTypePattern::Ethernet().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET);
-  if (type == shill::kTypeWifi)
-    return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI);
-  if (type == shill::kTypeWimax)
+  if (chromeos::NetworkTypePattern::Wimax().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIMAX);
-  if (type == shill::kTypeBluetooth)
-    return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_BLUETOOTH);
-  if (type == shill::kTypeCellular ||
-      chromeos::NetworkTypePattern::Tether().MatchesType(type)) {
+  if (chromeos::NetworkTypePattern::Mobile().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_MOBILE_DATA);
-  }
-  if (type == shill::kTypeVPN)
+  if (chromeos::NetworkTypePattern::VPN().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_VPN);
   NOTREACHED();
   return base::string16();

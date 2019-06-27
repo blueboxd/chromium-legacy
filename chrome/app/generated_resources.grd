@@ -9300,6 +9300,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Ads blocked on this site
     </message>
 
+    <!-- Heavy Ad Intervention strings. -->
+    <message name="IDS_HEAVY_AD_INTERVENTION_BUTTON_DETAILS" desc="Label for the button that expands the details on the heavy ad intervention page">
+      Details
+    </message>
+    <message name="IDS_HEAVY_AD_INTERVENTION_HEADING" desc="Heading of the heavy ad intervention page">
+      Ad removed.
+    </message>
+    <message name="IDS_HEAVY_AD_INTERVENTION_SUMMARY" desc="Summary in heavy ad intervention page when ad was removed for using too many system resources.">
+      This ad uses too many resources for your device, so Chrome removed it.
+    </message>
+
     <if expr="is_win">
       <message name="IDS_UTILITY_PROCESS_UTILITY_WIN_NAME" desc="The name of the utility process used to handle Windows utility operations.">
         Windows Utilities

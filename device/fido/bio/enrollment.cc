@@ -217,7 +217,7 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
       return base::nullopt;
     }
 
-    std::vector<std::pair<std::vector<uint8_t>, std::string>> template_infos;
+    std::map<std::vector<uint8_t>, std::string> template_infos;
     for (const auto& bio_template : it->second.GetArray()) {
       if (!bio_template.is_map()) {
         return base::nullopt;
@@ -232,6 +232,10 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
         return base::nullopt;
       }
       std::vector<uint8_t> id = template_it->second.GetBytestring();
+      if (template_infos.find(id) != template_infos.end()) {
+        // Found an existing ID, invalid response.
+        return base::nullopt;
+      }
 
       // name (optional)
       std::string name;
@@ -243,7 +247,7 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
         }
         name = template_it->second.GetString();
       }
-      template_infos.push_back(std::make_pair(std::move(id), std::move(name)));
+      template_infos[std::move(id)] = std::move(name);
     }
     response.template_infos = std::move(template_infos);
   }

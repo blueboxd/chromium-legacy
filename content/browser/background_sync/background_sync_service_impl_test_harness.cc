@@ -19,6 +19,7 @@
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_background_sync_context.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -94,10 +95,19 @@ void BackgroundSyncServiceImplTestHarness::SetUp() {
   // Don't let the tests be confused by the real-world device connectivity
   background_sync_test_util::SetIgnoreNetworkChanges(true);
 
+  mojo::core::SetDefaultProcessErrorCallback(base::AdaptCallbackForRepeating(
+      base::BindOnce(&BackgroundSyncServiceImplTestHarness::CollectMojoError,
+                     base::Unretained(this))));
+
   CreateTestHelper();
   CreateStoragePartition();
   CreateBackgroundSyncContext();
   ASSERT_NO_FATAL_FAILURE(CreateServiceWorkerRegistration());
+}
+
+void BackgroundSyncServiceImplTestHarness::CollectMojoError(
+    const std::string& message) {
+  mojo_bad_messages_.push_back(message);
 }
 
 void BackgroundSyncServiceImplTestHarness::TearDown() {
@@ -110,6 +120,9 @@ void BackgroundSyncServiceImplTestHarness::TearDown() {
 
   // Restore the network observer functionality for subsequent tests
   background_sync_test_util::SetIgnoreNetworkChanges(false);
+
+  mojo::core::SetDefaultProcessErrorCallback(
+      mojo::core::ProcessErrorCallback());
 }
 
 // SetUp helper methods

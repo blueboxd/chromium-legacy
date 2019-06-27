@@ -67,7 +67,7 @@ void PrintWindowHierarchy(const aura::Window* active_window,
   if (name.empty())
     name = "\"\"";
   const gfx::Vector2dF& subpixel_position_offset =
-      window->layer()->subpixel_position_offset();
+      window->layer()->GetSubpixelOffset();
   *out << indent_str;
   *out << name << " (" << window << ")"
        << " type=" << window->type();
@@ -80,8 +80,6 @@ void PrintWindowHierarchy(const aura::Window* active_window,
                ? aura::Window::OcclusionStateToString(window->occlusion_state())
                : "")
        << " " << window->bounds().ToString();
-  if (window->GetProperty(::wm::kSnapChildrenToPixelBoundary))
-    *out << " [snapped]";
   if (!subpixel_position_offset.IsZero())
     *out << " subpixel offset=" + subpixel_position_offset.ToString();
   std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);

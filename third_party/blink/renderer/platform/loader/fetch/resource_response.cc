@@ -223,8 +223,8 @@ void ResourceResponse::SetSecurityDetails(
     time_t valid_to,
     const Vector<AtomicString>& certificate,
     const SignedCertificateTimestampList& sct_list) {
-  DCHECK_NE(security_style_, kSecurityStyleUnknown);
-  DCHECK_NE(security_style_, kSecurityStyleUnauthenticated);
+  DCHECK_NE(security_style_, kWebSecurityStyleUnknown);
+  DCHECK_NE(security_style_, kWebSecurityStyleNeutral);
   security_details_ = SecurityDetails(
       protocol, key_exchange, key_exchange_group, cipher, mac, subject_name,
       san_list, issuer, valid_from, valid_to, certificate, sct_list);

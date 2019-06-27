@@ -7,7 +7,7 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -315,14 +315,14 @@ void PluginVmManager::OnGetVmInfoForSharing(
   EnsureDefaultSharedDirExists(
       profile_, base::BindOnce(&PluginVmManager::OnDefaultSharedDirExists,
                                weak_ptr_factory_.GetWeakPtr()));
-  crostini::CrostiniSharePath::GetForProfile(profile_)->SharePersistedPaths(
+  guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePersistedPaths(
       kPluginVmName, base::DoNothing());
 }
 
 void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
                                                bool exists) {
   if (exists) {
-    crostini::CrostiniSharePath::GetForProfile(profile_)->SharePath(
+    guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
         kPluginVmName, dir, false,
         base::BindOnce([](const base::FilePath& dir, bool success,
                           std::string failure_reason) {

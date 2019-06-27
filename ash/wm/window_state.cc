@@ -660,7 +660,6 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
         std::max(min_size.height(), actual_new_bounds.height()));
   }
   BoundsSetter().SetBounds(window_, actual_new_bounds);
-  ::wm::SnapWindowToPixelBoundary(window_);
 }
 
 void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {

@@ -13,7 +13,9 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager_export.h"
 
@@ -27,7 +29,11 @@ namespace test {
 class ContentProtectionManagerTest;
 }  // namespace test
 
-// Fulfills client requests to query and apply per-display content protection.
+// Fulfills client requests to query and apply per-display content protection,
+// and notifies observers of display security changes. Changes are detected by
+// polling as required by the kernel API, since authentication latency depends
+// on hardware topology, and the hardware may temporarily drop authentication,
+// in which case the kernel automatically tries to re-establish protection.
 class DISPLAY_MANAGER_EXPORT ContentProtectionManager
     : public DisplayConfigurator::Observer {
  public:
@@ -49,6 +55,14 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
     virtual void Run() = 0;
   };
 
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+
+    // Called after the secure state of a display has been changed.
+    virtual void OnDisplaySecurityChanged(int64_t display_id, bool secure) = 0;
+  };
+
   // Returns whether display configuration is disabled, in which case API calls
   // are no-ops resulting in failure callbacks.
   using ConfigurationDisabledCallback = base::RepeatingCallback<bool()>;
@@ -68,6 +82,9 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
   // client unregisters with pending requests, the callbacks are not run.
   ClientId RegisterClient();
   void UnregisterClient(ClientId client_id);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Queries protection against the client's latest request on the same display,
   // i.e. the result is CONTENT_PROTECTION_METHOD_NONE unless the client has
@@ -126,6 +143,21 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
   void OnDisplayModeChangeFailed(const DisplayConfigurator::DisplayStateList&,
                                  MultipleDisplayState) override;
 
+  // Toggles timer for periodic security queries given latest client requests.
+  void ToggleDisplaySecurityPolling();
+
+  // Forces timer to fire if running, and returns whether it was running.
+  bool TriggerDisplaySecurityTimeoutForTesting();
+
+  // Queries protection status for all displays, and notifies observers whether
+  // each display is secure. Called periodically while protection is requested.
+  void QueueDisplaySecurityQueries();
+  void OnDisplaySecurityQueried(int64_t display_id,
+                                Task::Status status,
+                                uint32_t connection_mask,
+                                uint32_t protection_mask);
+  void NotifyDisplaySecurityObservers(int64_t display_id, bool secure);
+
   DisplayLayoutManager* const layout_manager_;                // Not owned.
   NativeDisplayDelegate* native_display_delegate_ = nullptr;  // Not owned.
 
@@ -138,6 +170,11 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
 
   // Pending tasks to query or apply content protection.
   base::queue<std::unique_ptr<Task>> tasks_;
+
+  base::ObserverList<Observer> observers_;
+
+  // Used for periodic queries to notify observers of display security changes.
+  base::RepeatingTimer security_timer_;
 
   base::WeakPtrFactory<ContentProtectionManager> weak_ptr_factory_{this};
 

@@ -54,24 +54,37 @@ _MethodIdItem = collections.namedtuple('MethodIdItem',
 _TypeItem = collections.namedtuple('TypeItem', 'type_idx')
 _StringDataItem = collections.namedtuple('StringItem', 'utf16_size,data')
 
+DexMethodFullSignature = collections.namedtuple(
+    'DexMethodFullSignature',
+    'class_type,return_type,method_name,parameter_types')
+
 
 class _MemoryItemList(object):
-  """Base class for sections that are composed of repeated memory items."""
+  """Base class for repeated memory items."""
 
-  def __init__(self, reader, offset, size, factory, alignment=None):
+  def __init__(self,
+               reader,
+               offset,
+               size,
+               factory,
+               alignment=None,
+               first_item_offset=None):
     """Creates the item list using the specific item factory.
 
     Args:
       reader: _DexReader used for decoding the memory item.
-      offset: Offset from start of the file to the item list.
+      offset: Offset from start of the file to the item list, serving as the
+        key for some item types.
       size: Number of memory items in the list.
       factory: Function to extract each memory item from a _DexReader.
       alignment: Optional integer specifying the alignment for the memory
         section represented by this list.
+      first_item_offset: Optional, specifies a different offset to use for
+        extracting memory items (default is to use offset).
     """
-    self._offset = offset
-    self._size = size
-    reader.Seek(self._offset)
+    self.offset = offset
+    self.size = size
+    reader.Seek(first_item_offset or offset)
     self._items = [factory(reader) for _ in xrange(size)]
 
     if alignment:
@@ -88,12 +101,12 @@ class _MemoryItemList(object):
 
   def __repr__(self):
     item_type_part = ''
-    if self._size != 0:
+    if self.size != 0:
       item_type = type(self._items[0])
       item_type_part = ', item type={}'.format(item_type.__name__)
 
     return '{}(offset={:#x}, size={}{})'.format(
-        type(self).__name__, self._offset, self._size, item_type_part)
+        type(self).__name__, self.offset, self.size, item_type_part)
 
 
 class _TypeIdItemList(_MemoryItemList):
@@ -143,11 +156,19 @@ class _StringItemList(_MemoryItemList):
 class _TypeListItem(_MemoryItemList):
 
   def __init__(self, reader):
-    size = reader.ReadUInt()
     offset = reader.Tell()
+    size = reader.ReadUInt()
     factory = lambda x: _TypeItem(x.ReadUShort())
+    # This is necessary because we need to extract the size of the type list
+    # (in other cases the list size is provided in the header).
+    first_item_offset = reader.Tell()
     super(_TypeListItem, self).__init__(
-        reader, offset, size, factory, alignment=4)
+        reader,
+        offset,
+        size,
+        factory,
+        alignment=4,
+        first_item_offset=first_item_offset)
 
 
 class _TypeListItemList(_MemoryItemList):
@@ -321,8 +342,8 @@ class DexFile(object):
     method_item_list: _MethodIdItemList containing method_id_items.
     string_item_list: _StringItemList containing string_data_items that are
       referenced by index in other sections.
-    type_list_item_list: _TypeListItemList containing lists of _TypeListItems.
-      _TypeListItems are referenced by their offset.
+    type_list_item_list: _TypeListItemList containing _TypeListItems.
+      _TypeListItems are referenced by their offsets from other dex items.
   """
 
   def __init__(self, data):
@@ -340,11 +361,19 @@ class DexFile(object):
 
     type_list_key = _DexMapList.TYPE_TYPE_LIST
     if type_list_key in self.map_list:
+      map_list_item = self.map_list[type_list_key]
       self.type_list_item_list = _TypeListItemList(
-          self.reader, self.map_list[type_list_key].offset,
-          self.map_list[type_list_key].size)
+          self.reader, map_list_item.offset, map_list_item.size)
     else:
       self.type_list_item_list = _TypeListItemList(self.reader, 0, 0)
+
+  def GetString(self, string_item_idx):
+    string_item = self.string_item_list[string_item_idx]
+    return string_item.data
+
+  def GetTypeString(self, type_item_idx):
+    type_item = self.type_item_list[type_item_idx]
+    return self.GetString(type_item.descriptor_idx)
 
   def __repr__(self):
     items = [
@@ -358,7 +387,50 @@ class DexFile(object):
     return '\n'.join(str(item) for item in items)
 
 
-if __name__ == '__main__':
+def _MethodSignaturesFromDexFile(dexfile):
+  methods = []
+  type_lists_by_offset = {
+      type_list.offset: type_list
+      for type_list in dexfile.type_list_item_list
+  }
+
+  for method_item in dexfile.method_item_list:
+    class_name_string = dexfile.GetTypeString(method_item.type_idx)
+    method_name_string = dexfile.GetString(method_item.name_idx)
+
+    proto_item = dexfile.proto_item_list[method_item.proto_idx]
+    return_type_string = dexfile.GetTypeString(proto_item.return_type_idx)
+    parameter_types = ()
+    if proto_item.parameters_off:
+      type_list = type_lists_by_offset[proto_item.parameters_off]
+      parameter_types = tuple(
+          dexfile.GetTypeString(item.type_idx) for item in type_list)
+
+    methods.append(
+        DexMethodFullSignature(class_name_string, return_type_string,
+                               method_name_string, parameter_types))
+
+  return methods
+
+
+def CountUniqueDexMethods(dexfiles):
+  """Returns the number of unique methods given an iterable of dex files.
+
+  For method counts, most tools count the total number of defined dex methods.
+  In the multi-dex case, some method items are duplicated across dex files.
+  This function dedupes method definitions by converting dex method items into
+  string representations of the full method signatures.
+
+  Args:
+    dexfiles: Iterable of DexFile objects to count unique methods for.
+  """
+  unique_methods = set()
+  for dexfile in dexfiles:
+    unique_methods.update(_MethodSignaturesFromDexFile(dexfile))
+  return len(unique_methods)
+
+
+def main():
   parser = argparse.ArgumentParser(description='Dump dex contents to stdout.')
   parser.add_argument('dexfile', help='Input dex file path.')
   args = parser.parse_args()
@@ -366,3 +438,7 @@ if __name__ == '__main__':
   with open(args.dexfile) as f:
     dexfile = DexFile(bytearray(f.read()))
     print('{} contents:\n\n{}'.format(args.dexfile, dexfile))
+
+
+if __name__ == '__main__':
+  main()

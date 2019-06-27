@@ -24,10 +24,6 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/wm/core/window_util.h"
-#endif  // defined(USE_AURA)
-
 class OmniboxPopupContentsView::AutocompletePopupWidget
     : public ThemeCopyingWidget,
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
@@ -63,12 +59,6 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 
   void SetTargetBounds(const gfx::Rect& bounds) {
     SetBounds(bounds);
-
-#if defined(USE_AURA)
-    // TODO(malaykeshav): Remove this manual snap when we start snapping each
-    // window to its parent window. See https://crbug.com/863268 for more info.
-    wm::SnapWindowToPixelBoundary(GetNativeWindow());
-#endif  // defined(USE_AURA)
   }
 
   void ShowAnimated() {

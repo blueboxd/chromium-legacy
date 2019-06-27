@@ -5,6 +5,7 @@
 #include "media/base/supported_types.h"
 
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "media/base/media_client.h"
 #include "media/base/media_switches.h"
@@ -12,12 +13,19 @@
 #include "ui/display/display_switches.h"
 
 #if BUILDFLAG(ENABLE_LIBVPX)
+// TODO(dalecurtis): This technically should not be allowed in media/base. See
+// TODO below about moving outside of base.
 #include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+
+// TODO(dalecurtis): This include is not allowed by media/base since
+// media/base/android is technically a different component. We should move
+// supported_types*.{cc,h} out of media/base to fix this.
+#include "media/base/android/media_codec_util.h"  // nogncheck
 #endif
 
 namespace media {
@@ -120,13 +128,11 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
   return true;
 }
 
-bool IsVp9ProfileSupported(VideoCodecProfile profile) {
+bool IsVp9ProfileSupportedByLibvpx(VideoCodecProfile profile) {
 #if BUILDFLAG(ENABLE_LIBVPX)
   // High bit depth capabilities may be toggled via LibVPX config flags.
-  static bool vpx_supports_high_bit_depth =
-      (vpx_codec_get_caps(vpx_codec_vp9_dx()) & VPX_CODEC_CAP_HIGHBITDEPTH) !=
-      0;
-
+  static const bool vpx_supports_hbd = (vpx_codec_get_caps(vpx_codec_vp9_dx()) &
+                                        VPX_CODEC_CAP_HIGHBITDEPTH) != 0;
   switch (profile) {
     // LibVPX always supports Profiles 0 and 1.
     case VP9PROFILE_PROFILE0:
@@ -134,11 +140,50 @@ bool IsVp9ProfileSupported(VideoCodecProfile profile) {
       return true;
     case VP9PROFILE_PROFILE2:
     case VP9PROFILE_PROFILE3:
-      return vpx_supports_high_bit_depth;
+      return vpx_supports_hbd;
     default:
       NOTREACHED();
   }
 #endif
+  return false;
+}
+
+bool IsVp9ProfileSupported(VideoCodecProfile profile) {
+  if (IsVp9ProfileSupportedByLibvpx(profile))
+    return true;
+
+#if defined(OS_ANDROID)
+  // Support for VP9.2, VP9.3 was not added until Nougat.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_NOUGAT) {
+    return false;
+  }
+
+  struct Vp9Support {
+    bool has_profile2 = false;
+    bool has_profile3 = false;
+  };
+  static const base::NoDestructor<Vp9Support> vp9_support([]() {
+    std::vector<CodecProfileLevel> profiles;
+    MediaCodecUtil::AddSupportedCodecProfileLevels(&profiles);
+
+    Vp9Support vp9_support;
+    for (const auto& c : profiles) {
+      if (c.profile == VP9PROFILE_PROFILE2)
+        vp9_support.has_profile2 = true;
+      else if (c.profile == VP9PROFILE_PROFILE3)
+        vp9_support.has_profile3 = true;
+    }
+
+    return vp9_support;
+  }());
+
+  if (vp9_support->has_profile2 && profile == VP9PROFILE_PROFILE2)
+    return true;
+  if (vp9_support->has_profile3 && profile == VP9PROFILE_PROFILE3)
+    return true;
+#endif
+
   return false;
 }
 
@@ -273,6 +318,10 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
 
   NOTREACHED();
   return false;
+}
+
+bool IsVp9ProfileSupportedForTesting(VideoCodecProfile profile) {
+  return IsVp9ProfileSupported(profile);
 }
 
 }  // namespace media

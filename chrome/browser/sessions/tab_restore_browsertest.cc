@@ -895,3 +895,58 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
   ASSERT_EQ(chrome::GetRestoreTabType(browser()),
             TabStripModelDelegate::RESTORE_TAB);
 }
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreGroupedTab) {
+  const int tab_count = AddSomeTabs(browser(), 1);
+  ASSERT_LE(2, tab_count);
+
+  const int grouped_tab_index = tab_count - 1;
+  browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
+  CloseTab(grouped_tab_index);
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, grouped_tab_index));
+  ASSERT_EQ(tab_count, browser()->tab_strip_model()->count());
+
+  // Make sure the tab is *not* grouped when restored. We have not yet decided
+  // how to handle groups with the same group ID in different browser
+  // windows. Until we figure this out, we don't have a good way to handle
+  // restoring individual grouped tabs. TODO(crbug.com/930991): resolve this and
+  // change this expectation.
+  EXPECT_EQ(base::nullopt,
+            browser()->tab_strip_model()->GetTabGroupForTab(grouped_tab_index));
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  ASSERT_EQ(2u, active_browser_list_->size());
+
+  const int tab_count = AddSomeTabs(browser(), 3);
+  TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
+      {tab_count - 3, tab_count - 2});
+  TabGroupId group2 =
+      browser()->tab_strip_model()->AddToNewGroup({tab_count - 1});
+  CloseBrowserSynchronously(browser());
+  ASSERT_EQ(1u, active_browser_list_->size());
+
+  content::WindowedNotificationObserver open_window_observer(
+      chrome::NOTIFICATION_BROWSER_OPENED,
+      content::NotificationService::AllSources());
+  chrome::RestoreTab(GetBrowser(0));
+  open_window_observer.Wait();
+  ASSERT_EQ(2u, active_browser_list_->size());
+
+  Browser* restored_window = GetBrowser(1);
+  ASSERT_EQ(tab_count, restored_window->tab_strip_model()->count());
+  EXPECT_EQ(
+      base::make_optional(group1),
+      restored_window->tab_strip_model()->GetTabGroupForTab(tab_count - 3));
+  EXPECT_EQ(
+      base::make_optional(group1),
+      restored_window->tab_strip_model()->GetTabGroupForTab(tab_count - 2));
+  EXPECT_EQ(
+      base::make_optional(group2),
+      restored_window->tab_strip_model()->GetTabGroupForTab(tab_count - 1));
+}

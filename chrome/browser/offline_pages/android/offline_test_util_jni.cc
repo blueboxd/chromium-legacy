@@ -15,6 +15,7 @@
 #include "chrome/android/test_support_jni_headers/OfflineTestUtil_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
+#include "chrome/browser/offline_pages/android/request_coordinator_bridge.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -53,9 +54,8 @@ void OnGetAllRequestsDone(
     std::vector<std::unique_ptr<SavePageRequest>> all_requests) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::RunObjectCallbackAndroid(
-      j_callback_obj,
-      offline_pages::android::OfflinePageBridge::CreateJavaSavePageRequests(
-          env, std::move(all_requests)));
+      j_callback_obj, offline_pages::android::CreateJavaSavePageRequests(
+                          env, std::move(all_requests)));
 }
 
 void OnGetAllPagesDone(

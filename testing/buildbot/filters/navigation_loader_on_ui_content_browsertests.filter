@@ -1,21 +1,5 @@
 # These tests currently fail when run with --enable-features=NavigationLoaderOnUI
 
-# http://crbug.com/978556
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.BlockHeaders/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.BlockImages/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.CrossOriginResourcePolicy/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.HtmlImports_CompatibleLock1/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.HtmlImports_CompatibleLock2/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.HtmlImports_IncorrectLock/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.SharedWorker/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.BlockHeaders/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.BlockImages/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.CrossOriginResourcePolicy/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.HtmlImports_CompatibleLock1/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.HtmlImports_CompatibleLock2/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.HtmlImports_IncorrectLock/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.SharedWorker/0
-
 # http://crbug.com/824856
 -AppCacheNetworkServiceBrowserTest.CacheableResourcesReuse
 -WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.AppCache_InitiatorEnforcement/0

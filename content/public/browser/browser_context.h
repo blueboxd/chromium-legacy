@@ -80,6 +80,7 @@ class BrowsingDataRemover;
 class BrowsingDataRemoverDelegate;
 class DownloadManager;
 class ClientHintsControllerDelegate;
+class ContentIndexProvider;
 class DownloadManagerDelegate;
 class NativeFileSystemPermissionContext;
 class PermissionController;
@@ -321,8 +322,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       base::OnceClosure closure);
 
   // Returns a SharedCorsOriginAccessList instance.
-  virtual const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
-      const;
+  virtual const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList();
 
   // Handles a service request for a service expected to run an instance per
   // BrowserContext.
@@ -361,6 +361,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // if any, nullptr otherwise.
   virtual NativeFileSystemPermissionContext*
   GetNativeFileSystemPermissionContext();
+
+  // Returns the ContentIndexProvider associated with that context if any,
+  // nullptr otherwise.
+  virtual ContentIndexProvider* GetContentIndexProvider();
 
  private:
   const std::string unique_id_;

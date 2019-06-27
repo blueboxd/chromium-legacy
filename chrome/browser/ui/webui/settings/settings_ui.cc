@@ -87,6 +87,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
@@ -117,10 +118,12 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/login/auth/password_visibility_utils.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -456,6 +459,12 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   html_source->AddBoolean(
       "quickUnlockDisabledByPolicy",
       chromeos::quick_unlock::IsPinDisabledByPolicy(profile->GetPrefs()));
+  html_source->AddBoolean(
+      "userCannotManuallyEnterPassword",
+      !chromeos::password_visibility::AccountHasUserFacingPassword(
+          chromeos::ProfileHelper::Get()
+              ->GetUserByProfile(profile)
+              ->GetAccountId()));
   const bool fingerprint_unlock_enabled =
       chromeos::quick_unlock::IsFingerprintEnabled(profile);
   html_source->AddBoolean("fingerprintUnlockEnabled",

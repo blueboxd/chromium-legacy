@@ -27,6 +27,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -1011,6 +1012,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       1, test_layer->SetTransformOrigin(gfx::Point3F(1.23f, 4.56f, 0.f)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBackgroundColor(SK_ColorLTGRAY));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetMasksToBounds(true));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetClipRect(gfx::Rect(1, 2, 3, 4)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetRoundedCorner({1, 2, 3, 4}));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsFastRoundedCorner(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
@@ -1724,6 +1726,114 @@ TEST_F(LayerTest, UpdateMirrorCount) {
                              test_layer.get()));
 
   test_layer->SetLayerTreeHost(nullptr);
+}
+
+TEST_F(LayerTest, UpdatingClipRect) {
+  const gfx::Size kRootSize(200, 200);
+  const gfx::Vector2dF kParentOffset(10.f, 20.f);
+  const gfx::Size kLayerSize(100, 100);
+  const gfx::Rect kClipRect(50, 25, 100, 100);
+  const gfx::Rect kUpdatedClipRect_1(10, 20, 150, 200);
+  const gfx::Rect kUpdatedClipRect_2(20, 20, 50, 100);
+  const gfx::Rect kUpdatedClipRect_3(50, 25, 100, 80);
+  const gfx::Rect kUpdatedClipRect_4(10, 10, 200, 200);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> clipped_1 = Layer::Create();
+  scoped_refptr<Layer> clipped_2 = Layer::Create();
+  scoped_refptr<Layer> clipped_3 = Layer::Create();
+  scoped_refptr<Layer> clipped_4 = Layer::Create();
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
+  layer_tree_host_->SetRootLayer(root);
+  root->AddChild(parent);
+  parent->AddChild(clipped_1);
+  parent->AddChild(clipped_2);
+  parent->AddChild(clipped_3);
+  parent->AddChild(clipped_4);
+
+  root->SetBounds(kRootSize);
+  parent->SetBounds(kRootSize);
+  clipped_1->SetBounds(kLayerSize);
+  clipped_2->SetBounds(kLayerSize);
+  clipped_3->SetBounds(kLayerSize);
+  clipped_4->SetBounds(kLayerSize);
+
+  // This should introduce the |offset_from_transform_parent| component.
+  parent->SetPosition(gfx::PointF() + kParentOffset);
+
+  clipped_1->SetClipRect(kClipRect);
+  clipped_2->SetClipRect(kClipRect);
+  clipped_3->SetClipRect(kClipRect);
+  clipped_4->SetClipRect(kClipRect);
+  EXPECT_EQ(clipped_1->clip_rect(), kClipRect);
+  EXPECT_EQ(clipped_2->clip_rect(), kClipRect);
+  EXPECT_EQ(clipped_3->clip_rect(), kClipRect);
+  EXPECT_EQ(clipped_4->clip_rect(), kClipRect);
+
+  root->layer_tree_host()->BuildPropertyTreesForTesting();
+  ClipNode* node_1 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_1->clip_tree_index());
+  ClipNode* node_2 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_2->clip_tree_index());
+  ClipNode* node_3 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_3->clip_tree_index());
+  ClipNode* node_4 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_4->clip_tree_index());
+
+  EXPECT_EQ(gfx::RectF(kClipRect) + kParentOffset, node_1->clip);
+  EXPECT_EQ(gfx::RectF(kClipRect) + kParentOffset, node_2->clip);
+  EXPECT_EQ(gfx::RectF(kClipRect) + kParentOffset, node_3->clip);
+  EXPECT_EQ(gfx::RectF(kClipRect) + kParentOffset, node_4->clip);
+
+  // The following layer properties should result in the layer being clipped to
+  // its bounds along with being clipped by the clip rect. Check if the final
+  // rect on the clip node is set correctly.
+
+  // Setting clip to layer bounds.
+  clipped_1->SetMasksToBounds(true);
+
+  // Setting a mask.
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  clipped_2->SetMaskLayer(mask.get());
+
+  // Setting a filter that moves pixels.
+  FilterOperations move_pixel_filters;
+  move_pixel_filters.Append(
+      FilterOperation::CreateBlurFilter(2, SkBlurImageFilter::kClamp_TileMode));
+  ASSERT_TRUE(move_pixel_filters.HasFilterThatMovesPixels());
+  clipped_3->SetFilters(move_pixel_filters);
+
+  clipped_1->SetClipRect(kUpdatedClipRect_1);
+  clipped_2->SetClipRect(kUpdatedClipRect_2);
+  clipped_3->SetClipRect(kUpdatedClipRect_3);
+  clipped_4->SetClipRect(kUpdatedClipRect_4);
+
+  node_1 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_1->clip_tree_index());
+  node_2 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_2->clip_tree_index());
+  node_3 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_3->clip_tree_index());
+  node_4 = layer_tree_host_->property_trees()->clip_tree.Node(
+      clipped_4->clip_tree_index());
+
+  EXPECT_EQ(node_1->clip,
+            gfx::IntersectRects(gfx::RectF(kUpdatedClipRect_1),
+                                gfx::RectF(gfx::SizeF(kLayerSize))) +
+                kParentOffset);
+  EXPECT_EQ(node_2->clip,
+            gfx::IntersectRects(gfx::RectF(kUpdatedClipRect_2),
+                                gfx::RectF(gfx::SizeF(kLayerSize))) +
+                kParentOffset);
+  EXPECT_EQ(node_3->clip,
+            gfx::IntersectRects(gfx::RectF(kUpdatedClipRect_3),
+                                gfx::RectF(gfx::SizeF(kLayerSize))) +
+                kParentOffset);
+  EXPECT_EQ(node_4->clip, gfx::RectF(kUpdatedClipRect_4) + kParentOffset);
 }
 
 class LayerTestWithLayerLists : public LayerTest {

@@ -584,14 +584,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->Init(ui::LAYER_NOT_DRAWN);
-
-  RenderWidgetHostViewAura* rwhva =
-      static_cast<RenderWidgetHostViewAura*>(
-          shell()->web_contents()->GetRenderWidgetHostView());
-  rwhva->ResetHasSnappedToBoundary();
-  EXPECT_FALSE(rwhva->has_snapped_to_boundary());
   window->AddChild(shell()->web_contents()->GetNativeView());
-  EXPECT_TRUE(rwhva->has_snapped_to_boundary());
 }
 
 // Flaky on some platforms, likely for the same reason as other flaky overscroll

@@ -382,6 +382,7 @@ void ImportantSitesUtil::RegisterProfilePrefs(
 std::vector<ImportantDomainInfo>
 ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
                                                     size_t max_results) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Storage.ImportantSites.GenerationTime");
   std::map<std::string, ImportantDomainInfo> important_info;
   std::map<GURL, double> engagement_map;
 

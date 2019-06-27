@@ -25,7 +25,7 @@ struct CORE_EXPORT LogicalOffset {
   constexpr LogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
       : inline_offset(inline_offset), block_offset(block_offset) {}
 
-  // For testing only. It's defined in core/testing/core_unit_test_helpers.h.
+  // For testing only. It's defined in core/testing/core_unit_test_helper.h.
   inline LogicalOffset(int inline_offset, int block_offset);
 
   LayoutUnit inline_offset;

@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -49,6 +50,31 @@ int kAllDetectableValues =
     CreditCardSaveManager::DetectedValue::POSTAL_CODE |
     CreditCardSaveManager::DetectedValue::COUNTRY_CODE |
     CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
+
+struct CardUnmaskOptions {
+  CardUnmaskOptions& with_use_fido(bool b) {
+    use_fido = b;
+    return *this;
+  }
+
+  CardUnmaskOptions& with_cvc(std::string c) {
+    cvc = c;
+    return *this;
+  }
+
+  CardUnmaskOptions& with_reason(AutofillClient::UnmaskCardReason r) {
+    reason = r;
+    return *this;
+  }
+
+  // If true, use FIDO authentication instead of CVC authentication.
+  bool use_fido = false;
+  // If not using FIDO authentication, the CVC value the user entered, to be
+  // sent to Google Payments.
+  std::string cvc = "123";
+  // The reason for unmasking this card.
+  AutofillClient::UnmaskCardReason reason = AutofillClient::UNMASK_FOR_AUTOFILL;
+};
 
 }  // namespace
 
@@ -164,16 +190,18 @@ class PaymentsClientTest : public testing::Test {
 
   // Issue an UnmaskCard request. This requires an OAuth token before starting
   // the request.
-  void StartUnmasking(bool use_fido = false) {
+  void StartUnmasking(CardUnmaskOptions options) {
     PaymentsClient::UnmaskRequestDetails request_details;
     request_details.billing_customer_number = 111222333444;
+    request_details.reason = options.reason;
+
     request_details.card = test::GetMaskedServerCard();
     request_details.risk_data = "some risk data";
-    if (use_fido) {
+    if (options.use_fido) {
       request_details.fido_assertion_info =
           base::Value(base::Value::Type::DICTIONARY);
     } else {
-      request_details.user_response.cvc = base::ASCIIToUTF16("123");
+      request_details.user_response.cvc = base::ASCIIToUTF16(options.cvc);
     }
     client_->UnmaskCard(request_details,
                         base::BindOnce(&PaymentsClientTest::OnDidGetRealPan,
@@ -340,7 +368,7 @@ TEST_F(PaymentsClientTest, GetUnmaskDetailsIncludesChromeUserContext) {
 }
 
 TEST_F(PaymentsClientTest, OAuthError) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
@@ -349,7 +377,7 @@ TEST_F(PaymentsClientTest, OAuthError) {
 
 TEST_F(PaymentsClientTest,
        UnmaskRequestIncludesBillingCustomerNumberInRequest) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
 
   // Verify that the billing customer number is included in the request.
@@ -359,7 +387,7 @@ TEST_F(PaymentsClientTest,
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessViaCVC) {
-  StartUnmasking(/*use_fido=*/false);
+  StartUnmasking(CardUnmaskOptions().with_use_fido(false));
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
@@ -367,7 +395,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaCVC) {
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
-  StartUnmasking(/*use_fido=*/true);
+  StartUnmasking(CardUnmaskOptions().with_use_fido(true));
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
@@ -376,7 +404,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
 
 TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
   EnableAutofillGetPaymentsIdentityFromSync();
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
@@ -388,7 +416,7 @@ TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
       {features::kAutofillGetPaymentsIdentityFromSync},  // Enabled
       {features::kAutofillEnableAccountWalletStorage});  // Disabled
 
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
 
@@ -403,7 +431,7 @@ TEST_F(PaymentsClientTest,
       {features::kAutofillEnableAccountWalletStorage},    // Enabled
       {features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
 
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
 
@@ -418,7 +446,7 @@ TEST_F(PaymentsClientTest, UnmaskExcludesChromeUserContextIfExperimentsOff) {
       {features::kAutofillEnableAccountWalletStorage,
        features::kAutofillGetPaymentsIdentityFromSync});  // Disabled
 
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
 
@@ -426,6 +454,39 @@ TEST_F(PaymentsClientTest, UnmaskExcludesChromeUserContextIfExperimentsOff) {
   EXPECT_TRUE(!GetUploadData().empty());
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") == std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") == std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, UnmaskLogsCvcLengthForAutofill) {
+  base::HistogramTester histogram_tester;
+  StartUnmasking(CardUnmaskOptions()
+                     .with_reason(AutofillClient::UNMASK_FOR_AUTOFILL)
+                     .with_cvc("1234"));
+  IssueOAuthToken();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CardUnmask.CvcLength.ForAutofill", 4, 1);
+}
+
+TEST_F(PaymentsClientTest, UnmaskLogsCvcLengthForPaymentRequest) {
+  base::HistogramTester histogram_tester;
+  StartUnmasking(CardUnmaskOptions()
+                     .with_reason(AutofillClient::UNMASK_FOR_PAYMENT_REQUEST)
+                     .with_cvc("56789"));
+  IssueOAuthToken();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CardUnmask.CvcLength.ForPaymentRequest", 5, 1);
+}
+
+TEST_F(PaymentsClientTest, UnmaskLogsBlankCvcLength) {
+  base::HistogramTester histogram_tester;
+  StartUnmasking(CardUnmaskOptions()
+                     .with_reason(AutofillClient::UNMASK_FOR_AUTOFILL)
+                     .with_cvc(""));
+  IssueOAuthToken();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CardUnmask.CvcLength.ForAutofill", 0, 1);
 }
 
 TEST_F(PaymentsClientTest, GetDetailsSuccess) {
@@ -743,7 +804,7 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // DisableAutofillSendExperimentIdsInPaymentsRPCs().
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
 
   // Note that experiment information is stored in X-Client-Data.
@@ -759,7 +820,7 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTestExperimentOff) {
   DisableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_FALSE(HasVariationsHeader());
@@ -1041,13 +1102,13 @@ TEST_F(PaymentsClientTest, MigrationSuccessWithDisplayText) {
 }
 
 TEST_F(PaymentsClientTest, UnmaskMissingPan) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   ReturnResponse(net::HTTP_OK, "{}");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
 }
 
 TEST_F(PaymentsClientTest, RetryFailure) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"error\": { \"code\": \"INTERNAL\" } }");
   EXPECT_EQ(AutofillClient::TRY_AGAIN_FAILURE, result_);
@@ -1055,7 +1116,7 @@ TEST_F(PaymentsClientTest, RetryFailure) {
 }
 
 TEST_F(PaymentsClientTest, PermanentFailure) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK,
                  "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
@@ -1064,7 +1125,7 @@ TEST_F(PaymentsClientTest, PermanentFailure) {
 }
 
 TEST_F(PaymentsClientTest, MalformedResponse) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
@@ -1073,7 +1134,7 @@ TEST_F(PaymentsClientTest, MalformedResponse) {
 
 TEST_F(PaymentsClientTest, ReauthNeeded) {
   {
-    StartUnmasking();
+    StartUnmasking(CardUnmaskOptions());
     IssueOAuthToken();
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     // No response yet.
@@ -1091,7 +1152,7 @@ TEST_F(PaymentsClientTest, ReauthNeeded) {
   real_pan_.clear();
 
   {
-    StartUnmasking();
+    StartUnmasking(CardUnmaskOptions());
     // NOTE: Don't issue an access token here: the issuing of an access token
     // first waits for the access token request to be received, but here there
     // should be no access token request because PaymentsClient should reuse the
@@ -1110,7 +1171,7 @@ TEST_F(PaymentsClientTest, ReauthNeeded) {
 }
 
 TEST_F(PaymentsClientTest, NetworkError) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_REQUEST_TIMEOUT, std::string());
   EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
@@ -1118,7 +1179,7 @@ TEST_F(PaymentsClientTest, NetworkError) {
 }
 
 TEST_F(PaymentsClientTest, OtherError) {
-  StartUnmasking();
+  StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_FORBIDDEN, std::string());
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);

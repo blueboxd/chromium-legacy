@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
+#include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/base_earl_grey_test_case_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
@@ -31,6 +33,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(BaseEarlGreyTestCaseAppInterface)
 
 #if defined(CHROME_EARL_GREY_2)
   [self launchAppForTestMethod];
+  [self handleSystemAlertIfVisible];
 
   NSString* logFormat = @"*********************************\nStarting test: %@";
   [BaseEarlGreyTestCaseAppInterface
@@ -48,6 +51,45 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(BaseEarlGreyTestCaseAppInterface)
     [CoverageUtils configureCoverageReportPath];
     [[self class] setUpForTestCase];
   });
+}
+
+// Handles system alerts if any are present, closing them to unblock the UI.
+- (void)handleSystemAlertIfVisible {
+#if defined(CHROME_EARL_GREY_2)
+  NSError* systemAlertFoundError = nil;
+  [[EarlGrey selectElementWithMatcher:grey_systemAlertViewShown()]
+      assertWithMatcher:grey_nil()
+                  error:&systemAlertFoundError];
+
+  if (systemAlertFoundError) {
+    NSError* alertGetTextError = nil;
+    NSString* alertText =
+        [self grey_systemAlertTextWithError:&alertGetTextError];
+    GREYAssertNil(alertGetTextError, @"Error getting alert text.\n%@",
+                  alertGetTextError);
+
+    // If the system alert is of a known type, accept it.
+    // Otherwise, reject it, as unknown types include alerts which are not
+    // desirable to accept, including OS upgrades.
+    if ([self grey_systemAlertType] != GREYSystemAlertTypeUnknown) {
+      DLOG(WARNING) << "Accepting iOS system alert: "
+                    << base::SysNSStringToUTF8(alertText);
+
+      NSError* acceptAlertError = nil;
+      [self grey_acceptSystemDialogWithError:&acceptAlertError];
+      GREYAssertNil(acceptAlertError, @"Error accepting system alert.\n%@",
+                    acceptAlertError);
+    } else {
+      DLOG(WARNING) << "Denying iOS system alert of unknown type: "
+                    << base::SysNSStringToUTF8(alertText);
+
+      NSError* denyAlertError = nil;
+      [self grey_denySystemDialogWithError:&denyAlertError];
+      GREYAssertNil(denyAlertError, @"Error denying system alert.\n%@",
+                    denyAlertError);
+    }
+  }
+#endif  // CHROME_EARL_GREY_2
 }
 
 - (void)launchAppForTestMethod {

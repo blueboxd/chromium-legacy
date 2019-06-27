@@ -1,7 +1,7 @@
 {
     "0": {
         "benchmarks": {
-            "rendering.desktop": {}
+            "v8.browsing_desktop": {}
         }
     },
     "extra_infos": {}

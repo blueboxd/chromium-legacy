@@ -141,11 +141,14 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   NGBoxStrut vrl_border_padding =
       ComputeBordersForTest(*style_) + ComputePadding(vrl_space_, *style_);
 
-  NGStaticPosition static_position{NGStaticPosition::kTopLeft,
-                                   {LayoutUnit(), LayoutUnit()}};
+  NGPhysicalStaticPosition static_position = {{LayoutUnit(), LayoutUnit()},
+                                              NGPhysicalStaticPosition::kLeft,
+                                              NGPhysicalStaticPosition::kTop};
   // Same as regular static position, but with right edge.
-  NGStaticPosition static_right_position{NGStaticPosition::kTopRight,
-                                         {LayoutUnit(), LayoutUnit()}};
+  NGPhysicalStaticPosition static_position_right = {
+      {LayoutUnit(), LayoutUnit()},
+      NGPhysicalStaticPosition::kRight,
+      NGPhysicalStaticPosition::kTop};
   //
   // Tests.
   //
@@ -168,7 +171,7 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
   estimated_inline = minmax_60;
   p = ComputePartialAbsoluteWithChildInlineSize(
-      ltr_space_, *style_, ltr_border_padding, static_right_position,
+      ltr_space_, *style_, ltr_border_padding, static_position_right,
       estimated_inline, base::nullopt, WritingMode::kHorizontalTb,
       TextDirection::kLtr);
   EXPECT_EQ(minmax_60.min_size, p.size.width);
@@ -368,10 +371,13 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   NGBoxStrut vrl_border_padding =
       ComputeBordersForTest(*style_) + ComputePadding(vrl_space_, *style_);
 
-  NGStaticPosition static_position{NGStaticPosition::kTopLeft,
-                                   {LayoutUnit(), LayoutUnit()}};
-  NGStaticPosition static_position_bottom{NGStaticPosition::kBottomLeft,
-                                          {LayoutUnit(), LayoutUnit()}};
+  NGPhysicalStaticPosition static_position = {{LayoutUnit(), LayoutUnit()},
+                                              NGPhysicalStaticPosition::kLeft,
+                                              NGPhysicalStaticPosition::kTop};
+  NGPhysicalStaticPosition static_position_bottom = {
+      {LayoutUnit(), LayoutUnit()},
+      NGPhysicalStaticPosition::kLeft,
+      NGPhysicalStaticPosition::kBottom};
 
   //
   // Tests
@@ -515,8 +521,9 @@ TEST_F(NGAbsoluteUtilsTest, MinMax) {
   NGBoxStrut ltr_border_padding =
       ComputeBordersForTest(*style_) + ComputePadding(ltr_space_, *style_);
 
-  NGStaticPosition static_position{NGStaticPosition::kTopLeft,
-                                   {LayoutUnit(), LayoutUnit()}};
+  NGPhysicalStaticPosition static_position = {{LayoutUnit(), LayoutUnit()},
+                                              NGPhysicalStaticPosition::kLeft,
+                                              NGPhysicalStaticPosition::kTop};
   MinMaxSize estimated_inline{LayoutUnit(20), LayoutUnit(20)};
   NGAbsolutePhysicalPosition p;
 

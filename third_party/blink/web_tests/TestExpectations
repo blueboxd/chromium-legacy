@@ -863,7 +863,7 @@ crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descenda
 crbug.com/591099 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 crbug.com/591099 [ Mac ] images/feature-policy-oversized-images-resize.html [ Failure ]
 crbug.com/974717 [ Linux ] images/feature-policy-oversized-images-resize.html [ Failure Pass ]
-crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
+# crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
 crbug.com/591099 [ Mac10.11 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/geometry/root-layer-update.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
@@ -6205,11 +6205,6 @@ crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-without-c
 crbug.com/978611 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Failure ]
 crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Pass Crash ]
 
-# Disable until v8 https://chromium-review.googlesource.com/c/v8/v8/+/1649174 merges
-crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-navigation.js [ Skip ]
-crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-remove.js [ Skip ]
-crbug.com/967927 http/tests/devtools/startup/console-log-before-frame-navigation.js [ Skip ]
-
 # Sheriff 2019-06-26
 crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-markers.html [ Pass Failure ]
 
@@ -6219,3 +6214,5 @@ crbug.com/979193 [ Mac ] paint/invalidation/svg/remove-background-property-on-ro
 crbug.com/979193 [ Mac ] external/wpt/inert/inert-retargeting-iframe.tentative.html [ Pass Failure ]
 crbug.com/979243 [ Mac ] editing/selection/inline-closest-leaf-child.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
+crbug.com/979323 [ Mac ] media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
+crbug.com/979336 [ Mac ] fast/dynamic/anonymous-block-orphaned-lines.html [ Pass Failure ]

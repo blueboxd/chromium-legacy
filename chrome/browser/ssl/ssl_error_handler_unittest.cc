@@ -1507,55 +1507,39 @@ TEST(SSLErrorHandlerTest, CalculateOptionsMask) {
   mask = SSLErrorHandler::CalculateOptionsMask(
       net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, /* cert_error */
       false,                                     /* hard_override_disabled */
-      false, /* should_ssl_errors_be_fatal */
-      false /* expired_previous_decision */);
+      false /* should_ssl_errors_be_fatal */
+  );
   EXPECT_EQ(0, mask);
   mask = SSLErrorHandler::CalculateOptionsMask(
       net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, /* cert_error */
       true,                                      /* hard_override_disabled */
-      false, /* should_ssl_errors_be_fatal */
-      false /* expired_previous_decision */);
+      false /* should_ssl_errors_be_fatal */
+  );
   EXPECT_EQ(security_interstitials::SSLErrorUI::HARD_OVERRIDE_DISABLED, mask);
   mask = SSLErrorHandler::CalculateOptionsMask(
       net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, /* cert_error */
       false,                                     /* hard_override_disabled */
-      true,  /* should_ssl_errors_be_fatal */
-      false /* expired_previous_decision */);
+      true /* should_ssl_errors_be_fatal */
+  );
   EXPECT_EQ(security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT, mask);
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, /* cert_error */
-      false,                                     /* hard_override_disabled */
-      false, /* should_ssl_errors_be_fatal */
-      true /* expired_previous_decision */);
-  EXPECT_EQ(security_interstitials::SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED,
-            mask);
 
   // Overridable cert error.
   mask = SSLErrorHandler::CalculateOptionsMask(
       net::ERR_CERT_DATE_INVALID, /* cert_error */
       false,                      /* hard_override_disabled */
-      false,                      /* should_ssl_errors_be_fatal */
-      false /* expired_previous_decision */);
+      false                       /* should_ssl_errors_be_fatal */
+  );
   EXPECT_EQ(security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED, mask);
   mask = SSLErrorHandler::CalculateOptionsMask(
       net::ERR_CERT_DATE_INVALID, /* cert_error */
       true,                       /* hard_override_disabled */
-      false,                      /* should_ssl_errors_be_fatal */
-      false /* expired_previous_decision */);
+      false                       /* should_ssl_errors_be_fatal */
+  );
   EXPECT_EQ(security_interstitials::SSLErrorUI::HARD_OVERRIDE_DISABLED, mask);
   mask = SSLErrorHandler::CalculateOptionsMask(
       net::ERR_CERT_DATE_INVALID, /* cert_error */
       false,                      /* hard_override_disabled */
-      true,                       /* should_ssl_errors_be_fatal */
-      false /* expired_previous_decision */);
+      true                        /* should_ssl_errors_be_fatal */
+  );
   EXPECT_EQ(security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT, mask);
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_CERT_DATE_INVALID, /* cert_error */
-      false,                      /* hard_override_disabled */
-      false,                      /* should_ssl_errors_be_fatal */
-      true /* expired_previous_decision */);
-  EXPECT_EQ(
-      security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED |
-          security_interstitials::SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED,
-      mask);
 }

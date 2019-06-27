@@ -34,7 +34,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
-#include "ui/wm/core/window_properties.h"
 #endif
 
 namespace {
@@ -170,8 +169,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, PopupAlignment) {
 
 #if defined(USE_AURA)
   popup_view()->UpdatePopupAppearance();
-  EXPECT_TRUE(
-      popup->GetNativeWindow()->GetProperty(wm::kSnapChildrenToPixelBoundary));
 #endif  // defined(USE_AURA)
 
   gfx::Rect alignment_rect = location_bar()->GetBoundsInScreen();

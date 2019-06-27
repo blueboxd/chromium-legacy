@@ -9,7 +9,8 @@ namespace content {
 ContentIndexContext::ContentIndexContext(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : content_index_database_(std::move(service_worker_context)) {
+    : content_index_database_(browser_context,
+                              std::move(service_worker_context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

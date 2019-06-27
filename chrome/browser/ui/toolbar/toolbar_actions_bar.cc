@@ -126,6 +126,11 @@ ToolbarActionsBar::~ToolbarActionsBar() {
   // the order of deletion between the views and the ToolbarActionsBar.
   DCHECK(toolbar_actions_.empty())
       << "Must call DeleteActions() before destruction.";
+
+  // Make sure we don't listen to any more model changes during
+  // ToolbarActionsBar destruction.
+  model_observer_.RemoveAll();
+
   for (ToolbarActionsBarObserver& observer : observers_)
     observer.OnToolbarActionsBarDestroyed();
 }

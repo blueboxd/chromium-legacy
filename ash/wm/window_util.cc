@@ -41,7 +41,6 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/core/window_animations.h"
-#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -205,12 +204,6 @@ bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
     return false;
   aura::Window* root = target->GetWidget()->GetNativeView()->GetRootWindow();
   return root && MoveWindowToRoot(window, root);
-}
-
-void SetSnapsChildrenToPhysicalPixelBoundary(aura::Window* container) {
-  DCHECK(!container->GetProperty(::wm::kSnapChildrenToPixelBoundary))
-      << container->GetName();
-  container->SetProperty(::wm::kSnapChildrenToPixelBoundary, true);
 }
 
 int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {

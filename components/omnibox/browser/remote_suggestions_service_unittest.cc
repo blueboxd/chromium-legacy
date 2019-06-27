@@ -54,11 +54,12 @@ TEST_F(RemoteSuggestionsServiceTest, EnsureAttachCookies) {
 
   RemoteSuggestionsService service(nullptr /* identity_manager */,
                                    GetUrlLoaderFactory());
-  AutocompleteInput input;
   base::Time visit_time;
   TemplateURLService template_url_service(nullptr, 0);
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+  search_terms_args.current_page_url = "https://www.google.com/";
   service.CreateSuggestionsRequest(
-      "https://www.google.com/", visit_time, input, &template_url_service,
+      search_terms_args, visit_time, &template_url_service,
       base::BindOnce(&RemoteSuggestionsServiceTest::OnRequestStart,
                      base::Unretained(this)),
       base::BindOnce(&RemoteSuggestionsServiceTest::OnRequestComplete,

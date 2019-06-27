@@ -92,6 +92,7 @@ js_library("security_keys_credential_management_dialog") {
     ":security_keys_browser_proxy",
     ":security_keys_pin_field",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 

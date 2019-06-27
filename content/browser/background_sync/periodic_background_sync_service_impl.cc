@@ -44,6 +44,12 @@ void PeriodicBackgroundSyncServiceImpl::Register(
     int64_t sw_registration_id,
     RegisterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(options);
+
+  if (options->min_interval < 0) {
+    registration_helper_->NotifyInvalidOptionsProvided(std::move(callback));
+    return;
+  }
 
   registration_helper_->Register(std::move(options), sw_registration_id,
                                  std::move(callback));

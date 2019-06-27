@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/search_engines/template_url.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/identity/public/cpp/access_token_info.h"
 #include "url/gurl.h"
@@ -55,20 +56,18 @@ class RemoteSuggestionsService : public KeyedService {
       base::OnceCallback<void(const network::SimpleURLLoader* source,
                               std::unique_ptr<std::string> response_body)>;
 
-  // Creates a loader for remote suggestions for |current_url| and passes
+  // Creates a loader for remote suggestions for |search_terms_args| and passes
   // the loader to |start_callback|. It uses a number of signals to create the
   // loader, including field trial / experimental parameters, and it may
   // pass a nullptr to |start_callback| (see below for details).
   //
-  // |current_url| may be empty, in which case the system will never use the
-  // experimental suggestions service. It's possible the non-experimental
+  // |search_terms_args| encapsulates the arguments sent to the remote service.
+  // If |search_terms_args.current_page_url| is empty, the system will never use
+  // the experimental suggestions service. It's possible the non-experimental
   // service may decide to offer general-purpose suggestions.
   //
   // |visit_time| is the time of the visit for the URL for which suggestions
   // should be fetched.
-  //
-  // |input| is the current user input of the autocomplete query, whose
-  // |current_page_classification| will be used to build the suggestion url.
   //
   // |template_url_service| may be null, but some services may be disabled.
   //
@@ -82,12 +81,12 @@ class RemoteSuggestionsService : public KeyedService {
   //
   // This method sends a request for an OAuth2 token and temporarily
   // instantiates |token_fetcher_|.
-  void CreateSuggestionsRequest(const std::string& current_url,
-                                const base::Time& visit_time,
-                                const AutocompleteInput& input,
-                                const TemplateURLService* template_url_service,
-                                StartCallback start_callback,
-                                CompletionCallback completion_callback);
+  void CreateSuggestionsRequest(
+      const TemplateURLRef::SearchTermsArgs& search_terms_args,
+      const base::Time& visit_time,
+      const TemplateURLService* template_url_service,
+      StartCallback start_callback,
+      CompletionCallback completion_callback);
 
   // Advises the service to stop any process that creates a suggestion request.
   void StopCreatingSuggestionsRequest();
@@ -98,15 +97,14 @@ class RemoteSuggestionsService : public KeyedService {
   // Returns an invalid URL (i.e.: GURL::is_valid() == false) in case of an
   // error.
   //
-  // |current_url| is the page the user is currently browsing and may be empty.
-  //
-  // |input| is the current user input of the autocomplete query, whose
-  // |current_page_classification| will be used to build the suggestion url.
+  // |search_terms_args| encapsulates the arguments sent to the suggest service.
+  // Various parts of it (including the current page URL and classification) are
+  // used to build the final endpoint URL. Note that the current page URL can
+  // be empty.
   //
   // Note that this method is public and is also used by ZeroSuggestProvider for
-  // suggestions that do not take |current_url| into consideration.
-  static GURL EndpointUrl(const std::string& current_url,
-                          const AutocompleteInput& input,
+  // suggestions that do not take the current page URL into consideration.
+  static GURL EndpointUrl(TemplateURLRef::SearchTermsArgs search_terms_args,
                           const TemplateURLService* template_url_service);
 
  private:
@@ -133,11 +131,11 @@ class RemoteSuggestionsService : public KeyedService {
   //
   // This function is called by CreateSuggestionsRequest. See its
   // function definition for details on the parameters.
-  void CreateDefaultRequest(const std::string& current_url,
-                            const AutocompleteInput& input,
-                            const TemplateURLService* template_url_service,
-                            StartCallback start_callback,
-                            CompletionCallback completion_callback);
+  void CreateDefaultRequest(
+      const TemplateURLRef::SearchTermsArgs& search_terms_args,
+      const TemplateURLService* template_url_service,
+      StartCallback start_callback,
+      CompletionCallback completion_callback);
 
   // Upon succesful creation of an HTTP POST request for experimental remote
   // suggestions, the |callback| function is run with the HTTP POST request as a

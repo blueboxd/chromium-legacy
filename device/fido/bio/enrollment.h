@@ -165,8 +165,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentResponse {
   base::Optional<std::vector<uint8_t>> template_id;
   base::Optional<BioEnrollmentSampleStatus> last_status;
   base::Optional<uint8_t> remaining_samples;
-  base::Optional<std::vector<std::pair<std::vector<uint8_t>, std::string>>>
-      template_infos;
+  base::Optional<std::map<std::vector<uint8_t>, std::string>> template_infos;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

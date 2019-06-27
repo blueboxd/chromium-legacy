@@ -15,6 +15,7 @@
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
+      "fuchsia.posix.socket.Provider",
       "fuchsia.process.Launcher",
       "fuchsia.sys.Environment",
       "fuchsia.sys.Launcher",

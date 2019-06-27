@@ -588,10 +588,10 @@ void EventRouter::ObserveEvents() {
   if (intent_helper)
     intent_helper->AddObserver(this);
 
-  auto* crostini_share_path =
-      crostini::CrostiniSharePath::GetForProfile(profile_);
-  if (crostini_share_path)
-    crostini_share_path->AddObserver(this);
+  auto* guest_os_share_path =
+      guest_os::GuestOsSharePath::GetForProfile(profile_);
+  if (guest_os_share_path)
+    guest_os_share_path->AddObserver(this);
 }
 
 // File watch setup routines.

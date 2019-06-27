@@ -69,6 +69,14 @@ void BackgroundSyncRegistrationHelper::OnRegisterResult(
       result->options()->Clone());
 }
 
+void BackgroundSyncRegistrationHelper::NotifyInvalidOptionsProvided(
+    RegisterCallback callback) const {
+  mojo::ReportBadMessage(
+      "BackgroundSyncRegistrationHelper: Invalid options passed.");
+  std::move(callback).Run(blink::mojom::BackgroundSyncError::NOT_ALLOWED,
+                          /* options= */ nullptr);
+}
+
 void BackgroundSyncRegistrationHelper::OnGetRegistrationsResult(
     GetRegistrationsCallback callback,
     BackgroundSyncStatus status,

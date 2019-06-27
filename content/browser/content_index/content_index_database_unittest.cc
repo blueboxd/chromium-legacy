@@ -4,15 +4,46 @@
 
 #include "content/browser/content_index/content_index_database.h"
 
+#include <string>
+
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/public/browser/content_index_provider.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
 namespace {
+
+using ::testing::_;
+
+class MockContentIndexProvider : public ContentIndexProvider {
+ public:
+  MOCK_METHOD2(OnContentAdded,
+               void(ContentIndexEntry entry,
+                    base::WeakPtr<ContentIndexProvider::Client>));
+  MOCK_METHOD2(OnContentDeleted,
+               void(int64_t service_Worker_registration_id,
+                    const std::string& description_id));
+};
+
+class ContentIndexTestBrowserContext : public TestBrowserContext {
+ public:
+  ContentIndexTestBrowserContext()
+      : delegate_(std::make_unique<MockContentIndexProvider>()) {}
+  ~ContentIndexTestBrowserContext() override = default;
+
+  MockContentIndexProvider* GetContentIndexProvider() override {
+    return delegate_.get();
+  }
+
+ private:
+  std::unique_ptr<MockContentIndexProvider> delegate_;
+};
 
 void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
                               base::OnceClosure quit_closure,
@@ -77,7 +108,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     ASSERT_NE(service_worker_registration_id_,
               blink::mojom::kInvalidServiceWorkerRegistrationId);
     database_ = std::make_unique<ContentIndexDatabase>(
-        embedded_worker_test_helper_.context_wrapper());
+        &browser_context_, embedded_worker_test_helper_.context_wrapper());
   }
 
   blink::mojom::ContentDescriptionPtr CreateDescription(const std::string& id) {
@@ -121,6 +152,16 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     run_loop.Run();
     return descriptions;
   }
+
+  MockContentIndexProvider* provider() {
+    return browser_context_.GetContentIndexProvider();
+  }
+
+  int64_t service_worker_registration_id() {
+    return service_worker_registration_id_;
+  }
+
+  ContentIndexDatabase* database() { return database_.get(); }
 
  private:
   int64_t RegisterServiceWorker() {
@@ -169,6 +210,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
   }
 
   TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  ContentIndexTestBrowserContext browser_context_;
   url::Origin origin_ = url::Origin::Create(GURL("https://example.com"));
   int64_t service_worker_registration_id_ =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
@@ -227,6 +269,33 @@ TEST_F(ContentIndexDatabaseTest, DeleteNonExistentEntry) {
   EXPECT_TRUE(descriptions.empty());
 
   EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
+}
+
+TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
+  {
+    std::unique_ptr<ContentIndexEntry> out_entry;
+    ContentIndexProvider::Client* client_ptr;
+    EXPECT_CALL(*provider(), OnContentAdded(_, _))
+        .WillOnce(testing::Invoke([&](auto entry, auto client) {
+          out_entry = std::make_unique<ContentIndexEntry>(std::move(entry));
+          client_ptr = client.get();
+        }));
+    EXPECT_EQ(AddEntry(CreateDescription("id")),
+              blink::mojom::ContentIndexError::NONE);
+    ASSERT_TRUE(out_entry);
+    ASSERT_TRUE(out_entry->description);
+    EXPECT_EQ(out_entry->service_worker_registration_id,
+              service_worker_registration_id());
+    EXPECT_EQ(out_entry->description->id, "id");
+    EXPECT_FALSE(out_entry->registration_time.is_null());
+    EXPECT_EQ(client_ptr, database());
+  }
+
+  {
+    EXPECT_CALL(*provider(),
+                OnContentDeleted(service_worker_registration_id(), "id"));
+    EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
+  }
 }
 
 }  // namespace content

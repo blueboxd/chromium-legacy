@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -384,6 +385,19 @@ class UnmaskCardRequest : public PaymentsRequest {
         net::EscapeUrlEncodedData(
             base::UTF16ToASCII(request_details_.user_response.cvc), true)
             .c_str());
+
+    // Payments is reporting receiving blank or non-standard-length CVCs.
+    // Log CVC length being sent to gauge how often this is happening.
+    if (request_details_.reason == AutofillClient::UNMASK_FOR_AUTOFILL) {
+      base::UmaHistogramCounts1000("Autofill.CardUnmask.CvcLength.ForAutofill",
+                                   request_details_.user_response.cvc.length());
+    } else if (request_details_.reason ==
+               AutofillClient::UNMASK_FOR_PAYMENT_REQUEST) {
+      base::UmaHistogramCounts1000(
+          "Autofill.CardUnmask.CvcLength.ForPaymentRequest",
+          request_details_.user_response.cvc.length());
+    }
+
     VLOG(3) << "getrealpan request body: " << request_content;
     return request_content;
   }
@@ -842,6 +856,7 @@ PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails() {}
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails(
     const UnmaskRequestDetails& other) {
   billing_customer_number = other.billing_customer_number;
+  reason = other.reason;
   card = other.card;
   risk_data = other.risk_data;
   user_response = other.user_response;

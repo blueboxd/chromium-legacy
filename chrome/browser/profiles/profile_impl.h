@@ -101,7 +101,7 @@ class ProfileImpl : public Profile {
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
   const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
-      const override;
+      override;
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;

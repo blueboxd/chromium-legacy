@@ -86,6 +86,21 @@ TEST_F(PeriodicBackgroundSyncServiceImplTest, RegisterPeriodicSync) {
   EXPECT_EQ(3600, reg->min_interval);
 }
 
+TEST_F(PeriodicBackgroundSyncServiceImplTest, RegisterWithInvalidMinInterval) {
+  bool called = false;
+  blink::mojom::BackgroundSyncError error;
+  blink::mojom::SyncRegistrationOptionsPtr reg;
+  auto to_register = default_sync_registration_.Clone();
+  to_register->min_interval = -1;
+
+  FakeMojoMessageDispatchContext fake_dispatch_context;
+  RegisterPeriodicSync(
+      std::move(to_register),
+      base::BindOnce(&ErrorAndRegistrationCallback, &called, &error, &reg));
+  ASSERT_TRUE(called);
+  EXPECT_EQ(mojo_bad_messages_.size(), 1u);
+}
+
 TEST_F(PeriodicBackgroundSyncServiceImplTest,
        GetPeriodicSyncRegistrationsNoSyncRegistered) {
   bool called = false;

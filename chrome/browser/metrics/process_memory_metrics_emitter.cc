@@ -17,6 +17,7 @@
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
@@ -860,7 +861,8 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     process_info.launch_time = process_node->launch_time();
 
     base::flat_set<performance_manager::PageNodeImpl*> page_nodes =
-        process_node->GetAssociatedPageNodes();
+        performance_manager::GraphImplOperations::GetAssociatedPageNodes(
+            process_node);
     for (performance_manager::PageNodeImpl* page_node : page_nodes) {
       if (page_node->ukm_source_id() == ukm::kInvalidSourceId)
         continue;

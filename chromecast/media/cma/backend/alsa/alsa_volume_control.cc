@@ -339,6 +339,8 @@ void AlsaVolumeControl::SetPowerSave(bool power_save_on) {
   }
 }
 
+void AlsaVolumeControl::SetLimit(float limit) {}
+
 bool AlsaVolumeControl::SetElementMuted(ScopedAlsaMixer* mixer, bool muted) {
   if (!mixer || !mixer->element ||
       !alsa_->MixerSelemHasPlaybackSwitch(mixer->element)) {

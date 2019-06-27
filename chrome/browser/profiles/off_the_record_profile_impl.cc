@@ -562,7 +562,7 @@ void OffTheRecordProfileImpl::SetCorsOriginAccessListForOrigin(
 }
 
 const content::SharedCorsOriginAccessList*
-OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() const {
+OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() {
   return profile_->GetSharedCorsOriginAccessList();
 }
 

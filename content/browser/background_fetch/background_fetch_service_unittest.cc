@@ -27,6 +27,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/test/fake_mojo_message_dispatch_context.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -65,18 +66,6 @@ bool ContainsHeader(const base::flat_map<std::string, std::string>& headers,
                                                                 target);
                       });
 }
-
-class FakeMojoMessageDispatchContext {
- public:
-  FakeMojoMessageDispatchContext()
-      : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {}
-
- private:
-  mojo::Message dummy_message_;
-  mojo::internal::MessageDispatchContext context_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeMojoMessageDispatchContext);
-};
 
 std::vector<blink::mojom::FetchAPIRequestPtr> CloneRequestVector(
     const std::vector<blink::mojom::FetchAPIRequestPtr>& requests) {

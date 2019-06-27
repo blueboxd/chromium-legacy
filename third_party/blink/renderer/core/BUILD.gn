@@ -1354,6 +1354,7 @@ jumbo_source_set("unit_tests") {
     "layout/multi_column_fragmentainer_group_test.cc",
     "layout/ng/exclusions/ng_exclusion_space_test.cc",
     "layout/ng/geometry/ng_box_strut_test.cc",
+    "layout/ng/geometry/ng_static_position_test.cc",
     "layout/ng/inline/ng_baseline_test.cc",
     "layout/ng/inline/ng_caret_position_test.cc",
     "layout/ng/inline/ng_inline_fragment_traversal_test.cc",

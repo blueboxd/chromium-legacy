@@ -82,7 +82,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
   void UpdateWithMediaActions(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image);
-  void UpdateWithMediaIcon(const gfx::ImageSkia& image);
 
  private:
   friend class MediaNotificationViewTest;

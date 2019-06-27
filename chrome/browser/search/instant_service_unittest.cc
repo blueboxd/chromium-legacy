@@ -87,36 +87,6 @@ TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   EXPECT_EQ(ntp_tiles::TileTitleSource::TITLE_TAG, items[0].title_source);
 }
 
-TEST_F(InstantServiceTest, DeleteThumbnailDataIfExists) {
-  const std::string kTestData("test");
-  base::FilePath database_dir =
-      profile()->GetPath().Append(FILE_PATH_LITERAL("Thumbnails"));
-
-  if (!base::PathExists(database_dir))
-    ASSERT_TRUE(base::CreateDirectory(database_dir));
-  ASSERT_NE(-1, base::WriteFile(
-                    database_dir.Append(FILE_PATH_LITERAL("test_thumbnail")),
-                    kTestData.c_str(), kTestData.length()));
-
-  // Delete the thumbnail directory.
-  base::MockCallback<base::OnceCallback<void(bool)>> result;
-  EXPECT_CALL(result, Run(true));
-  instant_service_->DeleteThumbnailDataIfExists(
-      profile()->GetPath(),
-      base::Optional<base::OnceCallback<void(bool)>>(result.Get()));
-  thread_bundle()->RunUntilIdle();
-  EXPECT_FALSE(base::PathExists(database_dir));
-
-  // Delete should fail since the path does not exist.
-  base::MockCallback<base::OnceCallback<void(bool)>> result2;
-  EXPECT_CALL(result2, Run(false));
-  instant_service_->DeleteThumbnailDataIfExists(
-      profile()->GetPath(),
-      base::Optional<base::OnceCallback<void(bool)>>(result2.Get()));
-  thread_bundle()->RunUntilIdle();
-  EXPECT_FALSE(base::PathExists(database_dir));
-}
-
 TEST_F(InstantServiceTest, DoesToggleMostVisitedOrCustomLinks) {
   sync_preferences::TestingPrefServiceSyncable* pref_service =
       profile()->GetTestingPrefService();

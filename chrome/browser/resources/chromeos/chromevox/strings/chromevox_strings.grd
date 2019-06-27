@@ -3710,6 +3710,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A string to specify time units in hours." name="IDS_CHROMEVOX_HOURS">
         {COUNT, plural, =1 {hour}other {hours}}
       </message>
+      <message desc="Appends language in front of content." name="IDS_CHROMEVOX_LANGUAGE_SWITCH">
+        <ph name="language">$1<ex>English</ex></ph>: <ph name="content">$2<ex>This is example content</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

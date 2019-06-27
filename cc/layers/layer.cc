@@ -550,9 +550,14 @@ void Layer::SetClipRect(const gfx::Rect& clip_rect) {
   if (clip_tree_index() != ClipTree::kInvalidNodeId && !force_rebuild) {
     PropertyTrees* property_trees = layer_tree_host_->property_trees();
     if (ClipNode* node = property_trees->clip_tree.Node(clip_tree_index())) {
-      node->clip = gfx::RectF(
-          gfx::PointF(clip_rect.origin()) + offset_to_transform_parent(),
-          gfx::SizeF(clip_rect.size()));
+      node->clip = gfx::RectF(clip_rect);
+      // This mirrors the logic in PropertyTreeBuilder's AddClipNodeIfNeeded
+      // method.
+      if (masks_to_bounds() || mask_layer() ||
+          filters().HasFilterThatMovesPixels()) {
+        node->clip.Intersect(gfx::RectF(gfx::SizeF(bounds())));
+      }
+      node->clip += offset_to_transform_parent();
       property_trees->clip_tree.set_needs_update(true);
     }
   } else {

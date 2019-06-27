@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/android/tab_model/android_live_tab_context.h"
+
+#include "base/token.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/android/tab_model/android_live_tab_context.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "components/sessions/content/content_live_tab.h"
@@ -59,6 +61,12 @@ bool AndroidLiveTabContext::IsTabPinned(int index) const {
   return false;
 }
 
+base::Optional<base::Token> AndroidLiveTabContext::GetTabGroupForTab(
+    int index) const {
+  // Not applicable to android.
+  return base::Optional<base::Token>();
+}
+
 const gfx::Rect AndroidLiveTabContext::GetRestoredBounds() const {
   // Not applicable to android.
   return gfx::Rect();
@@ -79,6 +87,7 @@ sessions::LiveTab* AndroidLiveTabContext::AddRestoredTab(
     int tab_index,
     int selected_navigation,
     const std::string& extension_app_id,
+    base::Optional<base::Token> group,
     bool select,
     bool pin,
     bool from_last_session,
@@ -108,6 +117,7 @@ sessions::LiveTab* AndroidLiveTabContext::AddRestoredTab(
 // Currently does nothing.
 sessions::LiveTab* AndroidLiveTabContext::ReplaceRestoredTab(
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
+    base::Optional<base::Token> group,
     int selected_navigation,
     bool from_last_session,
     const std::string& extension_app_id,

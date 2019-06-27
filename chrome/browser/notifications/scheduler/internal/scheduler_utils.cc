@@ -59,6 +59,35 @@ void NotificationsShownToday(
   }
 }
 
+int NotificationsShownToday(ClientState* state) {
+  int count = 0;
+  auto impressions = state->impressions;
+  base::Time now(base::Time::Now());
+  base::Time beginning_of_today, beginning_of_tomorrow;
+  bool success = ToLocalHour(0, now, 0, &beginning_of_today);
+  beginning_of_tomorrow += base::TimeDelta::FromDays(1);
+  DCHECK(success);
+  if (impressions.rbegin()->create_time < beginning_of_today) {
+    count = 0;
+  } else if (impressions.begin()->create_time > beginning_of_tomorrow) {
+    count = impressions.size();
+  } else {
+    auto right = lower_bound(impressions.rbegin(), impressions.rend(),
+                             beginning_of_today,
+                             [](const Impression& lhs, const base::Time& rhs) {
+                               return lhs.create_time < rhs;
+                             });
+    auto left = upper_bound(impressions.rbegin(), impressions.rend(),
+                            beginning_of_tomorrow,
+                            [](const base::Time& lhs, const Impression& rhs) {
+                              return lhs < rhs.create_time;
+                            });
+    count = right - left + 1;
+  }
+  DCHECK_LE(count, state->current_max_daily_show);
+  return count;
+}
+
 std::unique_ptr<ClientState> CreateNewClientState(
     SchedulerClientType type,
     const SchedulerConfig& config) {

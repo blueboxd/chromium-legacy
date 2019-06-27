@@ -1228,7 +1228,28 @@
       },
     },
   },
- 'pixel_test':{
+  # TODO(https://crbug.com/977620): Remove this once the V8 bots are fixed and
+  # no longer need additional logging.
+  'pixel_skia_gold_test': {
+    'modifications': {
+      'Android V8 FYI Release (Nexus 5X)': {
+        'args': [ '--stream-goldctl-output' ]
+      },
+      'Linux V8 FYI Release (NVIDIA)': {
+        'args': [ '--stream-goldctl-output' ]
+      },
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
+        'args': [ '--stream-goldctl-output' ]
+      },
+      'Mac V8 FYI Release (Intel)': {
+        'args': [ '--stream-goldctl-output' ]
+      },
+      'Win V8 FYI Release (NVIDIA)': {
+        'args': [ '--stream-goldctl-output' ]
+      },
+    },
+  },
+  'pixel_test': {
     'modifications': {
       'Android Release (Nexus 5X)': {
         'swarming': {

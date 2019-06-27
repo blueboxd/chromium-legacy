@@ -696,8 +696,6 @@ if (!is_android) {
 
     data = [
       "data/",
-      "//chrome/browser/policy/test/asn1der.py",
-      "//chrome/browser/policy/test/policy_testserver.py",
       "//chrome/common/extensions/docs/examples/apps/calculator/",
       "//chrome/third_party/mock4js/",
       "//components/test/data/arc/",
@@ -2914,7 +2912,9 @@ test("unit_tests") {
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/graph/frame_node_impl_unittest.cc",
+    "../browser/performance_manager/graph/graph_impl_operations_unittest.cc",
     "../browser/performance_manager/graph/graph_impl_unittest.cc",
+    "../browser/performance_manager/graph/graph_operations_unittest.cc",
     "../browser/performance_manager/graph/graph_test_harness.cc",
     "../browser/performance_manager/graph/graph_test_harness.h",
     "../browser/performance_manager/graph/mock_graphs.cc",

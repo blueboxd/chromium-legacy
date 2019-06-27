@@ -1,18 +1,21 @@
 # URL-Keyed Metrics API
 
-This describes how to write client code to collect UKM data. Before you add new metrics, you should file a proposal.  See go/ukm for more information.
+This describes how to write client code to collect UKM data. Before you add new metrics, you should file a proposal.  See [go/ukm](http://go/ukm) for more information.
+
+[TOC]
 
 ## Document your metrics in ukm.xml
 
 Any events and metrics you collect need to be documented in [//tools/metrics/ukm/ukm.xml](https://cs.chromium.org/chromium/src/tools/metrics/ukm/ukm.xml)
 
-Important information to include:
+### Required Details
 
-* Metric owners: This the email of someone who can answer questions about how this metric is recorded, what it means, and how it should be used. Can include multiple people.
-* A description of the event about which you are recording details, including when the event will be recorded.
-* For each metric in the event: a description of the data and what it means.
-* The unit should be included in the description, along with possible output values.
-* If an event will only happen once per Navigation, it can be marked singular="true".
+* Metric `owner`: This the email of someone who can answer questions about how this metric is recorded, what it means, and how it should be used. Can include multiple people.
+* A `summary` of the event about which you are recording details, including a description of when the event will be recorded.
+* For each metric in the event: a `summary` of the data and what it means.
+* The `enum` type if the metric is enumerated. The enum uses the [//tools/metrics/histograms/enums.xml](https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml) file for definitions. Note this is the same file for UMA histogram definitions so these can ideally be reused.
+* If the metric is numeric then a `unit` should be included.
+* If an event will only happen once per Navigation, it can be marked `singular="true"`.
 
 ### Example
 ```xml
@@ -21,14 +24,14 @@ Important information to include:
   <summary>
     Recorded when a page teleports a goat.
   </summary>
-  <metric name="Duration">
+  <metric name="Duration" unit="ms">
     <summary>
-      How long it took to teleport, in ns.
+      How long it took to teleport.
     </summary>
   </metric>
-  <metric name="Mass">
+  <metric name="GoatType" enum="GoatType">
     <summary>
-      The mass of the teleported goat, in kg, rounded to the nearest multiple of 10.
+      The type of goat that was teleported.
     </summary>
   </metric>
 </event>
@@ -82,7 +85,7 @@ Currently supported additional index fields are:
 *   `profile.form_factor`
 *   `profile.system_ram`
 
-#### Aggregation by Metrics in the Same Event
+### Aggregation by Metrics in the Same Event
 
 In addition to the standard "profile" keys, aggregation can be done against
 another metric in the same event. This is accomplished with the same `<index>`
@@ -96,7 +99,7 @@ likely to be useful on its own, add `export=False` to its `<statistics>` tag.
 
 ```xml
 <event name="Memory.Experimental">
-  <metric name="ProcessType">
+  <metric name="ProcessType" enum="MemoryProcessType">
     <aggregation>
       <history>
         <statistics export="False">
@@ -105,7 +108,7 @@ likely to be useful on its own, add `export=False` to its `<statistics>` tag.
       </history>
     </aggregation>
   </metric>
-  <metric name="PrivateMemoryFootprint">
+  <metric name="PrivateMemoryFootprint" unit="MB">
     <aggregation>
       <history>
         <index fields="metrics.ProcessType"/>
@@ -118,9 +121,9 @@ likely to be useful on its own, add `export=False` to its `<statistics>` tag.
 </event>
 ```
 
-## Enumeration Proportions
+### Enumeration Proportions
 
-Porportions are calculated against the number of "page loads" (meaning per
+Proportions are calculated against the number of "page loads" (meaning per
 "source" which is usually but not always the same as a browser page load) that
 emitted one or more values for the enumeration.  The proportions will sum to 1.0
 for an enumeration that emits only one result per page-load if it emits anything
@@ -165,7 +168,9 @@ The denominator for each is 3 because there were 3 sources reporting the metric.
 The numerator for each enum value is the count of how many times the value was
 emitted.
 
-## Get UkmRecorder instance
+## Client API
+
+### Get UkmRecorder Instance
 
 In order to record UKM events, your code needs a UkmRecorder object, defined by [//services/metrics/public/cpp/ukm_recorder.h](https://cs.chromium.org/chromium/src/services/metrics/public/cpp/ukm_recorder.h)
 
@@ -183,7 +188,7 @@ ukm::builders::MyEvent(source_id)
     .Record(ukm_recorder.get());
 ```
 
-## Get a ukm::SourceId
+### Get A ukm::SourceId
 
 UKM identifies navigations by their source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
 
@@ -228,7 +233,7 @@ ukm_recorder->UpdateSourceURL(source_id, main_frame_url);
 
 You will also need to add your class as a friend of UkmRecorder in order to use this private API.
 
-## Create some events
+### Create Events
 
 Helper objects for recording your event are generated from the descriptions in ukm.xml.  You can use them like so:
 
@@ -238,18 +243,18 @@ Helper objects for recording your event are generated from the descriptions in u
 void OnGoatTeleported() {
   ...
   ukm::builders::Goat_Teleported(source_id)
-      .SetDuration(duration.InNanoseconds())
-      .SetMass(RoundedToMultiple(mass_kg, 10))
+      .SetDuration(duration.InMilliseconds())
+      .SetType(goat_type)
       .Record(ukm_recorder);
 }
 ```
 
 If the event name in the XML contains a period (`.`), it is replaced with an underscore (`_`) in the method name.
 
-## Check that it works
+### Local Testing
 
-Build chromium and run it with '--force-enable-metrics-reporting'.  Trigger your event and check chrome://ukm to make sure the data was recorded correctly.
+Build Chromium and run it with '--force-enable-metrics-reporting'. Trigger your event locally and check chrome://ukm to make sure the data was recorded correctly.
 
-## Unit testing
+## Unit Testing
 
 You can pass your code a TestUkmRecorder (see [//components/ukm/test_ukm_recorder.h](https://cs.chromium.org/chromium/src/components/ukm/test_ukm_recorder.h)) and then use the methods it provides to test that your data records correctly.

@@ -34,9 +34,6 @@ class SSLErrorUI {
     // Strict-Transport-Security). By default, the error assumes strict
     // enforcement was not requested.
     STRICT_ENFORCEMENT = 1 << 2,
-    // Indicates that a user decision had been previously made but the
-    // decision has expired.
-    EXPIRED_BUT_PREVIOUSLY_ALLOWED = 1 << 3,
   };
 
   SSLErrorUI(const GURL& request_url,

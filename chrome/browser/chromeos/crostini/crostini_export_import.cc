@@ -12,9 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/pref_names.h"
@@ -47,7 +47,7 @@ class CrostiniExportImportFactory : public BrowserContextKeyedServiceFactory {
       : BrowserContextKeyedServiceFactory(
             "CrostiniExportImportService",
             BrowserContextDependencyManager::GetInstance()) {
-    DependsOn(CrostiniSharePathFactory::GetInstance());
+    DependsOn(guest_os::GuestOsSharePathFactory::GetInstance());
     DependsOn(CrostiniManagerFactory::GetInstance());
   }
 
@@ -168,14 +168,14 @@ void CrostiniExportImport::Start(
 
   switch (type) {
     case ExportImportType::EXPORT:
-      CrostiniSharePath::GetForProfile(profile_)->SharePath(
+      guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
           kCrostiniDefaultVmName, path.DirName(), false,
           base::BindOnce(&CrostiniExportImport::ExportAfterSharing,
                          weak_ptr_factory_.GetWeakPtr(), container_id,
                          path.BaseName(), std::move(callback)));
       break;
     case ExportImportType::IMPORT:
-      CrostiniSharePath::GetForProfile(profile_)->SharePath(
+      guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
           kCrostiniDefaultVmName, path, false,
           base::BindOnce(&CrostiniExportImport::ImportAfterSharing,
                          weak_ptr_factory_.GetWeakPtr(), container_id,

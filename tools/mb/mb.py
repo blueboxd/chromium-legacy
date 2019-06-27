@@ -1193,6 +1193,7 @@ class MetaBuildWrapper(object):
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
     cfi_diag = 'use_cfi_diag=true' in vals['gn_args']
+    java_coverage = 'jacoco_coverage=true' in vals['gn_args']
 
     test_type = isolate_map[target]['type']
 
@@ -1235,6 +1236,8 @@ class MetaBuildWrapper(object):
           '--target', target,
           '--logdog-bin-cmd', '../../bin/logdog_butler',
           '--store-tombstones']
+      if java_coverage:
+        cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
     elif is_fuchsia and test_type != 'script':
       cmdline = [
           '../../testing/test_env.py',

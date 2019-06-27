@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -78,31 +79,67 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
   // TODO(dalecurtis): This needs to actually check the profiles available. This
   // can be done by calling MediaCodecUtil::AddSupportedCodecProfileLevels.
   if (device_info->IsVp9DecoderAvailable()) {
-    // For unencrypted content, require that the size is at least 360p and that
-    // the MediaCodec implementation is hardware; otherwise fall back to libvpx.
-    if (!device_info->IsDecoderKnownUnaccelerated(kCodecVP9)) {
-      supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
-                                     gfx::Size(480, 360), gfx::Size(3840, 2160),
-                                     false,   // allow_encrypted
-                                     false);  // require_encrypted
-      supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
-                                     gfx::Size(360, 480), gfx::Size(2160, 3840),
-                                     false,   // allow_encrypted
-                                     false);  // require_encrypted
-    }
+    const bool is_sw = device_info->IsDecoderKnownUnaccelerated(kCodecVP9);
 
-    // Encrypted content must be decoded by MediaCodec.
-    supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
-                                   gfx::Size(0, 0), gfx::Size(3840, 2160),
-                                   true,   // allow_encrypted
-                                   true);  // require_encrypted
-    supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
-                                   gfx::Size(0, 0), gfx::Size(2160, 3840),
-                                   true,   // allow_encrypted
-                                   true);  // require_encrypted
+    std::vector<CodecProfileLevel> profiles;
+
+    // Support for VP9.2, VP9.3 was not added until Nougat.
+    if (device_info->SdkVersion() >= base::android::SDK_VERSION_NOUGAT)
+      device_info->AddSupportedCodecProfileLevels(&profiles);
+
+    // If we think a VP9 decoder is available, but we didn't get any profiles
+    // returned, just assume support for vp9.0 only.
+    if (profiles.empty())
+      profiles.push_back({kCodecVP9, VP9PROFILE_PROFILE0, 0});
+
+    for (const auto& p : profiles) {
+      if (p.codec != kCodecVP9)
+        continue;
+
+      // We don't compile support into libvpx for these profiles, so allow them
+      // for all resolutions. See notes on H264 profiles below for more detail.
+      if (p.profile > VP9PROFILE_PROFILE1) {
+        supported_configs.emplace_back(p.profile, p.profile, gfx::Size(0, 0),
+                                       gfx::Size(3840, 2160),
+                                       true,    // allow_encrypted
+                                       false);  // require_encrypted
+        supported_configs.emplace_back(p.profile, p.profile, gfx::Size(0, 0),
+                                       gfx::Size(2160, 3840),
+                                       true,    // allow_encrypted
+                                       false);  // require_encrypted
+        continue;
+      }
+
+      // For unencrypted vp9.0 and vp9.1 content, require that the size is at
+      // least 360p and that the MediaCodec implementation is hardware;
+      // otherwise fall back to libvpx.
+      if (!is_sw) {
+        supported_configs.emplace_back(
+            p.profile, p.profile, gfx::Size(480, 360), gfx::Size(3840, 2160),
+            false,   // allow_encrypted
+            false);  // require_encrypted
+        supported_configs.emplace_back(
+            p.profile, p.profile, gfx::Size(360, 480), gfx::Size(2160, 3840),
+            false,   // allow_encrypted
+            false);  // require_encrypted
+      }
+
+      // Encrypted content must be decoded by MediaCodec.
+      supported_configs.emplace_back(p.profile, p.profile, gfx::Size(0, 0),
+                                     gfx::Size(3840, 2160),
+                                     true,   // allow_encrypted
+                                     true);  // require_encrypted
+      supported_configs.emplace_back(p.profile, p.profile, gfx::Size(0, 0),
+                                     gfx::Size(2160, 3840),
+                                     true,   // allow_encrypted
+                                     true);  // require_encrypted
+    }
   }
 
   if (device_info->IsAv1DecoderAvailable()) {
+    // Technically we should check which profiles are supported, but since we
+    // don't have an AV1 SW decoder, just allow them all. See notes below for
+    // H264 profiles on the reasons why.
     supported_configs.emplace_back(AV1PROFILE_MIN, AV1PROFILE_MAX,
                                    gfx::Size(0, 0), gfx::Size(3840, 2160),
                                    true,    // allow_encrypted
@@ -118,19 +155,17 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
   // support others. Advertise support for all H.264 profiles and let the
   // MediaCodec fail when decoding if it's not actually supported. It's assumed
   // that there is not software fallback for H.264 on Android.
-  supported_configs.emplace_back(H264PROFILE_BASELINE,
-                                 H264PROFILE_MULTIVIEWHIGH, gfx::Size(0, 0),
-                                 gfx::Size(3840, 2160),
+  supported_configs.emplace_back(H264PROFILE_MIN, H264PROFILE_MAX,
+                                 gfx::Size(0, 0), gfx::Size(3840, 2160),
                                  true,    // allow_encrypted
                                  false);  // require_encrypted
-  supported_configs.emplace_back(H264PROFILE_BASELINE,
-                                 H264PROFILE_MULTIVIEWHIGH, gfx::Size(0, 0),
-                                 gfx::Size(2160, 3840),
+  supported_configs.emplace_back(H264PROFILE_MIN, H264PROFILE_MAX,
+                                 gfx::Size(0, 0), gfx::Size(2160, 3840),
                                  true,    // allow_encrypted
                                  false);  // require_encrypted
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  supported_configs.emplace_back(HEVCPROFILE_MAIN, HEVCPROFILE_MAIN10,
+  supported_configs.emplace_back(HEVCPROFILE_MIN, HEVCPROFILE_MAX,
                                  gfx::Size(0, 0), gfx::Size(3840, 2160),
                                  true,    // allow_encrypted
                                  false);  // require_encrypted

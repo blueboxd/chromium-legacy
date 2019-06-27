@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -104,11 +104,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // Warning: Do not call unless necessary.
   LogicalOffset GetChildOffset(const LayoutObject* child) const;
 
-  // Builder has non-trivial out-of-flow descendant methods.
-  // These methods are building blocks for implementation of
-  // out-of-flow descendants by layout algorithms.
-  //
-  // They are intended to be used by layout algorithm like this:
+  // Builder has non-trivial OOF-positioned methods.
+  // They are intended to be used by a layout algorithm like this:
   //
   // Part 1: layout algorithm positions in-flow children.
   //   out-of-flow children, and out-of-flow descendants of fragments
@@ -124,7 +121,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   //
   // builder->SetSize
   //
-  // Part 2: Out-of-flow layout part positions out-of-flow descendants.
+  // Part 2: Out-of-flow layout part positions OOF-positioned nodes.
   //
   // NGOutOfFlowLayoutPart(container_style, builder).Run();
   //
@@ -138,26 +135,25 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       base::Optional<TextDirection> container_direction = base::nullopt);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
-      const NGOutOfFlowPositionedDescendant& descendant);
+      const NGLogicalOutOfFlowPositionedNode& descendant);
 
-  void GetAndClearOutOfFlowDescendantCandidates(
-      Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
-      const LayoutObject* container);
+  void SwapOutOfFlowPositionedCandidates(
+      Vector<NGLogicalOutOfFlowPositionedNode>* candidates,
+      const LayoutObject* current_container);
 
-  bool HasOutOfFlowDescendantCandidates() const {
+  bool HasOutOfFlowPositionedCandidates() const {
     return !oof_positioned_candidates_.IsEmpty();
   }
 
   // This method should only be used within the inline layout algorithm. It is
-  // used to convert all OOF descendant candidates to descendants.
+  // used to convert all OOF-positioned candidates to descendants.
   //
   // During the inline layout algorithm, we don't have enough information to
   // position OOF candidates yet, (as a containing box may be split over
   // multiple lines), instead we bubble all the descendants up to the parent
   // block layout algorithm, to perform the final OOF layout and positioning.
   void MoveOutOfFlowDescendantCandidatesToDescendants() {
-    GetAndClearOutOfFlowDescendantCandidates(&oof_positioned_descendants_,
-                                             nullptr);
+    SwapOutOfFlowPositionedCandidates(&oof_positioned_descendants_, nullptr);
   }
 
   NGContainerFragmentBuilder& SetIsSelfCollapsing() {
@@ -200,31 +196,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   friend class NGPhysicalContainerFragment;
   friend class NGLayoutResult;
 
-  // An out-of-flow positioned-candidate is a temporary data structure used
-  // within the NGBoxFragmentBuilder.
-  //
-  // A positioned-candidate can be:
-  // 1. A direct out-of-flow positioned child. The child_offset is (0,0).
-  // 2. A fragment containing an out-of-flow positioned-descendant. The
-  //    child_offset in this case is the containing fragment's offset.
-  //
-  // The child_offset is stored as a LogicalOffset as the physical offset
-  // cannot be computed until we know the current fragment's size.
-  //
-  // When returning the positioned-candidates (from
-  // GetAndClearOutOfFlowDescendantCandidates), the NGBoxFragmentBuilder will
-  // convert the positioned-candidate to a positioned-descendant using the
-  // physical size the fragment builder.
-  struct NGOutOfFlowPositionedCandidate {
-    NGOutOfFlowPositionedDescendant descendant;
-    LogicalOffset child_offset;  // Logical offset of child's top left vertex.
-
-    NGOutOfFlowPositionedCandidate(
-        const NGOutOfFlowPositionedDescendant& descendant,
-        LogicalOffset child_offset)
-        : descendant(descendant), child_offset(child_offset) {}
-  };
-
   NGContainerFragmentBuilder(NGLayoutInputNode node,
                              scoped_refptr<const ComputedStyle> style,
                              const NGConstraintSpace* space,
@@ -247,8 +218,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGMarginStrut end_margin_strut_;
   NGExclusionSpace exclusion_space_;
 
-  Vector<NGOutOfFlowPositionedCandidate> oof_positioned_candidates_;
-  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+  Vector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
+  Vector<NGLogicalOutOfFlowPositionedNode> oof_positioned_descendants_;
 
   NGUnpositionedListMarker unpositioned_list_marker_;
 

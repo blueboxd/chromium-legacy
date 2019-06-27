@@ -34,6 +34,9 @@ void NotificationsShownToday(
     int* shown_total,
     SchedulerClientType* last_shown_type);
 
+// Counts the number of notifications shown today of a given |state|.
+int NotificationsShownToday(ClientState* state);
+
 // Creates client state data for new registered client.
 std::unique_ptr<ClientState> CreateNewClientState(
     SchedulerClientType type,

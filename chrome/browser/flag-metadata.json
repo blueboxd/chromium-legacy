@@ -2904,7 +2904,7 @@
   },
   {
     "name": "terminal-system-app",
-    "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/crostini/OWNERS" ],
+    "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
     "expiry_milestone": 82
   },
   {

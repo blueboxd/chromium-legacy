@@ -2508,8 +2508,6 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
       relevant_registries.push_back(std::make_pair(it->second.get(), true));
   }
 
-  // The following block is experimentally enabled and its impact on load time
-  // logged with UMA Extensions.NetworkDelayRegistryLoad. crbug.com/175961
   for (auto it : relevant_registries) {
     WebRequestRulesRegistry* rules_registry = it.first;
     if (rules_registry->ready().is_signaled())
@@ -2573,10 +2571,6 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
     return;
 
   BlockedRequest& blocked_request = it->second;
-  base::TimeDelta block_time =
-      base::Time::Now() - blocked_request.blocking_time;
-  UMA_HISTOGRAM_TIMES("Extensions.NetworkDelayRegistryLoad", block_time);
-
   ProcessDeclarativeRules(browser_context, blocked_request.extension_info_map,
                           event_name, blocked_request.request, request_stage,
                           blocked_request.filtered_response_headers.get());

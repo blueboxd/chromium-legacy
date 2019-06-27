@@ -113,10 +113,6 @@ class SSLBlockingPage : public SSLBlockingPageBase {
   const net::SSLInfo ssl_info_;
   const bool overridable_;  // The UI allows the user to override the error.
 
-  // The user previously allowed a bad certificate, but the decision has now
-  // expired.
-  const bool expired_but_previously_allowed_;
-
   const std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);

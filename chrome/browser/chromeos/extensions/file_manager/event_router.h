@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -58,7 +58,7 @@ class EventRouter
       public VolumeManagerObserver,
       public arc::ArcIntentHelperObserver,
       public drive::DriveIntegrationServiceObserver,
-      public crostini::CrostiniSharePath::Observer {
+      public guest_os::GuestOsSharePath::Observer {
  public:
   typedef base::Callback<void(const base::FilePath& virtual_path,
                               const drive::FileChange* list,
@@ -151,7 +151,7 @@ class EventRouter
   // DriveIntegrationServiceObserver override.
   void OnFileSystemMountFailed() override;
 
-  // crostini::CrostiniSharePath::Observer overrides
+  // guest_os::GuestOsSharePath::Observer overrides
   void OnUnshare(const std::string& vm_name,
                  const base::FilePath& path) override;
 

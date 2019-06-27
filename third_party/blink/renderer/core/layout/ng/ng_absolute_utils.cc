@@ -153,12 +153,13 @@ inline LayoutUnit ResolveMargin(const NGConstraintSpace& space,
 // Available size can is maximum length Element can have without overflowing
 // container bounds. The position of Element's edges will determine
 // how much space there is available.
-LayoutUnit ComputeAvailableWidth(LayoutUnit container_width,
-                                 const base::Optional<LayoutUnit>& left,
-                                 const base::Optional<LayoutUnit>& right,
-                                 const base::Optional<LayoutUnit>& margin_left,
-                                 const base::Optional<LayoutUnit>& margin_right,
-                                 const NGStaticPosition& static_position) {
+LayoutUnit ComputeAvailableWidth(
+    LayoutUnit container_width,
+    const base::Optional<LayoutUnit>& left,
+    const base::Optional<LayoutUnit>& right,
+    const base::Optional<LayoutUnit>& margin_left,
+    const base::Optional<LayoutUnit>& margin_right,
+    const NGPhysicalStaticPosition& static_position) {
   LayoutUnit available_width = container_width;
   DCHECK(!left || !right);
   if (!left && !right) {
@@ -182,7 +183,7 @@ LayoutUnit ComputeAvailableHeight(
     const base::Optional<LayoutUnit>& bottom,
     const base::Optional<LayoutUnit>& margin_top,
     const base::Optional<LayoutUnit>& margin_bottom,
-    const NGStaticPosition& static_position) {
+    const NGPhysicalStaticPosition& static_position) {
   LayoutUnit available_height = container_height;
   DCHECK(!top || !bottom);
   if (!top && !bottom) {
@@ -206,7 +207,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const ComputedStyle& style,
                                const NGBoxStrut& border_padding,
                                const base::Optional<LayoutUnit>& incoming_width,
-                               const NGStaticPosition& static_position,
+                               const NGPhysicalStaticPosition& static_position,
                                const base::Optional<MinMaxSize>& child_minmax,
                                const WritingMode container_writing_mode,
                                const TextDirection container_direction,
@@ -380,7 +381,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const ComputedStyle& style,
                              const NGBoxStrut& border_padding,
                              const base::Optional<LayoutUnit>& incoming_height,
-                             const NGStaticPosition& static_position,
+                             const NGPhysicalStaticPosition& static_position,
                              const base::Optional<MinMaxSize>& child_minmax,
                              const WritingMode container_writing_mode,
                              const TextDirection container_direction,
@@ -610,7 +611,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    const NGStaticPosition& static_position,
+    const NGPhysicalStaticPosition& static_position,
     const base::Optional<MinMaxSize>& child_minmax,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
@@ -646,7 +647,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    const NGStaticPosition& static_position,
+    const NGPhysicalStaticPosition& static_position,
     const base::Optional<LayoutUnit>& child_block_size,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,

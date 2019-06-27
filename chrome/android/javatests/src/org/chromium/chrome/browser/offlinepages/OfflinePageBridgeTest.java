@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.offlinepages;
 import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+import android.support.test.filters.MediumTest;
 import android.util.Base64;
 
 import org.junit.After;
@@ -67,7 +67,6 @@ public class OfflinePageBridgeTest {
 
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
-    private static final long POLLING_INTERVAL = 100;
     private static final ClientId TEST_CLIENT_ID =
             new ClientId(OfflinePageBridge.DOWNLOAD_NAMESPACE, "1234");
 
@@ -98,6 +97,7 @@ public class OfflinePageBridgeTest {
             });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        if (!incognitoProfile) Assert.assertNotNull(mOfflinePageBridge);
     }
 
     @Before
@@ -124,7 +124,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
     public void testLoadOfflinePagesWhenEmpty() throws Exception {
         List<OfflinePageItem> offlinePages = OfflineTestUtil.getAllPages();
@@ -132,10 +132,10 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
-    @DisableIf.Build(
-            message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    @DisableIf.
+    Build(message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void testAddOfflinePageAndLoad() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
@@ -146,7 +146,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
     public void testGetPageByBookmarkId() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
@@ -159,10 +159,10 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
-    @DisableIf.Build(
-            message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    @DisableIf.
+    Build(message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void testDeleteOfflinePage() throws Exception {
         deletePage(TEST_CLIENT_ID, DeletePageResult.SUCCESS);
         mActivityTestRule.loadUrl(mTestPage);
@@ -175,7 +175,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
     public void testGetRequestsInQueue() throws Exception {
         String url = "https://www.google.com/";
@@ -209,7 +209,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
     public void testOfflinePageBridgeDisabledInIncognito() throws Exception {
         initializeBridgeForProfile(true);
@@ -217,7 +217,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
     public void testRemoveRequestsFromQueue() throws Exception {
         String url = "https://www.google.com/";
@@ -246,7 +246,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testDeletePagesByOfflineIds() throws Exception {
         // Save 3 pages and record their offline IDs to delete later.
         Set<String> pageUrls = new HashSet<>();
@@ -285,7 +285,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testGetPagesByNamespace() throws Exception {
         // Save 3 pages and record their offline IDs to delete later.
         Set<Long> offlineIdsToFetch = new HashSet<>();
@@ -322,7 +322,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
     @DisabledTest(message = "crbug.com/954205")
     public void testDownloadPage() throws Exception {
@@ -356,7 +356,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testSavePageWithRequestOrigin() throws Exception {
         final OfflinePageOrigin origin =
                 new OfflinePageOrigin("abc.xyz", new String[] {"deadbeef"});
@@ -386,7 +386,7 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @DisabledTest(message = "crbug.com/842801")
     public void testSavePageNoOrigin() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
@@ -396,10 +396,10 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     @RetryOnFailure
-    @DisableIf.Build(
-            message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    @DisableIf.
+    Build(message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void testGetLoadUrlParamsForOpeningMhtmlFileUrl() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);

@@ -222,7 +222,10 @@ UnifiedMessageListView::UnifiedMessageListView(
 }
 
 UnifiedMessageListView::~UnifiedMessageListView() {
-  MessageCenter::Get()->RemoveObserver(this);
+  // The MessageCenter may be destroyed already during shutdown. See
+  // crbug.com/946153.
+  if (MessageCenter::Get())
+    MessageCenter::Get()->RemoveObserver(this);
 
   model_->ClearNotificationChanges();
   for (auto* view : children())

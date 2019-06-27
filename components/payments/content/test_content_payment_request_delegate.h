@@ -31,6 +31,7 @@ class TestContentPaymentRequestDelegate : public ContentPaymentRequestDelegate {
   void ShowErrorMessage() override;
   void ShowProcessingSpinner() override;
   bool IsBrowserWindowActive() const override;
+  bool SkipUiForBasicCard() const override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
   bool IsIncognito() const override;

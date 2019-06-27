@@ -3837,15 +3837,10 @@
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-        },
+        'mixins': [
+          'hammerhead',
+          'kitkat',
+        ],
         'os_type': 'android',
       },
       'win-asan': {

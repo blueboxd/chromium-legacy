@@ -77,11 +77,6 @@ ASH_EXPORT bool MoveWindowToDisplay(aura::Window* window, int64_t display_id);
 ASH_EXPORT bool MoveWindowToEventRoot(aura::Window* window,
                                       const ui::Event& event);
 
-// Mark the container window so that InstallSnapLayoutManagerToContainers
-// installs the SnapToPixelLayoutManager.
-ASH_EXPORT void SetSnapsChildrenToPhysicalPixelBoundary(
-    aura::Window* container);
-
 // Convenience for window->delegate()->GetNonClientComponent(location) that
 // returns HTNOWHERE if window->delegate() is null.
 ASH_EXPORT int GetNonClientComponent(aura::Window* window,

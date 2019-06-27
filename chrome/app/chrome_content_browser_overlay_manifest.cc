@@ -49,7 +49,6 @@
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
@@ -207,7 +206,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)
                 chromeos::ime::mojom::InputEngineManager,
-                chromeos::kiosk_next_home::mojom::KioskNextHomeInterfaceBroker,
                 chromeos::machine_learning::mojom::PageHandler,
                 chromeos::media_perception::mojom::MediaPerception,
                 chromeos::supervision::mojom::OnboardingController,

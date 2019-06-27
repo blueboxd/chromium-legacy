@@ -236,10 +236,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, CannotShipError) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, SkipUI) {
+  SetSkipUiForForBasicCard();
   NavigateTo("/show_promise/digital_goods.html");
   InstallEchoPaymentHandlerForBasicCard();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "create();"));
-  EnableSkipUIForForBasicCard();
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_SHOWN,
        DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,

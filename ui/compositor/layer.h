@@ -71,8 +71,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
                                 public cc::LayerClient {
  public:
   using ShapeRects = std::vector<gfx::Rect>;
-  Layer();
-  explicit Layer(LayerType type);
+  explicit Layer(LayerType type = LAYER_TEXTURED);
   ~Layer() override;
 
   // Note that only solid color and surface content is copied.
@@ -175,11 +174,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   const gfx::Size& size() const { return bounds_.size(); }
 
   // The offset from our parent (stored in bounds.origin()) is an integer but we
-  // may need to be at a fractional pixel offset to align properly on screen.
+  // may need to be at a fractional pixel offset to align properly on screen. If
+  // this is not set, the layer will auto compute its sub pixel offset
+  // information with respect to its parent layer.
   void SetSubpixelPositionOffset(const gfx::Vector2dF& offset);
-  const gfx::Vector2dF& subpixel_position_offset() const {
-    return subpixel_position_offset_;
-  }
+  const gfx::Vector2dF GetSubpixelOffset() const;
 
   // Return the target bounds if animator is running, or the current bounds
   // otherwise.
@@ -515,6 +514,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
  private:
   friend class LayerOwner;
   class LayerMirror;
+  class SubpixelPositionOffsetCache;
 
   void CollectAnimators(std::vector<scoped_refptr<LayerAnimator> >* animators);
 
@@ -596,7 +596,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   bool sync_bounds_with_source_ = false;
 
   gfx::Rect bounds_;
-  gfx::Vector2dF subpixel_position_offset_;
+
+  std::unique_ptr<SubpixelPositionOffsetCache> subpixel_position_offset_;
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;

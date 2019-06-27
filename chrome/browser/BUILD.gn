@@ -38,10 +38,6 @@ if (is_android) {
   import("//tools/grit/grit_rule.gni")
 }
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 additional_modules_list_file =
     "$root_gen_dir/chrome/browser/internal/additional_modules_list.txt"
 
@@ -1034,6 +1030,9 @@ jumbo_split_static_library("browser") {
     "performance_manager/graph/graph.cc",
     "performance_manager/graph/graph_impl.cc",
     "performance_manager/graph/graph_impl.h",
+    "performance_manager/graph/graph_impl_operations.cc",
+    "performance_manager/graph/graph_impl_operations.h",
+    "performance_manager/graph/graph_operations.cc",
     "performance_manager/graph/node.cc",
     "performance_manager/graph/node_attached_data.cc",
     "performance_manager/graph/node_attached_data.h",
@@ -1089,6 +1088,7 @@ jumbo_split_static_library("browser") {
     "performance_manager/persistence/site_data/tab_visibility.h",
     "performance_manager/public/graph/frame_node.h",
     "performance_manager/public/graph/graph.h",
+    "performance_manager/public/graph/graph_operations.h",
     "performance_manager/public/graph/node.h",
     "performance_manager/public/graph/node_attached_data.h",
     "performance_manager/public/graph/page_node.h",
@@ -3536,7 +3536,6 @@ jumbo_split_static_library("browser") {
     deps += [
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
-      "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chrome/services/cups_proxy",
       "//chromeos/services/assistant/public:feature_flags",
       "//chromeos/services/cellular_setup",
@@ -4529,10 +4528,6 @@ jumbo_split_static_library("browser") {
       "offline_pages/offline_page_origin_utils.h",
       "offline_pages/offline_page_request_handler.cc",
       "offline_pages/offline_page_request_handler.h",
-      "offline_pages/offline_page_request_interceptor.cc",
-      "offline_pages/offline_page_request_interceptor.h",
-      "offline_pages/offline_page_request_job.cc",
-      "offline_pages/offline_page_request_job.h",
       "offline_pages/offline_page_tab_helper.cc",
       "offline_pages/offline_page_tab_helper.h",
       "offline_pages/offline_page_url_loader.cc",
@@ -4605,6 +4600,8 @@ jumbo_split_static_library("browser") {
         "offline_pages/android/prefetch_background_task_scheduler_android.cc",
         "offline_pages/android/prefetch_configuration_impl_android.cc",
         "offline_pages/android/prefetched_pages_notifier_android.cc",
+        "offline_pages/android/request_coordinator_bridge.cc",
+        "offline_pages/android/request_coordinator_bridge.h",
         "offline_pages/android/request_coordinator_factory.cc",
       ]
     }
@@ -5128,10 +5125,6 @@ grit("resources") {
     defines += [ "enable_hangout_services_extension" ]
   }
 
-  if (is_chromeos && enable_kiosk_next) {
-    defines += [ "_kiosk_next" ]
-  }
-
   output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/browser_resources.h",
@@ -5380,10 +5373,7 @@ static_library("test_support") {
   ]
 
   if (!is_android && !is_fuchsia) {
-    sources += [
-      "policy/test/local_policy_test_server.cc",
-      "policy/test/local_policy_test_server.h",
-    ]
+    deps += [ "//components/policy/test_support" ]
   }
 
   if (is_android) {

@@ -367,6 +367,7 @@ ParseInfo RulesetSource::IndexAndPersistRules(std::vector<dnr_api::Rule> rules,
                                               int* ruleset_checksum) const {
   DCHECK_LE(rules.size(), rule_count_limit_);
   DCHECK(ruleset_checksum);
+  DCHECK(IsAPIAvailable());
 
   FlatRulesetIndexer indexer;
 

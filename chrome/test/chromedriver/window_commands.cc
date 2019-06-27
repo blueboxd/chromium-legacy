@@ -1846,24 +1846,9 @@ Status ExecuteScreenshot(Session* session,
     return status;
 
   std::string screenshot;
-  ChromeDesktopImpl* desktop = NULL;
-  status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsOk() && !session->force_devtools_screenshot) {
-    AutomationExtension* extension = NULL;
-    status = desktop->GetAutomationExtension(&extension,
-                                             session->w3c_compliant);
-    if (status.IsError())
-      return status;
-    status = extension->CaptureScreenshot(&screenshot);
-  } else {
-    std::unique_ptr<base::DictionaryValue> screenshot_params(
-        const base::DictionaryValue&);
   status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
-  }
   if (status.IsError()) {
     LOG(WARNING) << "screenshot failed, retrying";
-    std::unique_ptr<base::DictionaryValue> screenshot_params(
-        new base::DictionaryValue);
     status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   }
   if (status.IsError())

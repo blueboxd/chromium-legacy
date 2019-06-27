@@ -359,7 +359,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_animating_for_snap_(false),
       paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
       scrollbar_controller_(std::make_unique<ScrollbarController>(this)),
-      scroll_gesture_did_end_(false) {
+      scroll_gesture_did_end_(false),
+      weak_factory_(this) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -3231,7 +3232,7 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
   tile_manager_.decoded_image_tracker().QueueImageDecode(
       image, GetRasterColorSpace(),
       base::BindOnce(&LayerTreeHostImpl::ImageDecodeFinished,
-                     base::Unretained(this), request_id));
+                     weak_factory_.GetWeakPtr(), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);
 }
 
@@ -5980,6 +5981,10 @@ void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
   // before a new tree is activated.
   bool needs_first_draw_on_activation = true;
   client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
+}
+
+base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace cc

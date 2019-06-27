@@ -6,12 +6,14 @@
 
 #include <memory>
 
+#include "base/token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabrestore.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_live_tab.h"
@@ -87,6 +89,14 @@ bool BrowserLiveTabContext::IsTabPinned(int index) const {
   return browser_->tab_strip_model()->IsTabPinned(index);
 }
 
+base::Optional<base::Token> BrowserLiveTabContext::GetTabGroupForTab(
+    int index) const {
+  const base::Optional<TabGroupId> group_id =
+      browser_->tab_strip_model()->GetTabGroupForTab(index);
+  return group_id.has_value() ? base::make_optional(group_id.value().token())
+                              : base::nullopt;
+}
+
 const gfx::Rect BrowserLiveTabContext::GetRestoredBounds() const {
   return browser_->window()->GetRestoredBounds();
 }
@@ -104,6 +114,7 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
     int tab_index,
     int selected_navigation,
     const std::string& extension_app_id,
+    base::Optional<base::Token> group,
     bool select,
     bool pin,
     bool from_last_session,
@@ -118,7 +129,7 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
 
   WebContents* web_contents = chrome::AddRestoredTab(
       browser_, navigations, tab_index, selected_navigation, extension_app_id,
-      base::nullopt, select, pin, from_last_session, base::TimeTicks(),
+      group, select, pin, from_last_session, base::TimeTicks(),
       storage_namespace, user_agent_override, false /* from_session_restore */);
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -132,7 +143,7 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
   }
   std::vector<TabLoader::RestoredTab> restored_tabs;
   restored_tabs.emplace_back(web_contents, select, !extension_app_id.empty(),
-                             pin, base::nullopt);
+                             pin, group);
   TabLoader::RestoreTabs(restored_tabs, base::TimeTicks::Now());
 #else   // BUILDFLAG(ENABLE_SESSION_SERVICE)
   // Load the tab manually if there is no TabLoader.
@@ -144,6 +155,7 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
 
 sessions::LiveTab* BrowserLiveTabContext::ReplaceRestoredTab(
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
+    base::Optional<base::Token> group,
     int selected_navigation,
     bool from_last_session,
     const std::string& extension_app_id,

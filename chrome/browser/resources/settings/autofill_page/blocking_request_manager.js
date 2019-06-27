@@ -8,9 +8,13 @@
  */
 cr.define('settings', function() {
   class BlockingRequestManager {
-    /** @param {Function} makeRequest Function to initiate flow for request. */
+    /**
+     * @param {Function=} makeRequest Function to initiate flow for request. If
+     *     no function is provided, it defaults to this.resolve, i.e. it
+     *     immediately resolves all requests.
+     */
     constructor(makeRequest) {
-      this.makeRequest_ = makeRequest;
+      this.makeRequest_ = makeRequest || this.resolve;
       /**
        * @private {Function} callback Provided in requests and called when the
        *     request is resolved.

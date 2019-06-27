@@ -4,6 +4,7 @@
 
 #include "ui/display/manager/content_protection_manager.h"
 
+#include "base/containers/flat_map.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,30 @@ constexpr int64_t kDisplayIds[] = {123, 456};
 const DisplayMode kDisplayMode{gfx::Size(1366, 768), false, 60.0f};
 
 }  // namespace
+
+using SecurityChanges = base::flat_map<int64_t, bool>;
+
+class TestObserver : public ContentProtectionManager::Observer {
+ public:
+  explicit TestObserver(ContentProtectionManager* manager) : manager_(manager) {
+    manager_->AddObserver(this);
+  }
+  ~TestObserver() override { manager_->RemoveObserver(this); }
+
+  const SecurityChanges& security_changes() const { return security_changes_; }
+
+  void Reset() { security_changes_.clear(); }
+
+ private:
+  void OnDisplaySecurityChanged(int64_t display_id, bool secure) override {
+    security_changes_.emplace(display_id, secure);
+  }
+
+  ContentProtectionManager* const manager_;
+  SecurityChanges security_changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
 
 class ContentProtectionManagerTest : public testing::Test {
  public:
@@ -74,6 +99,10 @@ class ContentProtectionManagerTest : public testing::Test {
 
   void TriggerDisplayConfiguration() {
     manager_.OnDisplayModeChanged(layout_manager_.GetDisplayStates());
+  }
+
+  bool TriggerDisplaySecurityTimeout() {
+    return manager_.TriggerDisplaySecurityTimeoutForTesting();
   }
 
   base::MessageLoop message_loop_;
@@ -485,6 +514,125 @@ TEST_F(ContentProtectionManagerTest, TasksKilledOnConfigure) {
   // Pending task to enable protection should have been killed.
   EXPECT_EQ(kNoActions, log_.GetActionsAndClear());
   EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_.hdcp_state());
+}
+
+TEST_F(ContentProtectionManagerTest, DisplaySecurityObserver) {
+  TestObserver observer(&manager_);
+
+  // Internal display is secure if not mirroring.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}, {kDisplayIds[1], false}}),
+            observer.security_changes());
+  observer.Reset();
+
+  auto id = manager_.RegisterClient();
+  EXPECT_TRUE(id);
+
+  native_display_delegate_.set_run_async(true);
+
+  manager_.ApplyContentProtection(
+      id, kDisplayIds[1], CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(
+          &ContentProtectionManagerTest::ApplyContentProtectionCallback,
+          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer.security_changes().empty());
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Observer should be notified when client applies protection.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}, {kDisplayIds[1], true}}),
+            observer.security_changes());
+  observer.Reset();
+
+  layout_manager_.set_display_state(MULTIPLE_DISPLAY_STATE_MULTI_MIRROR);
+  TriggerDisplayConfiguration();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Observer should be notified on configuration change.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}, {kDisplayIds[1], true}}),
+            observer.security_changes());
+  observer.Reset();
+
+  manager_.ApplyContentProtection(
+      id, kDisplayIds[1], CONTENT_PROTECTION_METHOD_NONE,
+      base::BindOnce(
+          &ContentProtectionManagerTest::ApplyContentProtectionCallback,
+          base::Unretained(this)));
+
+  // Timer should be stopped when no client requests protection.
+  EXPECT_FALSE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Internal display is not secure if mirrored to an unprotected display.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], false}, {kDisplayIds[1], false}}),
+            observer.security_changes());
+  observer.Reset();
+
+  native_display_delegate_.set_set_hdcp_state_expectation(false);
+
+  manager_.ApplyContentProtection(
+      id, kDisplayIds[1], CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(
+          &ContentProtectionManagerTest::ApplyContentProtectionCallback,
+          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer.security_changes().empty());
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Internal display is not secure if mirrored to an unprotected display.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], false}, {kDisplayIds[1], false}}),
+            observer.security_changes());
+  observer.Reset();
+
+  native_display_delegate_.set_hdcp_state(HDCP_STATE_UNDESIRED);
+  native_display_delegate_.set_set_hdcp_state_expectation(true);
+
+  manager_.ApplyContentProtection(
+      id, kDisplayIds[1], CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(
+          &ContentProtectionManagerTest::ApplyContentProtectionCallback,
+          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer.security_changes().empty());
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Internal display is secure if mirrored to a protected display.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}, {kDisplayIds[1], true}}),
+            observer.security_changes());
+  observer.Reset();
+
+  layout_manager_.set_display_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
+  TriggerDisplayConfiguration();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Observer should be notified on configuration change.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}, {kDisplayIds[1], true}}),
+            observer.security_changes());
+  observer.Reset();
+
+  manager_.UnregisterClient(id);
+
+  // Timer should be stopped when no client requests protection.
+  EXPECT_FALSE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Observer should be notified when client unregisters.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}, {kDisplayIds[1], false}}),
+            observer.security_changes());
 }
 
 }  // namespace test

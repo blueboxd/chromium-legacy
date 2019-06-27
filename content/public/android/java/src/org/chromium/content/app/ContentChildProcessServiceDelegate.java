@@ -118,7 +118,6 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
             }
         }
         boolean isLoaded = false;
-        boolean loadAtFixedAddressFailed = false;
         try {
             LibraryLoader.getInstance().loadNowOverrideApplicationContext(hostContext);
             isLoaded = true;
@@ -127,7 +126,6 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
                 Log.w(TAG,
                         "Failed to load native library with shared RELRO, "
                                 + "retrying without");
-                loadAtFixedAddressFailed = true;
             } else {
                 Log.e(TAG, "Failed to load native library", e);
             }
@@ -144,8 +142,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         if (!isLoaded) {
             return false;
         }
-        LibraryLoader.getInstance().registerRendererProcessHistogram(
-                requestedSharedRelro, loadAtFixedAddressFailed);
+        LibraryLoader.getInstance().registerRendererProcessHistogram();
 
         return initializeLibrary();
     }

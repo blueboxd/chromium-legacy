@@ -17,7 +17,7 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class NGConstraintSpace;
-struct NGStaticPosition;
+struct NGPhysicalStaticPosition;
 
 struct CORE_EXPORT NGAbsolutePhysicalPosition {
   NGPhysicalBoxStrut inset;
@@ -63,7 +63,7 @@ ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
-    const NGStaticPosition&,
+    const NGPhysicalStaticPosition&,
     const base::Optional<MinMaxSize>& child_minmax,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
@@ -74,7 +74,7 @@ CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
-    const NGStaticPosition&,
+    const NGPhysicalStaticPosition&,
     const base::Optional<LayoutUnit>& child_block_size,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,

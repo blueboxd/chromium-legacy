@@ -6,12 +6,15 @@
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_SERVICE_IMPL_TEST_HARNESS_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/fake_mojo_message_dispatch_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -50,12 +53,12 @@ class BackgroundSyncServiceImplTestHarness : public testing::Test {
   ~BackgroundSyncServiceImplTestHarness() override;
 
   void SetUp() override;
-
   void TearDown() override;
 
  protected:
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   blink::mojom::SyncRegistrationOptionsPtr default_sync_registration_;
+  std::vector<std::string> mojo_bad_messages_;
   int64_t sw_registration_id_;
 
  private:
@@ -64,6 +67,7 @@ class BackgroundSyncServiceImplTestHarness : public testing::Test {
   void CreateStoragePartition();
   void CreateBackgroundSyncContext();
   void CreateServiceWorkerRegistration();
+  void CollectMojoError(const std::string& message);
 
   // Helpers for testing *BackgroundSyncServiceImpl methods
   void RegisterOneShotSync(

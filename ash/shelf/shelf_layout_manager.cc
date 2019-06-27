@@ -605,7 +605,7 @@ void ShelfLayoutManager::OnWindowResized() {
 
 void ShelfLayoutManager::SetChildBounds(aura::Window* child,
                                         const gfx::Rect& requested_bounds) {
-  wm::WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
+  wm::WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
   // We may contain other widgets (such as frame maximize bubble) but they don't
   // effect the layout in anyway.
   if (!updating_bounds_ &&

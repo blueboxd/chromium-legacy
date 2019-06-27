@@ -57,12 +57,14 @@ PreviewsProber::PreviewsProber(
     const std::string& name,
     const GURL& url,
     const HttpMethod http_method,
+    const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy)
     : PreviewsProber(url_loader_factory,
                      name,
                      url,
                      http_method,
+                     headers,
                      retry_policy,
                      timeout_policy,
                      base::DefaultTickClock::GetInstance()) {}
@@ -72,12 +74,14 @@ PreviewsProber::PreviewsProber(
     const std::string& name,
     const GURL& url,
     const HttpMethod http_method,
+    const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy,
     const base::TickClock* tick_clock)
     : name_(name),
       url_(url),
       http_method_(http_method),
+      headers_(headers),
       retry_policy_(retry_policy),
       timeout_policy_(timeout_policy),
       successive_retry_count_(0),
@@ -141,6 +145,7 @@ void PreviewsProber::CreateAndStartURLLoader() {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->method = HttpMethodToString(http_method_);
+  request->headers = headers_;
   request->load_flags = net::LOAD_DISABLE_CACHE;
   request->allow_credentials = false;
 

@@ -61,12 +61,26 @@ GraphImpl::GraphImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
+// TODO(chrisha|siggi): Move this to a TearDown, which is invoked by the
+// performance manager before the graph destructor.
 GraphImpl::~GraphImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Notify graph observers that the graph is being destroyed.
   for (auto* observer : graph_observers_)
     observer->OnBeforeGraphDestroyed(this);
+
+  // Clean up graph owned objects. This causes their TakeFromGraph callbacks to
+  // be invoked, and ideally they clean up any observers they may have, etc.
+  while (!graph_owned_.empty())
+    auto object = TakeFromGraph(graph_owned_.begin()->first);
+
+  // At this point, all typed observers should be empty.
+  DCHECK(graph_observers_.empty());
+  DCHECK(frame_node_observers_.empty());
+  DCHECK(page_node_observers_.empty());
+  DCHECK(process_node_observers_.empty());
+  DCHECK(system_node_observers_.empty());
 
   // All observers should have been removed before the graph is deleted.
   // TODO(chrisha): This will disappear, as new observers are allowed to stay
@@ -129,6 +143,26 @@ void GraphImpl::RemoveProcessNodeObserver(ProcessNodeObserver* observer) {
 void GraphImpl::RemoveSystemNodeObserver(SystemNodeObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RemoveObserverImpl(&system_node_observers_, observer);
+}
+
+void GraphImpl::PassToGraph(std::unique_ptr<GraphOwned> graph_owned) {
+  auto* raw = graph_owned.get();
+  DCHECK(!base::Contains(graph_owned_, raw));
+  graph_owned_.insert(std::make_pair(raw, std::move(graph_owned)));
+  raw->OnPassedToGraph(this);
+}
+
+std::unique_ptr<GraphOwned> GraphImpl::TakeFromGraph(GraphOwned* graph_owned) {
+  std::unique_ptr<GraphOwned> object;
+  auto it = graph_owned_.find(graph_owned);
+  if (it != graph_owned_.end()) {
+    DCHECK_EQ(graph_owned, it->first);
+    DCHECK_EQ(graph_owned, it->second.get());
+    object = std::move(it->second);
+    graph_owned_.erase(it);
+    object->OnTakenFromGraph(this);
+  }
+  return object;
 }
 
 void GraphImpl::RegisterObserver(GraphImplObserver* observer) {

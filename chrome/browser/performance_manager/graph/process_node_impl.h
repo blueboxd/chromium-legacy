@@ -69,8 +69,7 @@ class ProcessNodeImpl
   }
   base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
-  const base::flat_set<FrameNodeImpl*>& GetFrameNodes() const;
-  base::flat_set<PageNodeImpl*> GetAssociatedPageNodes() const;
+  const base::flat_set<FrameNodeImpl*>& frame_nodes() const;
 
   // If this process is associated with only one page, returns that page.
   // Otherwise, returns nullptr.
@@ -109,6 +108,20 @@ class ProcessNodeImpl
 
  private:
   friend class FrozenFrameAggregatorAccess;
+
+  // ProcessNode implementation. These are private so that users of the impl use
+  // the private getters rather than the public interface.
+  base::ProcessId GetProcessId() const override;
+  const base::Process& GetProcess() const override;
+  base::Time GetLaunchTime() const override;
+  base::Optional<int32_t> GetExitStatus() const override;
+  void VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
+  base::flat_set<const FrameNode*> GetFrameNodes() const override;
+  base::TimeDelta GetExpectedTaskQueueingDuration() const override;
+  bool GetMainThreadTaskLoadIsLow() const override;
+  double GetCpuUsage() const override;
+  base::TimeDelta GetCumulativeCpuUsage() const override;
+  uint64_t GetPrivateFootprintKb() const override;
 
   void OnAllFramesInProcessFrozen();
 

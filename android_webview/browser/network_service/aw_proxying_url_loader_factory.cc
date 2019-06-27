@@ -287,11 +287,6 @@ void InterceptedRequest::Restart() {
   std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
       GetIoThreadClient();
 
-  if (!io_thread_client) {
-    SendErrorAndCompleteImmediately(net::ERR_ABORTED);
-    return;
-  }
-
   if (ShouldBlockURL(request_.url, io_thread_client.get())) {
     SendErrorAndCompleteImmediately(net::ERR_ACCESS_DENIED);
     return;
@@ -299,7 +294,7 @@ void InterceptedRequest::Restart() {
 
   request_.load_flags =
       UpdateLoadFlags(request_.load_flags, io_thread_client.get());
-  if (ShouldNotInterceptRequest()) {
+  if (!io_thread_client || ShouldNotInterceptRequest()) {
     // equivalent to no interception
     InterceptResponseReceived(nullptr);
   } else {

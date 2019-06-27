@@ -175,23 +175,23 @@ const base::FilePath::CharType OfflinePageUtils::kMHTMLExtension[] =
 
 // static
 void OfflinePageUtils::SelectPagesForURL(
-    content::BrowserContext* browser_context,
+    SimpleFactoryKey* key,
     const GURL& url,
     int tab_id,
     base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback) {
   PageCriteria criteria;
   criteria.url = url;
   criteria.pages_for_tab_id = tab_id;
-  SelectPagesWithCriteria(browser_context, criteria, std::move(callback));
+  SelectPagesWithCriteria(key, criteria, std::move(callback));
 }
 
 // static
 void OfflinePageUtils::SelectPagesWithCriteria(
-    content::BrowserContext* browser_context,
+    SimpleFactoryKey* key,
     const PageCriteria& criteria,
     base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback) {
   OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
+      OfflinePageModelFactory::GetForKey(key);
   if (!offline_page_model) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

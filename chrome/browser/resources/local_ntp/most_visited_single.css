@@ -42,7 +42,6 @@ a,
 a:active,
 a:hover,
 a:visited {
-  color: inherit;
   text-decoration: none;
 }
 
@@ -125,6 +124,7 @@ body.reordering .grid-tile {
 .md-tile {
   border-radius: 4px;
   box-sizing: border-box;
+  color: rgb(var(--tile-title-color));
   cursor: pointer;
   height: var(--md-tile-size);
   margin-bottom: var(--md-tile-margin);
@@ -141,6 +141,7 @@ body.reordering .grid-tile {
   border-radius: 4px;
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
       0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
+  color: rgb(var(--GG800-rgb));
   transition-duration: 200ms;
 }
 
@@ -148,6 +149,7 @@ html[darkmode=true] .reorder {
   background-color: rgb(var(--dark-mode-bg-rgb));
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4),
       0 4px 8px 3px rgba(0, 0, 0, 0.25);
+  color: rgb(var(--GG100-rgb));
 }
 
 .reorder .md-tile-inner {
@@ -239,7 +241,6 @@ body.dark-theme:not(.reordering) .md-tile:active + .md-menu::after {
 }
 
 .md-title {
-  color: rgb(var(--tile-title-color));
   font-size: var(--md-title-font-size);
   font-weight: 500;
   max-height: var(--md-title-max-height);
@@ -248,18 +249,6 @@ body.dark-theme:not(.reordering) .md-tile:active + .md-menu::after {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 88px;
-}
-
-/* During reorder background is white. Therefore use dark grey for
- * title. */
-.reorder {
-  color: rgb(var(--GG800-rgb));
-}
-
-/* During reorder in dark mode background is dark. Therefore use light
- * grey for title. */
-html[darkmode=true] .reorder {
-  color: rgb(var(--GG100-rgb));
 }
 
 .md-title span {

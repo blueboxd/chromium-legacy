@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/scheduler/public/impression_detail.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -25,6 +26,14 @@ class NotificationScheduleService : public KeyedService {
   // Schedules a notification to display.
   virtual void Schedule(
       std::unique_ptr<NotificationParams> notification_params) = 0;
+
+  // Deletes notifications of a given |SchedulerClientType|.
+  virtual void DeleteNotifications(SchedulerClientType type) = 0;
+
+  // Queries impression details for a given |SchedulerClientType|.
+  virtual void GetImpressionDetail(
+      SchedulerClientType type,
+      ImpressionDetail::ImpressionDetailCallback callback) = 0;
 
   // Returns NotificationBackgroundTaskScheduler Handler.
   virtual NotificationBackgroundTaskScheduler::Handler*

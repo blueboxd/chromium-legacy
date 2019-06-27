@@ -417,7 +417,6 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
     return nullptr;
   DCHECK(ContainsIndex(index));
 
-  NotifyGroupChange(index, UngroupTab(index), base::nullopt);
   FixOpeners(index);
 
   // Ask the delegate to save an entry for this tab in the historical tab
@@ -425,6 +424,8 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   WebContents* raw_web_contents = GetWebContentsAtImpl(index);
   if (create_historical_tab)
     delegate_->CreateHistoricalTab(raw_web_contents);
+
+  NotifyGroupChange(index, UngroupTab(index), base::nullopt);
 
   int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);

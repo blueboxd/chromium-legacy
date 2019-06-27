@@ -52,6 +52,10 @@ class ContentPaymentRequestDelegate : public PaymentRequestDelegate {
   // The |web_contents| parameter should not be null. A null |web_contents|
   // parameter will return an "Invalid certificate" error message.
   virtual std::string GetInvalidSslCertificateErrorMessage() = 0;
+
+  // Returns whether the UI should be skipped for a "basic-card" scenario. This
+  // will only be true in tests.
+  virtual bool SkipUiForBasicCard() const = 0;
 };
 
 }  // namespace payments

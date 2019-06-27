@@ -95,7 +95,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 #include "ui/wm/public/tooltip_client.h"
@@ -347,7 +346,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       legacy_window_destroyed_(false),
       virtual_keyboard_requested_(false),
 #endif
-      has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
@@ -582,7 +580,6 @@ RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() const {
 }
 
 void RenderWidgetHostViewAura::HandleParentBoundsChanged() {
-  SnapToPhysicalPixelBoundary();
 #if defined(OS_WIN)
   if (legacy_render_widget_host_HWND_) {
     legacy_render_widget_host_HWND_->SetBounds(
@@ -1650,7 +1647,6 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   DCHECK_EQ(new_device_scale_factor, display.device_scale_factor());
   current_cursor_.SetDisplayInfo(display);
-  SnapToPhysicalPixelBoundary();
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
@@ -2250,17 +2246,6 @@ void RenderWidgetHostViewAura::SetOverscrollControllerForTesting(
   overscroll_controller_ = std::move(controller);
 }
 
-void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
-  // The top left corner of our view in window coordinates might not land on a
-  // device pixel boundary if we have a non-integer device scale. In that case,
-  // to avoid the web contents area looking blurry we translate the web contents
-  // in the +x, +y direction to land on the nearest pixel boundary. This may
-  // cause the bottom and right edges to be clipped slightly, but that's ok.
-  // We want to snap it to the nearest ancestor.
-  wm::SnapWindowToPixelBoundary(window_);
-  has_snapped_to_boundary_ = true;
-}
-
 void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
     std::unique_ptr<TouchSelectionControllerClientAura> client) {
   selection_controller_client_.swap(client);
@@ -2268,7 +2253,6 @@ void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
-  SnapToPhysicalPixelBoundary();
   // Don't recursively call SetBounds if this bounds update is the result of
   // a Window::SetBoundsInternal call.
   if (!in_bounds_changed_)

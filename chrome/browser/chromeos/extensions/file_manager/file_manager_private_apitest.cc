@@ -560,11 +560,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
     ASSERT_TRUE(base::CreateDirectory(shared1));
     ASSERT_TRUE(base::CreateDirectory(shared2));
   }
-  crostini::CrostiniSharePath* crostini_share_path =
-      crostini::CrostiniSharePath::GetForProfile(browser()->profile());
-  crostini_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
+  guest_os::GuestOsSharePath* guest_os_share_path =
+      guest_os::GuestOsSharePath::GetForProfile(browser()->profile());
+  guest_os_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
                                              shared1);
-  crostini_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
+  guest_os_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
                                              shared2);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));

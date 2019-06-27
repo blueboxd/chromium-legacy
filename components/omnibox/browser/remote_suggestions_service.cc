@@ -98,20 +98,20 @@ RemoteSuggestionsService::RemoteSuggestionsService(
 RemoteSuggestionsService::~RemoteSuggestionsService() {}
 
 void RemoteSuggestionsService::CreateSuggestionsRequest(
-    const std::string& current_url,
+    const TemplateURLRef::SearchTermsArgs& search_terms_args,
     const base::Time& visit_time,
-    const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
-  const GURL experimental_suggest_url =
-      ExperimentalEndpointUrl(current_url, template_url_service);
+  const GURL experimental_suggest_url = ExperimentalEndpointUrl(
+      search_terms_args.current_page_url, template_url_service);
   if (experimental_suggest_url.is_valid())
-    CreateExperimentalRequest(current_url, visit_time, experimental_suggest_url,
+    CreateExperimentalRequest(search_terms_args.current_page_url, visit_time,
+                              experimental_suggest_url,
                               std::move(start_callback),
                               std::move(completion_callback));
   else
-    CreateDefaultRequest(current_url, input, template_url_service,
+    CreateDefaultRequest(search_terms_args, template_url_service,
                          std::move(start_callback),
                          std::move(completion_callback));
 }
@@ -123,8 +123,7 @@ void RemoteSuggestionsService::StopCreatingSuggestionsRequest() {
 
 // static
 GURL RemoteSuggestionsService::EndpointUrl(
-    const std::string& current_url,
-    const AutocompleteInput& input,
+    TemplateURLRef::SearchTermsArgs search_terms_args,
     const TemplateURLService* template_url_service) {
   if (template_url_service == nullptr) {
     return GURL();
@@ -140,18 +139,12 @@ GURL RemoteSuggestionsService::EndpointUrl(
       search_engine->suggestions_url_ref();
   const SearchTermsData& search_terms_data =
       template_url_service->search_terms_data();
-  TemplateURLRef::SearchTermsArgs search_term_args;
-  if (!current_url.empty()) {
-    search_term_args.current_page_url = current_url;
-  }
-
-  search_term_args.page_classification = input.current_page_classification();
 
   // Append a specific suggest client in ChromeOS app_list launcher contexts.
   BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
-      search_engine, search_terms_data, input.current_page_classification(),
-      &search_term_args);
-  return GURL(suggestion_url_ref.ReplaceSearchTerms(search_term_args,
+      search_engine, search_terms_data, search_terms_args.page_classification,
+      &search_terms_args);
+  return GURL(suggestion_url_ref.ReplaceSearchTerms(search_terms_args,
                                                     search_terms_data));
 }
 
@@ -194,13 +187,11 @@ GURL RemoteSuggestionsService::ExperimentalEndpointUrl(
 }
 
 void RemoteSuggestionsService::CreateDefaultRequest(
-    const std::string& current_url,
-    const AutocompleteInput& input,
+    const TemplateURLRef::SearchTermsArgs& search_terms_args,
     const TemplateURLService* template_url_service,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
-  const GURL suggest_url =
-      EndpointUrl(current_url, input, template_url_service);
+  const GURL suggest_url = EndpointUrl(search_terms_args, template_url_service);
   DCHECK(suggest_url.is_valid());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

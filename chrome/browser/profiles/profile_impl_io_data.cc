@@ -46,7 +46,6 @@
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
-#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_member.h"
@@ -76,10 +75,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/offline_page_request_interceptor.h"
-#endif
 
 using content::BrowserThread;
 

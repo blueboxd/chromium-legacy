@@ -11,7 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
-#include "ash/wm/wm_snap_to_pixel_layout_manager.h"
+#include "ash/wm/wm_default_layout_manager.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
@@ -26,7 +26,7 @@ class WindowDimmer;
 // System modal windows which are centered on the screen will be kept centered
 // when the container size changes.
 class ASH_EXPORT SystemModalContainerLayoutManager
-    : public wm::WmSnapToPixelLayoutManager,
+    : public wm::WmDefaultLayoutManager,
       public aura::WindowObserver,
       public KeyboardControllerObserver {
  public:
@@ -35,7 +35,7 @@ class ASH_EXPORT SystemModalContainerLayoutManager
 
   bool has_window_dimmer() const { return window_dimmer_ != nullptr; }
 
-  // Overridden from WmSnapToPixelLayoutManager:
+  // Overridden from WmDefaultLayoutManager:
   void OnChildWindowVisibilityChanged(aura::Window* child,
                                       bool visible) override;
   void OnWindowResized() override;

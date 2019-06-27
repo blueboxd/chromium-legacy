@@ -566,8 +566,6 @@ Status ParseChromeOptions(
     parser_map["extensions"] = base::Bind(&ParseExtensions);
     parser_map["extensionLoadTimeout"] =
         base::Bind(&ParseTimeDelta, &capabilities->extension_load_timeout);
-    parser_map["forceDevToolsScreenshot"] = base::Bind(
-        &ParseBoolean, &capabilities->force_devtools_screenshot);
     parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
     parser_map["localState"] =
         base::Bind(&ParseDict, &capabilities->local_state);
@@ -716,7 +714,6 @@ Capabilities::Capabilities()
       android_use_running_app(false),
       detach(false),
       extension_load_timeout(base::TimeDelta::FromSeconds(10)),
-      force_devtools_screenshot(true),
       network_emulation_enabled(false),
       use_automation_extension(true) {}
 

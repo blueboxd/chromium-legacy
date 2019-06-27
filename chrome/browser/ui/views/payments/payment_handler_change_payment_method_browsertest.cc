@@ -58,6 +58,9 @@ class PaymentHandlerChangePaymentMethodTest
 };
 
 IN_PROC_BROWSER_TEST_P(PaymentHandlerChangePaymentMethodTest, Test) {
+  if (GetParam().method_identifier == MethodIdentifier::kBasicCard)
+    SetSkipUiForForBasicCard();
+
   NavigateTo("/change_payment_method.html");
 
   if (GetParam().method_identifier == MethodIdentifier::kBasicCard) {
@@ -71,9 +74,6 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerChangePaymentMethodTest, Test) {
 
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
                                      GetParam().init_test_code));
-
-  if (GetParam().method_identifier == MethodIdentifier::kBasicCard)
-    EnableSkipUIForForBasicCard();
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       GetActiveWebContents(), "outputChangePaymentMethodReturnValue(request);",

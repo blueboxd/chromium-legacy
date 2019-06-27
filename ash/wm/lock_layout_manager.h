@@ -10,7 +10,7 @@
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/wm_snap_to_pixel_layout_manager.h"
+#include "ash/wm/wm_default_layout_manager.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
@@ -36,7 +36,7 @@ class WMEvent;
 // virtual keyboard changes inner workspace of each WebContents.
 // For all windows in LockScreenContainer default wm::WindowState is replaced
 // with LockWindowState.
-class ASH_EXPORT LockLayoutManager : public wm::WmSnapToPixelLayoutManager,
+class ASH_EXPORT LockLayoutManager : public wm::WmDefaultLayoutManager,
                                      public aura::WindowObserver,
                                      public ShellObserver,
                                      public ShelfObserver,
@@ -45,7 +45,7 @@ class ASH_EXPORT LockLayoutManager : public wm::WmSnapToPixelLayoutManager,
   LockLayoutManager(aura::Window* window, Shelf* shelf);
   ~LockLayoutManager() override;
 
-  // Overridden from WmSnapToPixelLayoutManager:
+  // Overridden from WmDefaultLayoutManager:
   void OnWindowResized() override;
   void OnWindowAddedToLayout(aura::Window* child) override;
   void OnWillRemoveWindowFromLayout(aura::Window* child) override;

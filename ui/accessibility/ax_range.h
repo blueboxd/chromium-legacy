@@ -139,8 +139,7 @@ class AXRange {
         forward_range.anchor()->AsLeafTextPosition();
     AXPositionInstance range_end = forward_range.focus()->AsLeafTextPosition();
 
-    while (!current_anchor_start->IsNullPosition() &&
-           *current_anchor_start <= *range_end) {
+    while (!current_anchor_start->IsNullPosition()) {
       // When the current start reaches the same anchor as this AXRange's end,
       // simply append this last anchor (trimmed at range_end) and exit.
       if (current_anchor_start->GetAnchor() == range_end->GetAnchor()) {
@@ -166,58 +165,66 @@ class AXRange {
   // Appends rects in screen coordinates of all anchor nodes that span between
   // anchor_ and focus_. Rects outside of the viewport are skipped.
   std::vector<gfx::Rect> GetScreenRects() const {
-    AXRange forward_range = GetForwardRange();
-    std::vector<gfx::Rect> rectangles;
-    auto current_line_start = forward_range.anchor()->Clone();
-    auto range_end = forward_range.focus()->Clone();
+    std::vector<gfx::Rect> rects;
 
-    while (*current_line_start <= *range_end) {
-      auto current_line_end = current_line_start->CreateNextLineEndPosition(
-          ui::AXBoundaryBehavior::CrossBoundary);
+    for (const AXRange& anchor_range : GetAnchors()) {
+      DCHECK(!anchor_range.IsNull());
+      AXPositionInstance anchor_end =
+          anchor_range.focus()->AsLeafTextPosition();
+      AXPositionInstance current_line_start =
+          anchor_range.anchor()->AsLeafTextPosition();
 
-      if (current_line_end->IsNullPosition() || *current_line_end > *range_end)
-        current_line_end = range_end->Clone();
+      while (current_line_start->GetAnchor() == anchor_end->GetAnchor() &&
+             *current_line_start <= *anchor_end) {
+        AXPositionInstance current_line_end =
+            current_line_start->CreateNextLineEndPosition(
+                ui::AXBoundaryBehavior::CrossBoundary);
 
-      DCHECK_EQ(current_line_end->GetAnchor(), current_line_start->GetAnchor());
+        if (current_line_end->GetAnchor() != anchor_end->GetAnchor() ||
+            *current_line_end > *anchor_end)
+          current_line_end = anchor_end->Clone();
 
-      if (current_line_start->GetAnchor()->data().role ==
-          ax::mojom::Role::kInlineTextBox) {
-        current_line_start = current_line_start->CreateParentPosition();
-        current_line_end = current_line_end->CreateParentPosition();
+        DCHECK_LE(*current_line_start, *current_line_end);
+        DCHECK_LE(*current_line_end, *anchor_end);
+
+        if (current_line_start->GetAnchor()->data().role ==
+            ax::mojom::Role::kInlineTextBox) {
+          current_line_start = current_line_start->CreateParentPosition();
+          current_line_end = current_line_end->CreateParentPosition();
+        }
+
+        AXTreeID current_tree_id = current_line_start->tree_id();
+        AXTreeManager* manager =
+            AXTreeManagerMap::GetInstance().GetManager(current_tree_id);
+        AXNode* current_anchor = current_line_start->GetAnchor();
+        AXPlatformNodeDelegate* current_anchor_delegate =
+            manager->GetDelegate(current_tree_id, current_anchor->id());
+
+        // For text anchors, we retrieve the bounding rectangles of its text
+        // content. For non-text anchors (such as checkboxes, images, etc.), we
+        // want to directly retrieve their bounding rectangles.
+        gfx::Rect current_rect;
+        if (IsTextOrLineBreak(current_anchor->data().role))
+          current_rect = current_anchor_delegate->GetInnerTextRangeBoundsRect(
+              current_line_start->text_offset(),
+              current_line_end->text_offset(), AXCoordinateSystem::kScreen,
+              AXClippingBehavior::kClipped);
+        else
+          current_rect = current_anchor_delegate->GetBoundsRect(
+              AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+
+        // We only add rects that are visible within the current viewport.
+        // If the bounding rectangle is outside the viewport, the `kClipped`
+        // parameter from the bounds APIs will result in returning an empty
+        // rect, which we should omit from the final result.
+        if (!current_rect.IsEmpty())
+          rects.push_back(current_rect);
+
+        current_line_start = current_line_end->CreateNextLineStartPosition(
+            ui::AXBoundaryBehavior::CrossBoundary);
       }
-
-      AXTreeID current_tree_id = current_line_start->tree_id();
-      AXTreeManager* manager =
-          AXTreeManagerMap::GetInstance().GetManager(current_tree_id);
-      AXNode* current_anchor = current_line_start->GetAnchor();
-      AXPlatformNodeDelegate* current_anchor_delegate =
-          manager->GetDelegate(current_tree_id, current_anchor->id());
-
-      gfx::Rect current_rect;
-      // For text anchors, we retrieve the bounding rectangles of its text
-      // content. For non-text anchors (such as checkboxes, images, etc.), we
-      // want to directly retrieve their bounding rectangles.
-      if (IsTextOrLineBreak(current_anchor->data().role)) {
-        current_rect = current_anchor_delegate->GetInnerTextRangeBoundsRect(
-            current_line_start->text_offset(), current_line_end->text_offset(),
-            AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
-      } else {
-        current_rect = current_anchor_delegate->GetBoundsRect(
-            AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
-      }
-
-      // We only add rects that are within the current viewport. If the bounding
-      // rect is outside the viewport, the 'clipped' parameter in the bounds
-      // API's above will result in returning an empty rect and we omit it in
-      // the final result.
-      if (!current_rect.IsEmpty())
-        rectangles.emplace_back(current_rect);
-
-      current_line_start = current_line_end->CreateNextLineStartPosition(
-          ui::AXBoundaryBehavior::CrossBoundary);
     }
-
-    return rectangles;
+    return rects;
   }
 
  private:

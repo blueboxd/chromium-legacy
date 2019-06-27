@@ -36,6 +36,12 @@ class WilcoDtcSupportdNotificationController {
   virtual std::string ShowIncompatibleDockNotification() const;
   // Displays notification when the attached dock presents hardware failures.
   virtual std::string ShowDockErrorNotification() const;
+  // Displays notification when HDMI and USB Type-C are used for displays at the
+  // same time with the attached dock.
+  virtual std::string ShowDockDisplayNotification() const;
+  // Displays notification when the attached dock has unsupported Thunderbolt
+  // capabilities.
+  virtual std::string ShowDockThunderboltNotification() const;
 
  private:
   void DisplayNotification(

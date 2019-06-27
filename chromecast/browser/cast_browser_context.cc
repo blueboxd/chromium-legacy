@@ -204,7 +204,7 @@ void CastBrowserContext::SetCorsOriginAccessListForOrigin(
 }
 
 const content::SharedCorsOriginAccessList*
-CastBrowserContext::GetSharedCorsOriginAccessList() const {
+CastBrowserContext::GetSharedCorsOriginAccessList() {
   return shared_cors_origin_access_list_.get();
 }
 

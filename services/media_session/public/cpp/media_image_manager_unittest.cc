@@ -170,4 +170,16 @@ TEST_F(MediaImageManagerTest, PickImageWithBetterAspectRatio) {
   EXPECT_EQ(image1, manager()->SelectImage(images));
 }
 
+TEST_F(MediaImageManagerTest, MinAndIdealAndImageSizeAreSame) {
+  MediaImageManager manager(10, 10);
+
+  std::vector<MediaImage> images;
+
+  MediaImage image;
+  image.sizes.push_back(gfx::Size(10, 10));
+  images.push_back(image);
+
+  EXPECT_TRUE(manager.SelectImage(images));
+}
+
 }  // namespace media_session

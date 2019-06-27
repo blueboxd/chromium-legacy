@@ -25,7 +25,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
@@ -2376,10 +2375,6 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
       for (ui::Layer* layer_beneath : layers_beneath_)
         layer_beneath->SetSubpixelPositionOffset(
             offset_data.GetSubpixelOffset());
-    } else {
-      ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer());
-      for (ui::Layer* layer_beneath : layers_beneath_)
-        ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer_beneath);
     }
   } else {
     // Reset the offset.

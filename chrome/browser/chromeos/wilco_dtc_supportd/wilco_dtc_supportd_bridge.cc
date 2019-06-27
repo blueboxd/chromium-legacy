@@ -335,6 +335,12 @@ void WilcoDtcSupportdBridge::HandleEvent(WilcoDtcSupportdEvent event) {
     case WilcoDtcSupportdEvent::kDockError:
       notification_controller_->ShowDockErrorNotification();
       return;
+    case WilcoDtcSupportdEvent::kDockDisplay:
+      notification_controller_->ShowDockDisplayNotification();
+      return;
+    case WilcoDtcSupportdEvent::kDockThunderbolt:
+      notification_controller_->ShowDockThunderboltNotification();
+      return;
   }
   LOG(ERROR) << "Unrecognized event " << event << " event";
 }

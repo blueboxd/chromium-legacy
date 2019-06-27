@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -28,7 +28,8 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
     TouchlessActionItemViewHolder(SuggestionsRecyclerView recyclerView,
             ContextMenuManager contextMenuManager, final SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig) {
-        super(R.layout.dialog_list_item, recyclerView, contextMenuManager, uiDelegate, uiConfig);
+        super(R.layout.touchless_action_card, recyclerView, contextMenuManager, uiDelegate,
+                uiConfig);
         mTextView = itemView.findViewById(R.id.dialog_item_text);
         mImageView = itemView.findViewById(R.id.dialog_item_icon);
     }
@@ -37,12 +38,12 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
     public void onBindViewHolder(ActionItem item) {
         super.onBindViewHolder(item);
 
-        LinearLayout.LayoutParams params =
-                new LinearLayout.LayoutParams(itemView.getLayoutParams());
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(itemView.getLayoutParams());
         params.bottomMargin = itemView.getResources().getDimensionPixelSize(
                 R.dimen.touchless_new_tab_recycler_view_over_scroll);
         itemView.setLayoutParams(params);
-        itemView.setBackground(ApiCompatibilityUtils.getDrawable(
+
+        mButton.setBackground(ApiCompatibilityUtils.getDrawable(
                 itemView.getResources(), R.drawable.hairline_border_card_background));
         mTextView.setText(itemView.getResources().getString(R.string.more_articles));
         mImageView.setImageDrawable(
@@ -61,23 +62,6 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
                         return menuItemId == ContextMenuItemId.LEARN_MORE;
                     }
                 });
-    }
-
-    @Override
-    protected void setState(@ActionItem.State int state) {
-        assert state != ActionItem.State.HIDDEN;
-
-        // Similar to the method in ActionItem.ViewHolder, but removing the animted progress
-        // indicator that's not supported for touchless devices.
-        if (state == ActionItem.State.BUTTON) {
-            mButton.setVisibility(View.VISIBLE);
-        } else if (state == ActionItem.State.INITIAL_LOADING
-                || state == ActionItem.State.MORE_BUTTON_LOADING) {
-            mButton.setVisibility(View.INVISIBLE);
-        } else {
-            // Not even HIDDEN is supported as the item should not be able to receive updates.
-            assert false : "ActionViewHolder got notified of an unsupported state: " + state;
-        }
     }
 
     @Override

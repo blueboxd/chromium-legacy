@@ -310,7 +310,6 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (status.IsError())
     return status;
   session->detach = capabilities.detach;
-  session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
   session->capabilities =
       CreateCapabilities(session, capabilities, *desired_caps);
 

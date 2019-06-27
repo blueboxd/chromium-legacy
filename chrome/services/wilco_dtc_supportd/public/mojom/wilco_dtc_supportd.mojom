@@ -40,6 +40,11 @@ enum WilcoDtcSupportdEvent {
   kIncompatibleDock,
   // Attached dock presents hardware failures.
   kDockError,
+  // HDMI and USB Type-C cannot be used for displays at the same time
+  // with the attached dock.
+  kDockDisplay,
+  // Attached dock will operate in USB Type-C compatible mode.
+  kDockThunderbolt,
 };
 
 // Factory interface exposed by the wilco_dtc_supportd daemon, which allows both

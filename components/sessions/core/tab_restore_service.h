@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
@@ -115,6 +117,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
     // The user agent override used for the tab's navigations (if applicable).
     std::string user_agent_override;
+
+    // The group the tab belonged to, if any.
+    base::Optional<base::Token> group;
   };
 
   // Represents a previously open window.

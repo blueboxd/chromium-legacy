@@ -20,6 +20,13 @@ namespace payments {
 void CreatePaymentRequest(mojom::PaymentRequestRequest request,
                           content::RenderFrameHost* render_frame_host);
 
+// Unit tests should clean up this factory override by giving a null callback so
+// as to not interfere with other tests.
+void SetPaymentRequestFactoryForTesting(
+    base::RepeatingCallback<void(mojom::PaymentRequestRequest request,
+                                 content::RenderFrameHost* render_frame_host)>
+        factory_callback);
+
 }  // namespace payments
 
 #endif  // CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_

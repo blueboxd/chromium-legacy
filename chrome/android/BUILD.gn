@@ -2612,6 +2612,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java",
     "java/src/org/chromium/chrome/browser/offlinepages/OfflinePagesDownloadManagerBridge.java",
     "java/src/org/chromium/chrome/browser/offlinepages/PublishPageCallback.java",
+    "java/src/org/chromium/chrome/browser/offlinepages/RequestCoordinatorBridge.java",
     "java/src/org/chromium/chrome/browser/offlinepages/SavePageRequest.java",
     "java/src/org/chromium/chrome/browser/offlinepages/downloads/OfflinePageDownloadBridge.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/OfflineNotificationBackgroundTask.java",

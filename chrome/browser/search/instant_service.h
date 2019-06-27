@@ -178,7 +178,6 @@ class InstantService : public KeyedService,
   friend class TestInstantService;
 
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
-  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DeleteThumbnailDataIfExists);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, GetNTPTileSuggestion);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest,
                            DoesToggleMostVisitedOrCustomLinks);
@@ -230,14 +229,6 @@ class InstantService : public KeyedService,
   void FallbackToDefaultThemeInfo();
 
   void RemoveLocalBackgroundImageCopy();
-
-  // Remove old user thumbnail data if it exists. If |callback| is provided,
-  // calls back true if the thumbnail data was deleted. Thumbnails have been
-  // deprecated as of M69.
-  // TODO(crbug.com/893362): Remove after M75.
-  void DeleteThumbnailDataIfExists(
-      const base::FilePath& profile_path,
-      base::Optional<base::OnceCallback<void(bool)>> callback);
 
   // Returns false if the custom background pref cannot be parsed, otherwise
   // returns true and sets custom_background_url to the value in the pref.

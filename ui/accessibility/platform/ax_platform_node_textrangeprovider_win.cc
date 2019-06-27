@@ -403,20 +403,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   *rectangles = nullptr;
-
   AXNodeRange range(start_->Clone(), end_->Clone());
-  std::vector<AXNodeRange> anchors = range.GetAnchors();
-
-  std::vector<gfx::Rect> rects;
-  for (auto&& current_range : anchors) {
-    std::vector<gfx::Rect> current_anchor_rects =
-        current_range.GetScreenRects();
-    // std::vector does not have a built-in way of appending another
-    // std::vector. Using insert with iterators is the safest and most
-    // performant way to accomplish this.
-    rects.insert(rects.end(), current_anchor_rects.begin(),
-                 current_anchor_rects.end());
-  }
+  std::vector<gfx::Rect> rects = range.GetScreenRects();
 
   // 4 array items per rect: left, top, width, height
   SAFEARRAY* safe_array = SafeArrayCreateVector(
@@ -799,7 +787,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
 
 base::string16 AXPlatformNodeTextRangeProviderWin::GetString() {
   AXNodeRange range(start_->Clone(), end_->Clone());
-
   return range.GetText();
 }
 

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -103,30 +104,6 @@ constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
 constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
-
-// TODO(estark): Figure out a way for the embedder to provide the
-// security style for a resource. Ideally, the logic for assigning
-// per-resource security styles should live in the same place as the
-// logic for assigning per-page security styles (which lives in the
-// embedder). It would also be nice for the embedder to have the chance
-// to control the per-resource security style beyond the simple logic
-// here. (For example, the embedder might want to mark certain resources
-// differently if they use SHA1 signatures.) https://crbug.com/648326
-blink::WebSecurityStyle GetSecurityStyleForResource(
-    const GURL& url,
-    net::CertStatus cert_status) {
-  if (!url.SchemeIsCryptographic())
-    return blink::kWebSecurityStyleNeutral;
-
-  // Minor errors don't lower the security style to
-  // WebSecurityStyleAuthenticationBroken.
-  if (net::IsCertStatusError(cert_status) &&
-      !net::IsCertStatusMinorError(cert_status)) {
-    return blink::kWebSecurityStyleInsecure;
-  }
-
-  return blink::kWebSecurityStyleSecure;
-}
 
 // Converts timing data from |load_timing| to the format used by WebKit.
 void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
@@ -270,8 +247,13 @@ void SetSecurityStyleAndDetails(const GURL& url,
     }
   }
 
-  response->SetSecurityStyle(
-      GetSecurityStyleForResource(url, info.cert_status));
+  // Minor errors don't lower the security style to WebSecurityStyleInsecure.
+  if (net::IsCertStatusError(info.cert_status) &&
+      !net::IsCertStatusMinorError(info.cert_status)) {
+    response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
+  } else {
+    response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
+  }
 
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
       ssl_info.signed_certificate_timestamps.size());

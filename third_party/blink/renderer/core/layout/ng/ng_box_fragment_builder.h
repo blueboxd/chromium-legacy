@@ -100,7 +100,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGBoxFragmentBuilder& PropagateBreak(const NGPhysicalContainerFragment&);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
-                                   const NGStaticPosition&,
+                                   const NGLogicalStaticPosition&,
                                    const LayoutInline* inline_container);
 
   // Set how much of the block size we've used so far for this box.

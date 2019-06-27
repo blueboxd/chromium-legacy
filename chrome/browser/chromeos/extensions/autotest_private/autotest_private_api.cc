@@ -18,7 +18,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
@@ -46,7 +45,6 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -326,26 +324,6 @@ ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
 
   chromeos::SessionManagerClient::Get()->RequestLockScreen();
   return RespondNow(NoArguments());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateGetAllEnterprisePoliciesFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateGetAllEnterprisePoliciesFunction::
-    ~AutotestPrivateGetAllEnterprisePoliciesFunction() = default;
-
-ExtensionFunction::ResponseAction
-AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
-  DVLOG(1) << "AutotestPrivateGetAllEnterprisePoliciesFunction";
-
-  base::Value all_policies_array = policy::GetAllPolicyValuesAsDictionary(
-      browser_context(), true /* with_user_policies */,
-      false /* convert_values */, true /* with_device_data */,
-      false /* pretty_print */);
-
-  return RespondNow(OneArgument(
-      base::Value::ToUniquePtrValue(std::move(all_policies_array))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

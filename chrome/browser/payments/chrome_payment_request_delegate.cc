@@ -197,4 +197,8 @@ ChromePaymentRequestDelegate::GetInvalidSslCertificateErrorMessage() {
       web_contents_);
 }
 
+bool ChromePaymentRequestDelegate::SkipUiForBasicCard() const {
+  return false;  // Only tests do this.
+}
+
 }  // namespace payments

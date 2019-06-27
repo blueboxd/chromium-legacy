@@ -21,6 +21,9 @@ MEDIA_EXPORT bool IsSupportedVideoType(const VideoType& type);
 MEDIA_EXPORT bool IsDefaultSupportedAudioType(const AudioType& type);
 MEDIA_EXPORT bool IsDefaultSupportedVideoType(const VideoType& type);
 
+// Test helper for navigating the complexities of VP9.2 and VP9.3 support.
+MEDIA_EXPORT bool IsVp9ProfileSupportedForTesting(VideoCodecProfile profile);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_SUPPORTED_TYPES_H_

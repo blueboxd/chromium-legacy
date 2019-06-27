@@ -202,8 +202,16 @@ Polymer({
     this.passwordManager_ = PasswordManagerImpl.getInstance();
 
     // <if expr="chromeos">
-    this.tokenRequestManager_ = new settings.BlockingRequestManager(
-        () => this.showPasswordPromptDialog_ = true);
+    // If the user's account supports the password check, an auth token will be
+    // required in order for them to view or export passwords. Otherwise there
+    // is no additional security so |tokenRequestManager_| will immediately
+    // resolve requests.
+    if (loadTimeData.getBoolean('userCannotManuallyEnterPassword')) {
+      this.tokenRequestManager_ = new settings.BlockingRequestManager();
+    } else {
+      this.tokenRequestManager_ = new settings.BlockingRequestManager(
+          () => this.showPasswordPromptDialog_ = true);
+    }
     // </if>
 
     // Request initial data.

@@ -27,6 +27,7 @@ class TestPreviewsProber : public PreviewsProber {
       const std::string& name,
       const GURL& url,
       const HttpMethod http_method,
+      const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
       const base::TickClock* tick_clock)
@@ -34,6 +35,7 @@ class TestPreviewsProber : public PreviewsProber {
                        name,
                        url,
                        http_method,
+                       headers,
                        retry_policy,
                        timeout_policy,
                        tick_clock) {}
@@ -61,9 +63,11 @@ class PreviewsProberTest : public testing::Test {
   std::unique_ptr<PreviewsProber> NewProberWithPolicies(
       const PreviewsProber::RetryPolicy& retry_policy,
       const PreviewsProber::TimeoutPolicy& timeout_policy) {
+    net::HttpRequestHeaders headers;
+    headers.SetHeader("X-Testing", "Hello world");
     return std::make_unique<TestPreviewsProber>(
         test_shared_loader_factory_, kName, kTestUrl,
-        PreviewsProber::HttpMethod::kGet, retry_policy, timeout_policy,
+        PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
         scoped_task_environment_.GetMockTickClock());
   }
 
@@ -101,8 +105,12 @@ class PreviewsProberTest : public testing::Test {
   void VerifyRequest(bool expect_random_guid = false) {
     ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
 
+    std::string testing_header;
     network::TestURLLoaderFactory::PendingRequest* request =
         test_url_loader_factory_.GetPendingRequest(0);
+    request->request.headers.GetHeader("X-Testing", &testing_header);
+
+    EXPECT_EQ(testing_header, "Hello world");
     EXPECT_EQ(request->request.method, "GET");
     EXPECT_EQ(request->request.load_flags, net::LOAD_DISABLE_CACHE);
     EXPECT_FALSE(request->request.allow_credentials);

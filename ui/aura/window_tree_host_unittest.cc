@@ -40,8 +40,6 @@ TEST_F(WindowTreeHostTest, DPIWindowSize) {
 
   EXPECT_EQ(starting_bounds, host()->GetBoundsInPixels());
   EXPECT_EQ(gfx::Rect(0, 1, 534, 401), root_window()->bounds());
-  EXPECT_EQ(gfx::Vector2dF(0, 0),
-            host()->compositor()->root_layer()->subpixel_position_offset());
 }
 
 #if defined(OS_CHROMEOS)

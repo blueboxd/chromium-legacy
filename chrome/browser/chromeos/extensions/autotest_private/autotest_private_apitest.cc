@@ -15,19 +15,7 @@
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
-#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/test_navigation_observer.h"
-#include "content/public/test/test_utils.h"
-
-using testing::_;
-using testing::Return;
 
 namespace extensions {
 
@@ -102,44 +90,6 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
       << message_;
 
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
-}
-
-class AutotestPrivateWithPolicyApiTest : public extensions::ExtensionApiTest {
- public:
-  AutotestPrivateWithPolicyApiTest() {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    EXPECT_CALL(provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
-    // Set a fake policy
-    policy::PolicyMap policy;
-    policy.Set(policy::key::kAllowDinosaurEasterEgg,
-               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-               nullptr);
-    provider_.UpdateChromePolicy(policy);
-    base::RunLoop().RunUntilIdle();
-  }
-
- protected:
-  policy::MockConfigurationPolicyProvider provider_;
-};
-
-// GetAllEnterprisePolicies Sanity check.
-IN_PROC_BROWSER_TEST_F(AutotestPrivateWithPolicyApiTest, PolicyAPITest) {
-  // Turn on testing mode so we don't kill the browser.
-  AutotestPrivateAPI::GetFactoryInstance()
-      ->Get(browser()->profile())
-      ->set_test_mode(true);
-  ASSERT_TRUE(RunComponentExtensionTestWithArg("autotest_private",
-                                               "enterprisePolicies"))
-      << message_;
 }
 
 }  // namespace extensions

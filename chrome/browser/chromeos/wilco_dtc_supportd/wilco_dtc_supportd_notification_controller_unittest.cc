@@ -33,7 +33,7 @@ struct WilcoDtcSupportdNotificationControllerTestParams {
     {&WilcoDtcSupportdNotificationController::ShowNonWilcoChargerNotification,
      IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE,
      IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE,
-     message_center::SYSTEM_PRIORITY},
+     message_center::DEFAULT_PRIORITY},
     {&WilcoDtcSupportdNotificationController::ShowIncompatibleDockNotification,
      IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE,
      IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_MESSAGE,
@@ -41,6 +41,14 @@ struct WilcoDtcSupportdNotificationControllerTestParams {
     {&WilcoDtcSupportdNotificationController::ShowDockErrorNotification,
      IDS_WILCO_NOTIFICATION_DOCK_ERROR_TITLE,
      IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE,
+     message_center::DEFAULT_PRIORITY},
+    {&WilcoDtcSupportdNotificationController::ShowDockDisplayNotification,
+     IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE,
+     IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE,
+     message_center::DEFAULT_PRIORITY},
+    {&WilcoDtcSupportdNotificationController::ShowDockThunderboltNotification,
+     IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE,
+     IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_MESSAGE,
      message_center::DEFAULT_PRIORITY}};
 
 class WilcoDtcSupportdNotificationControllerTest

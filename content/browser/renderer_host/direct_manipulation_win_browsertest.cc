@@ -49,33 +49,23 @@ class DirectManipulationBrowserTest : public ContentBrowserTest,
     return rwhva->legacy_render_widget_host_HWND_;
   }
 
-  HWND GetSubWindowHWND() {
-    LegacyRenderWidgetHostHWND* lrwhh = GetLegacyRenderWidgetHostHWND();
-
-    return lrwhh->hwnd();
-  }
-
   ui::WindowEventTarget* GetWindowEventTarget() {
     LegacyRenderWidgetHostHWND* lrwhh = GetLegacyRenderWidgetHostHWND();
 
     return lrwhh->GetWindowEventTarget(lrwhh->GetParent());
   }
 
-  void SimulatePointerHitTest() {
+  void SetDirectManipulationInteraction(
+      DIRECTMANIPULATION_INTERACTION_TYPE type) {
     LegacyRenderWidgetHostHWND* lrwhh = GetLegacyRenderWidgetHostHWND();
 
-    lrwhh->direct_manipulation_helper_->need_poll_events_ = true;
-    lrwhh->CreateAnimationObserver();
+    lrwhh->direct_manipulation_helper_->event_handler_->OnInteraction(nullptr,
+                                                                      type);
   }
 
-  void UpdateParent(HWND hwnd) {
-    LegacyRenderWidgetHostHWND* lrwhh = GetLegacyRenderWidgetHostHWND();
-
-    lrwhh->UpdateParent(hwnd);
-  }
-
-  bool HasCompositorAnimationObserver(LegacyRenderWidgetHostHWND* lrwhh) {
-    return lrwhh->compositor_animation_observer_ != nullptr;
+  bool HasAnimationObserver(LegacyRenderWidgetHostHWND* lrwhh) {
+    return lrwhh->direct_manipulation_helper_->compositor_
+        ->HasAnimationObserver(lrwhh->direct_manipulation_helper_.get());
   }
 
  private:
@@ -88,8 +78,10 @@ INSTANTIATE_TEST_SUITE_P(WithScrollEventPhase,
                          DirectManipulationBrowserTest,
                          testing::Bool());
 
-// Ensure the AnimationObserver destroy when hwnd reparent to other hwnd.
-IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, HWNDReparent) {
+// Ensure the AnimationObserver is only created after direct manipulation
+// interaction begin and destroyed after direct manipulation interaction end.
+IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest,
+                       ObserverDuringInteraction) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
@@ -98,25 +90,20 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, HWNDReparent) {
   LegacyRenderWidgetHostHWND* lrwhh = GetLegacyRenderWidgetHostHWND();
   ASSERT_TRUE(lrwhh);
 
-  // The observer should not create before it needed.
-  ASSERT_TRUE(!HasCompositorAnimationObserver(lrwhh));
+  // The observer should not be created before it is needed.
+  EXPECT_FALSE(HasAnimationObserver(lrwhh));
 
-  // Add AnimationObserver to tab to simulate direct manipulation start.
-  SimulatePointerHitTest();
-  ASSERT_TRUE(HasCompositorAnimationObserver(lrwhh));
+  // Begin direct manipulation interaction.
+  SetDirectManipulationInteraction(DIRECTMANIPULATION_INTERACTION_BEGIN);
+  // AnimationObserver should be added after direct manipulation interaction
+  // begin.
+  EXPECT_TRUE(HasAnimationObserver(lrwhh));
 
-  // Create another browser.
-  Shell* shell2 = CreateBrowser();
-  NavigateToURL(shell2, GURL(url::kAboutBlankURL));
-
-  // Move to the tab to browser2.
-  UpdateParent(
-      shell2->window()->GetRootWindow()->GetHost()->GetAcceleratedWidget());
+  // End direct manipulation interaction.
+  SetDirectManipulationInteraction(DIRECTMANIPULATION_INTERACTION_END);
 
   // The animation observer should be removed.
-  EXPECT_FALSE(HasCompositorAnimationObserver(lrwhh));
-
-  shell2->Close();
+  EXPECT_FALSE(HasAnimationObserver(lrwhh));
 }
 
 // EventLogger is to observe the events sent from WindowEventTarget (the root

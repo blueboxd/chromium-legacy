@@ -26,7 +26,6 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -41,6 +40,7 @@
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/policy/test_support/local_policy_test_server.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -302,7 +302,8 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
 
   void StartTestServer() {
     test_server_.reset(new LocalPolicyTestServer(
-        "machine_level_user_cloud_policy_service_browsertest"));
+        "chrome/test/data/policy/"
+        "policy_machine_level_user_cloud_policy_service_browsertest.json"));
     ASSERT_TRUE(test_server_->Start());
   }
 

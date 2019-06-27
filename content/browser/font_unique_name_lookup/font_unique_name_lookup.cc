@@ -68,11 +68,25 @@ void LogUMAFontScanningDuration(base::TimeDelta duration) {
                              duration);
 }
 
-bool SfntNameIsEnglish(const FT_SfntName& sfnt_name) {
+bool IsRelevantNameRecord(const FT_SfntName& sfnt_name) {
+  if (sfnt_name.name_id != TT_NAME_ID_FULL_NAME &&
+      sfnt_name.name_id != TT_NAME_ID_PS_NAME)
+    return false;
+
+  // From the CSS Fonts spec chapter 4.3. Font reference: the src descriptor
+  // "For OpenType fonts with multiple localizations of the full font name,
+  // the US English version is used (language ID = 0x409 for Windows and
+  // language ID = 0 for Macintosh) or the first localization when a US
+  // English full font name is not available (the OpenType specification
+  // recommends that all fonts minimally include US English names)."
+  // Since we can assume Android system fonts contain an English name,
+  // continue here.
   if (sfnt_name.platform_id == TT_PLATFORM_MICROSOFT)
     return sfnt_name.language_id == TT_MS_LANGID_ENGLISH_UNITED_STATES;
+
   if (sfnt_name.platform_id == TT_PLATFORM_MACINTOSH)
     return sfnt_name.language_id == TT_MAC_LANGID_ENGLISH;
+
   return false;
 }
 
@@ -155,15 +169,7 @@ void IndexFile(FT_Library ft_library,
       return;
     }
 
-    // From the CSS Fonts spec chapter 4.3. Font reference: the src descriptor
-    // "For OpenType fonts with multiple localizations of the full font name,
-    // the US English version is used (language ID = 0x409 for Windows and
-    // language ID = 0 for Macintosh) or the first localization when a US
-    // English full font name is not available (the OpenType specification
-    // recommends that all fonts minimally include US English names)."
-    // Since we can assume Android system fonts contain an English name,
-    // continue here.
-    if (!SfntNameIsEnglish(sfnt_name))
+    if (!IsRelevantNameRecord(sfnt_name))
       continue;
 
     std::string sfnt_name_string = "";

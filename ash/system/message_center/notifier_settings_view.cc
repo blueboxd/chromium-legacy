@@ -30,6 +30,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -92,8 +93,6 @@ constexpr gfx::Insets kQuietModeViewPadding(0, 18, 0, 0);
 constexpr gfx::Insets kQuietModeLabelPadding(16, 0, 15, 0);
 constexpr gfx::Insets kQuietModeTogglePadding(0, 14);
 constexpr SkColor kTopBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
-constexpr SkColor kDisabledNotifierFilterColor =
-    SkColorSetA(SK_ColorWHITE, 0xB8);
 const int kLabelFontSizeDelta = 1;
 
 // NotifierButtonWrapperView ---------------------------------------------------
@@ -123,19 +122,10 @@ class NotifierButtonWrapperView : public views::View {
   const char* GetClassName() const override;
 
  private:
-  // Initialize |disabled_filter_|. Should be called once.
-  void CreateDisabledFilter();
-
   std::unique_ptr<views::Painter> focus_painter_;
 
   // NotifierButton to wrap.
   views::View* contents_;
-
-  // A view to add semi-transparent filter on top of |contents_|.
-  // It is only visible when NotifierButton is disabled (e.g. the setting is
-  // enforced by administrator.) The color of the NotifierButton would be dim
-  // and users notice they can't change the setting.
-  views::View* disabled_filter_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierButtonWrapperView);
 };
@@ -153,18 +143,6 @@ void NotifierButtonWrapperView::Layout() {
   int contents_height = contents_->GetHeightForWidth(contents_width);
   int y = std::max((height() - contents_height) / 2, 0);
   contents_->SetBounds(0, y, contents_width, contents_height);
-
-  // Since normally we don't show |disabled_filter_|, initialize it lazily.
-  if (!contents_->GetEnabled()) {
-    if (!disabled_filter_)
-      CreateDisabledFilter();
-    disabled_filter_->SetVisible(true);
-    gfx::Rect filter_bounds = GetContentsBounds();
-    filter_bounds.set_width(filter_bounds.width() - kEntryIconSize);
-    disabled_filter_->SetBoundsRect(filter_bounds);
-  } else if (disabled_filter_) {
-    disabled_filter_->SetVisible(false);
-  }
 
   SetFocusBehavior(contents_->GetEnabled() ? FocusBehavior::ALWAYS
                                            : FocusBehavior::NEVER);
@@ -215,15 +193,6 @@ void NotifierButtonWrapperView::OnBlur() {
 
 const char* NotifierButtonWrapperView::GetClassName() const {
   return "NotifierButtonWrapperView";
-}
-
-void NotifierButtonWrapperView::CreateDisabledFilter() {
-  DCHECK(!disabled_filter_);
-  disabled_filter_ = new views::View;
-  disabled_filter_->SetBackground(
-      views::CreateSolidBackground(kDisabledNotifierFilterColor));
-  disabled_filter_->set_can_process_events_within_subtree(false);
-  AddChildView(disabled_filter_);
 }
 
 // ScrollContentsView ----------------------------------------------------------
@@ -331,6 +300,12 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   if (notifier.enforced) {
     Button::SetEnabled(false);
     checkbox->SetEnabled(false);
+
+    icon_view->SetPaintToLayer();
+    icon_view->layer()->SetFillsBoundsOpaquely(false);
+    icon_view->layer()->SetOpacity(gfx::kDisabledControlAlpha / float{0xFF});
+    name_view->SetEnabledColor(
+        SkColorSetA(name_view->GetEnabledColor(), gfx::kDisabledControlAlpha));
   }
 
   // Add the views before the layout is assigned. Because GridChanged() may be

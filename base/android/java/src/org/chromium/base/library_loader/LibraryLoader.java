@@ -614,8 +614,7 @@ public class LibraryLoader {
     private void recordBrowserProcessHistogramAlreadyLocked() {
         assert Thread.holdsLock(mLock);
         if (useCrazyLinker()) {
-            nativeRecordChromiumAndroidLinkerBrowserHistogram(
-                    mIsUsingBrowserSharedRelros, mLoadAtFixedAddressFailed, mLibraryLoadTimeMs);
+            nativeRecordChromiumAndroidLinkerBrowserHistogram(mLibraryLoadTimeMs);
         }
         if (mLibraryPreloader != null) {
             nativeRecordLibraryPreloaderBrowserHistogram(mLibraryPreloaderStatus);
@@ -626,12 +625,10 @@ public class LibraryLoader {
     // recorded as a histogram immediately because histograms and IPC are not ready at the
     // time it are captured. This function stores a pending value, so that a later call to
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
-    public void registerRendererProcessHistogram(boolean requestedSharedRelro,
-                                                 boolean loadAtFixedAddressFailed) {
+    public void registerRendererProcessHistogram() {
         synchronized (mLock) {
             if (useCrazyLinker()) {
-                nativeRegisterChromiumAndroidLinkerRendererHistogram(
-                        requestedSharedRelro, loadAtFixedAddressFailed, mLibraryLoadTimeMs);
+                nativeRegisterChromiumAndroidLinkerRendererHistogram(mLibraryLoadTimeMs);
             }
             if (mLibraryPreloader != null) {
                 nativeRegisterLibraryPreloaderRendererHistogram(mLibraryPreloaderStatus);
@@ -729,27 +726,16 @@ public class LibraryLoader {
     // Return true on success and false on failure.
     private native boolean nativeLibraryLoaded(@LibraryProcessType int processType);
 
-    // Method called to record statistics about the Chromium linker operation for the main
-    // browser process. Indicates whether the linker attempted relro sharing for the browser,
-    // and if it did, whether the library failed to load at a fixed address. Also records
-    // support for loading a library directly from the APK file, and the number of milliseconds
-    // it took to load the libraries.
+    // Records the number of milliseconds it took to load the libraries in the browser.
     private native void nativeRecordChromiumAndroidLinkerBrowserHistogram(
-            boolean isUsingBrowserSharedRelros,
-            boolean loadAtFixedAddressFailed,
             long libraryLoadTime);
 
     // Method called to record the return value of NativeLibraryPreloader.loadLibrary for the main
     // browser process.
     private native void nativeRecordLibraryPreloaderBrowserHistogram(int status);
 
-    // Method called to register (for later recording) statistics about the Chromium linker
-    // operation for a renderer process. Indicates whether the linker attempted relro sharing,
-    // and if it did, whether the library failed to load at a fixed address. Also records the
-    // number of milliseconds it took to load the libraries.
+    // Records the number of milliseconds it took to load the libraries in the renderer.
     private native void nativeRegisterChromiumAndroidLinkerRendererHistogram(
-            boolean requestedSharedRelro,
-            boolean loadAtFixedAddressFailed,
             long libraryLoadTime);
 
     // Method called to register (for later recording) the return value of

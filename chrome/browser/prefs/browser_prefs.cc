@@ -164,7 +164,7 @@
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
@@ -247,6 +247,7 @@
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api.h"
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_resources_remover.h"
@@ -869,6 +870,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   crostini::prefs::RegisterProfilePrefs(registry);
   extensions::EPKPChallengeUserKey::RegisterProfilePrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
+  guest_os::prefs::RegisterProfilePrefs(registry);
   lock_screen_apps::StateController::RegisterProfilePrefs(registry);
   plugin_vm::prefs::RegisterProfilePrefs(registry);
   policy::AppInstallEventLogger::RegisterProfilePrefs(registry);
@@ -1060,7 +1062,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #endif
 
   // Added 4/2019
-  crostini::CrostiniSharePath::MigratePersistedPathsToMultiVM(profile_prefs);
+  guest_os::GuestOsSharePath::MigratePersistedPathsToMultiVM(profile_prefs);
 #endif
 
   // Added 1/2019.

@@ -99,6 +99,25 @@ cr.define('settings_people_page_change_picture', function() {
     let crPicturePane = null;
     let crPictureList = null;
 
+    const LEFT_KEY_CODE = 37;
+    const RIGHT_KEY_CODE = 39;
+
+    /**
+     * @return {Array<HTMLElement>} Traverses the DOM tree to find the lowest
+     *     level active element and returns an array of the node path down the
+     *     tree, skipping shadow roots.
+     */
+    function getActiveElementPath() {
+      let node = document.activeElement;
+      let path = [];
+      while (node) {
+        path.push(node);
+        node = (node.shadowRoot || node).activeElement;
+      }
+      return path;
+    }
+
+
     suiteSetup(function() {
       loadTimeData.overrideValues({
         profilePhoto: 'Fake Profile Photo description',
@@ -127,6 +146,57 @@ cr.define('settings_people_page_change_picture', function() {
 
     teardown(function() {
       changePicture.remove();
+    });
+
+    test('TraverseCameraIconUsingArrows', function() {
+      // Force the camera to be present.
+      cr.webUIListenerCallback('camera-presence-changed', true);
+      Polymer.dom.flush();
+      assertTrue(crPictureList.cameraPresent);
+
+      // Click camera icon.
+      const cameraImage = crPictureList.$.cameraImage;
+      cameraImage.click();
+      Polymer.dom.flush();
+
+      assertTrue(crPictureList.cameraSelected_);
+      const crCamera = crPicturePane.$$('#camera');
+      assertTrue(!!crCamera);
+
+      // Mock camera's video stream beginning to play.
+      crCamera.$.cameraVideo.dispatchEvent(new Event('canplay'));
+      Polymer.dom.flush();
+
+      // "Take photo" button should be active.
+      let activeElementPath = getActiveElementPath();
+      assertTrue(activeElementPath.includes(crPicturePane));
+      assertFalse(activeElementPath.includes(crPictureList));
+
+      // Press 'Right' key on active element.
+      MockInteractions.pressAndReleaseKeyOn(
+          activeElementPath.pop(), RIGHT_KEY_CODE);
+      Polymer.dom.flush();
+
+      // A profile picture open should be active.
+      activeElementPath = getActiveElementPath();
+      assertFalse(crPictureList.cameraSelected_);
+      assertFalse(activeElementPath.includes(crPicturePane));
+      assertTrue(activeElementPath.includes(crPictureList));
+
+      // Press 'Left' key on active element.
+      MockInteractions.pressAndReleaseKeyOn(
+          activeElementPath.pop(), LEFT_KEY_CODE);
+      Polymer.dom.flush();
+
+      // Mock camera's video stream beginning to play.
+      crCamera.$.cameraVideo.dispatchEvent(new Event('canplay'));
+      Polymer.dom.flush();
+
+      // "Take photo" button should be active again.
+      activeElementPath = getActiveElementPath();
+      assertTrue(crPictureList.cameraSelected_);
+      assertTrue(activeElementPath.includes(crPicturePane));
+      assertFalse(activeElementPath.includes(crPictureList));
     });
 
     test('ChangePictureSelectCamera', function() {
@@ -301,7 +371,7 @@ cr.define('settings_people_page_change_picture', function() {
             // Now verify that arrow keys actually select the new image.
             browserProxy.resetResolver('selectDefaultImage');
             MockInteractions.pressAndReleaseKeyOn(
-                changePicture.selectedItem_, 39 /* right */);
+                changePicture.selectedItem_, RIGHT_KEY_CODE);
             return browserProxy.whenCalled('selectDefaultImage');
           })
           .then(function(args) {

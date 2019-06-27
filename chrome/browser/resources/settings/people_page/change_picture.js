@@ -237,6 +237,17 @@ Polymer({
         videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText'));
   },
 
+  /**
+   * Callback the iron-a11y-keys "keys-pressed" event bubbles up from the
+   * cr-camera-pane.
+   * @param {!CustomEvent<!{key: string, keyboardEvent: Object}>} event
+   * @private
+   */
+  onCameraPaneKeysPressed_(event) {
+    this.$.pictureList.focus();
+    this.$.pictureList.onKeysPressed(event);
+  },
+
   /** @private */
   onDiscardImage_: function() {
     // Prevent image from being discarded if old image is pending.

@@ -3368,14 +3368,9 @@ TEST_F(NetworkContextTest, CanGetCookiesTrueIfCookiesAllowed) {
 class ConnectionListener
     : public net::test_server::EmbeddedTestServerConnectionListener {
  public:
-  ConnectionListener()
-      : total_sockets_seen_(0),
-        total_sockets_waited_for_(0),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        num_accepted_connections_needed_(0),
-        num_accepted_connections_loop_(nullptr) {}
+  ConnectionListener() = default;
 
-  ~ConnectionListener() override {}
+  ~ConnectionListener() override = default;
 
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was accepted.
@@ -3397,13 +3392,17 @@ class ConnectionListener
 
   // Wait for exactly |n| items in |sockets_|. |n| must be greater than 0.
   void WaitForAcceptedConnections(size_t num_connections) {
-    DCHECK(!num_accepted_connections_loop_);
+    DCHECK(on_done_accepting_connections_.is_null());
     DCHECK_GT(num_connections, 0u);
     base::RunLoop run_loop;
     {
       base::AutoLock lock(lock_);
       EXPECT_GE(num_connections, sockets_.size() - total_sockets_waited_for_);
-      num_accepted_connections_loop_ = &run_loop;
+      // QuitWhenIdle() instead of regular Quit() because in Preconnect tests we
+      // count "idle_socket_count" but tasks posted synchronously after
+      // AcceptedSocket() need to resolve before the new sockets are considered
+      // idle.
+      on_done_accepting_connections_ = run_loop.QuitWhenIdleClosure();
       num_accepted_connections_needed_ = num_connections;
       CheckAccepted();
     }
@@ -3426,17 +3425,16 @@ class ConnectionListener
     lock_.AssertAcquired();
     // |num_accepted_connections_loop_| null implies
     // |num_accepted_connections_needed_| == 0.
-    DCHECK(num_accepted_connections_loop_ ||
+    DCHECK(!on_done_accepting_connections_.is_null() ||
            num_accepted_connections_needed_ == 0);
-    if (!num_accepted_connections_loop_ ||
+    if (on_done_accepting_connections_.is_null() ||
         num_accepted_connections_needed_ !=
             sockets_.size() - total_sockets_waited_for_) {
       return;
     }
 
     num_accepted_connections_needed_ = 0;
-    num_accepted_connections_loop_->Quit();
-    num_accepted_connections_loop_ = nullptr;
+    std::move(on_done_accepting_connections_).Run();
   }
 
  private:
@@ -3454,12 +3452,10 @@ class ConnectionListener
     return address.port();
   }
 
-  int total_sockets_seen_;
-  int total_sockets_waited_for_;
+  int total_sockets_seen_ = 0;
+  int total_sockets_waited_for_ = 0;
 
   enum SocketStatus { SOCKET_ACCEPTED, SOCKET_READ_FROM };
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // This lock protects all the members below, which each are used on both the
   // IO and UI thread. Members declared after the lock are protected by it.
@@ -3469,9 +3465,9 @@ class ConnectionListener
 
   // If |num_accepted_connections_needed_| is non zero, then the object is
   // waiting for |num_accepted_connections_needed_| sockets to be accepted
-  // before quitting the |num_accepted_connections_loop_|.
-  size_t num_accepted_connections_needed_;
-  base::RunLoop* num_accepted_connections_loop_;
+  // before invoking |on_done_accepting_connections_|.
+  size_t num_accepted_connections_needed_ = 0;
+  base::OnceClosure on_done_accepting_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionListener);
 };

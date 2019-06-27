@@ -63,7 +63,7 @@ void TabManager::ResourceCoordinatorSignalObserver::
   // the process that was sampled.
   const base::TimeDelta& duration =
       process_node->expected_task_queueing_duration();
-  for (auto* frame_node : process_node->GetFrameNodes()) {
+  for (auto* frame_node : process_node->frame_nodes()) {
     if (!frame_node->IsMainFrame())
       continue;
     auto* page_node = frame_node->page_node();

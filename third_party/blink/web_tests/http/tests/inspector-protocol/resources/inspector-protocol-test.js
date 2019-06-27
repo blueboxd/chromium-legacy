@@ -316,25 +316,23 @@ TestRunner.Session = class {
   }
 
   async evaluate(code, ...args) {
-    if (typeof code === 'function') {
-      var argsString = args.map(JSON.stringify.bind(JSON)).join(', ');
-      code = `(${code.toString()})(${argsString})`;
-    }
-    var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true});
-    if (response.error || response.result.exceptionDetails) {
-      this._testRunner.log(`Error while evaluating '${code}': ${JSON.stringify(response.error || response.result.exceptionDetails)}`);
-      this._testRunner.completeTest();
-    } else {
-      return response.result.result.value;
-    }
+    return this._innerEvaluate(false /* awaitPromise */, false /* userGesture */, code, ...args);
   }
 
   async evaluateAsync(code, ...args) {
+    return this._innerEvaluate(true /* awaitPromise */, false /* userGesture */, code, ...args);
+  }
+
+  async evaluateAsyncWithUserGesture(code, ...args) {
+    return this._innerEvaluate(true /* awaitPromise */, true /* userGesture */, code, ...args);
+  }
+
+  async _innerEvaluate(awaitPromise, userGesture, code, ...args) {
     if (typeof code === 'function') {
       var argsString = args.map(JSON.stringify.bind(JSON)).join(', ');
       code = `(${code.toString()})(${argsString})`;
     }
-    var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true, awaitPromise: true});
+    var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true, awaitPromise, userGesture});
     if (response.error) {
       this._testRunner.log(`Error while evaluating async '${code}': ${response.error}`);
       this._testRunner.completeTest();

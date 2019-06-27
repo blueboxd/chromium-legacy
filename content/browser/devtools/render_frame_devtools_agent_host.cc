@@ -327,7 +327,9 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
       GetId(), GetRendererChannel(), session->GetRootSession()));
   session->AddHandler(std::make_unique<protocol::PageHandler>(
-      emulation_handler_ptr, session->client()->MayWriteLocalFiles()));
+      emulation_handler_ptr, &active_file_chooser_interceptor_,
+      session->client()->MayWriteLocalFiles(),
+      session->client()->MayReadLocalFiles()));
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
     session->AddHandler(std::make_unique<protocol::TracingHandler>(

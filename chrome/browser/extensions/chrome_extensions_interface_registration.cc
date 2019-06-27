@@ -22,7 +22,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_features.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
@@ -41,11 +40,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
 
-#if defined(KIOSK_NEXT)
-#include "chrome/browser/chromeos/kiosk_next_home/kiosk_next_home_interface_broker_impl.h"
-#include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
-#endif  // defined(KIOSK_NEXT)
-
 namespace extensions {
 namespace {
 #if defined(OS_CHROMEOS)
@@ -59,28 +53,6 @@ void BindInputEngineManager(
       std::move(request));
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-#if defined(KIOSK_NEXT)
-const char kKioskNextHomeInterfaceBrokerImplKey[] = "cros_kiosk_next_home_impl";
-
-void BindKioskNextHomeInterfaceBrokerRequest(
-    content::BrowserContext* context,
-    chromeos::kiosk_next_home::mojom::KioskNextHomeInterfaceBrokerRequest
-        request,
-    content::RenderFrameHost* source) {
-  auto* impl =
-      static_cast<chromeos::kiosk_next_home::KioskNextHomeInterfaceBrokerImpl*>(
-          context->GetUserData(kKioskNextHomeInterfaceBrokerImplKey));
-  if (!impl) {
-    auto new_impl = std::make_unique<
-        chromeos::kiosk_next_home::KioskNextHomeInterfaceBrokerImpl>(context);
-    impl = new_impl.get();
-    context->SetUserData(kKioskNextHomeInterfaceBrokerImplKey,
-                         std::move(new_impl));
-  }
-  impl->BindRequest(std::move(request));
-}
-#endif  // defined(KIOSK_NEXT)
 
 // Translates the renderer-side source ID to video device id.
 void TranslateVideoDeviceId(
@@ -155,14 +127,6 @@ void RegisterChromeInterfacesForExtension(
     registry->AddInterface(base::BindRepeating(&BindInputEngineManager));
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-#if defined(KIOSK_NEXT)
-  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell) &&
-      extension->id() == extension_misc::kKioskNextHomeAppId) {
-    registry->AddInterface(
-        base::BindRepeating(&BindKioskNextHomeInterfaceBrokerRequest, context));
-  }
-#endif  // defined(KIOSK_NEXT)
 
   if (extension->permissions_data()->HasAPIPermission(
           APIPermission::kMediaPerceptionPrivate)) {

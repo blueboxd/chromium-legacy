@@ -74,6 +74,21 @@ TEST_F(OneShotBackgroundSyncServiceImplTest, RegisterOneShotSync) {
   EXPECT_EQ("", reg->tag);
 }
 
+TEST_F(OneShotBackgroundSyncServiceImplTest, RegisterWithInvalidOptions) {
+  bool called = false;
+  blink::mojom::BackgroundSyncError error;
+  blink::mojom::SyncRegistrationOptionsPtr reg;
+  auto to_register = default_sync_registration_.Clone();
+  to_register->min_interval = 3600;
+
+  FakeMojoMessageDispatchContext fake_dispatch_context;
+  RegisterOneShotSync(
+      std::move(to_register),
+      base::BindOnce(&ErrorAndRegistrationCallback, &called, &error, &reg));
+  ASSERT_TRUE(called);
+  EXPECT_EQ(mojo_bad_messages_.size(), 1u);
+}
+
 TEST_F(OneShotBackgroundSyncServiceImplTest,
        GetOneShotSyncRegistrationsNoSyncRegistered) {
   bool called = false;

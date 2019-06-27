@@ -35,6 +35,29 @@ void InitAwareNotificationScheduler::Schedule(
                                    std::move(params)));
 }
 
+void InitAwareNotificationScheduler::DeleteAllNotifications(
+    SchedulerClientType type) {
+  if (IsReady()) {
+    impl_->DeleteAllNotifications(type);
+    return;
+  }
+  MaybeCacheClosure(
+      base::BindOnce(&InitAwareNotificationScheduler::DeleteAllNotifications,
+                     weak_ptr_factory_.GetWeakPtr(), type));
+}
+
+void InitAwareNotificationScheduler::GetImpressionDetail(
+    SchedulerClientType type,
+    ImpressionDetail::ImpressionDetailCallback callback) {
+  if (IsReady()) {
+    impl_->GetImpressionDetail(type, std::move(callback));
+    return;
+  }
+  MaybeCacheClosure(base::BindOnce(
+      &InitAwareNotificationScheduler::GetImpressionDetail,
+      weak_ptr_factory_.GetWeakPtr(), type, std::move(callback)));
+}
+
 void InitAwareNotificationScheduler::OnStartTask(
     TaskFinishedCallback callback) {
   if (IsReady()) {

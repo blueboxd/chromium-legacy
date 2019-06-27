@@ -76,13 +76,6 @@ MediaNotificationItem::MediaNotificationItem(
         kMediaSessionNotificationArtworkMinSize,
         kMediaSessionNotificationArtworkDesiredSize,
         std::move(artwork_observer));
-
-    media_session::mojom::MediaControllerImageObserverPtr icon_observer;
-    icon_observer_binding_.Bind(mojo::MakeRequest(&icon_observer));
-    media_controller_ptr_->ObserveImages(
-        media_session::mojom::MediaSessionImageType::kSourceIcon,
-        message_center::kSmallImageSizeMD, message_center::kSmallImageSizeMD,
-        std::move(icon_observer));
   }
 
   MaybeHideOrShowNotification();
@@ -133,20 +126,12 @@ void MediaNotificationItem::MediaSessionActionsChanged(
 void MediaNotificationItem::MediaControllerImageChanged(
     media_session::mojom::MediaSessionImageType type,
     const SkBitmap& bitmap) {
-  switch (type) {
-    case media_session::mojom::MediaSessionImageType::kArtwork:
-      session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  DCHECK_EQ(media_session::mojom::MediaSessionImageType::kArtwork, type);
 
-      if (view_)
-        view_->UpdateWithMediaArtwork(*session_artwork_);
-      break;
-    case media_session::mojom::MediaSessionImageType::kSourceIcon:
-      session_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 
-      if (view_)
-        view_->UpdateWithMediaIcon(session_icon_);
-      break;
-  }
+  if (view_)
+    view_->UpdateWithMediaArtwork(*session_artwork_);
 }
 
 void MediaNotificationItem::SetView(MediaNotificationView* view) {

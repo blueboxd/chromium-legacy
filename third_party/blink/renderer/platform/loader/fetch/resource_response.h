@@ -67,12 +67,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     kHTTPVersion_1_1,
     kHTTPVersion_2_0
   };
-  enum SecurityStyle : uint8_t {
-    kSecurityStyleUnknown,
-    kSecurityStyleUnauthenticated,
-    kSecurityStyleAuthenticationBroken,
-    kSecurityStyleAuthenticated
-  };
 
   enum CTPolicyCompliance {
     kCTPolicyComplianceDetailsNotAvailable,
@@ -287,8 +281,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
   void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
 
-  SecurityStyle GetSecurityStyle() const { return security_style_; }
-  void SetSecurityStyle(SecurityStyle security_style) {
+  WebSecurityStyle GetSecurityStyle() const { return security_style_; }
+  void SetSecurityStyle(WebSecurityStyle security_style) {
     security_style_ = security_style;
   }
 
@@ -539,7 +533,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   // The security style of the resource.
   // This only contains a valid value when the DevTools Network domain is
   // enabled. (Otherwise, it contains a default value of Unknown.)
-  SecurityStyle security_style_ = kSecurityStyleUnknown;
+  WebSecurityStyle security_style_ = kWebSecurityStyleUnknown;
 
   // Security details of this request's connection.
   base::Optional<SecurityDetails> security_details_;

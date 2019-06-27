@@ -126,6 +126,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static const size_t kDomainCookiesQuotaMedium;
   static const size_t kDomainCookiesQuotaHigh;
 
+  // The number of days since last access that cookies will not be subject
+  // to global garbage collection.
+  static const int kSafeFromGlobalPurgeDays;
+
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
   // this class, but it must remain valid for the duration of the cookie
@@ -202,7 +206,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
  private:
   // For garbage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
-  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GarbageCollectionTriggers);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
                            GarbageCollectWithSecureCookiesOnly);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestGCTimes);
@@ -335,10 +338,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE,
     COOKIE_DELETE_EQUIVALENT_LAST_ENTRY
   };
-
-  // The number of days since last access that cookies will not be subject
-  // to global garbage collection.
-  static const int kSafeFromGlobalPurgeDays;
 
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;

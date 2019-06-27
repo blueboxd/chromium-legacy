@@ -111,8 +111,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
 
   base::Optional<gfx::ImageSkia> session_artwork_;
 
-  gfx::ImageSkia session_icon_;
-
   // True if the metadata needs to be updated on |view_|. Used to prevent
   // updating |view_|'s metadata twice on a single change.
   bool view_needs_metadata_update_ = false;
@@ -122,9 +120,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
 
   mojo::Binding<media_session::mojom::MediaControllerImageObserver>
       artwork_observer_binding_{this};
-
-  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
-      icon_observer_binding_{this};
 
   base::WeakPtrFactory<MediaNotificationItem> weak_ptr_factory_{this};
 

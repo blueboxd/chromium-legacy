@@ -7713,12 +7713,18 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromiumAndroidLinkerBrowserState">
+  <obsolete>
+    Deprecated as of 06/2019.
+  </obsolete>
   <int value="0" label="Normal, Random Address Load"/>
   <int value="1" label="Low memory, Fixed Address Load Success"/>
   <int value="2" label="Low memory, Fixed Address Load Failure"/>
 </enum>
 
 <enum name="ChromiumAndroidLinkerRendererState">
+  <obsolete>
+    Deprecated as of 06/2019.
+  </obsolete>
   <int value="0" label="Fixed Address Load Success"/>
   <int value="1" label="Fixed Address Load Failure"/>
   <int value="2" label="Fixed Address Load Not Attempted"/>
@@ -19830,7 +19836,6 @@ Called by update_net_error_codes.py.-->
   <int value="1348" label="LOGIN_ISRUNNINGINLOGINPROFILE"/>
   <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
   <int value="1350" label="ACTION_SETICON"/>
-  <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
 </enum>
 
 <enum name="ExtensionIconState">

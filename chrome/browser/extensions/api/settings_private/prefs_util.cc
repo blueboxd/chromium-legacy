@@ -44,6 +44,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -401,15 +402,15 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kTextToSpeechVolume] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
-  // Crostini
+  // Guest OS
   (*s_whitelist)[crostini::prefs::kCrostiniEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[crostini::prefs::kGuestOSPathsSharedToVms] =
-      settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)[crostini::prefs::kCrostiniSharedUsbDevices] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[crostini::prefs::kCrostiniContainers] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[guest_os::prefs::kGuestOSPathsSharedToVms] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
 
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =

@@ -21,8 +21,6 @@
 namespace performance_manager {
 
 class FrameNodeImpl;
-class PageNodeImpl;
-class ProcessNodeImpl;
 
 class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
                      public TypedNodeBase<PageNodeImpl,
@@ -51,15 +49,11 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
                                       int64_t navigation_id,
                                       const GURL& url);
 
-  // There is no direct relationship between processes and pages. However,
-  // frames are accessible by both processes and frames, so we find all of the
-  // processes that are reachable from the pages's accessible frames.
-  base::flat_set<ProcessNodeImpl*> GetAssociatedProcessNodes() const;
-
   // Returns the average CPU usage that can be attributed to this page over the
   // last measurement period. CPU usage is expressed as the average percentage
   // of cores occupied over the last measurement interval. One core fully
   // occupied would be 100, while two cores at 5% each would be 10.
+  // TODO(chrisha): Make this 1.0 for 100%, and 0.1 for 10%.
   double GetCPUUsage() const;
 
   // Returns 0 if no navigation has happened, otherwise returns the time since
@@ -70,8 +64,6 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // value since we set the visibility property when we create a
   // page node.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
-
-  std::vector<FrameNodeImpl*> GetFrameNodes() const;
 
   // Returns the current main frame node (if there is one), otherwise returns
   // any of the potentially multiple main frames that currently exist. If there
@@ -153,9 +145,6 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   void JoinGraph() override;
   void LeaveGraph() override;
 
-  // Returns true iff |frame_node| is in the current frame hierarchy.
-  bool HasFrame(FrameNodeImpl* frame_node);
-
   void SetPageAlmostIdle(bool page_almost_idle);
   void SetLifecycleState(LifecycleState lifecycle_state);
 
@@ -174,10 +163,6 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // a policy is queried.
   void RecomputeInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention);
-
-  // Invokes |map_function| for all frame nodes in this pages frame tree.
-  template <typename MapFunction>
-  void ForAllFrameNodes(MapFunction map_function) const;
 
   // The WebContentsProxy associated with this page.
   const WebContentsProxy contents_proxy_;

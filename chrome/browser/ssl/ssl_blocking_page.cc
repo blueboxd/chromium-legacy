@@ -171,8 +171,6 @@ SSLBlockingPage::SSLBlockingPage(
       callback_(callback),
       ssl_info_(ssl_info),
       overridable_(overridable),
-      expired_but_previously_allowed_(
-          (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
       ssl_error_ui_(std::make_unique<SSLErrorUI>(request_url,
                                                  cert_error,
                                                  ssl_info,

@@ -164,10 +164,6 @@ struct Capabilities {
   // Time to wait for extension background page to appear. If 0, no waiting.
   base::TimeDelta extension_load_timeout;
 
-  // True if should always use DevTools for taking screenshots.
-  // This is experimental and may be removed at a later point.
-  bool force_devtools_screenshot;
-
   std::unique_ptr<base::DictionaryValue> local_state;
 
   std::string log_path;

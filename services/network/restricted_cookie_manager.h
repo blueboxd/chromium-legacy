@@ -80,10 +80,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   void CookieListToGetAllForUrlCallback(
       const GURL& url,
       const GURL& site_for_cookies,
+      const net::CookieOptions& net_options,
       mojom::CookieManagerGetOptionsPtr options,
       GetAllForUrlCallback callback,
       const net::CookieList& cookie_list,
       const net::CookieStatusList& excluded_cookies);
+
+  // Reports the result of setting the cookie to |network_context_client_|, and
+  // invokes the user callback.
+  void SetCanonicalCookieResult(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const net::CanonicalCookie& cookie,
+      const net::CookieOptions& net_options,
+      SetCanonicalCookieCallback user_callback,
+      net::CanonicalCookie::CookieInclusionStatus status);
 
   // Called when the Mojo pipe associated with a listener is closed.
   void RemoveChangeListener(Listener* listener);

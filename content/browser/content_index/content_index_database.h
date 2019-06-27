@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/content_index_provider.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 
 namespace url {
@@ -17,13 +18,17 @@ class Origin;
 
 namespace content {
 
+class BrowserContext;
+
 // Handles interacting with the Service Worker Database for Content Index
 // entries. This is owned by the ContentIndexContext.
-class CONTENT_EXPORT ContentIndexDatabase {
+class CONTENT_EXPORT ContentIndexDatabase
+    : public ContentIndexProvider::Client {
  public:
-  explicit ContentIndexDatabase(
+  ContentIndexDatabase(
+      BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
-  ~ContentIndexDatabase();
+  ~ContentIndexDatabase() override;
 
   void AddEntry(int64_t service_worker_registration_id,
                 const url::Origin& origin,
@@ -39,10 +44,18 @@ class CONTENT_EXPORT ContentIndexDatabase {
       int64_t service_worker_registration_id,
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback);
 
+  // ContentIndexProvider::Client implementation.
+  void GetIcon(int64_t service_worker_registration_id,
+               const std::string& description_id,
+               base::OnceCallback<void(SkBitmap)> icon_callback) override;
+
  private:
   void DidAddEntry(blink::mojom::ContentIndexService::AddCallback callback,
+                   ContentIndexEntry entry,
                    blink::ServiceWorkerStatusCode status);
   void DidDeleteEntry(
+      int64_t service_worker_registration_id,
+      const std::string& entry_id,
       blink::mojom::ContentIndexService::DeleteCallback callback,
       blink::ServiceWorkerStatusCode status);
   void DidGetDescriptions(
@@ -50,6 +63,7 @@ class CONTENT_EXPORT ContentIndexDatabase {
       const std::vector<std::string>& data,
       blink::ServiceWorkerStatusCode status);
 
+  BrowserContext* browser_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_;
 

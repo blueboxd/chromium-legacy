@@ -158,6 +158,7 @@ group("gn_all") {
       "//cc:cc_unittests",
       "//components/policy:policy_templates",
       "//components/ui_devtools/viz",
+      "//components/url_formatter/tools:format_url",
       "//components/viz:viz_perftests",
       "//components/viz:viz_unittests",
       "//components/viz/common:viz_benchmark",
@@ -230,6 +231,7 @@ group("gn_all") {
     deps += [
       "//extensions:extensions_browsertests",
       "//extensions:extensions_unittests",
+      "//extensions/browser/api/declarative_net_request/filter_list_converter",
       "//extensions/shell:app_shell_unittests",
     ]
   }

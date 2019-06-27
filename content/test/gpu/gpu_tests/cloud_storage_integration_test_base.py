@@ -141,6 +141,12 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       help='For Skia Gold integration. Always report that the test passed even '
            'if the Skia Gold image comparison reported a failure, but '
            'otherwise perform the same steps as usual.')
+    parser.add_option(
+      '--stream-goldctl-output',
+      action='store_true', default=False,
+      help='When running goldctl commands, always show the stdout/stderr from '
+           'the subprocess instead of only on failure, and stream the output '
+           'instead of collecting it at the end.')
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 tolerance, device_pixel_ratio,
@@ -453,9 +459,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       json.dump(gpu_keys, f)
     try:
       if not self.GetParsedCommandLineOptions().no_luci_auth:
-        subprocess.check_output([goldctl_bin, 'auth', '--luci',
-                                 '--work-dir', self._skia_gold_temp_dir],
-            stderr=subprocess.STDOUT)
+        self._RunGoldctlCommand([goldctl_bin, 'auth', '--luci',
+                                 '--work-dir', self._skia_gold_temp_dir])
       cmd = ([goldctl_bin, 'imgtest', 'add'] + mode +
                             ['--test-name', image_name,
                              '--instance', SKIA_GOLD_INSTANCE,
@@ -464,7 +469,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                              '--work-dir', self._skia_gold_temp_dir,
                              '--failure-file', failure_file] +
                             build_id_args)
-      subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+      self._RunGoldctlCommand(cmd)
     except CalledProcessError as e:
       contents = ''
       try:
@@ -475,6 +480,26 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       logging.error('goldctl failed with output: %s', e.output)
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
         raise Exception('goldctl command failed: ' + contents)
+
+  def _RunGoldctlCommand(self, command):
+    if self.GetParsedCommandLineOptions().stream_goldctl_output:
+      process = subprocess.Popen(
+          command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+      full_output = ""
+      while True:
+        line = process.stdout.readline()
+        if not line and process.poll() is not None:
+          break
+        if line:
+          full_output += line
+          logging.info(line.rstrip())
+      rc = process.returncode
+      # Emulate what subprocess.check_output would do so that callers don't
+      # have to care how the command is being run.
+      if rc != 0:
+        raise subprocess.CalledProcessError(rc, command, full_output)
+    else:
+      subprocess.check_output(command, stderr=subprocess.STDOUT)
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
                                              expectations, tolerance,

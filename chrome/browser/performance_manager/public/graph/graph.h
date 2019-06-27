@@ -6,12 +6,15 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_GRAPH_H_
 
 #include <cstdint>
+#include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 
 namespace performance_manager {
 
 class GraphObserver;
+class GraphOwned;
 class FrameNodeObserver;
 class PageNodeObserver;
 class ProcessNodeObserver;
@@ -42,6 +45,21 @@ class Graph {
   virtual void RemoveProcessNodeObserver(ProcessNodeObserver* observer) = 0;
   virtual void RemoveSystemNodeObserver(SystemNodeObserver* observer) = 0;
 
+  // For convenience, allows you to pass ownership of an object to the graph.
+  // Useful for attaching observers that will live with the graph until it dies.
+  // If you can name the object you can also take it back via "TakeFromGraph".
+  virtual void PassToGraph(std::unique_ptr<GraphOwned> graph_owned) = 0;
+  virtual std::unique_ptr<GraphOwned> TakeFromGraph(
+      GraphOwned* graph_owned) = 0;
+
+  // A TakeFromGraph helper that casts to a derived type. It is up to the caller
+  // to ensure that the cast is safe.
+  template <typename DerivedType>
+  std::unique_ptr<DerivedType> TakeFromGraphAs(GraphOwned* graph_owned) {
+    return base::WrapUnique(
+        static_cast<DerivedType*>(TakeFromGraph(graph_owned).release()));
+  }
+
   // The following functions are implementation detail and should not need to be
   // used by external clients. They provide the ability to safely downcast to
   // the underlying implementation.
@@ -59,16 +77,46 @@ class GraphObserver {
   virtual ~GraphObserver();
 
   // Called before the |graph| associated with this observer disappears. This
-  // allows the observer to do any necessary cleanup work. Note that the graph
-  // is in its destructor while this is being called, so the observer should
-  // refrain from uselessly modifying the graph. This is intended to be used to
-  // facilitate lifetime management of observers.
-  // TODO(chrisha): Make this run before the constructor!
+  // allows the observer to do any necessary cleanup work. Note that the
+  // observer should remove itself from observing the graph using this
+  // callback.
+  // TODO(chrisha): Make this run before the destructor!
   // crbug.com/966840
-  virtual void OnBeforeGraphDestroyed(const Graph* graph) = 0;
+  virtual void OnBeforeGraphDestroyed(Graph* graph) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GraphObserver);
+};
+
+// Helper class for passing ownership of objects to a graph.
+class GraphOwned {
+ public:
+  GraphOwned();
+  virtual ~GraphOwned();
+
+  // Called when the object is passed into the graph.
+  virtual void OnPassedToGraph(Graph* graph) = 0;
+
+  // Called when the object is removed from the graph, either via an explicit
+  // call to Graph::TakeFromGraph, or prior to the Graph being destroyed.
+  virtual void OnTakenFromGraph(Graph* graph) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GraphOwned);
+};
+
+// A default implementation of GraphOwned.
+class GraphOwnedDefaultImpl : public GraphOwned {
+ public:
+  GraphOwnedDefaultImpl();
+  ~GraphOwnedDefaultImpl() override;
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override {}
+  void OnTakenFromGraph(Graph* graph) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GraphOwnedDefaultImpl);
 };
 
 }  // namespace performance_manager

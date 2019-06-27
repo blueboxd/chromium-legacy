@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/offline_page_request_job.h"
-
 #include <memory>
 #include <string>
 #include <utility>
@@ -24,7 +22,6 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/offline_pages/offline_page_request_interceptor.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"

@@ -1097,14 +1097,6 @@
     'ios_web': {
       'filepath': 'ios/web(_view)?/',
     },
-    'kiosk_next': {
-      'filepath': 'ash/kiosk_next/|'\
-                  'ash/public/interfaces/kiosk_next_shell.mojom|'\
-                  'chrome/browser/chromeos/kiosk_next_home/|'\
-                  'chrome/browser/resources/chromeos/kiosk_next_home/|'\
-                  'chrome/browser/resources/settings/kiosk_next_shell_page/|'\
-                  'chrome/browser/ui/ash/kiosk_next_',
-    },
     'libaom': {
       'filepath': 'third_party/libaom/',
     },
@@ -2374,13 +2366,6 @@
                      'marq+watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org',
                 'eugenebut@chromium.org'],
-    'kiosk_next': ['agawronska+watch@chromium.org',
-                   'brunoad+watch@chromium.org',
-                   'escordeiro+watch@chromium.org',
-                   'ltenorio+watch@chromium.org',
-                   'maroun+watch@chromium.org',
-                   'michaelpg+watch@chromium.org',
-                   'yilkal+watch@chromium.org'],
     'libaom': ['fgalligan@chromium.org',
                'johannkoenig@chromium.org',
                'jzern@chromium.org',

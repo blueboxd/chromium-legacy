@@ -21555,7 +21555,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=\"BackForwardCache\""
+          "--enable-features=BackForwardCache"
         ],
         "merge": {
           "args": [],
@@ -21595,7 +21595,7 @@
       },
       {
         "args": [
-          "--enable-features=\"BackForwardCache\""
+          "--enable-features=BackForwardCache"
         ],
         "merge": {
           "args": [],
@@ -21615,7 +21615,7 @@
       },
       {
         "args": [
-          "--enable-features=\"BackForwardCache\""
+          "--enable-features=BackForwardCache"
         ],
         "merge": {
           "args": [],
@@ -21634,7 +21634,7 @@
       },
       {
         "args": [
-          "--enable-features=\"BackForwardCache\""
+          "--enable-features=BackForwardCache"
         ],
         "merge": {
           "args": [],

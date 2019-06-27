@@ -17,7 +17,7 @@
 namespace blink {
 
 class NGContainerFragmentBuilder;
-struct NGOutOfFlowPositionedDescendant;
+struct NGPhysicalOutOfFlowPositionedNode;
 enum class NGOutlineType;
 
 class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
@@ -123,10 +123,10 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return oof_positioned_descendants_.get();
   }
 
-  base::span<NGOutOfFlowPositionedDescendant> OutOfFlowPositionedDescendants()
+  base::span<NGPhysicalOutOfFlowPositionedNode> OutOfFlowPositionedDescendants()
       const {
     if (!HasOutOfFlowPositionedDescendants())
-      return base::span<NGOutOfFlowPositionedDescendant>();
+      return base::span<NGPhysicalOutOfFlowPositionedNode>();
     return {oof_positioned_descendants_->data(),
             oof_positioned_descendants_->size()};
   }
@@ -154,7 +154,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
   scoped_refptr<NGBreakToken> break_token_;
-  const std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
+  const std::unique_ptr<Vector<NGPhysicalOutOfFlowPositionedNode>>
       oof_positioned_descendants_;
 
   // Because flexible arrays need to be the last member in a class, the actual

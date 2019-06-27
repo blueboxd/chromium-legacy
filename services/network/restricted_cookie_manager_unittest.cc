@@ -10,8 +10,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "mojo/core/embedder/embedder.h"
+#include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
@@ -362,6 +364,27 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     EXPECT_EQ("cookie-value", cookies[0].Value());
   }
 
+  ASSERT_EQ(2u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[0].get, true);
+  EXPECT_EQ(recorded_activity()[0].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[0].cookie,
+              net::MatchesCookieLine("cookie-name=cookie-value"));
+  EXPECT_EQ(recorded_activity()[0].status,
+            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+
+  // Duplicated for exclusion warning.
+  EXPECT_EQ(recorded_activity()[1].get, true);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[1].cookie,
+              net::MatchesCookieLine("cookie-name=cookie-value"));
+  // SetSessionCookie uses net::CookieSameSite::NO_RESTRICTION, but this is an
+  // insecure cookie.
+  EXPECT_EQ(recorded_activity()[1].status,
+            net::CanonicalCookie::CookieInclusionStatus::
+                EXCLUDE_SAMESITE_NONE_INSECURE);
+
   // Disabing getting third-party cookies works correctly.
   cookie_settings_.set_block_third_party_cookies(true);
   {
@@ -375,23 +398,47 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     ASSERT_THAT(cookies, testing::SizeIs(0));
   }
 
-  ASSERT_EQ(2u, recorded_activity().size());
+  ASSERT_EQ(3u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[2].get, true);
+  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[2].cookie,
+              net::MatchesCookieLine("cookie-name=cookie-value"));
+  EXPECT_EQ(
+      recorded_activity()[2].status,
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+}
+
+TEST_F(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {net::features::kSameSiteByDefaultCookies,
+       net::features::
+           kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
+      {} /* disabled_features */);
+
+  {
+    auto options = mojom::CookieManagerGetOptions::New();
+    options->name = "cookie-name";
+    options->match_type = mojom::CookieMatchType::STARTS_WITH;
+
+    std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+        GURL("http://example.com/test/"), GURL("http://notexample.com"),
+        std::move(options));
+    EXPECT_TRUE(cookies.empty());
+  }
+
+  ASSERT_EQ(1u, recorded_activity().size());
+
   EXPECT_EQ(recorded_activity()[0].get, true);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/test/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
   EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-
-  EXPECT_EQ(recorded_activity()[1].get, true);
-  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookie,
-              net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(
-      recorded_activity()[1].status,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+            net::CanonicalCookie::CookieInclusionStatus::
+                EXCLUDE_SAMESITE_NONE_INSECURE);
 }
 
 TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
@@ -438,6 +485,22 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
         *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
   }
 
+  ASSERT_EQ(2u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[0].get, false);
+  EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
+  EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
+  EXPECT_EQ(recorded_activity()[0].status,
+            net::CanonicalCookie::CookieInclusionStatus::
+                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
+
+  EXPECT_EQ(recorded_activity()[1].get, false);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A=B"));
+  EXPECT_EQ(recorded_activity()[1].status,
+            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+
   {
     // Not if third-party cookies are disabled, though.
     cookie_settings_.set_block_third_party_cookies(true);
@@ -447,6 +510,16 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
     EXPECT_FALSE(sync_service_->SetCanonicalCookie(
         *cookie, GURL("http://example.com"), GURL("http://otherexample.com")));
   }
+
+  ASSERT_EQ(3u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[2].get, false);
+  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/");
+  EXPECT_EQ(recorded_activity()[2].site_for_cookies,
+            "http://otherexample.com/");
+  EXPECT_THAT(recorded_activity()[2].cookie, net::MatchesCookieLine("A2=B2"));
+  EXPECT_EQ(
+      recorded_activity()[2].status,
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
 
   // Read back, in first-party context
   auto options = mojom::CookieManagerGetOptions::New();
@@ -460,29 +533,38 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("B", cookies[0].Value());
 
-  ASSERT_EQ(3u, recorded_activity().size());
+  ASSERT_EQ(4u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[3].get, true);
+  EXPECT_EQ(recorded_activity()[3].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[3].site_for_cookies, "http://example.com/");
+  EXPECT_THAT(recorded_activity()[3].cookie, net::MatchesCookieLine("A=B"));
+  EXPECT_EQ(recorded_activity()[3].status,
+            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+}
+
+TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
+  // Make sure the deprecation warnings are also produced when the feature
+  // to enable the new behavior is on.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
+
+  // Uses different options between create/set here for failure to be at set.
+  net::CookieOptions create_options;
+  create_options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  auto cookie = net::CanonicalCookie::Create(GURL("http://example.com"), "A=B",
+                                             base::Time::Now(), create_options);
+  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+      *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
+
+  ASSERT_EQ(1u, recorded_activity().size());
   EXPECT_EQ(recorded_activity()[0].get, false);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
   EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-
-  EXPECT_EQ(recorded_activity()[1].get, false);
-  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
-  EXPECT_EQ(recorded_activity()[1].site_for_cookies,
-            "http://otherexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A2=B2"));
-  EXPECT_EQ(
-      recorded_activity()[1].status,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
-
-  EXPECT_EQ(recorded_activity()[2].get, true);
-  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://example.com/");
-  EXPECT_THAT(recorded_activity()[2].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[2].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            net::CanonicalCookie::CookieInclusionStatus::
+                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
 }
 
 namespace {

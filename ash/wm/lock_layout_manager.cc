@@ -17,7 +17,7 @@
 namespace ash {
 
 LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
-    : wm::WmSnapToPixelLayoutManager(),
+    : wm::WmDefaultLayoutManager(),
       window_(window),
       root_window_(window->GetRootWindow()),
       shelf_observer_(this) {

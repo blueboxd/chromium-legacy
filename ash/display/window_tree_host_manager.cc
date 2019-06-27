@@ -46,6 +46,7 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -207,6 +208,10 @@ WindowTreeHostManager::~WindowTreeHostManager() = default;
 
 void WindowTreeHostManager::Start() {
   display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()
+      ->display_configurator()
+      ->content_protection_manager()
+      ->AddObserver(this);
   Shell::Get()->display_manager()->set_delegate(this);
 }
 
@@ -221,6 +226,10 @@ void WindowTreeHostManager::Shutdown() {
   cursor_window_controller_.reset();
   mirror_window_controller_.reset();
 
+  Shell::Get()
+      ->display_configurator()
+      ->content_protection_manager()
+      ->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -646,6 +655,18 @@ void WindowTreeHostManager::OnHostResized(aura::WindowTreeHost* host) {
   }
 }
 
+void WindowTreeHostManager::OnDisplaySecurityChanged(int64_t display_id,
+                                                     bool secure) {
+  AshWindowTreeHost* host = GetAshWindowTreeHostForDisplayId(display_id);
+  // No host for internal display in docked mode.
+  if (!host)
+    return;
+
+  ui::Compositor* compositor = host->AsWindowTreeHost()->compositor();
+  compositor->SetOutputIsSecure(secure);
+  compositor->ScheduleFullRedraw();
+}
+
 void WindowTreeHostManager::CreateOrUpdateMirroringDisplay(
     const display::DisplayInfoList& info_list) {
   if (GetDisplayManager()->IsInMirrorMode() ||
@@ -766,18 +787,6 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
 
 void WindowTreeHostManager::PostDisplayConfigurationChange() {
   focus_activation_store_->Restore();
-
-  display::DisplayManager* display_manager = GetDisplayManager();
-  for (const display::Display& display :
-       display_manager->active_display_list()) {
-    bool output_is_secure =
-        !display_manager->IsInMirrorMode() && display.IsInternal();
-    ui::Compositor* compositor = GetAshWindowTreeHostForDisplayId(display.id())
-                                     ->AsWindowTreeHost()
-                                     ->compositor();
-    compositor->SetOutputIsSecure(output_is_secure);
-    compositor->ScheduleFullRedraw();
-  }
 
   for (auto& observer : observers_)
     observer.OnDisplayConfigurationChanged();

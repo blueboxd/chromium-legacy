@@ -736,13 +736,15 @@ class TestURLRequestContextWithProxy : public TestURLRequestContext {
  public:
   // Does not own |delegate|.
   TestURLRequestContextWithProxy(const std::string& proxy,
-                                 NetworkDelegate* delegate)
+                                 NetworkDelegate* delegate,
+                                 bool delay_initialization = false)
       : TestURLRequestContext(true) {
     context_storage_.set_proxy_resolution_service(
         ProxyResolutionService::CreateFixed(proxy,
                                             TRAFFIC_ANNOTATION_FOR_TESTS));
     set_network_delegate(delegate);
-    Init();
+    if (!delay_initialization)
+      Init();
   }
   ~TestURLRequestContextWithProxy() override = default;
 };
@@ -2395,19 +2397,15 @@ TEST_F(URLRequestTest, Identifiers) {
   ASSERT_NE(req->identifier(), other_req->identifier());
 }
 
-#if defined(OS_IOS)
-// TODO(droger): Check that a failure to connect to the proxy is reported to
-// the network delegate. crbug.com/496743
-#define MAYBE_NetworkDelegateProxyError DISABLED_NetworkDelegateProxyError
-#else
-#define MAYBE_NetworkDelegateProxyError NetworkDelegateProxyError
-#endif
-TEST_F(URLRequestTest, MAYBE_NetworkDelegateProxyError) {
+TEST_F(URLRequestTest, NetworkDelegateProxyError) {
   MockHostResolver host_resolver;
   host_resolver.rules()->AddSimulatedFailure("*");
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequests.
-  TestURLRequestContextWithProxy context("myproxy:70", &network_delegate);
+  TestURLRequestContextWithProxy context("myproxy:70", &network_delegate,
+                                         true /* delay_initialization */);
+  context.set_host_resolver(&host_resolver);
+  context.Init();
 
   TestDelegate d;
   std::unique_ptr<URLRequest> req(

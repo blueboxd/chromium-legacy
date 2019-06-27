@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
+#include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -159,6 +161,12 @@ class DisplayLockContextTest : public testing::Test,
     client.Reset();
     GetFindInPage()->Find(FAKE_FIND_ID, search_text, FindOptions(find_next));
     test::RunPendingTasks();
+  }
+
+  void ResetBudget(std::unique_ptr<DisplayLockBudget> budget,
+                   DisplayLockContext* context) {
+    ASSERT_TRUE(context->update_budget_);
+    context->update_budget_ = std::move(budget);
   }
 
   const int FAKE_FIND_ID = 1;
@@ -1552,5 +1560,61 @@ TEST_F(DisplayLockContextTest, DescendantNeedsPaintPropertyUpdateBlocked) {
   EXPECT_FALSE(descendant_object->DescendantNeedsPaintPropertyUpdate());
   EXPECT_FALSE(locked_object->DescendantNeedsPaintPropertyUpdate());
   EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
+}
+
+TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      contain: style layout;
+    }
+    </style>
+    <div id="container"></div>
+  )HTML");
+
+  auto* container = GetDocument().getElementById("container");
+  LockElement(*container, false);
+
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldStyle(
+      DisplayLockContext::kChildren));
+  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
+  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldPrePaint(
+      DisplayLockContext::kChildren));
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    container->GetDisplayLockContext()->update(script_state);
+  }
+  auto budget = base::WrapUnique(
+      new StrictYieldingDisplayLockBudget(container->GetDisplayLockContext()));
+  ResetBudget(std::move(budget), container->GetDisplayLockContext());
+
+  // This should style and allow layout, but not actually do layout (thus
+  // pre-paint would be blocked). Furthermore, this should schedule a task to
+  // run DisplayLockContext::ScheduleAnimation (since we can't directly schedule
+  // it from within a lifecycle).
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_FALSE(GetDocument().View()->InLifecycleUpdate());
+  GetDocument().View()->SetInLifecycleUpdateForTest(true);
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container->GetDisplayLockContext()->ShouldStyle(
+      DisplayLockContext::kChildren));
+  EXPECT_TRUE(container->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
+  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldPrePaint(
+      DisplayLockContext::kChildren));
+  GetDocument().View()->SetInLifecycleUpdateForTest(false);
+
+  // Now disconnect the element.
+  container->remove();
+
+  // Flushing the pending tasks would call ScheduleAnimation, but since we're no
+  // longer connected and can't schedule from within the element, we should
+  // gracefully exit (and not crash).
+  test::RunPendingTasks();
 }
 }  // namespace blink

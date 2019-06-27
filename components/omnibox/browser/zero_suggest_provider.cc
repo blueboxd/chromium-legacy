@@ -163,8 +163,12 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   current_page_classification_ = input.current_page_classification();
   current_url_match_ = MatchForCurrentURL();
 
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+  search_terms_args.page_classification = current_page_classification_;
+  search_terms_args.omnibox_focus_type =
+      TemplateURLRef::SearchTermsArgs::OmniboxFocusType::ON_FOCUS;
   GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
-      /*current_url=*/"", input, client()->GetTemplateURLService());
+      search_terms_args, client()->GetTemplateURLService());
   if (!suggest_url.is_valid())
     return;
 
@@ -191,14 +195,14 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  const std::string current_url =
+  search_terms_args.current_page_url =
       result_type_running_ == REMOTE_SEND_URL ? current_query_ : std::string();
   // Create a request for suggestions, routing completion to
   // OnRemoteSuggestionsLoaderAvailable.
   client()
       ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
       ->CreateSuggestionsRequest(
-          current_url, client()->GetCurrentVisitTimestamp(), input,
+          search_terms_args, client()->GetCurrentVisitTimestamp(),
           client()->GetTemplateURLService(),
           base::BindOnce(
               &ZeroSuggestProvider::OnRemoteSuggestionsLoaderAvailable,
@@ -278,9 +282,8 @@ ZeroSuggestProvider::ZeroSuggestProvider(
       client->GetTemplateURLService();
   // Template URL service can be null in tests.
   if (template_url_service != nullptr) {
-    AutocompleteInput empty_input;
     GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
-        /*current_url=*/"", /*empty input*/ empty_input, template_url_service);
+        TemplateURLRef::SearchTermsArgs(), template_url_service);
     // To check whether this is allowed, use an arbitrary insecure (http) URL
     // as the URL we'd want suggestions for.  The value of OTHER as the current
     // page classification is to correspond with that URL.

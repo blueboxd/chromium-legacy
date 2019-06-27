@@ -103,7 +103,7 @@ void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
 void SystemModalContainerLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
+  WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
   if (IsBoundsCentered(requested_bounds))
     windows_to_center_.insert(child);
   else

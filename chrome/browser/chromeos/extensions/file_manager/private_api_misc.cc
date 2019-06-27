@@ -23,7 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -729,7 +729,7 @@ FileManagerPrivateInternalSharePathsWithCrostiniFunction::Run() {
     paths.emplace_back(cracked.path());
   }
 
-  crostini::CrostiniSharePath::GetForProfile(profile)->SharePaths(
+  guest_os::GuestOsSharePath::GetForProfile(profile)->SharePaths(
       params->vm_name, std::move(paths), params->persist,
       base::BindOnce(&FileManagerPrivateInternalSharePathsWithCrostiniFunction::
                          SharePathsCallback,
@@ -756,7 +756,7 @@ FileManagerPrivateInternalUnsharePathWithCrostiniFunction::Run() {
           profile, render_frame_host());
   storage::FileSystemURL cracked =
       file_system_context->CrackURL(GURL(params->url));
-  crostini::CrostiniSharePath::GetForProfile(profile)->UnsharePath(
+  guest_os::GuestOsSharePath::GetForProfile(profile)->UnsharePath(
       params->vm_name, cracked.path(), /*unpersist=*/true,
       base::BindOnce(
           &FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
@@ -779,12 +779,12 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
-  auto* crostini_share_path =
-      crostini::CrostiniSharePath::GetForProfile(profile);
+  auto* guest_os_share_path =
+      guest_os::GuestOsSharePath::GetForProfile(profile);
   bool first_for_session = params->observe_first_for_session &&
-                           crostini_share_path->GetAndSetFirstForSession();
+                           guest_os_share_path->GetAndSetFirstForSession();
   auto shared_paths =
-      crostini_share_path->GetPersistedSharedPaths(params->vm_name);
+      guest_os_share_path->GetPersistedSharedPaths(params->vm_name);
   auto entries = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : shared_paths) {
     std::string mount_name;
@@ -807,7 +807,7 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
     // All shared paths should be directories.  Even if this is not true,
     // it is fine for foreground/js/crostini.js class to think so. We
     // verify that the paths are in fact valid directories before calling
-    // seneschal/9p in CrostiniSharePath::CallSeneschalSharePath().
+    // seneschal/9p in GuestOsSharePath::CallSeneschalSharePath().
     entry->SetBoolean("fileIsDirectory", true);
     entries->Append(std::move(entry));
   }

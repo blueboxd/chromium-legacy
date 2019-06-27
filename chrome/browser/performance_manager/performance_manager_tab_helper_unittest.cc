@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_test_harness.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
@@ -87,15 +88,16 @@ void PerformanceManagerTabHelperTest::CheckGraphTopology(
         auto* page = graph->GetAllPageNodes()[0];
 
         // Extra RPHs can and most definitely do exist.
-        auto associated_process_nodes = page->GetAssociatedProcessNodes();
+        auto associated_process_nodes =
+            GraphImplOperations::GetAssociatedProcessNodes(page);
         EXPECT_GE(graph->GetAllProcessNodes().size(),
                   associated_process_nodes.size());
-        EXPECT_GE(num_hosts, page->GetAssociatedProcessNodes().size());
+        EXPECT_GE(num_hosts, associated_process_nodes.size());
 
         for (auto* process_node : associated_process_nodes)
           EXPECT_TRUE(base::Contains(process_nodes, process_node));
 
-        EXPECT_EQ(4u, page->GetFrameNodes().size());
+        EXPECT_EQ(4u, GraphImplOperations::GetFrameNodes(page).size());
         ASSERT_EQ(1u, page->main_frame_nodes().size());
 
         auto* main_frame = page->GetMainFrameNode();

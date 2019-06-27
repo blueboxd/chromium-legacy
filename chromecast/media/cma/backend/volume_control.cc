@@ -190,12 +190,10 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       return;
     }
 
-    if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
-      return;
-    }
-    limit = std::max(0.0f, std::min(limit, 1.0f));
-    StreamMixer::Get()->SetOutputLimit(
-        type, DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
+    thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VolumeControlInternal::SetOutputLimitOnThread,
+                       base::Unretained(this), type, limit));
   }
 
   void SetPowerSaveMode(bool power_save_on) {
@@ -313,6 +311,24 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       for (VolumeObserver* observer : volume_observers_) {
         observer->OnMuteChange(source, type, muted);
       }
+    }
+  }
+
+  void SetOutputLimitOnThread(AudioContentType type, float limit) {
+    if (type == AudioContentType::kOther) {
+      NOTREACHED() << "Can't set output limit for content type kOther";
+      return;
+    }
+
+    if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
+      return;
+    }
+    limit = std::max(0.0f, std::min(limit, 1.0f));
+    StreamMixer::Get()->SetOutputLimit(
+        type, DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
+
+    if (type == AudioContentType::kMedia) {
+      system_volume_control_->SetLimit(limit);
     }
   }
 

@@ -54,6 +54,7 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
       PaymentHandlerOpenWindowCallback callback) override;
   bool IsInteractive() const override;
   std::string GetInvalidSslCertificateErrorMessage() override;
+  bool SkipUiForBasicCard() const override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

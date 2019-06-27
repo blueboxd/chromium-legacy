@@ -106,7 +106,6 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   Shell::Get()->activation_client()->AddObserver(this);
   root_window_->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
-  DCHECK(window->GetProperty(::wm::kSnapChildrenToPixelBoundary));
   backdrop_controller_ = std::make_unique<BackdropController>(window_);
   keyboard::KeyboardController::Get()->AddObserver(this);
   settings_bubble_container_ = window->GetRootWindow()->GetChildById(

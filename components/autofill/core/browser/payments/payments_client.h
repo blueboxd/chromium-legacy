@@ -82,6 +82,7 @@ class PaymentsClient {
     ~UnmaskRequestDetails();
 
     int64_t billing_customer_number = 0;
+    AutofillClient::UnmaskCardReason reason;
     CreditCard card;
     std::string risk_data;
     CardUnmaskDelegate::UnmaskResponse user_response;

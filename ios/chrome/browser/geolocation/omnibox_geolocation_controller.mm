@@ -80,14 +80,6 @@ typedef enum {
 const char* const kGeolocationHeaderSentOrNotHistogram =
     "Geolocation.HeaderSentOrNot";
 
-// Name of the histogram recording location acquisition time.
-const char* const kOmniboxQueryGeolocationAcquisitionTimeHistogram =
-    "Omnibox.QueryGeolocationAcquisitionTime";
-
-// Name of the histogram recording estimated location accuracy.
-const char* const kOmniboxQueryGeolocationHorizontalAccuracyHistogram =
-    "Omnibox.QueryGeolocationHorizontalAccuracy";
-
 // Name of the histogram recording AuthorizationAction for an existing user.
 const char* const kGeolocationAuthorizationActionExistingUser =
     "Geolocation.AuthorizationActionExistingUser";
@@ -301,18 +293,6 @@ const char* const kGeolocationAuthorizationActionNewUser =
               @{ @"X-Geo" : [currentLocation cr_xGeoString] };
           item->AddHttpRequestHeaders(locationHTTPHeaders);
           headerState = kHeaderStateSent;
-
-          NSTimeInterval acquisitionInterval =
-              currentLocation.cr_acquisitionInterval;
-          base::TimeDelta acquisitionTime = base::TimeDelta::FromMilliseconds(
-              acquisitionInterval * base::Time::kMillisecondsPerSecond);
-          UMA_HISTOGRAM_TIMES(kOmniboxQueryGeolocationAcquisitionTimeHistogram,
-                              acquisitionTime);
-
-          double horizontalAccuracy = currentLocation.horizontalAccuracy;
-          UMA_HISTOGRAM_COUNTS_10000(
-              kOmniboxQueryGeolocationHorizontalAccuracyHistogram,
-              horizontalAccuracy);
         }
         break;
       }

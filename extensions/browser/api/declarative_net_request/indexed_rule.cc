@@ -272,7 +272,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
                                            const GURL& base_url,
                                            IndexedRule* indexed_rule) {
   DCHECK(indexed_rule);
-  DCHECK(IsAPIAvailable());
 
   if (parsed_rule.id < kMinValidID)
     return ParseResult::ERROR_INVALID_RULE_ID;

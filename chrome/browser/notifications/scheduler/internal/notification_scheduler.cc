@@ -132,6 +132,17 @@ class NotificationSchedulerImpl : public NotificationScheduler,
         std::move(notification_params));
   }
 
+  void DeleteAllNotifications(SchedulerClientType type) override {
+    context_->notification_manager()->DeleteNotifications(type);
+  }
+
+  void GetImpressionDetail(
+      SchedulerClientType type,
+      ImpressionDetail::ImpressionDetailCallback callback) override {
+    context_->impression_tracker()->GetImpressionDetail(type,
+                                                        std::move(callback));
+  }
+
   void OnInitialized(std::unique_ptr<InitHelper>,
                      InitCallback init_callback,
                      bool success) {

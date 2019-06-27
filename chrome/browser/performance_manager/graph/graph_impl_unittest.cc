@@ -138,7 +138,7 @@ class LenientMockObserver : public GraphObserver {
   LenientMockObserver() {}
   ~LenientMockObserver() override {}
 
-  MOCK_METHOD1(OnBeforeGraphDestroyed, void(const Graph*));
+  MOCK_METHOD1(OnBeforeGraphDestroyed, void(Graph*));
 };
 
 using MockObserver = ::testing::StrictMock<LenientMockObserver>;
@@ -150,15 +150,79 @@ using testing::Invoke;
 
 TEST(GraphImplTest, ObserverWorks) {
   std::unique_ptr<GraphImpl> graph = base::WrapUnique(new GraphImpl());
-  const Graph* raw_graph = graph.get();
+  Graph* raw_graph = graph.get();
 
   MockObserver obs;
   graph->AddGraphObserver(&obs);
   graph->RemoveGraphObserver(&obs);
   graph->AddGraphObserver(&obs);
 
-  EXPECT_CALL(obs, OnBeforeGraphDestroyed(raw_graph));
+  // Expect the graph teardown callback to be invoked. We have to unregister our
+  // observer in order to maintain graph invariants.
+  EXPECT_CALL(obs, OnBeforeGraphDestroyed(raw_graph))
+      .WillOnce(testing::Invoke(
+          [&obs](Graph* graph) { graph->RemoveGraphObserver(&obs); }));
   graph.reset();
+}
+
+namespace {
+
+class Foo : public GraphOwned {
+ public:
+  explicit Foo(int* destructor_count) : destructor_count_(destructor_count) {}
+
+  ~Foo() override { (*destructor_count_)++; }
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override { passed_to_called_ = true; }
+  void OnTakenFromGraph(Graph* graph) override { taken_from_called_ = true; }
+
+  bool passed_to_called() const { return passed_to_called_; }
+  bool taken_from_called() const { return taken_from_called_; }
+
+ private:
+  bool passed_to_called_ = false;
+  bool taken_from_called_ = false;
+  int* destructor_count_ = nullptr;
+};
+
+}  // namespace
+
+TEST(GraphImplTest, GraphOwned) {
+  int destructor_count = 0;
+
+  std::unique_ptr<Foo> foo1 = base::WrapUnique(new Foo(&destructor_count));
+  std::unique_ptr<Foo> foo2 = base::WrapUnique(new Foo(&destructor_count));
+  auto* raw1 = foo1.get();
+  auto* raw2 = foo2.get();
+
+  // Pass both objects to the graph.
+  std::unique_ptr<GraphImpl> graph = base::WrapUnique(new GraphImpl());
+  EXPECT_EQ(0u, graph->GraphOwnedCountForTesting());
+  EXPECT_FALSE(raw1->passed_to_called());
+  graph->PassToGraph(std::move(foo1));
+  EXPECT_TRUE(raw1->passed_to_called());
+  EXPECT_EQ(1u, graph->GraphOwnedCountForTesting());
+  EXPECT_FALSE(raw2->passed_to_called());
+  graph->PassToGraph(std::move(foo2));
+  EXPECT_TRUE(raw2->passed_to_called());
+  EXPECT_EQ(2u, graph->GraphOwnedCountForTesting());
+
+  // Take one back.
+  EXPECT_FALSE(raw1->taken_from_called());
+  foo1 = graph->TakeFromGraphAs<Foo>(raw1);
+  EXPECT_TRUE(raw1->taken_from_called());
+  EXPECT_EQ(1u, graph->GraphOwnedCountForTesting());
+
+  // Destroy that object and expect its destructor to have been invoked.
+  EXPECT_EQ(0, destructor_count);
+  foo1.reset();
+  EXPECT_EQ(1, destructor_count);
+
+  // Now destroy the graph and expect the other object to have been torn down
+  // too.
+  graph.reset();
+  EXPECT_EQ(2, destructor_count);
 }
 
 }  // namespace performance_manager

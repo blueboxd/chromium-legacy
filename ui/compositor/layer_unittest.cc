@@ -2745,76 +2745,22 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
   c1->SetBounds(gfx::Rect(1, 1, 10, 10));
   c11->SetBounds(gfx::Rect(1, 1, 10, 10));
-  SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
-  // 0.5 at 1.25 scale : (1 - 0.25 + 0.25) / 1.25 = 0.4
-  EXPECT_EQ("0.40 0.40",
-            Vector2dFTo100thPrecisionString(c11->subpixel_position_offset()));
+  // 1 at 1.25 scale = 1.25 : (-0.25) / 1.25 = -0.20
+  EXPECT_EQ("-0.20 -0.20",
+            Vector2dFTo100thPrecisionString(c11->GetSubpixelOffset()));
 
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(
       1.5f, gfx::Size(100, 100),
       allocator.GetCurrentLocalSurfaceIdAllocation());
-  SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
-  // c11 must already be aligned at 1.5 scale.
-  EXPECT_EQ("0.00 0.00",
-            Vector2dFTo100thPrecisionString(c11->subpixel_position_offset()));
+  // 1 at 1.5 scale = 1.5 : (round(1.5) - 1.5) / 1.5 = 0.33
+  EXPECT_EQ("0.33 0.33",
+            Vector2dFTo100thPrecisionString(c11->GetSubpixelOffset()));
 
   c11->SetBounds(gfx::Rect(2, 2, 10, 10));
-  SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
-  // c11 is now off the pixel.
-  // 0.5 / 1.5 = 0.333...
-  EXPECT_EQ("0.33 0.33",
-            Vector2dFTo100thPrecisionString(c11->subpixel_position_offset()));
-}
-
-TEST_F(LayerWithRealCompositorTest, SnapLayerToPixelsWithScaleTransform) {
-  std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
-  std::unique_ptr<Layer> c1(CreateLayer(LAYER_TEXTURED));
-  std::unique_ptr<Layer> c11(CreateLayer(LAYER_TEXTURED));
-  std::unique_ptr<Layer> c111(CreateLayer(LAYER_TEXTURED));
-
-  viz::ParentLocalSurfaceIdAllocator allocator;
-  allocator.GenerateId();
-  GetCompositor()->SetScaleAndSize(
-      1.0f, gfx::Size(100, 100),
-      allocator.GetCurrentLocalSurfaceIdAllocation());
-  GetCompositor()->SetRootLayer(root.get());
-  root->Add(c1.get());
-  c1->Add(c11.get());
-  c11->Add(c111.get());
-
-  root->SetBounds(gfx::Rect(0, 0, 100, 100));
-  c1->SetBounds(gfx::Rect(0, 0, 10, 10));
-  c11->SetBounds(gfx::Rect(0, 0, 10, 10));
-  c111->SetBounds(gfx::Rect(2, 2, 5, 5));
-
-  gfx::Transform transform;
-  transform.Scale(1.25f, 1.25f);
-
-  c1->SetTransform(transform);
-  SnapLayerToPhysicalPixelBoundary(root.get(), c111.get());
-
-  // c111 ends up at 2.5, and is supposed to be snapped to 3.0. So subpixel
-  // offset is expected to be:
-  // 0.5 / 1.25 = 0.40
-  EXPECT_EQ("0.40 0.40",
-            Vector2dFTo100thPrecisionString(c111->subpixel_position_offset()));
-
-  c11->SetTransform(transform);
-  SnapLayerToPhysicalPixelBoundary(root.get(), c111.get());
-
-  // c111 ends up at 3.125, and is supposed to be snapped to 3.0. So subpixel
-  // offset is expected to be:
-  // -0.125 / (1.25 * 1.25) = -0.08
-  EXPECT_EQ("-0.08 -0.08",
-            Vector2dFTo100thPrecisionString(c111->subpixel_position_offset()));
-
-  // A transform on c111 should not affect the subpixel offset so expect it to
-  // be the same as before.
-  c111->SetTransform(transform);
-  SnapLayerToPhysicalPixelBoundary(root.get(), c111.get());
-  EXPECT_EQ("-0.08 -0.08",
-            Vector2dFTo100thPrecisionString(c111->subpixel_position_offset()));
+  // 2 at 1.5 scale = 3 : (round(3) - 3) / 1.5 = 0
+  EXPECT_EQ("0.00 0.00",
+            Vector2dFTo100thPrecisionString(c11->GetSubpixelOffset()));
 }
 
 // Verify that LayerDelegate::OnLayerBoundsChanged() is called when the bounds

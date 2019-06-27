@@ -164,42 +164,12 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
 
 void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(
     NGBlockNode node,
-    const NGStaticPosition& static_position,
+    const NGLogicalStaticPosition& static_position,
     const LayoutInline* inline_container) {
-  DCHECK_GE(InlineSize(), LayoutUnit());
-  DCHECK_GE(BlockSize(), LayoutUnit());
-
-  NGOutOfFlowPositionedDescendant descendant(
+  oof_positioned_candidates_.emplace_back(
       node, static_position,
       inline_container ? ToLayoutInline(inline_container->ContinuationRoot())
                        : nullptr);
-  // Need 0,0 physical coordinates as child offset. Because offset
-  // is stored as logical, must convert physical 0,0 to logical.
-  LogicalOffset zero_offset;
-  switch (GetWritingMode()) {
-    case WritingMode::kHorizontalTb:
-      if (IsLtr(Direction()))
-        zero_offset = LogicalOffset();
-      else
-        zero_offset = LogicalOffset(InlineSize(), LayoutUnit());
-      break;
-    case WritingMode::kVerticalRl:
-    case WritingMode::kSidewaysRl:
-      if (IsLtr(Direction()))
-        zero_offset = LogicalOffset(LayoutUnit(), BlockSize());
-      else
-        zero_offset = LogicalOffset(InlineSize(), BlockSize());
-      break;
-    case WritingMode::kVerticalLr:
-    case WritingMode::kSidewaysLr:
-      if (IsLtr(Direction()))
-        zero_offset = LogicalOffset();
-      else
-        zero_offset = LogicalOffset(InlineSize(), LayoutUnit());
-      break;
-  }
-  oof_positioned_candidates_.push_back(
-      NGOutOfFlowPositionedCandidate{descendant, zero_offset});
 }
 
 NGPhysicalFragment::NGBoxType NGBoxFragmentBuilder::BoxType() const {

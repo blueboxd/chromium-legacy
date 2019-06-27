@@ -718,30 +718,6 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   EXPECT_EQ(accent, header_row()->accent_color_for_testing());
 }
 
-TEST_F(MediaNotificationViewTest, UpdateIconFromItem) {
-  gfx::ImageSkia original = GetAppIcon();
-  EXPECT_EQ(message_center::kSmallImageSizeMD, original.width());
-  EXPECT_EQ(message_center::kSmallImageSizeMD, original.height());
-
-  // The size for the image we provide should be different so we can compare.
-  const int alt_size = message_center::kSmallImageSizeMD + 1;
-
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(alt_size, alt_size);
-
-  GetItem()->MediaControllerImageChanged(
-      media_session::mojom::MediaSessionImageType::kSourceIcon, bitmap);
-
-  EXPECT_EQ(alt_size, GetAppIcon().width());
-  EXPECT_EQ(alt_size, GetAppIcon().height());
-
-  GetItem()->MediaControllerImageChanged(
-      media_session::mojom::MediaSessionImageType::kSourceIcon, SkBitmap());
-
-  EXPECT_EQ(message_center::kSmallImageSizeMD, GetAppIcon().width());
-  EXPECT_EQ(message_center::kSmallImageSizeMD, GetAppIcon().height());
-}
-
 TEST_F(MediaNotificationViewTest, ExpandableDefaultState) {
   EXPECT_FALSE(IsActuallyExpanded());
   EXPECT_FALSE(expand_button_enabled());

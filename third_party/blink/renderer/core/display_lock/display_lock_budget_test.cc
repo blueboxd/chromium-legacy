@@ -480,7 +480,6 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
 
   auto budget_owned = base::WrapUnique(
       new YieldingDisplayLockBudget(element->GetDisplayLockContext()));
-  ;
   auto* budget = budget_owned.get();
   budget->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
   {

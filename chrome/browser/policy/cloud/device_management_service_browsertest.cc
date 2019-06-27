@@ -13,12 +13,12 @@
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
+#include "components/policy/test_support/local_policy_test_server.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -178,8 +178,9 @@ class DeviceManagementServiceIntegrationTest
   }
 
   void StartTestServer() {
-    test_server_.reset(
-        new LocalPolicyTestServer("device_management_service_browsertest"));
+    test_server_.reset(new LocalPolicyTestServer(
+        "chrome/test/data/policy/"
+        "policy_device_management_service_browsertest.json"));
     ASSERT_TRUE(test_server_->Start());
   }
 

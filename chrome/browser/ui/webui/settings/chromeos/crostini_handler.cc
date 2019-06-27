@@ -12,9 +12,9 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -126,7 +126,7 @@ void CrostiniHandler::HandleRemoveCrostiniSharedPath(
   std::string path;
   CHECK(args->GetString(1, &path));
 
-  crostini::CrostiniSharePath::GetForProfile(profile_)->UnsharePath(
+  guest_os::GuestOsSharePath::GetForProfile(profile_)->UnsharePath(
       vm_name, base::FilePath(path),
       /*unpersist=*/true,
       base::BindOnce(

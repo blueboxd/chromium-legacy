@@ -15,6 +15,7 @@
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 
 class GURL;
 
@@ -34,6 +35,7 @@ struct ResourceResponse;
 namespace content {
 class SignedExchangeEnvelope;
 class FrameTreeNode;
+class FileSelectListener;
 class NavigationHandleImpl;
 class NavigationRequest;
 class NavigationThrottle;
@@ -54,6 +56,11 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* loader_factory_request);
+
+bool InterceptFileChooser(
+    RenderFrameHostImpl* rfh,
+    std::unique_ptr<content::FileSelectListener>* listener,
+    const blink::mojom::FileChooserParams& params);
 
 bool WillCreateURLLoaderFactoryForServiceWorker(
     RenderProcessHost* rph,

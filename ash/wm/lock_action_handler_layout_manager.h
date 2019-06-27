@@ -48,7 +48,7 @@ class ASH_EXPORT LockActionHandlerLayoutManager
       LockScreenActionBackgroundController* action_background_controller);
   ~LockActionHandlerLayoutManager() override;
 
-  // WmSnapToPixelLayoutManager:
+  // WmDefaultLayoutManager:
   void OnWindowAddedToLayout(aura::Window* child) override;
   void OnChildWindowVisibilityChanged(aura::Window* child,
                                       bool visibile) override;

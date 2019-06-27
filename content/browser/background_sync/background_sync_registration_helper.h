@@ -41,6 +41,7 @@ class BackgroundSyncRegistrationHelper {
   void OnRegisterResult(RegisterCallback callback,
                         BackgroundSyncStatus status,
                         std::unique_ptr<BackgroundSyncRegistration> result);
+  void NotifyInvalidOptionsProvided(RegisterCallback callback) const;
   void OnGetRegistrationsResult(
       GetRegistrationsCallback callback,
       BackgroundSyncStatus status,

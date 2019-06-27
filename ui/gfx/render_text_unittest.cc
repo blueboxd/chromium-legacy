@@ -4102,6 +4102,24 @@ TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
   }
 }
 
+TEST_F(RenderTextTest, Multiline_ZeroWidthNewline) {
+  RenderTextHarfBuzz* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+
+  const base::string16 text(UTF8ToUTF16("\n\n"));
+  render_text->SetText(text);
+  test_api()->EnsureLayout();
+  EXPECT_EQ(3u, test_api()->lines().size());
+  for (const auto& line : test_api()->lines()) {
+    EXPECT_EQ(0, line.size.width());
+    EXPECT_LT(0, line.size.height());
+  }
+
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  EXPECT_EQ(2U, run_list->size());
+  EXPECT_EQ(0, run_list->width());
+}
+
 TEST_F(RenderTextTest, Multiline_GetLineContainingCaret) {
   struct {
     const SelectionModel caret;
@@ -4436,6 +4454,36 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
   EXPECT_EQ(ToString16Vec({"「", "🦋", "」「"}), GetRunListStrings());
   // Note 🦋 is a surrogate pair [1->2].
   EXPECT_EQ("[0][1->2][3->4]", GetRunListStructureString());
+}
+
+TEST_F(RenderTextTest, HarfBuzz_BreakRunsByNewline) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetText(WideToUTF16(L"x\ny"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"x", "\n", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1][2]", GetRunListStructureString());
+
+  // Validate that the character newline is an unknown glyph
+  // (see http://crbug/972090 and http://crbug/680430).
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  ASSERT_EQ(3U, run_list->size());
+  EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
+  EXPECT_EQ(1U, run_list->runs()[1]->CountMissingGlyphs());
+  EXPECT_EQ(0U, run_list->runs()[2]->CountMissingGlyphs());
+
+  SkScalar x_width =
+      run_list->runs()[0]->GetGlyphWidthForCharRange(Range(0, 1));
+  EXPECT_GT(x_width, 0);
+
+  // Newline character must have a width of zero.
+  SkScalar newline_width =
+      run_list->runs()[1]->GetGlyphWidthForCharRange(Range(1, 2));
+  EXPECT_EQ(newline_width, 0);
+
+  SkScalar y_width =
+      run_list->runs()[2]->GetGlyphWidthForCharRange(Range(2, 3));
+  EXPECT_GT(y_width, 0);
 }
 
 TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {

@@ -1172,16 +1172,12 @@ void SearchProvider::AddNavigationResultsToMatches(
 void SearchProvider::AddRawHistoryResultsToMap(bool is_keyword,
                                                int did_not_accept_suggestion,
                                                MatchMap* map) {
-  base::TimeTicks start_time(base::TimeTicks::Now());
-
   const SearchSuggestionParser::SuggestResults* transformed_results =
       is_keyword ? &transformed_keyword_history_results_
                  : &transformed_default_history_results_;
   DCHECK(transformed_results);
   AddTransformedHistoryResultsToMap(
       *transformed_results, did_not_accept_suggestion, map);
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
-                      base::TimeTicks::Now() - start_time);
 }
 
 void SearchProvider::AddTransformedHistoryResultsToMap(

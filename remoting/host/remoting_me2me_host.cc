@@ -967,7 +967,7 @@ void HostProcess::OnHeartbeatSuccessful() {
 
 void HostProcess::OnHostDeleted() {
   LOG(ERROR) << "Host was deleted from the directory.";
-  ShutdownHost(kInvalidHostIdExitCode);
+  ShutdownHost(kHostDeletedExitCode);
 }
 
 void HostProcess::OnInitializePairingRegistry(
@@ -1724,7 +1724,12 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
 
   // Before shutting down HostSignalingManager, send the |host_offline_reason|
   // if possible (i.e. if we have the config).
-  if (!serialized_config_.empty()) {
+  if (host_offline_reason == ExitCodeToString(kHostDeletedExitCode)) {
+    // Host is deleted. There is no need to report the host offline reason back
+    // to directory.
+    OnHostOfflineReasonAck(true);
+    return;
+  } else if (!serialized_config_.empty()) {
     if (!signal_strategy_)
       InitializeSignaling();
 

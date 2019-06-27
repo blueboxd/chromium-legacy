@@ -345,7 +345,6 @@ function getThemeBackgroundInfo() {
  *
  * @param {!Object} info Theme background information.
  * @return {boolean} Whether the chips should be dark.
- * @private
  */
 function getUseDarkChips(info) {
   return info.usingDarkMode && !info.imageUrl;
@@ -353,7 +352,6 @@ function getUseDarkChips(info) {
 
 /**
  * Updates the NTP based on the current theme.
- * @private
  */
 function renderTheme() {
   const info = getThemeBackgroundInfo();
@@ -454,7 +452,6 @@ function renderTheme() {
 
 /**
  * Sends the current theme info to the most visited iframe.
- * @private
  */
 function sendThemeInfoToMostVisitedIframe() {
   const info = getThemeBackgroundInfo();
@@ -483,7 +480,6 @@ function sendThemeInfoToMostVisitedIframe() {
 
 /**
  * Sends the current theme info to the edit custom link iframe.
- * @private
  */
 function sendThemeInfoToEditCustomLinkIframe() {
   if (!configData.isGooglePage) {
@@ -504,7 +500,6 @@ function sendThemeInfoToEditCustomLinkIframe() {
 /**
  * Updates the OneGoogleBar (if it is loaded) based on the current theme.
  * TODO(crbug.com/918582): Add support for OGB dark mode.
- * @private
  */
 function renderOneGoogleBarTheme() {
   if (!window.gbar) {
@@ -524,7 +519,6 @@ function renderOneGoogleBarTheme() {
 
 /**
  * Callback for embeddedSearch.newTabPage.onthemechange.
- * @private
  */
 function onThemeChange() {
   // Save the current dark mode state to check if dark mode has changed.
@@ -545,7 +539,6 @@ function onThemeChange() {
 /**
  * Updates the NTP style according to theme.
  * @param {Object} themeInfo The information about the theme.
- * @private
  */
 function setCustomThemeStyle(themeInfo) {
   let textColor = '';
@@ -571,7 +564,6 @@ function setCustomThemeStyle(themeInfo) {
  * @param {string} url The URL of the attribution image, if any.
  * @param {string} themeBackgroundAlignment The alignment of the theme
  *     background image. This is used to compute the attribution's alignment.
- * @private
  */
 function updateThemeAttribution(url, themeBackgroundAlignment) {
   if (!url) {
@@ -597,7 +589,6 @@ function updateThemeAttribution(url, themeBackgroundAlignment) {
 /**
  * Sets the visibility of the theme attribution.
  * @param {boolean} show True to show the attribution.
- * @private
  */
 function setAttributionVisibility_(show) {
   $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
@@ -607,7 +598,6 @@ function setAttributionVisibility_(show) {
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
  * @param {Array<number>} color Array of rgba color components.
  * @return {string} CSS color in RGBA format.
- * @private
  */
 function convertToRGBAColor(color) {
   return 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' +

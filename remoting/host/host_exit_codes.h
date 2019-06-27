@@ -26,11 +26,12 @@ enum HostExitCodes {
   kInvalidHostDomainExitCode = 103,
   kLoginScreenNotSupportedExitCode = 104,
   kUsernameMismatchExitCode = 105,
+  kHostDeletedExitCode = 106,
 
   // The range of the exit codes that should be interpreted as a permanent error
   // condition.
   kMinPermanentErrorExitCode = kInvalidHostConfigurationExitCode,
-  kMaxPermanentErrorExitCode = kUsernameMismatchExitCode
+  kMaxPermanentErrorExitCode = kHostDeletedExitCode
 };
 
 const char* ExitCodeToString(HostExitCodes exit_code);

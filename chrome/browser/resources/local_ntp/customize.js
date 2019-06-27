@@ -168,10 +168,23 @@ customize.MENU_ENTRIES = {
   RESTORE_DEFAULT: 3,
 };
 
+/**
+ * The semi-transparent, gradient overlay for the custom background. Intended
+ * to improve readability of NTP elements/text.
+ * @type {string}
+ * @const
+ */
 customize.CUSTOM_BACKGROUND_OVERLAY =
     'linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3))';
 
-// These shound match the corresponding values in local_ntp.js, that control the
+/**
+ * Number of rows in the custom background dialog to preload.
+ * @type {number}
+ * @const
+ */
+customize.ROWS_TO_PRELOAD = 3;
+
+// These should match the corresponding values in local_ntp.js, that control the
 // mv-notice element.
 customize.delayedHideNotification = -1;
 customize.NOTIFICATION_TIMEOUT = 10000;
@@ -189,23 +202,14 @@ customize.builtTiles = false;
 customize.selectedBackgroundTile = null;
 
 /**
- * Number of rows in the custom background dialog to preload.
- * @type {number}
- * @const
- */
-customize.ROWS_TO_PRELOAD = 3;
-
-/**
  * Called when the error notification should be shown.
  * @type {?Function}
- * @private
  */
 customize.showErrorNotification = null;
 
 /**
  * Called when the custom link notification should be hidden.
  * @type {?Function}
- * @private
  */
 customize.hideCustomLinkNotification = null;
 
@@ -213,14 +217,12 @@ customize.hideCustomLinkNotification = null;
  * The currently selected submenu (i.e. Background, Shortcuts, etc.) in the
  * richer picker. Corresponds to the submenu's button element in the sidebar.
  * @type {?Element}
- * @private
  */
 customize.richerPicker_selectedSubmenu = null;
 
 /**
  * The preselected options for Shortcuts in the richer picker.
  * @type {Object}
- * @private
  */
 customize.preselectedShortcutOptions = {
   // Contains the selected type's DOM element, i.e. either custom links or most visited.
@@ -231,7 +233,6 @@ customize.preselectedShortcutOptions = {
 /**
  * The currently selected options for Shortcuts in the richer picker.
  * @type {Object}
- * @private
  */
 customize.selectedShortcutOptions = {
   // Contains the preselected type's DOM element, i.e. either custom links or most visited.
@@ -889,7 +890,7 @@ customize.removeSelectedState = function(tile) {
 };
 
 /**
- * Show dialog for selecting an image. Image data should previous have been
+ * Show dialog for selecting an image. Image data should previously have been
  * loaded into collImg via
  * chrome-search://local-ntp/ntp-background-images.js?collection_id=<collection_id>
  * @param {string} dialogTitle The title to be displayed at the top of the
@@ -1080,7 +1081,6 @@ customize.fadeInImageTile = function(tile, imageUrl, countLoad) {
 /**
  * Load the NTPBackgroundCollections script. It'll create a global
  * variable name "coll" which is a dict of background collections data.
- * @private
  */
 customize.loadChromeBackgrounds = function() {
   const collElement = $('ntp-collection-loader');

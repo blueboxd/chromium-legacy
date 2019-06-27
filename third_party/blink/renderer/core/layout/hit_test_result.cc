@@ -205,17 +205,19 @@ void HitTestResult::SetInnerNode(Node* n) {
     return;
   }
 
-  if (GetHitTestRequest().RetargetForInert()) {
-    if (n->IsInert()) {
-      if (!inert_node_)
-        inert_node_ = n;
+  if (RuntimeEnabledFeatures::InertAttributeEnabled()) {
+    if (GetHitTestRequest().RetargetForInert()) {
+      if (n->IsInert()) {
+        if (!inert_node_)
+          inert_node_ = n;
 
-      return;
-    }
+        return;
+      }
 
-    if (inert_node_ && n != inert_node_ &&
-        !n->IsShadowIncludingInclusiveAncestorOf(*inert_node_)) {
-      return;
+      if (inert_node_ && n != inert_node_ &&
+          !n->IsShadowIncludingInclusiveAncestorOf(*inert_node_)) {
+        return;
+      }
     }
   }
 

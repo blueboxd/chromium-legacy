@@ -36,7 +36,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/user_manager.h"
@@ -68,7 +67,6 @@ constexpr char kArcStatusKey[] = "CHROMEOS_ARC_STATUS";
 constexpr char kMonitorInfoKey[] = "monitor_info";
 constexpr char kAccountTypeKey[] = "account_type";
 constexpr char kDemoModeConfigKey[] = "demo_mode_config";
-constexpr char kKioskNextKey[] = "kiosk_next";
 #else
 constexpr char kOsVersionTag[] = "OS VERSION";
 #endif
@@ -247,11 +245,6 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
   response->emplace(kDemoModeConfigKey,
                     chromeos::DemoSession::DemoConfigToString(
                         chromeos::DemoSession::GetDemoConfig()));
-  response->emplace(
-      kKioskNextKey,
-      KioskNextShellClient::Get() && KioskNextShellClient::Get()->has_launched()
-          ? "enabled"
-          : "disabled");
   PopulateLocalStateSettings(response.get());
 
   // Chain asynchronous fetchers: PopulateMonitorInfoAsync, PopulateEntriesAsync

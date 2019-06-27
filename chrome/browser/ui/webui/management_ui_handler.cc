@@ -50,7 +50,6 @@
 #include "ui/chromeos/devicetype_utils.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -108,8 +107,6 @@ enum class ReportingType {
   kUser,
   kUserActivity
 };
-
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
 const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
@@ -237,7 +234,6 @@ void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 std::vector<base::Value> GetPermissionsForExtension(
     scoped_refptr<const extensions::Extension> extension) {
   std::vector<base::Value> permission_messages;
@@ -298,8 +294,6 @@ const char* GetReportingTypeValue(ReportingType reportingType) {
   }
 }
 
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
 }  // namespace
 
 // TODO(raleksandov) Move to util class or smth similar.
@@ -323,11 +317,9 @@ std::string ManagementUIHandler::GetAccountDomain(Profile* profile) {
 }
 
 ManagementUIHandler::ManagementUIHandler() {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   reporting_extension_ids_ = {kOnPremReportingExtensionStableId,
                               kOnPremReportingExtensionBetaId,
                               kCloudReportingExtensionId};
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 ManagementUIHandler::~ManagementUIHandler() {
@@ -379,7 +371,6 @@ void ManagementUIHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 void ManagementUIHandler::OnJavascriptAllowed() {
   AddObservers();
 }
@@ -570,7 +561,6 @@ const extensions::Extension* ManagementUIHandler::GetEnabledExtension(
       ->GetExtensionById(kCloudReportingExtensionId,
                          extensions::ExtensionRegistry::ENABLED);
 }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 void ManagementUIHandler::AsyncUpdateLogo() {
 #if defined(OS_CHROMEOS)
@@ -701,7 +691,6 @@ void ManagementUIHandler::GetManagementStatus(Profile* profile,
 
 void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
   AllowJavascript();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   // List of all enabled extensions
   const extensions::ExtensionSet& extensions =
       extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
@@ -711,10 +700,6 @@ void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             powerful_extensions);
-#else
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            base::Value(base::Value::Type::LIST));
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 #if defined(OS_CHROMEOS)
@@ -758,14 +743,11 @@ void ManagementUIHandler::HandleInitBrowserReportingInfo(
     const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   AddExtensionReportingInfo(&report_sources);
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 void ManagementUIHandler::NotifyBrowserReportingInfoUpdated() {
   base::Value report_sources(base::Value::Type::LIST);
   AddExtensionReportingInfo(&report_sources);
@@ -854,4 +836,3 @@ void ManagementUIHandler::RemoveObservers() {
 
   pref_registrar_.RemoveAll();
 }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)

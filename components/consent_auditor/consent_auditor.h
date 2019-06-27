@@ -30,7 +30,7 @@ enum class Feature {
   PLAY_STORE = 1,
   BACKUP_AND_RESTORE = 2,
   GOOGLE_LOCATION_SERVICE = 3,
-  CHROME_UNIFIED_CONSENT = 4,
+  // CHROME_UNIFIED_CONSENT = 4, (deprecated, not used)
   ASSISTANT_ACTIVITY_CONTROL = 5,
 
   FEATURE_LAST = ASSISTANT_ACTIVITY_CONTROL
@@ -73,12 +73,6 @@ class ConsentAuditor : public KeyedService {
   virtual void RecordSyncConsent(
       const std::string& account_id,
       const sync_pb::UserConsentTypes::SyncConsent& consent) = 0;
-
-  // Records the Chrome Unified |consent| for the signed-in GAIA account with
-  // the ID |accounts_id| (as defined in Account Info).
-  virtual void RecordUnifiedConsent(
-      const std::string& account_id,
-      const sync_pb::UserConsentTypes::UnifiedConsent& consent) = 0;
 
   // Records the Assistant activity control |consent| for the signed-in GAIA
   // account with the ID |accounts_id| (as defined in Account Info).

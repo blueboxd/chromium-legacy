@@ -28,12 +28,11 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
+#include "ios/web_view/test/test_with_locale_and_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,13 +52,9 @@ NSString* const kTestFieldValue = @"FieldValue";
 
 }  // namespace
 
-class CWVAutofillControllerTest : public PlatformTest {
+class CWVAutofillControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVAutofillControllerTest()
-      : browser_state_(
-            // Using comma-operator to perform required initialization before
-            // creating browser_state.
-            (InitializeLocaleAndResources(), /*off_the_record=*/false)) {
+  CWVAutofillControllerTest() : browser_state_(/*off_the_record=*/false) {
     web::SetWebClient(&web_client_);
 
     web_state_.SetBrowserState(&browser_state_);
@@ -83,17 +78,6 @@ class CWVAutofillControllerTest : public PlatformTest {
                                     JSSuggestionManager:js_suggestion_manager_];
     test_form_activity_tab_helper_ =
         std::make_unique<autofill::TestFormActivityTabHelper>(&web_state_);
-  }
-
-  ~CWVAutofillControllerTest() override {
-    ui::ResourceBundle::CleanupSharedInstance();
-  }
-
-  static void InitializeLocaleAndResources() {
-    l10n_util::OverrideLocaleWithCocoaLocale();
-    ui::ResourceBundle::InitSharedInstanceWithLocale(
-        l10n_util::GetLocaleOverride(), /*delegate=*/nullptr,
-        ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   web::WebClient web_client_;

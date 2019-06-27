@@ -5437,70 +5437,25 @@ be describing additional metrics about the same event.
       changes in form control types.
     </summary>
   </metric>
-  <metric name="Fill.FirstFillingResultInRenderer">
+  <metric name="Fill.FirstFillingResultInRenderer"
+      enum="PasswordManagerFirstRendererFillingResult">
     <summary>
       Records whether the PasswordAutofillAgent in the renderer manages to fill
       credentials as instructed by the browser or records a failure reason
       otherwise. Only the outcome of the first attempt to fill is recorded.
 
-      0: Success
-
-      1: No password element - The password element to be filled has not been
-      found.
-
-      2: Blocked by frame hierarchy - Filling only happens in iframes if all
-      parent frames PSL-match the security origin of the iframe containing the
-      password field.
-
-      3: Password element is not autocompleteable - Passwords are not filled
-      into fields that are not editable.
-
-      4: Username prefilled with incompatible value - The username field
-      contains a string that does not match the username of any available
-      credential. This typically indicates placeholder values.
-
-      5: Found no password for username - No credential was filled due to
-      mismatches with the username. This can happen in a number of cases: In
-      case the username field is empty and readonly. In case of a
-      username-first-flow where a user's credentials do contain a username but
-      the form contains only a password field and no username field. In case of
-      change password forms that contain no username field. In case the user
-      name is given on a page but only PSL matched credentials exist for this
-      username. There may be further cases.
-
-      6: Wait for username - Renderer was instructed to wait until user has
-      manually picked a credential. This happens for example if the session is
-      an incognito session, the credendial's URL matches the mainframe only via
-      the PSL, the site is on HTTP, or the form has no current password field.
-      Fill.FirstWaitForUsernameReason records the root causes.
-
-      7: No fillable elements found - No fillable elements were found, only
-      possible for the old form parser.
-
       This is replicated as PasswordManager.FirstFillingResultInRenderer in UMA.
     </summary>
   </metric>
-  <metric name="Fill.FirstWaitForUsernameReason">
+  <metric name="Fill.FirstWaitForUsernameReason"
+      enum="PasswordManagerFirstWaitForUsernameReason">
     <summary>
       This metric records why the browser instructs the renderer not to fill the
       credentials on page load but to wait for the user to confirm the
       credential to be filled. Only the value of the first decision to fill is
       recorded.
 
-      0: Don't wait
-
-      1: Incognito mode - User is browsing in incognito mode.
-
-      2: Public suffix match - A credential exists for a PSL matched site but
-      not for the current security origin.
-
-      3: Form not good for filling - Form is suspected to be a password change
-      form. (Only recorded for old form parser)
-
-      4: FOAS on HTTP - User is on an HTTP site where passwords are filled on
-      account selection (FOAS).
-
-      This is replicated PasswordManager.FirstWaitForUsernameReason in UMA.
+      This is replicated as PasswordManager.FirstWaitForUsernameReason in UMA.
     </summary>
   </metric>
   <metric name="FillOnLoad">

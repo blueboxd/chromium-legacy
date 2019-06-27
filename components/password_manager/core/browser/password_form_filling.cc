@@ -148,6 +148,11 @@ LikelyFormFilling SendFillInformationToRenderer(
       base::FeatureList::IsEnabled(features::kFillOnAccountSelectHttp) &&
       !client.IsMainFrameSecure();
 
+  // Suppress autofilling on Android in case the Touch To Fill feature is
+  // enabled.
+  const bool enable_touch_to_fill =
+      base::FeatureList::IsEnabled(features::kTouchToFillAndroid);
+
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, or
@@ -171,6 +176,8 @@ LikelyFormFilling SendFillInformationToRenderer(
     wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;
   } else if (enable_foas_on_http) {
     wait_for_username_reason = WaitForUsernameReason::kFoasOnHTTP;
+  } else if (enable_touch_to_fill) {
+    wait_for_username_reason = WaitForUsernameReason::kTouchToFill;
   }
 
   // Record no "FirstWaitForUsernameReason" metrics for a form that is not meant

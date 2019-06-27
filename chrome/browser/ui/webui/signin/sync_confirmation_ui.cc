@@ -26,8 +26,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
-    : SigninWebDialogUI(web_ui),
-      consent_feature_(consent_auditor::Feature::CHROME_SYNC) {
+    : SigninWebDialogUI(web_ui) {
   DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
   Profile* profile = Profile::FromWebUI(web_ui);
   bool is_sync_allowed = profile->IsSyncAllowed();
@@ -80,8 +79,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                                .spec();
     }
     source->AddString("accountPictureUrl", custom_picture_url);
-
-    consent_feature_ = consent_auditor::Feature::CHROME_UNIFIED_CONSENT;
   } else {
     source->SetDefaultResource(IDR_SYNC_DISABLED_CONFIRMATION_HTML);
     source->AddResourcePath("sync_disabled_confirmation.js",
@@ -95,8 +92,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                       IDS_SYNC_DISABLED_CONFIRMATION_CONFIRM_BUTTON_LABEL);
     AddStringResource(source, "syncDisabledConfirmationUndoLabel",
                       IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL);
-
-    consent_feature_ = consent_auditor::Feature::CHROME_SYNC;
   }
 
   base::DictionaryValue strings;
@@ -111,7 +106,7 @@ SyncConfirmationUI::~SyncConfirmationUI() {}
 
 void SyncConfirmationUI::InitializeMessageHandlerWithBrowser(Browser* browser) {
   web_ui()->AddMessageHandler(std::make_unique<SyncConfirmationHandler>(
-      browser, js_localized_string_to_ids_map_, consent_feature_));
+      browser, js_localized_string_to_ids_map_));
 }
 
 void SyncConfirmationUI::AddStringResource(content::WebUIDataSource* source,

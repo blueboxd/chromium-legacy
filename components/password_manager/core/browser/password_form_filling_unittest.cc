@@ -238,10 +238,11 @@ TEST_F(PasswordFormFillingTest, FillingOnHttp) {
   best_matches.emplace(saved_match_.username_value, &saved_match_);
 
   for (bool enable_foas_http : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "Enable FOAS on HTTP: " << std::boolalpha
+                                    << enable_foas_http);
     base::test::ScopedFeatureList features;
-    enable_foas_http
-        ? features.InitAndEnableFeature(features::kFillOnAccountSelectHttp)
-        : features.InitAndDisableFeature(features::kFillOnAccountSelectHttp);
+    features.InitWithFeatureState(features::kFillOnAccountSelectHttp,
+                                  enable_foas_http);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
         client_, &driver_, false /* is_blacklisted */, observed_form_,
@@ -249,6 +250,27 @@ TEST_F(PasswordFormFillingTest, FillingOnHttp) {
         metrics_recorder_.get());
     EXPECT_EQ(enable_foas_http ? LikelyFormFilling::kFillOnAccountSelect
                                : LikelyFormFilling::kFillOnPageLoad,
+              likely_form_filling);
+  }
+}
+
+TEST_F(PasswordFormFillingTest, TouchToFill) {
+  std::map<base::string16, const autofill::PasswordForm*> best_matches;
+  best_matches.emplace(saved_match_.username_value, &saved_match_);
+
+  for (bool enable_touch_to_fill : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "Enable Touch To Fill: "
+                                    << std::boolalpha << enable_touch_to_fill);
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatureState(features::kTouchToFillAndroid,
+                                  enable_touch_to_fill);
+
+    LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
+        client_, &driver_, false /* is_blacklisted */, observed_form_,
+        best_matches, federated_matches_, &saved_match_,
+        metrics_recorder_.get());
+    EXPECT_EQ(enable_touch_to_fill ? LikelyFormFilling::kFillOnAccountSelect
+                                   : LikelyFormFilling::kFillOnPageLoad,
               likely_form_filling);
   }
 }

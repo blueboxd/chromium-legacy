@@ -40,6 +40,7 @@
 #include "chrome/common/search.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/favicon_base/favicon_url_parser.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -266,8 +267,9 @@ InstantService::InstantService(Profile* profile)
                               std::make_unique<LocalNtpSource>(profile_));
   content::URLDataSource::Add(profile_,
                               std::make_unique<NtpIconSource>(profile_));
-  content::URLDataSource::Add(profile_,
-                              std::make_unique<FaviconSource>(profile_));
+  content::URLDataSource::Add(
+      profile_, std::make_unique<FaviconSource>(
+                    profile_, chrome::FaviconUrlFormat::kFaviconLegacy));
   content::URLDataSource::Add(profile_,
                               std::make_unique<MostVisitedIframeSource>());
 

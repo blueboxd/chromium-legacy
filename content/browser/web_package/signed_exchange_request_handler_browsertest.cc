@@ -690,8 +690,9 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
                                        SignedExchangeLoadResult::kOCSPError, 1);
 }
 
+// TODO(https://crbug.com/979169) Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
-                       LogicalUrlInServiceWorkerScope) {
+                       DISABLED_LogicalUrlInServiceWorkerScope) {
   // SW-scope: https://test.example.org/test/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/

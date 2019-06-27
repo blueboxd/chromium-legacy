@@ -12,6 +12,8 @@ source_set("tabs") {
     "tab_model_list_observer.h",
     "tab_model_synced_window_delegate.h",
     "tab_model_synced_window_delegate_getter.h",
+    "tab_parenting_global_observer.cc",
+    "tab_parenting_global_observer.h",
     "tab_title_util.h",
   ]
   public_deps = [

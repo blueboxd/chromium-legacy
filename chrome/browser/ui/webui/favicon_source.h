@@ -21,41 +21,23 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace chrome {
+enum class FaviconUrlFormat;
+}
+
 namespace ui {
 class NativeTheme;
 }
 
 // FaviconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
-//
-// Format:
-//   chrome://favicon/size&scalefactor/iconurl/url
-// Some parameters are optional as described below. However, the order of the
-// parameters is not interchangeable.
-//
-// Parameter:
-//  'url'               Required
-//    Specifies the page URL of the requested favicon. If the 'iconurl'
-//    parameter is specified, the URL refers to the URL of the favicon image
-//    instead.
-//  'size&scalefactor'  Optional
-//    Values: ['size/aa@bx/']
-//      Specifies the requested favicon's size in DIP (aa) and the requested
-//      favicon's scale factor. (b).
-//      The supported requested DIP sizes are: 16x16, 32x32 and 64x64.
-//      If the parameter is unspecified, the requested favicon's size defaults
-//      to 16 and the requested scale factor defaults to 1x.
-//      Example: chrome://favicon/size/16@2x/https://www.google.com/
-//  'iconurl'           Optional
-//    Values: ['iconurl']
-//    'iconurl': Specifies that the url parameter refers to the URL of
-//    the favicon image as opposed to the URL of the page that the favicon is
-//    on.
-//    Example: chrome://favicon/iconurl/https://www.google.com/favicon.ico
+// Two possible formats are allowed: chrome://favicon, kept only for backwards
+// compatibility for extensions, and chrome://favicon2. Formats are described in
+// favicon_url_parser.h.
 class FaviconSource : public content::URLDataSource {
  public:
   // |type| is the type of icon this FaviconSource will provide.
-  explicit FaviconSource(Profile* profile);
+  explicit FaviconSource(Profile* profile, chrome::FaviconUrlFormat format);
 
   ~FaviconSource() override;
 
@@ -115,6 +97,8 @@ class FaviconSource : public content::URLDataSource {
 
   // Sends the default favicon.
   void SendDefaultResponse(const IconRequest& request);
+
+  chrome::FaviconUrlFormat url_format_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 

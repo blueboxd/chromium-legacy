@@ -135,8 +135,10 @@ bool ParseIconRestrictedUrl(const GURL& url,
 
   // Get the starting index of the page URL.
   chrome::ParsedFaviconPath parsed;
-  if (!chrome::ParseFaviconPath(raw_path, &parsed))
+  if (!chrome::ParseFaviconPath(
+          raw_path, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed)) {
     return false;
+  }
   int path_index = parsed.path_index;
 
   std::string id_part = raw_path.substr(path_index);

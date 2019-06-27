@@ -224,7 +224,9 @@ class PasswordFormMetricsRecorder
     // User is on an HTTP site where passwords are filled on account selection
     // (FOAS).
     kFoasOnHTTP = 4,
-    kMaxValue = kFoasOnHTTP,
+    // The Touch To Fill feature is enabled.
+    kTouchToFill = 5,
+    kMaxValue = kTouchToFill,
   };
 
   // This metric records the user experience with the passwords filling. The

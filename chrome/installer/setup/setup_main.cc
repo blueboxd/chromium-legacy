@@ -313,11 +313,6 @@ bool UncompressAndPatchChromeArchive(
   return true;
 }
 
-void RecordNumDeleteOldVersionsAttempsBeforeAbort(int num_attempts) {
-  UMA_HISTOGRAM_COUNTS_100(
-      "Setup.Install.NumDeleteOldVersionsAttemptsBeforeAbort", num_attempts);
-}
-
 // Repetitively attempts to delete all files that belong to old versions of
 // Chrome from |install_dir|. Waits 15 seconds before the first attempt and 5
 // minutes after each unsuccessful attempt. Returns when no files that belong to
@@ -326,7 +321,11 @@ void RecordNumDeleteOldVersionsAttempsBeforeAbort(int num_attempts) {
 installer::InstallStatus RepeatDeleteOldVersions(
     const base::FilePath& install_dir,
     const installer::SetupSingleton& setup_singleton) {
-  constexpr int kMaxNumAttempts = 12;
+  // The 99th percentile of the number of attempts it takes to successfully
+  // delete old versions is 2.75. The 75th percentile is 1.77. 98% of calls to
+  // this function will successfully delete old versions.
+  // Source: 30 days of UMA data on June 25, 2019.
+  constexpr int kMaxNumAttempts = 3;
   int num_attempts = 0;
 
   while (num_attempts < kMaxNumAttempts) {
@@ -345,7 +344,6 @@ installer::InstallStatus RepeatDeleteOldVersions(
     if (setup_singleton.WaitForInterrupt(max_wait_time)) {
       VLOG(1) << "Exiting --delete-old-versions process because another "
                  "process tries to acquire the SetupSingleton.";
-      RecordNumDeleteOldVersionsAttempsBeforeAbort(num_attempts);
       return installer::SETUP_SINGLETON_RELEASED;
     }
 
@@ -360,9 +358,6 @@ installer::InstallStatus RepeatDeleteOldVersions(
     if (delete_old_versions_success) {
       VLOG(1) << "Successfully deleted all old files from "
                  "--delete-old-versions process.";
-      UMA_HISTOGRAM_COUNTS_100(
-          "Setup.Install.NumDeleteOldVersionsAttemptsBeforeSuccess",
-          num_attempts);
       return installer::DELETE_OLD_VERSIONS_SUCCESS;
     } else if (num_attempts == 1) {
       VLOG(1) << "Failed to delete all old files from --delete-old-versions "
@@ -373,7 +368,6 @@ installer::InstallStatus RepeatDeleteOldVersions(
   VLOG(1) << "Exiting --delete-old-versions process after retrying too many "
              "times to delete all old files.";
   DCHECK_EQ(num_attempts, kMaxNumAttempts);
-  RecordNumDeleteOldVersionsAttempsBeforeAbort(num_attempts);
   return installer::DELETE_OLD_VERSIONS_TOO_MANY_ATTEMPTS;
 }
 

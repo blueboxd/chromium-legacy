@@ -61,6 +61,7 @@
       initWithPresentationProvider:self
                        queryLoader:static_cast<id<LoadQueryCommands>>(
                                        self.dispatcher)];
+  self.viewController.modalPresentationStyle = UIModalPresentationFullScreen;
 
   [self.baseViewController
       presentViewController:[self.viewController getViewControllerToPresent]

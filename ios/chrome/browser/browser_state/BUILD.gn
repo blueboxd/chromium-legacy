@@ -9,6 +9,8 @@ source_set("browser_state") {
     "chrome_browser_state.h",
     "chrome_browser_state.mm",
     "chrome_browser_state_manager.h",
+    "web_data_service_factory.cc",
+    "web_data_service_factory.h",
   ]
 
   public_deps = [
@@ -18,9 +20,15 @@ source_set("browser_state") {
 
   deps = [
     "//base",
+    "//components/autofill/core/browser",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
     "//components/prefs",
+    "//components/search_engines",
+    "//components/signin/core/browser",
     "//components/sync_preferences",
     "//components/variations/net",
+    "//components/webdata_services",
     "//ios/chrome/browser/net:net_types",
     "//ios/web/public/webui",
   ]

@@ -56,9 +56,6 @@ class ConsentAuditorImpl : public ConsentAuditor {
   void RecordSyncConsent(
       const std::string& account_id,
       const sync_pb::UserConsentTypes::SyncConsent& consent) override;
-  void RecordUnifiedConsent(
-      const std::string& account_id,
-      const sync_pb::UserConsentTypes::UnifiedConsent& consent) override;
   void RecordAssistantActivityControlConsent(
       const std::string& account_id,
       const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent)

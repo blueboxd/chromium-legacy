@@ -62,14 +62,22 @@ FaviconSource::IconRequest::IconRequest(const IconRequest& other) = default;
 FaviconSource::IconRequest::~IconRequest() {
 }
 
-FaviconSource::FaviconSource(Profile* profile)
-    : profile_(profile->GetOriginalProfile()) {}
+FaviconSource::FaviconSource(Profile* profile,
+                             chrome::FaviconUrlFormat url_format)
+    : profile_(profile->GetOriginalProfile()), url_format_(url_format) {}
 
 FaviconSource::~FaviconSource() {
 }
 
 std::string FaviconSource::GetSource() {
-  return chrome::kChromeUIFaviconHost;
+  switch (url_format_) {
+    case chrome::FaviconUrlFormat::kFaviconLegacy:
+      return chrome::kChromeUIFaviconHost;
+    case chrome::FaviconUrlFormat::kFavicon2:
+      return chrome::kChromeUIFavicon2Host;
+  }
+  NOTREACHED();
+  return "";
 }
 
 void FaviconSource::StartDataRequest(
@@ -85,7 +93,7 @@ void FaviconSource::StartDataRequest(
   }
 
   chrome::ParsedFaviconPath parsed;
-  bool success = chrome::ParseFaviconPath(path, &parsed);
+  bool success = chrome::ParseFaviconPath(path, url_format_, &parsed);
   if (!success) {
     SendDefaultResponse(callback);
     return;

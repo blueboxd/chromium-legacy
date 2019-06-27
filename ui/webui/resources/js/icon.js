@@ -55,7 +55,7 @@ cr.define('cr.icon', function() {
   function getImageSet(path) {
     const supportedScaleFactors = getSupportedScaleFactors();
 
-    const replaceStartIndex = path.indexOf('scalefactor');
+    const replaceStartIndex = path.indexOf('SCALEFACTOR');
     if (replaceStartIndex < 0) {
       return getUrlForCss(path);
     }
@@ -86,7 +86,7 @@ cr.define('cr.icon', function() {
     const chromeThemePath = 'chrome://theme';
     const isChromeThemeUrl =
         (path.slice(0, chromeThemePath.length) == chromeThemePath);
-    return isChromeThemeUrl ? getImageSet(path + '@scalefactorx') :
+    return isChromeThemeUrl ? getImageSet(path + '@SCALEFACTORx') :
                               getUrlForCss(path);
   }
 
@@ -104,11 +104,12 @@ cr.define('cr.icon', function() {
    * @return {string} -webkit-image-set for the favicon.
    */
   function getFavicon(url) {
+    // Note: Literal strings used below must match those in the description of
+    // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
     return getImageSet(
-        'chrome://favicon/size/16@scalefactorx/' +
-        // Note: Literal 'iconurl' must match |kIconURLParameter| in
-        // components/favicon_base/favicon_url_parser.cc.
-        (FAVICON_URL_REGEX.test(url) ? 'iconurl/' : '') + url);
+        'chrome://favicon2/?size=16&scale_factor=SCALEFACTORx' +
+        '&url_type=' + (FAVICON_URL_REGEX.test(url) ? 'icon_url' : 'page_url') +
+        '&url=' + encodeURIComponent(url));
   }
 
   return {

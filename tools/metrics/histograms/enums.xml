@@ -45341,6 +45341,9 @@ Called by update_net_trust_anchors.py.-->
     User is on an HTTP site where passwords are filled on account selection
     (FOAS).
   </int>
+  <int value="5" label="Touch To Fill">
+    User is browsing with the Touch To Fill feature enabled.
+  </int>
 </enum>
 
 <enum name="PasswordManagerHttpCredentialType">

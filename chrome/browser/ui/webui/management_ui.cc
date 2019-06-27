@@ -71,7 +71,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
     {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
     {"backButton", IDS_ACCNAME_BACK},
-#if BUILDFLAG(ENABLE_EXTENSIONS)
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},
     {kManagementExtensionReportMachineNameAddress,
@@ -86,7 +85,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH},
     {kManagementExtensionReportUserBrowsingData,
      IDS_MANAGEMENT_EXTENSION_REPORT_USER_BROWSING_DATA},
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   };
 
   AddLocalizedStringsBulk(source, kLocalizedStrings,

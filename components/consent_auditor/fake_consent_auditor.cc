@@ -43,12 +43,6 @@ void FakeConsentAuditor::RecordSyncConsent(
                     ConvertConsentStatus(consent.status()));
 }
 
-void FakeConsentAuditor::RecordUnifiedConsent(
-    const std::string& account_id,
-    const sync_pb::UserConsentTypes::UnifiedConsent& consent) {
-  NOTIMPLEMENTED();
-}
-
 void FakeConsentAuditor::RecordAssistantActivityControlConsent(
     const std::string& account_id,
     const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent) {

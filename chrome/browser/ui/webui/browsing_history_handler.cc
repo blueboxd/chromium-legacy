@@ -35,6 +35,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/large_icon_service.h"
+#include "components/favicon_base/favicon_url_parser.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
@@ -244,8 +245,9 @@ void BrowsingHistoryHandler::RegisterMessages() {
       this, local_history, sync_service);
 
   // Create our favicon data source.
-  content::URLDataSource::Add(profile,
-                              std::make_unique<FaviconSource>(profile));
+  content::URLDataSource::Add(
+      profile, std::make_unique<FaviconSource>(
+                   profile, chrome::FaviconUrlFormat::kFavicon2));
 
   web_ui()->RegisterMessageCallback(
       "queryHistory",

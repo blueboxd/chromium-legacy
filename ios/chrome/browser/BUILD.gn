@@ -68,10 +68,6 @@ source_set("browser") {
     "procedural_block_types.h",
     "system_flags.h",
     "system_flags.mm",
-    "tab_parenting_global_observer.cc",
-    "tab_parenting_global_observer.h",
-    "web_data_service_factory.cc",
-    "web_data_service_factory.h",
   ]
 
   deps = [

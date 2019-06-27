@@ -33,13 +33,11 @@ const int kProfileImageSize = 128;
 
 SyncConfirmationHandler::SyncConfirmationHandler(
     Browser* browser,
-    const std::unordered_map<std::string, int>& string_to_grd_id_map,
-    consent_auditor::Feature consent_feature)
+    const std::unordered_map<std::string, int>& string_to_grd_id_map)
     : profile_(browser->profile()),
       browser_(browser),
       did_user_explicitly_interact(false),
       string_to_grd_id_map_(string_to_grd_id_map),
-      consent_feature_(consent_feature),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)) {
   DCHECK(profile_);
   DCHECK(browser_);
@@ -123,12 +121,11 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
       args->GetList()[0].GetList();
   const std::string& consent_confirmation = args->GetList()[1].GetString();
 
-  std::vector<int> consent_text_ids;
-
   // The strings returned by the WebUI are not free-form, they must belong into
   // a pre-determined set of strings (stored in |string_to_grd_id_map_|). As
   // this has privacy and legal implications, CHECK the integrity of the strings
   // received from the renderer process before recording the consent.
+  std::vector<int> consent_text_ids;
   for (const base::Value& text : consent_description) {
     auto iter = string_to_grd_id_map_.find(text.GetString());
     CHECK(iter != string_to_grd_id_map_.end()) << "Unexpected string:\n"
@@ -141,30 +138,18 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
                                              << consent_confirmation;
   int consent_confirmation_id = iter->second;
 
+  sync_pb::UserConsentTypes::SyncConsent sync_consent;
+  sync_consent.set_confirmation_grd_id(consent_confirmation_id);
+  for (int id : consent_text_ids) {
+    sync_consent.add_description_grd_ids(id);
+  }
+  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
+                              UserConsentTypes_ConsentStatus_GIVEN);
+
   consent_auditor::ConsentAuditor* consent_auditor =
       ConsentAuditorFactory::GetForProfile(profile_);
-  const std::string& account_id = identity_manager_->GetPrimaryAccountId();
-  // TODO(markusheintz): Use a bool unified_consent_enabled instead of a
-  // consent_auditor::Feature type variable.
-  if (consent_feature_ == consent_auditor::Feature::CHROME_UNIFIED_CONSENT) {
-    sync_pb::UserConsentTypes::UnifiedConsent unified_consent;
-    unified_consent.set_confirmation_grd_id(consent_confirmation_id);
-    for (int id : consent_text_ids) {
-      unified_consent.add_description_grd_ids(id);
-    }
-    unified_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
-                                   UserConsentTypes_ConsentStatus_GIVEN);
-    consent_auditor->RecordUnifiedConsent(account_id, unified_consent);
-  } else {
-    sync_pb::UserConsentTypes::SyncConsent sync_consent;
-    sync_consent.set_confirmation_grd_id(consent_confirmation_id);
-    for (int id : consent_text_ids) {
-      sync_consent.add_description_grd_ids(id);
-    }
-    sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
-                                UserConsentTypes_ConsentStatus_GIVEN);
-    consent_auditor->RecordSyncConsent(account_id, sync_consent);
-  }
+  consent_auditor->RecordSyncConsent(identity_manager_->GetPrimaryAccountId(),
+                                     sync_consent);
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/favicon_base/favicon_url_parser.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,8 +24,10 @@ void Noop(scoped_refptr<base::RefCountedMemory>) {}
 
 class TestFaviconSource : public FaviconSource {
  public:
+  // chrome::FaviconUrlFormat::kFavicon2 is arbitrary below.
   TestFaviconSource(Profile* profile, ui::NativeTheme* theme)
-      : FaviconSource(profile), theme_(theme) {}
+      : FaviconSource(profile, chrome::FaviconUrlFormat::kFavicon2),
+        theme_(theme) {}
 
   ~TestFaviconSource() override {}
 

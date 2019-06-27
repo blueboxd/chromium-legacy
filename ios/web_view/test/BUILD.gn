@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/build/config.gni")
 import("//build/config/ios/rules.gni")
+import("//ios/build/config.gni")
 import("//testing/test.gni")
 
 source_set("inttests") {
@@ -46,6 +46,8 @@ source_set("test_support") {
     "//ios/web_view/public/cwv_web_view_configuration.h",
     "observer.h",
     "observer.mm",
+    "test_with_locale_and_resources.cc",
+    "test_with_locale_and_resources.h",
     "web_view_test_util.h",
     "web_view_test_util.mm",
   ]
@@ -53,6 +55,8 @@ source_set("test_support") {
   deps = [
     "//base:base",
     "//base/test:test_support",
+    "//testing/gtest",
+    "//ui/base",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

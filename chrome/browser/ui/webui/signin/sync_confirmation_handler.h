@@ -32,8 +32,7 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // mapped to their GRD IDs.
   explicit SyncConfirmationHandler(
       Browser* browser,
-      const std::unordered_map<std::string, int>& string_to_grd_id_map,
-      consent_auditor::Feature consent_feature);
+      const std::unordered_map<std::string, int>& string_to_grd_id_map);
   ~SyncConfirmationHandler() override;
 
   // content::WebUIMessageHandler:
@@ -103,9 +102,6 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // Mapping between strings displayed in the UI corresponding to this handler
   // and their respective GRD IDs.
   std::unordered_map<std::string, int> string_to_grd_id_map_;
-
-  // Contains the features to use when the user consent decision is recorded.
-  consent_auditor::Feature consent_feature_;
 
   identity::IdentityManager* identity_manager_;
 

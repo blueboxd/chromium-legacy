@@ -7,51 +7,74 @@
 const IMAGE_URL = "http://localhost:8080/security/resources/abe.png";
 const VIDEO_URL = "http://localhost:8080/external/wpt/media/white.webm";
 
+// Returns a Promise that is resolve()d if detect() is rejected. Needs an input
+// |element| (e.g. an HTMLImageElement or HTMLVideoElement) and a |url| to load.
+function detectTextOnElementAndExpectError(element, url) {
+  return new Promise(function(resolve, reject) {
+    var tryTextDetection = function() {
+      var textDetector = new TextDetector();
+      textDetector.detect(element)
+          .then(textDetectionResult => {
+            reject("Promise should have been rejected.");
+          })
+          .catch(error => {
+            resolve(error);
+          });
+    };
+    element.onload = tryTextDetection;
+    element.onerror = tryTextDetection;
+    element.src = url;
+  });
+}
+
+function detectTextOnImageBitmapAndExpectError(imageUrl) {
+  return new Promise(function(resolve, reject) {
+    var image = new Image();
+    image.onload = function() {
+      createImageBitmap(image)
+          .then(imageBitmap => {
+            var textDetector = new TextDetector();
+            return textDetector.detect(imageBitmap);
+          })
+          .then(textDetectionResult => {
+            reject("Promise should have been rejected.");
+          })
+          .catch(error => {
+            resolve(error);
+          });
+    };
+    image.onerror = () => {};  // Explicitly ignore expected error events.
+    image.src = imageUrl;
+  });
+}
+
 // Verifies that TextDetector rejects a cross-origin HTMLImageElement.
-promise_test(async t => {
-  const img = new Image();
-  const imgWatcher = new EventWatcher(t, img, ["load", "error"]);
-  img.src = IMAGE_URL;
-  await imgWatcher.wait_for("load");
-  const detector = new TextDetector();
-  await promise_rejects(t, "SecurityError", detector.detect(img));
+promise_test(function(t) {
+  var image = new Image();
+  return detectTextOnElementAndExpectError(image, IMAGE_URL)
+      .then(error => {
+        assert_equals(error.name, "SecurityError");
+      });
 },
 "TextDetector should reject cross-origin HTMLImageElements with a SecurityError.");
 
 // Verifies that TextDetector rejects a cross-origin ImageBitmap.
-promise_test(async t => {
-  const img = new Image();
-  const imgWatcher = new EventWatcher(t, img, ["load", "error"]);
-  img.src = IMAGE_URL;
-  await imgWatcher.wait_for("load");
-  const imgBitmap = await createImageBitmap(img);
-  const detector = new TextDetector();
-  await promise_rejects(t, "SecurityError", detector.detect(imgBitmap));
+promise_test(function(t) {
+  return detectTextOnImageBitmapAndExpectError(IMAGE_URL)
+      .then(error => {
+        assert_equals(error.name, "SecurityError");
+      });
 },
 "TextDetector should reject cross-origin ImageBitmaps with a SecurityError.");
 
 // Verifies that TextDetector rejects a cross-origin HTMLVideoElement.
-promise_test(async t => {
-  const video = document.createElement('video');
-  const videoWatcher = new EventWatcher(t, video, ["load", "error"]);
-  video.src = VIDEO_URL;
-  await videoWatcher.wait_for("error");
-  const detector = new TextDetector();
-  await promise_rejects(t, "SecurityError", detector.detect(video));
+promise_test(function(t) {
+  var video = document.createElement('video');
+  return detectTextOnElementAndExpectError(video, VIDEO_URL)
+      .then(error => {
+        assert_equals(error.name, "SecurityError");
+      });
 },
 "TextDetector should reject cross-origin HTMLVideoElements with a SecurityError.");
-
-// Verifies that TextDetector rejects a cross-origin HTMLCanvasElement.
-promise_test(async t => {
-  const img = new Image();
-  const imgWatcher = new EventWatcher(t, img, ["load", "error"]);
-  img.src = IMAGE_URL;
-  await imgWatcher.wait_for("load");
-  const canvas = document.createElement("canvas");
-  canvas.getContext("2d").drawImage(img, 0, 0);
-  const detector = new TextDetector();
-  await promise_rejects(t, "SecurityError", detector.detect(canvas));
-},
-"TextDetector should reject cross-origin HTMLCanvasElements with a SecurityError.");
 
 </script>

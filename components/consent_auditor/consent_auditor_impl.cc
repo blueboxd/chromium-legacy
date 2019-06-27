@@ -118,18 +118,6 @@ void ConsentAuditorImpl::RecordSyncConsent(
   consent_sync_bridge_->RecordConsent(std::move(specifics));
 }
 
-void ConsentAuditorImpl::RecordUnifiedConsent(
-    const std::string& account_id,
-    const sync_pb::UserConsentTypes::UnifiedConsent& consent) {
-  std::unique_ptr<sync_pb::UserConsentSpecifics> specifics =
-      CreateUserConsentSpecifics(account_id, app_locale_, clock_);
-
-  sync_pb::UserConsentTypes::UnifiedConsent* unified_consent =
-      specifics->mutable_unified_consent();
-  unified_consent->CopyFrom(consent);
-  consent_sync_bridge_->RecordConsent(std::move(specifics));
-}
-
 void ConsentAuditorImpl::RecordAssistantActivityControlConsent(
     const std::string& account_id,
     const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent) {

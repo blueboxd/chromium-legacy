@@ -6,17 +6,14 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "components/favicon_base/favicon_types.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/favicon_size.h"
 
-namespace {
+namespace chrome {
 
-// Parameters which can be used in chrome://favicon path. See file
-// "chrome/browser/ui/webui/favicon_source.h" for a description of
-// what each does.
-const char kIconURLParameter[] = "iconurl/";
-const char kSizeParameter[] = "size/";
+namespace {
 
 // Returns true if |search| is a substring of |path| which starts at
 // |start_index|.
@@ -26,12 +23,28 @@ bool HasSubstringAt(const std::string& path,
   return path.compare(start_index, search.length(), search) == 0;
 }
 
-}  // namespace
+bool ParseIsIconUrl(const std::string& url_type, bool* is_icon_url) {
+  if (url_type == "page_url") {
+    *is_icon_url = false;
+    return true;
+  }
 
-namespace chrome {
+  if (url_type == "icon_url") {
+    *is_icon_url = true;
+    return true;
+  }
 
-bool ParseFaviconPath(const std::string& path,
-                      ParsedFaviconPath* parsed) {
+  return false;
+}
+
+// Parse with legacy FaviconUrlFormat::kFavicon format.
+bool ParseFaviconPathWithLegacyFormat(const std::string& path,
+                                      chrome::ParsedFaviconPath* parsed) {
+  // Parameters which can be used in chrome://favicon path. See file
+  // "favicon_url_parser.h" for a description of what each one does.
+  const char kIconURLParameter[] = "iconurl/";
+  const char kSizeParameter[] = "size/";
+
   parsed->is_icon_url = false;
   parsed->url = "";
   parsed->size_in_dip = gfx::kFaviconSize;
@@ -87,6 +100,58 @@ bool ParseFaviconPath(const std::string& path,
   //   "chrome-search://favicon/size/16@2x/<most-visited-item-with-given-id>".
   parsed->path_index = parsed_index;
   return true;
+}
+
+// Parse with FaviconUrlFormat::kFavicon2 format.
+bool ParseFaviconPathWithFavicon2Format(const std::string& path,
+                                        chrome::ParsedFaviconPath* parsed) {
+  // Parameters which can be used in chrome://favicon2 path. See file
+  // "favicon_url_parser.h" for a description of what each one does.
+  const std::string kSizeParameter = "size";
+  const std::string kScaleParameter = "scale_factor";
+  const std::string kUrlTypeParameter = "url_type";
+  const std::string kUrlParameter = "url";
+
+  if (path.empty())
+    return false;
+
+  GURL query_url("chrome://favicon2/" + path);
+
+  std::string size_str;
+  if (!net::GetValueForKeyInQuery(query_url, kSizeParameter, &size_str))
+    parsed->size_in_dip = gfx::kFaviconSize;
+  else if (!base::StringToInt(size_str, &parsed->size_in_dip))
+    return false;
+
+  std::string scale_str;
+  if (!net::GetValueForKeyInQuery(query_url, kScaleParameter, &scale_str))
+    parsed->device_scale_factor = 1.0f;
+  else if (!webui::ParseScaleFactor(scale_str, &parsed->device_scale_factor))
+    return false;
+
+  std::string url_type;
+  if (!net::GetValueForKeyInQuery(query_url, kUrlTypeParameter, &url_type))
+    parsed->is_icon_url = false;
+  else if (!ParseIsIconUrl(url_type, &parsed->is_icon_url))
+    return false;
+
+  net::GetValueForKeyInQuery(query_url, kUrlParameter, &parsed->url);
+
+  return true;
+}
+}  // namespace
+
+bool ParseFaviconPath(const std::string& path,
+                      FaviconUrlFormat format,
+                      ParsedFaviconPath* parsed) {
+  switch (format) {
+    case FaviconUrlFormat::kFaviconLegacy:
+      return ParseFaviconPathWithLegacyFormat(path, parsed);
+    case FaviconUrlFormat::kFavicon2:
+      return ParseFaviconPathWithFavicon2Format(path, parsed);
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace chrome

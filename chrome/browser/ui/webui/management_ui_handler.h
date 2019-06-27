@@ -14,17 +14,14 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/common/url_constants.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "components/policy/core/common/policy_service.h"
-#include "extensions/browser/extension_registry_observer.h"
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
 // Constants defining the IDs for the localized strings sent to the page as
@@ -37,7 +34,6 @@ extern const char kManagementReportUsers[];
 extern const char kManagementPrinting[];
 #endif  // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kCloudReportingExtensionId[];
 extern const char kOnPremReportingExtensionStableId[];
 extern const char kOnPremReportingExtensionBetaId[];
@@ -66,8 +62,6 @@ extern const char kReportingTypeSecurity[];
 extern const char kReportingTypeUser[];
 extern const char kReportingTypeUserActivity[];
 
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
 namespace base {
 class ListValue;
 }  // namespace base
@@ -83,15 +77,10 @@ class PolicyService;
 class Profile;
 
 // The JavaScript message handler for the chrome://management page.
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 class ManagementUIHandler : public content::WebUIMessageHandler,
                             public extensions::ExtensionRegistryObserver,
                             public policy::PolicyService::Observer,
                             public BitmapFetcherDelegate {
-#else
-class ManagementUIHandler : public content::WebUIMessageHandler,
-                            public BitmapFetcherDelegate {
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
  public:
   ManagementUIHandler();
   ~ManagementUIHandler() override;
@@ -107,13 +96,10 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
 
   static std::string GetAccountDomain(Profile* profile);
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  protected:
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Protected for testing.
   static void InitializeInternal(content::WebUI* web_ui,
                                  content::WebUIDataSource* source,
@@ -124,7 +110,6 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   virtual policy::PolicyService* GetPolicyService() const;
   virtual const extensions::Extension* GetEnabledExtension(
       const std::string& extensionId) const;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
   // Protected for testing.
@@ -151,7 +136,6 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   // BitmapFetcherDelegate
   void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   void NotifyBrowserReportingInfoUpdated();
 
   // extensions::ExtensionRegistryObserver implementation.
@@ -182,7 +166,6 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   PrefChangeRegistrar pref_registrar_;
 
   std::set<extensions::ExtensionId> reporting_extension_ids_;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   GURL logo_url_;
   std::string fetched_image_;
   std::unique_ptr<BitmapFetcher> icon_fetcher_;

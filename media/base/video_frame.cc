@@ -98,7 +98,6 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
@@ -273,8 +272,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
     const gfx::Size& natural_size,
     base::TimeDelta timestamp) {
   if (format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_XRGB &&
-      format != PIXEL_FORMAT_RGB32 && format != PIXEL_FORMAT_UYVY &&
-      format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_I420) {
+      format != PIXEL_FORMAT_UYVY && format != PIXEL_FORMAT_NV12 &&
+      format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_ABGR) {
     DLOG(ERROR) << "Unsupported pixel format: "
                 << VideoPixelFormatToString(format);
     return nullptr;
@@ -765,7 +764,6 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
       return 4;
@@ -1243,7 +1241,6 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_ARGB:
         case PIXEL_FORMAT_XRGB:
         case PIXEL_FORMAT_RGB24:
-        case PIXEL_FORMAT_RGB32:
         case PIXEL_FORMAT_MJPEG:
         case PIXEL_FORMAT_ABGR:
         case PIXEL_FORMAT_XBGR:

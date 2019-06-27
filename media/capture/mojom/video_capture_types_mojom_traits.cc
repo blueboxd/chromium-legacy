@@ -113,8 +113,6 @@ EnumTraits<media::mojom::VideoCapturePixelFormat,
       return media::mojom::VideoCapturePixelFormat::XRGB;
     case media::VideoPixelFormat::PIXEL_FORMAT_RGB24:
       return media::mojom::VideoCapturePixelFormat::RGB24;
-    case media::VideoPixelFormat::PIXEL_FORMAT_RGB32:
-      return media::mojom::VideoCapturePixelFormat::RGB32;
     case media::VideoPixelFormat::PIXEL_FORMAT_MJPEG:
       return media::mojom::VideoCapturePixelFormat::MJPEG;
     case media::VideoPixelFormat::PIXEL_FORMAT_MT21:
@@ -194,9 +192,6 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
       return true;
     case media::mojom::VideoCapturePixelFormat::RGB24:
       *output = media::PIXEL_FORMAT_RGB24;
-      return true;
-    case media::mojom::VideoCapturePixelFormat::RGB32:
-      *output = media::PIXEL_FORMAT_RGB32;
       return true;
     case media::mojom::VideoCapturePixelFormat::MJPEG:
       *output = media::PIXEL_FORMAT_MJPEG;

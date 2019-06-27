@@ -98,7 +98,7 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
           *controls);
 
   MediaControlElementsHelper::CreateDiv(
-      "-internal-media-controls-touchless-error-info", controls);
+      "-internal-media-controls-touchless-info", controls);
 
   controls->ParserAppendChild(controls->bottom_container_);
   controls->ParserAppendChild(controls->overlay_);

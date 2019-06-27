@@ -12,8 +12,10 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/ui/views/chrome_web_dialog_view.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/confirm_signout_dialog.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,6 +24,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -33,19 +38,31 @@ std::string& GetDialogId() {
   return *dialog_id;
 }
 
-}  // namespace
-
-namespace chromeos {
+// Shows the dialog indicating that user has to sign out if supervision has been
+// enabled for their account.  Returns a boolean indicating whether the
+// ConfirmSignoutDialog is being shown.
+bool MaybeShowConfirmSignoutDialog() {
+  SupervisedUserService* service = SupervisedUserServiceFactory::GetForProfile(
+      ProfileManager::GetPrimaryUserProfile());
+  if (service->signout_required_after_supervision_enabled()) {
+    ConfirmSignoutDialog::Show();
+    return true;
+  }
+  return false;
+}
 
 const char kAddSupervisionURL[] =
     "https://families.google.com/supervision/setup";
 const char kAddSupervisionEventOriginFilter[] = "https://families.google.com";
 const char kAddSupervisionFlowType[] = "1";
 
+}  // namespace
+
 // AddSupervisionDialog implementations.
 
 // static
-void AddSupervisionDialog::Show() {
+void AddSupervisionDialog::Show(gfx::NativeView parent) {
+  // Get the system singleton instance of the AddSupervisionDialog.
   SystemWebDialogDelegate* current_instance = GetInstance();
   if (current_instance) {
     // Focus the dialog if it is already there.  Currently, this is
@@ -61,43 +78,48 @@ void AddSupervisionDialog::Show() {
 
   GetDialogId() = current_instance->Id();
 
-  // TODO(danan): This should pass ash_util::GetFramelessInitParams() for
-  // extra_params. Currently however, that prevents the dialog from presenting
-  // in full screen if tablet mode is enabled. See https://crbug.com/888629.
-  chrome::ShowWebDialog(nullptr /* no parent */,
-                        ProfileManager::GetPrimaryUserProfile(),
-                        current_instance);
+  current_instance->ShowSystemDialogForBrowserContext(
+      ProfileManager::GetPrimaryUserProfile(), parent);
 }
 
-void AddSupervisionDialog::AddOnCloseCallback(base::OnceClosure callback) {
-  on_close_callbacks_.push_back(std::move(callback));
+// static
+void AddSupervisionDialog::Close() {
+  SystemWebDialogDelegate* current_instance = GetInstance();
+  if (current_instance) {
+    current_instance->Close();
+    GetDialogId() = std::string();
+  }
 }
 
 ui::ModalType AddSupervisionDialog::GetDialogModalType() const {
-  return ui::ModalType::MODAL_TYPE_SYSTEM;
+  return ui::ModalType::MODAL_TYPE_WINDOW;
 }
 
 void AddSupervisionDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidthPx, kDialogHeightPx);
 }
 
-void AddSupervisionDialog::OnDialogClosed(const std::string& json_retval) {
-  DCHECK(this == GetInstance());
-  GetDialogId() = "";
+bool AddSupervisionDialog::OnDialogCloseRequested() {
+  bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
+  return !showing_confirm_dialog;
+}
 
-  // Note: The call below deletes |this|, so there is no further need to keep
-  // track of the pointer.
-  SystemWebDialogDelegate::OnDialogClosed(json_retval);
+void AddSupervisionDialog::OnCloseContents(content::WebContents* source,
+                                           bool* out_close_dialog) {
+  // This code gets called by a different path that OnDialogCloseRequested(),
+  // and actually masks the call to OnDialogCloseRequested() the first time the
+  // user clicks on the [x].  Because the first [x] click comes here, we need to
+  // show the confirmation dialog here and signal the caller to possibly close
+  // the dialog.  Subsequent clicks on [x] during the lifetime of the dialog
+  // will result in calls to OnDialogCloseRequested().
+  *out_close_dialog = OnDialogCloseRequested();
 }
 
 AddSupervisionDialog::AddSupervisionDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIAddSupervisionURL),
                               base::string16()) {}
 
-AddSupervisionDialog::~AddSupervisionDialog() {
-  for (auto& callback : on_close_callbacks_)
-    std::move(callback).Run();
-}
+AddSupervisionDialog::~AddSupervisionDialog() = default;
 
 // static
 SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
@@ -107,7 +129,7 @@ SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
 // AddSupervisionUI implementations.
 
 AddSupervisionUI::AddSupervisionUI(content::WebUI* web_ui)
-    : ui::MojoWebDialogUI(web_ui) {
+    : ui::MojoWebUIController(web_ui) {
   // Register the Mojo API handler.
   AddHandlerToRegistry(base::BindRepeating(
       &AddSupervisionUI::BindAddSupervisionHandler, base::Unretained(this)));
@@ -146,10 +168,19 @@ void AddSupervisionUI::SetupResources() {
 
 AddSupervisionUI::~AddSupervisionUI() = default;
 
+bool AddSupervisionUI::CloseDialog() {
+  bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
+  if (!showing_confirm_dialog) {
+    // We aren't showing the confirm dialog, so close the AddSupervisionDialog.
+    AddSupervisionDialog::Close();
+  }
+  return !showing_confirm_dialog;
+}
+
 void AddSupervisionUI::BindAddSupervisionHandler(
     add_supervision::mojom::AddSupervisionHandlerRequest request) {
-  mojo_api_handler_.reset(
-      new AddSupervisionHandler(std::move(request), web_ui()));
+  mojo_api_handler_ = std::make_unique<AddSupervisionHandler>(
+      std::move(request), web_ui(), this);
 }
 
 }  // namespace chromeos

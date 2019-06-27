@@ -49,6 +49,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // implementation for details.
   void Focus();
 
+  // Closes the dialog window.
+  void Close();
+
   // ui::WebDialogDelegate
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;
@@ -66,10 +69,14 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
 
-  // Shows a system dialog using the current ative profile.
+  // Shows a system dialog using the specified BrowserContext (or Profile).
   // If |parent| is not null, the dialog will be parented to |parent|.
   // Otherwise it will be attached to either the AlwaysOnTop container or the
   // LockSystemModal container, depending on the session state at creation.
+  void ShowSystemDialogForBrowserContext(content::BrowserContext* context,
+                                         gfx::NativeWindow parent = nullptr);
+  // Same as previous but shows a system dialog using the current active
+  // profile.
   void ShowSystemDialog(gfx::NativeWindow parent = nullptr);
 
   content::WebUI* GetWebUIForTest() { return webui_; }

@@ -1549,13 +1549,16 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_PRIOR:
       if (control || alt || shift || read_only())
         return false;
-      model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
+      model()->OnUpOrDownKeyPressed(
+          -static_cast<int>(model()->popup_model()->selected_line()));
       return true;
 
     case ui::VKEY_NEXT:
       if (control || alt || shift || read_only())
         return false;
-      model()->OnUpOrDownKeyPressed(model()->result().size());
+      model()->OnUpOrDownKeyPressed(model()->result().size() -
+                                    model()->popup_model()->selected_line() -
+                                    1);
       return true;
 
     case ui::VKEY_RIGHT:

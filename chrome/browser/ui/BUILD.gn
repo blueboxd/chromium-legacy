@@ -1597,6 +1597,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/add_supervision/add_supervision_handler_utils.h",
       "webui/chromeos/add_supervision/add_supervision_ui.cc",
       "webui/chromeos/add_supervision/add_supervision_ui.h",
+      "webui/chromeos/add_supervision/confirm_signout_dialog.cc",
+      "webui/chromeos/add_supervision/confirm_signout_dialog.h",
       "webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_handler.cc",
       "webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_handler.h",
       "webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_ui.cc",

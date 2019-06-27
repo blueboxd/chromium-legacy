@@ -96,11 +96,10 @@ class OmniboxPopupModel {
   void ResetToDefaultMatch();
 
   // Immediately updates and opens the popup if necessary, then moves the
-  // current selection down (|count| > 0) or up (|count| < 0), clamping to the
-  // first or last result if necessary.  If |count| == 0, the selection will be
-  // unchanged, but the popup will still redraw and modify the text in the
-  // OmniboxEditModel.
-  void Move(int count);
+  // current selection to the respective line. If the line is unchanged, the
+  // selection will be unchanged, but the popup will still redraw and modify
+  // the text in the OmniboxEditModel.
+  void MoveTo(size_t new_line);
 
   // If the selected line has both a normal match and a keyword match, this can
   // be used to choose which to select.  This allows the user to toggle between

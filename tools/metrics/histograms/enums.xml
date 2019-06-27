@@ -33734,6 +33734,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1701123067" label="ShowManagedUi:enabled"/>
+  <int value="-1696619241" label="OmniboxWrapPopupPosition:disabled"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
   <int value="-1694353093" label="ArcVpn:disabled"/>
@@ -35239,6 +35240,7 @@ from previous Chrome versions.
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
   <int value="471969274" label="MediaControlsExpandGesture:enabled"/>
+  <int value="473958125" label="OmniboxWrapPopupPosition:enabled"/>
   <int value="474743272" label="material-design-ink-drop"/>
   <int value="475858648"
       label="OverlayScrollbarFlashAfterAnyScrollUpdate:disabled"/>
@@ -59177,7 +59179,7 @@ Full version information for the fingerprint enum values:
   <int value="10" label="ARGB"/>
   <int value="11" label="XRGB"/>
   <int value="12" label="RGB24"/>
-  <int value="13" label="RGB32"/>
+  <int value="13" label="RGB32 (Deprecated in M77)"/>
   <int value="14" label="MJPEG"/>
   <int value="15" label="MT21"/>
   <int value="16" label="YUV420P9"/>

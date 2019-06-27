@@ -78,7 +78,6 @@ gfx::ColorSpace OverrideColorSpaceForLibYuvConversion(
     case media::PIXEL_FORMAT_ARGB:
     case media::PIXEL_FORMAT_XRGB:
     case media::PIXEL_FORMAT_RGB24:
-    case media::PIXEL_FORMAT_RGB32:
     case media::PIXEL_FORMAT_ABGR:
     case media::PIXEL_FORMAT_XBGR:
       // Check if we can merge data 's primary and transfer function into the
@@ -314,8 +313,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       flip = true;
 #endif
       break;
-    // TODO(crbug.com/953128): Deprecate PIXEL_FORMAT_RGB32
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_ARGB:
       // Windows platforms e.g. send the data vertically flipped sometimes.
       flip = flip_y;

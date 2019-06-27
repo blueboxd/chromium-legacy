@@ -28,6 +28,10 @@ bool WebDialogDelegate::CanResizeDialog() const {
   return true;
 }
 
+bool WebDialogDelegate::OnDialogCloseRequested() {
+  return true;
+}
+
 void WebDialogDelegate::OnDialogCloseFromWebUI(
     const std::string& json_retval) {
   OnDialogClosed(json_retval);

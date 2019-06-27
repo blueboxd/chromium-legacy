@@ -294,10 +294,10 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(
   DCHECK(PIXEL_FORMAT_ARGB == video_frame->format() ||
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
-         PIXEL_FORMAT_RGB32 == video_frame->format() ||
+         PIXEL_FORMAT_ABGR == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format() ||
          PIXEL_FORMAT_UYVY == video_frame->format())
-      << "Format: " << (int)video_frame->format();
+      << "Format: " << VideoPixelFormatToString(video_frame->format());
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
@@ -1054,7 +1054,6 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_ABGR:

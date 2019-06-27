@@ -7,30 +7,35 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/web_dialogs/web_dialog_ui.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/views/controls/label.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace chromeos {
 
-// Dialog which displays the add-supeivision flow which allows users to
+// Dialog which displays the add-supervision flow which allows users to
 // convert a regular Google account into a Family-Link managed account.
 class AddSupervisionDialog : public SystemWebDialogDelegate {
  public:
   // Shows the dialog; if the dialog is already displayed, this function is a
   // no-op.
-  static void Show();
+  static void Show(gfx::NativeView parent);
 
-  // Registers a callback which will be called when the dialog is closed.
-  void AddOnCloseCallback(base::OnceClosure callback);
+  // Closes the dialog, if the dialog doesn't exist, this function is a
+  // no-op.
+  static void Close();
 
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   void GetDialogSize(gfx::Size* size) const override;
-  void OnDialogClosed(const std::string& json_retval) override;
+  bool OnDialogCloseRequested() override;
+  void OnCloseContents(content::WebContents* source,
+                       bool* out_close_dialog) override;
 
  protected:
   AddSupervisionDialog();
@@ -39,18 +44,18 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
  private:
   static SystemWebDialogDelegate* GetInstance();
 
-  // List of callbacks that have registered themselves to be invoked once this
-  // dialog is closed.
-  std::vector<base::OnceClosure> on_close_callbacks_;
-
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionDialog);
 };
 
 // Controller for chrome://add-supervision
-class AddSupervisionUI : public ui::MojoWebDialogUI {
+class AddSupervisionUI : public ui::MojoWebUIController,
+                         public AddSupervisionHandler::Delegate {
  public:
   explicit AddSupervisionUI(content::WebUI* web_ui);
   ~AddSupervisionUI() override;
+
+  // AddSupervisionHandler::Delegate:
+  bool CloseDialog() override;
 
  private:
   void BindAddSupervisionHandler(

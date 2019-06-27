@@ -124,6 +124,10 @@ bool WebDialogView::CanClose() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, views::WidgetDelegate implementation:
 
+bool WebDialogView::OnCloseRequested(Widget::ClosedReason close_reason) {
+  return !delegate_ || delegate_->OnDialogCloseRequested();
+}
+
 bool WebDialogView::CanResize() const {
   if (delegate_)
     return delegate_->CanResizeDialog();

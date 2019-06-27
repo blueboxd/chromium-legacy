@@ -169,15 +169,11 @@ void OmniboxPopupModel::ResetToDefaultMatch() {
   view_->OnDragCanceled();
 }
 
-void OmniboxPopupModel::Move(int count) {
-  const AutocompleteResult& result = this->result();
-  if (result.empty())
+void OmniboxPopupModel::MoveTo(size_t new_line) {
+  if (result().empty())
     return;
 
-  // Clamp the new line to [0, result_.count() - 1].
-  const size_t new_line = selected_line_ + count;
-  SetSelectedLine(((count < 0) && (new_line >= selected_line_)) ? 0 : new_line,
-                  false, false);
+  SetSelectedLine(new_line, false, false);
 }
 
 void OmniboxPopupModel::SetSelectedLineState(LineState state) {

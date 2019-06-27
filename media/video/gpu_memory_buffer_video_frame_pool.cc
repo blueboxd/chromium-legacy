@@ -293,11 +293,11 @@ VideoPixelFormat VideoFormat(
     case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       return PIXEL_FORMAT_UYVY;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       return PIXEL_FORMAT_ARGB;
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
     case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
-    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
-      return PIXEL_FORMAT_RGB32;
+      return PIXEL_FORMAT_ABGR;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
       break;
@@ -633,7 +633,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_YUV422P9:

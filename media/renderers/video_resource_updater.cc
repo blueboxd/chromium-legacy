@@ -67,8 +67,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_ABGR:
       DCHECK_EQ(num_textures, 1);
       buffer_formats[0] = gfx::BufferFormat::RGBA_8888;
       switch (target) {
@@ -126,7 +126,6 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
-    case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_P016LE:
     case PIXEL_FORMAT_UNKNOWN:

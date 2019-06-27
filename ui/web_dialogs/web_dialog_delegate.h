@@ -91,6 +91,11 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual void OnDialogShown(content::WebUI* webui,
                              content::RenderViewHost* render_view_host) {}
 
+  // A callback to notify the delegate that the window is requesting to be
+  // closed.  If this returns true, the dialog is closed, otherwise the
+  // dialog remains open. Default implementation returns true.
+  virtual bool OnDialogCloseRequested();
+
   // A callback to notify the delegate that the dialog is about to close due to
   // the user pressing the ESC key.
   virtual void OnDialogClosingFromKeyEvent() {}

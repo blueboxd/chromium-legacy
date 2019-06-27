@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -19,6 +20,7 @@
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -33,6 +35,15 @@ class TestOmniboxPopupView : public OmniboxPopupView {
   void UpdatePopupAppearance() override {}
   void OnMatchIconUpdated(size_t match_index) override {}
   void OnDragCanceled() override {}
+};
+
+class TestOmniboxEditModel : public OmniboxEditModel {
+ public:
+  TestOmniboxEditModel(OmniboxView* view,
+                       OmniboxEditController* controller,
+                       std::unique_ptr<OmniboxClient> client)
+      : OmniboxEditModel(view, controller, std::move(client)) {}
+  bool PopupIsOpen() const override { return true; }
 };
 
 }  // namespace
@@ -51,7 +62,7 @@ class OmniboxPopupModelTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   TestOmniboxEditController controller_;
   TestOmniboxView view_;
-  OmniboxEditModel model_;
+  TestOmniboxEditModel model_;
   TestOmniboxPopupView popup_view_;
   OmniboxPopupModel popup_model_;
 
@@ -82,6 +93,47 @@ TEST_F(OmniboxPopupModelTest, SetSelectedLine) {
   EXPECT_FALSE(popup_model()->has_selected_match());
   popup_model()->SetSelectedLine(0, false, false);
   EXPECT_TRUE(popup_model()->has_selected_match());
+}
+
+TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
+  ACMatches matches;
+  for (size_t i = 0; i < 3; ++i) {
+    AutocompleteMatch match(nullptr, 1000, false,
+                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    match.keyword = base::ASCIIToUTF16("match");
+    match.allowed_to_be_default_match = true;
+    matches.push_back(match);
+  }
+  auto* result = &model()->autocomplete_controller()->result_;
+  AutocompleteInput input(base::UTF8ToUTF16("match"),
+                          metrics::OmniboxEventProto::NTP,
+                          TestSchemeClassifier());
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(0u, model()->popup_model()->selected_line());
+  model()->OnUpOrDownKeyPressed(1);
+  EXPECT_EQ(1u, model()->popup_model()->selected_line());
+  model()->OnUpOrDownKeyPressed(-1);
+  EXPECT_EQ(0u, model()->popup_model()->selected_line());
+  model()->OnUpOrDownKeyPressed(2);
+  EXPECT_EQ(2u, model()->popup_model()->selected_line());
+  // Cap at number of results.
+  model()->OnUpOrDownKeyPressed(2);
+  EXPECT_EQ(2u, model()->popup_model()->selected_line());
+  // Cap at 0 too.
+  model()->OnUpOrDownKeyPressed(-3);
+  EXPECT_EQ(0u, model()->popup_model()->selected_line());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kOmniboxWrapPopupPosition);
+  // Test wrapping.
+  model()->OnUpOrDownKeyPressed(-1);
+  EXPECT_EQ(2u, model()->popup_model()->selected_line());
+  model()->OnUpOrDownKeyPressed(1);
+  EXPECT_EQ(0u, model()->popup_model()->selected_line());
+  model()->OnUpOrDownKeyPressed(1);
+  EXPECT_EQ(1u, model()->popup_model()->selected_line());
 }
 
 TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {

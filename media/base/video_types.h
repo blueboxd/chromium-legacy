@@ -44,9 +44,8 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_ARGB = 10,   // 32bpp BGRA (byte-order), 1 plane.
   PIXEL_FORMAT_XRGB = 11,   // 24bpp BGRX (byte-order), 1 plane.
   PIXEL_FORMAT_RGB24 = 12,  // 24bpp BGR (byte-order), 1 plane.
-  // TODO(crbug.com/953128): Deprecate PIXEL_FORMAT_RGB32 in favor of
-  // PIXEL_FORMAT_ARGB.
-  PIXEL_FORMAT_RGB32 = 13,  // 32bpp BGRA (byte-order), 1 plane.
+
+  /* PIXEL_FORMAT_RGB32 = 13,  Deprecated */
   PIXEL_FORMAT_MJPEG = 14,  // MJPEG compressed.
   // MediaTek proprietary format. MT21 is similar to NV21 except the memory
   // layout and pixel layout (swizzles). 12bpp with Y plane followed by a 2x2

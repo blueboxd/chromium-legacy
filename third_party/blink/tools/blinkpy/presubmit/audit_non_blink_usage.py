@@ -110,6 +110,9 @@ _CONFIG = [
             # //base/allocator/partition_allocator/oom_callback.h.
             'base::SetPartitionAllocOomCallback',
 
+            # //base/containers/adapters.h
+            'base::Reversed',
+
             # //base/metrics/histogram_functions.h
             'base::UmaHistogram.+',
 

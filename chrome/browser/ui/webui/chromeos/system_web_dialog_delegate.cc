@@ -91,6 +91,11 @@ void SystemWebDialogDelegate::Focus() {
     dialog_window()->Focus();
 }
 
+void SystemWebDialogDelegate::Close() {
+  DCHECK(dialog_window());
+  views::Widget::GetWidgetForNativeWindow(dialog_window())->Close();
+}
+
 ui::ModalType SystemWebDialogDelegate::GetDialogModalType() const {
   return modal_type_;
 }
@@ -149,9 +154,9 @@ bool SystemWebDialogDelegate::ShouldShowDialogTitle() const {
   return !title_.empty();
 }
 
-void SystemWebDialogDelegate::ShowSystemDialog(gfx::NativeWindow parent) {
-  content::BrowserContext* browser_context =
-      ProfileManager::GetActiveUserProfile();
+void SystemWebDialogDelegate::ShowSystemDialogForBrowserContext(
+    content::BrowserContext* browser_context,
+    gfx::NativeWindow parent) {
   views::Widget::InitParams extra_params;
   // If unparented and not modal, keep it on top (see header comment).
   if (!parent && GetDialogModalType() == ui::MODAL_TYPE_NONE)
@@ -161,4 +166,8 @@ void SystemWebDialogDelegate::ShowSystemDialog(gfx::NativeWindow parent) {
                                                    this, &extra_params);
 }
 
+void SystemWebDialogDelegate::ShowSystemDialog(gfx::NativeWindow parent) {
+  ShowSystemDialogForBrowserContext(ProfileManager::GetActiveUserProfile(),
+                                    parent);
+}
 }  // namespace chromeos

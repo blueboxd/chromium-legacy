@@ -25,7 +25,6 @@ enum VideoCapturePixelFormat {
   ARGB,
   XRGB,
   RGB24,
-  RGB32,
   MJPEG,
   MT21,
   YUV420P9,

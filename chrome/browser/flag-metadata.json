@@ -2560,6 +2560,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-wrap-popup-position",
+    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "omnibox-zero-suggestions-on-ntp",
     "owners": [ "chrome-android-omnibox-team@google.com" ],
     "expiry_milestone": 81

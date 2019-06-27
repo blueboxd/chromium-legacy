@@ -459,6 +459,11 @@ class OmniboxEditModel {
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
 
+  // Calculates the new selected line based on |count|, how many
+  // suggestions are currently in the results, and any features
+  // that are enabled.
+  size_t GetNewSelectedLine(int count);
+
   // NOTE: |client_| must outlive |omnibox_controller_|, as the latter has a
   // reference to the former.
   std::unique_ptr<OmniboxClient> client_;

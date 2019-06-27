@@ -426,6 +426,10 @@ bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
 // is enabled.
 bool IsMaxURLMatchesFeatureEnabled();
 
+// Returns whether the feature to allow the Omnibox pop-up position to wrap
+// between top and bottom is enabled.
+bool IsOmniboxWrapPopupPositionEnabled();
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 

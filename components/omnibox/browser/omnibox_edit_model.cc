@@ -1158,15 +1158,12 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
 
     // If, as a result of the key press, we would select the first result, then
     // we should revert the temporary text same as what pressing escape would
-    // have done. In the future, if the selection behavior becomes more involved
-    // (e.g. wrap around), then we should consider creating a helper method
-    // GetNewSelectionLine(int cont) to be compared with 0 here and to be reused
-    // in OmniboxPopupModel::Move.
-    if (has_temporary_text_ && count < 0 &&
-        (unsigned)-count >= popup_model()->selected_line()) {
+    // have done.
+    const size_t line_no = GetNewSelectedLine(count);
+    if (has_temporary_text_ && line_no == 0) {
       RevertTemporaryText(true);
     } else {
-      popup_model()->Move(count);
+      popup_model()->MoveTo(line_no);
     }
     return;
   }
@@ -1617,4 +1614,23 @@ void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
     view_->ApplyCaretVisibility();
 
   client_->OnFocusChanged(focus_state_, reason);
+}
+
+size_t OmniboxEditModel::GetNewSelectedLine(int count) {
+  if (!OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled()) {
+    if (count < 0) {
+      if ((size_t)-count >= popup_model()->selected_line())
+        return 0;
+    } else if (count + popup_model()->selected_line() >=
+               popup_model()->result().size()) {
+      return popup_model()->result().size() - 1;
+    }
+    return popup_model()->selected_line() + count;
+  } else {
+    int line_no = (static_cast<int>(popup_model()->selected_line()) + count) %
+                  static_cast<int>(popup_model()->result().size());
+    if (line_no < 0)
+      line_no += popup_model()->result().size();
+    return line_no;
+  }
 }

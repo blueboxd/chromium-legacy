@@ -37,8 +37,6 @@ std::string VideoPixelFormatToString(VideoPixelFormat format) {
       return "PIXEL_FORMAT_XRGB";
     case PIXEL_FORMAT_RGB24:
       return "PIXEL_FORMAT_RGB24";
-    case PIXEL_FORMAT_RGB32:
-      return "PIXEL_FORMAT_RGB32";
     case PIXEL_FORMAT_MJPEG:
       return "PIXEL_FORMAT_MJPEG";
     case PIXEL_FORMAT_MT21:
@@ -118,7 +116,6 @@ bool IsYuvPlanar(VideoPixelFormat format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_ABGR:
@@ -158,7 +155,6 @@ bool IsOpaque(VideoPixelFormat format) {
       return true;
     case PIXEL_FORMAT_I420A:
     case PIXEL_FORMAT_ARGB:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_ABGR:
       break;
   }
@@ -182,7 +178,6 @@ size_t BitDepth(VideoPixelFormat format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_ABGR:

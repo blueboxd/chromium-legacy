@@ -64,6 +64,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   bool CanClose() override;
 
   // Overridden from views::WidgetDelegate:
+  bool OnCloseRequested(Widget::ClosedReason close_reason) override;
   bool CanResize() const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;

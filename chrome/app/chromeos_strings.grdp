@@ -4097,6 +4097,21 @@
   <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
     Add Supervision
   </message>
+  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_TITLE" desc="Title for the dialog shown when attempting to exit the Add Supervision screen.">
+    Are you sure you want to exit?
+  </message>
+  <!-- TODO(danan):  Add final string and remove untranslateable -->
+  <message translateable="false" name="IDS_ADD_SUPERVISION_EXIT_DIALOG_BODY" desc="Body for the dialog shown when attempting to exit the Add Supervision screen.">
+    Supervision is already set up for <ph name="USER_FIRST_NAME">$1<ex>John</ex></ph>'s Google Account.
+You can always stop supervision from the Famly Link app. We've sent instructions to you in an email that explains how to install Family Link.
+  </message>
+  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL" desc="Label for the cancel button on the dialog shown when attempting to exit the Add Supervision screen.">
+    Cancel
+  </message>
+  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_SIGNOUT_BUTTON_LABEL" desc="Label for the signout button on the dialog shown when attempting to exit the Add Supervision screen.">
+    Sign out
+  </message>
+
     <!-- Strings for gnubby U2FD authentication UI -->
   <message name="IDS_GNUBBY_NOTIFICATION_TITLE" desc="Title for notification informing user to press power button for gnubby U2FD.">
     A security key is being requested

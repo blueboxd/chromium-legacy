@@ -5,7 +5,9 @@
 /**
  * The methods to expose to the client.
  */
-const METHOD_LIST = ['logOut', 'getInstalledArcApps'];
+const METHOD_LIST = [
+  'logOut', 'getInstalledArcApps', 'requestClose', 'notifySupervisionEnabled'
+];
 
 /**
  * Class that implements the server side of the AddSupervision postMessage
@@ -31,12 +33,14 @@ class AddSupervisionAPIServer extends PostMessageAPIServer {
     this.registerMethod('logOut', this.logOut.bind(this));
     this.registerMethod(
         'getInstalledArcApps', this.getInstalledArcApps.bind(this));
+    this.registerMethod('requestClose', this.requestClose.bind(this));
+    this.registerMethod(
+        'notifySupervisionEnabled', this.notifySupervisionEnabled.bind(this));
   }
 
   /**
    * Logs out of the device.
    * @param {!Array} unused Placeholder unused empty parameter.
-   * @return {Promise} This promise is never actually resolved.
    */
   logOut(unused) {
     return this.proxy_.logOut();
@@ -51,5 +55,26 @@ class AddSupervisionAPIServer extends PostMessageAPIServer {
    */
   getInstalledArcApps(unused) {
     return this.proxy_.getInstalledArcApps();
+  }
+
+  /**
+   * Attempts to close the widget hosting the Add Supervision flow.
+   * If supervision has already been enabled, this will prompt the
+   * user to sign out.
+   * @param {!Array} unused Placeholder unused empty parameter.
+   * @return {Promise <{closed: boolean}>} If the dialog is not closed
+   *     this promise will
+   * resolve with boolean result indicating whether the dialog was closed.
+   */
+  requestClose(unused) {
+    return this.proxy_.requestClose();
+  }
+
+  /**
+   * Signals to the API that supervision has been enabled for the current user.
+   * @param {!Array} unused Placeholder unused empty parameter.
+   */
+  notifySupervisionEnabled(unused) {
+    return this.proxy_.notifySupervisionEnabled();
   }
 }

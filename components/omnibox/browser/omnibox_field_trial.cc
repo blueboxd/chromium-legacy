@@ -694,6 +694,10 @@ bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
 }
 
+bool OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxWrapPopupPosition);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";

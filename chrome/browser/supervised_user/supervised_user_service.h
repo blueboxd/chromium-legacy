@@ -184,6 +184,15 @@ class SupervisedUserService : public KeyedService,
   // SupervisedUserURLFilter::Observer implementation:
   void OnSiteListUpdated() override;
 
+#if !defined(OS_ANDROID)
+  bool signout_required_after_supervision_enabled() {
+    return signout_required_after_supervision_enabled_;
+  }
+  void set_signout_required_after_supervision_enabled() {
+    signout_required_after_supervision_enabled_ = true;
+  }
+#endif  // !defined(OS_ANDROID)
+
  private:
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;
@@ -350,6 +359,10 @@ class SupervisedUserService : public KeyedService,
 #endif
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;
+
+#if !defined(OS_ANDROID)
+  bool signout_required_after_supervision_enabled_ = false;
+#endif
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
 

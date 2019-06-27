@@ -13,6 +13,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
@@ -22,18 +24,23 @@
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
+namespace chromeos {
+
 AddSupervisionHandler::AddSupervisionHandler(
     add_supervision::mojom::AddSupervisionHandlerRequest request,
-    content::WebUI* web_ui)
+    content::WebUI* web_ui,
+    Delegate* delegate)
     : binding_(this, std::move(request)),
       web_ui_(web_ui),
       identity_manager_(
-          IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui))) {}
+          IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui))),
+      delegate_(delegate) {}
 
 AddSupervisionHandler::~AddSupervisionHandler() = default;
 
-void AddSupervisionHandler::LogOut(LogOutCallback callback) {
-  chrome::AttemptUserExit();
+void AddSupervisionHandler::RequestClose(RequestCloseCallback callback) {
+  bool dialog_closed = delegate_->CloseDialog();
+  std::move(callback).Run(dialog_closed);
 }
 
 void AddSupervisionHandler::GetInstalledArcApps(
@@ -74,6 +81,17 @@ void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
           identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
+void AddSupervisionHandler::LogOut() {
+  chrome::AttemptUserExit();
+}
+
+void AddSupervisionHandler::NotifySupervisionEnabled() {
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
+
+  service->set_signout_required_after_supervision_enabled();
+}
+
 void AddSupervisionHandler::OnAccessTokenFetchComplete(
     GetOAuthTokenCallback callback,
     GoogleServiceAuthError error,
@@ -91,3 +109,5 @@ void AddSupervisionHandler::OnAccessTokenFetchComplete(
                             access_token_info.token);
   }
 }
+
+}  // namespace chromeos

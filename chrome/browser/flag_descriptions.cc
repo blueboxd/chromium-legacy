@@ -2714,6 +2714,10 @@ const char kOmniboxTabSwitchSuggestionsName[] =
 const char kOmniboxTabSwitchSuggestionsDescription[] =
     "Enable suggestions for switching to open tabs within the Omnibox.";
 
+const char kOmniboxWrapPopupPositionName[] = "Omnibox wrap pop-up position";
+const char kOmniboxWrapPopupPositionDescription[] =
+    "Enable wrapping the Omnibox pop-up position between top and bottom.";
+
 const char kProactiveTabFreezeAndDiscardName[] =
     "Proactive Tab Freeze and Discard";
 const char kProactiveTabFreezeAndDiscardDescription[] =

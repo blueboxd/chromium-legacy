@@ -87,6 +87,54 @@ TEST_F(FrecencyPredictorTest, ToAndFromProto) {
   EXPECT_EQ(predictor_->Rank(0u), new_predictor.Rank(0u));
 }
 
+class ConditionalFrequencyPredictorTest : public testing::Test {};
+
+TEST_F(ConditionalFrequencyPredictorTest, TrainAndRank) {
+  ConditionalFrequencyPredictor cfp;
+
+  cfp.TrainWithDelta(0u, 1u, 5.0f);
+  cfp.TrainWithDelta(1u, 1u, 1.0f);
+  cfp.TrainWithDelta(1u, 1u, 1.0f);
+  cfp.TrainWithDelta(1u, 50u, 1.0f);
+  cfp.TrainWithDelta(1u, 50u, 2.0f);
+  cfp.TrainWithDelta(2u, 50u, 1.0f);
+  cfp.TrainWithDelta(2u, 50u, 1.0f);
+
+  EXPECT_THAT(cfp.Rank(1u),
+              UnorderedElementsAre(Pair(0u, FloatEq(5.0f / 7.0f)),
+                                   Pair(1u, FloatEq(2.0f / 7.0f))));
+  EXPECT_THAT(cfp.Rank(50u),
+              UnorderedElementsAre(Pair(1u, FloatEq(3.0f / 5.0f)),
+                                   Pair(2u, FloatEq(2.0f / 5.0f))));
+}
+
+TEST_F(ConditionalFrequencyPredictorTest, ToFromProto) {
+  ConditionalFrequencyPredictor cfp1;
+
+  cfp1.Train(1u, 1u);
+  cfp1.Train(2u, 1u);
+  cfp1.Train(3u, 1u);
+  cfp1.Train(4u, 1u);
+  cfp1.Train(1u, 2u);
+  cfp1.Train(1u, 2u);
+  cfp1.TrainWithDelta(2u, 3u, 3.0f);
+  cfp1.Train(3u, 3u);
+
+  RecurrencePredictorProto proto;
+  cfp1.ToProto(&proto);
+
+  ConditionalFrequencyPredictor cfp2;
+  cfp2.FromProto(proto);
+
+  EXPECT_THAT(
+      cfp2.Rank(1u),
+      UnorderedElementsAre(Pair(1u, FloatEq(0.25f)), Pair(2u, FloatEq(0.25f)),
+                           Pair(3u, FloatEq(0.25f)), Pair(4u, FloatEq(0.25f))));
+  EXPECT_THAT(cfp2.Rank(2u), UnorderedElementsAre(Pair(1u, FloatEq(1.0f))));
+  EXPECT_THAT(cfp2.Rank(3u), UnorderedElementsAre(Pair(2u, FloatEq(0.75f)),
+                                                  Pair(3u, FloatEq(0.25f))));
+}
+
 class HourBinPredictorTest : public testing::Test {
  protected:
   void SetUp() override {

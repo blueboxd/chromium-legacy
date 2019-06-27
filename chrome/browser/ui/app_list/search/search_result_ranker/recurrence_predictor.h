@@ -19,6 +19,8 @@ namespace app_list {
 using FakePredictorConfig = RecurrenceRankerConfigProto::FakePredictorConfig;
 using DefaultPredictorConfig =
     RecurrenceRankerConfigProto::DefaultPredictorConfig;
+using ConditionalFrequencyPredictorConfig =
+    RecurrenceRankerConfigProto::ConditionalFrequencyPredictorConfig;
 using FrecencyPredictorConfig =
     RecurrenceRankerConfigProto::FrecencyPredictorConfig;
 using HourBinPredictorConfig =
@@ -91,6 +93,53 @@ class DefaultPredictor : public RecurrencePredictor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultPredictor);
+};
+
+// Represents a conditional probability table which stores the frequency of
+// targets given a condition. Conditions can be client-provided, or could be the
+// output of a hash of other contextual features. This allows for an arbitrary
+// number of conditions to be used.
+class ConditionalFrequencyPredictor : public RecurrencePredictor {
+ public:
+  // The predictor doesn't use any configuration values, so a zero-argument
+  // constructor is also provided for convenience when this is used within other
+  // predictors.
+  explicit ConditionalFrequencyPredictor(
+      const ConditionalFrequencyPredictorConfig& config);
+  ConditionalFrequencyPredictor();
+  ~ConditionalFrequencyPredictor() override;
+
+  // Stores a mapping from events to frequencies, along with the total frequency
+  // of all events.
+  class Events {
+   public:
+    Events();
+    Events(const Events& other);
+    ~Events();
+
+    base::flat_map<unsigned int, float> freqs;
+    float total = 0.0f;
+  };
+
+  // RecurrencePredictor:
+  // Add 1.0f to the relative frequency of |target| given |condition|.
+  void Train(unsigned int target, unsigned int condition) override;
+  // The scores in the returned map sum to 1 if the map is non-empty.
+  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  void ToProto(RecurrencePredictorProto* proto) const override;
+  void FromProto(const RecurrencePredictorProto& proto) override;
+  const char* GetPredictorName() const override;
+
+  static const char kPredictorName[];
+
+  // Add |delta| to the relative frequency of |target| given |condition|.
+  void TrainWithDelta(unsigned int target, unsigned int condition, float delta);
+
+ private:
+  // Stores a mapping from conditions to events to frequencies.
+  base::flat_map<unsigned int, ConditionalFrequencyPredictor::Events> table_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConditionalFrequencyPredictor);
 };
 
 // FrecencyPredictor ranks targets according to their frecency, and

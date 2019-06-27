@@ -40,8 +40,16 @@ cca.bg.TOPBAR_COLOR = '#000000';
  * won't connect to the main.html target before the window is created, otherwise
  * the window might disappear.
  * @type {boolean}
+ * @deprecated This flag would be removed after we migrate CCA Tast tests.
  */
 cca.bg.appWindowCreated = false;
+
+/**
+ * It's used in test to ensure that we won't connect to the main.html target
+ * before the window is created, otherwise the window might disappear.
+ * @type {?function(): undefined}
+ */
+cca.bg.onAppWindowCreatedForTesting = null;
 
 /**
  * Creates the window. Note, that only one window at once is supported.
@@ -82,6 +90,9 @@ cca.bg.create = function() {
         chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
       });
       cca.bg.appWindowCreated = true;
+      if (cca.bg.onAppWindowCreatedForTesting !== null) {
+        cca.bg.onAppWindowCreatedForTesting();
+      }
     });
   });
 };

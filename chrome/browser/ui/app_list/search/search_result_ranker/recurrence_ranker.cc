@@ -80,6 +80,9 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
     return std::make_unique<FakePredictor>(config.fake_predictor());
   if (config.has_default_predictor())
     return std::make_unique<DefaultPredictor>(config.default_predictor());
+  if (config.has_conditional_frequency_predictor())
+    return std::make_unique<ConditionalFrequencyPredictor>(
+        config.conditional_frequency_predictor());
   if (config.has_frecency_predictor())
     return std::make_unique<FrecencyPredictor>(config.frecency_predictor());
   if (config.has_hour_bin_predictor())

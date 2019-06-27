@@ -19,7 +19,6 @@ xf-display-panel {
     display: flex;
     flex-direction: row;
     max-width: 400px;
-    min-height: 68px;
 }
 
 .xf-button {

@@ -79,10 +79,19 @@ class DisplayPanel extends HTMLElement {
               }
               /* Limit to 3 visible progress panels before scroll */
               #panels {
-                  max-height: calc(92px * 3);
+                  max-height: calc(192px + 28px);
               }
               xf-panel-item:not(:only-child) {
-                --multi-progress-height: 92px;
+                --progress-height: 64px;
+              }
+              xf-panel-item:not(:only-child):first-child {
+                --progress-padding-top: 14px;
+              }
+              xf-panel-item:not(:only-child):last-child {
+                --progress-padding-bottom: 14px;
+              }
+              xf-panel-item:only-child {
+                --progress-height: 68px;
               }
               @keyframes setcollapse {
                 0% {
@@ -91,12 +100,12 @@ class DisplayPanel extends HTMLElement {
                   opacity: 0;
                 }
                 75% {
-                  max-height: calc(92px * 3);;
+                  max-height: calc(192px + 28px);
                   max-width: 400px;
                   opacity: 0;
                 }
                 100% {
-                  max-height: calc(92px * 3);;
+                  max-height: calc(192px + 28px);
                   max-width: 400px;
                   opacity: 1;
                 }
@@ -104,12 +113,12 @@ class DisplayPanel extends HTMLElement {
 
               @keyframes setexpand {
                 0% {
-                  max-height: calc(92px * 3);;
+                  max-height: calc(192px + 28px);
                   max-width: 400px;
                   opacity: 1;
                 }
                 25% {
-                  max-height: calc(92px * 3);;
+                  max-height: calc(192px + 28px);
                   max-width: 400px;
                   opacity: 0;
                 }

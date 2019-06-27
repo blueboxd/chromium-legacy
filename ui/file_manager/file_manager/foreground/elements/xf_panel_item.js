@@ -43,7 +43,12 @@ class PanelItem extends HTMLElement {
               href='foreground/elements/files_xf_elements.css'>
             <style>
               :host([panel-type='0']) .xf-panel-item {
-                height: var(--multi-progress-height);
+                height: var(--progress-height);
+                padding-top: var(--progress-padding-top);
+                padding-bottom: var(--progress-padding-bottom);
+              }
+              :not(:host([panel-type='0'])) .xf-panel-item {
+                height: 68px;
               }
             </style>
             <div class='xf-panel-item'>

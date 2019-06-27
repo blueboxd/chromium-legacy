@@ -47,11 +47,23 @@ message HourBinPredictorProto {
   optional uint32 last_decay_timestamp = 4;
 }
 
+// Conditional frequency predictor.
+message ConditionalFrequencyPredictorProto {
+  message Event {
+    required fixed64 condition = 1;
+    required uint32 event = 2;
+    required float freq = 3;
+  }
+
+  repeated Event events = 1;
+}
+
 // Represents the serialisation of one particular predictor.
 message RecurrencePredictorProto {
   oneof predictor {
     FakePredictorProto fake_predictor = 1;
     FrecencyPredictorProto frecency_predictor = 2;
     HourBinPredictorProto hour_bin_predictor = 3;
+    ConditionalFrequencyPredictorProto conditional_frequency_predictor = 4;
   }
 }

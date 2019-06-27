@@ -74,6 +74,77 @@ void DefaultPredictor::ToProto(RecurrencePredictorProto* proto) const {}
 
 void DefaultPredictor::FromProto(const RecurrencePredictorProto& proto) {}
 
+ConditionalFrequencyPredictor::ConditionalFrequencyPredictor() = default;
+ConditionalFrequencyPredictor::ConditionalFrequencyPredictor(
+    const ConditionalFrequencyPredictorConfig& config) {}
+ConditionalFrequencyPredictor::~ConditionalFrequencyPredictor() = default;
+
+ConditionalFrequencyPredictor::Events::Events() = default;
+ConditionalFrequencyPredictor::Events::~Events() = default;
+ConditionalFrequencyPredictor::Events::Events(const Events& other) = default;
+
+const char ConditionalFrequencyPredictor::kPredictorName[] =
+    "ConditionalFrequencyPredictor";
+const char* ConditionalFrequencyPredictor::GetPredictorName() const {
+  return kPredictorName;
+}
+
+void ConditionalFrequencyPredictor::Train(unsigned int target,
+                                          unsigned int condition) {
+  TrainWithDelta(target, condition, 1.0f);
+}
+
+void ConditionalFrequencyPredictor::TrainWithDelta(unsigned int target,
+                                                   unsigned int condition,
+                                                   float delta) {
+  DCHECK_NE(delta, 0.0f);
+  auto& events = table_[condition];
+  events.freqs[target] += delta;
+  events.total += delta;
+}
+
+base::flat_map<unsigned int, float> ConditionalFrequencyPredictor::Rank(
+    unsigned int condition) {
+  const auto& it = table_.find(condition);
+  // If the total frequency is zero, we can't return any meaningful results, so
+  // return empty.
+  if (it == table_.end() || it->second.total == 0.0f)
+    return {};
+
+  base::flat_map<unsigned int, float> result;
+  const auto& events = it->second;
+  for (const auto& target_freq : events.freqs)
+    result[target_freq.first] = target_freq.second / events.total;
+  return result;
+}
+
+void ConditionalFrequencyPredictor::ToProto(
+    RecurrencePredictorProto* proto) const {
+  auto* predictor = proto->mutable_conditional_frequency_predictor();
+  for (const auto& condition_events : table_) {
+    for (const auto& event_freq : condition_events.second.freqs) {
+      auto* event = predictor->add_events();
+      event->set_condition(condition_events.first);
+      event->set_event(event_freq.first);
+      event->set_freq(event_freq.second);
+    }
+  }
+}
+
+void ConditionalFrequencyPredictor::FromProto(
+    const RecurrencePredictorProto& proto) {
+  if (!proto.has_conditional_frequency_predictor()) {
+    // TODO(921444): Add error metrics for new predictors.
+    return;
+  }
+
+  for (const auto& event : proto.conditional_frequency_predictor().events()) {
+    auto& events = table_[event.condition()];
+    events.freqs[event.event()] = event.freq();
+    events.total += event.freq();
+  }
+}
+
 FrecencyPredictor::FrecencyPredictor(const FrecencyPredictorConfig& config)
     : decay_coeff_(config.decay_coeff()) {}
 FrecencyPredictor::~FrecencyPredictor() = default;

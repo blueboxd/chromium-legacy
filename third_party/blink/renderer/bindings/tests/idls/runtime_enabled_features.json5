@@ -15,6 +15,26 @@
 
   data: [
     {
+      name: "FeatureName",
+      in_origin_trial: true,
+    },
+    {
+      name: "FeatureName1",
+      in_origin_trial: true,
+    },
+    {
+      name: "FeatureName2",
+      in_origin_trial: true,
+    },
+    {
+      name: "FeatureName3",
+      in_origin_trial: true,
+    },
+    {
+      name: "InterfaceFeatureName",
+      in_origin_trial: true,
+    },
+    {
       name: "Interface2PartialRuntimeFeature",
     },
     {
@@ -40,6 +60,10 @@
       in_origin_trial: true,
     },
     {
+      name: "OriginTrialPartialFeature",
+      in_origin_trial: true,
+    },
+    {
       name: "PartialRuntimeFeature",
     },
     {
@@ -56,6 +80,10 @@
     },
     {
       name: "SecureFeature",
+    },
+    {
+      name: "TestFeature",
+      in_origin_trial: true,
     },
   ],
 }

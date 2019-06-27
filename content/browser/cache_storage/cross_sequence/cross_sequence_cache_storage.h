@@ -13,6 +13,8 @@
 
 namespace content {
 
+class CacheStorageContextWithManager;
+
 // A CacheStorage implementation that can be used from one sequence to access
 // a real CacheStorage executing on a different sequence.  The
 // CrossSequenceCacheStorageManager constructs instances of this class in
@@ -29,7 +31,7 @@ class CrossSequenceCacheStorage
       const url::Origin& origin,
       CacheStorageOwner owner,
       scoped_refptr<base::SequencedTaskRunner> target_task_runner,
-      scoped_refptr<CacheStorageManager> target_manager);
+      scoped_refptr<CacheStorageContextWithManager> context);
 
   // CacheStorage
   CacheStorageHandle CreateHandle() override;

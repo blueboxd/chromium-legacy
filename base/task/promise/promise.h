@@ -116,12 +116,12 @@ class Promise {
 
   bool IsResolvedForTesting() const {
     DCHECK(abstract_promise_);
-    return abstract_promise_->IsResolvedForTesting();
+    return abstract_promise_->IsResolved();
   }
 
   bool IsRejectedForTesting() const {
     DCHECK(abstract_promise_);
-    return abstract_promise_->IsRejectedForTesting();
+    return abstract_promise_->IsRejected();
   }
 
   // A task to execute |on_reject| is posted on |task_runner| as soon as this
@@ -173,7 +173,7 @@ class Promise {
                    ReturnedPromiseRejectT>(internal::AbstractPromise::Create(
         std::move(task_runner), from_here,
         std::make_unique<internal::AbstractPromise::AdjacencyList>(
-            abstract_promise_.get()),
+            abstract_promise_),
         RejectPolicy::kMustCatchRejection,
         internal::AbstractPromise::ConstructWith<
             internal::DependentList::ConstructUnresolved,
@@ -250,7 +250,7 @@ class Promise {
         internal::AbstractPromise::Create(
             std::move(task_runner), from_here,
             std::make_unique<internal::AbstractPromise::AdjacencyList>(
-                abstract_promise_.get()),
+                abstract_promise_),
             RejectPolicy::kMustCatchRejection,
             internal::AbstractPromise::ConstructWith<
                 internal::DependentList::ConstructUnresolved,
@@ -346,7 +346,7 @@ class Promise {
                    ReturnedPromiseRejectT>(internal::AbstractPromise::Create(
         std::move(task_runner), from_here,
         std::make_unique<internal::AbstractPromise::AdjacencyList>(
-            abstract_promise_.get()),
+            abstract_promise_),
         RejectPolicy::kMustCatchRejection,
         internal::AbstractPromise::ConstructWith<
             internal::DependentList::ConstructUnresolved,
@@ -406,7 +406,7 @@ class Promise {
         internal::AbstractPromise::Create(
             std::move(task_runner), from_here,
             std::make_unique<internal::AbstractPromise::AdjacencyList>(
-                abstract_promise_.get()),
+                abstract_promise_),
             RejectPolicy::kMustCatchRejection,
             internal::AbstractPromise::ConstructWith<
                 internal::DependentList::ConstructUnresolved,
@@ -514,16 +514,17 @@ class ManualPromiseResolver {
       RejectPolicy reject_policy = RejectPolicy::kMustCatchRejection)
       : promise_(SequencedTaskRunnerHandle::Get(), from_here, reject_policy) {}
 
-  ~ManualPromiseResolver() = default;
-
-  void Resolve(Promise<ResolveType, RejectType> promise) noexcept {
-    promise_.abstract_promise_->emplace(std::move(promise.abstract_promise_));
-    promise_.abstract_promise_->OnResolved();
+  ~ManualPromiseResolver() {
+    // If the promise wasn't resolved or rejected, then cancel it to make sure
+    // we don't leak memory.
+    if (!promise_.abstract_promise_->IsSettled())
+      promise_.abstract_promise_->OnCanceled();
   }
 
   template <typename... Args>
   void Resolve(Args&&... arg) noexcept {
-    DCHECK(!promise_.abstract_promise_->IsSettled());
+    DCHECK(!promise_.abstract_promise_->IsResolved());
+    DCHECK(!promise_.abstract_promise_->IsRejected());
     static_assert(!std::is_same<NoResolve, ResolveType>::value,
                   "Can't resolve a NoResolve promise.");
     promise_.abstract_promise_->emplace(
@@ -533,7 +534,8 @@ class ManualPromiseResolver {
 
   template <typename... Args>
   void Reject(Args&&... arg) noexcept {
-    DCHECK(!promise_.abstract_promise_->IsSettled());
+    DCHECK(!promise_.abstract_promise_->IsResolved());
+    DCHECK(!promise_.abstract_promise_->IsRejected());
     static_assert(!std::is_same<NoReject, RejectType>::value,
                   "Can't reject a NoReject promise.");
     promise_.abstract_promise_->emplace(
@@ -635,11 +637,11 @@ class Promises {
         std::tuple<internal::ToNonVoidT<Resolve>...>;
     using ReturnedPromiseRejectT = Reject;
 
-    std::vector<internal::DependentList::Node> prerequisite_list(
+    std::vector<internal::AbstractPromise::AdjacencyListNode> prerequisite_list(
         sizeof...(promises));
     int i = 0;
     for (auto&& p : {promises.abstract_promise_...}) {
-      prerequisite_list[i++].SetPrerequisite(p.get());
+      prerequisite_list[i++].prerequisite = std::move(p);
     }
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         internal::AbstractPromise::Create(

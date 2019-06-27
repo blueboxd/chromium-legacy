@@ -158,10 +158,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // ContentBrowserClient::GetInitatorSchemeBypassingDocumentBlocking
   bool is_initiator_scheme_excluded_ = false;
 
-  // Whether |is_initiator_scheme_excluded_| actually prevented blocking from
-  // happening.
-  bool initiator_scheme_prevented_blocking_ = false;
-
   // Whether the response is being blocked because of the presence of
   // Cross-Origin-Resource-Policy header in 'no-cors' mode (in this case the
   // response should fail with net::ERR_BLOCKED_BY_RESPONSE error code).

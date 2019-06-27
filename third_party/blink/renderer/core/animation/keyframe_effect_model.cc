@@ -87,8 +87,7 @@ bool KeyframeEffectModelBase::Sample(
   last_iteration_ = iteration;
   last_fraction_ = fraction;
   last_iteration_duration_ = iteration_duration;
-  interpolation_effect_->GetActiveInterpolations(
-      fraction, iteration_duration.InSecondsF(), result);
+  interpolation_effect_->GetActiveInterpolations(fraction, result);
   return changed;
 }
 

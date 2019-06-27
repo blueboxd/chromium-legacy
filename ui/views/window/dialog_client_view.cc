@@ -77,8 +77,8 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  button_row_container_ = new ButtonRowContainer(this);
-  AddChildView(button_row_container_);
+  button_row_container_ =
+      AddChildView(std::make_unique<ButtonRowContainer>(this));
 }
 
 DialogClientView::~DialogClientView() {
@@ -296,7 +296,7 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
     // MdTextButton, make it so. Note that some overrides may not always update
     // the title (they should). See http://crbug.com/697303 .
     const base::string16 title = delegate->GetDialogButtonLabel(type);
-    std::unique_ptr<LabelButton> button = nullptr;
+    std::unique_ptr<LabelButton> button;
 
     const bool is_default = delegate->GetDefaultDialogButton() == type &&
                             (type != ui::DIALOG_BUTTON_CANCEL ||
@@ -311,7 +311,7 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
 
     button->SetGroup(kButtonGroup);
 
-    *member = button.release();
+    *member = button_row_container_->AddChildView(std::move(button));
   }
 
   delegate->UpdateButton(*member, type);
@@ -346,19 +346,26 @@ void DialogClientView::SetupLayout() {
 
   // Clobber any existing LayoutManager since it has weak references to child
   // Views which may be removed by SetupViews().
-  GridLayout* layout = button_row_container_->SetLayoutManager(
-      std::make_unique<views::GridLayout>());
-  layout->set_minimum_size(minimum_size_);
+  button_row_container_->SetLayoutManager(nullptr);
 
   SetupViews();
+
   const std::array<View*, kNumButtons> views = GetButtonRowViews();
 
   // Visibility changes on |extra_view_| must be observed to re-Layout. However,
   // when hidden it's not included in the button row (it can't influence layout)
   // and it can't be added to |button_row_container_| (GridLayout complains).
   // So add it, hidden, to |this| so it can be observed.
-  if (extra_view_ && !views[0])
-    AddChildView(extra_view_);
+  if (extra_view_) {
+    if (!views[0])
+      AddChildView(extra_view_);
+    else
+      button_row_container_->AddChildViewAt(extra_view_, 0);
+  }
+
+  GridLayout* layout = button_row_container_->SetLayoutManager(
+      std::make_unique<views::GridLayout>());
+  layout->set_minimum_size(minimum_size_);
 
   if (std::count(views.begin(), views.end(), nullptr) == kNumButtons)
     return;
@@ -402,7 +409,7 @@ void DialogClientView::SetupLayout() {
                               button_row_insets_.top());
   for (size_t view_index = 0; view_index < kNumButtons; ++view_index) {
     if (views[view_index]) {
-      layout->AddView(views[view_index]);
+      layout->AddExistingView(views[view_index]);
       link[link_index++] = kViewToColumnIndex[view_index];
     } else {
       layout->SkipColumns(1);
@@ -437,14 +444,13 @@ void DialogClientView::SetupLayout() {
 }
 
 void DialogClientView::SetupViews() {
-  button_row_container_->RemoveAllChildViews(false /* delete children */);
-  // If SetupLayout() "stored" a hidden |extra_view_| in |this|, ensure it can
-  // be re-added to the layout when becoming visible.
-  if (extra_view_)
-    RemoveChildView(extra_view_);
-
-  UpdateDialogButton(&ok_button_, ui::DIALOG_BUTTON_OK);
-  UpdateDialogButton(&cancel_button_, ui::DIALOG_BUTTON_CANCEL);
+  if (PlatformStyle::kIsOkButtonLeading) {
+    UpdateDialogButton(&ok_button_, ui::DIALOG_BUTTON_OK);
+    UpdateDialogButton(&cancel_button_, ui::DIALOG_BUTTON_CANCEL);
+  } else {
+    UpdateDialogButton(&cancel_button_, ui::DIALOG_BUTTON_CANCEL);
+    UpdateDialogButton(&ok_button_, ui::DIALOG_BUTTON_OK);
+  }
 
   if (extra_view_)
     return;

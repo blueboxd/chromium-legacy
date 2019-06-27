@@ -68,7 +68,6 @@ class DrmThreadProxy {
       const std::vector<OverlaySurfaceCandidate>& candidates,
       OverlayCapabilitiesCallback callback);
 
-  void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
   void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 
  private:

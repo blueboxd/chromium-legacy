@@ -26,6 +26,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -526,6 +527,19 @@ void BrowserTestBase::WaitUntilJavaIsReady(base::OnceClosure quit_closure) {
 #endif
 
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
+  // Install a RunLoop timeout if none is present but do not override tests that
+  // set a ScopedRunTimeoutForTest from their fixture's constructor (which
+  // happens as part of setting up the test factory in gtest while
+  // ProxyRunTestOnMainThreadLoop() happens later as part of SetUp()).
+  base::Optional<base::RunLoop::ScopedRunTimeoutForTest> scoped_run_timeout;
+  if (!base::RunLoop::ScopedRunTimeoutForTest::Current()) {
+    // TODO(https://crbug.com/918724): determine whether the timeout can be
+    // reduced from action_max_timeout() to action_timeout().
+    scoped_run_timeout.emplace(TestTimeouts::action_max_timeout(),
+                               base::MakeExpectedNotRunClosure(
+                                   FROM_HERE, "RunLoop::Run() timed out."));
+  }
+
 #if defined(OS_POSIX)
   g_browser_process_pid = base::GetCurrentProcId();
   signal(SIGSEGV, DumpStackTraceSignalHandler);

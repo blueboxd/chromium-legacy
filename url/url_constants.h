@@ -12,6 +12,7 @@
 namespace url {
 
 COMPONENT_EXPORT(URL) extern const char kAboutBlankURL[];
+COMPONENT_EXPORT(URL) extern const char kAboutSrcdocURL[];
 
 COMPONENT_EXPORT(URL) extern const char kAboutBlankPath[];
 COMPONENT_EXPORT(URL) extern const char kAboutSrcdocPath[];

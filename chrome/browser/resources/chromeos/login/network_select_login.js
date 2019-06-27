@@ -7,9 +7,10 @@
  */
 
 {
+  const mojom = chromeos.networkConfig.mojom;
+
   /**
    * Custom data that is stored with network element to trigger action.
-   *
    * @typedef {{onTap: !function()}}
    */
   let networkCustomItemCustomData;
@@ -217,13 +218,14 @@
 
     /**
      * Event triggered when the default network state may have changed.
-     * @param {!CustomEvent<CrOnc.NetworkStateProperties>} event
+     * @param {!CustomEvent<OncMojo.NetworkStateProperties>} event
      * @private
      */
     onDefaultNetworkChanged_: function(event) {
-      var state = event.detail;
-      this.isConnected =
-          state && state.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+      // Note: event.detail will be {} if there is no default network.
+      var networkState = event.detail.type ? event.detail : undefined;
+      this.isConnected = !!networkState &&
+          OncMojo.connectionStateIsConnected(networkState.connectionState);
       if (!this.isConnected || !this.is_shown_)
         return;
       this.attemptApplyConfiguration_();
@@ -231,20 +233,20 @@
 
     /**
      * Event triggered when a cr-network-list-item connection state changes.
-     * @param {!CustomEvent<!CrOnc.NetworkStateProperties>} event
+     * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
      * @private
      */
     onNetworkConnectChanged_: function(event) {
-      var state = event.detail;
-      if (state && state.GUID == this.networkLastSelectedGuid_ &&
-          state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+      var networkState = event.detail;
+      if (networkState && networkState.guid == this.networkLastSelectedGuid_ &&
+          OncMojo.connectionStateIsConnected(networkState.connectionState)) {
         this.onSelectedNetworkConnected_();
       }
     },
 
     /**
      * Event triggered when a list of networks get changed.
-     * @param {!CustomEvent<!Array<!CrOnc.NetworkStateProperties>>} event
+     * @param {!CustomEvent<!Array<!OncMojo.NetworkStateProperties>>} event
      * @private
      */
     onNetworkListChanged_: function(event) {
@@ -269,13 +271,12 @@
         return;
       }
       var defaultNetwork = this.$.networkSelect.getDefaultNetwork();
-      if (configuration.networkUseConnected && defaultNetwork) {
-        if (defaultNetwork.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
-          window.setTimeout(
-              this.handleNetworkSelection_.bind(this, defaultNetwork), 0);
-          this.configuration_applied_ = true;
-          return;
-        }
+      if (configuration.networkUseConnected && defaultNetwork &&
+          OncMojo.connectionStateIsConnected(defaultNetwork.connectionState)) {
+        window.setTimeout(
+            this.handleNetworkSelection_.bind(this, defaultNetwork), 0);
+        this.configuration_applied_ = true;
+        return;
       }
       if (configuration.networkSelectGuid) {
         var network =
@@ -291,8 +292,7 @@
 
     /**
      * This is called when user taps on network entry in networks list.
-     *
-     * @param {!CustomEvent<!CrOnc.NetworkStateProperties>} event
+     * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
      * @private
      */
     onNetworkListNetworkItemSelected_: function(event) {
@@ -301,16 +301,18 @@
 
     /**
      * Handles selection of particular network.
-     *
-     * @param {!CrOnc.NetworkStateProperties} state network state.
+     * @param {!OncMojo.NetworkStateProperties} networkState
      * @private
      */
-    handleNetworkSelection_: function(state) {
-      assert(state);
+    handleNetworkSelection_: function(networkState) {
+      assert(networkState);
+
+      var isConnected =
+          OncMojo.connectionStateIsConnected(networkState.connectionState);
+
       // If |configureConnected| is false and a connected network is selected,
       // continue to the next screen.
-      if (!this.configureConnected &&
-          state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+      if (!this.configureConnected && isConnected) {
         this.onSelectedNetworkConnected_();
         return;
       }
@@ -319,33 +321,32 @@
       // is pending connection attempt. So even if new selection is currently
       // connected, it may get disconnected at any time.
       // So just send one more connection request to cancel current attempts.
-      this.networkLastSelectedGuid_ = (state ? state.GUID : '');
-
-      if (!state)
-        return;
+      this.networkLastSelectedGuid_ = networkState.guid;
 
       var self = this;
-      var networkStateCopy = Object.assign({}, state);
+      var oncType = OncMojo.getNetworkTypeString(networkState.type);
+      var guid = networkState.guid;
 
       // Cellular should normally auto connect. If it is selected, show the
       // details UI since there is no configuration UI for Cellular.
-      if (state.Type == chrome.networkingPrivate.NetworkType.CELLULAR) {
-        chrome.send('showNetworkDetails', [state.Type, state.GUID]);
+      if (networkState.type ==
+          chromeos.networkConfig.mojom.NetworkType.kCellular) {
+        chrome.send('showNetworkDetails', [oncType, guid]);
         return;
       }
 
       // Allow proxy to be set for connected networks.
-      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
-        chrome.send('showNetworkDetails', [state.Type, state.GUID]);
+      if (isConnected) {
+        chrome.send('showNetworkDetails', [oncType, guid]);
         return;
       }
 
-      if (state.Connectable === false || state.ErrorState) {
-        chrome.send('showNetworkConfig', [state.GUID]);
+      if (!networkState.connectable || networkState.errorState) {
+        chrome.send('showNetworkConfig', [guid]);
         return;
       }
 
-      chrome.networkingPrivate.startConnect(state.GUID, () => {
+      chrome.networkingPrivate.startConnect(guid, () => {
         const lastError = chrome.runtime.lastError;
         if (!lastError)
           return;
@@ -356,8 +357,8 @@
         }
         console.error(
             'networkingPrivate.startConnect error: ' + message +
-            ' For: ' + state.GUID);
-        chrome.send('showNetworkConfig', [state.GUID]);
+            ' For: ' + guid);
+        chrome.send('showNetworkConfig', [guid]);
       });
     },
 

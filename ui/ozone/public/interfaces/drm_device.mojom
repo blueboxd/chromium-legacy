@@ -12,6 +12,7 @@ import "ui/display/mojo/display_snapshot.mojom";
 import "ui/display/mojo/gamma_ramp_rgb_entry.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
+import "ui/ozone/public/interfaces/device_cursor.mojom";
 import "ui/ozone/public/interfaces/overlay_surface_candidate.mojom";
 
 
@@ -82,5 +83,10 @@ interface DrmDevice {
           (gfx.mojom.AcceleratedWidget widget,
           array<ui.ozone.mojom.OverlaySurfaceCandidate> candidates,
           array<ui.ozone.mojom.OverlayStatus> status);
+
+  // Provides a DeviceCursor interface. The provided interface needs to be
+  // associated because the AcceleratedWidgets referenced by its methods are
+  // registered via CreateWindow() in this interface.
+  GetDeviceCursor(associated DeviceCursor& cursor);
 };
 

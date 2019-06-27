@@ -370,13 +370,13 @@ void GetDeviceLocalAccountPolicies(bool convert_values,
 
 const LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
     {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
-    {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
+    {"cloud", IDS_POLICY_SOURCE_CLOUD},
     {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
     {"sourceDeviceLocalAccountOverride",
      IDS_POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE},
-    {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
-    {"sourcePriorityCloud", IDS_POLICY_SOURCE_CLOUD},
-    {"sourceMerged", IDS_POLICY_SOURCE_MERGED},
+    {"platform", IDS_POLICY_SOURCE_PLATFORM},
+    {"priorityCloud", IDS_POLICY_SOURCE_CLOUD},
+    {"merged", IDS_POLICY_SOURCE_MERGED},
 };
 
 Value GetAllPolicyValuesAsArray(content::BrowserContext* context,

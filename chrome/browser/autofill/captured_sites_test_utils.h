@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_AUTOFILL_CAPTURED_SITES_TEST_UTILS_H_
 #define CHROME_BROWSER_AUTOFILL_CAPTURED_SITES_TEST_UTILS_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/browser.h"
@@ -34,6 +38,9 @@ const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
 // an action. The Captured Site Automation Framework uses this timeout to
 // break out of a wait loop after a hover action.
 const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
+// Some times, tests tend to need a break that can't be read from the elements
+// play status
+const base::TimeDelta cool_off_action_timeout = base::TimeDelta::FromSeconds(1);
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
 
@@ -198,6 +205,13 @@ class TestRecipeReplayer {
   static const int kHostHttpPort = 8080;
   static const int kHostHttpsPort = 8081;
 
+  enum DomElementReadyState {
+    kReadyStatePresent = 0,
+    kReadyStateVisible = 1 << 0,
+    kReadyStateEnabled = 1 << 1,
+    kReadyStateOnTop   = 1 << 2
+  };
+
   TestRecipeReplayer(
       Browser* browser,
       TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor);
@@ -253,11 +267,14 @@ class TestRecipeReplayer {
                            base::Process* process);
   bool ReplayRecordedActions(const base::FilePath& recipe_file_path);
   bool InitializeBrowserToExecuteRecipe(
-      std::unique_ptr<base::DictionaryValue>& recipe);
+      const std::unique_ptr<base::DictionaryValue>& recipe);
   bool ExecuteAutofillAction(const base::DictionaryValue& action);
   bool ExecuteClickAction(const base::DictionaryValue& action);
+  bool ExecuteCoolOffAction(const base::DictionaryValue& action);
   bool ExecuteHoverAction(const base::DictionaryValue& action);
+  bool ExecuteForceLoadPage(const base::DictionaryValue& action);
   bool ExecutePressEnterAction(const base::DictionaryValue& action);
+  bool ExecutePressEscapeAction(const base::DictionaryValue& action);
   bool ExecuteRunCommandAction(const base::DictionaryValue& action);
   bool ExecuteSavePasswordAction(const base::DictionaryValue& action);
   bool ExecuteSelectDropdownAction(const base::DictionaryValue& action);

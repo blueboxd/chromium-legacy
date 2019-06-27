@@ -7,6 +7,7 @@
 namespace url {
 
 const char kAboutBlankURL[] = "about:blank";
+const char kAboutSrcdocURL[] = "about:srcdoc";
 
 const char kAboutBlankPath[] = "blank";
 const char kAboutSrcdocPath[] = "srcdoc";

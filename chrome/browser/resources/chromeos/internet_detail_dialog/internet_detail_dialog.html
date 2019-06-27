@@ -81,7 +81,7 @@
       <div class="start layout horizontal center">
         <cr-network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
-            network-state="[[networkProperties]]">
+            network-state="[[getNetworkState_(networkProperties)]]">
         </cr-network-icon>
         <div id="networkName" class="title">
           [[getNameText_(networkProperties)]]

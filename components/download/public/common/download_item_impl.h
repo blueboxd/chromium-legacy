@@ -645,6 +645,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // INTERRUPTED state.
   ResumeMode GetResumeMode() const;
 
+  // Whether strong validators are present.
+  bool HasStrongValidators() const;
+
   DownloadItem::DownloadRenameResult RenameDownloadedFile(
       const std::string& name);
   void RenameDownloadedFileDone(RenameDownloadCallback callback,
@@ -822,6 +825,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // UKM ID for reporting, default to 0 if uninitialized.
   uint64_t ukm_download_id_ = 0;
+
+  // Whether download has been resumed.
+  bool has_resumed_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

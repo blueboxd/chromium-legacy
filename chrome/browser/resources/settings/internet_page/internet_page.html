@@ -35,8 +35,7 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <network-summary default-network="{{defaultNetwork}}"
-            device-states="{{deviceStates}}"
-            networking-private="[[networkingPrivate]]">
+            device-states="{{deviceStates}}">
         </network-summary>
         <template is="dom-if" if="[[allowAddConnection_(globalPolicy_,
             managedNetworkAvailable)]]">
@@ -131,7 +130,6 @@
               global-policy="[[globalPolicy_]]"
               third-party-vpn-providers="[[thirdPartyVpnProviders_]]"
               arc-vpn-providers="[[arcVpnProviders_]]"
-              networking-private="[[networkingPrivate]]"
               show-spinner="{{showSpinner_}}">
           </settings-internet-subpage>
         </settings-subpage>

@@ -156,7 +156,8 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   }
 
   // Adds a view to the layout using the default alignment from the column.
-  void AddView(View* view, int col_span = 1, int row_span = 1);
+  // NOTE: The |view| must already be present and owned by the host.
+  void AddExistingView(View* view, int col_span = 1, int row_span = 1);
 
   // Adds a view with the specified alignment and spans. If
   // pref_width/pref_height is > 0 then the preferred width/height of the view
@@ -180,15 +181,14 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // Adds a view to the layout with the specified alignment and spans. If
   // pref_width/pref_height is > 0 then the preferred width/height of the view
   // is fixed to the specified value.
-  // TODO: Rename to AddViewToLayout() once call sites are refactored to prefer
-  //       the AddView<T> version above.
-  void AddView(View* view,
-               int col_span,
-               int row_span,
-               Alignment h_align,
-               Alignment v_align,
-               int pref_width = 0,
-               int pref_height = 0);
+  // NOTE: The |view| must already be present and owned by the host;
+  void AddExistingView(View* view,
+                       int col_span,
+                       int row_span,
+                       Alignment h_align,
+                       Alignment v_align,
+                       int pref_width = 0,
+                       int pref_height = 0);
 
   // Notification we've been installed on a particular host. Checks that host
   // is the same as the View supplied in the constructor.

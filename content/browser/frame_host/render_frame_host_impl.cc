@@ -4778,6 +4778,18 @@ void RenderFrameHostImpl::CommitNavigation(
     }
   }
 
+  // Main frame navigation to about:srcdoc and navigation to about:srcdoc?foo or
+  // about:srcdoc#foo are expected to be blocked.
+  //
+  // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M79 if it
+  // is never reached.
+  if (common_params.url.IsAboutSrcdoc()) {
+    if (frame_tree_node_->IsMainFrame() ||
+        common_params.url != GURL(url::kAboutSrcdocURL)) {
+      base::debug::DumpWithoutCrashing();
+    }
+  }
+
   // If this is an attempt to commit a URL in an incompatible process, capture a
   // crash dump to diagnose why it is occurring.
   // TODO(creis): Remove this check after we've gathered enough information to

@@ -1,5 +1,6 @@
 <link rel="import" href="../../../html/polymer.html">
 
+<link rel="import" href="../../../html/chromeos/onc_mojo.html">
 <link rel="import" href="../../chromeos/network/cr_network_icon.html">
 <link rel="import" href="../../chromeos/network/cr_onc_types.html">
 <link rel="import" href="../../cr_icon_button/cr_icon_button.html">
@@ -58,9 +59,9 @@
     <div id="divOuter"
         class="layout horizontal center flex" actionable>
       <template is="dom-if" if="[[networkState]]">
-        <cr-network-icon
+        <cr-network-icon is-list-item
             show-technology-badge="[[showTechnologyBadge]]"
-            is-list-item network-state="[[networkState]]">
+            network-state="[[networkState]]">
         </cr-network-icon>
       </template>
       <template is="dom-if" if="[[item.polymerIcon]]">
@@ -74,9 +75,9 @@
           [[getNetworkStateText_(networkState)]]
         </div>
       </div>
-      <template is="dom-if" if="[[isPolicySource(networkState.Source)]]">
+      <template is="dom-if" if="[[isPolicySource(networkState.source)]]">
         <cr-policy-indicator
-            indicator-type="[[getIndicatorTypeForSource(networkState.Source)]]">
+            indicator-type="[[getIndicatorTypeForSource(networkState.source)]]">
         </cr-policy-indicator>
       </template>
       <template is="dom-if"

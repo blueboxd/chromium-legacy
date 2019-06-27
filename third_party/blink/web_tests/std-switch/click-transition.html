@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
+<body>
+<script type="module">
+import 'std:elements/switch';
+
+function singleFrame() {
+  return new Promise((resolve, reject) => {
+    requestAnimationFrame(resolve);
+  });
+}
+
+promise_test(async () => {
+  let switchElement = document.createElement('std-switch');
+  document.body.appendChild(switchElement);
+  assert_false(switchElement.on);
+  let thumb = internals.shadowRoot(switchElement).getElementById('thumb');
+  let transitionStartCounter = 0;
+  let transitionEndCounter = 0;
+  thumb.addEventListener('transitionstart', e => { ++transitionStartCounter; });
+  thumb.addEventListener('transitionend', e => { ++transitionEndCounter; });
+
+  await test_driver.click(switchElement);
+  assert_true(switchElement.on);
+  await singleFrame();
+  assert_true(transitionStartCounter > 0);
+  if (transitionStartCounter > transitionEndCounter) {
+    await new Promise((resolve, reject) => {
+      thumb.addEventListener('transitionend', resolve, {once: true});
+    });
+  }
+
+  // Changing the state with an IDL attribute should not animate.
+  transitionStartCounter = 0;
+  switchElement.on = false;
+  await singleFrame();
+  assert_equals(transitionStartCounter, 0, 'No additional events');
+}, 'Click event handler should start transition');
+</script>
+</body>

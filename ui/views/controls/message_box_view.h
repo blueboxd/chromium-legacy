@@ -122,10 +122,10 @@ class VIEWS_EXPORT MessageBoxView : public View {
   Link* link_ = nullptr;
 
   // Spacing between rows in the grid layout.
-  int inter_row_vertical_spacing_ = 0;
+  const int inter_row_vertical_spacing_ = 0;
 
   // Maximum width of the message label.
-  int message_width_;
+  int message_width_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxView);
 };

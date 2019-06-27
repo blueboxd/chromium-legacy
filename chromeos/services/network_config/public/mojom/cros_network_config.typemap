@@ -6,16 +6,13 @@ mojom =
     "//chromeos/services/network_config/public/mojom/cros_network_config.mojom"
 
 public_deps = [
-  "//components/onc",
   "//components/proxy_config",
 ]
-
-public_headers = [ "//components/onc/onc_constants.h" ]
 
 traits_headers = [ "//chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h" ]
 
 type_mappings =
-    [ "chromeos.cros_network_config.mojom.ONCSource=onc::ONCSource" ]
+    [ "chromeos.cros_network_config.mojom.ProxyMode=ProxyPrefs::ProxyMode" ]
 
 sources = [
   "//chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.cc",

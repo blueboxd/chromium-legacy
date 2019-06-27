@@ -4,13 +4,10 @@
 
 #include "third_party/blink/renderer/core/animation/interpolation_effect.h"
 
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
-
 namespace blink {
 
 void InterpolationEffect::GetActiveInterpolations(
     double fraction,
-    double iteration_duration,
     HeapVector<Member<Interpolation>>& result) const {
   wtf_size_t existing_size = result.size();
   wtf_size_t result_index = 0;
@@ -23,8 +20,7 @@ void InterpolationEffect::GetActiveInterpolations(
           record_length ? (fraction - record->start_) / record_length : 0.0;
       if (record->easing_) {
         local_fraction = record->easing_->Evaluate(
-            local_fraction, TimingFunction::LimitDirection::RIGHT,
-            AccuracyForDuration(iteration_duration));
+            local_fraction, TimingFunction::LimitDirection::RIGHT);
       }
       interpolation->Interpolate(0, local_fraction);
       if (result_index < existing_size)

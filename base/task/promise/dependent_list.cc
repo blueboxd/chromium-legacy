@@ -13,55 +13,42 @@
 
 namespace base {
 namespace internal {
+namespace {
 
-// static
-DependentList::Node* DependentList::ReverseList(DependentList::Node* list) {
+DependentList::Node* ReverseList(DependentList::Node* list) {
   DependentList::Node* prev = nullptr;
   while (list) {
-    DependentList::Node* next = list->next_;
-    list->next_ = prev;
+    DependentList::Node* next = list->next;
+    list->next = prev;
     prev = list;
     list = next;
   }
   return prev;
 }
 
-// static
-void DependentList::DispatchAll(DependentList::Node* head,
-                                DependentList::Visitor* visitor,
-                                bool retain_prerequsites) {
+// Goes through the list starting at |head| consuming node->dependent and
+// passing it to the provided |visitor|.
+void DispatchAll(DependentList::Node* head, DependentList::Visitor* visitor) {
   head = ReverseList(head);
   DependentList::Node* next = nullptr;
   while (head) {
-    next = head->next_;
-    if (retain_prerequsites)
-      head->RetainSettledPrerequisite();
-    // |visitor| might delete the node, so no access to node past this
+    next = head->next;
+    // consume_fn might delete the node, so no access to node past this
     // call!
-    visitor->Visit(std::move(head->dependent_));
+    visitor->Visit(std::move(head->dependent));
     head = next;
   }
 }
 
+}  // namespace
+
 DependentList::Visitor::~Visitor() = default;
 
 DependentList::Node::Node() = default;
-
-DependentList::Node::Node(Node&& other) {
-  prerequisite_ = other.prerequisite_.load(std::memory_order_relaxed);
-  other.prerequisite_ = 0;
-  dependent_ = std::move(other.dependent_);
-  DCHECK_EQ(other.next_, nullptr);
-}
-
-DependentList::Node::Node(AbstractPromise* prerequisite,
-                          scoped_refptr<AbstractPromise> dependent)
-    : prerequisite_(reinterpret_cast<intptr_t>(prerequisite)),
-      dependent_(std::move(dependent)) {}
-
-DependentList::Node::~Node() {
-  ClearPrerequisite();
-}
+DependentList::Node::Node(DependentList::Node&& other) = default;
+DependentList::Node& DependentList::Node::operator=(
+    DependentList::Node&& other) = default;
+DependentList::Node::~Node() = default;
 
 DependentList::DependentList(State initial_state)
     : data_(CreateData(nullptr,
@@ -80,50 +67,8 @@ DependentList::DependentList(ConstructRejected)
 
 DependentList::~DependentList() = default;
 
-void DependentList::Node::Reset(AbstractPromise* prerequisite,
-                                scoped_refptr<AbstractPromise> dependent) {
-  SetPrerequisite(prerequisite);
-  dependent_ = std::move(dependent);
-  next_ = nullptr;
-}
-
-void DependentList::Node::SetPrerequisite(AbstractPromise* prerequisite) {
-  DCHECK(prerequisite);
-  intptr_t prev_value = prerequisite_.exchange(
-      reinterpret_cast<intptr_t>(prerequisite), std::memory_order_acq_rel);
-
-  if (prev_value & kIsRetained)
-    reinterpret_cast<AbstractPromise*>(prev_value & ~kIsRetained)->Release();
-}
-
-AbstractPromise* DependentList::Node::prerequisite() const {
-  return reinterpret_cast<AbstractPromise*>(
-      prerequisite_.load(std::memory_order_acquire) & ~kIsRetained);
-}
-
-void DependentList::Node::RetainSettledPrerequisite() {
-  intptr_t prerequisite = prerequisite_.load(std::memory_order_acquire);
-  DCHECK((prerequisite & kIsRetained) == 0) << "May only be called once";
-  if (!prerequisite)
-    return;
-
-  // Mark as retained, note we could have another thread trying to call
-  // ClearPrerequisite.
-  if (prerequisite_.compare_exchange_strong(
-          prerequisite, prerequisite | kIsRetained, std::memory_order_release,
-          std::memory_order_acquire)) {
-    reinterpret_cast<AbstractPromise*>(prerequisite)->AddRef();
-  }
-}
-
-void DependentList::Node::ClearPrerequisite() {
-  intptr_t prerequisite = prerequisite_.exchange(0, std::memory_order_acq_rel);
-  if (prerequisite & kIsRetained)
-    reinterpret_cast<AbstractPromise*>(prerequisite & ~kIsRetained)->Release();
-}
-
 DependentList::InsertResult DependentList::Insert(Node* node) {
-  DCHECK(!node->next_);
+  DCHECK(!node->next);
 
   // std::memory_order_acquire for hapens-after relation with
   // SettleAndDispatchAllDependents completing and thus this this call returning
@@ -131,7 +76,7 @@ DependentList::InsertResult DependentList::Insert(Node* node) {
   uintptr_t prev_data = data_.load(std::memory_order_acquire);
   bool did_insert = false;
   while (IsAllowingInserts(prev_data) && !did_insert) {
-    node->next_ = ExtractHead(prev_data);
+    node->next = ExtractHead(prev_data);
 
     // On success std::memory_order_release so that all memory operations become
     // visible in SettleAndDispatchAllDependents when iterating the list.
@@ -145,11 +90,11 @@ DependentList::InsertResult DependentList::Insert(Node* node) {
     // new node but with the same address so node->next is still valid).
     if (data_.compare_exchange_weak(
             prev_data, CreateData(node, ExtractState(prev_data), kAllowInserts),
-            std::memory_order_seq_cst, std::memory_order_seq_cst)) {
+            std::memory_order_release, std::memory_order_acquire)) {
       did_insert = true;
     } else {
       // Cleanup in case the loop terminates
-      node->next_ = nullptr;
+      node->next = nullptr;
     }
   }
 
@@ -187,7 +132,7 @@ bool DependentList::SettleAndDispatchAllDependents(const State settled_state,
   // This load, and the ones in for compare_exchange_weak failures can be
   // std::memory_order_relaxed as we do not make any ordering guarantee when
   // this method returns false.
-  uintptr_t prev_data = data_.load(std::memory_order_seq_cst);
+  uintptr_t prev_data = data_.load(std::memory_order_relaxed);
   while (true) {
     if (!did_set_state && ExtractState(prev_data) != State::kUnresolved) {
       // Somebody else set the state.
@@ -211,14 +156,12 @@ bool DependentList::SettleAndDispatchAllDependents(const State settled_state,
       // On success std::memory_order_acquire for happens-after relation with
       // with the last successful Insert().
       if (!data_.compare_exchange_weak(prev_data, new_data,
-                                       std::memory_order_seq_cst,
+                                       std::memory_order_acquire,
                                        std::memory_order_relaxed)) {
         continue;
       }
       did_set_state = true;
-      // We don't want to retain prerequisites when cancelling.
-      DispatchAll(ExtractHead(prev_data), visitor,
-                  settled_state != State::kCanceled);
+      DispatchAll(ExtractHead(prev_data), visitor);
       prev_data = new_data;
     }
 
@@ -232,7 +175,7 @@ bool DependentList::SettleAndDispatchAllDependents(const State settled_state,
     // Insert returning an error.
     if (data_.compare_exchange_weak(
             prev_data, CreateData(nullptr, settled_state, kBlockInserts),
-            std::memory_order_seq_cst, std::memory_order_relaxed)) {
+            std::memory_order_release, std::memory_order_relaxed)) {
       // Inserts no longer allowed, state settled and list is empty. We are
       // done!
       return true;
@@ -247,35 +190,23 @@ bool DependentList::SettleAndDispatchAllDependents(const State settled_state,
 // std::memory_order_relaxed.
 
 bool DependentList::IsSettled() const {
-  return ExtractState(data_.load(std::memory_order_seq_cst)) !=
+  return ExtractState(data_.load(std::memory_order_relaxed)) !=
          State::kUnresolved;
 }
 
 bool DependentList::IsResolved() const {
-  DCHECK(IsSettled()) << "This check is racy";
-  return ExtractState(data_.load(std::memory_order_seq_cst)) ==
+  return ExtractState(data_.load(std::memory_order_relaxed)) ==
          State::kResolved;
 }
 
 bool DependentList::IsRejected() const {
-  DCHECK(IsSettled()) << "This check is racy";
-  return ExtractState(data_.load(std::memory_order_seq_cst)) ==
+  return ExtractState(data_.load(std::memory_order_relaxed)) ==
          State::kRejected;
 }
 
 bool DependentList::IsCanceled() const {
-  return ExtractState(data_.load(std::memory_order_seq_cst)) ==
+  return ExtractState(data_.load(std::memory_order_relaxed)) ==
          State::kCanceled;
-}
-
-bool DependentList::IsResolvedForTesting() const {
-  return ExtractState(data_.load(std::memory_order_seq_cst)) ==
-         State::kResolved;
-}
-
-bool DependentList::IsRejectedForTesting() const {
-  return ExtractState(data_.load(std::memory_order_seq_cst)) ==
-         State::kRejected;
 }
 
 }  // namespace internal

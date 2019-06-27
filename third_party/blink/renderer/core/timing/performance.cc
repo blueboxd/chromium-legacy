@@ -564,16 +564,18 @@ void Performance::FireResourceTimingBufferFull(TimerBase*) {
 }
 
 void Performance::AddElementTimingBuffer(PerformanceElementTiming& entry) {
-  if (!IsElementTimingBufferFull()) {
-    element_timing_buffer_.push_back(&entry);
-  }
+  element_timing_buffer_.push_back(&entry);
+
+  if (IsElementTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kElementtimingbufferfull));
 }
 
 void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
   DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
-  if (!IsEventTimingBufferFull()) {
-    event_timing_buffer_.push_back(&entry);
-  }
+  event_timing_buffer_.push_back(&entry);
+
+  if (IsEventTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
 }
 
 void Performance::AddLayoutJankBuffer(LayoutShift& entry) {
@@ -586,6 +588,37 @@ void Performance::AddLargestContentfulPaint(LargestContentfulPaint* entry) {
       kDefaultLargestContenfulPaintSize) {
     largest_contentful_paint_buffer_.push_back(entry);
   }
+}
+
+unsigned Performance::ElementTimingBufferSize() const {
+  return element_timing_buffer_.size();
+}
+
+unsigned Performance::EventTimingBufferSize() const {
+  return event_timing_buffer_.size();
+}
+
+void Performance::clearElementTimings() {
+  element_timing_buffer_.clear();
+}
+
+void Performance::clearEventTimings() {
+  event_timing_buffer_.clear();
+}
+
+// TODO(crbug.com/72556): remove Element Timing buffering when shipping the
+// 'buffered' flag.
+void Performance::setElementTimingBufferMaxSize(unsigned size) {
+  element_timing_buffer_max_size_ = size;
+  if (IsElementTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kElementtimingbufferfull));
+}
+
+// TODO(yoav): EventTiming should follow a simpler buffering model.
+void Performance::setEventTimingBufferMaxSize(unsigned size) {
+  event_timing_buffer_max_size_ = size;
+  if (IsEventTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
 }
 
 void Performance::AddFirstPaintTiming(base::TimeTicks start_time) {

@@ -672,7 +672,8 @@ void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
 }
 
 void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
-                                          base::TimeDelta duration) {
+                                          base::TimeDelta duration,
+                                          gfx::Tween::Type tween_type) {
   if (::wm::WindowAnimationsDisabled(window_)) {
     SetBoundsDirect(bounds);
     return;
@@ -681,12 +682,12 @@ void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
   ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
   slide_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  slide_settings.SetTweenType(tween_type);
   slide_settings.SetTransitionDuration(duration);
   SetBoundsDirect(bounds);
 }
 
-void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
-                                           gfx::Tween::Type animation_type) {
+void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   // Some test results in invoking CrossFadeToBounds when window is not visible.
   // No animation is necessary in that case, thus just change the bounds and
   // quit.
@@ -714,7 +715,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   // Resize the window to the new size, which will force a layout and paint.
   SetBoundsDirect(new_bounds);
 
-  CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
+  CrossFadeAnimation(window_, std::move(old_layer_owner));
 }
 
 void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {

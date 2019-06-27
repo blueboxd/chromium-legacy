@@ -147,6 +147,14 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} properties
+   * @return {!OncMojo.NetworkStateProperties}
+   */
+  getNetworkState_: function(properties) {
+    return OncMojo.oncPropertiesToNetworkState(properties);
+  },
+
+  /**
    * @param {!chrome.networkingPrivate.NetworkConfigProperties} onc The ONC
    *     network properties.
    * @private

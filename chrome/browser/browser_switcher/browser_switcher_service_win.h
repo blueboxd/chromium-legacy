@@ -49,8 +49,11 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
   // Delete the "cache.dat" file created by |SavePrefsToFile()|. This call does
   // not block, it only posts a task to a worker thread.
   void DeletePrefsFile() const;
+  // Delete the "sitelistcache.dat" file that might be left from the LBS
+  // extension, or from a previous Chrome version. Called during initialization.
+  void DeleteSitelistCacheFile() const;
 
-  std::unique_ptr<XmlDownloader> ieem_downloader_;
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   base::WeakPtrFactory<BrowserSwitcherServiceWin> weak_ptr_factory_;
 

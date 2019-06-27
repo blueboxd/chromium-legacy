@@ -221,13 +221,13 @@ class TestBluetoothLowEnergyWeaveClientConnection
       multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      device::MockBluetoothDevice* mock_bluetooth_device,
+      const std::string& device_address,
       bool should_set_low_connection_latency)
       : BluetoothLowEnergyWeaveClientConnection(
             remote_device,
             adapter,
             remote_service_uuid,
-            mock_bluetooth_device,
+            device_address,
             should_set_low_connection_latency) {}
 
   ~TestBluetoothLowEnergyWeaveClientConnection() override {}
@@ -397,7 +397,8 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
     std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
         new TestBluetoothLowEnergyWeaveClientConnection(
             remote_device_, adapter_, service_uuid_,
-            mock_bluetooth_device_.get(), should_set_low_connection_latency));
+            kTestRemoteDeviceBluetoothAddress,
+            should_set_low_connection_latency));
 
     EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
     EXPECT_EQ(connection->status(), Connection::Status::DISCONNECTED);
@@ -716,7 +717,8 @@ TEST_F(SecureChannelBluetoothLowEnergyWeaveClientConnectionTest,
        CreateAndDestroyWithoutConnectCallDoesntCrash) {
   std::unique_ptr<BluetoothLowEnergyWeaveClientConnection> connection =
       std::make_unique<BluetoothLowEnergyWeaveClientConnection>(
-          remote_device_, adapter_, service_uuid_, mock_bluetooth_device_.get(),
+          remote_device_, adapter_, service_uuid_,
+          kTestRemoteDeviceBluetoothAddress,
           true /* should_set_low_connection_latency */);
 
   connection.reset();

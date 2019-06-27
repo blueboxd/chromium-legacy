@@ -498,13 +498,15 @@ TEST_F(ScopedTaskEnvironmentTest, SetsDefaultRunTimeout) {
     ScopedTaskEnvironment scoped_task_environment;
 
     // ScopedTaskEnvironment should set a default Run() timeout that fails the
-    // calling test.
+    // calling test (before test_launcher_timeout()).
+
     const RunLoop::ScopedRunTimeoutForTest* run_timeout =
         RunLoop::ScopedRunTimeoutForTest::Current();
-    ASSERT_NE(run_timeout, old_run_timeout);
-    EXPECT_EQ(run_timeout->timeout(), TestTimeouts::action_max_timeout());
+    EXPECT_NE(run_timeout, old_run_timeout);
+    EXPECT_TRUE(run_timeout);
+    EXPECT_LT(run_timeout->timeout(), TestTimeouts::test_launcher_timeout());
     EXPECT_NONFATAL_FAILURE({ run_timeout->on_timeout().Run(); },
-                            "Run() timed out");
+                            "RunLoop::Run() timed out");
   }
 
   EXPECT_EQ(RunLoop::ScopedRunTimeoutForTest::Current(), old_run_timeout);

@@ -883,6 +883,16 @@ void NavigationRequest::BeginNavigation() {
 
   CreateNavigationHandle(false);
 
+  if (CheckAboutSrcDoc() == AboutSrcDocCheckResult::BLOCK_REQUEST) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
+        true /* skip_throttles */, base::nullopt /* error_page_content*/,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
+    return;
+  }
+
   if (!NeedsUrlLoader()) {
     // There is no need to make a network request for this navigation, so commit
     // it immediately.
@@ -2325,6 +2335,31 @@ NavigationRequest::CheckLegacyProtocolInSubresource() const {
                               console_message);
 
   return LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST;
+}
+
+NavigationRequest::AboutSrcDocCheckResult NavigationRequest::CheckAboutSrcDoc()
+    const {
+  if (!common_params_.url.IsAboutSrcdoc())
+    return AboutSrcDocCheckResult::ALLOW_REQUEST;
+
+  // Loading about:srcdoc in the main frame can't have any reasonable meaning.
+  // There might be a malicious website trying to exploit a bug from this. As a
+  // defensive measure, do not proceed. They would have failed anyway later.
+  if (frame_tree_node_->IsMainFrame())
+    return AboutSrcDocCheckResult::BLOCK_REQUEST;
+
+  // Navigations to about:srcdoc?foo or about:srcdoc#foo are never caused by
+  // using the iframe srcdoc attribute. Only about:srcdoc is expected.
+  if (common_params_.url != GURL(url::kAboutSrcdocURL))
+    return AboutSrcDocCheckResult::BLOCK_REQUEST;
+
+  // TODO(arthursonzogni): Disallow navigations to about:srcdoc initiated from a
+  // different frame or from a different window.
+
+  // TODO(arthursonzogni): Disallow browser initiated navigations to
+  // about:srcdoc, except session history navigations.
+
+  return AboutSrcDocCheckResult::ALLOW_REQUEST;
 }
 
 void NavigationRequest::UpdateCommitNavigationParamsHistory() {

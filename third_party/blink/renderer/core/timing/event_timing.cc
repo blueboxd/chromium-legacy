@@ -49,8 +49,14 @@ bool ShouldReportForEventTiming(WindowPerformance* performance) {
           performance->GetExecutionContext()))
     return false;
 
-  return (!performance->IsEventTimingBufferFull() ||
-          performance->HasObserverFor(PerformanceEntry::kEvent));
+  if (performance->HasObserverFor(PerformanceEntry::kEvent))
+    return true;
+  if (performance->ShouldBufferEntries() &&
+      !performance->IsEventTimingBufferFull()) {
+    return true;
+  }
+
+  return false;
 }
 
 EventTiming::EventTiming(base::TimeTicks processing_start,

@@ -11,6 +11,8 @@
 
 namespace content {
 
+class CacheStorageContextWithManager;
+
 // A CacheStorageManager implementation that can be used from one sequence to
 // access the real CacheStorageManager executing on a different sequence.  The
 // CacheStorageContextImpl will create one of these whenever code calls the
@@ -23,7 +25,7 @@ class CONTENT_EXPORT CrossSequenceCacheStorageManager
  public:
   CrossSequenceCacheStorageManager(
       scoped_refptr<base::SequencedTaskRunner> target_task_runner,
-      scoped_refptr<CacheStorageManager> target_manager);
+      scoped_refptr<CacheStorageContextWithManager> context);
 
   // CacheStorageManager
   CacheStorageHandle OpenCacheStorage(const url::Origin& origin,
@@ -53,7 +55,7 @@ class CONTENT_EXPORT CrossSequenceCacheStorageManager
   ~CrossSequenceCacheStorageManager() override;
 
   const scoped_refptr<base::SequencedTaskRunner> target_task_runner_;
-  const scoped_refptr<CacheStorageManager> target_manager_;
+  const scoped_refptr<CacheStorageContextWithManager> context_;
 
   // The |inner_| object is SequenceBound<> to the target sequence used by the
   // real manager.

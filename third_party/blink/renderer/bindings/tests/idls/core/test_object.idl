@@ -156,7 +156,7 @@ interface TestObject {
     [Custom=Setter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;
     [NotEnumerable] attribute long notEnumerableLongAttribute;
-    [OriginTrialEnabled=FeatureName] attribute long originTrialEnabledLongAttribute;
+    [RuntimeEnabled=FeatureName] attribute long originTrialEnabledLongAttribute;
     [RuntimeEnabled=OriginTrialFeature] attribute long originTrialEnabledLongAttribute2;
     [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [LogActivity, LogAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
@@ -212,7 +212,7 @@ interface TestObject {
     [SameObject, SaveSameObject] readonly attribute TestInterface saveSameObjectAttribute;
     [SameObject, SaveSameObject] static readonly attribute TestInterface staticSaveSameObjectAttribute;
     [Unscopable] attribute long unscopableLongAttribute;
-    [Unscopable, OriginTrialEnabled=FeatureName] attribute long unscopableOriginTrialEnabledLongAttribute;
+    [Unscopable, RuntimeEnabled=FeatureName] attribute long unscopableOriginTrialEnabledLongAttribute;
     [Unscopable, RuntimeEnabled=RuntimeFeature] attribute long unscopableRuntimeEnabledLongAttribute;
     [Unscopable] void unscopableVoidMethod();
     [Unscopable, RuntimeEnabled=RuntimeFeature] void unscopableRuntimeEnabledVoidMethod();
@@ -500,16 +500,16 @@ interface TestObject {
     [DeprecateAs=TestFeatureA, MeasureAs=TestFeatureB] void deprecateAsSameValueMeasureAsSameValueOverloadedMethod();
     [DeprecateAs=TestFeatureA, MeasureAs=TestFeatureB] void deprecateAsSameValueMeasureAsSameValueOverloadedMethod(long arg);
     [NotEnumerable] void notEnumerableVoidMethod();
-    [OriginTrialEnabled=FeatureName] void originTrialEnabledVoidMethod();
-    [PerWorldBindings, OriginTrialEnabled=FeatureName] void perWorldBindingsOriginTrialEnabledVoidMethod();
+    [RuntimeEnabled=FeatureName] void originTrialEnabledVoidMethod();
+    [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsOriginTrialEnabledVoidMethod();
     // TODO(iclelland): Re-enable origin trials on overloaded methods
     // (crbug.com/621641)
-    // [OriginTrialEnabled=FeatureName] void originTrialEnabledOverloadedVoidMethod(DOMString stringArg);
-    // [OriginTrialEnabled=FeatureName] void originTrialEnabledOverloadedVoidMethod(long longArg);
-    // [OriginTrialEnabled=FeatureName1] void partiallyOriginTrialEnabledOverloadedVoidMethod(DOMString stringArg);
-    // [OriginTrialEnabled=FeatureName2] void partiallyOriginTrialEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
+    // [RuntimeEnabled=FeatureName] void originTrialEnabledOverloadedVoidMethod(DOMString stringArg);
+    // [RuntimeEnabled=FeatureName] void originTrialEnabledOverloadedVoidMethod(long longArg);
+    // [RuntimeEnabled=FeatureName1] void partiallyOriginTrialEnabledOverloadedVoidMethod(DOMString stringArg);
+    // [RuntimeEnabled=FeatureName2] void partiallyOriginTrialEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
     // void partiallyOriginTrialEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
-    // [OriginTrialEnabled=FeatureName3] void partiallyOriginTrialEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
+    // [RuntimeEnabled=FeatureName3] void partiallyOriginTrialEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
     [PerWorldBindings] void perWorldBindingsVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [LogActivity, LogAllWorlds, PerWorldBindings] void activityLoggingForAllWorldsPerWorldBindingsVoidMethod();

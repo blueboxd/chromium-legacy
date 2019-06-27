@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_persistence.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 
@@ -310,62 +311,17 @@ bool FontUniqueNameLookup::UpdateTable() {
 }
 
 bool FontUniqueNameLookup::LoadFromFile() {
-  // Reset to empty to ensure IsValid() is false if reading fails.
-  proto_storage_ = base::MappedReadOnlyRegion();
-  base::File table_cache_file(
-      TableCacheFilePath(),
-      base::File::FLAG_OPEN | base::File::Flags::FLAG_READ);
-  if (!table_cache_file.IsValid()) {
-    LogUMALoadFromFileSuccess(false);
-    return false;
-  }
-  proto_storage_ =
-      base::ReadOnlySharedMemoryRegion::Create(table_cache_file.GetLength());
-  if (!proto_storage_.IsValid() || !proto_storage_.mapping.size()) {
-    LogUMALoadFromFileSuccess(false);
-    return false;
-  }
-  int read_result = table_cache_file.Read(
-      0, static_cast<char*>(proto_storage_.mapping.memory()),
-      table_cache_file.GetLength());
-  // If no bytes were read or Read() returned -1 we are not able to reconstruct
-  // a font table from the cached file.
-  if (read_result <= 0) {
-    proto_storage_ = base::MappedReadOnlyRegion();
-    LogUMALoadFromFileSuccess(false);
-    return false;
-  }
-
-  blink::FontUniqueNameTable font_table;
-  if (!font_table.ParseFromArray(proto_storage_.mapping.memory(),
-                                 proto_storage_.mapping.size())) {
-    proto_storage_ = base::MappedReadOnlyRegion();
-    LogUMALoadFromFileSuccess(false);
-    return false;
-  }
-  LogUMALoadFromFileSuccess(true);
-  return true;
+  bool load_success = blink::font_table_persistence::LoadFromFile(
+      TableCacheFilePath(), &proto_storage_);
+  LogUMALoadFromFileSuccess(load_success);
+  return load_success;
 }
 
 bool FontUniqueNameLookup::PersistToFile() {
-  DCHECK(proto_storage_.IsValid() && proto_storage_.mapping.size());
-  base::File table_cache_file(
-      TableCacheFilePath(),
-      base::File::FLAG_CREATE_ALWAYS | base::File::Flags::FLAG_WRITE);
-  if (!table_cache_file.IsValid()) {
-    LogUMAPersistSuccess(false);
-    return false;
-  }
-  if (table_cache_file.Write(
-          0, static_cast<char*>(proto_storage_.mapping.memory()),
-          proto_storage_.mapping.size()) == -1) {
-    table_cache_file.SetLength(0);
-    proto_storage_ = base::MappedReadOnlyRegion();
-    LogUMAPersistSuccess(false);
-    return false;
-  }
-  LogUMAPersistSuccess(true);
-  return true;
+  bool persist_success = blink::font_table_persistence::PersistToFile(
+      proto_storage_, TableCacheFilePath());
+  LogUMAPersistSuccess(persist_success);
+  return persist_success;
 }
 
 void FontUniqueNameLookup::ScheduleLoadOrUpdateTable() {

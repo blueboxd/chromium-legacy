@@ -141,6 +141,7 @@ source_set("headers") {
   if (is_android || is_win) {
     sources += [
       "font_unique_name_lookup/font_table_matcher.h",
+      "font_unique_name_lookup/font_table_persistence.h",
       "font_unique_name_lookup/icu_fold_case_util.h",
     ]
     deps += [ ":font_unique_name_table_proto" ]

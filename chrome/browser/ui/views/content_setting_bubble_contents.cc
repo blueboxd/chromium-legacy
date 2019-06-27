@@ -120,9 +120,9 @@ class MediaMenuBlock : public views::View {
       blink::mojom::MediaStreamType stream_type = i->first;
       const ContentSettingBubbleModel::MediaMenu& menu = i->second;
 
-      views::Label* label = new views::Label(menu.label);
+      auto label = std::make_unique<views::Label>(menu.label);
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      layout->AddView(label);
+      layout->AddView(std::move(label));
 
       auto combobox_model = std::make_unique<MediaComboboxModel>(stream_type);
       // Disable the device selection when the website is managing the devices
@@ -134,12 +134,12 @@ class MediaMenuBlock : public views::View {
               ? 0
               : combobox_model->GetDeviceIndex(menu.selected_device);
       // The combobox takes ownership of the model.
-      views::Combobox* combobox =
-          new views::Combobox(std::move(combobox_model));
+      auto combobox =
+          std::make_unique<views::Combobox>(std::move(combobox_model));
       combobox->SetEnabled(combobox_enabled);
       combobox->set_listener(listener);
       combobox->SetSelectedIndex(combobox_selected_index);
-      layout->AddView(combobox);
+      layout->AddView(std::move(combobox));
     }
   }
 
@@ -205,14 +205,18 @@ class ContentSettingBubbleContents::ListItemContainer : public views::View {
 
  private:
   using Row = std::pair<views::ImageView*, views::Label*>;
+  using NewRow = std::pair<std::unique_ptr<views::ImageView>,
+                           std::unique_ptr<views::Label>>;
 
   void ResetLayout();
   void AddRowToLayout(const Row& row);
+  Row AddNewRowToLayout(NewRow row);
+  void UpdateScrollHeight(const Row& row);
 
   ContentSettingBubbleContents* parent_;
 
   // Our controls representing list items, so we can add or remove
-  // these dynamically. Each pair represetns one list item.
+  // these dynamically. Each pair represents one list item.
   std::vector<Row> list_item_views_;
 
   DISALLOW_COPY_AND_ASSIGN(ListItemContainer);
@@ -226,20 +230,21 @@ ContentSettingBubbleContents::ListItemContainer::ListItemContainer(
 
 void ContentSettingBubbleContents::ListItemContainer::AddItem(
     const ContentSettingBubbleModel::ListItem& item) {
-  views::ImageView* icon = new views::ImageView();
-  views::Label* label = nullptr;
+  std::unique_ptr<views::ImageView> icon = std::make_unique<views::ImageView>();
+  std::unique_ptr<views::Label> label;
   if (item.has_link) {
-    views::Link* link = new views::Link(item.title);
+    std::unique_ptr<views::Link> link =
+        std::make_unique<views::Link>(item.title);
     link->set_listener(parent_);
     link->SetElideBehavior(gfx::ELIDE_MIDDLE);
-    label = link;
+    label = std::move(link);
   } else {
     icon->SetImage(item.image.AsImageSkia());
-    label = new views::Label(item.title);
+    label = std::make_unique<views::Label>(item.title);
   }
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  list_item_views_.push_back(Row(icon, label));
-  AddRowToLayout(list_item_views_.back());
+  list_item_views_.push_back(
+      AddNewRowToLayout(NewRow(std::move(icon), std::move(label))));
 }
 
 void ContentSettingBubbleContents::ListItemContainer::RemoveRowAtIndex(
@@ -251,8 +256,8 @@ void ContentSettingBubbleContents::ListItemContainer::RemoveRowAtIndex(
 
   // As GridLayout can't remove rows, we have to rebuild it entirely.
   ResetLayout();
-  for (size_t i = 0; i < list_item_views_.size(); i++)
-    AddRowToLayout(list_item_views_[i]);
+  for (auto& row : list_item_views_)
+    AddRowToLayout(row);
 }
 
 int ContentSettingBubbleContents::ListItemContainer::GetRowIndexOf(
@@ -293,9 +298,26 @@ void ContentSettingBubbleContents::ListItemContainer::AddRowToLayout(
       static_cast<views::GridLayout*>(GetLayoutManager());
   DCHECK(layout);
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  layout->AddView(row.first);
-  layout->AddView(row.second);
+  layout->AddExistingView(row.first);
+  layout->AddExistingView(row.second);
+  UpdateScrollHeight(row);
+}
 
+ContentSettingBubbleContents::ListItemContainer::Row
+ContentSettingBubbleContents::ListItemContainer::AddNewRowToLayout(NewRow row) {
+  views::GridLayout* layout =
+      static_cast<views::GridLayout*>(GetLayoutManager());
+  DCHECK(layout);
+  Row row_result;
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
+  row_result.first = layout->AddView(std::move(row.first));
+  row_result.second = layout->AddView(std::move(row.second));
+  UpdateScrollHeight(row_result);
+  return row_result;
+}
+
+void ContentSettingBubbleContents::ListItemContainer::UpdateScrollHeight(
+    const Row& row) {
   auto* scroll_view = views::ScrollView::GetScrollViewForContents(this);
   DCHECK(scroll_view);
   if (!scroll_view->is_bounded()) {
@@ -315,12 +337,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
     views::BubbleBorder::Arrow arrow)
     : content::WebContentsObserver(web_contents),
       BubbleDialogDelegateView(anchor_view, arrow),
-      content_setting_bubble_model_(std::move(content_setting_bubble_model)),
-      list_item_container_(nullptr),
-      custom_link_(nullptr),
-      manage_button_(nullptr),
-      manage_checkbox_(nullptr),
-      learn_more_button_(nullptr) {
+      content_setting_bubble_model_(std::move(content_setting_bubble_model)) {
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CONTENT_SETTING_CONTENTS);
 }
@@ -483,7 +500,7 @@ void ContentSettingBubbleContents::Init() {
       row.view->SetBorder(
           views::CreateEmptyBorder(0, row_left_margin, 0, right_margin));
     }
-    AddChildView(row.view.release());
+    AddChildView(std::move(row.view));
   }
 
   content_setting_bubble_model_->set_owner(this);

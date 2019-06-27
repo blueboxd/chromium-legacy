@@ -15,8 +15,4 @@ bool CacheStorageManager::IsValidQuotaOrigin(const url::Origin& origin) {
   return !origin.opaque();
 }
 
-CacheStorageManager::CacheStorageManager()
-    : base::RefCountedDeleteOnSequence<CacheStorageManager>(
-          base::SequencedTaskRunnerHandle::Get()) {}
-
 }  // namespace content

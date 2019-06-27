@@ -1586,7 +1586,6 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   // observe and record smoothness for one.
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(300, 200));
-
   // Tests that we get one enter and one exit animation smoothess histogram when
   // entering and exiting tablet mode with a normal window.
   ui::Layer* layer = window->layer();
@@ -1602,7 +1601,7 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   layer = window->layer();
   layer2 = window2->layer();
   tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_TRUE(layer->GetAnimator()->is_animating());
+  EXPECT_FALSE(layer->GetAnimator()->is_animating());
   EXPECT_TRUE(layer2->GetAnimator()->is_animating());
   layer->GetAnimator()->StopAnimating();
   layer2->GetAnimator()->StopAnimating();

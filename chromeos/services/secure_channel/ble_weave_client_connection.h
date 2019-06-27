@@ -61,7 +61,7 @@ class BluetoothLowEnergyWeaveClientConnection
         multidevice::RemoteDeviceRef remote_device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
-        device::BluetoothDevice* bluetooth_device,
+        const std::string& device_address,
         bool should_set_low_connection_latency);
     static void SetInstanceForTesting(Factory* factory);
 
@@ -70,7 +70,7 @@ class BluetoothLowEnergyWeaveClientConnection
         multidevice::RemoteDeviceRef remote_device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
-        device::BluetoothDevice* bluetooth_device,
+        const std::string& device_address,
         bool should_set_low_connection_latency);
 
    private:
@@ -96,7 +96,7 @@ class BluetoothLowEnergyWeaveClientConnection
       multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      device::BluetoothDevice* bluetooth_device,
+      const std::string& device_address,
       bool should_set_low_connection_latency);
 
   ~BluetoothLowEnergyWeaveClientConnection() override;
@@ -395,8 +395,11 @@ class BluetoothLowEnergyWeaveClientConnection
   // connection.
   std::string GetReasonForClose();
 
-  // The device to which to connect.
-  device::BluetoothDevice* bluetooth_device_;
+  // The initial address of the Bluetooth device to which to connect. The
+  // address of the device we're connecting to may change over time because
+  // public addresses of BLE devices periodically rotate (we don't know its
+  // static private address because we're not paired to it.)
+  const std::string initial_device_address_;
 
   bool should_set_low_connection_latency_;
 

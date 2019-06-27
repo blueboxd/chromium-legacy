@@ -38,11 +38,26 @@ class ChromeBlobStorageContext;
 class CacheStorageDispatcherHost;
 class CacheStorageManager;
 
+// An intermediate abstract interface that exposes the CacheManager() method.
+// This is mainly used in some places instead of the full
+// CacheStorageContextImpl to make it easier to write tests where we want to
+// provide a specific manager instance.
+class CONTENT_EXPORT CacheStorageContextWithManager
+    : public CacheStorageContext {
+ public:
+  // Callable on any sequence.  May return nullptr during shutdown.
+  virtual scoped_refptr<CacheStorageManager> CacheManager() = 0;
+
+ protected:
+  ~CacheStorageContextWithManager() override = default;
+};
+
 // One instance of this exists per StoragePartition, and services multiple
 // child processes/origins. Most logic is delegated to the owned
 // CacheStorageManager instance, which is only accessed on the target
 // sequence.
-class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
+class CONTENT_EXPORT CacheStorageContextImpl
+    : public CacheStorageContextWithManager {
  public:
   explicit CacheStorageContextImpl(BrowserContext* browser_context);
 
@@ -69,11 +84,10 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   void AddBinding(blink::mojom::CacheStorageRequest request,
                   const url::Origin& origin);
 
-  // Callable on any sequence.  If called on the cache_storage target sequence
-  // the real manager will be returned directly.  If called on any other
-  // sequence then a cross-sequence wrapper object will be created and returned
-  // instead.
-  scoped_refptr<CacheStorageManager> CacheManager();
+  // If called on the cache_storage target sequence the real manager will be
+  // returned directly.  If called on any other sequence then a cross-sequence
+  // wrapper object will be created and returned instead.
+  scoped_refptr<CacheStorageManager> CacheManager() override;
 
   bool is_incognito() const { return is_incognito_; }
 
@@ -122,7 +136,9 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   // Initialized in Init().
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
-  // Only accessed on the target sequence.
+  // Created and accessed on the target sequence.  Released on the target
+  // sequence in SHutdownOnTaskRunner() or the destructor via
+  // SequencedTaskRunner::ReleaseSoon().
   scoped_refptr<CacheStorageManager> cache_manager_;
 
   // Initialized from the UI thread and bound to |task_runner_|.

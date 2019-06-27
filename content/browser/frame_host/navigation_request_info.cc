@@ -40,21 +40,6 @@ NavigationRequestInfo::NavigationRequestInfo(
       devtools_navigation_token(devtools_navigation_token),
       devtools_frame_token(devtools_frame_token) {}
 
-NavigationRequestInfo::NavigationRequestInfo(const NavigationRequestInfo& other)
-    : common_params(other.common_params),
-      begin_params(other.begin_params.Clone()),
-      site_for_cookies(other.site_for_cookies),
-      top_frame_origin(other.top_frame_origin),
-      is_main_frame(other.is_main_frame),
-      parent_is_main_frame(other.parent_is_main_frame),
-      are_ancestors_secure(other.are_ancestors_secure),
-      frame_tree_node_id(other.frame_tree_node_id),
-      is_for_guests_only(other.is_for_guests_only),
-      report_raw_headers(other.report_raw_headers),
-      is_prerendering(other.is_prerendering),
-      upgrade_if_insecure(other.upgrade_if_insecure),
-      devtools_frame_token(other.devtools_frame_token) {}
-
 NavigationRequestInfo::~NavigationRequestInfo() {}
 
 }  // namespace content

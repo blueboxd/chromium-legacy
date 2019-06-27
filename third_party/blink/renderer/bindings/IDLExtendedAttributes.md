@@ -47,7 +47,7 @@ Lastly, please do not confuse "_extended_ attributes", which go inside `[...]` a
 
 ### Constants
 
-Only the following (Blink-only) extended attributes apply to constants: `[DeprecateAs]`, `[MeasureAs]`, `[OriginTrialEnabled]`, `[Reflect]`, and `[RuntimeEnabled]`, and the interface extended attribute `[DoNotCheckConstants]` affects constants.
+Only the following (Blink-only) extended attributes apply to constants: `[DeprecateAs]`, `[MeasureAs]`, `[Reflect]`, and `[RuntimeEnabled]`, and the interface extended attribute `[DoNotCheckConstants]` affects constants.
 
 ### Overloaded methods
 
@@ -100,9 +100,9 @@ The following extended attributes are used on special operations, as on methods 
 
 Extended attributes on partial interface members work as normal. However, only the following 4 extended attributes can be used on the partial interface itself; otherwise extended attributes should appear on the main interface definition:
 
-`[Conditional]`, `[ImplementedAs]`, `[OriginTrialEnabled]` and `[RuntimeEnabled]`
+`[Conditional]`, `[ImplementedAs]` and `[RuntimeEnabled]`
 
-3 of these are used to allow the entire partial interface to be selectively enabled or disabled: `[Conditional]`, `[OriginTrialEnabled]` and `[RuntimeEnabled]`, and function as if the extended attribute were applied to each _member_ (methods, attributes, and constants). Style-wise, if the entire partial interface should be enabled or disabled, these extended attributes should be used on the partial interface, not on each individual member; this clarifies intent and simplifies editing. However:
+2 of these are used to allow the entire partial interface to be selectively enabled or disabled: `[Conditional]` and `[RuntimeEnabled]`, and function as if the extended attribute were applied to each _member_ (methods, attributes, and constants). Style-wise, if the entire partial interface should be enabled or disabled, these extended attributes should be used on the partial interface, not on each individual member; this clarifies intent and simplifies editing. However:
 
 * If some members should not be disabled, this cannot be used on the partial interface; this is often the case for constants.
 * If different members should be controlled by different flags, this must be specified individually.
@@ -119,8 +119,6 @@ Extended attributes on members of an interface mixin work as normal. However, on
 * `[LegacyTreatAsPartialInterface]` is part of an ongoing change, as interface mixins used to be treated internally as partial interfaces.
 
 * `[ImplementedAs]` is only necessary for these legacy files: otherwise the class (C++) implementing (IDL) interface mixins does not need to be specified, as this is handled in Blink C++.
-
-* `[OriginTrialEnabled]` behaves as for partial interfaces.
 
 * `[RuntimeEnabled]` behaves as for partial interfaces.
 
@@ -1001,24 +999,6 @@ Usage: `[NotEnumerable]` can be specified on methods and attributes
 ```
 
 `[NotEnumerable]` indicates that the method or attribute is not enumerable.
-
-### [OriginTrialEnabled] _(i, m, a, c)_
-
-Summary: Like `[RuntimeEnabled]`, it controls at runtime whether bindings are exposed, but uses a different mechanism for enabling experimental features.
-
-Usage: `[OriginTrialEnabled=FeatureName]`. FeatureName must be included in [runtime\_enabled\_features.json5](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/platform/runtime_enabled_features.json5), and is the same value that would be used with `[RuntimeEnabled]`.
-
-```webidl
-[
-    OriginTrialEnabled=MediaSession
-] interface MediaSession { ... };
-```
-
-When there is an active origin trial for the current execution context, the feature is enabled at runtime, and the binding would be exposed to the web. `[OriginTrialEnabled]` also includes a check for the associated runtime flag, so features can be enabled in that fashion, even without an origin trial.
-
-`[OriginTrialEnabled]` has similar semantics to `[RuntimeEnabled]`, and is intended as a drop-in replacement. For example, `[OriginTrialEnabled]` _cannot_ be applied to arguments, see `[RuntimeEnabled]` for reasoning. The key implementation difference is that `[OriginTrialEnabled]` wraps the generated code with `if (origin_trials::FeatureNameEnabled(...)) { ...code... }`.
-
-For more information, see [RuntimeEnabledFeatures](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/platform/runtime_enabled_features.json5) and [OriginTrialContext](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/core/origin_trials/origin_trial_context.h).
 
 ### [RaisesException] _(i, m, a)_
 

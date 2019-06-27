@@ -7,18 +7,17 @@
 import sys
 
 import collections
-import json
+import distutils.version
 import logging
 import multiprocessing
 import os
 import plistlib
-import re
-import shutil
 import subprocess
 import threading
 import time
 
 import test_runner
+import xcode_log_parser
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,89 +48,6 @@ def terminate_process(proc):
     proc.terminate()
   except OSError as ex:
     LOGGER.info('Error while killing a process: %s' % ex)
-
-
-def test_status_summary(summary_plist):
-  """Gets status summary from TestSummaries.plist.
-
-  Args:
-    summary_plist: (str) A path to plist-file.
-
-  Returns:
-    A dict that contains all passed and failed tests from the egtests.app.
-    e.g.
-    {
-        'passed': [passed_tests],
-        'failed': {
-            'failed_test': ['StackTrace']
-        }
-    }
-  """
-  root_summary = plistlib.readPlist(summary_plist)
-  status_summary = {
-      'passed': [],
-      'failed': {}
-  }
-  for summary in root_summary['TestableSummaries']:
-    failed_egtests = {}  # Contains test identifier and message
-    passed_egtests = []
-    if not summary['Tests']:
-      continue
-    for test_suite in summary['Tests'][0]['Subtests'][0]['Subtests']:
-      for test in test_suite['Subtests']:
-        if test['TestStatus'] == 'Success':
-          passed_egtests.append(test['TestIdentifier'])
-        else:
-          message = []
-          for failure_summary in test['FailureSummaries']:
-            message.append('%s: line %s' % (failure_summary['FileName'],
-                                            failure_summary['LineNumber']))
-            message.extend(failure_summary['Message'].splitlines())
-          failed_egtests[test['TestIdentifier']] = message
-    if failed_egtests:
-      status_summary['failed'] = failed_egtests
-    if passed_egtests:
-      status_summary['passed'] = passed_egtests
-  return status_summary
-
-
-def collect_test_results(plist_path):
-  """Gets test result data from Info.plist.
-
-  Args:
-    plist_path: (str) A path to plist-file.
-  Returns:
-    Test result as a map:
-      {
-        'passed': [passed_tests],
-        'failed': {
-            'failed_test': ['StackTrace']
-        }
-    }
-  """
-  test_results = {
-      'passed': [],
-      'failed': {}
-  }
-  root = plistlib.readPlist(plist_path)
-
-  for action in root['Actions']:
-    action_result = action['ActionResult']
-    if ((root['TestsCount'] == 0 and
-         root['TestsFailedCount'] == 0)
-        or 'TestSummaryPath' not in action_result):
-      test_results['failed']['TESTS_DID_NOT_START'] = []
-      if 'ErrorSummaries' in action_result and action_result['ErrorSummaries']:
-        test_results['failed']['TESTS_DID_NOT_START'].append('\n'.join(
-            error_summary['Message']
-            for error_summary in action_result['ErrorSummaries']))
-    else:
-      summary_plist = os.path.join(os.path.dirname(plist_path),
-                                   action_result['TestSummaryPath'])
-      summary = test_status_summary(summary_plist)
-      test_results['failed'] = summary['failed']
-      test_results['passed'] = summary['passed']
-  return test_results
 
 
 class EgtestsApp(object):
@@ -285,6 +201,11 @@ class LaunchCommand(object):
     self.logs = collections.OrderedDict()
     self.test_results = collections.OrderedDict()
     self.env = env
+    if distutils.version.LooseVersion('11.0') <= distutils.version.LooseVersion(
+        test_runner.get_current_xcode_info()['version']):
+      self._log_parser = xcode_log_parser.Xcode11LogParser()
+    else:
+      self._log_parser = xcode_log_parser.XcodeLogParser()
 
   def _make_cmd_list_for_failed_tests(self, failed_results, out_dir,
                                       test_args=None, env_vars=None):
@@ -313,39 +234,6 @@ class LaunchCommand(object):
         host_app_path=self.egtests_app.host_app_path)
     # Regenerates xctest run and gets a command.
     return self.command(eg_app, out_dir, self.destination, shards=1)
-
-  def _copy_screenshots(self, info_plist_path, output_folder):
-    """Copy screenshots of failed tests to output folder.
-
-    Args:
-      info_plist_path: (str) A full path to Info.plist
-      output_folder: (str) A full path to folder where
-    """
-    plist = plistlib.readPlist(info_plist_path)
-    if 'TestFailureSummaries' not in plist or not plist['TestFailureSummaries']:
-      LOGGER.info('No failures in %s' % info_plist_path)
-      return
-
-    screenshot_regex = re.compile(r'Screenshots:\s\{(\n.*)+?\n}')
-    for failure_summary in plist['TestFailureSummaries']:
-      screenshots = screenshot_regex.search(failure_summary['Message'])
-      test_case_folder = os.path.join(
-          output_folder,
-          'failures',
-          failure_summary['TestCase'].replace('[', '').replace(']', '').replace(
-              ' ', '_').replace('-', ''))
-      if not os.path.exists(test_case_folder):
-        os.makedirs(test_case_folder)
-      if screenshots:
-        LOGGER.info('Screenshots for failure "%s" in "%s"' % (
-            failure_summary['TestCase'], test_case_folder))
-        d = json.loads(screenshots.group().replace('Screenshots:', '').strip())
-        for f in d.values():
-          if not os.path.exists(f):
-            LOGGER.warning('File %s does not exist!' % f)
-            continue
-          screenshot = os.path.join(test_case_folder, os.path.basename(f))
-          shutil.copyfile(f, screenshot)
 
   def summary_log(self):
     """Calculates test summary - how many passed, failed and error tests.
@@ -420,8 +308,9 @@ class LaunchCommand(object):
       # Create a command for the 1st run or if tests did not start,
       # re-run the same command but with different output folder.
       # (http://crbug.com/916620) If tests did not start, repeat the command.
-      if (not self.test_results['attempts'] or 'TESTS_DID_NOT_START'
-          in self.test_results['attempts'][-1]['failed']):
+      if (not self.test_results['attempts'] or
+          {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}.intersection(
+              self.test_results['attempts'][-1]['failed'].keys())):
         cmd_list = self.command(self.egtests_app,
                                 outdir_attempt,
                                 self.destination,
@@ -439,12 +328,11 @@ class LaunchCommand(object):
           attempt, ' '.join(cmd_list)))
       self.launch_attempt(cmd_list, outdir_attempt)
       self.test_results['attempts'].append(
-          collect_test_results(os.path.join(outdir_attempt, 'Info.plist')))
+          self._log_parser.collect_test_results(outdir_attempt))
       if self.retries == attempt or not self.test_results[
           'attempts'][-1]['failed']:
         break
-      self._copy_screenshots(os.path.join(outdir_attempt, 'Info.plist'),
-                             outdir_attempt)
+      self._log_parser.copy_screenshots(outdir_attempt)
 
     self.test_results['end_run'] = int(time.time())
     self.summary_log()

@@ -5,7 +5,7 @@
 import * as face from './face_utils.mjs';
 import * as reflection from '../internal/reflection.mjs';
 import { SwitchTrack } from './track.mjs';
-import { styleSheetFactory } from './style.mjs';
+import * as style from './style.mjs';
 
 // https://github.com/tkent-google/std-switch/issues/2
 const STATE_ATTR = 'on';
@@ -15,6 +15,7 @@ const STATE_ATTR = 'on';
 const _internals = Symbol();
 const _track = Symbol();
 const _rippleElement = Symbol();
+const _containerElement = Symbol();
 
 export class StdSwitchElement extends HTMLElement {
   // TODO(tkent): The following should be |static fooBar = value;|
@@ -34,6 +35,8 @@ export class StdSwitchElement extends HTMLElement {
     }
     this[_internals] = this.attachInternals();
     this._initializeDOM();
+
+    this.addEventListener('click', this._onClick);
   }
 
   attributeChangedCallback(attrName, oldValue, newValue) {
@@ -46,21 +49,31 @@ export class StdSwitchElement extends HTMLElement {
   _initializeDOM() {
     let factory = this.ownerDocument;
     let root = this.attachShadow({mode: 'closed'});
-    let container = factory.createElement('span');
-    container.id = 'container';
-    root.appendChild(container);
+    this[_containerElement] = factory.createElement('span');
+    this[_containerElement].id = 'container';
+    root.appendChild(this[_containerElement]);
 
     this[_track] = new SwitchTrack(factory);
-    container.appendChild(this[_track].element);
+    this[_containerElement].appendChild(this[_track].element);
     this[_track].value = this.on;
 
-    let thumbElement = container.appendChild(factory.createElement('span'));
+    let thumbElement = this[_containerElement].appendChild(factory.createElement('span'));
     thumbElement.id = 'thumb';
 
     this[_rippleElement] = thumbElement.appendChild(factory.createElement('span'));
     this[_rippleElement].id = 'ripple';
 
-    root.adoptedStyleSheets = [styleSheetFactory()()];
+    root.adoptedStyleSheets = [style.styleSheetFactory()()];
+  }
+
+  // TODO(tkent): Make this private.
+  _onClick(event) {
+    for (let element of this[_containerElement].querySelectorAll('*')) {
+      style.markTransition(element);
+    }
+    this.on = !this.on;
+    this.dispatchEvent(new Event('input', {bubbles: true}));
+    this.dispatchEvent(new Event('change', {bubbles: true}));
   }
 }
 

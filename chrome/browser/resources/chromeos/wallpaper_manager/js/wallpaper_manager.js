@@ -476,6 +476,10 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
             !this.dailyRefreshInfo_.enabled;
         if (!$('refresh').hidden) {
           this.addEventToButton_($('refresh'), () => {
+            if (this.pendingDailyRefreshInfo_) {
+              // There's already a refresh in progress, ignore this request.
+              return;
+            }
             this.pendingDailyRefreshInfo_ = this.dailyRefreshInfo_;
             this.setDailyRefreshWallpaper_();
           });

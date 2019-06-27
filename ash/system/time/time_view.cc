@@ -80,6 +80,12 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
     AddChildView(horizontal_label_.get());
   } else {
     RemoveChildView(horizontal_label_.get());
+    // Remove the current layout manager since it could be the FillLayout which
+    // only allows one child.
+    SetLayoutManager(nullptr);
+    // Pre-add the children since ownership is being retained by this.
+    AddChildView(vertical_label_hours_.get());
+    AddChildView(vertical_label_minutes_.get());
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
     const int kColumnId = 0;
@@ -89,9 +95,10 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
                        0, views::GridLayout::USE_PREF, 0, 0);
     layout->AddPaddingRow(0, kClockLeadingPadding);
     layout->StartRow(0, kColumnId);
-    layout->AddView(vertical_label_hours_.get());
+    // Add the views as existing since ownership isn't being transferred.
+    layout->AddExistingView(vertical_label_hours_.get());
     layout->StartRow(0, kColumnId);
-    layout->AddView(vertical_label_minutes_.get());
+    layout->AddExistingView(vertical_label_minutes_.get());
     layout->AddPaddingRow(0, kVerticalClockMinutesTopOffset);
   }
   Layout();

@@ -8,7 +8,6 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/library_loader/anchor_functions_buildflags.h"
-#include "base/android/library_loader/library_load_from_apk_status_codes.h"
 #include "base/android/library_loader/library_prefetcher.h"
 #include "base/android/orderfile/orderfile_buildflags.h"
 #include "base/android/sys_utils.h"
@@ -125,7 +124,6 @@ static void JNI_LibraryLoader_RecordChromiumAndroidLinkerBrowserHistogram(
     const JavaParamRef<jobject>& jcaller,
     jboolean is_using_browser_shared_relros,
     jboolean load_at_fixed_address_failed,
-    jint library_load_from_apk_status,
     jlong library_load_time_ms) {
   // For low-memory devices, record whether or not we successfully loaded the
   // browser at a fixed address. Otherwise just record a normal invocation.
@@ -139,12 +137,6 @@ static void JNI_LibraryLoader_RecordChromiumAndroidLinkerBrowserHistogram(
   UMA_HISTOGRAM_ENUMERATION("ChromiumAndroidLinker.BrowserStates",
                             histogram_code,
                             MAX_BROWSER_HISTOGRAM_CODE);
-
-  // Record the device support for loading a library directly from the APK file.
-  UMA_HISTOGRAM_ENUMERATION(
-      "ChromiumAndroidLinker.LibraryLoadFromApkStatus",
-      static_cast<LibraryLoadFromApkStatusCodes>(library_load_from_apk_status),
-      LIBRARY_LOAD_FROM_APK_STATUS_CODES_MAX);
 
   // Record how long it took to load the shared libraries.
   UMA_HISTOGRAM_TIMES("ChromiumAndroidLinker.BrowserLoadTime",

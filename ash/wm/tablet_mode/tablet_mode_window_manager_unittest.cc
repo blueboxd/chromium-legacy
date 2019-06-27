@@ -17,10 +17,13 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -2003,6 +2006,62 @@ TEST_F(TabletModeWindowManagerWithClamshellSplitViewTest,
   CreateTabletModeWindowManager();
   EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
+}
+
+// Test the divider position value during tablet <-> clamshell transition.
+TEST_F(TabletModeWindowManagerWithClamshellSplitViewTest,
+       ClamshellTabletTransitionDividerPositionTest) {
+  UpdateDisplay("1200x800");
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+
+  // First test 1 window case.
+  const wm::WMEvent left_snap_event(wm::WM_EVENT_SNAP_LEFT);
+  wm::GetWindowState(window.get())->OnWMEvent(&left_snap_event);
+  const gfx::Rect left_snapped_bounds = gfx::Rect(1200 / 2, 800 - kShelfSize);
+  EXPECT_EQ(window->bounds().width(), left_snapped_bounds.width());
+  // Change its bounds horizontally a bit and then enter tablet mode.
+  window->SetBounds(gfx::Rect(400, left_snapped_bounds.height()));
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window.get()));
+  // Check the window is moved to 1/3 snapped position.
+  EXPECT_EQ(window->bounds().width(),
+            1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
+  // Exit tablet mode and verify the window stays in the same position.
+  DestroyTabletModeWindowManager();
+  EXPECT_EQ(window->bounds().width(),
+            1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
+
+  // Now test the 2 windows case.
+  std::unique_ptr<aura::Window> window2(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  wm::GetWindowState(window.get())->OnWMEvent(&left_snap_event);
+  const wm::WMEvent right_snap_event(wm::WM_EVENT_SNAP_RIGHT);
+  wm::GetWindowState(window2.get())->OnWMEvent(&right_snap_event);
+  // Change their bounds horizontally and then enter tablet mode.
+  window->SetBounds(gfx::Rect(400, left_snapped_bounds.height()));
+  window2->SetBounds(gfx::Rect(400, 0, 800, left_snapped_bounds.height()));
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window.get()));
+  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
+  // Check |window| and |window2| is moved to 1/3 snapped position.
+  EXPECT_EQ(window->bounds().width(),
+            1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
+  EXPECT_EQ(window2->bounds().width(),
+            1200 - window->bounds().width() - kSplitviewDividerShortSideLength);
+  // Exit tablet mode and verify the windows stay in the same position.
+  DestroyTabletModeWindowManager();
+  EXPECT_EQ(window->bounds().width(),
+            1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
+  EXPECT_EQ(window2->bounds().width(), 1200 - window->bounds().width());
 }
 
 }  // namespace ash

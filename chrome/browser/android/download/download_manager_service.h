@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/download/download_manager_utils.h"
 #include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "content/public/browser/download_manager.h"
@@ -173,10 +174,6 @@ class DownloadManagerService
   download::InProgressDownloadManager* RetriveInProgressDownloadManager(
       content::BrowserContext* context);
 
-  // Get all downloads from DownloadManager or InProgressManager.
-  void GetAllDownloads(content::DownloadManager::DownloadVector* all_items,
-                       bool is_off_the_record);
-
   // Gets a download item from DownloadManager or InProgressManager.
   download::DownloadItem* GetDownload(const std::string& download_guid,
                                       bool is_off_the_record);
@@ -192,10 +189,6 @@ class DownloadManagerService
       const JavaParamRef<jobject>& obj,
       const JavaParamRef<jstring>& jdownload_guid,
       jboolean download_started);
-
- protected:
-  // Called to get the content::DownloadManager instance.
-  virtual content::DownloadManager* GetDownloadManager(bool is_off_the_record);
 
  private:
   // For testing.
@@ -249,6 +242,13 @@ class DownloadManagerService
       download::SimpleDownloadManagerCoordinator* coordinator,
       bool is_off_the_record);
 
+  // Called to get the content::DownloadManager instance.
+  content::DownloadManager* GetDownloadManager(bool is_off_the_record);
+
+  // Retrieves the SimpleDownloadManagerCoordinator this object is listening to.
+  download::SimpleDownloadManagerCoordinator* GetCoordinator(
+      bool is_off_the_record);
+
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
@@ -286,10 +286,6 @@ class DownloadManagerService
 
   // The Registrar used to register for notifications.
   content::NotificationRegistrar registrar_;
-
-  // In-progress download manager when download is running as a service. Will
-  // pass this object to DownloadManagerImpl once it is created.
-  std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
 
   download::SimpleDownloadManagerCoordinator* original_coordinator_;
   download::SimpleDownloadManagerCoordinator* off_the_record_coordinator_;

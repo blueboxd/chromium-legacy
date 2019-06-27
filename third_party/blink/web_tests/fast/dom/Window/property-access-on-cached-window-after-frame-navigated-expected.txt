@@ -191,6 +191,8 @@ PASS oldChildWindow.pageXOffset is newChildWindow.pageXOffset
 PASS oldChildWindow.pageYOffset is newChildWindow.pageYOffset
 PASS oldChildWindow.performance.navigation.redirectCount is newChildWindow.performance.navigation.redirectCount
 PASS oldChildWindow.performance.navigation.type is newChildWindow.performance.navigation.type
+PASS oldChildWindow.performance.onelementtimingbufferfull is newChildWindow.performance.onelementtimingbufferfull
+PASS oldChildWindow.performance.oneventtimingbufferfull is newChildWindow.performance.oneventtimingbufferfull
 PASS oldChildWindow.performance.onresourcetimingbufferfull is newChildWindow.performance.onresourcetimingbufferfull
 PASS oldChildWindow.performance.timing.connectEnd is newChildWindow.performance.timing.connectEnd
 PASS oldChildWindow.performance.timing.connectStart is newChildWindow.performance.timing.connectStart

@@ -51,6 +51,7 @@ if (is_chromeos) {
   js_library("cr_policy_network_behavior") {
     deps = [
       ":cr_policy_indicator_behavior",
+      "../../js/chromeos:onc_mojo",
       "../chromeos/network:cr_onc_types",
     ]
   }

@@ -7,7 +7,7 @@
 // [OriginTrialEnabled] attribute takes precedence over [RuntimeEnabled].
 
 [
-    OriginTrialEnabled=InterfaceFeatureName
+    RuntimeEnabled=InterfaceFeatureName
 ] interface TestInterfaceOriginTrialEnabled {
     const unsigned long UNSIGNED_LONG = 0;
     const short CONST_JAVASCRIPT = 1;

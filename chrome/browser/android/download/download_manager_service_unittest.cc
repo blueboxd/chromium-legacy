@@ -23,42 +23,19 @@
 
 using ::testing::_;
 
-class MockDownloadManagerService : public DownloadManagerService {
- public:
-  MockDownloadManagerService() : DownloadManagerService() {
-    ON_CALL(manager_, GetDownloadByGuid(_)).WillByDefault(
-        ::testing::Invoke(this,
-                          &MockDownloadManagerService::GetDownloadByGuid));
-  }
-
-  void CreateDownloadItem(bool can_resume) {
-    download_.reset(new download::MockDownloadItem());
-    ON_CALL(*download_, CanResume()).WillByDefault(
-        ::testing::Return(can_resume));
-  }
-
- protected:
-  download::DownloadItem* GetDownloadByGuid(const std::string&) {
-    return download_.get();
-  }
-
-  content::DownloadManager* GetDownloadManager(
-      bool is_off_the_record) override {
-    return &manager_;
-  }
-
- private:
-  std::unique_ptr<download::MockDownloadItem> download_;
-  content::MockDownloadManager manager_;
-};
-
 class DownloadManagerServiceTest : public testing::Test {
  public:
   DownloadManagerServiceTest()
-      : service_(new MockDownloadManagerService()),
+      : service_(new DownloadManagerService()),
         coordinator_(base::NullCallback()),
         finished_(false),
-        success_(false) {}
+        success_(false) {
+    ON_CALL(manager_, GetDownloadByGuid(_))
+        .WillByDefault(::testing::Invoke(
+            this, &DownloadManagerServiceTest::GetDownloadByGuid));
+    coordinator_.SetSimpleDownloadManager(&manager_, false);
+    service_->UpdateCoordinator(&coordinator_, false);
+  }
 
   void OnResumptionDone(bool success) {
     finished_ = true;
@@ -81,10 +58,22 @@ class DownloadManagerServiceTest : public testing::Test {
       base::RunLoop().RunUntilIdle();
   }
 
+  void CreateDownloadItem(bool can_resume) {
+    download_.reset(new download::MockDownloadItem());
+    ON_CALL(*download_, CanResume())
+        .WillByDefault(::testing::Return(can_resume));
+  }
+
  protected:
+  download::DownloadItem* GetDownloadByGuid(const std::string&) {
+    return download_.get();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  MockDownloadManagerService* service_;
+  DownloadManagerService* service_;
   download::SimpleDownloadManagerCoordinator coordinator_;
+  std::unique_ptr<download::MockDownloadItem> download_;
+  content::MockDownloadManager manager_;
   bool finished_;
   bool success_;
 
@@ -94,14 +83,14 @@ class DownloadManagerServiceTest : public testing::Test {
 // Test that resumption succeeds if the download item is found and can be
 // resumed.
 TEST_F(DownloadManagerServiceTest, ResumptionWithResumableItem) {
-  service_->CreateDownloadItem(true);
+  CreateDownloadItem(true);
   StartDownload("0000");
   EXPECT_TRUE(success_);
 }
 
 // Test that resumption fails if the target download item is not resumable.
 TEST_F(DownloadManagerServiceTest, ResumptionWithNonResumableItem) {
-  service_->CreateDownloadItem(false);
+  CreateDownloadItem(false);
   StartDownload("0000");
   EXPECT_FALSE(success_);
 }

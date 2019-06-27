@@ -82,7 +82,8 @@ MessageBoxView::InitParams::InitParams(const base::string16& message)
 MessageBoxView::InitParams::~InitParams() = default;
 
 MessageBoxView::MessageBoxView(const InitParams& params)
-    : message_width_(params.message_width) {
+    : inter_row_vertical_spacing_(params.inter_row_vertical_spacing),
+      message_width_(params.message_width) {
   Init(params);
 }
 
@@ -227,8 +228,6 @@ void MessageBoxView::Init(const InitParams& params) {
     prompt_field_ = AddChildView(std::move(prompt_field));
   }
 
-  inter_row_vertical_spacing_ = params.inter_row_vertical_spacing;
-
   ResetLayoutManager();
 }
 
@@ -256,27 +255,27 @@ void MessageBoxView::ResetLayoutManager() {
   }
 
   layout->StartRow(0, kMessageViewColumnSetId);
-  layout->AddView(scroll_view_);
+  layout->AddExistingView(scroll_view_);
 
   views::DialogContentType trailing_content_type = views::TEXT;
   if (prompt_field_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
-    layout->AddView(prompt_field_);
+    layout->AddExistingView(prompt_field_);
     trailing_content_type = views::CONTROL;
   }
 
   if (checkbox_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
-    layout->AddView(checkbox_);
+    layout->AddExistingView(checkbox_);
     trailing_content_type = views::TEXT;
   }
 
   if (link_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
-    layout->AddView(link_);
+    layout->AddExistingView(link_);
     trailing_content_type = views::TEXT;
   }
 

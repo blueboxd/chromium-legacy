@@ -1375,7 +1375,6 @@ jumbo_component("base") {
       "android/jni_weak_ref.h",
       "android/library_loader/anchor_functions.cc",
       "android/library_loader/anchor_functions.h",
-      "android/library_loader/library_load_from_apk_status_codes.h",
       "android/library_loader/library_loader_hooks.cc",
       "android/library_loader/library_loader_hooks.h",
       "android/library_loader/library_prefetcher.cc",
@@ -3477,7 +3476,6 @@ if (is_android) {
     sources = [
       "android/application_status_listener.h",
       "android/child_process_binding_types.h",
-      "android/library_loader/library_load_from_apk_status_codes.h",
       "android/library_loader/library_loader_hooks.h",
       "android/task_scheduler/task_runner_android.h",
       "memory/memory_pressure_listener.h",

@@ -4,6 +4,7 @@
 
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage.h"
 
+#include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage_cache.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_utils.h"
@@ -23,8 +24,8 @@ class CrossSequenceCacheStorage::Inner {
 
   Inner(const url::Origin& origin,
         CacheStorageOwner owner,
-        scoped_refptr<CacheStorageManager> target_manager)
-      : handle_(target_manager->OpenCacheStorage(origin, owner)) {}
+        scoped_refptr<CacheStorageContextWithManager> context)
+      : handle_(context->CacheManager()->OpenCacheStorage(origin, owner)) {}
 
   void OpenCache(scoped_refptr<CrossSequenceCacheStorageCache> cache_wrapper,
                  const std::string& cache_name,
@@ -148,13 +149,10 @@ CrossSequenceCacheStorage::CrossSequenceCacheStorage(
     const url::Origin& origin,
     CacheStorageOwner owner,
     scoped_refptr<base::SequencedTaskRunner> target_task_runner,
-    scoped_refptr<CacheStorageManager> target_manager)
+    scoped_refptr<CacheStorageContextWithManager> context)
     : CacheStorage(origin),
       target_task_runner_(std::move(target_task_runner)),
-      inner_(target_task_runner_,
-             origin,
-             std::move(owner),
-             std::move(target_manager)),
+      inner_(target_task_runner_, origin, std::move(owner), std::move(context)),
       weak_factory_(this) {}
 
 CacheStorageHandle CrossSequenceCacheStorage::CreateHandle() {

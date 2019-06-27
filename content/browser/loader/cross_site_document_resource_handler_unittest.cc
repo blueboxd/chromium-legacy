@@ -1317,7 +1317,7 @@ const TestScenario kScenarios[] = {
         "Sensitive, Blocked: html with CORS heuristic and no sniff",
         __LINE__,
         "http://www.a.com/resource.html",  // target_url
-        ResourceType::kScript,             // resource_type
+        ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kOmit,               // cors_request
         "HTTP/1.1 200 OK\n"
@@ -1337,7 +1337,7 @@ const TestScenario kScenarios[] = {
         "Sensitive, Needs Sniffing: html with CORS heuristic",
         __LINE__,
         "http://www.a.com/resource.html",  // target_url
-        ResourceType::kScript,             // resource_type
+        ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kOmit,               // cors_request
         "HTTP/1.1 200 OK\n"
@@ -1400,7 +1400,7 @@ const TestScenario kScenarios[] = {
         "Sensitive, Blocked: html with cache heuristic and no sniff",
         __LINE__,
         "http://www.a.com/resource.html",  // target_url
-        ResourceType::kScript,             // resource_type
+        ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kOmit,               // cors_request
         "HTTP/1.1 200 OK\n"
@@ -1420,7 +1420,7 @@ const TestScenario kScenarios[] = {
         "Sensitive, Needs Sniffing: html with cache heuristic",
         __LINE__,
         "http://www.a.com/resource.html",  // target_url
-        ResourceType::kScript,             // resource_type
+        ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kOmit,               // cors_request
         "HTTP/1.1 200 OK\n"
@@ -1449,15 +1449,75 @@ const TestScenario kScenarios[] = {
         "Vary: Origin\n"
         "Content-Range: bytes 200-1000/67589\n"
         "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
-        "unknown/mime_type",                        // response_content_type
-        MimeType::kOthers,                          // canonical_mime_type
-        MimeTypeBucket::kOther,                     // mime_type_bucket
+        "unknown/mime_type",                    // response_content_type
+        MimeType::kOthers,                      // canonical_mime_type
+        MimeTypeBucket::kOther,                 // mime_type_bucket
+        {"var x=3;"},                           // packets
+        true,                                   // resource_is_sensitive
+        CrossOriginProtectionDecision::kAllow,  // protection_decision
+        Verdict::kAllow,                        // verdict
+        kVerdictPacketForHeadersBasedVerdict,   // verdict_packet
+    },
+
+    // Responses with the accept-ranges header.
+    {
+        "Sensitive response with an accept-ranges header. ",
+        __LINE__,
+        "http://www.a.com/resource.html",  // target_url
+        ResourceType::kXhr,                // resource_type
+        "http://www.a.com/",               // initiator_origin
+        OriginHeader::kOmit,               // cors_request
+        "HTTP/1.1 200 OK\n"
+        "Accept-Ranges: bytes\n"
+        "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
+        "text/html",                                // response_content_type
+        MimeType::kHtml,                            // canonical_mime_type
+        MimeTypeBucket::kProtected,                 // mime_type_bucket
         {"<html><head>this should sniff as HTML"},  // packets
         true,                                       // resource_is_sensitive
-        CrossOriginProtectionDecision::kAllow,      // protection_decision
-        Verdict::kAllow,                            // verdict
-        kVerdictPacketForHeadersBasedVerdict,       // verdict_packet
+        CrossOriginProtectionDecision::kNeedToSniffMore,  // protection_decision
+        Verdict::kAllow,                                  // verdict
+        kVerdictPacketForHeadersBasedVerdict,             // verdict_packet
     },
+    {
+        "Sensitive response with an accept-ranges header but value |none|.",
+        __LINE__,
+        "http://www.a.com/resource.html",  // target_url
+        ResourceType::kXhr,                // resource_type
+        "http://www.a.com/",               // initiator_origin
+        OriginHeader::kOmit,               // cors_request
+        "HTTP/1.1 200 OK\n"
+        "Accept-Ranges: none\n"
+        "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
+        "text/html",                                // response_content_type
+        MimeType::kHtml,                            // canonical_mime_type
+        MimeTypeBucket::kProtected,                 // mime_type_bucket
+        {"<html><head>this should sniff as HTML"},  // packets
+        true,                                       // resource_is_sensitive
+        CrossOriginProtectionDecision::kNeedToSniffMore,  // protection_decision
+        Verdict::kAllow,                                  // verdict
+        kVerdictPacketForHeadersBasedVerdict,             // verdict_packet
+    },
+    {
+        "Non-sensitive response with an accept-ranges header.",
+        __LINE__,
+        "http://www.a.com/resource.html",  // target_url
+        ResourceType::kXhr,                // resource_type
+        "http://www.a.com/",               // initiator_origin
+        OriginHeader::kOmit,               // cors_request
+        "HTTP/1.1 200 OK\n"
+        "Accept-Ranges: bytes",                     // response_headers
+        "text/html",                                // response_content_type
+        MimeType::kHtml,                            // canonical_mime_type
+        MimeTypeBucket::kProtected,                 // mime_type_bucket
+        {"<html><head>this should sniff as HTML"},  // packets
+        false,                                      // resource_is_sensitive
+        CrossOriginProtectionDecision::kNeedToSniffMore,  // protection_decision
+        Verdict::kAllow,                                  // verdict
+        kVerdictPacketForHeadersBasedVerdict,             // verdict_packet
+    },
+    // TODO(krstnmnlsn): Add a scenario with nosniff to cover the "sensitive and
+    // kBlock" case when the additional accept-ranges UMA statistics are added.
 };
 
 // TestResourceDispatcherHost is a ResourceDispatcherHostImpl that the test
@@ -2190,6 +2250,15 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, CORBProtectionLogging) {
   base::HistogramTester::CountsMap expected_counts;
   expected_counts["SiteIsolation.CORBProtection.SensitiveResource"] = 1;
   if (scenario.resource_is_sensitive) {
+    // Check that we reported correctly if the server supports range requests.
+    bool supports_range_requests = network::CrossOriginReadBlocking::
+        ResponseAnalyzer::SupportsRangeRequests(response->head);
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "SiteIsolation.CORBProtection.SensitiveWithRangeSupport"),
+                testing::ElementsAre(base::Bucket(supports_range_requests, 1)));
+    expected_counts["SiteIsolation.CORBProtection.SensitiveWithRangeSupport"] =
+        1;
+
     std::string mime_type_bucket_string;
     switch (scenario.mime_type_bucket) {
       case MimeTypeBucket::kProtected:

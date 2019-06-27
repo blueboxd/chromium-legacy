@@ -327,7 +327,8 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
               ? nullptr
               : std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
                     TestTimeouts::action_max_timeout(),
-                    MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out."))) {
+                    MakeExpectedNotRunClosure(FROM_HERE,
+                                              "RunLoop::Run() timed out."))) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
 

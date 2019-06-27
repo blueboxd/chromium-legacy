@@ -35,7 +35,6 @@ LocalFontFaceSource::LocalFontFaceSource(CSSFontFace* css_font_face,
       font_selector_(font_selector),
       font_name_(font_name),
       weak_factory_(this) {
-  was_resolved_ = IsLocalNonBlocking();
 }
 
 LocalFontFaceSource::~LocalFontFaceSource() {}
@@ -80,7 +79,6 @@ scoped_refptr<SimpleFontData> LocalFontFaceSource::CreateFontData(
     return CreateLoadingFallbackFontData(font_description);
   }
 
-  DCHECK(was_resolved_);
   // FIXME(drott) crbug.com/627143: We still have the issue of matching
   // family name instead of postscript name for local fonts. However, we
   // should definitely not try to take into account the full requested
@@ -119,8 +117,6 @@ void LocalFontFaceSource::BeginLoadIfNeeded() {
 }
 
 void LocalFontFaceSource::NotifyFontUniqueNameLookupReady() {
-  was_resolved_ = IsLocalFontAvailable(FontDescription());
-
   PruneTable();
 
   if (face_->FontLoaded(this)) {
@@ -141,7 +137,7 @@ bool LocalFontFaceSource::IsLoading() const {
 }
 
 bool LocalFontFaceSource::IsValid() const {
-  return IsLoading() || was_resolved_;
+  return IsLoading() || IsLocalFontAvailable(FontDescription());
 }
 
 void LocalFontFaceSource::LocalFontHistograms::Record(bool load_success) {

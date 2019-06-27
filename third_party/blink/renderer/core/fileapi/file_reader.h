@@ -41,6 +41,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
+namespace base {
+class ElapsedTimer;
+}
+
 namespace blink {
 
 class Blob;
@@ -131,7 +135,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
 
   std::unique_ptr<FileReaderLoader> loader_;
   Member<DOMException> error_;
-  double last_progress_notification_time_ms_;
+  base::Optional<base::ElapsedTimer> last_progress_notification_time_;
 };
 
 }  // namespace blink

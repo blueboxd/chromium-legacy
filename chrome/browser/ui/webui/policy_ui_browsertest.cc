@@ -394,14 +394,14 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
              popups_blocked_for_urls.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kPopupsBlockedForUrls,
-                    "mandatory", "machine", "sourcePlatform", std::string(),
+                    "mandatory", "machine", "platform", std::string(),
                     std::string(), false, popups_blocked_for_urls);
 
   values.Set(policy::key::kDefaultImagesSetting, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
              std::make_unique<base::Value>(2), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kDefaultImagesSetting,
-                    "mandatory", "machine", "sourceCloud", std::string(),
+                    "mandatory", "machine", "cloud", std::string(),
                     std::string(), false, base::Value(2));
 
   // This also checks that we save complex policies correctly.
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
              unknown_policy.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, kUnknownPolicy, "recommended", "user",
-                    "sourceCloud", l10n_util::GetStringUTF8(IDS_POLICY_UNKNOWN),
+                    "cloud", l10n_util::GetStringUTF8(IDS_POLICY_UNKNOWN),
                     std::string(), false, unknown_policy);
 
   // Set the extension policies to an empty dictionary as we haven't added any
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              policy::POLICY_SOURCE_PLATFORM,
              std::make_unique<base::Value>(false), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kAllowFileSelectionDialogs,
-                    "mandatory", "machine", "sourcePlatform", std::string(),
+                    "mandatory", "machine", "platform", std::string(),
                     std::string(), false, base::Value(false));
 #endif
 
@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
              popups_blocked_for_urls.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kPopupsBlockedForUrls,
-                    "mandatory", "machine", "sourcePlatform", std::string(),
+                    "mandatory", "machine", "platform", std::string(),
                     std::string(), false, popups_blocked_for_urls);
 
   provider_.UpdateChromePolicy(values);

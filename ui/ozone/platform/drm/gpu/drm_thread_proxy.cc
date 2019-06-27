@@ -128,14 +128,6 @@ void DrmThreadProxy::CheckOverlayCapabilities(
                                 std::move(task), nullptr));
 }
 
-void DrmThreadProxy::AddBindingCursorDevice(
-    ozone::mojom::DeviceCursorRequest request) {
-  drm_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DrmThread::AddBindingCursorDevice,
-                     base::Unretained(&drm_thread_), std::move(request)));
-}
-
 void DrmThreadProxy::AddBindingDrmDevice(
     ozone::mojom::DrmDeviceRequest request) {
   DCHECK(drm_thread_.task_runner()) << "DrmThreadProxy::AddBindingDrmDevice "

@@ -36,8 +36,8 @@ struct NetworkInfo {
       chromeos::network_config::mojom::ConnectionStateType::kNotConnected;
   chromeos::network_config::mojom::NetworkType type =
       chromeos::network_config::mojom::NetworkType::kWiFi;
-  chromeos::network_config::mojom::ONCSource source =
-      chromeos::network_config::mojom::ONCSource::kUnknown;
+  chromeos::network_config::mojom::OncSource source =
+      chromeos::network_config::mojom::OncSource::kNone;
   int battery_percentage = 0;
   std::string captive_portal_provider_name;
 };

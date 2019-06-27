@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
@@ -87,7 +87,6 @@ class DrmThread : public base::Thread,
                               std::unique_ptr<GbmBuffer>* buffer,
                               scoped_refptr<DrmFramebuffer>* framebuffer);
   void SetClearOverlayCacheCallback(base::RepeatingClosure callback);
-  void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
   void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 
   // DrmWindowProxy (on GPU thread) is the client for these methods.
@@ -136,6 +135,8 @@ class DrmThread : public base::Thread,
       base::OnceCallback<void(gfx::AcceleratedWidget,
                               const OverlaySurfaceCandidateList&,
                               const OverlayStatusList&)> callback) override;
+  void GetDeviceCursor(
+      ozone::mojom::DeviceCursorAssociatedRequest cursor) override;
 
   // ozone::mojom::DeviceCursor
   void SetCursor(gfx::AcceleratedWidget widget,
@@ -173,9 +174,9 @@ class DrmThread : public base::Thread,
 
   base::OnceClosure complete_early_binding_requests_;
 
-  // The mojo implementation requires a BindingSet because the DrmThread serves
-  // requests from two different client threads.
-  mojo::BindingSet<ozone::mojom::DeviceCursor> cursor_bindings_;
+  // The mojo implementation requires an AssociatedBindingSet because the
+  // DrmThread serves requests from two different client threads.
+  mojo::AssociatedBindingSet<ozone::mojom::DeviceCursor> cursor_bindings_;
 
   // The mojo implementation of DrmDevice requires a BindingSet because the
   // DrmThread services requests from different client threads when operating in

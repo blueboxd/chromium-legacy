@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.ITEM_COUNT_KEY;
+
 import android.content.Context;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.touchless.R;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Custom layout manager for site suggestions carousel. Handles custom effects such as
@@ -37,14 +40,16 @@ class SiteSuggestionsLayoutManager extends RecyclerView.LayoutManager {
     private boolean mNeedRebind;
     private Context mContext;
     private RecyclerView mRecyclerView;
+    private PropertyModel mModel;
 
-    SiteSuggestionsLayoutManager(Context context) {
+    SiteSuggestionsLayoutManager(Context context, PropertyModel model) {
         setAutoMeasureEnabled(true);
         mContext = context;
         mFocusPosition = 0;
         mNeedRebind = false;
         mFocusView = null;
         mShouldFocusAfterLayout = false;
+        mModel = model;
     }
 
     @Override
@@ -243,6 +248,18 @@ class SiteSuggestionsLayoutManager extends RecyclerView.LayoutManager {
     public void onDetachedFromWindow(RecyclerView view, RecyclerView.Recycler recycler) {
         super.onDetachedFromWindow(view, recycler);
         mRecyclerView = null;
+    }
+
+    @Override
+    public int getRowCountForAccessibility(
+            RecyclerView.Recycler recycler, RecyclerView.State state) {
+        return 1;
+    }
+
+    @Override
+    public int getColumnCountForAccessibility(
+            RecyclerView.Recycler recycler, RecyclerView.State state) {
+        return mModel.get(ITEM_COUNT_KEY);
     }
 
     /**

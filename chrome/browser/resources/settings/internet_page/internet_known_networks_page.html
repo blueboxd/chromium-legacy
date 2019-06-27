@@ -34,13 +34,12 @@
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsPreferred_">
         <div class="list-item">
-          <cr-link-row
-              embedded
-              label="[[item.Name]]"
+          <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
               on-click="fireShowDetails_">
-            <template is="dom-if" if="[[isPolicySource(item.Source))]]">
+            <template is="dom-if" if="[[isPolicySourceMojo(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
-                  indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
+                  indicator-type="[[getIndicatorTypeForSourceMojo(
+                      item.source)]]">
               </cr-policy-indicator>
             </template>
           </cr-link-row>
@@ -60,13 +59,12 @@
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsNotPreferred_">
         <div class="list-item">
-          <cr-link-row
-              embedded
-              label="[[item.Name]]"
+          <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
               on-click="fireShowDetails_">
-            <template is="dom-if" if="[[isPolicySource(item.Source))]]">
+            <template is="dom-if" if="[[isPolicySourceMojo(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
-                  indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
+                  indicator-type="[[getIndicatorTypeForSourceMojo(
+                      item.source)]]">
               </cr-policy-indicator>
             </template>
           </cr-link-row>

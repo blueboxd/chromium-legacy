@@ -3043,37 +3043,6 @@
             ]
         }
     ],
-    "MojoChannel": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "MojoChannelMac": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MojoChannelMac"
-                    ]
-                }
-            ]
-        }
-    ],
     "MostLikelyDeprecation": [
         {
             "platforms": [

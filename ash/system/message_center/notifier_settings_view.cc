@@ -409,17 +409,17 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   cs->AddPaddingColumn(1, 0);
 
   layout->StartRow(0, 0);
-  layout->AddView(checkbox_);
-  layout->AddView(icon_view_);
-  layout->AddView(name_view_);
+  layout->AddExistingView(checkbox_);
+  layout->AddExistingView(icon_view_);
+  layout->AddExistingView(name_view_);
 
   if (!GetEnabled()) {
-    views::ImageView* policy_enforced_icon = new views::ImageView();
+    auto policy_enforced_icon = std::make_unique<views::ImageView>();
     policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
         kSystemMenuBusinessIcon, kEntryIconSize, kUnifiedMenuIconColor));
     cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
                   kEntryIconSize, 0);
-    layout->AddView(policy_enforced_icon);
+    layout->AddView(std::move(policy_enforced_icon));
   }
 
   Layout();

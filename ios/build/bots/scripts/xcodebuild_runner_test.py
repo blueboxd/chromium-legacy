@@ -12,6 +12,7 @@ import shutil
 import tempfile
 import test_runner
 import test_runner_test
+import xcode_log_parser
 import xcodebuild_runner
 
 
@@ -29,9 +30,8 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
   def setUp(self):
     super(XCodebuildRunnerTest, self).setUp()
     self.mock(os.path, 'exists', lambda _: True)
-    self.mock(xcodebuild_runner.LaunchCommand, '_copy_screenshots',
-              lambda _1, _2, _3: None)
-    self.mock(xcodebuild_runner.LaunchCommand, 'summary_log', lambda _: None)
+    self.mock(xcode_log_parser.XcodeLogParser, 'copy_screenshots',
+              lambda _1, _2: None)
     self.tmpdir = tempfile.mkdtemp()
 
   def tearDown(self):
@@ -121,7 +121,7 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
 
   @mock.patch('os.listdir', autospec=True)
   def testEgtests_not_found_xctest(self, mock_listdir):
-    mock_listdir.return_value = ['some_egtests.xctest']
+    mock_listdir.return_value = ['random_file']
     egtest = xcodebuild_runner.EgtestsApp(_EGTESTS_APP_PATH)
     with self.assertRaises(test_runner.XCTestPlugInNotFoundError):
       egtest._xctest_path()
@@ -180,10 +180,11 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
 
   @mock.patch('plistlib.writePlist', autospec=True)
   @mock.patch('os.path.join', autospec=True)
-  def testFill_xctest_run(self, mock_path_join, _):
-    self._mocks[xcodebuild_runner.LaunchCommand].pop('fill_xctest_run', None)
+  @mock.patch('test_runner.get_current_xcode_info', autospec=True)
+  def testFill_xctest_run(self, xcode_version, mock_path_join, _):
     mock_path_join.return_value = _XTEST_RUN
     mock_egtest = mock.MagicMock(spec=xcodebuild_runner.EgtestsApp)
+    xcode_version.return_value = {'version': '10.2.1'}
     launch_command = xcodebuild_runner.LaunchCommand(
         mock_egtest, _DESTINATION, shards=1, retries=1, out_dir=_OUT_DIR)
     self.assertEqual(_XTEST_RUN, launch_command.fill_xctest_run(mock_egtest))
@@ -202,6 +203,7 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     ]
     egtest_app = 'module_1_egtests.app'
     egtest_app_path = '%s/%s' % (_ROOT_FOLDER_PATH, egtest_app)
+    host_app_path = '%s/%s' % (_ROOT_FOLDER_PATH, egtest_app)
     failed_tests = {
         egtest_app: [
             'TestCase1_1/TestMethod1',
@@ -214,6 +216,8 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     mock_egtest = mock.MagicMock(spec=xcodebuild_runner.EgtestsApp)
     type(mock_egtest).egtests_path = mock.PropertyMock(
         return_value=egtest_app_path)
+    type(mock_egtest).host_app_path = mock.PropertyMock(
+        return_value=host_app_path)
     cmd = xcodebuild_runner.LaunchCommand(
         egtests_app=mock_egtest,
         destination=_DESTINATION,
@@ -228,9 +232,17 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
                           fill_xctest_run_mock.mock_calls[0][1][1].__dict__)
 
   @mock.patch('os.listdir', autospec=True)
-  def testLaunchCommand_restartFailed1stAttempt(self, mock_listdir):
+  @mock.patch('test_runner.get_current_xcode_info', autospec=True)
+  @mock.patch('xcode_log_parser.XcodeLogParser.collect_test_results')
+  def testLaunchCommand_restartFailed1stAttempt(self, mock_collect_results,
+                                                xcode_version, mock_listdir):
     mock_listdir.return_value = ['any_egtests.xctest']
     egtests = xcodebuild_runner.EgtestsApp(_EGTESTS_APP_PATH)
+    xcode_version.return_value = {'version': '10.2.1'}
+    mock_collect_results.side_effect = [
+        {'failed': {'TESTS_DID_NOT_START': ['not started']}},
+        {'failed': {}, 'passed': ['passedTest1']}
+    ]
     launch_command = xcodebuild_runner.LaunchCommand(egtests,
                                                      _DESTINATION,
                                                      shards=1,

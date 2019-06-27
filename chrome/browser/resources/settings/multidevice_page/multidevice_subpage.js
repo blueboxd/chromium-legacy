@@ -23,12 +23,6 @@ Polymer({
       type: Object,
       value: settings.routes,
     },
-
-    /** Overridden from NetworkListenerBehavior. */
-    networkingPrivate: {
-      type: Object,
-      value: chrome.networkingPrivate,
-    },
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */

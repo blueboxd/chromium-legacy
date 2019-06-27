@@ -15,7 +15,7 @@ Polymer({
   properties: {
     /**
      * The list of network state properties for the items to display.
-     * @type {!Array<!CrOnc.NetworkStateProperties>}
+     * @type {!Array<!OncMojo.NetworkStateProperties>}
      */
     networks: {
       type: Array,

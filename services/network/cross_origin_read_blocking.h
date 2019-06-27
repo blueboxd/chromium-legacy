@@ -157,6 +157,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
                              SeemsSensitiveFromCacheHeuristic);
     FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest,
                              SeemsSensitiveWithBothHeuristics);
+    FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest,
+                             SupportsRangeRequests);
     FRIEND_TEST_ALL_PREFIXES(content::CrossSiteDocumentResourceHandlerTest,
                              CORBProtectionLogging);
 
@@ -192,6 +194,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     static bool SeemsSensitiveFromCacheHeuristic(
         const ResourceResponseInfo& response);
 
+    // Checks if a response has an Accept-Ranges header. This indicates the
+    // server supports range requests which may allow bypassing CORB due to
+    // their multipart content type.
+    static bool SupportsRangeRequests(
+        const ResourceResponseInfo& response_headers);
+
     // Determines the MIME type bucket for CORB protection logging.
     static MimeTypeBucket GetMimeTypeBucket(
         const ResourceResponseInfo& response);
@@ -201,7 +209,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     void CreateSniffers();
 
     // Reports potentially sensitive responses and whether CORB would have
-    // protected them, were they made cross origin.
+    // protected them, were they made cross origin. Also reports if the server
+    // supports range requests.
     static void LogSensitiveResponseProtection(
         const ResourceResponseInfo& response,
         BlockingDecision would_protect_based_on_headers);

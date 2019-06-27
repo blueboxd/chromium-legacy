@@ -20,28 +20,28 @@ Polymer({
 
   properties: {
     /**
-     * Device state for the network type. This might briefly be undefined if a
-     * device becomes unavailable.
+     * Device state for the network type. This might briefly be undefined if
+     * a device becomes unavailable.
      * @type {!OncMojo.DeviceStateProperties|undefined}
      */
     deviceState: Object,
 
     /**
-     * If both Cellular and Tether technologies exist, we combine the sections
-     * and set this to the device state for Tether.
+     * If both Cellular and Tether technologies exist, we combine the
+     * sections and set this to the device state for Tether.
      * @type {!OncMojo.DeviceStateProperties|undefined}
      */
     tetherDeviceState: Object,
 
     /**
      * Network state for the active network.
-     * @type {!CrOnc.NetworkStateProperties|undefined}
+     * @type {!OncMojo.NetworkStateProperties|undefined}
      */
     activeNetworkState: Object,
 
     /**
      * List of all network state data for the network type.
-     * @type {!Array<!CrOnc.NetworkStateProperties>}
+     * @type {!Array<!OncMojo.NetworkStateProperties>}
      */
     networkStateList: {
       type: Array,
@@ -51,9 +51,9 @@ Polymer({
     },
 
     /**
-     * Title line describing the network type to appear in the row's top line.
-     * If it is undefined, the title text is a default from CrOncStrings (see
-     * this.getTitleText_() below).
+     * Title line describing the network type to appear in the row's top
+     * line. If it is undefined, the title text is a default from
+     * CrOncStrings (see this.getTitleText_() below).
      * @type {string|undefined}
      */
     networkTitleText: String,
@@ -72,13 +72,14 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} activeNetworkState
+   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @return {string}
    * @private
    */
   getNetworkStateText_: function(activeNetworkState, deviceState) {
-    const stateText = this.getConnectionStateText_(activeNetworkState);
+    const stateText =
+        this.getConnectionStateText_(activeNetworkState, deviceState);
     if (stateText) {
       return stateText;
     }
@@ -113,45 +114,43 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} networkState
+   * @param {!OncMojo.NetworkStateProperties} networkState
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @return {string}
    * @private
    */
-  getConnectionStateText_: function(networkState) {
-    const state = networkState ? networkState.ConnectionState : null;
-    if (!state) {
+  getConnectionStateText_: function(networkState, deviceState) {
+    const connectionState = networkState ? networkState.connectionState : null;
+    if (!connectionState) {
       return '';
     }
-    const name = CrOnc.getNetworkName(networkState);
-    switch (state) {
-      case CrOnc.ConnectionState.CONNECTED:
-        return name;
-      case CrOnc.ConnectionState.CONNECTING:
-        if (name) {
-          return CrOncStrings.networkListItemConnectingTo.replace('$1', name);
-        }
-        return CrOncStrings.networkListItemConnecting;
-      case CrOnc.ConnectionState.NOT_CONNECTED:
-        if (networkState.Type == mojom.NetworkType.kCellular &&
-            networkState.Cellular && networkState.Cellular.Scanning) {
-          return this.i18n('internetMobileSearching');
-        }
-        return CrOncStrings.networkListItemNotConnected;
+    const name =
+        networkState ? OncMojo.getNetworkDisplayName(networkState) : '';
+    if (OncMojo.connectionStateIsConnected(connectionState)) {
+      return name;
     }
-    assertNotReached();
-    return state;
+    if (connectionState == mojom.ConnectionStateType.kConnecting) {
+      return name ?
+          CrOncStrings.networkListItemConnectingTo.replace('$1', name) :
+          CrOncStrings.networkListItemConnecting;
+    }
+    if (networkState.type == mojom.NetworkType.kCellular && deviceState &&
+        deviceState.scanning) {
+      return this.i18n('internetMobileSearching');
+    }
+    return CrOncStrings.networkListItemNotConnected;
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} activeNetworkState
+   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
    * @return {boolean}
    * @private
    */
   showPolicyIndicator_: function(activeNetworkState) {
     return (activeNetworkState !== undefined &&
-            activeNetworkState.ConnectionState ==
-                CrOnc.ConnectionState.CONNECTED) ||
-        this.isPolicySource(activeNetworkState.Source);
+            OncMojo.connectionStateIsConnected(
+                activeNetworkState.connectionState)) ||
+        this.isPolicySourceMojo(activeNetworkState.source);
   },
 
   /**
@@ -257,21 +256,21 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} activeNetworkState
+   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStateList
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
    * @return {boolean}
    * @private
    */
   showDetailsIsVisible_: function(
       activeNetworkState, deviceState, networkStateList) {
     return this.deviceIsEnabled_(deviceState) &&
-        (!!activeNetworkState.GUID || networkStateList.length > 0);
+        (!!activeNetworkState.guid || networkStateList.length > 0);
   },
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStateList
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
    * @return {boolean}
    * @private
    */
@@ -306,7 +305,7 @@ Polymer({
     } else if (this.shouldShowSubpage_(
                    this.deviceState, this.networkStateList)) {
       this.fire('show-networks', this.deviceState.type);
-    } else if (this.activeNetworkState.GUID) {
+    } else if (this.activeNetworkState.guid) {
       this.fire('show-detail', this.activeNetworkState);
     } else if (this.networkStateList.length > 0) {
       this.fire('show-detail', this.networkStateList[0]);
@@ -315,24 +314,22 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} activeNetworkState
+   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStateList
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
    * @return {string}
    * @private
    */
   getDetailsA11yString_: function(
       activeNetworkState, deviceState, networkStateList) {
     if (!this.shouldShowSubpage_(deviceState, networkStateList)) {
-      if (activeNetworkState.GUID) {
-        return CrOnc.getNetworkName(activeNetworkState);
+      if (activeNetworkState.guid) {
+        return OncMojo.getNetworkDisplayName(activeNetworkState);
       } else if (networkStateList.length > 0) {
-        return CrOnc.getNetworkName(networkStateList[0]);
+        return OncMojo.getNetworkDisplayName(networkStateList[0]);
       }
     }
-    return this.getNetworkTypeString_(
-        /** @type {!chrome.networkingPrivate.NetworkType} */ (
-            OncMojo.getNetworkTypeString(deviceState.type)));
+    return this.getNetworkTypeString_(deviceState.type);
   },
 
   /**
@@ -355,7 +352,7 @@ Polymer({
   getTitleText_: function() {
     assert(CrOncStrings);
     return this.networkTitleText ||
-        this.getNetworkTypeString_(this.activeNetworkState.Type);
+        this.getNetworkTypeString_(this.activeNetworkState.type);
   },
 
   /**
@@ -368,7 +365,7 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkType} type
+   * @param {!mojom.NetworkType} type
    * @return {string}
    * @private
    */
@@ -376,10 +373,11 @@ Polymer({
     // The shared Cellular/Tether subpage is referred to as "Mobile".
     // TODO(khorimoto): Remove once Cellular/Tether are split into their own
     // sections.
-    if (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER) {
-      return this.i18n('OncTypeMobile');
+    if (type == mojom.NetworkType.kCellular ||
+        type == mojom.NetworkType.kTether) {
+      type = mojom.NetworkType.kMobile;
     }
-    return this.i18n('OncType' + type);
+    return this.i18n('OncType' + OncMojo.getNetworkTypeString(type));
   },
 });
 })();

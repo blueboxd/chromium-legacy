@@ -292,6 +292,11 @@ void DrmThread::CheckOverlayCapabilities(
           screen_manager_->GetWindow(widget)->TestPageFlip(params)));
 }
 
+void DrmThread::GetDeviceCursor(
+    ozone::mojom::DeviceCursorAssociatedRequest request) {
+  cursor_bindings_.AddBinding(this, std::move(request));
+}
+
 void DrmThread::RefreshNativeDisplays(
     base::OnceCallback<void(MovableDisplaySnapshots)> callback) {
   std::move(callback).Run(display_manager_->GetDisplays());
@@ -358,13 +363,6 @@ void DrmThread::SetGammaCorrection(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
   display_manager_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
-}
-
-// DrmThread requires a BindingSet instead of a simple Binding because it will
-// be used from multiple threads in multiple processes.
-void DrmThread::AddBindingCursorDevice(
-    ozone::mojom::DeviceCursorRequest request) {
-  cursor_bindings_.AddBinding(this, std::move(request));
 }
 
 void DrmThread::AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request) {

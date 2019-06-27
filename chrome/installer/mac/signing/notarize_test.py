@@ -180,4 +180,4 @@ class TestStaple(unittest.TestCase):
     def test_staple(self, run_command):
         notarize.staple('/tmp/file.dmg')
         run_command.assert_called_once_with(
-            ['stapler', 'staple', '--verbose', '/tmp/file.dmg'])
+            ['xcrun', 'stapler', 'staple', '--verbose', '/tmp/file.dmg'])

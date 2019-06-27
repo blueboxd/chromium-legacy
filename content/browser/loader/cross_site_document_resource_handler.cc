@@ -384,13 +384,11 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
 
   // At this point the block-vs-allow decision was made, but might be still
   // suppressed because of |is_initiator_scheme_excluded_|.  We perform the
-  // suppression at such a late point, because we want to ensure we only call
-  // LogInitiatorSchemeBypassingDocumentBlocking for cases that actuall matter
-  // in practice.
-  if (confirmed_blockable && is_initiator_scheme_excluded_) {
-    initiator_scheme_prevented_blocking_ = true;
+  // suppression at such a late point, because we want*ed* to ensure we only
+  // call LogInitiatorSchemeBypassingDocumentBlocking for cases that actually
+  // matter in practice.
+  if (confirmed_blockable && is_initiator_scheme_excluded_)
     confirmed_blockable = false;
-  }
 
   // At this point we have already made a block-vs-allow decision and we know
   // that we can wake the |next_handler_| and let it catch-up with our
@@ -526,20 +524,8 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
   } else {
     // Only report CORB status for successful (i.e. non-aborted,
     // non-errored-out) requests.
-    if (status.is_success()) {
+    if (status.is_success())
       analyzer_->LogAllowedResponse();
-      if (initiator_scheme_prevented_blocking_ &&
-          analyzer_->ShouldReportBlockedResponse() && GetRequestInfo()) {
-        base::PostTaskWithTraits(
-            FROM_HERE, {BrowserThread::UI},
-            base::BindOnce(&ContentBrowserClient::
-                               LogInitiatorSchemeBypassingDocumentBlocking,
-                           base::Unretained(GetContentClient()->browser()),
-                           request()->initiator().value(),
-                           GetRequestInfo()->GetChildID(),
-                           GetRequestInfo()->GetResourceType()));
-      }
-    }
 
     next_handler_->OnResponseCompleted(status, std::move(controller));
   }

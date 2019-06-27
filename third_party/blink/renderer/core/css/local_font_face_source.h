@@ -73,7 +73,6 @@ class LocalFontFaceSource final : public CSSFontFaceSource,
   Member<CSSFontFace> face_;
   Member<FontSelector> font_selector_;
 
-  bool was_resolved_ = false;
   AtomicString font_name_;
   LocalFontHistograms histograms_;
   base::WeakPtrFactory<LocalFontFaceSource> weak_factory_;

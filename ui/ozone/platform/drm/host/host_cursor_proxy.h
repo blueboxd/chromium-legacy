@@ -18,8 +18,8 @@ namespace ui {
 // priviledged process.
 class HostCursorProxy : public DrmCursorProxy {
  public:
-  HostCursorProxy(ui::ozone::mojom::DeviceCursorPtr main_cursor_ptr,
-                  ui::ozone::mojom::DeviceCursorPtr evdev_cursor_ptr);
+  HostCursorProxy(ui::ozone::mojom::DeviceCursorAssociatedPtr main_cursor_ptr,
+                  ui::ozone::mojom::DeviceCursorAssociatedPtr evdev_cursor_ptr);
   ~HostCursorProxy() override;
 
  private:
@@ -32,8 +32,8 @@ class HostCursorProxy : public DrmCursorProxy {
   void InitializeOnEvdevIfNecessary() override;
 
   // Mojo implementation of the DrmCursorProxy.
-  ui::ozone::mojom::DeviceCursorPtr main_cursor_ptr_ = nullptr;
-  ui::ozone::mojom::DeviceCursorPtr evdev_cursor_ptr_ = nullptr;
+  ui::ozone::mojom::DeviceCursorAssociatedPtr main_cursor_ptr_ = nullptr;
+  ui::ozone::mojom::DeviceCursorAssociatedPtr evdev_cursor_ptr_ = nullptr;
 
   base::PlatformThreadRef ui_thread_ref_;
   bool evdev_bound_ = false;

@@ -614,11 +614,8 @@ public class LibraryLoader {
     private void recordBrowserProcessHistogramAlreadyLocked() {
         assert Thread.holdsLock(mLock);
         if (useCrazyLinker()) {
-            nativeRecordChromiumAndroidLinkerBrowserHistogram(mIsUsingBrowserSharedRelros,
-                    mLoadAtFixedAddressFailed,
-                    mLibraryWasLoadedFromApk ? LibraryLoadFromApkStatusCodes.SUCCESSFUL
-                                             : LibraryLoadFromApkStatusCodes.UNKNOWN,
-                    mLibraryLoadTimeMs);
+            nativeRecordChromiumAndroidLinkerBrowserHistogram(
+                    mIsUsingBrowserSharedRelros, mLoadAtFixedAddressFailed, mLibraryLoadTimeMs);
         }
         if (mLibraryPreloader != null) {
             nativeRecordLibraryPreloaderBrowserHistogram(mLibraryPreloaderStatus);
@@ -740,7 +737,6 @@ public class LibraryLoader {
     private native void nativeRecordChromiumAndroidLinkerBrowserHistogram(
             boolean isUsingBrowserSharedRelros,
             boolean loadAtFixedAddressFailed,
-            int libraryLoadFromApkStatus,
             long libraryLoadTime);
 
     // Method called to record the return value of NativeLibraryPreloader.loadLibrary for the main

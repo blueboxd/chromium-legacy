@@ -57,16 +57,13 @@ std::vector<std::string> SplitFontFilesList(
   return std::vector<std::string>(start_copy, end_copy);
 }
 
-enum class TruncateLength { TruncateToZero, TruncateHalf };
-
-void TruncateFile(const base::FilePath& file_path,
-                  TruncateLength truncate_length) {
+void TruncateFileToLength(const base::FilePath& file_path,
+                          int64_t truncated_length) {
   base::File file_to_truncate(
       file_path, base::File::FLAG_OPEN | base::File::Flags::FLAG_WRITE);
-  size_t truncate_to = truncate_length == TruncateLength::TruncateHalf
-                           ? file_to_truncate.GetLength() / 2
-                           : 0;
-  file_to_truncate.SetLength(truncate_to);
+
+  ASSERT_TRUE(file_to_truncate.IsValid());
+  ASSERT_TRUE(file_to_truncate.SetLength(truncated_length));
 }
 
 }  // namespace
@@ -98,29 +95,38 @@ TEST_F(FontUniqueNameLookupTest, TestBuildLookup) {
   ASSERT_GT(matcher_after_load.AvailableFonts(), 0u);
 }
 
-// http://crbug.com/928818
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_TestHandleFiledRead DISABLED_TestHandleFailedRead
-#else
-#define MAYBE_TestHandleFiledRead TestHandleFailedRead
-#endif
-TEST_F(FontUniqueNameLookupTest, MAYBE_TestHandleFiledRead) {
-  base::DeleteFile(font_unique_name_lookup_->TableCacheFilePathForTesting(),
-                   false);
+TEST_F(FontUniqueNameLookupTest, TestHandleFailedRead) {
+  ASSERT_FALSE(base::PathExists(
+      font_unique_name_lookup_->TableCacheFilePathForTesting()));
   ASSERT_FALSE(font_unique_name_lookup_->LoadFromFile());
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
   base::ReadOnlySharedMemoryMapping mapping =
       font_unique_name_lookup_->DuplicateMemoryRegion().Map();
   blink::FontTableMatcher matcher(mapping);
-  ASSERT_GT(matcher.AvailableFonts(), 0u);
+
+  // AOSP Android Kitkat has 81 fonts, the Kitkat bot seems to have 74,
+  // Marshmallow has 149, Oreo 247, let's expect at least 50.
+  ASSERT_GT(matcher.AvailableFonts(), 50u);
   ASSERT_TRUE(font_unique_name_lookup_->PersistToFile());
+  ASSERT_TRUE(base::PathExists(
+      font_unique_name_lookup_->TableCacheFilePathForTesting()));
+  int64_t file_size;
+  ASSERT_TRUE(base::GetFileSize(
+      font_unique_name_lookup_->TableCacheFilePathForTesting(), &file_size));
+  // For 81 fonts minimumm, very conservatively assume we have at least 1k of
+  // data, it's rather around 30k in practice.
+  ASSERT_GT(file_size, 1024);
   ASSERT_TRUE(font_unique_name_lookup_->LoadFromFile());
-  TruncateFile(font_unique_name_lookup_->TableCacheFilePathForTesting(),
-               TruncateLength::TruncateHalf);
-  ASSERT_FALSE(font_unique_name_lookup_->LoadFromFile());
-  TruncateFile(font_unique_name_lookup_->TableCacheFilePathForTesting(),
-               TruncateLength::TruncateToZero);
-  ASSERT_FALSE(font_unique_name_lookup_->LoadFromFile());
+
+  // For each truncated size, reading must fail, otherwise we successfully read
+  // a truncated protobuf.
+  for (int64_t truncated_size = file_size - 1; truncated_size >= 0;
+       truncated_size -= file_size) {
+    TruncateFileToLength(
+        font_unique_name_lookup_->TableCacheFilePathForTesting(),
+        truncated_size);
+    ASSERT_FALSE(font_unique_name_lookup_->LoadFromFile());
+  }
 }
 
 TEST_F(FontUniqueNameLookupTest, TestMatchPostScriptName) {

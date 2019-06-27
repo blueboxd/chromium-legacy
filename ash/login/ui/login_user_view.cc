@@ -703,20 +703,20 @@ void LoginUserView::SetLargeLayout() {
   // Add views in rendering order.
   // Image
   layout->StartRow(0 /*vertical_resize*/, kImageColumnId);
-  layout->AddView(user_image_);
+  layout->AddExistingView(user_image_);
 
   add_padding(kVerticalSpacingBetweenEntriesDp);
 
   // Label/dropdown.
   layout->StartRow(0 /*vertical_resize*/, kLabelDropdownColumnId);
-  layout->AddView(user_label_);
+  layout->AddExistingView(user_label_);
   if (dropdown_)
-    layout->AddView(dropdown_);
+    layout->AddExistingView(dropdown_);
 
   if (user_domain_) {
     add_padding(kVerticalSpacingBetweenUserNameAndDomainDp);
     layout->StartRow(0 /*vertical_resize*/, kLabelDomainColumnId);
-    layout->AddView(user_domain_);
+    layout->AddExistingView(user_domain_);
   }
 }
 

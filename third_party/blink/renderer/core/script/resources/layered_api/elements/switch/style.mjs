@@ -46,6 +46,9 @@ export function styleSheetFactory() {
   margin-inline-start: calc(-100% + ${THUMB_MARGIN_START});
   max-inline-size: ${THUMB_WIDTH};
   min-inline-size: ${THUMB_WIDTH};
+}
+
+#thumb.transitioning {
   transition: all linear 0.1s;
 }
 
@@ -74,8 +77,11 @@ export function styleSheetFactory() {
   box-sizing: border-box;
   display: inline-block;
   inline-size: 0%;
-  transition: all linear 0.1s;
   vertical-align: top;
+}
+
+#trackFill.transitioning {
+  transition: all linear 0.1s;
 }
 
 :host([on]) #track {
@@ -85,4 +91,44 @@ export function styleSheetFactory() {
     }
     return styleSheet;
   };
+}
+
+/**
+ * Add 'transitioning' class to the element, and remove it on 'transitionend'
+ * event.
+ *
+ * TODO(tkent): This doesn't work well with customization by web authors because
+ * class of a shadow element is invisible for web authors. We should apply
+ * custom state.
+ *
+ * @param {!Element} element
+ */
+export function markTransition(element) {
+  const CLASS_NAME = 'transitioning';
+  element.classList.add(CLASS_NAME);
+  let durations = element.computedStyleMap().getAll('transition-duration');
+  if (!durations.some(duration => duration.value >= 0)) {
+    // If the element will have no transitions, we remove CLASS_NAME
+    // immediately.
+    element.classList.remove(CLASS_NAME);
+    return;
+  }
+  // If the element will have transitions, initialize counters and listeners
+  // only once.
+  if (element.runningTransitions !== undefined) {
+    return;
+  }
+  element.runningTransitions = 0;
+  element.addEventListener('transitionrun', e => {
+    if (e.target === element) {
+      ++element.runningTransitions;
+    }
+  });
+  let handleEndOrCancel = e => {
+    if (e.target === element && --element.runningTransitions === 0) {
+      element.classList.remove(CLASS_NAME);
+    }
+  };
+  element.addEventListener('transitionend', handleEndOrCancel);
+  element.addEventListener('transitioncancel', handleEndOrCancel);
 }

@@ -13,8 +13,8 @@ namespace ui {
 
 // We assume that this is invoked only on the Mus/UI thread.
 HostCursorProxy::HostCursorProxy(
-    ui::ozone::mojom::DeviceCursorPtr main_cursor_ptr,
-    ui::ozone::mojom::DeviceCursorPtr evdev_cursor_ptr)
+    ui::ozone::mojom::DeviceCursorAssociatedPtr main_cursor_ptr,
+    ui::ozone::mojom::DeviceCursorAssociatedPtr evdev_cursor_ptr)
     : main_cursor_ptr_(std::move(main_cursor_ptr)),
       evdev_cursor_ptr_(std::move(evdev_cursor_ptr)),
       ui_thread_ref_(base::PlatformThread::CurrentRef()) {}

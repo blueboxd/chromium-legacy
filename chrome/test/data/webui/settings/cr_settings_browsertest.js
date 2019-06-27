@@ -9,6 +9,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#if defined(OS_CHROMEOS)');
 GEN('#include "ash/public/cpp/ash_features.h"');
+GEN('#include "chromeos/constants/chromeos_switches.h"');
 GEN('#endif  // defined(OS_CHROMEOS)');
 
 GEN('#include "chrome/common/chrome_features.h"');
@@ -585,6 +586,9 @@ CrSettingsPeoplePageAccountManagerTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://settings/people_page/account_manager.html',
+
+  /** @override */
+  featureList: {enabled: ['chromeos::switches::kAccountManager']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1547,9 +1551,9 @@ CrSettingsSecurityKeysSubpageTest.prototype = {
   ]),
 };
 
-// Disabling on Mac due to deterministic failures on some bots.
+// Disabling on Mac and Linux due to deterministic failures on some bots.
 // https://crbug.com/978792
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MACOSX) || defined(OS_LINUX)');
 GEN('#define MAYBE_All3 DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All3 All');

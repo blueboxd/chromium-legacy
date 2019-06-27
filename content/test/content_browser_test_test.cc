@@ -10,10 +10,12 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -28,6 +30,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -220,6 +223,17 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, NonNestableTask) {
       FROM_HERE, base::BindOnce(&CallbackChecker, &non_nested_task_ran));
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(non_nested_task_ran);
+}
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunTimeoutInstalled) {
+  // Verify that a RunLoop timeout is installed and shorter than the test
+  // timeout itself.
+  const auto* run_timeout = base::RunLoop::ScopedRunTimeoutForTest::Current();
+  EXPECT_TRUE(run_timeout);
+  EXPECT_LT(run_timeout->timeout(), TestTimeouts::test_launcher_timeout());
+
+  EXPECT_NONFATAL_FAILURE({ run_timeout->on_timeout().Run(); },
+                          "RunLoop::Run() timed out");
 }
 
 }  // namespace content

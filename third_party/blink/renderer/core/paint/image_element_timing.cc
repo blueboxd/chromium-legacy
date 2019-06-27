@@ -137,7 +137,9 @@ void ImageElementTiming::NotifyImagePaintedInternal(
           &layout_object.GetDocument())) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*GetSupplementable());
-    if (performance) {
+    if (performance &&
+        (performance->HasObserverFor(PerformanceEntry::kElement) ||
+         performance->ShouldBufferEntries())) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
           ImagePaintString(), url.GetString(), intersection_rect,
@@ -216,7 +218,8 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                                                   base::TimeTicks timestamp) {
   WindowPerformance* performance =
       DOMWindowPerformance::performance(*GetSupplementable());
-  if (performance) {
+  if (performance && (performance->HasObserverFor(PerformanceEntry::kElement) ||
+                      performance->ShouldBufferEntries())) {
     for (const auto& element_timing : element_timings_) {
       performance->AddElementTiming(
           ImagePaintString(), element_timing->url, element_timing->rect,

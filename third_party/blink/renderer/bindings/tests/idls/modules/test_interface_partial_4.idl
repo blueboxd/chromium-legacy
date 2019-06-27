@@ -8,7 +8,7 @@
 
 [
     ImplementedAs=TestInterfacePartial4,
-    OriginTrialEnabled=OriginTrialPartialFeature, // Conflicts with RuntimeEnabled
+    RuntimeEnabled=OriginTrialPartialFeature, // Conflicts with RuntimeEnabled
     SecureContext
 ] partial interface TestInterface {
     const unsigned short PARTIAL4_UNSIGNED_SHORT = 4;

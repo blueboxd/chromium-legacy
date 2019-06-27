@@ -10759,8 +10759,8 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
             LOCAL_RENDER_WARNING(
                 std::string("texture bound to texture unit ") +
                 base::NumberToString(texture_unit_index) +
-                " is not renderable. It maybe non-power-of-2 and have"
-                " incompatible texture filtering.");
+                " is not renderable. It might be non-power-of-2 or have"
+                " incompatible texture filtering (maybe)?");
           }
           continue;
         } else if (!texture_ref->texture()->CompatibleWithSamplerUniformType(

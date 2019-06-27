@@ -50,6 +50,22 @@ class TestIdentityManagerObserver;
 // requirement.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
  public:
+  // Allow passing platform specific parameters to create the IdentityManager.
+  // Need to be default constructible and moveable.
+  struct ExtraParams {
+    ExtraParams();
+    ~ExtraParams();
+    ExtraParams(ExtraParams&& other);
+    ExtraParams& operator=(ExtraParams&& other);
+
+#if defined(OS_IOS)
+    // If non-null, an iOS delegate instance will be constructed for the
+    // token service as opposed to the default fake delegate.
+    std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>
+        token_service_provider;
+#endif
+  };
+
   // Preferred constructor: constructs an IdentityManager object and its
   // dependencies internally. Cannot be used if the client of this class
   // is still interacting directly with those dependencies (e.g., if
@@ -80,7 +96,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr,
       signin::AccountConsistencyMethod account_consistency =
           signin::AccountConsistencyMethod::kDisabled,
-      TestSigninClient* test_signin_client = nullptr);
+      TestSigninClient* test_signin_client = nullptr,
+      ExtraParams extra_params = {});
 
   ~IdentityTestEnvironment() override;
 
@@ -304,7 +321,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   IdentityTestEnvironment(
       std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
       network::TestURLLoaderFactory* test_url_loader_factory,
-      signin::AccountConsistencyMethod account_consistency);
+      signin::AccountConsistencyMethod account_consistency,
+      ExtraParams extra_params = {});
 
   // Constructs an IdentityTestEnvironment that uses the supplied
   // |identity_manager|.
@@ -355,23 +373,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
-
-  // Allow passing platform specific parameters to
-  // BuildIdentityManagerForTests. Need to be default
-  // constructible and moveable.
-  struct ExtraParams {
-    ExtraParams();
-    ~ExtraParams();
-    ExtraParams(ExtraParams&& other);
-    ExtraParams& operator=(ExtraParams&& other);
-
-#if defined(OS_IOS)
-    // If non-null, an iOS delegate instance will be constructed for the
-    // token service as opposed to the default fake delegate.
-    std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>
-        token_service_provider;
-#endif
-  };
 
   // Create an IdentityManager instance for tests.
   static std::unique_ptr<IdentityManagerWrapper> BuildIdentityManagerForTests(

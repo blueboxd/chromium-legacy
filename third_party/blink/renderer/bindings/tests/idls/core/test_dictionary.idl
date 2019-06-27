@@ -39,8 +39,8 @@ dictionary TestDictionary {
     Dictionary dictionaryMember;
     [RuntimeEnabled=RuntimeFeature] boolean runtimeMember;
     [RuntimeEnabled=RuntimeFeature] boolean runtimeSecondMember;
-    [OriginTrialEnabled=FeatureName] boolean originTrialMember;
-    [OriginTrialEnabled=FeatureName1] boolean originTrialSecondMember;
+    [RuntimeEnabled=FeatureName] boolean originTrialMember;
+    [RuntimeEnabled=FeatureName1] boolean originTrialSecondMember;
     [RuntimeEnabled=OriginTrialFeature] boolean originTrialThirdMember;
     [RuntimeEnabled=OriginTrialFeature1] boolean originTrialFourthMember;
     record<ByteString, byte> recordMember;

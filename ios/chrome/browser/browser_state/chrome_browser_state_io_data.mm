@@ -121,7 +121,7 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
   if (!IsOffTheRecord()) {
     google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
                                           pref_service);
-    google_services_user_account_id_.MoveToThread(io_task_runner);
+    google_services_user_account_id_.MoveToSequence(io_task_runner);
   }
 }
 
@@ -297,7 +297,7 @@ void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {
   // read from there.
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        GetApplicationContext()->GetLocalState());
-  enable_metrics_.MoveToThread(
+  enable_metrics_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 }
 

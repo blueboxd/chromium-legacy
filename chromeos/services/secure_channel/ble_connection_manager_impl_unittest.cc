@@ -218,7 +218,7 @@ class FakeWeaveClientConnectionFactory
       multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      device::BluetoothDevice* bluetooth_device,
+      const std::string& device_address,
       bool should_set_low_connection_latency) override {
     EXPECT_EQ(expected_mock_adapter_, adapter);
     EXPECT_EQ(device::BluetoothUUID(kGattServerUuid), remote_service_uuid);

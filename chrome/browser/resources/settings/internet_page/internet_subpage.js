@@ -25,7 +25,7 @@ Polymer({
     /**
      * Highest priority connected network or null. Provided by
      * settings-internet-page (but set in network-summary).
-     * @type {?CrOnc.NetworkStateProperties|undefined}
+     * @type {?OncMojo.NetworkStateProperties|undefined}
      */
     defaultNetwork: Object,
 
@@ -60,12 +60,6 @@ Polymer({
      */
     arcVpnProviders: Array,
 
-    /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {!NetworkingPrivate}
-     */
-    networkingPrivate: Object,
-
     showSpinner: {
       type: Boolean,
       notify: true,
@@ -74,7 +68,7 @@ Polymer({
 
     /**
      * List of all network state data for the network type.
-     * @private {!Array<!CrOnc.NetworkStateProperties>}
+     * @private {!Array<!OncMojo.NetworkStateProperties>}
      */
     networkStateList_: {
       type: Array,
@@ -85,7 +79,7 @@ Polymer({
 
     /**
      * Dictionary of lists of network states for third party VPNs.
-     * @private {!Object<!Array<!CrOnc.NetworkStateProperties>>}
+     * @private {!Object<!Array<!OncMojo.NetworkStateProperties>>}
      */
     thirdPartyVpns_: {
       type: Object,
@@ -96,7 +90,7 @@ Polymer({
 
     /**
      * Dictionary of lists of network states for Arc VPNs.
-     * @private {!Object<!Array<!CrOnc.NetworkStateProperties>>}
+     * @private {!Object<!Array<!OncMojo.NetworkStateProperties>>}
      */
     arcVpns_: {
       type: Object,
@@ -187,8 +181,7 @@ Polymer({
 
   /**
    * CrosNetworkConfigObserver impl
-   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
-   *     networks
+   * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
   onActiveNetworksChanged: function(networks) {
     this.getNetworkStateList_();
@@ -273,30 +266,36 @@ Polymer({
     if (!this.deviceState) {
       return;
     }
-    const type = /** @type{CrOnc.Type} */ (
-        OncMojo.getNetworkTypeString(this.deviceState.type));
-    const filter = {networkType: type, visible: true, configured: false};
-    this.networkingPrivate.getNetworks(filter, this.onGetNetworks_.bind(this));
+    const filter = {
+      filter: chromeos.networkConfig.mojom.FilterType.kVisible,
+      limit: chromeos.networkConfig.mojom.kNoLimit,
+      networkType: this.deviceState.type,
+    };
+    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+      this.onGetNetworks_(response.result);
+    });
   },
 
   /**
-   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStates
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStates
    * @private
    */
   onGetNetworks_: function(networkStates) {
     if (!this.deviceState) {
+      // Edge case when device states change before this callback.
       return;
-    }  // Edge case when device states change before this callback.
+    }
 
-    // For the Cellular/Mobile subpage, request Tether networks if available.
+    // For the Cellular/Mobile subpage, also request Tether networks.
     if (this.deviceState.type == mojom.NetworkType.kCellular &&
         this.tetherDeviceState) {
       const filter = {
-        networkType: CrOnc.Type.TETHER,
-        visible: true,
-        configured: false
+        filter: chromeos.networkConfig.mojom.FilterType.kVisible,
+        limit: chromeos.networkConfig.mojom.kNoLimit,
+        networkType: mojom.NetworkType.kTether,
       };
-      this.networkingPrivate.getNetworks(filter, tetherNetworkStates => {
+      this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+        const tetherNetworkStates = response.result;
         this.networkStateList_ = networkStates.concat(tetherNetworkStates);
       });
       return;
@@ -307,23 +306,27 @@ Polymer({
       const builtinNetworkStates = [];
       const thirdPartyVpns = {};
       const arcVpns = {};
-      for (let i = 0; i < networkStates.length; ++i) {
-        const state = networkStates[i];
-        const providerType = this.get('VPN.ThirdPartyVPN.ProviderName', state);
-        if (providerType) {
-          thirdPartyVpns[providerType] = thirdPartyVpns[providerType] || [];
-          thirdPartyVpns[providerType].push(state);
-        } else if (this.get('VPN.Type', state) == 'ARCVPN') {
-          const arcProviderName = this.get('VPN.Host', state);
-          if (state.ConnectionState != CrOnc.ConnectionState.CONNECTED) {
-            continue;
-          }
-          arcVpns[arcProviderName] = arcVpns[arcProviderName] || [];
-          arcVpns[arcProviderName].push(state);
-        } else {
-          builtinNetworkStates.push(state);
+      networkStates.forEach(state => {
+        assert(state.type == mojom.NetworkType.kVPN);
+        switch (state.vpn.type) {
+          case mojom.VPNType.kL2TPIPsec:
+          case mojom.VPNType.kOpenVPN:
+            builtinNetworkStates.push(state);
+            break;
+          case mojom.VPNType.kThirdPartyVPN:
+            const providerName = state.vpn.providerName;
+            thirdPartyVpns[providerName] = thirdPartyVpns[providerName] || [];
+            thirdPartyVpns[providerName].push(state);
+            break;
+          case mojom.VPNType.kArcVPN:
+            const arcProviderName = this.get('VPN.Host', state);
+            if (OncMojo.connectionStateIsConnected(state.connectionState)) {
+              arcVpns[arcProviderName] = arcVpns[arcProviderName] || [];
+              arcVpns[arcProviderName].push(state);
+            }
+            break;
         }
-      }
+      });
       networkStates = builtinNetworkStates;
       this.thirdPartyVpns_ = thirdPartyVpns;
       this.arcVpns_ = arcVpns;
@@ -452,15 +455,14 @@ Polymer({
   /** @private */
   onAddButtonTap_: function() {
     assert(this.deviceState);
-    const type = OncMojo.getNetworkTypeString(this.deviceState.type);
-    assert(type != CrOnc.Type.CELLULAR);
-    this.fire('show-config', {GUID: '', Type: type});
+    const type = this.deviceState.type;
+    assert(type != mojom.NetworkType.kCellular);
+    this.fire('show-config', {type: OncMojo.getNetworkTypeString(type)});
   },
 
   /**
-   * @param {!{model:
-   *              !{item: !chrome.networkingPrivate.ThirdPartyVPNProperties},
-   *        }} event
+   * @param {!{model: !{item:
+   *     !chrome.networkingPrivate.ThirdPartyVPNProperties}}} event
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
@@ -509,9 +511,9 @@ Polymer({
   },
 
   /**
-   * @param {!Object<!Array<!CrOnc.NetworkStateProperties>>} thirdPartyVpns
+   * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
    * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
-   * @return {!Array<!CrOnc.NetworkStateProperties>}
+   * @return {!Array<!OncMojo.NetworkStateProperties>}
    * @private
    */
   getThirdPartyVpnNetworks_: function(thirdPartyVpns, vpnState) {
@@ -519,7 +521,7 @@ Polymer({
   },
 
   /**
-   * @param {!Object<!Array<!CrOnc.NetworkStateProperties>>} thirdPartyVpns
+   * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
    * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
    * @return {boolean}
    * @private
@@ -530,9 +532,9 @@ Polymer({
   },
 
   /**
-   * @param {!Object<!Array<!CrOnc.NetworkStateProperties>>} arcVpns
+   * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} arcVpns
    * @param {!settings.ArcVpnProvider} arcVpnProvider
-   * @return {!Array<!CrOnc.NetworkStateProperties>}
+   * @return {!Array<!OncMojo.NetworkStateProperties>}
    * @private
    */
   getArcVpnNetworks_: function(arcVpns, arcVpnProvider) {
@@ -540,7 +542,7 @@ Polymer({
   },
 
   /**
-   * @param {!Object<!Array<!CrOnc.NetworkStateProperties>>} arcVpns
+   * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} arcVpns
    * @param {!settings.ArcVpnProvider} arcVpnProvider
    * @return {boolean}
    * @private
@@ -552,55 +554,54 @@ Polymer({
 
   /**
    * Event triggered when a network list item is selected.
-   * @param {!{target: HTMLElement, detail: !CrOnc.NetworkStateProperties}} e
+   * @param {!{target: HTMLElement, detail: !OncMojo.NetworkStateProperties}} e
    * @private
    */
   onNetworkSelected_: function(e) {
     assert(this.globalPolicy);
     assert(this.defaultNetwork !== undefined);
-    const state = e.detail;
+    const networkState = e.detail;
     e.target.blur();
-    if (this.canConnect_(state)) {
-      this.fire('network-connect', {networkProperties: state});
+    if (this.canConnect_(networkState)) {
+      this.fire('network-connect', {networkState: networkState});
       return;
     }
-    this.fire('show-detail', state);
+    this.fire('show-detail', networkState);
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} state The network state.
+   * @param {!OncMojo.NetworkStateProperties} state The network state.
    * @return {boolean}
    * @private
    */
   isBlockedByPolicy_: function(state) {
-    if (state.Type != CrOnc.Type.WI_FI || this.isPolicySource(state.Source) ||
-        !this.globalPolicy) {
+    if (state.type != mojom.NetworkType.kWiFi ||
+        this.isPolicySourceMojo(state.source) || !this.globalPolicy) {
       return false;
     }
     return !!this.globalPolicy.AllowOnlyPolicyNetworksToConnect ||
         (!!this.globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable &&
          !!this.deviceState && !!this.deviceState.managedNetworkAvailable) ||
-        (!!state.WiFi && !!state.WiFi.HexSSID &&
-         !!this.globalPolicy.BlacklistedHexSSIDs &&
-         this.globalPolicy.BlacklistedHexSSIDs.includes(state.WiFi.HexSSID));
+        (!!this.globalPolicy.BlacklistedHexSSIDs &&
+         this.globalPolicy.BlacklistedHexSSIDs.includes(state.wifi.hexSsid));
   },
 
   /**
    * Determines whether or not a network state can be connected to.
-   * @param {!CrOnc.NetworkStateProperties} state The network state.
+   * @param {!OncMojo.NetworkStateProperties} state The network state.
    * @private
    */
   canConnect_: function(state) {
-    if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED) {
+    if (state.connectionState != mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
     if (this.isBlockedByPolicy_(state)) {
       return false;
     }
-    if (state.Type == CrOnc.Type.VPN &&
+    if (state.type == mojom.NetworkType.kVPN &&
         (!this.defaultNetwork ||
-         this.defaultNetwork.ConnectionState !=
-             CrOnc.ConnectionState.CONNECTED)) {
+         !OncMojo.connectionStateIsConnected(
+             this.defaultNetwork.connectionState))) {
       return false;
     }
     return true;
@@ -654,7 +655,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStateList
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
    * @return {boolean}
    * @private
    */

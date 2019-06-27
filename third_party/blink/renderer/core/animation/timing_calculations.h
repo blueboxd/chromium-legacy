@@ -33,7 +33,6 @@
 
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -298,8 +297,7 @@ static inline double CalculateTransformedProgress(
 
   // Return the result of evaluating the animation effect’s timing function
   // passing directed progress as the input progress value.
-  return timing_function->Evaluate(directed_progress, limit_direction,
-                                   AccuracyForDuration(iteration_duration));
+  return timing_function->Evaluate(directed_progress, limit_direction);
 }
 
 // Offsets the active time by how far into the animation we start (i.e. the

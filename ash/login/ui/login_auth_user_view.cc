@@ -713,7 +713,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
                         0 /*fixed_width*/, 0 /*min_width*/);
   auto add_view = [&](views::View* view) {
     grid_layout->StartRow(0 /*vertical_resize*/, 0 /*column_set_id*/);
-    grid_layout->AddView(view);
+    grid_layout->AddExistingView(view);
   };
   auto add_padding = [&](int amount) {
     grid_layout->AddPaddingRow(0 /*vertical_resize*/, amount /*size*/);

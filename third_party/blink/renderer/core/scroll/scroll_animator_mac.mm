@@ -332,7 +332,7 @@ class BlinkScrollbarPartAnimationTimer {
 
     double fraction = delta / duration_;
     fraction = clampTo(fraction, 0.0, 1.0);
-    double progress = timing_function_->Evaluate(fraction, 0.001);
+    double progress = timing_function_->Evaluate(fraction);
     [animation_ setCurrentProgress:progress];
   }
 

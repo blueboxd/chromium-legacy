@@ -239,6 +239,26 @@ class TestCacheStorageObserver : public CacheStorageContextImpl::Observer {
   std::unique_ptr<base::RunLoop> loop_;
 };
 
+class TestCacheStorageContext : public CacheStorageContextWithManager {
+ public:
+  explicit TestCacheStorageContext(scoped_refptr<CacheStorageManager> manager)
+      : manager_(std::move(manager)) {}
+
+  scoped_refptr<CacheStorageManager> CacheManager() override {
+    return manager_;
+  }
+
+  void GetAllOriginsInfo(GetUsageInfoCallback callback) override {
+    NOTREACHED();
+  }
+
+  void DeleteForOrigin(const GURL& origin_url) override { NOTREACHED(); }
+
+ private:
+  ~TestCacheStorageContext() override = default;
+  scoped_refptr<CacheStorageManager> manager_;
+};
+
 class CacheStorageManagerTest : public testing::Test {
  public:
   CacheStorageManagerTest()
@@ -368,8 +388,10 @@ class CacheStorageManagerTest : public testing::Test {
         cache_manager_ = std::move(legacy_manager);
         break;
       case TestManager::kCrossSequence:
+        auto context = base::MakeRefCounted<TestCacheStorageContext>(
+            std::move(legacy_manager));
         cache_manager_ = base::MakeRefCounted<CrossSequenceCacheStorageManager>(
-            base::ThreadTaskRunnerHandle::Get(), std::move(legacy_manager));
+            base::ThreadTaskRunnerHandle::Get(), std::move(context));
         break;
     }
   }

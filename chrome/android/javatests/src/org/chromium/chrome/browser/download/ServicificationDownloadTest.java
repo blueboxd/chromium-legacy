@@ -99,6 +99,7 @@ public final class ServicificationDownloadTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadManagerService downloadManagerService =
                     DownloadManagerService.getDownloadManagerService();
+            downloadManagerService.disableAddCompletedDownloadToDownloadManager();
             ((SystemDownloadNotifier) downloadManagerService.getDownloadNotifier())
                     .setDownloadNotificationService(mNotificationService);
             downloadManagerService.createInterruptedDownloadForTest(url, DOWNLOAD_GUID, tempFile);

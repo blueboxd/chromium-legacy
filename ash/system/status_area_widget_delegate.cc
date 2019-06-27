@@ -147,7 +147,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     layout->StartRow(0, 0);
     for (auto* child : children()) {
       if (child->GetVisible())
-        layout->AddView(child);
+        layout->AddExistingView(child);
     }
   } else {
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
@@ -157,7 +157,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
       if (!child->GetVisible())
         continue;
       layout->StartRow(0, 0);
-      layout->AddView(child);
+      layout->AddExistingView(child);
     }
   }
 

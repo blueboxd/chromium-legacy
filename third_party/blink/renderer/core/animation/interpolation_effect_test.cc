@@ -13,8 +13,6 @@ namespace blink {
 
 namespace {
 
-const double kInterpolationTestDuration = 1.0;
-
 double GetInterpolableNumber(Interpolation* value) {
   TransitionInterpolation* interpolation = ToTransitionInterpolation(value);
   std::unique_ptr<TypedInterpolationValue> interpolated_value =
@@ -45,31 +43,25 @@ TEST(AnimationInterpolationEffectTest, SingleInterpolation) {
       CreateInterpolation(0, 10), scoped_refptr<TimingFunction>(), 0, 1, -1, 2);
 
   HeapVector<Member<Interpolation>> active_interpolations;
-  interpolation_effect->GetActiveInterpolations(-2, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(-2, active_interpolations);
   EXPECT_EQ(0ul, active_interpolations.size());
 
-  interpolation_effect->GetActiveInterpolations(
-      -0.5, kInterpolationTestDuration, active_interpolations);
+  interpolation_effect->GetActiveInterpolations(-0.5, active_interpolations);
   EXPECT_EQ(1ul, active_interpolations.size());
   EXPECT_EQ(-5, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolation_effect->GetActiveInterpolations(0.5, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(0.5, active_interpolations);
   EXPECT_EQ(1ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(5, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolation_effect->GetActiveInterpolations(1.5, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(1.5, active_interpolations);
   EXPECT_EQ(1ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(15, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolation_effect->GetActiveInterpolations(3, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(3, active_interpolations);
   EXPECT_EQ(0ul, active_interpolations.size());
 
-  interpolation_effect->GetActiveInterpolations(0, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(0, active_interpolations);
   EXPECT_EQ(1ul, active_interpolations.size());
 }
 
@@ -90,42 +82,29 @@ TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
   // ease(0.5) = 0.8024033877399112
 
   HeapVector<Member<Interpolation>> active_interpolations;
-  interpolation_effect->GetActiveInterpolations(
-      -0.5, kInterpolationTestDuration, active_interpolations);
+  interpolation_effect->GetActiveInterpolations(-0.5, active_interpolations);
   EXPECT_EQ(0ul, active_interpolations.size());
 
-  interpolation_effect->GetActiveInterpolations(0, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(0, active_interpolations);
   EXPECT_EQ(1ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(0, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolation_effect->GetActiveInterpolations(0.5, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(0.5, active_interpolations);
   EXPECT_EQ(2ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(0.5f, GetInterpolableNumber(active_interpolations.at(0)));
   EXPECT_FLOAT_EQ(1, GetInterpolableNumber(active_interpolations.at(1)));
 
-  interpolation_effect->GetActiveInterpolations(1, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(1, active_interpolations);
   EXPECT_EQ(2ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(10, GetInterpolableNumber(active_interpolations.at(0)));
   EXPECT_FLOAT_EQ(5.0120169f,
                   GetInterpolableNumber(active_interpolations.at(1)));
 
-  interpolation_effect->GetActiveInterpolations(
-      1, kInterpolationTestDuration * 1000, active_interpolations);
-  EXPECT_EQ(2ul, active_interpolations.size());
-  EXPECT_FLOAT_EQ(10, GetInterpolableNumber(active_interpolations.at(0)));
-  EXPECT_FLOAT_EQ(5.0120169f,
-                  GetInterpolableNumber(active_interpolations.at(1)));
-
-  interpolation_effect->GetActiveInterpolations(1.5, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(1.5, active_interpolations);
   EXPECT_EQ(1ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(12.5f, GetInterpolableNumber(active_interpolations.at(0)));
 
-  interpolation_effect->GetActiveInterpolations(2, kInterpolationTestDuration,
-                                                active_interpolations);
+  interpolation_effect->GetActiveInterpolations(2, active_interpolations);
   EXPECT_EQ(1ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(15, GetInterpolableNumber(active_interpolations.at(0)));
 }

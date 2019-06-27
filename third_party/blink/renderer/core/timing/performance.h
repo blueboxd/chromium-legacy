@@ -175,9 +175,18 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   bool IsElementTimingBufferFull() const;
   void AddElementTimingBuffer(PerformanceElementTiming&);
+  unsigned ElementTimingBufferSize() const;
+  void clearElementTimings();
+  void setElementTimingBufferMaxSize(unsigned);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(elementtimingbufferfull,
+                                  kElementtimingbufferfull)
 
   bool IsEventTimingBufferFull() const;
   void AddEventTimingBuffer(PerformanceEventTiming&);
+  unsigned EventTimingBufferSize() const;
+  void clearEventTimings();
+  void setEventTimingBufferMaxSize(unsigned);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull, kEventtimingbufferfull)
 
   void AddLayoutJankBuffer(LayoutShift&);
 

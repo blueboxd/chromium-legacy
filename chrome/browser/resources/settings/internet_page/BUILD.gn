@@ -96,7 +96,6 @@ js_library("internet_subpage") {
     ":internet_page_browser_proxy",
     "..:route",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",

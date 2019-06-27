@@ -5965,6 +5965,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Has slow paths with non-AA paint"/>
 </enum>
 
+<enum name="BooleanHasStrongValidators">
+  <int value="0" label="Lacks strong validators"/>
+  <int value="1" label="Has strong validators"/>
+</enum>
+
 <enum name="BooleanHasWithheldHosts">
   <int value="0" label="Does not have withheld hosts"/>
   <int value="1" label="Has withheld hosts"/>
@@ -19825,6 +19830,7 @@ Called by update_net_error_codes.py.-->
   <int value="1348" label="LOGIN_ISRUNNINGINLOGINPROFILE"/>
   <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
   <int value="1350" label="ACTION_SETICON"/>
+  <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -32901,6 +32907,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LibraryLoadFromApkStatus">
+  <obsolete>
+    Deprecated as of 06/2019.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Not supported">obsolete</int>
   <int value="2" label="Supported">obsolete</int>

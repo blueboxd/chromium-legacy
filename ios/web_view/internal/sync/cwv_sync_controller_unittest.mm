@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -42,12 +43,24 @@ using testing::_;
 using testing::Invoke;
 using testing::Return;
 
+const char kTestGaiaId[] = "1337";
+const char kTestEmail[] = "johndoe@chromium.org";
+const char kTestFullName[] = "John Doe";
+const char kTestPassphrase[] = "dummy-passphrase";
+const char kTestScope1[] = "scope1.chromium.org";
+const char kTestScope2[] = "scope2.chromium.org";
+
 }  // namespace
 
 class CWVSyncControllerTest : public TestWithLocaleAndResources {
  protected:
   CWVSyncControllerTest()
       : browser_state_(/*off_the_record=*/false),
+        identity_test_env_(nullptr,
+                           nullptr,
+                           signin::AccountConsistencyMethod::kDisabled,
+                           nullptr,
+                           CreateExtraParams()),
         signin_error_controller_(
             SigninErrorController::AccountMode::ANY_ACCOUNT,
             identity_test_env_.identity_manager()) {
@@ -72,6 +85,15 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
     sync_service_observer_ = observer;
   }
 
+  static identity::IdentityTestEnvironment::ExtraParams CreateExtraParams() {
+    auto provider =
+        std::make_unique<FakeProfileOAuth2TokenServiceIOSProvider>();
+    provider->AddAccount(kTestGaiaId, kTestEmail);
+    identity::IdentityTestEnvironment::ExtraParams extra_params;
+    extra_params.token_service_provider = std::move(provider);
+    return extra_params;
+  }
+
   web::TestWebThreadBundle web_thread_bundle_;
   ios_web_view::WebViewBrowserState browser_state_;
   web::TestWebState web_state_;
@@ -93,19 +115,17 @@ TEST_F(CWVSyncControllerTest, DataSourceCallbacks) {
     [[data_source expect]
                  syncController:sync_controller_
         getAccessTokenForScopes:[OCMArg checkWithBlock:^BOOL(NSArray* scopes) {
-          return [scopes containsObject:@"scope1.chromium.org"] &&
-                 [scopes containsObject:@"scope2.chromium.org"];
+          return [scopes containsObject:@(kTestScope1)] &&
+                 [scopes containsObject:@(kTestScope2)];
         }]
               completionHandler:[OCMArg any]];
 
-    CWVIdentity* identity =
-        [[CWVIdentity alloc] initWithEmail:@"johndoe@chromium.org"
-                                  fullName:@"John Doe"
-                                    gaiaID:@"1337"];
+    CWVIdentity* identity = [[CWVIdentity alloc] initWithEmail:@(kTestEmail)
+                                                      fullName:@(kTestFullName)
+                                                        gaiaID:@(kTestGaiaId)];
     [sync_controller_ startSyncWithIdentity:identity dataSource:data_source];
 
-    std::set<std::string> scopes = {"scope1.chromium.org",
-                                    "scope2.chromium.org"};
+    std::set<std::string> scopes = {kTestScope1, kTestScope2};
     ProfileOAuth2TokenServiceIOSProvider::AccessTokenCallback callback;
     [sync_controller_ fetchAccessTokenForScopes:scopes callback:callback];
 
@@ -131,17 +151,19 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
           return error.code == CWVSyncErrorInvalidGAIACredentials;
         }]];
 
+    id data_source = OCMProtocolMock(@protocol(CWVSyncControllerDataSource));
+
+    CWVIdentity* identity = [[CWVIdentity alloc] initWithEmail:@(kTestEmail)
+                                                      fullName:@(kTestFullName)
+                                                        gaiaID:@(kTestGaiaId)];
+    [sync_controller_ startSyncWithIdentity:identity dataSource:data_source];
+
     // Create authentication error.
     GoogleServiceAuthError auth_error(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-    std::string account_id =
-        identity_test_env_.MakePrimaryAccountAvailable("email@example.com")
-            .account_id;
-    // TODO(crbug.com/930094): Eliminate this.
-    identity_test_env_.identity_manager()->LegacyAddAccountFromSystem(
-        account_id);
     identity_test_env_.UpdatePersistentErrorOfRefreshTokenForAccount(
-        account_id, auth_error);
+        identity_test_env_.identity_manager()->GetPrimaryAccountId(),
+        auth_error);
 
     [[delegate expect] syncController:sync_controller_
                 didStopSyncWithReason:CWVStopSyncReasonServer];
@@ -154,10 +176,9 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
 
 // Verifies CWVSyncController properly maintains the current syncing user.
 TEST_F(CWVSyncControllerTest, CurrentIdentity) {
-  CWVIdentity* identity =
-      [[CWVIdentity alloc] initWithEmail:@"johndoe@chromium.org"
-                                fullName:@"John Doe"
-                                  gaiaID:@"1337"];
+  CWVIdentity* identity = [[CWVIdentity alloc] initWithEmail:@(kTestEmail)
+                                                    fullName:@(kTestFullName)
+                                                      gaiaID:@(kTestGaiaId)];
   id unused_mock = OCMProtocolMock(@protocol(CWVSyncControllerDataSource));
   [sync_controller_ startSyncWithIdentity:identity dataSource:unused_mock];
   CWVIdentity* currentIdentity = sync_controller_.currentIdentity;
@@ -177,9 +198,9 @@ TEST_F(CWVSyncControllerTest, Passphrase) {
       .WillOnce(Return(true));
   EXPECT_TRUE(sync_controller_.passphraseNeeded);
   EXPECT_CALL(*profile_sync_service_->GetMockUserSettings(),
-              SetDecryptionPassphrase("dummy-passphrase"))
+              SetDecryptionPassphrase(kTestPassphrase))
       .WillOnce(Return(true));
-  EXPECT_TRUE([sync_controller_ unlockWithPassphrase:@"dummy-passphrase"]);
+  EXPECT_TRUE([sync_controller_ unlockWithPassphrase:@(kTestPassphrase)]);
 }
 
 }  // namespace ios_web_view

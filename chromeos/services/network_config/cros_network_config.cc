@@ -16,6 +16,7 @@
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/onc/onc_constants.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -24,7 +25,7 @@ namespace network_config {
 
 namespace {
 
-std::string ShillToONC(const std::string& shill_string,
+std::string ShillToOnc(const std::string& shill_string,
                        const onc::StringTranslationEntry table[]) {
   std::string onc_string;
   if (!shill_string.empty())
@@ -122,6 +123,26 @@ mojom::DeviceStateType GetMojoDeviceStateType(
   return mojom::DeviceStateType::kUnavailable;
 }
 
+mojom::OncSource GetMojoOncSource(const NetworkState* network) {
+  ::onc::ONCSource source = network->onc_source();
+  switch (source) {
+    case ::onc::ONC_SOURCE_UNKNOWN:
+    case ::onc::ONC_SOURCE_NONE:
+      if (!network->IsInProfile())
+        return mojom::OncSource::kNone;
+      return network->IsPrivate() ? mojom::OncSource::kUser
+                                  : mojom::OncSource::kDevice;
+    case ::onc::ONC_SOURCE_USER_IMPORT:
+      return mojom::OncSource::kUser;
+    case ::onc::ONC_SOURCE_DEVICE_POLICY:
+      return mojom::OncSource::kDevicePolicy;
+    case ::onc::ONC_SOURCE_USER_POLICY:
+      return mojom::OncSource::kUserPolicy;
+  }
+  NOTREACHED();
+  return mojom::OncSource::kNone;
+}
+
 mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
                                                     bool technology_enabled) {
   mojom::NetworkType type = ShillTypeToMojo(network->type());
@@ -146,7 +167,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
   result->name = network->name();
   result->priority = network->priority();
   result->prohibited_by_policy = network->blocked_by_policy();
-  result->source = mojom::ONCSource(network->onc_source());
+  result->source = GetMojoOncSource(network);
 
   // NetworkHandler and UIProxyConfigService may not exist in tests.
   UIProxyConfigService* ui_proxy_config_service =
@@ -172,7 +193,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
     case mojom::NetworkType::kCellular: {
       auto cellular = mojom::CellularStateProperties::New();
       cellular->activation_state = network->GetMojoActivationState();
-      cellular->network_technology = ShillToONC(network->network_technology(),
+      cellular->network_technology = ShillToOnc(network->network_technology(),
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
       cellular->signal_strength = network->signal_strength();

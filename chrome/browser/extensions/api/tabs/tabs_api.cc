@@ -219,15 +219,9 @@ void AssignOptionalValue(const std::unique_ptr<T>& source,
     *destination = std::make_unique<T>(*source);
 }
 
-void ReportRequestedWindowState(windows::WindowState state) {
-  UMA_HISTOGRAM_ENUMERATION("TabsApi.RequestedWindowState", state,
-                            windows::WINDOW_STATE_LAST + 1);
-}
-
 ui::WindowShowState ConvertToWindowShowState(windows::WindowState state) {
   switch (state) {
     case windows::WINDOW_STATE_NORMAL:
-    case windows::WINDOW_STATE_DOCKED:
       return ui::SHOW_STATE_NORMAL;
     case windows::WINDOW_STATE_MINIMIZED:
       return ui::SHOW_STATE_MINIMIZED;
@@ -261,7 +255,6 @@ bool IsValidStateForWindowsCreateFunction(
       // If maximised/fullscreen, default focused state should be focused.
       return !(create_data->focused && !*create_data->focused) && !has_bound;
     case windows::WINDOW_STATE_NORMAL:
-    case windows::WINDOW_STATE_DOCKED:
     case windows::WINDOW_STATE_NONE:
       return true;
   }
@@ -522,10 +515,6 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   std::string extension_id;
 
   if (create_data) {
-    // Report UMA stats to decide when to remove the deprecated "docked" windows
-    // state (crbug.com/703733).
-    ReportRequestedWindowState(create_data->state);
-
     // Figure out window type before figuring out bounds so that default
     // bounds can be set according to the window type.
     switch (create_data->type) {
@@ -671,10 +660,6 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
           &browser, &error)) {
     return RespondNow(Error(error));
   }
-
-  // Report UMA stats to decide when to remove the deprecated "docked" windows
-  // state (crbug.com/703733).
-  ReportRequestedWindowState(params->update_info.state);
 
   // Don't allow locked fullscreen operations on a window without the proper
   // permission (also don't allow any operations on a locked window if the

@@ -37,14 +37,24 @@ id<GREYMatcher> HttpAuthDialog() {
 
 // Returns matcher for Username text field.
 id<GREYMatcher> UsernameField() {
-  return chrome_test_util::StaticTextWithAccessibilityLabelId(
-      IDS_IOS_HTTP_LOGIN_DIALOG_USERNAME_PLACEHOLDER);
+  if (@available(iOS 13.0, *)) {
+    return grey_accessibilityValue(l10n_util::GetNSStringWithFixup(
+        IDS_IOS_HTTP_LOGIN_DIALOG_USERNAME_PLACEHOLDER));
+  } else {
+    return chrome_test_util::StaticTextWithAccessibilityLabelId(
+        IDS_IOS_HTTP_LOGIN_DIALOG_USERNAME_PLACEHOLDER);
+  }
 }
 
 // Returns matcher for Password text field.
 id<GREYMatcher> PasswordField() {
-  return chrome_test_util::StaticTextWithAccessibilityLabelId(
-      IDS_IOS_HTTP_LOGIN_DIALOG_PASSWORD_PLACEHOLDER);
+  if (@available(iOS 13.0, *)) {
+    return grey_accessibilityValue(l10n_util::GetNSStringWithFixup(
+        IDS_IOS_HTTP_LOGIN_DIALOG_PASSWORD_PLACEHOLDER));
+  } else {
+    return chrome_test_util::StaticTextWithAccessibilityLabelId(
+        IDS_IOS_HTTP_LOGIN_DIALOG_PASSWORD_PLACEHOLDER);
+  }
 }
 
 // Returns matcher for Login button.

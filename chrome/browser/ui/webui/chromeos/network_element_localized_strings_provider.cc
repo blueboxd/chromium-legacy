@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -16,6 +18,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace network_element {
@@ -276,11 +279,17 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkConfigSaveCredentials",
        IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS},
       {"networkConfigShare", IDS_SETTINGS_INTERNET_CONFIG_SHARE},
+      {"networkAutoConnect", IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT},
+      {"hiddenNetworkWarning", IDS_SETTINGS_HIDDEN_NETWORK_WARNING},
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+  html_source->AddBoolean(
+      "showHiddenNetworkWarning",
+      base::FeatureList::IsEnabled(features::kHiddenNetworkWarning));
 
   // Login screen and public account users can only create shared network
   // configurations. Other users default to unshared network configurations.

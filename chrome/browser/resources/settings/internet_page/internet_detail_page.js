@@ -81,7 +81,7 @@ Polymer({
 
     /**
      * Highest priority connected network or null.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {?OncMojo.NetworkStateProperties}
      */
     defaultNetwork: {
       type: Object,
@@ -203,9 +203,20 @@ Polymer({
   /** @private  {settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   */
+  networkConfigProxy_: null,
+
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
   },
 
   /**
@@ -442,8 +453,9 @@ Polymer({
   getNetworkDetails_: function() {
     assert(this.guid);
     if (this.isSecondaryUser_) {
-      this.networkingPrivate.getState(
-          this.guid, this.getStateCallback_.bind(this));
+      this.networkConfigProxy_.getNetworkState(this.guid).then(response => {
+        this.getStateCallback_(response.result);
+      });
     } else {
       this.networkingPrivate.getManagedProperties(
           this.guid, this.getPropertiesCallback_.bind(this));
@@ -492,24 +504,36 @@ Polymer({
   },
 
   /**
-   * networkingPrivate.getState callback.
-   * @param {CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {?OncMojo.NetworkStateProperties} networkState
    * @private
    */
-  getStateCallback_: function(state) {
-    if (!state) {
+  getStateCallback_: function(networkState) {
+    if (!networkState) {
       // Edge case, may occur when disabling. Close this.
       this.close();
       return;
     }
+    const type = /** @type {CrOnc.Type} */ (
+        OncMojo.getNetworkTypeString(networkState.type));
+    const connectionState = /** @type {CrOnc.ConnectionState} */ (
+        OncMojo.getConnectionStateTypeString(networkState.connectionState));
     this.networkProperties_ = {
-      GUID: state.GUID,
-      Type: state.Type,
-      Connectable: state.Connectable,
-      ConnectionState: state.ConnectionState,
+      GUID: networkState.guid,
+      Type: type,
+      Connectable: networkState.connectable,
+      ConnectionState: connectionState,
     };
     this.networkPropertiesReceived_ = true;
     this.outOfRange_ = false;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} properties
+   * @return {!OncMojo.NetworkStateProperties|undefined}
+   */
+  getNetworkState_: function(properties) {
+    return properties ? OncMojo.oncPropertiesToNetworkState(properties) :
+                        undefined;
   },
 
   /**
@@ -850,7 +874,7 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {?CrOnc.NetworkStateProperties} defaultNetwork
+   * @param {?OncMojo.NetworkStateProperties} defaultNetwork
    * @param {boolean} networkPropertiesReceived
    * @param {boolean} outOfRange
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
@@ -940,20 +964,33 @@ Polymer({
 
   /** @private */
   onConnectTap_: function() {
-    if (CrOnc.shouldShowTetherDialogBeforeConnection(this.networkProperties_)) {
+    // For Tether networks that have not connected to a host, show a dialog.
+    if (this.networkProperties_.Type == CrOnc.Type.TETHER &&
+        (!this.networkProperties_.Tether ||
+         !this.networkProperties_.Tether.HasConnectedToHost)) {
       this.showTetherDialog_();
       return;
     }
-    this.fire('network-connect', {networkProperties: this.networkProperties_});
+    this.fireNetworkConnect_(/*bypassDialog=*/ false);
   },
 
   /** @private */
   onTetherConnect_: function() {
     this.getTetherDialog_().close();
-    this.fire('network-connect', {
-      networkProperties: this.networkProperties_,
-      bypassConnectionDialog: true
-    });
+    this.fireNetworkConnect_(/*bypassDialog=*/ true);
+  },
+
+  /**
+   * @param {boolean} bypassDialog
+   * @private
+   */
+  fireNetworkConnect_: function(bypassDialog) {
+    assert(this.networkProperties_);
+    const networkState =
+        OncMojo.oncPropertiesToNetworkState(this.networkProperties_);
+    this.fire(
+        'network-connect',
+        {networkState: networkState, bypassConnectionDialog: bypassDialog});
   },
 
   /** @private */
@@ -982,7 +1019,11 @@ Polymer({
       return;
     }
 
-    this.fire('show-config', this.networkProperties_);
+    this.fire('show-config', {
+      guid: this.networkProperties_.GUID,
+      type: this.networkProperties_.Type,
+      name: CrOnc.getNetworkName(this.networkProperties_)
+    });
   },
 
   /** @private */
@@ -997,6 +1038,17 @@ Polymer({
   /** @private */
   showTetherDialog_: function() {
     this.getTetherDialog_().open();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showHiddenNetworkWarning_: function() {
+    return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
+        !!this.autoConnect_ && !!this.autoConnect_.value &&
+        !!this.networkProperties_ && !!this.networkProperties_.WiFi &&
+        !!CrOnc.getActiveValue(this.networkProperties_.WiFi.HiddenSSID);
   },
 
   /**

@@ -17,6 +17,7 @@
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_request_utils.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/system_connector.h"
 
 #if defined(OS_ANDROID)
@@ -50,20 +51,55 @@ void GetDownloadManagerOnProfileCreation(Profile* profile) {
   DCHECK(manager);
 }
 
-void CreateInProgressDownloadManager(SimpleFactoryKey* key) {
+}  // namespace
+
+// static
+download::InProgressDownloadManager*
+DownloadManagerUtils::RetrieveInProgressDownloadManager(Profile* profile) {
+  SimpleFactoryKey* key = profile->GetProfileKey();
+  GetInProgressDownloadManager(key);
+  auto& map = GetInProgressManagerMap();
+  return map[key].release();
+}
+
+// static
+void DownloadManagerUtils::InitializeSimpleDownloadManager(
+    SimpleFactoryKey* key) {
+#if defined(OS_ANDROID)
+  if (!g_browser_process) {
+    GetInProgressDownloadManager(key);
+    return;
+  }
+#endif
+  if (base::FeatureList::IsEnabled(
+          download::features::
+              kUseInProgressDownloadManagerForDownloadService)) {
+    GetInProgressDownloadManager(key);
+  } else {
+    FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
+        key, base::BindOnce(&GetDownloadManagerOnProfileCreation));
+  }
+}
+
+// static
+download::InProgressDownloadManager*
+DownloadManagerUtils::GetInProgressDownloadManager(SimpleFactoryKey* key) {
   auto& map = GetInProgressManagerMap();
   auto it = map.find(key);
   // Create the InProgressDownloadManager if it hasn't been created yet.
   if (it == map.end()) {
+    service_manager::Connector* connector = content::GetSystemConnector();
     auto in_progress_manager =
         std::make_unique<download::InProgressDownloadManager>(
             nullptr, key->IsOffTheRecord() ? base::FilePath() : key->GetPath(),
             base::BindRepeating(&IgnoreOriginSecurityCheck),
             base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
-            content::GetSystemConnector());
+            connector);
+    content::GetNetworkServiceFromConnector(connector);
     download::SimpleDownloadManagerCoordinator* coordinator =
         SimpleDownloadManagerCoordinatorFactory::GetForKey(key);
-    coordinator->SetSimpleDownloadManager(in_progress_manager.get(), false);
+    coordinator->SetSimpleDownloadManager(in_progress_manager.get(),
+                                          key->IsOffTheRecord());
     scoped_refptr<network::SharedURLLoaderFactory> factory =
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
     in_progress_manager->set_url_loader_factory_getter(
@@ -71,41 +107,5 @@ void CreateInProgressDownloadManager(SimpleFactoryKey* key) {
             factory->Clone()));
     map[key] = std::move(in_progress_manager);
   }
-}
-
-}  // namespace
-
-download::InProgressDownloadManager*
-DownloadManagerUtils::RetrieveInProgressDownloadManager(Profile* profile) {
-  // TODO(qinmin): use the profile to retrieve SimpleFactoryKey and
-  // create SimpleDownloadManagerCoordinator.
-#if defined(OS_ANDROID)
-  download::InProgressDownloadManager* manager =
-      DownloadManagerService::GetInstance()->RetriveInProgressDownloadManager(
-          profile);
-  if (manager)
-    return manager;
-#endif
-  SimpleFactoryKey* key = profile->GetProfileKey();
-  CreateInProgressDownloadManager(key);
-  auto& map = GetInProgressManagerMap();
-  return map[key].release();
-}
-
-void DownloadManagerUtils::InitializeSimpleDownloadManager(
-    SimpleFactoryKey* key) {
-#if defined(OS_ANDROID)
-  if (!g_browser_process) {
-    DownloadManagerService::GetInstance()->CreateInProgressDownloadManager();
-    return;
-  }
-#endif
-  if (base::FeatureList::IsEnabled(
-          download::features::
-              kUseInProgressDownloadManagerForDownloadService)) {
-    CreateInProgressDownloadManager(key);
-  } else {
-    FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
-        key, base::BindOnce(&GetDownloadManagerOnProfileCreation));
-  }
+  return map[key].get();
 }

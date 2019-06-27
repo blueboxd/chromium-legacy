@@ -99,6 +99,7 @@ jumbo_source_set("common") {
   if (is_android || is_win) {
     sources += [
       "font_unique_name_lookup/font_table_matcher.cc",
+      "font_unique_name_lookup/font_table_persistence.cc",
       "font_unique_name_lookup/icu_fold_case_util.cc",
     ]
 

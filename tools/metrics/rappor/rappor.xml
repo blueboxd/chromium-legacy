@@ -1189,6 +1189,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="Extensions.CrossOriginFetchFromContentScript"
     type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    Logging code was removed in June 2019 / in M77.
+  </obsolete>
   <owner>lukasza@chromium.org</owner>
   <summary>
     The ID of an extension which triggers a cross-origin request from its
@@ -1199,8 +1202,6 @@ components/rappor/rappor_parameters.h.
     Note that gathering of this data is not reimplemented in the NetworkService
     version of Cross-Origin Read Blocking feature. This should be okay since we
     hope to gather enough data before NetworkService ships.
-
-    TODO(lukasza): Around Q4 2018: Remove code after we've gathered enough data.
 
     DEPRECATED: This metric incorrectly covers more than just requests from
     content scripts - for example it also covers requests from GuestViews
@@ -1212,6 +1213,16 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="Extensions.CrossOriginFetchFromContentScript2"
     type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    Logging code was removed in June 2019 / in M77.
+
+    The Rappor data may be found in a Google-internal documents at:
+    https://docs.google.com/document/d/1ReuTBgn6HDIO0QKsjzBZz2Bz9F9_sEW4X-rz6IogURo
+
+    The allowlist built based on the Rappor data may be found in a
+    Google-internal table at:
+    https://docs.google.com/spreadsheets/d/1EfOYXomD3uNa_WSjVijuHIhmadrXFjxY-Hurd_TUEic
+  </obsolete>
   <owner>lukasza@chromium.org</owner>
   <summary>
     The ID of an extension which triggers a cross-origin request from its
@@ -1222,8 +1233,6 @@ components/rappor/rappor_parameters.h.
     Note that gathering of this data is not reimplemented in the NetworkService
     version of Cross-Origin Read Blocking feature. This should be okay since we
     hope to gather enough data before NetworkService ships.
-
-    TODO(lukasza): Around Q4 2018: Remove code after we've gathered enough data.
   </summary>
 </rappor-metric>
 

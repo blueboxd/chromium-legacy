@@ -50,18 +50,14 @@ class PLATFORM_EXPORT TimingFunction
 
   // Evaluates the timing function at the given fraction. The limit direction
   // applies when evaluating a function at a discontinuous boundary and
-  // indicates if the left or right limit should be applied. The accuracy
-  // parameter provides a hint as to the required accuracy and is not
-  // guaranteed.
+  // indicates if the left or right limit should be applied.
   virtual double Evaluate(double fraction,
-                          LimitDirection limit_direction,
-                          double accuracy) const {
-    return Evaluate(fraction, accuracy);
+                          LimitDirection limit_direction) const {
+    return Evaluate(fraction);
   }
 
-  // Evaluates the timing function at the given fraction. The accuracy parameter
-  // provides a hint as to the required accuracy and is not guaranteed.
-  virtual double Evaluate(double fraction, double accuracy) const = 0;
+  // Evaluates the timing function at the given fraction.
+  virtual double Evaluate(double fraction) const = 0;
 
   // This function returns the minimum and maximum values obtainable when
   // calling evaluate();
@@ -89,7 +85,7 @@ class PLATFORM_EXPORT LinearTimingFunction final : public TimingFunction {
 
   // TimingFunction implementation.
   String ToString() const override;
-  double Evaluate(double fraction, double) const override;
+  double Evaluate(double fraction) const override;
   void Range(double* min_value, double* max_value) const override;
   std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
 
@@ -114,7 +110,7 @@ class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
 
   // TimingFunction implementation.
   String ToString() const override;
-  double Evaluate(double fraction, double accuracy) const override;
+  double Evaluate(double fraction) const override;
   void Range(double* min_value, double* max_value) const override;
   std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
 
@@ -191,9 +187,8 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
   // TimingFunction implementation.
   String ToString() const override;
   double Evaluate(double fraction,
-                  LimitDirection limit_direction,
-                  double) const override;
-  double Evaluate(double fraction, double) const override;
+                  LimitDirection limit_direction) const override;
+  double Evaluate(double fraction) const override;
 
   void Range(double* min_value, double* max_value) const override;
   std::unique_ptr<cc::TimingFunction> CloneToCC() const override;

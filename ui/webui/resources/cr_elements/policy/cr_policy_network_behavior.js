@@ -108,6 +108,17 @@ const CrPolicyNetworkBehavior = {
   },
 
   /**
+   * @param {chromeos.networkConfig.mojom.OncSource} source
+   * @return {boolean}
+   * @protected
+   */
+  isPolicySourceMojo: function(source) {
+    return !!source &&
+        (source == chromeos.networkConfig.mojom.OncSource.kDevicePolicy ||
+         source == chromeos.networkConfig.mojom.OncSource.kUserPolicy);
+  },
+
+  /**
    * @param {string} source
    * @return {!CrPolicyIndicatorType}
    * @private
@@ -117,6 +128,21 @@ const CrPolicyNetworkBehavior = {
       return CrPolicyIndicatorType.DEVICE_POLICY;
     }
     if (source == CrOnc.Source.USER_POLICY) {
+      return CrPolicyIndicatorType.USER_POLICY;
+    }
+    return CrPolicyIndicatorType.NONE;
+  },
+
+  /**
+   * @param {chromeos.networkConfig.mojom.OncSource} source
+   * @return {!CrPolicyIndicatorType}
+   * @private
+   */
+  getIndicatorTypeForSourceMojo: function(source) {
+    if (source == chromeos.networkConfig.mojom.OncSource.kDevicePolicy) {
+      return CrPolicyIndicatorType.DEVICE_POLICY;
+    }
+    if (source == chromeos.networkConfig.mojom.OncSource.kUserPolicy) {
       return CrPolicyIndicatorType.USER_POLICY;
     }
     return CrPolicyIndicatorType.NONE;

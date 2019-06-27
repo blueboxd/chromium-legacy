@@ -93,11 +93,6 @@ class ChromeContentBrowserClientExtensionsPart
   static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context);
 
-  static void LogInitiatorSchemeBypassingDocumentBlocking(
-      const url::Origin& initiator_origin,
-      int render_process_id,
-      content::ResourceType resource_type);
-
   static network::mojom::URLLoaderFactoryPtrInfo
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,

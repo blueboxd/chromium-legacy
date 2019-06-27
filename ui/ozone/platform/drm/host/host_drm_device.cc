@@ -43,13 +43,13 @@ void HostDrmDevice::AsyncStartDrmDevice(const DrmDeviceConnector& connector) {
   connector.BindInterfaceDrmDevice(&drm_device_ptr_);
 
   // Bind the cursor interface pointers.
-  ui::ozone::mojom::DeviceCursorPtr cursor_ptr_ui, cursor_ptr_io;
-  connector.BindInterfaceDeviceCursor(&cursor_ptr_ui);
+  ui::ozone::mojom::DeviceCursorAssociatedPtr cursor_ptr_ui, cursor_ptr_io;
+  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_ui));
 
   // This interface pointer is bound on the wrong thread. But that's OK because
   // we'll re-bind it the first time that it's used from the I/O thread in
   // HostCursorProxy.
-  connector.BindInterfaceDeviceCursor(&cursor_ptr_io);
+  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_io));
 
   // Stash the cursor_proxy so that we can install it in the callback.
   cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
@@ -380,16 +380,17 @@ void HostDrmDevice::GpuSetHDCPStateCallback(int64_t display_id,
 
 // Invoked in response to the successful launching of the GPU service.
 void HostDrmDevice::OnGpuServiceLaunched(
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr,
-    ui::ozone::mojom::DeviceCursorPtr cursor_ptr_ui,
-    ui::ozone::mojom::DeviceCursorPtr cursor_ptr_io) {
+    ui::ozone::mojom::DrmDevicePtr drm_device_ptr) {
   DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
 
   // Rebind InterfacePtrs to the window server thread.
-  cursor_ptr_ui.Bind(cursor_ptr_ui.PassInterface());
-  drm_device_ptr.Bind(drm_device_ptr.PassInterface());
+  drm_device_ptr_.Bind(drm_device_ptr.PassInterface());
 
-  drm_device_ptr_ = std::move(drm_device_ptr);
+  // Create two DeviceCursor connections: one for the UI thread and one for the
+  // IO thread.
+  ui::ozone::mojom::DeviceCursorAssociatedPtr cursor_ptr_ui, cursor_ptr_io;
+  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_ui));
+  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_io));
 
   // The cursor is special since it will process input events on the IO thread
   // and can by-pass the UI thread. As a result, it has an InterfacePtr for both

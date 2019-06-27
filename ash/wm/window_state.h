@@ -412,13 +412,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // a scale animation, with duration specified by |duration|.
   void SetBoundsDirectAnimated(
       const gfx::Rect& bounds,
-      base::TimeDelta duration = kBoundsChangeSlideDuration);
+      base::TimeDelta duration = kBoundsChangeSlideDuration,
+      gfx::Tween::Type animation_type = gfx::Tween::LINEAR);
 
   // Sets the window's |bounds| and transition to the new bounds with
   // a cross fade animation.
-  void SetBoundsDirectCrossFade(
-      const gfx::Rect& bounds,
-      gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
+  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
 
   // Called before the state change and update PIP related state, such as next
   // window animation type, upon state change.

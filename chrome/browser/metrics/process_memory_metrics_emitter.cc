@@ -794,7 +794,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
       }
       if (native_library_resident_not_ordered_kb != metrics.kInvalid) {
         base::UmaHistogramCustomCounts(
-            "Memory.NativeLibrary.ResidentNotOrdereredCodeMemoryFootprint",
+            "Memory.NativeLibrary.ResidentNotOrderedCodeMemoryFootprint",
             native_library_resident_not_ordered_kb, 1000, 100000, 100);
       }
     }

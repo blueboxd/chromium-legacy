@@ -50,9 +50,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void ProvideManagers(DrmDisplayHostManager* display_manager,
                        DrmOverlayManagerHost* overlay_manager);
 
-  void OnGpuServiceLaunched(ui::ozone::mojom::DrmDevicePtr drm_device_ptr,
-                            ui::ozone::mojom::DeviceCursorPtr cursor_ptr_ui,
-                            ui::ozone::mojom::DeviceCursorPtr cursor_ptr_io);
+  void OnGpuServiceLaunched(ui::ozone::mojom::DrmDevicePtr drm_device_ptr);
 
   void OnGpuServiceLaunchedCompositor(
       ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor);

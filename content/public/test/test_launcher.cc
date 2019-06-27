@@ -357,9 +357,12 @@ void WrapperTestLauncherDelegate::DoRunTests(
 
   auto observer = std::make_unique<ChildProcessLifetimeObserver>(
       this, test_launcher, std::move(test_names_copy), test_name, output_file);
+
+  // Must use test_launcher_timeout() here because this process is allowed to
+  // assume that it can use an entire action_max_timeout() in its lifespan.
   test_launcher->LaunchChildGTestProcess(
       new_cmd_line, browser_wrapper ? browser_wrapper : std::string(),
-      TestTimeouts::action_max_timeout(), test_launch_options,
+      TestTimeouts::test_launcher_timeout(), test_launch_options,
       std::move(observer));
 }
 

@@ -70,7 +70,7 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
 
     private boolean installInternal(String moduleName) {
         Context context = ContextUtils.getApplicationContext();
-        int versionCode = BuildInfo.getInstance().versionCode;
+        long versionCode = BuildInfo.getInstance().versionCode;
 
         // Get list of all files at path where SplitCompat looks for downloaded modules.
         // May change in future releases of the Play Core SDK.
@@ -102,7 +102,7 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
             if (srcModuleFileName.endsWith(".apk") && srcModuleFileName.startsWith(moduleName)) {
                 // Construct destination file corresponding to each source file.
                 File dstModuleFile = joinPaths(context.getFilesDir().getPath(), "splitcompat",
-                        Integer.toString(versionCode), "unverified-splits", srcModuleFileName);
+                        Long.toString(versionCode), "unverified-splits", srcModuleFileName);
 
                 // NOTE: Need to give Chrome storage permission for this to work.
                 try {

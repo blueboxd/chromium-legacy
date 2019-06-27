@@ -64,10 +64,7 @@ def Asan(args):
           logging.info('disable-verity output:')
           for line in verity_output.splitlines():
             logging.info('  %s', line)
-        # Wait an unusually long time to ensure that the device has time
-        # to come back after disabling verity + get re-added to the container
-        # on swarming. Context: http://shortn/_Mg3YuiSftf
-        device.Reboot(timeout=600)
+        device.Reboot()
       # Call EnableRoot prior to asan_device_setup.sh to ensure it doesn't
       # get tripped up by the root timeout.
       device.EnableRoot()
@@ -91,10 +88,7 @@ def Asan(args):
           logging.info('enable-verity output:')
           for line in verity_output.splitlines():
             logging.info('  %s', line)
-        # Wait an unusually long time to ensure that the device has time
-        # to come back after disabling verity + get re-added to the container
-        # on swarming. Context: http://shortn/_Mg3YuiSftf
-        device.Reboot(timeout=600)
+        device.Reboot()
 
 
 def main(raw_args):

@@ -5,6 +5,7 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.content.pm.PackageInfo;
 import android.net.LinkProperties;
 import android.os.Build;
 
@@ -28,5 +29,10 @@ public final class ApiHelperForP {
     /** See {@link LinkProperties#getPrivateDnsServerName() }. */
     public static String getPrivateDnsServerName(LinkProperties linkProperties) {
         return linkProperties.getPrivateDnsServerName();
+    }
+
+    /** See {@link PackageInfo#getLongVersionCode() }. */
+    public static long getLongVersionCode(PackageInfo packageInfo) {
+        return packageInfo.getLongVersionCode();
     }
 }

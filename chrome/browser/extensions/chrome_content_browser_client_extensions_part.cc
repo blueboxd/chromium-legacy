@@ -36,7 +36,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
-#include "components/rappor/public/rappor_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
@@ -768,50 +767,6 @@ ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
 #else
   return nullptr;
 #endif
-}
-
-// static
-void ChromeContentBrowserClientExtensionsPart::
-    LogInitiatorSchemeBypassingDocumentBlocking(
-        const url::Origin& initiator_origin,
-        int render_process_id,
-        content::ResourceType resource_type) {
-  // Return early if the RenderProcessHost can't be found.  This can happen if
-  // the process goes away for some reason during the IO -> UI thread hop
-  // required for calling LogInitiatorSchemeBypassingDocumentBlocking.
-  content::RenderProcessHost* process_host =
-      content::RenderProcessHost::FromID(render_process_id);
-  if (!process_host)
-    return;
-  content::BrowserContext* browser_context = process_host->GetBrowserContext();
-
-  // Until there is Site Isolation in GuestViews, CORB cannot offer protection
-  // against compromised renderers.  Therefore, let's ignore GuestViews when
-  // gathering the list of extensions that issue CORB-eligible requests.
-  if (process_host->IsForGuestsOnly())
-    return;
-
-  // Assert that |initiator_origin| corresponds to an extension and extract the
-  // |extension_id|.
-  DCHECK_EQ(kExtensionScheme, initiator_origin.scheme());
-  const std::string& extension_id = initiator_origin.host();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
-  DCHECK(registry);
-  DCHECK(registry->enabled_extensions().GetByID(extension_id));
-
-  // Don't log anything if the request was initiated by an extension process
-  // (we're only interested in requests initiated by content scripts).
-  ProcessMap* process_map = ProcessMap::Get(browser_context);
-  if (process_map->Contains(extension_id, render_process_id))
-    return;
-
-  // Log that CORB would have blocked in a meaningful way a request that was
-  // initiated by a content script.
-  UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Allowed.ContentScript",
-                            resource_type);
-  rappor::SampleString(rappor::GetDefaultService(),
-                       "Extensions.CrossOriginFetchFromContentScript2",
-                       rappor::UMA_RAPPOR_TYPE, extension_id);
 }
 
 // static

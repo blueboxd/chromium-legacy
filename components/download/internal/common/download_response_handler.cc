@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
@@ -227,6 +228,11 @@ void DownloadResponseHandler::OnComplete(
   if (client_ptr_) {
     client_ptr_->OnStreamCompleted(
         ConvertInterruptReasonToMojoNetworkRequestStatus(reason));
+  }
+
+  if (reason == DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
+    base::UmaHistogramSparse("Download.MapErrorNetworkFailed.NetworkService",
+                             std::abs(status.error_code));
   }
 
   if (started_) {

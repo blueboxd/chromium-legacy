@@ -33,7 +33,7 @@ Polymer({
 
     /**
      * List of all network state data for the network type.
-     * @private {!Array<!CrOnc.NetworkStateProperties>}
+     * @private {!Array<!OncMojo.NetworkStateProperties>}
      */
     networkStateList_: {
       type: Array,
@@ -60,6 +60,21 @@ Polymer({
   /** @private {string} */
   selectedGuid_: '',
 
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   */
+  networkConfigProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
+  },
+
   /** CrosNetworkConfigObserver impl */
   onNetworkStateListChanged: function() {
     this.refreshNetworks_();
@@ -80,32 +95,32 @@ Polymer({
       return;
     }
     const filter = {
-      networkType: this.networkType,
-      visible: false,
-      configured: true
+      filter: chromeos.networkConfig.mojom.FilterType.kConfigured,
+      limit: chromeos.networkConfig.mojom.kNoLimit,
+      networkType: OncMojo.getNetworkTypeFromString(this.networkType),
     };
-    this.networkingPrivate.getNetworks(filter, states => {
-      this.networkStateList_ = states;
+    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+      this.networkStateList_ = response.result;
     });
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} state
+   * @param {!OncMojo.NetworkStateProperties} networkState
    * @return {boolean}
    * @private
    */
-  networkIsPreferred_: function(state) {
+  networkIsPreferred_: function(networkState) {
     // Currently we treat NetworkStateProperties.Priority as a boolean.
-    return state.Priority > 0;
+    return networkState.priority > 0;
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} networkState
+   * @param {!OncMojo.NetworkStateProperties} networkState
    * @return {boolean}
    * @private
    */
   networkIsNotPreferred_: function(networkState) {
-    return networkState.Priority == 0;
+    return networkState.priority == 0;
   },
 
   /**
@@ -127,14 +142,23 @@ Polymer({
   },
 
   /**
+   * @param {!OncMojo.NetworkStateProperties} networkState
+   * @return {string}
+   * @private
+   */
+  getNetworkDisplayName_: function(networkState) {
+    return OncMojo.getNetworkDisplayName(networkState);
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
   onMenuButtonTap_: function(event) {
     const button = event.target;
     const networkState =
-        /** @type {!CrOnc.NetworkStateProperties} */ (event.model.item);
-    this.selectedGuid_ = networkState.GUID;
+        /** @type {!OncMojo.NetworkStateProperties} */ (event.model.item);
+    this.selectedGuid_ = networkState.guid;
     // We need to make a round trip to Chrome in order to retrieve the managed
     // properties for the network. The delay is not noticeable (~5ms) and is
     // preferable to initiating a query for every known network at load time.
@@ -179,16 +203,15 @@ Polymer({
   },
 
   /**
-   * Fires a 'show-details' event with an item containing a |networkStateList_|
+   * Fires a 'show-detail' event with an item containing a |networkStateList_|
    * entry in the event model.
    * @param {!Event} event
    * @private
    */
   fireShowDetails_: function(event) {
-    const state =
-        /** @type {!{model: !{item: !CrOnc.NetworkStateProperties}}} */ (event)
-            .model.item;
-    this.fire('show-detail', state);
+    const networkState =
+        /** @type {!OncMojo.NetworkStateProperties} */ (event.model.item);
+    this.fire('show-detail', networkState);
     event.stopPropagation();
   },
 

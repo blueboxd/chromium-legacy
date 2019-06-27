@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
@@ -38,9 +39,9 @@ namespace ash {
 namespace {
 
 // This function is called to check if window[i] is eligible to be carried over
-// to split view mode during clamshell <-> tablet mode transition. Returns true
-// if windows[i] exists, can snap in split view, is not showing in overview, and
-// is not ARC window.
+// to split view mode during clamshell <-> tablet mode transition or multi-user
+// switch transition. Returns true if windows[i] exists, can snap in split view,
+// is not showing in overview, and is not ARC window.
 // TODO(xdai): Make it work for ARC windows. (see
 // https://crbug.com/922282 and
 // https://buganizer.corp.google.com/issues/123432223).
@@ -53,36 +54,111 @@ bool IsCarryOverCandidateForSplitView(
              aura::client::kAppType)) != AppType::ARC_APP;
 }
 
-// Iterates over |windows| and |positions| in parallel, up to the length of
-// |positions| (assumed not to exceed the length of |windows|), snapping the
-// windows in the positions.
-void DoSplitView(
-    const MruWindowTracker::WindowList& windows,
-    const std::vector<SplitViewController::SnapPosition>& positions) {
-  DCHECK_GE(windows.size(), positions.size());
-
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  for (size_t i = 0u; i < positions.size(); ++i)
-    split_view_controller->SnapWindow(windows[i], positions[i]);
-}
-
-// Returns the windows that are currently showing in splitscreen.
-base::flat_map<aura::Window*, WindowStateType> GetWindowsInSplitView() {
+// Returns the windows that are going to be carried over to splitview during
+// clamshell <-> tablet transition or multi user switch transition.
+// TODO(xdai): Return eligible windows regardless of window zorders.
+base::flat_map<aura::Window*, WindowStateType>
+GetCarryOverWindowsInSplitView() {
   base::flat_map<aura::Window*, WindowStateType> windows;
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  if (split_view_controller && split_view_controller->InSplitViewMode()) {
-    if (split_view_controller->left_window()) {
-      windows.emplace(split_view_controller->left_window(),
-                      WindowStateType::kLeftSnapped);
-    }
-    if (split_view_controller->right_window()) {
-      windows.emplace(split_view_controller->right_window(),
-                      WindowStateType::kRightSnapped);
+  // Check the topmost window and the second topmost's window state to see if
+  // they are eligible to be carried over to splitscreen. A window must meet
+  // IsCarryOverCandidateForSplitView() to be carried over to splitscreen.
+  MruWindowTracker::WindowList mru_windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
+  if (IsCarryOverCandidateForSplitView(mru_windows, 0u)) {
+    if (wm::GetWindowState(mru_windows[0])->GetStateType() ==
+        WindowStateType::kLeftSnapped) {
+      windows.emplace(mru_windows[0], WindowStateType::kLeftSnapped);
+      if (IsCarryOverCandidateForSplitView(mru_windows, 1u) &&
+          wm::GetWindowState(mru_windows[1])->GetStateType() ==
+              WindowStateType::kRightSnapped) {
+        windows.emplace(mru_windows[1], WindowStateType::kRightSnapped);
+      }
+    } else if (wm::GetWindowState(mru_windows[0])->GetStateType() ==
+               WindowStateType::kRightSnapped) {
+      windows.emplace(mru_windows[0], WindowStateType::kRightSnapped);
+      if (IsCarryOverCandidateForSplitView(mru_windows, 1u) &&
+          wm::GetWindowState(mru_windows[1])->GetStateType() ==
+              WindowStateType::kLeftSnapped) {
+        windows.emplace(mru_windows[1], WindowStateType::kLeftSnapped);
+      }
     }
   }
   return windows;
+}
+
+// Calculates the divider position of the splitscreen based on the snapped
+// window(s)'s positions. We'll try to keep the current snapped window(s)'
+// bounds as much as possible.
+int CalculateCarryOverDividerPostion(
+    base::flat_map<aura::Window*, WindowStateType> windows_in_splitview) {
+  aura::Window* left_window = nullptr;
+  aura::Window* right_window = nullptr;
+  for (auto& iter : windows_in_splitview) {
+    if (iter.second == WindowStateType::kLeftSnapped)
+      left_window = iter.first;
+    else if (iter.second == WindowStateType::kRightSnapped)
+      right_window = iter.first;
+  }
+  if (!left_window && !right_window)
+    return -1;
+
+  gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(left_window ? left_window : right_window)
+          .work_area();
+  gfx::Rect left_window_bounds =
+      left_window ? left_window->GetBoundsInScreen() : gfx::Rect();
+  gfx::Rect right_window_bounds =
+      right_window ? right_window->GetBoundsInScreen() : gfx::Rect();
+
+  switch (GetCurrentScreenOrientation()) {
+    case OrientationLockType::kLandscapePrimary:
+      return left_window ? left_window_bounds.width()
+                         : work_area.width() - right_window_bounds.width();
+    case OrientationLockType::kPortraitPrimary:
+      return left_window ? left_window_bounds.height()
+                         : work_area.height() - right_window_bounds.height();
+    case OrientationLockType::kLandscapeSecondary:
+      return left_window ? work_area.width() - left_window_bounds.width()
+                         : right_window_bounds.width();
+    case OrientationLockType::kPortraitSecondary:
+      return left_window ? work_area.height() - left_window_bounds.height()
+                         : right_window_bounds.height();
+    default:
+      return Shell::Get()->split_view_controller()->GetDefaultDividerPosition(
+          left_window ? left_window : right_window);
+  }
+}
+
+// Snap the carry over windows into splitview mode at |divider_position|.
+void DoSplitViewTransition(
+    base::flat_map<aura::Window*, WindowStateType> windows,
+    int divider_position) {
+  if (windows.empty())
+    return;
+
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  // If split view mode is already active, use its own divider position.
+  if (!split_view_controller->InSplitViewMode())
+    split_view_controller->InitDividerPositionForTransition(divider_position);
+
+  for (auto& iter : windows) {
+    split_view_controller->SnapWindow(
+        iter.first, iter.second == WindowStateType::kLeftSnapped
+                        ? SplitViewController::LEFT
+                        : SplitViewController::RIGHT);
+  }
+
+  // For clamshell split view mode, end splitview mode if we're in single
+  // split mode or both snapped mode (in both cases overview is not active).
+  // TODO(xdai): Refactoring SplitViewController to make SplitViewController to
+  // handle this case.
+  if (split_view_controller->InClamshellSplitViewMode() &&
+      !Shell::Get()->overview_controller()->InOverviewSession()) {
+    split_view_controller->EndSplitView();
+  }
 }
 
 }  // namespace
@@ -191,7 +267,7 @@ void TabletModeWindowManager::Shutdown() {
   // TODO(xdai): Instead of caching snapped windows and their state here, we
   // should try to see if it can be done in the WindowState::State impl.
   base::flat_map<aura::Window*, WindowStateType> windows_in_splitview =
-      GetWindowsInSplitView();
+      GetCarryOverWindowsInSplitView();
 
   // For case 2 and 3: End splitview mode for two snapped windows case or single
   // split case to match the clamshell split view behavior. (there is no both
@@ -259,6 +335,11 @@ void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
 void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
   for (auto& pair : window_state_map_)
     pair.second->set_ignore_wm_events(true);
+}
+
+void TabletModeWindowManager::StopWindowAnimations() {
+  for (auto& pair : window_state_map_)
+    pair.first->layer()->GetAnimator()->StopAnimating();
 }
 
 void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
@@ -431,9 +512,11 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   // then do the logic for carrying over snapped windows. Else recreate the
   // split view layout from the last time the current user session was active.
   if (accounts_since_entering_tablet_.count(account_id) == 0u) {
-    MruWindowTracker::WindowList windows =
-        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
-    DoSplitView(windows, GetSnapPositions(windows));
+    base::flat_map<aura::Window*, WindowStateType> windows_in_splitview =
+        GetCarryOverWindowsInSplitView();
+    int divider_position =
+        CalculateCarryOverDividerPostion(windows_in_splitview);
+    DoSplitViewTransition(windows_in_splitview, divider_position);
     accounts_since_entering_tablet_.insert(account_id);
   } else {
     // Search for snapped windows to detect if the now active user session was
@@ -493,40 +576,6 @@ WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
              : iter->second->old_state()->GetType();
 }
 
-std::vector<SplitViewController::SnapPosition>
-TabletModeWindowManager::GetSnapPositions(
-    const MruWindowTracker::WindowList& windows) const {
-  std::vector<SplitViewController::SnapPosition> result;
-  if (!IsCarryOverCandidateForSplitView(windows, 0u))
-    return result;
-  switch (GetDesktopWindowStateType(windows[0])) {
-    case WindowStateType::kLeftSnapped:
-      // windows[0] was snapped on the left in desktop mode. Snap windows[0] on
-      // the left in split view. If windows[1] was snapped on the right in
-      // desktop mode, then snap windows[1] on the right in split view.
-      result.push_back(SplitViewController::LEFT);
-      if (IsCarryOverCandidateForSplitView(windows, 1u) &&
-          GetDesktopWindowStateType(windows[1]) ==
-              WindowStateType::kRightSnapped) {
-        result.push_back(SplitViewController::RIGHT);
-      }
-      return result;
-    case WindowStateType::kRightSnapped:
-      // windows[0] was snapped on the right in desktop mode. Snap windows[0] on
-      // the right in split view. If windows[1] was snapped on the left in
-      // desktop mode, then snap windows[1] on the left in split view.
-      result.push_back(SplitViewController::RIGHT);
-      if (IsCarryOverCandidateForSplitView(windows, 1u) &&
-          GetDesktopWindowStateType(windows[1]) ==
-              WindowStateType::kLeftSnapped) {
-        result.push_back(SplitViewController::LEFT);
-      }
-      return result;
-    default:
-      return result;
-  }
-}
-
 void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   // |split_view_eligible_windows| is for determining split view layout.
   // |activatable_windows| includes all windows to be tracked, and that includes
@@ -537,12 +586,14 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   MruWindowTracker::WindowList activatable_windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(kAllDesks);
 
-  // Determine the desired split view layout.
-  const std::vector<SplitViewController::SnapPosition> snap_positions =
-      GetSnapPositions(split_view_eligible_windows);
+  // Determine which windows are to be carried over to splitview from clamshell
+  // mode to tablet mode.
+  base::flat_map<aura::Window*, WindowStateType> windows_in_splitview =
+      GetCarryOverWindowsInSplitView();
+  int divider_position = CalculateCarryOverDividerPostion(windows_in_splitview);
 
   // If split view is not appropriate, then maximize all windows and bail out.
-  if (snap_positions.empty()) {
+  if (windows_in_splitview.empty()) {
     for (auto* window : activatable_windows)
       TrackWindow(window, /*entering_tablet_mode=*/true);
     return;
@@ -552,8 +603,8 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   // Maximize all other windows. Do not animate any window bounds updates.
   for (auto* window : activatable_windows) {
     bool snap = false;
-    for (size_t i = 0u; i < snap_positions.size(); ++i) {
-      if (window == split_view_eligible_windows[i]) {
+    for (auto& iter : windows_in_splitview) {
+      if (window == iter.first) {
         snap = true;
         break;
       }
@@ -562,29 +613,25 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
                 /*animate_bounds_on_attach=*/false);
   }
 
-  // Enter split view mode.
-  DoSplitView(split_view_eligible_windows, snap_positions);
+  // Do split view mode transition.
+  DoSplitViewTransition(windows_in_splitview, divider_position);
 }
 
 void TabletModeWindowManager::ArrangeWindowsForClamshellMode(
     base::flat_map<aura::Window*, WindowStateType> windows_in_splitview) {
+  int divider_position = CalculateCarryOverDividerPostion(windows_in_splitview);
+
   while (window_state_map_.size()) {
     aura::Window* window = window_state_map_.begin()->first;
     ForgetWindow(window, /*destroyed=*/false);
+  }
 
+  if (IsClamshellSplitViewModeEnabled()) {
     // Arriving here the window state has changed to its clamshell window state.
     // Since we need to keep the windows that were in splitview still be snapped
     // in clamshell mode, change its window state to the corresponding snapped
     // window state.
-    if (windows_in_splitview.find(window) != windows_in_splitview.end() &&
-        IsClamshellSplitViewModeEnabled()) {
-      WindowStateType type = windows_in_splitview[window];
-      const wm::WMEvent event((type == WindowStateType::kLeftSnapped)
-                                  ? wm::WM_EVENT_SNAP_LEFT
-                                  : wm::WM_EVENT_SNAP_RIGHT);
-      wm::GetWindowState(window)->OnWMEvent(&event);
-      windows_in_splitview.erase(window);
-    }
+    DoSplitViewTransition(windows_in_splitview, divider_position);
   }
 }
 

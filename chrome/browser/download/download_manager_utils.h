@@ -24,6 +24,11 @@ class DownloadManagerUtils {
   // possible.
   static void InitializeSimpleDownloadManager(SimpleFactoryKey* key);
 
+  // Creates an InProgressDownloadManager for a particular |key| if it doesn't
+  // exist and return the pointer.
+  static download::InProgressDownloadManager* GetInProgressDownloadManager(
+      SimpleFactoryKey* key);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerUtils);
 };

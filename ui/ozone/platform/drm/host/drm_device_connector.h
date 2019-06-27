@@ -48,10 +48,6 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
   void BindInterfaceDrmDevice(
       ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const;
 
-  // BindInterface arranges for the cursor_ptr to be wired up.
-  void BindInterfaceDeviceCursor(
-      ui::ozone::mojom::DeviceCursorPtr* cursor_ptr) const;
-
   // BindableNow returns true if this DrmDeviceConnector is capable of binding a
   // mojo endpoint for the DrmDevice service.
   bool BindableNow() const { return !!connector_; }

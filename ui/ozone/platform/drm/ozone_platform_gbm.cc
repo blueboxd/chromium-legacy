@@ -110,24 +110,10 @@ class OzonePlatformGbm : public OzonePlatform {
     if (!using_mojo_)
       return;
 
-    registry->AddInterface<ozone::mojom::DeviceCursor>(
-        base::BindRepeating(&OzonePlatformGbm::CreateDeviceCursorBinding,
-                            weak_factory_.GetWeakPtr()),
-        base::ThreadTaskRunnerHandle::Get());
-
     registry->AddInterface<ozone::mojom::DrmDevice>(
         base::BindRepeating(&OzonePlatformGbm::CreateDrmDeviceBinding,
                             weak_factory_.GetWeakPtr()),
         base::ThreadTaskRunnerHandle::Get());
-  }
-
-  // Runs on the thread where AddInterfaces was invoked. But the endpoint is
-  // always bound on the DRM thread.
-  void CreateDeviceCursorBinding(ozone::mojom::DeviceCursorRequest request) {
-    if (drm_thread_started_)
-      drm_thread_proxy_->AddBindingCursorDevice(std::move(request));
-    else
-      pending_cursor_requests_.push_back(std::move(request));
   }
 
   // Runs on the thread where AddInterfaces was invoked. But the endpoint is
@@ -143,9 +129,6 @@ class OzonePlatformGbm : public OzonePlatform {
   // binding requests that could not be satisfied until the DRM thread is
   // available (i.e. if waiting until the sandbox has been entered.)
   void DrainBindingRequests() {
-    for (auto& request : pending_cursor_requests_)
-      drm_thread_proxy_->AddBindingCursorDevice(std::move(request));
-    pending_cursor_requests_.clear();
     for (auto& request : pending_gpu_adapter_requests_)
       drm_thread_proxy_->AddBindingDrmDevice(std::move(request));
     pending_gpu_adapter_requests_.clear();
@@ -338,7 +321,6 @@ class OzonePlatformGbm : public OzonePlatform {
 
   // TODO(rjkroege,sadrul): Provide a more elegant solution for this issue when
   // running in single process mode.
-  std::vector<ozone::mojom::DeviceCursorRequest> pending_cursor_requests_;
   std::vector<ozone::mojom::DrmDeviceRequest> pending_gpu_adapter_requests_;
   bool drm_thread_started_ = false;
 

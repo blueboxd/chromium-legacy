@@ -37,7 +37,11 @@ class NotificationSchedulerImpl;
 class InitHelper {
  public:
   using InitCallback = base::OnceCallback<void(bool)>;
-  InitHelper() : weak_ptr_factory_(this) {}
+  InitHelper()
+      : context_(nullptr),
+        notification_manager_delegate_(nullptr),
+        impression_tracker_delegate_(nullptr),
+        weak_ptr_factory_(this) {}
 
   ~InitHelper() = default;
 
@@ -49,53 +53,51 @@ class InitHelper {
       ScheduledNotificationManager::Delegate* notification_manager_delegate,
       ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
       InitCallback callback) {
+    // TODO(xingliu): Initialize the databases in parallel, we currently
+    // initialize one by one to work around a shared db issue. See
+    // https://crbug.com/978680.
+    context_ = context;
+    notification_manager_delegate_ = notification_manager_delegate;
+    impression_tracker_delegate_ = impression_tracker_delegate;
     callback_ = std::move(callback);
+
     context->icon_store()->Init(base::BindOnce(
         &InitHelper::OnIconStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
-    context->impression_tracker()->Init(
-        impression_tracker_delegate,
-        base::BindOnce(&InitHelper::OnImpressionTrackerInitialized,
-                       weak_ptr_factory_.GetWeakPtr()));
-    context->notification_manager()->Init(
-        notification_manager_delegate,
-        base::BindOnce(&InitHelper::OnNotificationManagerInitialized,
-                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
   void OnIconStoreInitialized(bool success) {
-    icon_store_initialzed_ = success;
-    MaybeFinishInitialization();
+    if (!success) {
+      std::move(callback_).Run(false /*success*/);
+      return;
+    }
+
+    context_->impression_tracker()->Init(
+        impression_tracker_delegate_,
+        base::BindOnce(&InitHelper::OnImpressionTrackerInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnImpressionTrackerInitialized(bool success) {
-    impression_tracker_initialzed_ = success;
-    MaybeFinishInitialization();
+    if (!success) {
+      std::move(callback_).Run(false /*success*/);
+      return;
+    }
+
+    context_->notification_manager()->Init(
+        notification_manager_delegate_,
+        base::BindOnce(&InitHelper::OnNotificationManagerInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnNotificationManagerInitialized(bool success) {
-    notification_manager_initialized_ = success;
-    MaybeFinishInitialization();
-  }
-
-  void MaybeFinishInitialization() {
-    bool all_finished = icon_store_initialzed_.has_value() &&
-                        impression_tracker_initialzed_.has_value() &&
-                        notification_manager_initialized_.has_value();
-    // Notify the initialization result when all subcomponents are initialized.
-    if (!all_finished)
-      return;
-
-    bool success = icon_store_initialzed_.value() &&
-                   impression_tracker_initialzed_.value() &&
-                   notification_manager_initialized_.value();
     std::move(callback_).Run(success);
   }
 
+  NotificationSchedulerContext* context_;
+  ScheduledNotificationManager::Delegate* notification_manager_delegate_;
+  ImpressionHistoryTracker::Delegate* impression_tracker_delegate_;
   InitCallback callback_;
-  base::Optional<bool> icon_store_initialzed_;
-  base::Optional<bool> impression_tracker_initialzed_;
-  base::Optional<bool> notification_manager_initialized_;
 
   base::WeakPtrFactory<InitHelper> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(InitHelper);

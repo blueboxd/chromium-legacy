@@ -44,4 +44,10 @@ constexpr base::Feature kEnableDbusAndX11StatusIcons{
     "EnableDbusAndX11StatusIcons", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Enables a warning about connecting to hidden WiFi networks.
+// https://crbug.com/903908
+const base::Feature kHiddenNetworkWarning{"HiddenNetworkWarning",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
 }  // namespace features

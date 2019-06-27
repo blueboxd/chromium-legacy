@@ -144,11 +144,7 @@ const NetworkUI = (function() {
     const icon = /** @type {!CrNetworkIconElement} */ (
         document.createElement('cr-network-icon'));
     icon.isListItem = true;
-    icon.networkState = {
-      GUID: '',
-      Type: /** @type{chrome.networkingPrivate.NetworkType} */ (
-          OncMojo.getNetworkTypeString(state.type)),
-    };
+    icon.networkState = OncMojo.getDefaultNetworkState(state.type);
     cell.appendChild(icon);
     return cell;
   };
@@ -514,25 +510,25 @@ const NetworkUI = (function() {
    * Handles clicks on network items in the <cr-network-select> element by
    * attempting a connection to the selected network or requesting a password
    * if the network requires a password.
-   * @param {!Event<!CrOnc.NetworkStateProperties>} event
+   * @param {!Event<!OncMojo.NetworkStateProperties>} event
    */
   const onNetworkItemSelected = function(event) {
-    const state = event.detail;
+    const networkState = event.detail;
 
     // If the network is already connected, show network details.
-    if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
-      chrome.send('showNetworkDetails', [state.GUID]);
+    if (OncMojo.connectionStateIsConnected(networkState.connectionState)) {
+      chrome.send('showNetworkDetails', [networkState.guid]);
       return;
     }
 
     // If the network is not connectable, show a configuration dialog.
-    if (state.Connectable === false || state.ErrorState) {
-      chrome.send('showNetworkConfig', [state.GUID]);
+    if (networkState.connectable === false || networkState.errorState) {
+      chrome.send('showNetworkConfig', [networkState.guid]);
       return;
     }
 
     // Otherwise, connect.
-    chrome.networkingPrivate.startConnect(state.GUID, () => {
+    chrome.networkingPrivate.startConnect(networkState.guid, () => {
       const lastError = chrome.runtime.lastError;
       if (!lastError)
         return;
@@ -543,8 +539,8 @@ const NetworkUI = (function() {
       }
       console.error(
           'networkingPrivate.startConnect error: ' + message +
-          ' For: ' + state.GUID);
-      chrome.send('showNetworkConfig', [state.GUID]);
+          ' For: ' + networkState.guid);
+      chrome.send('showNetworkConfig', [networkState.guid]);
     });
   };
 

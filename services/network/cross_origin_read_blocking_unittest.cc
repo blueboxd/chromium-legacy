@@ -414,4 +414,26 @@ TEST(CrossOriginReadBlockingTest, SeemsSensitiveWithBothHeuristics) {
                   SeemsSensitiveFromCacheHeuristic(both_response));
 }
 
+TEST(CrossOriginReadBlockingTest, SupportsRangeRequests) {
+  // Response with no Accept-Ranges header. Should return false.
+  network::ResourceResponseInfo no_accept_ranges =
+      CreateResponse("HTTP/1.1 200 OK");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
+      no_accept_ranges));
+
+  // Response with an Accept-Ranges header. Should return true.
+  network::ResourceResponseInfo bytes_accept_ranges = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Accept-Ranges: bytes");
+  EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
+      bytes_accept_ranges));
+
+  // Response with an Accept-Ranges header value of |none|. Should return false.
+  network::ResourceResponseInfo none_accept_ranges = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Accept-Ranges: none");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
+      none_accept_ranges));
+}
+
 }  // namespace network

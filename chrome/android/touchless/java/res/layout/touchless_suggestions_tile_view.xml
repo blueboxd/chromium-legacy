@@ -26,8 +26,7 @@
         android:layout_gravity="center"
         app:smallSize="@dimen/most_likely_quantized_icon_size_small"
         app:largeSize="@dimen/most_likely_quantized_icon_size_large"
-        android:layout_margin="@dimen/most_likely_quantized_icon_margin"
-        android:importantForAccessibility="no" />
+        android:layout_margin="@dimen/most_likely_quantized_icon_margin" />
 
     <!-- Focus highlight. -->
     <View

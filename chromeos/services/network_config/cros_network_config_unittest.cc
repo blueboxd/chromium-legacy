@@ -9,6 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/network/network_device_handler.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -64,7 +65,8 @@ class CrosNetworkConfigTest : public testing::Test {
             "Strength": 50})");
     helper().ConfigureService(
         R"({"GUID": "wifi2_guid", "Type": "wifi", "State": "idle",
-            "SecurityClass": "psk", "Strength": 100})");
+            "SecurityClass": "psk", "Strength": 100,
+            "Profile": "user_profile_path"})");
     helper().ConfigureService(
         R"({"GUID": "cellular_guid", "Type": "cellular",  "State": "idle",
             "Strength": 0, "Cellular.NetworkTechnology": "LTE",
@@ -75,9 +77,10 @@ class CrosNetworkConfigTest : public testing::Test {
 
     // Add a non visible configured wifi service.
     std::string wifi3_path = helper().ConfigureService(
-        R"({"GUID": "wifi3_guid", "Type": "wifi", "Visible": false})");
-    helper().profile_test()->AddService(helper().ProfilePathShared(),
-                                        wifi3_path);
+        R"({"GUID": "wifi3_guid", "Type": "wifi", "SecurityClass": "psk",
+            "Visible": false})");
+    helper().profile_test()->AddService(
+        NetworkProfileHandler::GetSharedProfilePath(), wifi3_path);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -149,7 +152,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
         EXPECT_EQ(mojom::NetworkType::kEthernet, result->type);
         EXPECT_EQ(mojom::ConnectionStateType::kOnline,
                   result->connection_state);
-        EXPECT_EQ(mojom::ONCSource::kUnknown, result->source);
+        EXPECT_EQ(mojom::OncSource::kNone, result->source);
       }));
   cros_network_config()->GetNetworkState(
       "wifi1_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
@@ -161,6 +164,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
         ASSERT_TRUE(result->wifi);
         EXPECT_EQ(mojom::SecurityType::kNone, result->wifi->security);
         EXPECT_EQ(50, result->wifi->signal_strength);
+        EXPECT_EQ(mojom::OncSource::kNone, result->source);
       }));
   cros_network_config()->GetNetworkState(
       "wifi2_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
@@ -172,6 +176,19 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
         ASSERT_TRUE(result->wifi);
         EXPECT_EQ(mojom::SecurityType::kWpaPsk, result->wifi->security);
         EXPECT_EQ(100, result->wifi->signal_strength);
+        EXPECT_EQ(mojom::OncSource::kUser, result->source);
+      }));
+  cros_network_config()->GetNetworkState(
+      "wifi3_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
+        ASSERT_TRUE(result);
+        EXPECT_EQ("wifi3_guid", result->guid);
+        EXPECT_EQ(mojom::NetworkType::kWiFi, result->type);
+        EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+                  result->connection_state);
+        ASSERT_TRUE(result->wifi);
+        EXPECT_EQ(mojom::SecurityType::kWpaPsk, result->wifi->security);
+        EXPECT_EQ(0, result->wifi->signal_strength);
+        EXPECT_EQ(mojom::OncSource::kDevice, result->source);
       }));
   cros_network_config()->GetNetworkState(
       "cellular_guid",
@@ -186,6 +203,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
         EXPECT_EQ("LTE", result->cellular->network_technology);
         EXPECT_EQ(mojom::ActivationStateType::kActivated,
                   result->cellular->activation_state);
+        EXPECT_EQ(mojom::OncSource::kNone, result->source);
       }));
   cros_network_config()->GetNetworkState(
       "vpn_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
@@ -196,6 +214,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
                   result->connection_state);
         ASSERT_TRUE(result->vpn);
         EXPECT_EQ(mojom::VPNType::kL2TPIPsec, result->vpn->type);
+        EXPECT_EQ(mojom::OncSource::kNone, result->source);
       }));
   // TODO(919691): Test ProxyMode once UIProxyConfigService logic is improved.
 }
@@ -257,8 +276,9 @@ TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {
       filter.Clone(),
       base::BindOnce(
           [](std::vector<mojom::NetworkStatePropertiesPtr> networks) {
-            ASSERT_EQ(1u, networks.size());
-            EXPECT_EQ("wifi3_guid", networks[0]->guid);
+            ASSERT_EQ(2u, networks.size());
+            EXPECT_EQ("wifi2_guid", networks[0]->guid);
+            EXPECT_EQ("wifi3_guid", networks[1]->guid);
           }));
 }
 

@@ -21,6 +21,7 @@
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/base/system_encryptor.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -292,6 +293,31 @@ bool ShouldSetExplicitCustomPassphraseKeyDerivationMethod(
              sync_pb::NigoriSpecifics::UNSPECIFIED;
 }
 
+// Checks whether |specifics|'s encryption_keybag could be decrypted with any
+// of |keystore_keys|, if they won't be base64 encoded, directly or with
+// keystore_decryptor_token. Needed for UMA only.
+bool CanDecryptKeybagWithBase64DecodedKeys(
+    const std::vector<std::string>& keystore_keys,
+    const sync_pb::NigoriSpecifics& specifics) {
+  SystemEncryptor encryptor;
+  Cryptographer cryptographer(&encryptor);
+  for (const std::string& keystore_key : keystore_keys) {
+    std::string decoded_key;
+    base::Base64Decode(keystore_key, &decoded_key);
+    cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), decoded_key});
+  }
+
+  const sync_pb::EncryptedData& keystore_decryptor =
+      specifics.keystore_decryptor_token();
+  if (!keystore_decryptor.blob().empty() &&
+      cryptographer.CanDecrypt(keystore_decryptor)) {
+    std::string serialized_decryptor;
+    cryptographer.DecryptToString(keystore_decryptor, &serialized_decryptor);
+    cryptographer.ImportNigoriKey(serialized_decryptor);
+  }
+  return cryptographer.CanDecrypt(specifics.encryption_keybag());
+}
+
 }  // namespace
 
 SyncEncryptionHandlerImpl::Vault::Vault(Encryptor* encryptor,
@@ -403,6 +429,13 @@ bool SyncEncryptionHandlerImpl::Init() {
                               MIGRATION_STATE_SIZE);
     UMA_HISTOGRAM_BOOLEAN("Sync.EncryptEverythingWhenCryptographerNotReady",
                           encrypt_everything_);
+    // TODO(crbug/944831): clean this up (including histogram itself and
+    // CanDecryptKeybagWithBase64DecodedKeys()) after investigation completed.
+    std::vector<std::string> all_keystore_keys = old_keystore_keys_;
+    all_keystore_keys.push_back(keystore_key_);
+    UMA_HISTOGRAM_BOOLEAN("Sync.CanDecryptNigoriKeybagWithBase64DecodedKeys",
+                          CanDecryptKeybagWithBase64DecodedKeys(
+                              all_keystore_keys, node.GetNigoriSpecifics()));
   } else if (keystore_key_.empty()) {
     // The client has no keystore key, either because it is not yet enabled or
     // the server is not sending a valid keystore key.

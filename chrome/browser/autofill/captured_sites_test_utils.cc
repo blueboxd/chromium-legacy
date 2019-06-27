@@ -4,6 +4,10 @@
 
 #include "chrome/browser/autofill/captured_sites_test_utils.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -550,6 +554,9 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(type, "click") == 0) {
       if (!ExecuteClickAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "coolOff") == 0) {
+      if (!ExecuteCoolOffAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "executeScript") == 0) {
       if (!ExecuteRunCommandAction(*action))
         return false;
@@ -557,9 +564,14 @@ bool TestRecipeReplayer::ReplayRecordedActions(
       if (!ExecuteHoverAction(*action))
         return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "loadPage") == 0) {
+      if (!ExecuteForceLoadPage(*action))
+        return false;
       // Load page is an no-op action.
     } else if (base::CompareCaseInsensitiveASCII(type, "pressEnter") == 0) {
       if (!ExecutePressEnterAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "pressEscape") == 0) {
+      if (!ExecutePressEscapeAction(*action))
         return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "savePassword") == 0) {
       if (!ExecuteSavePasswordAction(*action))
@@ -607,7 +619,7 @@ bool TestRecipeReplayer::ReplayRecordedActions(
 // Functions for deserializing and executing actions from the test recipe
 // JSON object.
 bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
-    std::unique_ptr<base::DictionaryValue>& recipe) {
+    const std::unique_ptr<base::DictionaryValue>& recipe) {
   // Setup any saved address and credit card at the start of the test.
   const base::Value* autofill_profile_container =
       recipe->FindKey("autofillProfile");
@@ -733,6 +745,28 @@ bool TestRecipeReplayer::ExecuteClickAction(
   return true;
 }
 
+bool TestRecipeReplayer::ExecuteCoolOffAction(
+    const base::DictionaryValue& action) {
+  base::RunLoop heart_beat;
+  base::TimeDelta cool_off_time = cool_off_action_timeout;
+  const base::Value* pause_time_container = action.FindKey("pauseTimeSec");
+  if (pause_time_container) {
+    if (pause_time_container->type() != base::Value::Type::INTEGER) {
+      ADD_FAILURE() << "Pause time is not an integer!";
+      return false;
+    }
+    int seconds = pause_time_container->GetInt();
+    cool_off_time = base::TimeDelta::FromSeconds(seconds);
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, heart_beat.QuitClosure(), cool_off_time);
+  VLOG(1) << "Pausing execution for '" << cool_off_time.InSeconds()
+          << "' seconds";
+  heart_beat.Run();
+
+  return true;
+}
+
 bool TestRecipeReplayer::ExecuteHoverAction(
     const base::DictionaryValue& action) {
   std::string xpath;
@@ -772,6 +806,38 @@ bool TestRecipeReplayer::ExecuteHoverAction(
   return true;
 }
 
+bool TestRecipeReplayer::ExecuteForceLoadPage(
+    const base::DictionaryValue& action) {
+  const base::Value* force_load_container = action.FindKey("force");
+  const base::Value* url_container = action.FindKey("url");
+  if (!force_load_container) {
+    // Nothing to do, load should have been made by previous action
+    return true;
+  }
+
+  if (force_load_container->type() != base::Value::Type::BOOLEAN) {
+    ADD_FAILURE() << "Force load is not a bool!";
+    return false;
+  }
+
+  bool shouldForce = force_load_container->GetBool();
+  if (!shouldForce)
+    return true;
+
+  if (!url_container || url_container->type() != base::Value::Type::STRING) {
+    ADD_FAILURE() << "Force load url could not be parsed";
+    return false;
+  }
+  std::string url = url_container->GetString();
+  VLOG(1) << "Making explicit URL redirect to '" << url << "'";
+  ui_test_utils::NavigateToURL(browser_, GURL(url));
+
+  PageActivityObserver page_activity_observer(GetWebContents());
+  page_activity_observer.WaitTillPageIsIdle();
+
+  return true;
+}
+
 bool TestRecipeReplayer::ExecutePressEnterAction(
     const base::DictionaryValue& action) {
   std::string xpath;
@@ -794,7 +860,7 @@ bool TestRecipeReplayer::ExecutePressEnterAction(
   if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
     return false;
 
-  VLOG(1) << "Press 'Enter' on `" << xpath << "`.";
+  VLOG(1) << "Pressing 'Enter' on `" << xpath << "`.";
   PageActivityObserver page_activity_observer(frame);
   if (!PlaceFocusOnElement(xpath, frame_path, frame))
     return false;
@@ -804,6 +870,19 @@ bool TestRecipeReplayer::ExecutePressEnterAction(
   ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
   SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key, code,
                    key_code, false, false, false, false);
+  page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecutePressEscapeAction(
+    const base::DictionaryValue& action) {
+  ui::DomKey key = ui::DomKey::ESCAPE;
+  ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+  ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+  SimulateKeyPress(GetWebContents(), key, code, key_code, false, false, false,
+                   false);
+  VLOG(1) << "Pressing 'Esc' in the current frame";
+  PageActivityObserver page_activity_observer(GetWebContents());
   page_activity_observer.WaitTillPageIsIdle();
   return true;
 }
@@ -1067,6 +1146,13 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
   content::RenderFrameHost* frame;
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
+
+  // If we're just validating we don't care about on_top-ness, as copied from
+  // chrome/test/data/web_page_replay_go_helper_scripts/automation_helper.js
+  // to TestRecipeReplayer::DomElementReadyState enum
+  // So remove (DomElementReadyState::kReadyStateOnTop)
+  if (visibility_enum_val & kReadyStateOnTop)
+    visibility_enum_val -= kReadyStateOnTop;
 
   if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
     return false;

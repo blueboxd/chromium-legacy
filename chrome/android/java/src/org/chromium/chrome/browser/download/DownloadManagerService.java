@@ -181,6 +181,9 @@ public class DownloadManagerService
     // Whether any ChromeActivity is launched.
     private boolean mActivityLaunched;
 
+    // Disabling call to DownloadManager.addCompletedDownload() for test.
+    private boolean mDisableAddCompletedDownloadForTesting;
+
     /**
      * Interface to intercept download request to Android DownloadManager. This is implemented by
      * tests so that we don't need to actually enqueue a download into the Android DownloadManager.
@@ -539,8 +542,8 @@ public class DownloadManagerService
         AsyncTask<Pair<Boolean, Boolean>> task = new AsyncTask<Pair<Boolean, Boolean>>() {
             @Override
             public Pair<Boolean, Boolean> doInBackground() {
-                boolean success =
-                        ContentUriUtils.isContentUri(item.getDownloadInfo().getFilePath());
+                boolean success = mDisableAddCompletedDownloadForTesting
+                        || ContentUriUtils.isContentUri(item.getDownloadInfo().getFilePath());
                 if (!success
                         && !ChromeFeatureList.isEnabled(
                                 ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
@@ -2022,6 +2025,10 @@ public class DownloadManagerService
     void createInterruptedDownloadForTest(String url, String guid, String targetPath) {
         nativeCreateInterruptedDownloadForTest(
                 getNativeDownloadManagerService(), url, guid, targetPath);
+    }
+
+    void disableAddCompletedDownloadToDownloadManager() {
+        mDisableAddCompletedDownloadForTesting = true;
     }
 
     /**

@@ -1145,7 +1145,7 @@ ResumeMode DownloadItemImpl::GetResumeMode() const {
   // we're getting the same file.
   bool restart_required =
       (GetFullPath().empty() ||
-       (etag_.empty() && last_modified_time_.empty() &&
+       (!HasStrongValidators() &&
         !base::FeatureList::IsEnabled(
             features::kAllowDownloadResumptionWithoutStrongValidators)));
   // We won't auto-restart if we've used up our attempts or the
@@ -1155,6 +1155,10 @@ ResumeMode DownloadItemImpl::GetResumeMode() const {
 
   return GetDownloadResumeMode(GetURL(), last_reason_, restart_required,
                                user_action_required);
+}
+
+bool DownloadItemImpl::HasStrongValidators() const {
+  return !etag_.empty() || !last_modified_time_.empty();
 }
 
 void DownloadItemImpl::UpdateValidatorsOnResumption(
@@ -1189,8 +1193,13 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   }
 
   if (destination_info_.received_bytes > 0 && new_create_info.offset == 0) {
-    RecordResumptionRestartCount(
-        ResumptionRestartCountTypes::kRequestedByServerCount);
+    if (!base::FeatureList::IsEnabled(
+            features::kAllowDownloadResumptionWithoutStrongValidators) ||
+        GetDownloadValidationLengthConfig() >
+            destination_info_.received_bytes) {
+      RecordResumptionRestartCount(
+          ResumptionRestartCountTypes::kRequestedByServerCount);
+    }
   }
 
   request_info_.url_chain.insert(request_info_.url_chain.end(), chain_iter,
@@ -1863,7 +1872,8 @@ void DownloadItemImpl::Completed() {
 
   bool is_parallelizable = job_ && job_->IsParallelizable();
   RecordDownloadCompleted(GetReceivedBytes(), is_parallelizable,
-                          download_source_);
+                          download_source_, has_resumed_,
+                          HasStrongValidators());
   if (!delegate_->IsOffTheRecord()) {
     RecordDownloadCountWithSource(COMPLETED_COUNT_NORMAL_PROFILE,
                                   download_source_);
@@ -2344,7 +2354,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
     LOG_IF(ERROR, !GetFullPath().empty())
         << "Download full path should be empty before resumption";
     if (destination_info_.received_bytes > 0) {
-      if (etag_.empty() && last_modified_time_.empty()) {
+      if (!HasStrongValidators()) {
         RecordResumptionRestartCount(
             ResumptionRestartCountTypes::kMissingStrongValidatorsCount);
       }
@@ -2401,7 +2411,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_hash_of_partial_file(GetHash());
   download_params->set_hash_state(std::move(hash_state_));
   download_params->set_guid(guid_);
-  if (etag_.empty() && last_modified_time_.empty() &&
+  if (!HasStrongValidators() && download_params->offset() > 0 &&
       base::FeatureList::IsEnabled(
           features::kAllowDownloadResumptionWithoutStrongValidators)) {
     download_params->set_use_if_range(false);
@@ -2440,10 +2450,12 @@ void DownloadItemImpl::ResumeInterruptedDownload(
 
   DownloadUkmHelper::RecordDownloadResumed(ukm_download_id_, GetResumeMode(),
                                            time_since_start);
+  RecordDownloadResumed(HasStrongValidators());
 
   delegate_->ResumeInterruptedDownload(std::move(download_params),
                                        request_info_.site_url);
 
+  has_resumed_ = true;
   if (job_)
     job_->Resume(false);
 }

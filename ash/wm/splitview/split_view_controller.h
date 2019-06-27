@@ -146,6 +146,14 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // Returns true if |window| is a snapped window in splitview.
   bool IsWindowInSplitView(const aura::Window* window) const;
 
+  // This function is only supposed to be called during clamshell <-> tablet
+  // transition or multi-user transition, when we need to carry over one/two
+  // snapped windows into splitview, we calculate the divider position based on
+  // the one or two to-be-snapped windows' bounds so that we can keep the
+  // snapped windows' bounds after transition (instead of putting them always
+  // on the middle split position).
+  void InitDividerPositionForTransition(int divider_position);
+
   // Called when a window (either it's browser window or an app window) start/
   // end being dragged.
   void OnWindowDragStarted(aura::Window* dragged_window);
@@ -192,6 +200,7 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
 
   // TabletModeObserver:
   void OnTabletModeStarting() override;
+  void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
   void OnTabletControllerDestroyed() override;
 

@@ -67,8 +67,8 @@
         </template>
 
         <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
-          <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
-              activeNetworkState.Source)]]" on-click="doNothing_">
+          <cr-policy-indicator indicator-type="[[getIndicatorTypeForSourceMojo(
+              activeNetworkState.source)]]" on-click="doNothing_">
           </cr-policy-indicator>
         </template>
 

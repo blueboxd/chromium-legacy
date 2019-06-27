@@ -79,6 +79,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Tell all managing windows not to handle WM events.
   void SetIgnoreWmEventsForExit();
 
+  // Stops animations on windows managed by this TabletModeWindowManager.
+  void StopWindowAnimations();
+
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
@@ -110,14 +113,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Returns the state type that |window| had before tablet mode started. If
   // |window| is not yet tracked, returns the current state type of |window|.
   WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
-
-  // Returns a std::vector of up to two split view snap positions, parallel to
-  // |windows|, implementing the logic for carrying over snapped window states
-  // from desktop mode to tablet mode: if the active window is snapped, then it
-  // shall carry over to split view, along with the previous window if it is
-  // snapped to the opposite side.
-  std::vector<SplitViewController::SnapPosition> GetSnapPositions(
-      const MruWindowTracker::WindowList& windows) const;
 
   // Maximize all windows, except that snapped windows shall carry over to split
   // view as determined by GetSnapPositions().

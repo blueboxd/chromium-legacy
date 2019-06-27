@@ -5368,9 +5368,13 @@ interface Performance : EventTarget
     attribute @@toStringTag
     getter memory
     getter navigation
+    getter onelementtimingbufferfull
+    getter oneventtimingbufferfull
     getter onresourcetimingbufferfull
     getter timeOrigin
     getter timing
+    method clearElementTimings
+    method clearEventTimings
     method clearMarks
     method clearMeasures
     method clearResourceTimings
@@ -5382,8 +5386,12 @@ interface Performance : EventTarget
     method measure
     method now
     method profile
+    method setElementTimingBufferMaxSize
+    method setEventTimingBufferMaxSize
     method setResourceTimingBufferSize
     method toJSON
+    setter onelementtimingbufferfull
+    setter oneventtimingbufferfull
     setter onresourcetimingbufferfull
 interface PerformanceElementTiming : PerformanceEntry
     attribute @@toStringTag

@@ -39,7 +39,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                             blob_url_loader_factory,
                         const base::UnguessableToken& devtools_navigation_token,
                         const base::UnguessableToken& devtools_frame_token);
-  NavigationRequestInfo(const NavigationRequestInfo& other);
+  NavigationRequestInfo(const NavigationRequestInfo& other) = delete;
   ~NavigationRequestInfo();
 
   const CommonNavigationParams common_params;

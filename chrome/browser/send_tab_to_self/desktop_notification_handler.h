@@ -52,9 +52,6 @@ class DesktopNotificationHandler : public NotificationHandler,
   // Displays a notification telling the user that the tab could not be sent.
   void DisplayFailureMessage(const GURL& url);
 
-  // Retrieves the Profile for which this Handler will manage notifications.
-  const Profile* GetProfile() const;
-
  protected:
   Profile* const profile_;
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationHandler);

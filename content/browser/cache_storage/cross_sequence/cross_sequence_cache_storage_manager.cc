@@ -5,6 +5,7 @@
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage_manager.h"
 
 #include "content/browser/cache_storage/cache_storage.h"
+#include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_utils.h"
 
@@ -17,8 +18,8 @@ namespace content {
 // order to post on the outer's original sequence.
 class CrossSequenceCacheStorageManager::Inner {
  public:
-  explicit Inner(scoped_refptr<CacheStorageManager> target_manager)
-      : target_manager_(std::move(target_manager)) {}
+  explicit Inner(scoped_refptr<CacheStorageContextWithManager> context)
+      : target_manager_(context->CacheManager()) {}
 
   void GetAllOriginsUsage(CacheStorageOwner owner,
                           CacheStorageContext::GetUsageInfoCallback callback) {
@@ -60,10 +61,10 @@ class CrossSequenceCacheStorageManager::Inner {
 
 CrossSequenceCacheStorageManager::CrossSequenceCacheStorageManager(
     scoped_refptr<base::SequencedTaskRunner> target_task_runner,
-    scoped_refptr<CacheStorageManager> target_manager)
+    scoped_refptr<CacheStorageContextWithManager> context)
     : target_task_runner_(std::move(target_task_runner)),
-      target_manager_(target_manager),
-      inner_(target_task_runner_, std::move(target_manager_)) {}
+      context_(context),
+      inner_(target_task_runner_, std::move(context)) {}
 
 CacheStorageHandle CrossSequenceCacheStorageManager::OpenCacheStorage(
     const url::Origin& origin,
@@ -74,7 +75,7 @@ CacheStorageHandle CrossSequenceCacheStorageManager::OpenCacheStorage(
   // The CrossSequenceCacheStorage object will asynchronously open the real
   // CacheStorage on the correct sequence.
   auto storage = base::MakeRefCounted<CrossSequenceCacheStorage>(
-      origin, owner, target_task_runner_, target_manager_);
+      origin, owner, target_task_runner_, context_);
   return storage->CreateHandle();
 }
 

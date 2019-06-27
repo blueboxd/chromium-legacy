@@ -90,7 +90,9 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     "0c45:64d0", "0c45:64d2",
     // Lenovo Thinkpad Model 20CG0006FMZ front and rear cameras, see
     // also https://crbug.com/924528
-    "04ca:7047", "04ca:7048"};
+    "04ca:7047", "04ca:7048",
+    // HP Elitebook 840 G1
+    "04f2:b3ed"};
 
 const std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>
     kMfAttributes[] = {{VideoCaptureApi::WIN_MEDIA_FOUNDATION,

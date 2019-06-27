@@ -360,7 +360,7 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
   auto legacy_credentials = ToWinCredentialVector(request.allow_list);
 
   uint32_t authenticator_attachment;
-  if (opt_app_id16) {
+  if (request.is_u2f_only) {
     authenticator_attachment =
         WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2;
   } else if (request.is_incognito_mode) {

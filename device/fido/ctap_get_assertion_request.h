@@ -56,6 +56,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
       alternative_application_parameter;
 
   bool is_incognito_mode = false;
+  bool is_u2f_only = false;
 };
 
 struct CtapGetNextAssertionRequest {

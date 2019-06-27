@@ -327,7 +327,11 @@ void SplitViewController::SnapWindow(aura::Window* window,
     Shell::Get()->activation_client()->AddObserver(this);
     Shell::Get()->NotifySplitViewModeStarting();
 
-    divider_position_ = GetDefaultDividerPosition(window);
+    // If there is pre-set |divider_position_|, use it. It can happen during
+    // tablet <-> clamshell transition or multi-user transition.
+    divider_position_ = (divider_position_ < 0)
+                            ? GetDefaultDividerPosition(window)
+                            : divider_position_;
     default_snap_position_ = snap_position;
 
     // There is no divider bar in clamshell splitview mode.
@@ -703,6 +707,14 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
 bool SplitViewController::IsWindowInSplitView(
     const aura::Window* window) const {
   return window && (window == left_window_ || window == right_window_);
+}
+
+void SplitViewController::InitDividerPositionForTransition(
+    int divider_position) {
+  // This should only be called before the actual carry-over happens.
+  DCHECK(!InSplitViewMode());
+  DCHECK_EQ(divider_position_, -1);
+  divider_position_ = divider_position;
 }
 
 void SplitViewController::OnWindowDragStarted(aura::Window* dragged_window) {
@@ -1111,10 +1123,13 @@ void SplitViewController::OnDisplayMetricsChanged(
 
 void SplitViewController::OnTabletModeStarting() {
   split_view_type_ = SplitViewType::kTabletType;
+}
 
+void SplitViewController::OnTabletModeStarted() {
   // If splitview is active when tablet mode is starting, do the clamshell mode
   // splitview to tablet mode splitview transition by adding the split view
-  // divider bar.
+  // divider bar and also adjust the |divider_position_| so that it's on one of
+  // the three fixed positions.
   if (InSplitViewMode()) {
     divider_position_ = GetClosestFixedDividerPosition();
     split_view_divider_ = std::make_unique<SplitViewDivider>(
@@ -1343,19 +1358,19 @@ void SplitViewController::GetSnappedWindowBoundsInScreenInternal(
           window);
 
   // |divide_position_| might not be properly initialized yet.
-  divider_position_ = (divider_position_ < 0)
-                          ? GetDefaultDividerPosition(window)
-                          : divider_position_;
+  int divider_position = (divider_position_ < 0)
+                             ? GetDefaultDividerPosition(window)
+                             : divider_position_;
   gfx::Rect divider_bounds;
   if (split_view_type_ == SplitViewType::kTabletType) {
     divider_bounds = SplitViewDivider::GetDividerBoundsInScreen(
         work_area_bounds_in_screen, GetCurrentScreenOrientation(),
-        divider_position_, false /* is_dragging */);
+        divider_position, false /* is_dragging */);
   } else {
     if (IsCurrentScreenOrientationLandscape())
-      divider_bounds.set_x(work_area_bounds_in_screen.x() + divider_position_);
+      divider_bounds.set_x(work_area_bounds_in_screen.x() + divider_position);
     else
-      divider_bounds.set_y(work_area_bounds_in_screen.y() + divider_position_);
+      divider_bounds.set_y(work_area_bounds_in_screen.y() + divider_position);
   }
 
   SplitRect(work_area_bounds_in_screen, divider_bounds,

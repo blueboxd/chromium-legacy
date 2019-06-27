@@ -873,6 +873,19 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::
 }
 
 // static
+bool CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
+    const ResourceResponseInfo& response) {
+  if (response.headers) {
+    std::string value;
+    response.headers->GetNormalizedHeader("accept-ranges", &value);
+    if (!value.empty() && !base::LowerCaseEqualsASCII(value, "none")) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// static
 CrossOriginReadBlocking::ResponseAnalyzer::MimeTypeBucket
 CrossOriginReadBlocking::ResponseAnalyzer::GetMimeTypeBucket(
     const ResourceResponseInfo& response) {
@@ -1131,6 +1144,11 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
             protection_decision);
     }
   }
+  // Also log if the server supports range requests, since these may allow
+  // bypassing CORB.
+  UMA_HISTOGRAM_BOOLEAN(
+      "SiteIsolation.CORBProtection.SensitiveWithRangeSupport",
+      SupportsRangeRequests(response));
 }
 
 // static

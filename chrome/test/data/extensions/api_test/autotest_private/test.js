@@ -489,9 +489,36 @@ var arcEnabledTests = [
   },
 ];
 
+var policyTests = [
+  function getAllEnterpricePolicies() {
+    chrome.autotestPrivate.getAllEnterprisePolicies(
+      chrome.test.callbackPass(function(policydata) {
+        chrome.test.assertNoLastError();
+        // See AutotestPrivateWithPolicyApiTest for constants.
+        var expectedPolicy;
+        expectedPolicy =
+          {
+            "chromePolicies":
+              {"AllowDinosaurEasterEgg":
+                {"level":"mandatory",
+                "scope":"user",
+                "source":"sourceCloud",
+                "value":true}
+              },
+            "deviceLocalAccountPolicies":{},
+            "extensionPolicies":{}
+          }
+        chrome.test.assertEq(expectedPolicy, policydata);
+        chrome.test.succeed();
+      }));
+  },
+];
+
+
 var test_suites = {
   'default': defaultTests,
-  'arcEnabled': arcEnabledTests
+  'arcEnabled': arcEnabledTests,
+  'enterprisePolicies': policyTests
 };
 
 chrome.test.getConfig(function(config) {

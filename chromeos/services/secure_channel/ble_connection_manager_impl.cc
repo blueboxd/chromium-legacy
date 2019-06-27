@@ -345,7 +345,8 @@ void BleConnectionManagerImpl::OnReceivedAdvertisement(
   std::unique_ptr<Connection> connection =
       weave::BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
           remote_device, bluetooth_adapter_,
-          device::BluetoothUUID(kGattServerUuid), bluetooth_device,
+          device::BluetoothUUID(kGattServerUuid),
+          bluetooth_device->GetAddress(),
           true /* should_set_low_connection_latency */);
 
   SetAuthenticatingChannel(

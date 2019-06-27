@@ -191,6 +191,18 @@ Polymer({
     },
 
     /**
+     * Whether the device should automatically connect to the network.
+     * @private
+     */
+    autoConnect_: Boolean,
+
+    /**
+     * Whether or not to show the hidden network warning.
+     * @private
+     */
+    hiddenNetworkWarning_: Boolean,
+
+    /**
      * Security value, used for Ethernet and Wifi and to detect when Security
      * changes.
      * @private
@@ -337,6 +349,7 @@ Polymer({
   observers: [
     'setEnableConnect_(isConfigured_, propertiesSent_)',
     'setEnableSave_(isConfigured_, waitingForProperties_)',
+    'updateHiddenNetworkWarning_(autoConnect_)',
     'updateConfigProperties_(managedProperties)',
     'updateSecurity_(configProperties_, security_)',
     'updateEapOuter_(eapProperties_.Outer)',
@@ -395,6 +408,16 @@ Polymer({
     } else {
       this.focusFirstInput_();
     }
+
+    if (this.type == CrOnc.Type.VPN ||
+        (this.globalPolicy &&
+         this.globalPolicy.AllowOnlyPolicyNetworksToConnect)) {
+      this.autoConnect_ = false;
+    } else {
+      this.autoConnect_ = true;
+    }
+    this.hiddenNetworkWarning_ = this.showHiddenNetworkWarning_();
+
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
     this.setShareNetwork_();
@@ -423,12 +446,9 @@ Polymer({
     const propertiesToSet = this.getPropertiesToSet_();
     if (this.getSource_(this.guid, this.managedProperties) ==
         CrOnc.Source.NONE) {
-      // Set 'AutoConnect' to false for VPN or if prohibited by policy.
-      // Note: Do not set AutoConnect to true, the connection manager will do
-      // that on a successful connection (unless set to false here).
-      if (this.type == CrOnc.Type.VPN ||
-          (this.globalPolicy &&
-           this.globalPolicy.AllowOnlyPolicyNetworksToConnect)) {
+      if (!this.autoConnect_) {
+        // Note: Do not set AutoConnect to true, the connection manager will do
+        // that on a successful connection (unless set to false here).
         CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', false);
       }
       this.networkingPrivate.createNetwork(
@@ -1303,6 +1323,50 @@ Polymer({
       }
     }
     return true;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  configCanAutoConnect_: function() {
+    // Only WiFi can choose whether or not to autoConnect.
+    return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
+        this.type == CrOnc.Type.WI_FI;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  autoConnectDisabled_: function() {
+    return this.isAutoConnectEnforcedByPolicy_();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isAutoConnectEnforcedByPolicy_: function() {
+    return !!this.globalPolicy &&
+        !!this.globalPolicy.AllowOnlyPolicyNetworksToAutoconnect;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showHiddenNetworkWarning_: function() {
+    Polymer.dom.flush();
+    return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
+        this.autoConnect_ && !this.hasGuid_();
+  },
+
+  /**
+   * @private
+   */
+  updateHiddenNetworkWarning_: function() {
+    this.hiddenNetworkWarning_ = this.showHiddenNetworkWarning_();
   },
 
   /**

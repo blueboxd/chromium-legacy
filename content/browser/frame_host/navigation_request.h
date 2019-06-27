@@ -565,6 +565,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   LegacyProtocolInSubresourceCheckResult CheckLegacyProtocolInSubresource()
       const;
 
+  // Block about:srcdoc navigation that aren't expected to happen. For instance,
+  // main frame navigations or about:srcdoc#foo.
+  enum class AboutSrcDocCheckResult {
+    ALLOW_REQUEST,
+    BLOCK_REQUEST,
+  };
+  AboutSrcDocCheckResult CheckAboutSrcDoc() const;
+
   // Called before a commit. Updates the history index and length held in
   // CommitNavigationParams. This is used to update this shared state with the
   // renderer process.

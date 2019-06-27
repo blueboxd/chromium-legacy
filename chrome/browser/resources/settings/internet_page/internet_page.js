@@ -50,7 +50,7 @@ Polymer({
 
     /**
      * Highest priority connected network or null. Set by network-summary.
-     * @type {?CrOnc.NetworkStateProperties|undefined}
+     * @type {?OncMojo.NetworkStateProperties|undefined}
      */
     defaultNetwork: {
       type: Object,
@@ -137,12 +137,12 @@ Polymer({
 
   // Element event listeners
   listeners: {
-    'device-enabled-toggled': 'onDeviceEnabledToggled_',  // mojo api
+    'device-enabled-toggled': 'onDeviceEnabledToggled_',
     'network-connect': 'onNetworkConnect_',
     'show-config': 'onShowConfig_',
     'show-detail': 'onShowDetail_',
-    'show-known-networks': 'onShowKnownNetworks_',  // mojo api
-    'show-networks': 'onShowNetworks_',             // mojo api
+    'show-known-networks': 'onShowKnownNetworks_',
+    'show-networks': 'onShowNetworks_',
   },
 
   // chrome.management listeners
@@ -292,52 +292,51 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent<!CrOnc.NetworkProperties>} event
+   * @param {!CustomEvent<!{type: string, guid: ?string, name: ?string}>} event
    * @private
    */
   onShowConfig_: function(event) {
-    const properties = event.detail;
-    if (!properties.GUID) {
+    if (!event.detail.guid) {
       // New configuration
-      this.showConfig_(true /* configAndConnect */, properties.Type);
+      this.showConfig_(true /* configAndConnect */, event.detail.type);
     } else {
       this.showConfig_(
-          false /* configAndConnect */, properties.Type, properties.GUID,
-          CrOnc.getNetworkName(properties));
+          false /* configAndConnect */, event.detail.type, event.detail.guid,
+          event.detail.name);
     }
   },
 
   /**
    * @param {boolean} configAndConnect
    * @param {string} type
-   * @param {string=} guid
-   * @param {string=} name
+   * @param {?string=} opt_guid
+   * @param {?string=} opt_name
    * @private
    */
-  showConfig_: function(configAndConnect, type, guid, name) {
+  showConfig_: function(configAndConnect, type, opt_guid, opt_name) {
     assert(type != CrOnc.Type.CELLULAR && type != CrOnc.Type.TETHER);
     const configDialog =
         /** @type {!InternetConfigElement} */ (this.$.configDialog);
     configDialog.type =
         /** @type {chrome.networkingPrivate.NetworkType} */ (type);
-    configDialog.guid = guid || '';
-    configDialog.name = name || '';
+    configDialog.guid = opt_guid || '';
+    configDialog.name = opt_name || '';
     configDialog.showConnect = configAndConnect;
     configDialog.open();
   },
 
   /**
-   * @param {!CustomEvent<!CrOnc.NetworkStateProperties>} event
+   * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
    * @private
    */
   onShowDetail_: function(event) {
-    this.detailType_ = event.detail.Type;
+    const networkState = event.detail;
+    const oncType = OncMojo.getNetworkTypeString(networkState.type);
+    this.detailType_ = oncType;
     const params = new URLSearchParams;
-    params.append('guid', event.detail.GUID);
-    params.append('type', event.detail.Type);
-    if (event.detail.Name) {
-      params.append('name', event.detail.Name);
-    }
+    params.append('guid', networkState.guid);
+    params.append('type', oncType);
+    params.append('name', OncMojo.getNetworkDisplayName(networkState));
     settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
   },
 
@@ -618,36 +617,37 @@ Polymer({
    * Handles UI requests to connect to a network.
    * TODO(stevenjb): Handle Cellular activation, etc.
    * @param {!CustomEvent<!{
-   *     networkProperties: (!CrOnc.NetworkProperties|
-   *         !CrOnc.NetworkStateProperties),
+   *     networkState: !OncMojo.NetworkStateProperties,
    *     bypassConnectionDialog: (boolean|undefined)
    * }>} event
    * @private
    */
   onNetworkConnect_: function(event) {
-    const properties = event.detail.networkProperties;
-    const name = CrOnc.getNetworkName(properties);
-    const networkType = properties.Type;
+    const networkState = event.detail.networkState;
+    const oncType = OncMojo.getNetworkTypeString(networkState.type);
+    const displayName = OncMojo.getNetworkDisplayName(networkState);
+
     if (!event.detail.bypassConnectionDialog &&
-        CrOnc.shouldShowTetherDialogBeforeConnection(properties)) {
+        networkState.type == mojom.NetworkType.kTether &&
+        !networkState.tether.hasConnectedToHost) {
       const params = new URLSearchParams;
-      params.append('guid', properties.GUID);
-      params.append('type', networkType);
-      params.append('name', name);
+      params.append('guid', networkState.guid);
+      params.append('type', oncType);
+      params.append('name', displayName);
       params.append('showConfigure', true.toString());
 
       settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
       return;
     }
 
-    if (!CrOnc.isMobileNetwork(properties) &&
-        (properties.Connectable === false || !!properties.ErrorState)) {
+    const isMobile = OncMojo.networkTypeIsMobile(networkState.type);
+    if (!isMobile && (!networkState.connectable || !!networkState.errorState)) {
       this.showConfig_(
-          true /* configAndConnect */, networkType, properties.GUID, name);
+          true /* configAndConnect */, oncType, networkState.guid, displayName);
       return;
     }
 
-    this.networkingPrivate.startConnect(properties.GUID, () => {
+    this.networkingPrivate.startConnect(networkState.guid, () => {
       if (chrome.runtime.lastError) {
         const message = chrome.runtime.lastError.message;
         if (message == 'connecting' || message == 'connect-canceled' ||
@@ -656,12 +656,13 @@ Polymer({
         }
         console.error(
             'networkingPrivate.startConnect error: ' + message +
-            ' For: ' + properties.GUID);
+            ' For: ' + networkState.guid);
 
         // There is no configuration flow for Mobile Networks.
-        if (!CrOnc.isMobileNetwork(properties)) {
+        if (!isMobile) {
           this.showConfig_(
-              true /* configAndConnect */, networkType, properties.GUID, name);
+              true /* configAndConnect */, oncType, networkState.guid,
+              displayName);
         }
       }
     });

@@ -31,6 +31,7 @@ NotificationSchedulerContext::NotificationSchedulerContext(
     std::unique_ptr<DisplayDecider> display_decider,
     std::unique_ptr<SchedulerConfig> config)
     : client_registrar_(std::move(client_registrar)),
+      icon_store_(std::move(icon_store)),
       impression_tracker_(std::move(impression_tracker)),
       notification_manager_(std::move(notification_manager)),
       display_agent_(std::move(display_agent)),

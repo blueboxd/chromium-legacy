@@ -131,4 +131,4 @@ def staple(path):
         path: The path to the artifact that had previously been submitted for
             notarization and is now ready for stapling.
     """
-    commands.run_command(['stapler', 'staple', '--verbose', path])
+    commands.run_command(['xcrun', 'stapler', 'staple', '--verbose', path])

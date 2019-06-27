@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/cache_storage/cache_storage_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,7 +43,7 @@ enum class CacheStorageOwner {
 // TODO(jkarlin): Remove CacheStorage from memory once they're no
 // longer in active use.
 class CONTENT_EXPORT CacheStorageManager
-    : public base::RefCountedDeleteOnSequence<CacheStorageManager> {
+    : public base::RefCounted<CacheStorageManager> {
  public:
   // Open the CacheStorage for the given origin and owner.  A reference counting
   // handle is returned which can be stored and used similar to a weak pointer.
@@ -79,10 +79,9 @@ class CONTENT_EXPORT CacheStorageManager
   static bool IsValidQuotaOrigin(const url::Origin& origin);
 
  protected:
-  friend class base::DeleteHelper<CacheStorageManager>;
-  friend class base::RefCountedDeleteOnSequence<CacheStorageManager>;
+  friend class base::RefCounted<CacheStorageManager>;
 
-  CacheStorageManager();
+  CacheStorageManager() = default;
   virtual ~CacheStorageManager() = default;
 };
 

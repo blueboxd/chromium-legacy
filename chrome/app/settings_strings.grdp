@@ -1976,6 +1976,9 @@
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SHARE" desc="Settings > Internet > Network config: Label for setting allowing other device users to use the network configuration.">
       Allow other users of this device to use this network
     </message>
+    <message name="IDS_SETTINGS_HIDDEN_NETWORK_WARNING" desc="Settings > Internet > Network config: Text shown when auto connect to the WiFi network is enabled, warning about the dangers of auto-connecting to hidden networks.">
+      Automatically connecting to a hidden network allows others to see your device and some network settings, and is not recommended.
+    </message>
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS" desc="Settings > Internet > Network config: Label for the setting to save identity and password.">
       Save identity and password
     </message>

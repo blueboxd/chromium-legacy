@@ -19,7 +19,7 @@ Polymer({
 
     /**
      * The ONC data properties used to display the list item.
-     * @type {!CrOnc.NetworkStateProperties|undefined}
+     * @type {!OncMojo.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
@@ -57,9 +57,9 @@ Polymer({
 
     /**
      * The cached ConnectionState for the network.
-     * @type {!CrOnc.ConnectionState|undefined}
+     * @type {!chromeos.networkConfig.mojom.ConnectionStateType|undefined}
      */
-    connectionState_: String,
+    connectionState_: Number,
 
     /** Whether to show technology badge on mobile network icon. */
     showTechnologyBadge: {type: Boolean, value: true},
@@ -81,7 +81,7 @@ Polymer({
   itemChanged_: function() {
     if (this.item && !this.item.hasOwnProperty('customItemName')) {
       this.networkState =
-          /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
+          /** @type {!OncMojo.NetworkStateProperties} */ (this.item);
     } else if (this.networkState) {
       this.networkState = undefined;
     }
@@ -92,7 +92,7 @@ Polymer({
     if (!this.networkState) {
       return;
     }
-    const connectionState = this.networkState.ConnectionState;
+    const connectionState = this.networkState.connectionState;
     if (connectionState == this.connectionState_) {
       return;
     }
@@ -114,8 +114,8 @@ Polymer({
       }
       return name;
     }
-    const network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
-    return CrOnc.getNetworkName(network);
+    return OncMojo.getNetworkDisplayName(
+        /** @type {!OncMojo.NetworkStateProperties} */ (this.item));
   },
 
   /**
@@ -132,31 +132,30 @@ Polymer({
    * @private
    */
   getNetworkStateText_: function() {
+    const mojom = chromeos.networkConfig.mojom;
     if (!this.networkState) {
       return '';
     }
-    const connectionState = this.networkState.ConnectionState;
-    if (this.networkState.Type == CrOnc.Type.CELLULAR) {
-      // For Cellular, an empty ConnectionState indicates that the device is
-      // still initializing.
-      if (!connectionState) {
-        return CrOncStrings.networkListItemInitializing;
-      }
-      if (this.networkState.Cellular && this.networkState.Cellular.Scanning) {
-        return CrOncStrings.networkListItemScanning;
-      }
+    const connectionState = this.networkState.connectionState;
+    if (this.networkState.type == mojom.NetworkType.kCellular &&
+        this.networkState.cellular.scanning) {
+      // TODO(khorimoto): Add and sim locked and possibly initializing states to
+      // CellularStateProperties.
+      return CrOncStrings.networkListItemScanning;
     }
-    if (connectionState == CrOnc.ConnectionState.CONNECTED) {
+    if (OncMojo.connectionStateIsConnected(connectionState)) {
+      // TODO(khorimoto): Consider differentiating between Portal, Connected,
+      // and Online.
       return CrOncStrings.networkListItemConnected;
     }
-    if (connectionState == CrOnc.ConnectionState.CONNECTING) {
+    if (connectionState == mojom.ConnectionStateType.kConnecting) {
       return CrOncStrings.networkListItemConnecting;
     }
     return '';
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties|undefined} networkState
+   * @param {!OncMojo.NetworkStateProperties|undefined} networkState
    * @param {boolean} showButtons
    * @return {boolean}
    * @private
@@ -170,8 +169,11 @@ Polymer({
    * @private
    */
   isConnected_: function() {
-    return !!this.networkState &&
-        this.networkState.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+    if (!this.networkState) {
+      return false;
+    }
+    return OncMojo.connectionStateIsConnected(
+        this.networkState.connectionState);
   },
 
   /**

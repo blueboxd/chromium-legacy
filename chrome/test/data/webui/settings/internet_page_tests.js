@@ -335,7 +335,12 @@ suite('InternetPage', function() {
 
     test('WiFi Detail', function() {
       setNetworksForTest([
-        {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
+        {
+          GUID: 'wifi1_guid',
+          Name: 'wifi1',
+          Type: 'WiFi',
+          ConnectionState: 'Connected'
+        },
       ]);
       api_.enableNetworkType('WiFi');
       return flushAsync().then(() => {

@@ -1928,4 +1928,127 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, WebViewRendererKillReload) {
   EXPECT_EQ(url, data.new_web_contents->GetMainFrame()->GetLastCommittedURL());
 }
 
+// Test NavigationRequest::CheckAboutSrcDoc()
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
+  // 1. Main frame navigations to about:srcdoc and its variations are blocked.
+  for (const char* url :
+       {"about:srcdoc", "about:srcdoc?foo", "about:srcdoc#foo"}) {
+    NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                             GURL(url));
+    EXPECT_FALSE(NavigateToURL(shell(), GURL(url)));
+    EXPECT_TRUE(handle_observer.has_committed());
+    EXPECT_TRUE(handle_observer.is_error());
+    EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
+  }
+
+  // 2. Subframe navigations to variations of about:srcdoc are blocked.
+  for (const char* url : {"about:srcdoc?foo", "about:srcdoc#foo"}) {
+    GURL main_url =
+        embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+    NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                             GURL(url));
+    shell()->LoadURLForFrame(GURL(url), "child-name-0",
+                             ui::PAGE_TRANSITION_FORWARD_BACK);
+    WaitForLoadStop(shell()->web_contents());
+    EXPECT_TRUE(handle_observer.has_committed());
+    EXPECT_TRUE(handle_observer.is_error());
+    EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
+  }
+
+  // 3. Subframe navigation to about:srcdoc are not blocked.
+  {
+    GURL main_url =
+        embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+    NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                             GURL("about::srcdoc"));
+    shell()->LoadURLForFrame(GURL("about::srcdoc"), "child-name-0",
+                             ui::PAGE_TRANSITION_FORWARD_BACK);
+    WaitForLoadStop(shell()->web_contents());
+    EXPECT_TRUE(handle_observer.has_committed());
+    EXPECT_FALSE(handle_observer.is_error());
+    EXPECT_EQ(net::OK, handle_observer.net_error_code());
+  }
+}
+
+// Test NavigationRequest::CheckAboutSrcDoc().
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  FrameTreeNode* main_frame =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root();
+
+  // 1. Main frame navigations to about:srcdoc and its variations are blocked.
+  for (const char* url :
+       {"about:srcdoc", "about:srcdoc?foo", "about:srcdoc#foo"}) {
+    DidStartNavigationObserver start_observer(shell()->web_contents());
+    NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                             GURL(url));
+    // TODO(arthursonzogni): It shouldn't be possible to navigate to
+    // about:srcdoc by executing location.href="about:srcdoc". Other web
+    // browsers like Firefox aren't allowing this.
+    EXPECT_TRUE(ExecJs(main_frame, JsReplace("location.href = $1", url)));
+
+    start_observer.Wait();
+    WaitForLoadStop(shell()->web_contents());
+
+    // TODO(arthursonzogni): The navigation should be blocked.
+    EXPECT_TRUE(handle_observer.has_committed());
+    EXPECT_FALSE(handle_observer.is_error());
+    EXPECT_EQ(net::OK, handle_observer.net_error_code());
+  }
+
+  // 2. Subframe navigations to variations of about:srcdoc are blocked.
+  for (const char* url : {"about:srcdoc?foo", "about:srcdoc#foo"}) {
+    GURL main_url =
+        embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+    DidStartNavigationObserver start_observer(shell()->web_contents());
+    NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                             GURL(url));
+    FrameTreeNode* subframe = main_frame->child_at(0);
+    // TODO(arthursonzogni): It shouldn't be possible to navigate to
+    // about:srcdoc by executing location.href="about:srcdoc". Other web
+    // browsers like Firefox aren't allowing this.
+    EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = $1", url)));
+
+    start_observer.Wait();
+    WaitForLoadStop(shell()->web_contents());
+
+    // TODO(arthursonzogni): The navigation should be blocked.
+    EXPECT_TRUE(handle_observer.has_committed());
+    EXPECT_FALSE(handle_observer.is_error());
+    EXPECT_EQ(net::OK, handle_observer.net_error_code());
+  }
+
+  // 3. Subframe navigation to about:srcdoc are not blocked.
+  {
+    GURL main_url =
+        embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+    DidStartNavigationObserver start_observer(shell()->web_contents());
+    NavigationHandleObserver handle_observer(shell()->web_contents(),
+                                             GURL("about:srcdoc"));
+    FrameTreeNode* subframe = main_frame->child_at(0);
+    // TODO(arthursonzogni): It shouldn't be possible to navigate to
+    // about:srcdoc by executing location.href="about:srcdoc". Other web
+    // browsers like Firefox aren't allowing this.
+    EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = 'about:srcdoc'")));
+
+    start_observer.Wait();
+    WaitForLoadStop(shell()->web_contents());
+
+    EXPECT_TRUE(handle_observer.has_committed());
+    EXPECT_FALSE(handle_observer.is_error());
+    EXPECT_EQ(net::OK, handle_observer.net_error_code());
+  }
+}
+
 }  // namespace content

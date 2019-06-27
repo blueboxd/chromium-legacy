@@ -34,6 +34,7 @@ CacheStorageContextImpl::CacheStorageContextImpl(
 
 CacheStorageContextImpl::~CacheStorageContextImpl() {
   // Can be destroyed on any thread.
+  task_runner_->ReleaseSoon(FROM_HERE, std::move(cache_manager_));
 }
 
 void CacheStorageContextImpl::Init(
@@ -92,14 +93,19 @@ void CacheStorageContextImpl::AddBinding(
 }
 
 scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {
-  // If we're shutdown or already on the target sequence, then just return the
-  // real manager.
-  if (!cache_manager_ || task_runner_->RunsTasksInCurrentSequence())
+  // If we're already on the target sequence, then just return the real manager.
+  //
+  // Note, we can't check for nullptr cache_manager_ here because it is not
+  // threadsafe.  In addition we may be creating a cross-sequence manager
+  // wrapper while the task to set cache_manager_ is waiting to run.  This
+  // should be fine since the cross-sequence wrapper will initialize after the
+  // manager is set.  See the comment in Init().
+  if (task_runner_->RunsTasksInCurrentSequence())
     return cache_manager_;
   // Otherwise we have to create a cross-sequence wrapper to provide safe
   // access.
   return base::MakeRefCounted<CrossSequenceCacheStorageManager>(task_runner_,
-                                                                cache_manager_);
+                                                                this);
 }
 
 void CacheStorageContextImpl::SetBlobParametersForCache(

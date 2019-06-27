@@ -222,6 +222,8 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+#include "url/origin.h"
+#include "url/scheme_host_port.h"
 
 #if defined(OS_WIN)
 #include <shellapi.h>
@@ -2037,24 +2039,45 @@ void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
   // in which case let the sad tabs remain.
   // Also, if tab is muted and the cause is the unloaded extension, unmute it.
   if (reason != extensions::UnloadedExtensionReason::TERMINATE) {
+    auto should_close_tab = [](const extensions::ExtensionId& extension_id,
+                               content::WebContents* web_contents) {
+      // Case 1: A "regular" extension page, e.g.
+      // chrome-extension://<id>/page.html.
+      // Note: we check the tuple or precursor tuple in order to close any
+      // windows with opaque origins that were opened by extensions, and may
+      // still be running code.
+      const url::SchemeHostPort& tuple_or_precursor_tuple =
+          web_contents->GetMainFrame()
+              ->GetLastCommittedOrigin()
+              .GetTupleOrPrecursorTupleIfOpaque();
+      if (tuple_or_precursor_tuple.scheme() == extensions::kExtensionScheme &&
+          tuple_or_precursor_tuple.host() == extension_id) {
+        // Edge-case: Chrome URL overrides (such as NTP overrides) are handled
+        // differently (reloaded), and managed by ExtensionWebUI. Ignore them.
+        if (!web_contents->GetLastCommittedURL().SchemeIs(
+                content::kChromeUIScheme)) {
+          return true;
+        }
+      }
+
+      // Case 2: Check if the page is a page associated with a hosted app, which
+      // can have non-extension schemes. For example, the Gmail hosted app would
+      // have a URL of https://mail.google.com.
+      if (extensions::TabHelper::FromWebContents(web_contents)->GetAppId() ==
+          extension_id) {
+        return true;
+      }
+
+      return false;
+    };
+
     // Iterate backwards as we may remove items while iterating.
     for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
       WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
-      // Two cases are handled here:
-
-      // - The scheme check is for when an extension page is loaded in a
-      // tab, e.g. chrome-extension://id/page.html.
-      // - The extension_app check is for apps, which can have non-extension
-      // schemes, e.g. https://mail.google.com if you have the Gmail app
-      // installed.
-      if ((web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
-           web_contents->GetURL().host_piece() == extension->id()) ||
-          (extensions::TabHelper::FromWebContents(web_contents)->GetAppId() ==
-           extension->id())) {
+      if (should_close_tab(extension->id(), web_contents))
         tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
-      } else {
+      else
         UnmuteIfMutedByExtension(web_contents, extension->id());
-      }
     }
   }
 

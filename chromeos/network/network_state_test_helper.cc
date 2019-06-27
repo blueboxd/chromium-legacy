@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
@@ -23,7 +24,6 @@ void FailErrorCallback(const std::string& error_name,
                        const std::string& error_message) {}
 
 const char kUserHash[] = "user_hash";
-const char kProfilePathShared[] = "shared_profile_path";
 const char kProfilePathUser[] = "user_profile_path";
 
 }  // namespace
@@ -40,7 +40,7 @@ NetworkStateTestHelper::NetworkStateTestHelper(
   device_test_ = ShillDeviceClient::Get()->GetTestInterface();
   service_test_ = ShillServiceClient::Get()->GetTestInterface();
 
-  profile_test_->AddProfile(kProfilePathShared,
+  profile_test_->AddProfile(NetworkProfileHandler::GetSharedProfilePath(),
                             std::string() /* shared profile */);
   profile_test_->AddProfile(kProfilePathUser, kUserHash);
   base::RunLoop().RunUntilIdle();
@@ -192,10 +192,6 @@ NetworkStateTestHelper::CreateStandaloneNetworkProperties(
     }
   }
   return network;
-}
-
-const char* NetworkStateTestHelper::ProfilePathShared() {
-  return kProfilePathShared;
 }
 
 const char* NetworkStateTestHelper::ProfilePathUser() {

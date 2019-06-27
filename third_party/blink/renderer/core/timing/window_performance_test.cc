@@ -225,7 +225,7 @@ TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
   }
 }
 
-TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
+TEST_F(WindowPerformanceTest, EventTimingBeforeOnLoad) {
   ScopedEventTimingForTest event_timing(true);
   EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
 
@@ -241,6 +241,7 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
       GetTimeOrigin() + base::TimeDelta::FromSecondsD(6.0);
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
+  performance_->clearEventTimings();
 
   page_holder_->GetFrame()
       .Loader()
@@ -250,7 +251,8 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, true);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(2u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
+  performance_->clearEventTimings();
 
   EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
   GetFrame()->PrepareForCommit();
@@ -258,7 +260,8 @@ TEST_F(WindowPerformanceTest, EventTimingEntryBuffering) {
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, false);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(3u, performance_->getEntriesByName("click", "event").size());
+  EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
+  performance_->clearEventTimings();
 }
 
 TEST_F(WindowPerformanceTest, Expose100MsEvents) {

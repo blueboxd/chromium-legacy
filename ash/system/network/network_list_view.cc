@@ -52,7 +52,7 @@ using chromeos::network_config::mojom::NetworkFilter;
 using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
-using chromeos::network_config::mojom::ONCSource;
+using chromeos::network_config::mojom::OncSource;
 using chromeos::network_config::mojom::ProxyMode;
 
 namespace ash {
@@ -394,8 +394,8 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
 
 views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
   // Check if the network is managed by policy.
-  ONCSource source = info.source;
-  if (source != ONCSource::kDevicePolicy && source != ONCSource::kUserPolicy)
+  OncSource source = info.source;
+  if (source != OncSource::kDevicePolicy && source != OncSource::kUserPolicy)
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();

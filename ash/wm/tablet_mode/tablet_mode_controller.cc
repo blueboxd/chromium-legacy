@@ -373,6 +373,10 @@ void TabletModeController::StopObservingAnimation(bool record_stats,
     fps_counter_->LogUma();
   fps_counter_.reset();
 
+  // Stop other animations (STEP_END), then update the tablet mode ui.
+  if (tablet_mode_window_manager_ && delete_screenshot)
+    tablet_mode_window_manager_->StopWindowAnimations();
+
   if (delete_screenshot)
     DeleteScreenshot();
 }

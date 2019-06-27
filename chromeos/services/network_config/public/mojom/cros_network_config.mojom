@@ -65,11 +65,11 @@ enum NetworkType {
 };
 
 // The ONC source for policy or imported networks.
-enum ONCSource {
-  kUnknown,
+enum OncSource {
   kNone,
-  kUserImport,
+  kDevice,
   kDevicePolicy,
+  kUser,
   kUserPolicy,
 };
 
@@ -207,7 +207,7 @@ struct NetworkStateProperties {
   ProxyMode proxy_mode;
   // True for visible networks that are blocked / disallowed by policy.
   bool prohibited_by_policy = false;
-  ONCSource source;
+  OncSource source;
   TetherStateProperties? tether;
   NetworkType type;
   VPNStateProperties? vpn;

@@ -98,14 +98,14 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   // Provides data for this bubble.
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
 
-  ListItemContainer* list_item_container_;
+  ListItemContainer* list_item_container_ = nullptr;
 
   typedef std::vector<views::RadioButton*> RadioGroup;
   RadioGroup radio_group_;
-  views::Link* custom_link_;
-  views::LabelButton* manage_button_;
-  views::Checkbox* manage_checkbox_;
-  views::ImageButton* learn_more_button_;
+  views::Link* custom_link_ = nullptr;
+  views::LabelButton* manage_button_ = nullptr;
+  views::Checkbox* manage_checkbox_ = nullptr;
+  views::ImageButton* learn_more_button_ = nullptr;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

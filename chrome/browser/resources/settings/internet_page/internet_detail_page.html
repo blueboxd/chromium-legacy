@@ -32,7 +32,7 @@
 
 <dom-module id="settings-internet-detail-page">
   <template>
-    <style include="internet-shared iron-flex">
+    <style include="internet-shared settings-shared iron-flex">
       :host {
         padding-bottom: 40px;
       }
@@ -66,13 +66,17 @@
       paper-spinner-lite {
         @apply --cr-icon-height-width;
       }
+      .warning {
+          color: var(--cr-secondary-text-color);
+          margin-inline-start: var(--settings-controlled-by-spacing);
+      }
     </style>
     <!-- Title section: Icon + name + connection state. -->
     <div id="titleDiv" class="settings-box first">
       <div class="start layout horizontal center">
         <cr-network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
-            network-state="[[networkProperties_]]">
+            network-state="[[getNetworkState_(networkProperties_)]]">
         </cr-network-icon>
         <div id="networkState" class="title settings-box-text"
             connected$="[[isConnectedState_(networkProperties_)]]"
@@ -184,6 +188,16 @@
             pref="{{autoConnect_}}"
             label="[[getAutoConnectToggleLabel_(networkProperties_)]]">
         </settings-toggle-button>
+        <!-- Hidden Network Warning -->
+        <template is="dom-if"
+            if="[[showHiddenNetworkWarning_(autoConnect_.*,
+                networkProperties_)]]"
+            restamp>
+          <div class="warning">
+            <iron-icon icon="cr:warning"></iron-icon>
+            [[i18n('hiddenNetworkWarning')]]
+          </div>
+        </template>
       </template>
       <!-- Always-on VPN. -->
       <template is="dom-if"

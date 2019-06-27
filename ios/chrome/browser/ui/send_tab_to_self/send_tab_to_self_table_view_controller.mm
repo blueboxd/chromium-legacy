@@ -111,6 +111,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
     deviceItem.text = base::SysUTF8ToNSString(iter.first);
     deviceItem.detailText =
         [self sendTabToSelfdaysSinceLastUpdate:daysSinceLastUpdate];
+    switch (iter.second.device_type) {
+      case sync_pb::SyncEnums::TYPE_TABLET:
+        deviceItem.iconImageName = @"send_tab_to_self_tablet";
+        break;
+      case sync_pb::SyncEnums::TYPE_PHONE:
+        deviceItem.iconImageName = @"send_tab_to_self_smartphone";
+        break;
+      case sync_pb::SyncEnums::TYPE_WIN:
+      case sync_pb::SyncEnums::TYPE_MAC:
+      case sync_pb::SyncEnums::TYPE_LINUX:
+      case sync_pb::SyncEnums::TYPE_CROS:
+        deviceItem.iconImageName = @"send_tab_to_self_laptop";
+        break;
+      default:
+        deviceItem.iconImageName = @"send_tab_to_self_devices";
+    }
 
     [model addItem:deviceItem
         toSectionWithIdentifier:SectionIdentifierDevicesToSend];

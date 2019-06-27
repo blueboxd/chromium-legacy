@@ -52,7 +52,6 @@ class SiteSuggestionsCoordinator {
             SuggestionsNavigationDelegate navigationDelegate, ContextMenuManager contextMenuManager,
             ImageFetcher imageFetcher, TouchlessLayoutManager touchlessLayoutManager) {
         Context context = parentView.getContext();
-        SiteSuggestionsLayoutManager layoutManager = new SiteSuggestionsLayoutManager(context);
         PropertyModel model =
                 new PropertyModel
                         .Builder(CURRENT_INDEX_KEY, INITIAL_INDEX_KEY, SUGGESTIONS_KEY,
@@ -65,6 +64,9 @@ class SiteSuggestionsCoordinator {
                         .build();
         View suggestionsView =
                 ((ViewStub) parentView.findViewById(R.id.most_likely_stub)).inflate();
+
+        SiteSuggestionsLayoutManager layoutManager =
+                new SiteSuggestionsLayoutManager(context, model);
 
         RoundedIconGenerator iconGenerator = ViewUtils.createDefaultRoundedIconGenerator(
                 context.getResources(), /* circularIcon = */ true);

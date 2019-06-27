@@ -187,6 +187,7 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
   DCHECK(!snap || CanSnapInSplitview(window));
   state_type_on_attach_ =
       snap ? current_state_type_ : GetMaximizedOrCenteredWindowType(state);
+  // TODO(oshima|sammiequon): consider SplitView scenario.
   if (entering_tablet_mode)
     set_enter_animation_type(IsTopWindow(window) ? DEFAULT : STEP_END);
   old_state_.reset(
@@ -467,8 +468,12 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
       if (enter_animation_type() == STEP_END) {
-        window_state->SetBoundsDirectCrossFade(bounds_in_parent,
-                                               gfx::Tween::ZERO);
+        // Just use the normal bounds animation with ZERO tween with long enough
+        // duration for STEP_END. The animation will be stopped when the to
+        // window's animation ends.
+        window_state->SetBoundsDirectAnimated(bounds_in_parent,
+                                              base::TimeDelta::FromSeconds(1),
+                                              gfx::Tween::ZERO);
         // Reset the |enter_animation_type_| to DEFAULT it if is STEP_END, which
         // is set for non-top windows when entering tablet mode.
         set_enter_animation_type(DEFAULT);

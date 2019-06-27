@@ -133,11 +133,6 @@ ContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
   return nullptr;
 }
 
-void ContentBrowserClient::LogInitiatorSchemeBypassingDocumentBlocking(
-    const url::Origin& initiator_origin,
-    int render_process_id,
-    ResourceType resource_type) {}
-
 network::mojom::URLLoaderFactoryPtrInfo
 ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     RenderProcessHost* process,

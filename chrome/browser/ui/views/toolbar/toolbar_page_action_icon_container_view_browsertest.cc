@@ -54,6 +54,11 @@ class ToolbarPageActionIconContainerViewBrowserTest
   void TestUsesHighlight(ToolbarPageActionIconContainerView* container,
                          bool expect_highlight) {
     DCHECK(container);
+
+    // Make sure the save-card icon is visible so that at least two children are
+    // visible. Otherwise the border highlight would never be drawn.
+    container->save_card_icon_view()->SetVisible(true);
+
     EXPECT_EQ(container->uses_highlight(), expect_highlight);
     EXPECT_EQ(container->border(), nullptr);
 

@@ -72,10 +72,6 @@ enum NotificationType {
   // Source<ThemeService>. There are no details.
   NOTIFICATION_BROWSER_THEME_CHANGED,
 
-  // Sent when the renderer returns focus to the browser, as part of focus
-  // traversal. The source is the browser, there are no details.
-  NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
-
   // Application-wide ----------------------------------------------------------
 
   // This message is sent when the application is terminating (the last
@@ -191,9 +187,6 @@ enum NotificationType {
   // Sent by the autocomplete controller when done.  The source is the
   // AutocompleteController, the details not used.
   NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-
-  // This is sent from Instant when the omnibox focus state changes.
-  NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
 
   // Printing ----------------------------------------------------------------
 

@@ -7,8 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol SendTabToSelfModalPositioner;
+
 // PresentationController for the modal dialog.
 @interface SendTabToSelfModalPresentationController : UIPresentationController
+
+// Delegate used to position the modal dialog.
+@property(nonatomic, weak) id<SendTabToSelfModalPositioner> modalPositioner;
 
 @end
 

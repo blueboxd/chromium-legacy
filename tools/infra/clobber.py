@@ -73,14 +73,16 @@ def _trigger_clobber(pool, cache, bot, dry_run):
 def main(raw_args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--builder', required=True)
-  parser.add_argument('--pool', required=True, choices=['ci', 'try'])
+  parser.add_argument('--pool', required=True)
+  parser.add_argument(
+      '--project', default='chromium', choices=['chromium', 'infra'])
   parser.add_argument('-n', '--dry-run', action='store_true')
   args = parser.parse_args(raw_args)
 
   # Matches http://bit.ly/2WZO33P
-  h = hashlib.sha256('chromium/%s/%s' % (args.pool, args.builder))
+  h = hashlib.sha256('%s/%s/%s' % (args.project, args.pool, args.builder))
   cache_name = 'builder_%s_v2' % (h.hexdigest())
-  swarming_pool = 'luci.chromium.%s' % args.pool
+  swarming_pool = 'luci.%s.%s' % (args.project, args.pool)
 
   bots = _get_bots(swarming_pool, cache_name)
 

@@ -49,15 +49,15 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   explicit Slider(SliderListener* listener);
   ~Slider() override;
 
-  float value() const { return value_; }
+  float GetValue() const;
   void SetValue(float value);
 
-  void set_enable_accessibility_events(bool enabled) {
-    accessibility_events_enabled_ = enabled;
-  }
+  bool GetEnableAccessibilityEvents() const;
+  void SetEnableAccessibilityEvents(bool enabled);
 
-  // Update UI based on control on/off state.
-  void UpdateState(bool control_on);
+  // Gets/Sets IsActive state
+  bool GetIsActive() const;
+  void SetIsActive(bool is_active);
 
  protected:
   // Returns the current position of the thumb on the slider.

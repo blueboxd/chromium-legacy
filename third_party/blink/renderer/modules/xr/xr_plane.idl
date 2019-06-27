@@ -15,7 +15,7 @@ enum XRPlaneOrientation {
     RuntimeEnabled=WebXRPlaneDetection
 ]
 interface XRPlane {
-    XRPose getPose(XRReferenceSpace referenceSpace);
+    readonly attribute XRSpace planeSpace;
     readonly attribute FrozenArray<DOMPointReadOnly> polygon;
     readonly attribute XRPlaneOrientation? orientation;
     readonly attribute DOMHighResTimeStamp lastChangedTime;

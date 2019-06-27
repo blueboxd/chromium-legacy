@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
+
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
-#include "third_party/blink/renderer/modules/xr/xr_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_plane_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
@@ -34,11 +36,16 @@ XRPlane::XRPlane(XRSession* session,
   DVLOG(3) << __func__;
 }
 
-XRPose* XRPlane::getPose(XRReferenceSpace* reference_space) const {
-  std::unique_ptr<TransformationMatrix> viewer_pose =
-      reference_space->GetViewerPoseMatrix(pose_matrix_.get());
-  return MakeGarbageCollected<XRPose>(*viewer_pose,
-                                      session_->EmulatedPosition());
+XRSpace* XRPlane::planeSpace() const {
+  if (!plane_space_) {
+    plane_space_ = MakeGarbageCollected<XRPlaneSpace>(session_, this);
+  }
+
+  return plane_space_;
+}
+
+TransformationMatrix XRPlane::poseMatrix() const {
+  return *pose_matrix_;
 }
 
 String XRPlane::orientation() const {
@@ -82,6 +89,7 @@ void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,
 void XRPlane::Trace(blink::Visitor* visitor) {
   visitor->Trace(polygon_);
   visitor->Trace(session_);
+  visitor->Trace(plane_space_);
   ScriptWrappable::Trace(visitor);
 }
 

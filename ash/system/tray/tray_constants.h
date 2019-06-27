@@ -172,9 +172,12 @@ constexpr SkColor kUnifiedNotificationSeparatorColor =
 constexpr SkColor kUnifiedFeaturePodHoverColor =
     SkColorSetRGB(0xff, 0xff, 0xff);
 constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRedDark600;
+constexpr SkColor kUnifiedManagedDeviceIconColor =
+    SkColorSetRGB(0x9a, 0xa0, 0xa6);
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);
+constexpr gfx::Insets kUnifiedManagedDeviceViewPadding(4, 19, 4, 16);
 constexpr gfx::Insets kUnifiedSliderRowPadding(0, 12, 8, 16);
 constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
@@ -211,6 +214,7 @@ constexpr SkColor kStackingNotificationCounterLabelColor =
 // A dark disc with |kTrayItemSize| diameter is drawn in the background.
 constexpr int kTrayTopShortcutButtonIconSize = 20;
 
+constexpr int kUnifiedManagedDeviceSpacing = 4;
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
 constexpr int kUnifiedSystemInfoSeparatorColor =

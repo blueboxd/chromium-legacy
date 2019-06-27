@@ -36,8 +36,8 @@ void PaintRenderingContext2D::InitializePaintRecorder() {
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
-  canvas->scale(effective_zoom_, effective_zoom_);
   canvas->save();
+  scale(effective_zoom_, effective_zoom_);
 
   did_record_draw_commands_in_paint_recorder_ = false;
 }

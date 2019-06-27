@@ -347,7 +347,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
-      function addPlaneToScene(plane, timestamp) {
+      function addPlaneToScene(frame, plane, timestamp) {
         if(typeof XRPlane.counter == 'undefined') {
           XRPlane.counter = 1;
           XRPlane.colors = [
@@ -389,7 +389,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           plane_node.addNode(planeFrameOfReference);
 
           plane.scene_node = plane_node;
-          plane.scene_node.matrix = plane.getPose(xrRefSpace).transform.matrix;
+          plane.scene_node.matrix = frame.getPose(plane.planeSpace, xrRefSpace).transform.matrix;
 
           plane.extended_polygon = extendPolygon(plane.polygon);
           plane.extended_polygon_node = new PlaneNode({
@@ -406,7 +406,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         {
           // old plane that was updated in current frame
           plane.scene_node.onPlaneChanged(plane.polygon);
-          plane.scene_node.matrix = plane.getPose(xrRefSpace).transform.matrix;
+          plane.scene_node.matrix = frame.getPose(plane.planeSpace, xrRefSpace).transform.matrix;
           plane.extended_polygon = extendPolygon(plane.polygon);
           plane.extended_polygon_node.onPlaneChanged(plane.extended_polygon);
         }
@@ -450,7 +450,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         // Process all currently detected planes.
         detected_planes.forEach(plane => {
-          addPlaneToScene(plane, t);
+          addPlaneToScene(frame, plane, t);
         });
 
         // If requested, use the pose to cast a reticle into the scene using a
@@ -469,7 +469,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           rayObject.matrix = ray.matrix.slice();
           rayObject.visible = true;
 
-          const hitTestResults = hitTest(ray, frame.worldInformation.detectedPlanes, xrRefSpace);
+          const hitTestResults = hitTest(frame, ray, xrRefSpace);
           const hitTestFiltered = filterHitTestResults(hitTestResults,
                                                        extendPlanesEnabled.checked,
                                                        false,

@@ -195,6 +195,10 @@ void MoveMouseToCenterAndPress(
 
 // Returns the center of |view| in screen coordinates.
 gfx::Point GetCenterInScreenCoordinates(const views::View* view);
+
+// Blocks until the given view is focused (or not focused, depending on
+// |focused|). Returns immediately if the state is already correct.
+void WaitForViewFocus(Browser* browser, ViewID vid, bool focused);
 #endif
 
 #if defined(OS_MACOSX)

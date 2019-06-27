@@ -121,8 +121,10 @@ void AssistantWebView::OnDeepLinkReceived(
 
   RemoveContents();
 
-  delegate_->GetNavigableContentsFactoryForView(
-      contents_factory_.BindNewPipeAndPassReceiver());
+  if (!contents_factory_.is_bound()) {
+    delegate_->GetNavigableContentsFactoryForView(
+        contents_factory_.BindNewPipeAndPassReceiver());
+  }
 
   auto contents_params = content::mojom::NavigableContentsParams::New();
   contents_params->suppress_navigations = true;

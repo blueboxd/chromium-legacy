@@ -76,13 +76,34 @@ Slider::Slider(SliderListener* listener)
 
 Slider::~Slider() = default;
 
+float Slider::GetValue() const {
+  return value_;
+}
+
 void Slider::SetValue(float value) {
   SetValueInternal(value, VALUE_CHANGED_BY_API);
 }
 
-void Slider::UpdateState(bool control_on) {
-  is_active_ = control_on;
-  SchedulePaint();
+bool Slider::GetEnableAccessibilityEvents() const {
+  return accessibility_events_enabled_;
+}
+
+void Slider::SetEnableAccessibilityEvents(bool enabled) {
+  if (accessibility_events_enabled_ == enabled)
+    return;
+  accessibility_events_enabled_ = enabled;
+  OnPropertyChanged(&accessibility_events_enabled_, kPropertyEffectsNone);
+}
+
+bool Slider::GetIsActive() const {
+  return is_active_;
+}
+
+void Slider::SetIsActive(bool is_active) {
+  if (is_active == is_active_)
+    return;
+  is_active_ = is_active;
+  OnPropertyChanged(&is_active_, kPropertyEffectsPaint);
 }
 
 float Slider::GetAnimatingValue() const{
@@ -140,8 +161,9 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
       move_animation_->SetSlideDuration(kSlideValueChangeDurationMs);
       move_animation_->Show();
     }
+    OnPropertyChanged(&value_, kPropertyEffectsNone);
   } else {
-    SchedulePaint();
+    OnPropertyChanged(&value_, kPropertyEffectsPaint);
   }
 
   if (accessibility_events_enabled_) {
@@ -355,6 +377,9 @@ void Slider::OnGestureEvent(ui::GestureEvent* event) {
 
 BEGIN_METADATA(Slider)
 METADATA_PARENT_CLASS(View)
+ADD_PROPERTY_METADATA(Slider, float, Value)
+ADD_PROPERTY_METADATA(Slider, bool, EnableAccessibilityEvents)
+ADD_PROPERTY_METADATA(Slider, bool, IsActive)
 END_METADATA()
 
 }  // namespace views

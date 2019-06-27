@@ -51,7 +51,7 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
   }
 
   avatar_ = new AvatarToolbarButton(browser);
-  AddMainView(avatar_);
+  AddMainButton(avatar_);
 }
 
 ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() {

@@ -151,7 +151,7 @@ void UnifiedVolumeView::Update(bool by_user) {
   float level = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.f;
 
   // Indicate that the slider is inactive when it's muted.
-  slider()->UpdateState(!is_muted);
+  slider()->SetIsActive(!is_muted);
 
   // The button should be gray whay muted and colored otherwise.
   button()->SetToggled(!is_muted);
@@ -165,7 +165,7 @@ void UnifiedVolumeView::Update(bool by_user) {
   // there will be a small discrepancy between slider's value and volume level
   // on audio side. To avoid the jittering in slider UI, do not set change
   // slider value if the change is less than the threshold.
-  if (std::abs(level - slider()->value()) < kSliderIgnoreUpdateThreshold)
+  if (std::abs(level - slider()->GetValue()) < kSliderIgnoreUpdateThreshold)
     return;
 
   SetSliderValue(level, by_user);

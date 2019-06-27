@@ -130,7 +130,7 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
   // Prevent an accessibility event while initiallizing this view. Typically
   // the first update of the slider value is conducted by the caller function
   // to reflect the current value.
-  slider_->set_enable_accessibility_events(false);
+  slider_->SetEnableAccessibilityEvents(false);
 
   slider_->GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(accessible_name_id));
@@ -152,7 +152,7 @@ void UnifiedSliderView::SetSliderValue(float value, bool by_user) {
 
   slider_->SetValue(value);
   if (by_user)
-    slider_->set_enable_accessibility_events(true);
+    slider_->SetEnableAccessibilityEvents(true);
 }
 
 const char* UnifiedSliderView::GetClassName() const {

@@ -300,7 +300,7 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
   }
 
   const vpx_image_t* vpx_image_alpha = nullptr;
-  AlphaDecodeStatus alpha_decode_status =
+  const auto alpha_decode_status =
       DecodeAlphaPlane(vpx_image, &vpx_image_alpha, buffer);
   if (alpha_decode_status == kAlphaPlaneError) {
     return false;
@@ -308,9 +308,10 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
     *video_frame = nullptr;
     return true;
   }
-  if (!CopyVpxImageToVideoFrame(vpx_image, vpx_image_alpha, video_frame)) {
+
+  if (!CopyVpxImageToVideoFrame(vpx_image, vpx_image_alpha, video_frame))
     return false;
-  }
+
   if (vpx_image_alpha && config_.codec() == kCodecVP8) {
     libyuv::CopyPlane(vpx_image_alpha->planes[VPX_PLANE_Y],
                       vpx_image_alpha->stride[VPX_PLANE_Y],
@@ -322,71 +323,61 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
 
   (*video_frame)->set_timestamp(buffer->timestamp());
 
-  // Default to the color space from the config, but if the bistream specifies
-  // one, prefer that instead.
+  // Prefer the color space from the config if available. It generally comes
+  // from the color tag which is more expressive than the vp8 and vp9 bitstream.
   if (config_.color_space_info().IsSpecified()) {
     (*video_frame)
         ->set_color_space(config_.color_space_info().ToGfxColorSpace());
+    return true;
   }
 
-  if (config_.color_space_info().IsSpecified()) {
-    // config_.color_space_info() comes from the color tag which is
-    // more expressive than the bitstream, so prefer it over the
-    // bitstream data below.
-    (*video_frame)
-        ->set_color_space(config_.color_space_info().ToGfxColorSpace());
-  } else {
-    gfx::ColorSpace::PrimaryID primaries = gfx::ColorSpace::PrimaryID::INVALID;
-    gfx::ColorSpace::TransferID transfer = gfx::ColorSpace::TransferID::INVALID;
-    gfx::ColorSpace::MatrixID matrix = gfx::ColorSpace::MatrixID::INVALID;
-    gfx::ColorSpace::RangeID range = vpx_image->range == VPX_CR_FULL_RANGE
-                                         ? gfx::ColorSpace::RangeID::FULL
-                                         : gfx::ColorSpace::RangeID::LIMITED;
+  auto primaries = gfx::ColorSpace::PrimaryID::INVALID;
+  auto transfer = gfx::ColorSpace::TransferID::INVALID;
+  auto matrix = gfx::ColorSpace::MatrixID::INVALID;
+  auto range = vpx_image->range == VPX_CR_FULL_RANGE
+                   ? gfx::ColorSpace::RangeID::FULL
+                   : gfx::ColorSpace::RangeID::LIMITED;
 
-    switch (vpx_image->cs) {
-      case VPX_CS_BT_601:
-      case VPX_CS_SMPTE_170:
-        primaries = gfx::ColorSpace::PrimaryID::SMPTE170M;
-        transfer = gfx::ColorSpace::TransferID::SMPTE170M;
-        matrix = gfx::ColorSpace::MatrixID::SMPTE170M;
-        break;
-      case VPX_CS_SMPTE_240:
-        primaries = gfx::ColorSpace::PrimaryID::SMPTE240M;
-        transfer = gfx::ColorSpace::TransferID::SMPTE240M;
-        matrix = gfx::ColorSpace::MatrixID::SMPTE240M;
-        break;
-      case VPX_CS_BT_709:
-        primaries = gfx::ColorSpace::PrimaryID::BT709;
+  switch (vpx_image->cs) {
+    case VPX_CS_BT_601:
+    case VPX_CS_SMPTE_170:
+      primaries = gfx::ColorSpace::PrimaryID::SMPTE170M;
+      transfer = gfx::ColorSpace::TransferID::SMPTE170M;
+      matrix = gfx::ColorSpace::MatrixID::SMPTE170M;
+      break;
+    case VPX_CS_SMPTE_240:
+      primaries = gfx::ColorSpace::PrimaryID::SMPTE240M;
+      transfer = gfx::ColorSpace::TransferID::SMPTE240M;
+      matrix = gfx::ColorSpace::MatrixID::SMPTE240M;
+      break;
+    case VPX_CS_BT_709:
+      primaries = gfx::ColorSpace::PrimaryID::BT709;
+      transfer = gfx::ColorSpace::TransferID::BT709;
+      matrix = gfx::ColorSpace::MatrixID::BT709;
+      break;
+    case VPX_CS_BT_2020:
+      primaries = gfx::ColorSpace::PrimaryID::BT2020;
+      if (vpx_image->bit_depth >= 12)
+        transfer = gfx::ColorSpace::TransferID::BT2020_12;
+      else if (vpx_image->bit_depth >= 10)
+        transfer = gfx::ColorSpace::TransferID::BT2020_10;
+      else
         transfer = gfx::ColorSpace::TransferID::BT709;
-        matrix = gfx::ColorSpace::MatrixID::BT709;
-        break;
-      case VPX_CS_BT_2020:
-        primaries = gfx::ColorSpace::PrimaryID::BT2020;
-        if (vpx_image->bit_depth >= 12) {
-          transfer = gfx::ColorSpace::TransferID::BT2020_12;
-        } else if (vpx_image->bit_depth >= 10) {
-          transfer = gfx::ColorSpace::TransferID::BT2020_10;
-        } else {
-          transfer = gfx::ColorSpace::TransferID::BT709;
-        }
-        matrix = gfx::ColorSpace::MatrixID::BT2020_NCL;  // is this right?
-        break;
-      case VPX_CS_SRGB:
-        primaries = gfx::ColorSpace::PrimaryID::BT709;
-        transfer = gfx::ColorSpace::TransferID::IEC61966_2_1;
-        matrix = gfx::ColorSpace::MatrixID::BT709;
-        break;
+      matrix = gfx::ColorSpace::MatrixID::BT2020_NCL;  // is this right?
+      break;
+    case VPX_CS_SRGB:
+      primaries = gfx::ColorSpace::PrimaryID::BT709;
+      transfer = gfx::ColorSpace::TransferID::IEC61966_2_1;
+      matrix = gfx::ColorSpace::MatrixID::BT709;
+      break;
+    default:
+      break;
+  }
 
-      default:
-        break;
-    }
-
-    // TODO(ccameron): Set a color space even for unspecified values.
-    if (primaries != gfx::ColorSpace::PrimaryID::INVALID) {
-      (*video_frame)
-          ->set_color_space(
-              gfx::ColorSpace(primaries, transfer, matrix, range));
-    }
+  // TODO(ccameron): Set a color space even for unspecified values.
+  if (primaries != gfx::ColorSpace::PrimaryID::INVALID) {
+    (*video_frame)
+        ->set_color_space(gfx::ColorSpace(primaries, transfer, matrix, range));
   }
 
   return true;

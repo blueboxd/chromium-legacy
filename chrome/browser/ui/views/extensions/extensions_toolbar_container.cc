@@ -19,7 +19,7 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
       model_observer_(this),
       extensions_button_(new ExtensionsToolbarButton(browser_, this)) {
   model_observer_.Add(model_);
-  AddMainView(extensions_button_);
+  AddMainButton(extensions_button_);
   CreateActions();
 }
 

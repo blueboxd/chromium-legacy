@@ -4,15 +4,58 @@
 
 // Methods compiled on all toolkit-views platforms (including Mac).
 
-#include "chrome/test/base/interactive_test_utils.h"
-
 #include "base/bind.h"
+#include "base/macros.h"
+#include "base/run_loop.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/test/base/interactive_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui_test_utils {
+
+namespace {
+
+// A helper to wait until a view either gains or loses focus.
+class ViewFocusWaiter : public views::ViewObserver {
+ public:
+  ViewFocusWaiter(views::View* view, bool focused)
+      : view_(view), target_focused_(focused) {
+    view->AddObserver(this);
+  }
+
+  ~ViewFocusWaiter() override { view_->RemoveObserver(this); }
+
+  // views::ViewObserver:
+  void OnViewFocused(views::View* observed_view) override {
+    if (target_focused_ && run_loop_.running())
+      run_loop_.Quit();
+  }
+
+  void OnViewBlurred(views::View* observed_view) override {
+    if (!target_focused_ && run_loop_.running())
+      run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (view_->HasFocus() != target_focused_)
+      run_loop_.Run();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  views::View* view_;
+  const bool target_focused_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewFocusWaiter);
+};
+
+}  // namespace
 
 void MoveMouseToCenterAndPress(views::View* view,
                                ui_controls::MouseButton button,
@@ -42,6 +85,15 @@ gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
   gfx::Point center = view->GetLocalBounds().CenterPoint();
   views::View::ConvertPointToScreen(view, &center);
   return center;
+}
+
+void WaitForViewFocus(Browser* browser, ViewID vid, bool focused) {
+  views::View* view = views::Widget::GetWidgetForNativeWindow(
+                          browser->window()->GetNativeWindow())
+                          ->GetContentsView()
+                          ->GetViewByID(vid);
+  ASSERT_TRUE(view);
+  ViewFocusWaiter(view, focused).Wait();
 }
 
 }  // namespace ui_test_utils

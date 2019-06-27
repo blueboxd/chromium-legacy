@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
@@ -42,8 +41,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -128,11 +125,6 @@ void SearchTabHelper::OmniboxInputStateChanged() {
 
 void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
                                           OmniboxFocusChangeReason reason) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
-      content::Source<SearchTabHelper>(this),
-      content::NotificationService::NoDetails());
-
   ipc_router_.OmniboxFocusChanged(state, reason);
 
   // Don't send oninputstart/oninputend updates in response to focus changes

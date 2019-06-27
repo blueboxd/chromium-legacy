@@ -22,7 +22,7 @@ class ToolbarIconContainerView : public views::View,
   virtual void UpdateAllIcons();
 
   // Adds the RHS child as well as setting its margins.
-  void AddMainView(views::View* main_view);
+  void AddMainButton(views::Button* main_button);
 
   // views::ButtonObserver:
   void OnHighlightChanged(views::Button* observed_button,
@@ -44,16 +44,19 @@ class ToolbarIconContainerView : public views::View,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+  void ViewHierarchyChanged(
+      const views::ViewHierarchyChangedDetails& details) override;
   gfx::Insets GetInsets() const override;
 
+  bool ShouldDisplayHighlight();
   void UpdateHighlight();
 
   // The main view is nominally always present and is last child in the view
   // hierarchy.
-  views::View* main_view_ = nullptr;
+  views::Button* main_button_ = nullptr;
 
   // Points to the child view that is currently highlighted.
-  views::View* highlighted_view_ = nullptr;
+  views::Button* highlighted_button_ = nullptr;
 
   // Determine whether the container shows its highlight background.
   const bool uses_highlight_;

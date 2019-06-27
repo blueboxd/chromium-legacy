@@ -5,6 +5,10 @@
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 
 #include "base/logging.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
+#import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_positioner.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_presentation_controller.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_table_view_controller.h"
 
@@ -12,11 +16,16 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SendTabToSelfCoordinator () <UIViewControllerTransitioningDelegate>
+@interface SendTabToSelfCoordinator () <UIViewControllerTransitioningDelegate,
+                                        SendTabToSelfModalPositioner>
 
 // The presentationController that shows the Send Tab To Self UI.
 @property(nonatomic, strong) SendTabToSelfModalPresentationController*
     sendTabToSelfModalPresentationController;
+
+// The presentationController that shows the Send Tab To Self UI.
+@property(nonatomic, strong)
+    SendTabToSelfTableViewController* sendTabToSelfViewController;
 
 @end
 
@@ -25,10 +34,16 @@
 #pragma mark - ChromeCoordinator Methods
 
 - (void)start {
-  SendTabToSelfTableViewController* tableViewController =
-      [[SendTabToSelfTableViewController alloc] init];
+  send_tab_to_self::SendTabToSelfSyncService* syncService =
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(self.browserState);
+  // This modal should not be launched in incognito mode where syncService is
+  // undefined.
+  DCHECK(syncService);
+
+  self.sendTabToSelfViewController = [[SendTabToSelfTableViewController alloc]
+      initWithModel:syncService->GetSendTabToSelfModel()];
   UINavigationController* navigationController = [[UINavigationController alloc]
-      initWithRootViewController:tableViewController];
+      initWithRootViewController:self.sendTabToSelfViewController];
 
   navigationController.transitioningDelegate = self;
   navigationController.modalPresentationStyle = UIModalPresentationCustom;
@@ -53,8 +68,24 @@
       [[SendTabToSelfModalPresentationController alloc]
           initWithPresentedViewController:presented
                  presentingViewController:presenting];
-  // TODO(crbug.com/970284) flesh out presentationController.
+  presentationController.modalPositioner = self;
   return presentationController;
+}
+
+#pragma mark - SendTabToSelfModalPositioner
+
+- (CGFloat)modalHeight {
+  UITableView* tableView = self.sendTabToSelfViewController.tableView;
+  [tableView setNeedsLayout];
+  [tableView layoutIfNeeded];
+
+  // Since the TableView is contained in a NavigationController get the
+  // navigation bar height.
+  CGFloat navigationBarHeight =
+      self.sendTabToSelfViewController.navigationController.navigationBar.frame
+          .size.height;
+
+  return tableView.contentSize.height + navigationBarHeight;
 }
 
 @end

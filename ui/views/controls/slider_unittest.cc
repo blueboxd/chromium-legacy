@@ -233,20 +233,20 @@ void SliderTest::ClickAt(int x, int y) {
 
 TEST_F(SliderTest, UpdateFromClickHorizontal) {
   ClickAt(0, 0);
-  EXPECT_EQ(0.0f, slider()->value());
+  EXPECT_EQ(0.0f, slider()->GetValue());
 
   ClickAt(max_x(), 0);
-  EXPECT_EQ(1.0f, slider()->value());
+  EXPECT_EQ(1.0f, slider()->GetValue());
 }
 
 TEST_F(SliderTest, UpdateFromClickRTLHorizontal) {
   base::i18n::SetICUDefaultLocale("he");
 
   ClickAt(0, 0);
-  EXPECT_EQ(1.0f, slider()->value());
+  EXPECT_EQ(1.0f, slider()->GetValue());
 
   ClickAt(max_x(), 0);
-  EXPECT_EQ(0.0f, slider()->value());
+  EXPECT_EQ(0.0f, slider()->GetValue());
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
@@ -257,17 +257,17 @@ TEST_F(SliderTest, SliderValueForTapGesture) {
   // Tap below the minimum.
   slider()->SetValue(0.5);
   event_generator()->GestureTapAt(gfx::Point(0, 0));
-  EXPECT_FLOAT_EQ(0, slider()->value());
+  EXPECT_FLOAT_EQ(0, slider()->GetValue());
 
   // Tap above the maximum.
   slider()->SetValue(0.5);
   event_generator()->GestureTapAt(gfx::Point(max_x(), max_y()));
-  EXPECT_FLOAT_EQ(1, slider()->value());
+  EXPECT_FLOAT_EQ(1, slider()->GetValue());
 
   // Tap somwhere in the middle.
   slider()->SetValue(0.5);
   event_generator()->GestureTapAt(gfx::Point(0.75 * max_x(), 0.75 * max_y()));
-  EXPECT_NEAR(0.75, slider()->value(), 0.03);
+  EXPECT_NEAR(0.75, slider()->GetValue(), 0.03);
 }
 
 // Test the slider location after a scroll gesture.
@@ -277,14 +277,14 @@ TEST_F(SliderTest, SliderValueForScrollGesture) {
   event_generator()->GestureScrollSequence(
       gfx::Point(0.5 * max_x(), 0.5 * max_y()), gfx::Point(0, 0),
       base::TimeDelta::FromMilliseconds(10), 5 /* steps */);
-  EXPECT_EQ(0, slider()->value());
+  EXPECT_EQ(0, slider()->GetValue());
 
   // Scroll above the maximum.
   slider()->SetValue(0.5);
   event_generator()->GestureScrollSequence(
       gfx::Point(0.5 * max_x(), 0.5 * max_y()), gfx::Point(max_x(), max_y()),
       base::TimeDelta::FromMilliseconds(10), 5 /* steps */);
-  EXPECT_EQ(1, slider()->value());
+  EXPECT_EQ(1, slider()->GetValue());
 
   // Scroll somewhere in the middle.
   slider()->SetValue(0.25);
@@ -292,7 +292,7 @@ TEST_F(SliderTest, SliderValueForScrollGesture) {
       gfx::Point(0.25 * max_x(), 0.25 * max_y()),
       gfx::Point(0.75 * max_x(), 0.75 * max_y()),
       base::TimeDelta::FromMilliseconds(10), 5 /* steps */);
-  EXPECT_NEAR(0.75, slider()->value(), 0.03);
+  EXPECT_NEAR(0.75, slider()->GetValue(), 0.03);
 }
 
 // Test the slider location by adjusting it using keyboard.
@@ -301,38 +301,38 @@ TEST_F(SliderTest, SliderValueForKeyboard) {
   slider()->SetValue(value);
   slider()->RequestFocus();
   event_generator()->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_GT(slider()->value(), value);
+  EXPECT_GT(slider()->GetValue(), value);
 
   slider()->SetValue(value);
   event_generator()->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_LT(slider()->value(), value);
+  EXPECT_LT(slider()->GetValue(), value);
 
   slider()->SetValue(value);
   event_generator()->PressKey(ui::VKEY_UP, 0);
-  EXPECT_GT(slider()->value(), value);
+  EXPECT_GT(slider()->GetValue(), value);
 
   slider()->SetValue(value);
   event_generator()->PressKey(ui::VKEY_DOWN, 0);
-  EXPECT_LT(slider()->value(), value);
+  EXPECT_LT(slider()->GetValue(), value);
 
   // RTL reverse left/right but not up/down.
   base::i18n::SetICUDefaultLocale("he");
   EXPECT_TRUE(base::i18n::IsRTL());
 
   event_generator()->PressKey(ui::VKEY_RIGHT, 0);
-  EXPECT_LT(slider()->value(), value);
+  EXPECT_LT(slider()->GetValue(), value);
 
   slider()->SetValue(value);
   event_generator()->PressKey(ui::VKEY_LEFT, 0);
-  EXPECT_GT(slider()->value(), value);
+  EXPECT_GT(slider()->GetValue(), value);
 
   slider()->SetValue(value);
   event_generator()->PressKey(ui::VKEY_UP, 0);
-  EXPECT_GT(slider()->value(), value);
+  EXPECT_GT(slider()->GetValue(), value);
 
   slider()->SetValue(value);
   event_generator()->PressKey(ui::VKEY_DOWN, 0);
-  EXPECT_LT(slider()->value(), value);
+  EXPECT_LT(slider()->GetValue(), value);
 }
 
 // Verifies the correct SliderListener events are raised for a tap gesture.

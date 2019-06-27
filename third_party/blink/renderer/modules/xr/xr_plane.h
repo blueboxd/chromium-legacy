@@ -15,9 +15,8 @@
 
 namespace blink {
 
-class XRPose;
 class XRSession;
-class XRReferenceSpace;
+class XRSpace;
 
 class XRPlane : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -34,8 +33,9 @@ class XRPlane : public ScriptWrappable {
           const HeapVector<Member<DOMPointReadOnly>>& polygon,
           double timestamp);
 
-  // Returns a pose expressed in passed in reference space.
-  XRPose* getPose(XRReferenceSpace* reference_space) const;
+  XRSpace* planeSpace() const;
+
+  TransformationMatrix poseMatrix() const;
 
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;
@@ -59,6 +59,9 @@ class XRPlane : public ScriptWrappable {
   Member<XRSession> session_;
 
   double last_changed_time_;
+
+  // Cached plane space - it will be created by `planeSpace()` if it's not set.
+  mutable Member<XRSpace> plane_space_;
 };
 
 }  // namespace blink

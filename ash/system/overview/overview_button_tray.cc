@@ -77,16 +77,15 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // a modal dialog is present.
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
-
-  bool kiosk_next = Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
-  bool events_blocked = Shell::Get()
-                            ->tablet_mode_controller()
-                            ->AreInternalInputDeviceEventsBlocked();
   bool active_session = session_controller->GetSessionState() ==
                         session_manager::SessionState::ACTIVE;
   bool app_mode = session_controller->IsRunningInAppMode();
 
-  SetVisible(!kiosk_next && events_blocked && active_session && !app_mode);
+  bool kiosk_next = Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
+  bool should_show =
+      Shell::Get()->tablet_mode_controller()->ShouldShowOverviewButton();
+
+  SetVisible(should_show && active_session && !app_mode && !kiosk_next);
 }
 
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {

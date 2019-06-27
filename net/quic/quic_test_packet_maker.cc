@@ -51,6 +51,7 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       host_(host),
       spdy_request_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       spdy_response_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
+      coalesce_http_frames_(false),
       qpack_encoder_(&decoder_stream_error_delegate_,
                      &encoder_stream_sender_delegate_),
       perspective_(perspective),
@@ -1104,25 +1105,33 @@ QuicTestPacketMaker::MakeInitialSettingsPacketAndSaveData(
   quic::QuicFrames frames;
   // A stream frame containing stream type will be written on the control stream
   // first.
-  char type[] = {0x00};
-  quic::QuicStreamFrame type_frame =
-      GenerateNextStreamFrame(quic::QuicUtils::GetFirstUnidirectionalStreamId(
-                                  version_.transport_version, perspective_),
-                              false, quic::QuicStringPiece(type, 1));
-  frames.push_back(quic::QuicFrame(type_frame));
+  std::string type(1, 0x00);
   quic::SettingsFrame settings;
   settings.values[quic::kSettingsMaxHeaderListSize] =
       quic::kDefaultMaxUncompressedHeaderSize;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
-  InitializeHeader(packet_number, /*should_include_version*/ true);
-  *stream_data = std::string(type, 1) + std::string(buffer.get(), frame_length);
-  quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
+  std::string settings_data = std::string(buffer.get(), frame_length);
+  *stream_data = type + settings_data;
+
+  std::vector<std::string> data;
+  if (coalesce_http_frames_) {
+    data = {type + settings_data};
+  } else {
+    data = {type, settings_data};
+  }
+
+  quic::QuicStreamId stream_id =
       quic::QuicUtils::GetFirstUnidirectionalStreamId(
-          version_.transport_version, perspective_),
-      false, quic::QuicStringPiece(buffer.get(), frame_length));
-  frames.push_back(quic::QuicFrame(quic_frame));
+          version_.transport_version, perspective_);
+
+  std::vector<quic::QuicStreamFrame> stream_frames =
+      GenerateNextStreamFrames(stream_id, false, data);
+  for (const auto& frame : stream_frames)
+    frames.push_back(quic::QuicFrame(frame));
+
+  InitializeHeader(packet_number, /*should_include_version*/ true);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
@@ -1256,6 +1265,14 @@ std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
       std::string(headers_frame_header.get(), headers_frame_header_length));
   // Add the HEADERS frame payload.
   data.push_back(encoded_headers);
+
+  if (coalesce_http_frames_) {
+    std::string coalesced;
+    for (const auto& d : data) {
+      coalesced += d;
+    }
+    data = {coalesced};
+  }
 
   // Compute the total data length.
   if (encoded_data_length) {

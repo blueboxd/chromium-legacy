@@ -168,7 +168,7 @@ void HandleToggleTouchscreen() {
 
 void HandleToggleTabletMode() {
   TabletModeController* controller = Shell::Get()->tablet_mode_controller();
-  controller->SetEnabledForTest(!controller->InTabletMode());
+  controller->SetEnabledForDev(!controller->InTabletMode());
 }
 
 void HandleTriggerCrash() {

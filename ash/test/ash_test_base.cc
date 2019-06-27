@@ -30,6 +30,7 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/window_factory.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/memory/ptr_util.h"
@@ -157,6 +158,8 @@ void AshTestBase::SetUp() {
 
 void AshTestBase::TearDown() {
   teardown_called_ = true;
+  // Make sure that we can exit tablet mode before shutdown correctly.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   Shell::Get()->session_controller()->NotifyChromeTerminating();
 
   // Flush the message loop to finish pending release tasks.

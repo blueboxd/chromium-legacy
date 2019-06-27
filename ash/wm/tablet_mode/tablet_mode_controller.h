@@ -172,6 +172,24 @@ class ASH_EXPORT TabletModeController
     ++tab_drag_in_splitview_count_;
   }
 
+  // Enable/disable the tablet mode for development. Please see cc file
+  // for more details.
+  void SetEnabledForDev(bool enabled);
+
+  // Returns true if the system tray should have a overview button.
+  bool ShouldShowOverviewButton() const;
+
+  // Defines how the tablet mode controller controls the
+  // tablet mode and its transition between clamshell mode.
+  // This is defined as a public to define constexpr in cc.
+  struct TabletModeBehavior {
+    bool use_sensor = true;
+    bool observe_display_events = true;
+    bool observe_external_pointer_device_events = true;
+    bool block_internal_input_device = false;
+    bool always_show_overview_button_in_tablet_mode = false;
+  };
+
  private:
   class TabletModeTransitionFpsCounter;
   friend class TabletModeControllerTestApi;
@@ -241,11 +259,6 @@ class ASH_EXPORT TabletModeController
   // Returns TABLET_MODE_INTERVAL_ACTIVE if TabletMode is currently active,
   // otherwise returns TABLET_MODE_INTERNAL_INACTIVE.
   TabletModeIntervalType CurrentTabletModeIntervalType();
-
-  // Checks whether we want to allow change the current ui mode to tablet mode
-  // or clamshell mode. This returns false if the user set a flag for the
-  // software to behave in a certain way regardless of configuration.
-  bool AllowUiModeChange() const;
 
   // Called when a pointing device config is changed, or when a device list is
   // sent from device manager. This will exit tablet mode if needed.
@@ -364,9 +377,6 @@ class ASH_EXPORT TabletModeController
   // mode.
   TabletModeToggleObserver* toggle_observer_ = nullptr;
 
-  // Tracks whether a flag is used to force ui mode.
-  UiMode force_ui_mode_ = UiMode::kNone;
-
   State state_ = State::kInClamshellMode;
 
   // Calls RecordLidAngle() periodically.
@@ -403,6 +413,8 @@ class ASH_EXPORT TabletModeController
   std::unique_ptr<ui::Layer> screenshot_layer_;
 
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
+
+  TabletModeBehavior tablet_mode_behavior_;
 
   base::WeakPtrFactory<TabletModeController> weak_factory_{this};
 

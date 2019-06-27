@@ -123,9 +123,8 @@ bool ShouldInitTabletModeController() {
       switches::kAshEnableTabletMode);
 }
 
-// Checks the command line to see which force tablet mode is turned on, if
-// any.
-TabletModeController::UiMode GetTabletMode() {
+// Returns the UiMode given by the force-table-mode command line.
+TabletModeController::UiMode GetUiMode() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshUiMode)) {
     std::string switch_value =
@@ -171,6 +170,49 @@ std::unique_ptr<ui::Layer> CreateLayerFromScreenshotResult(
   return screenshot_layer;
 }
 
+// The default behavior in Clamshell mode.
+constexpr TabletModeController::TabletModeBehavior kDefault{};
+
+// Defines the behavior of the tablet mode when enabled by sensor.
+constexpr TabletModeController::TabletModeBehavior kOnBySensor{
+    /*use_sensor=*/true,
+    /*observe_display_events=*/true,
+    /*observe_external_pointer_device_events=*/true,
+    /*block_internal_input_device=*/true,
+    /*always_show_overview_button_in_tablet_mode=*/false,
+};
+
+// Defines the behavior that sticks to the current mode. Used to
+// implement --force-tablet-mode flag.
+constexpr TabletModeController::TabletModeBehavior kLockInCurrentMode{
+    /*use_sensor=*/false,
+    /*observe_display_events=*/false,
+    /*observe_external_pointer_device_events=*/false,
+    /*block_internal_input_device=*/false,
+    /*always_show_overview_button_in_tablet_mode=*/true,
+};
+
+// Defines the behavior used for testing. It prevents the device from
+// switching the mode due to sensor events during the test.
+constexpr TabletModeController::TabletModeBehavior kOnForTest{
+    /*use_sensor=*/false,
+    /*observe_display_events=*/true,
+    /*observe_external_pointer_device_events=*/true,
+    /*block_internal_input_device=*/true,
+    /*always_show_overview_button_in_tablet_mode=*/false,
+};
+
+// Used for development purpose (currently debug shortcut shift-ctrl-alt). This
+// ignores the sensor but allows to switch upon docked mode and external
+// pointing device. It also forces to show the overview button.
+constexpr TabletModeController::TabletModeBehavior kOnForDev{
+    /*use_sensor=*/false,
+    /*observe_display_events=*/true,
+    /*observe_external_pointer_device_events=*/true,
+    /*block_internal_input_device=*/false,
+    /*always_show_overview_button_in_tablet_mode=*/true,
+};
+
 }  // namespace
 
 // Class which records animation smoothness when entering or exiting tablet
@@ -201,6 +243,9 @@ class TabletModeController::TabletModeTransitionFpsCounter : public FpsCounter {
 };
 
 constexpr char TabletModeController::kLidAngleHistogramName[];
+
+////////////////////////////////////////////////////////////////////////////////
+// TabletModeContrller, public:
 
 TabletModeController::TabletModeController()
     : event_blocker_(std::make_unique<InternalInputDevicesEventBlocker>()),
@@ -344,24 +389,31 @@ bool TabletModeController::InTabletMode() const {
 }
 
 void TabletModeController::SetEnabledForTest(bool enabled) {
-  // Disable Accelerometer and PowerManagerClient observers to prevent possible
-  // tablet mode overrides. It won't be possible to physically switch to/from
-  // tablet mode after calling this function. This is needed for tests that
-  // run on DUTs and require switching to/back tablet mode in runtime, like some
-  // ARC++ Tast tests.
-  AccelerometerReader::GetInstance()->RemoveObserver(this);
-  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
+  tablet_mode_behavior_ = enabled ? kOnForTest : kDefault;
+
   SetTabletModeEnabledInternal(enabled);
+  // Notify observers to update the tray button.
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletModeEventsBlockingChanged();
 }
 
 void TabletModeController::OnShellInitialized() {
-  force_ui_mode_ = GetTabletMode();
-  if (force_ui_mode_ == UiMode::kTabletMode)
-    AttemptEnterTabletMode();
+  switch (GetUiMode()) {
+    case UiMode::kTabletMode:
+      tablet_mode_behavior_ = kLockInCurrentMode;
+      AttemptEnterTabletMode();
+      break;
+    case UiMode::kClamshell:
+      tablet_mode_behavior_ = kLockInCurrentMode;
+      AttemptLeaveTabletMode();
+      break;
+    case UiMode::kNone:
+      break;
+  }
 }
 
 void TabletModeController::OnDisplayConfigurationChanged() {
-  if (!AllowUiModeChange())
+  if (!tablet_mode_behavior_.observe_display_events)
     return;
 
   if (!HasActiveInternalDisplay()) {
@@ -400,9 +452,6 @@ void TabletModeController::OnChromeTerminating() {
 
 void TabletModeController::OnAccelerometerUpdated(
     scoped_refptr<const AccelerometerUpdate> update) {
-  if (!AllowUiModeChange())
-    return;
-
   // When ChromeOS EC lid angle driver is present, EC can handle lid angle
   // calculation, thus Chrome side lid angle calculation is disabled. In this
   // case, TabletModeController no longer listens to accelerometer events.
@@ -424,6 +473,9 @@ void TabletModeController::OnAccelerometerUpdated(
   if (!HasActiveInternalDisplay())
     return;
 
+  if (!tablet_mode_behavior_.use_sensor)
+    return;
+
   // Whether or not we enter tablet mode affects whether we handle screen
   // rotation, so determine whether to enter tablet mode first.
   if (update->IsReadingStable(ACCELEROMETER_SOURCE_SCREEN) &&
@@ -440,26 +492,24 @@ void TabletModeController::OnAccelerometerUpdated(
 void TabletModeController::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& time) {
-  if (!AllowUiModeChange())
-    return;
-
   VLOG(1) << "Lid event received: " << static_cast<int>(state);
   const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   lid_is_closed_ = !open;
-
-  if (!tablet_mode_switch_is_on_)
+  if (tablet_mode_behavior_.use_sensor && !tablet_mode_switch_is_on_)
     AttemptLeaveTabletMode();
 }
 
 void TabletModeController::TabletModeEventReceived(
     chromeos::PowerManagerClient::TabletMode mode,
     const base::TimeTicks& time) {
-  if (!AllowUiModeChange())
+  if (!tablet_mode_behavior_.use_sensor)
     return;
 
   VLOG(1) << "Tablet mode event received: " << static_cast<int>(mode);
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
+
   tablet_mode_switch_is_on_ = on;
+  tablet_mode_behavior_ = on ? kOnBySensor : kDefault;
 
   // Do not change if docked.
   if (!HasActiveInternalDisplay())
@@ -534,7 +584,7 @@ void TabletModeController::OnDeviceListsComplete() {
 }
 
 void TabletModeController::OnKioskNextEnabled() {
-  force_ui_mode_ = UiMode::kTabletMode;
+  tablet_mode_behavior_ = kLockInCurrentMode;
   AttemptEnterTabletMode();
 }
 
@@ -579,11 +629,28 @@ void TabletModeController::OnWindowDestroying(aura::Window* window) {
   StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
 }
 
+void TabletModeController::SetEnabledForDev(bool enabled) {
+  tablet_mode_behavior_ = enabled ? kOnForDev : kDefault;
+
+  SetTabletModeEnabledInternal(enabled);
+  // Notify observers to update the tray button.
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletModeEventsBlockingChanged();
+}
+
+bool TabletModeController::ShouldShowOverviewButton() const {
+  return InTabletMode() &&
+         (AreInternalInputDeviceEventsBlocked() ||
+          tablet_mode_behavior_.always_show_overview_button_in_tablet_mode);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TabletModeContrller, private:
+
 // TODO(jcliang): Remove SetTabletModeEnabledInternal
 // (http://crbug.com/620241).
 void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
-  bool is_enabled = InTabletMode();
-  if (should_enable == is_enabled)
+  if (InTabletMode() == should_enable)
     return;
 
   // Hide the context menu on entering tablet mode to prevent users from
@@ -696,9 +763,11 @@ void TabletModeController::HandleHingeRotation(
 
   // Toggle tablet mode on or off when corresponding thresholds are passed.
   if (is_angle_stable && lid_angle_ <= kExitTabletModeAngle) {
+    tablet_mode_behavior_ = kDefault;
     AttemptLeaveTabletMode();
   } else if (!lid_is_closed_ && lid_angle_ >= kEnterTabletModeAngle &&
              (is_angle_stable || CanUseUnstableLidAngle())) {
+    tablet_mode_behavior_ = kOnBySensor;
     AttemptEnterTabletMode();
   }
 
@@ -714,9 +783,6 @@ void TabletModeController::HandleHingeRotation(
 void TabletModeController::OnGetSwitchStates(
     base::Optional<chromeos::PowerManagerClient::SwitchStates> result) {
   if (!result.has_value())
-    return;
-
-  if (AccelerometerReader::GetInstance()->is_disabled())
     return;
 
   LidEventReceived(result->lid_state, base::TimeTicks::Now());
@@ -740,7 +806,9 @@ bool TabletModeController::CanEnterTabletMode() {
 }
 
 void TabletModeController::AttemptEnterTabletMode() {
-  if (InTabletMode() || has_external_pointing_device_) {
+  if (InTabletMode() ||
+      (has_external_pointing_device_ &&
+       tablet_mode_behavior_.observe_external_pointer_device_events)) {
     UpdateInternalInputDevicesEventBlocker();
     return;
   }
@@ -793,14 +861,7 @@ TabletModeController::CurrentTabletModeIntervalType() {
   return TABLET_MODE_INTERVAL_INACTIVE;
 }
 
-bool TabletModeController::AllowUiModeChange() const {
-  return force_ui_mode_ == UiMode::kNone;
-}
-
 void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
-  if (!AllowUiModeChange())
-    return;
-
   bool has_external_pointing_device = false;
   // Check if there is an external mouse device.
   for (const ui::InputDevice& mouse :
@@ -830,6 +891,9 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
     return;
 
   has_external_pointing_device_ = has_external_pointing_device;
+
+  if (!tablet_mode_behavior_.observe_external_pointer_device_events)
+    return;
 
   // Enter clamshell mode whenever an external pointing device is attached.
   if (has_external_pointing_device) {
@@ -866,17 +930,20 @@ void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
   bool should_block_internal_events = false;
   if (InTabletMode()) {
     // If we are currently in tablet mode, the internal input events should
-    // always be blocked.
-    should_block_internal_events = (force_ui_mode_ == UiMode::kNone);
-  } else if (HasActiveInternalDisplay() &&
-             (LidAngleInTabletModeRange() || tablet_mode_switch_is_on_)) {
+    // be blocked if its specified by the behavior.
+    should_block_internal_events =
+        tablet_mode_behavior_.block_internal_input_device;
+  } else if (HasActiveInternalDisplay()) {
     // If we are currently in clamshell mode, the intenral input events should
-    // only be blocked if the current lid angle belongs to tablet mode angle
-    // or |tablet_mode_switch_is_on_| is true.
-    // Note if we don't have an active internal display, the device is currently
-    // in docked mode, and the user may still want to use the internal keyboard
-    // and mouse in docked mode, we don't block internal events in this case.
-    should_block_internal_events = true;
+    // only be blocked if the current lid angle belongs to tablet mode angle,
+    // or |tablet_mode_switch_on_| is true and with input device blocking is
+    // on. Note if we don't have an active internal display, the device is
+    // currently in docked mode, and the user may still want to use the internal
+    // keyboard and mouse in docked mode, we don't block internal events in this
+    // case.
+    should_block_internal_events =
+        (LidAngleInTabletModeRange() || tablet_mode_switch_is_on_) &&
+        tablet_mode_behavior_.block_internal_input_device;
   }
 
   if (should_block_internal_events == AreInternalInputDeviceEventsBlocked())

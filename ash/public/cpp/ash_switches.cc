@@ -69,7 +69,6 @@ const char kAshPowerButtonPosition[] = "ash-power-button-position";
 const char kAshUiMode[] = "force-tablet-mode";
 
 // Values for the kAshUiMode flag.
-const char kAshUiModeAuto[] = "auto";
 const char kAshUiModeClamshell[] = "clamshell";
 const char kAshUiModeTablet[] = "touch_view";
 

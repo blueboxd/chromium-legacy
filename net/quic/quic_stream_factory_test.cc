@@ -134,10 +134,13 @@ struct TestParams {
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllVersionsExcept99();
+      quic::AllSupportedVersions();
   for (const auto& version : all_supported_versions) {
-    params.push_back(TestParams{version, false});
-    params.push_back(TestParams{version, true});
+    // TODO(rch): crbug.com/978745 - Make this work with TLS
+    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
+      params.push_back(TestParams{version, false});
+      params.push_back(TestParams{version, true});
+    }
   }
   return params;
 }
@@ -174,7 +177,7 @@ struct PoolingTestParams {
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllVersionsExcept99();
+      quic::AllSupportedVersions();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST, false});
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST, true});
@@ -520,6 +523,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
     socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     socket_data1.AddSocketDataToFactory(socket_factory_.get());
 
+    client_maker_.set_coalesce_http_frames(true);
     // Set up second socket data provider that is used after
     // migration.
     MockQuicData socket_data2(version_);
@@ -1352,6 +1356,7 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
 
   client_maker_.Reset();
+  client_maker_.set_coalesce_http_frames(false);
   // Set up server IP, socket, proof, and config for new session.
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_->rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
@@ -2319,7 +2324,6 @@ void QuicStreamFactoryTestBase::TestMigrationOnNetworkMadeDefault(
 
   // Set up the second socket data provider that is used after migration.
   // The response to the earlier request is read on the new socket.
-  client_maker_.Reset();
   MockQuicData quic_data2(version_);
   // Connectivity probe to be sent on the new path.
   quic_data2.AddWrite(SYNCHRONOUS,
@@ -2493,7 +2497,6 @@ TEST_P(QuicStreamFactoryTest, MigratedToBlockedSocketAfterProbing) {
 
   // Set up the second socket data provider that is used after migration.
   // The response to the earlier request is read on the new socket.
-  client_maker_.Reset();
   MockQuicData quic_data2(version_);
   // First connectivity probe to be sent on the new path.
   quic_data2.AddWrite(SYNCHRONOUS,
@@ -3477,7 +3480,6 @@ TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
 
   // Set up the second socket data provider that is used for probing on the
   // alternate network.
-  client_maker_.Reset();
   MockQuicData quic_data2(version_);
   // Connectivity probe to be sent on the new path.
   quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(
@@ -3658,7 +3660,6 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
 
   // Set up the second socket data provider that is used after migration.
   // The response to the earlier request is read on the new socket.
-  client_maker_.Reset();
   MockQuicData quic_data2(version_);
   // Connectivity probe to be sent on the new path.
   quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(
@@ -4746,6 +4747,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnAysncWriteError) {
       SYNCHRONOUS,
       ConstructGetRequestPacket(
           2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
+  client_maker_.set_coalesce_http_frames(true);
   socket_data1.AddWrite(
       SYNCHRONOUS,
       ConstructGetRequestPacket(
@@ -6864,7 +6866,10 @@ TEST_P(QuicStreamFactoryTest, IgnoreWriteErrorFromOldWriterAfterMigration) {
   MockQuicData socket_data(version_);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
-  socket_data.AddWrite(ASYNC, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddWrite(
+      ASYNC, ERR_ADDRESS_UNREACHABLE,
+      ConstructGetRequestPacket(
+          2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -7208,26 +7213,15 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
           3, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
   socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Read two packets so that client will send ACK immedaitely.
-  spdy::SpdyHeaderBlock response_headers =
-      server_maker_.GetResponseHeaders("200 OK");
-  response_headers["key1"] = std::string(2000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
-  size_t chunk_size = 1200;
-  unsigned int packet_number = 1;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
-    socket_data1.AddRead(
-        ASYNC,
-        server_maker_.MakeDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
-  }
+  socket_data1.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  socket_data1.AddRead(
+      ASYNC, server_maker_.MakeDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 base::StringPiece("Hello World")));
+
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
                        server_maker_.MakeAckPacket(3, 3, 1, 1, false));
@@ -7365,26 +7359,14 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
           3, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
   socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Read two packets so that client will send ACK immedaitely.
-  spdy::SpdyHeaderBlock response_headers =
-      server_maker_.GetResponseHeaders("200 OK");
-  response_headers["key1"] = std::string(2000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
-  size_t chunk_size = 1200;
-  unsigned int packet_number = 1;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
-    socket_data1.AddRead(
-        ASYNC,
-        server_maker_.MakeDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
-  }
+  socket_data1.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  socket_data1.AddRead(
+      ASYNC, server_maker_.MakeDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 base::StringPiece("Hello World")));
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
                        server_maker_.MakeAckPacket(3, 3, 1, 1, false));
@@ -7511,26 +7493,14 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
           2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
   socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Read two packets so that client will send ACK immedaitely.
-  spdy::SpdyHeaderBlock response_headers =
-      server_maker_.GetResponseHeaders("200 OK");
-  response_headers["key1"] = std::string(2000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
-  size_t chunk_size = 1200;
-  unsigned int packet_number = 1;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
-    socket_data1.AddRead(
-        ASYNC,
-        server_maker_.MakeDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
-  }
+  socket_data1.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  socket_data1.AddRead(
+      ASYNC, server_maker_.MakeDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 base::StringPiece("Hello World")));
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
                        server_maker_.MakeAckPacket(3, 2, 1, 1, false));
@@ -7646,26 +7616,14 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
           2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
   socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Read two packets so that client will send ACK immedaitely.
-  spdy::SpdyHeaderBlock response_headers =
-      server_maker_.GetResponseHeaders("200 OK");
-  response_headers["key1"] = std::string(2000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
-  size_t chunk_size = 1200;
-  unsigned int packet_number = 1;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
-    socket_data1.AddRead(
-        ASYNC,
-        server_maker_.MakeDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
-  }
+  socket_data1.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  socket_data1.AddRead(
+      ASYNC, server_maker_.MakeDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 base::StringPiece("Hello World")));
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
                        server_maker_.MakeAckPacket(3, 2, 1, 1, false));
@@ -7781,26 +7739,14 @@ TEST_P(QuicStreamFactoryTest,
           2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
   socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Read two packets so that client will send ACK immedaitely.
-  spdy::SpdyHeaderBlock response_headers =
-      server_maker_.GetResponseHeaders("200 OK");
-  response_headers["key1"] = std::string(2000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
-  size_t chunk_size = 1200;
-  unsigned int packet_number = 1;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
-    socket_data1.AddRead(
-        ASYNC,
-        server_maker_.MakeDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
-  }
+  socket_data1.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  socket_data1.AddRead(
+      ASYNC, server_maker_.MakeDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 base::StringPiece("Hello World")));
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
                        server_maker_.MakeAckPacket(3, 2, 1, 1, false));
@@ -7918,26 +7864,14 @@ TEST_P(QuicStreamFactoryTest,
           2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
   socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
   // Read two packets so that client will send ACK immedaitely.
-  spdy::SpdyHeaderBlock response_headers =
-      server_maker_.GetResponseHeaders("200 OK");
-  response_headers["key1"] = std::string(2000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
-  size_t chunk_size = 1200;
-  unsigned int packet_number = 1;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
-    socket_data1.AddRead(
-        ASYNC,
-        server_maker_.MakeDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
-  }
+  socket_data1.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  socket_data1.AddRead(
+      ASYNC, server_maker_.MakeDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 base::StringPiece("Hello World")));
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
                        server_maker_.MakeAckPacket(3, 2, 1, 1, false));
@@ -8079,6 +8013,7 @@ TEST_P(QuicStreamFactoryTest,
       SYNCHRONOUS,
       ConstructGetRequestPacket(
           2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
+  client_maker_.set_coalesce_http_frames(true);
   socket_data1.AddRead(
       ASYNC,
       ConstructOkResponsePacket(
@@ -8239,6 +8174,7 @@ void QuicStreamFactoryTestBase::
       SYNCHRONOUS,
       ConstructGetRequestPacket(
           2, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
+  client_maker_.set_coalesce_http_frames(true);
   socket_data1.AddRead(
       ASYNC,
       ConstructOkResponsePacket(

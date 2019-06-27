@@ -18,11 +18,11 @@ TabletModeControllerTestApi::TabletModeControllerTestApi()
 TabletModeControllerTestApi::~TabletModeControllerTestApi() = default;
 
 void TabletModeControllerTestApi::EnterTabletMode() {
-  tablet_mode_controller_->AttemptEnterTabletMode();
+  tablet_mode_controller_->SetEnabledForTest(true);
 }
 
 void TabletModeControllerTestApi::LeaveTabletMode() {
-  tablet_mode_controller_->AttemptLeaveTabletMode();
+  tablet_mode_controller_->SetEnabledForTest(false);
 }
 
 void TabletModeControllerTestApi::AttachExternalMouse() {

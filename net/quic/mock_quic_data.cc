@@ -37,6 +37,13 @@ void MockQuicData::AddWrite(IoMode mode, int rv) {
   writes_.push_back(MockWrite(mode, rv, sequence_number_++));
 }
 
+void MockQuicData::AddWrite(IoMode mode,
+                            int rv,
+                            std::unique_ptr<quic::QuicEncryptedPacket> packet) {
+  writes_.push_back(MockWrite(mode, rv, sequence_number_++));
+  packets_.push_back(std::move(packet));
+}
+
 void MockQuicData::AddSocketDataToFactory(MockClientSocketFactory* factory) {
   factory->AddSocketDataProvider(InitializeAndGetSequencedSocketData());
 }

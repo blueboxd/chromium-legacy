@@ -350,6 +350,10 @@ class QuicTestPacketMaker {
         version_.transport_version)] = offset;
   }
 
+  void set_coalesce_http_frames(bool coalesce_http_frames) {
+    coalesce_http_frames_ = coalesce_http_frames;
+  }
+
  private:
   // QpackEncoder::DecoderStreamErrorDelegate implementation that does nothing
   class DecoderStreamErrorDelegate
@@ -415,6 +419,7 @@ class QuicTestPacketMaker {
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
   quic::HttpEncoder http_encoder_;
+  bool coalesce_http_frames_;
   DecoderStreamErrorDelegate decoder_stream_error_delegate_;
   EncoderStreamSenderDelegate encoder_stream_sender_delegate_;
   quic::QpackEncoder qpack_encoder_;

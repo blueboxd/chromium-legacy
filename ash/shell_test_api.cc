@@ -187,7 +187,6 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
 }
 
 void ShellTestApi::SetTabletModeEnabledForTest(bool enable) {
-  AccelerometerReader::GetInstance()->DisableForTest();
   shell_->tablet_mode_controller()->SetEnabledForTest(enable);
 }
 

@@ -39,6 +39,12 @@ class MockQuicData {
   // synchronously or asynchronously based on |mode|.
   void AddWrite(IoMode mode, int rv);
 
+  // Adds a write at the next sequence number which will write |packet|
+  // synchronously or asynchronously based on |mode| and return |rv|.
+  void AddWrite(IoMode mode,
+                int rv,
+                std::unique_ptr<quic::QuicEncryptedPacket> packet);
+
   // Adds the reads and writes to |factory|.
   void AddSocketDataToFactory(MockClientSocketFactory* factory);
 

@@ -85,10 +85,12 @@ RunLoop::Delegate::Delegate() {
 
 RunLoop::Delegate::~Delegate() {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
+  DCHECK(active_run_loops_.empty());
   // A RunLoop::Delegate may be destroyed before it is bound, if so it may still
   // be on its creation thread (e.g. a Thread that fails to start) and
   // shouldn't disrupt that thread's state.
   if (bound_) {
+    DCHECK_EQ(this, GetTlsDelegate().Get());
     GetTlsDelegate().Set(nullptr);
   }
 }
@@ -331,10 +333,10 @@ bool RunLoop::BeforeRun() {
   if (quit_called_)
     return false;
 
-  auto& active_run_loops_ = delegate_->active_run_loops_;
-  active_run_loops_.push(this);
+  auto& active_run_loops = delegate_->active_run_loops_;
+  active_run_loops.push(this);
 
-  const bool is_nested = active_run_loops_.size() > 1;
+  const bool is_nested = active_run_loops.size() > 1;
 
   if (is_nested) {
     for (auto& observer : delegate_->nesting_observers_)
@@ -352,21 +354,19 @@ void RunLoop::AfterRun() {
 
   running_ = false;
 
-  auto& active_run_loops_ = delegate_->active_run_loops_;
-  DCHECK_EQ(active_run_loops_.top(), this);
-  active_run_loops_.pop();
+  auto& active_run_loops = delegate_->active_run_loops_;
+  DCHECK_EQ(active_run_loops.top(), this);
+  active_run_loops.pop();
 
-  RunLoop* previous_run_loop =
-      active_run_loops_.empty() ? nullptr : active_run_loops_.top();
-
-  if (previous_run_loop) {
+  // Exiting a nested RunLoop?
+  if (!active_run_loops.empty()) {
     for (auto& observer : delegate_->nesting_observers_)
       observer.OnExitNestedRunLoop();
-  }
 
-  // Execute deferred Quit, if any:
-  if (previous_run_loop && previous_run_loop->quit_called_)
-    delegate_->Quit();
+    // Execute deferred Quit, if any:
+    if (active_run_loops.top()->quit_called_)
+      delegate_->Quit();
+  }
 }
 
 }  // namespace base

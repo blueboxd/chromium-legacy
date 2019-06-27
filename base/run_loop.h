@@ -339,10 +339,10 @@ class BASE_EXPORT RunLoop {
   bool BeforeRun();
   void AfterRun();
 
-  // A copy of RunLoop::Delegate for the thread driven by tis RunLoop for quick
-  // access without using TLS (also allows access to state from another sequence
-  // during Run(), ref. |sequence_checker_| below).
-  Delegate* delegate_;
+  // A cached reference of RunLoop::Delegate for the thread driven by this
+  // RunLoop for quick access without using TLS (also allows access to state
+  // from another sequence during Run(), ref. |sequence_checker_| below).
+  Delegate* const delegate_;
 
   const Type type_;
 

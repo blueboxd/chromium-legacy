@@ -48,7 +48,7 @@ class PaymentResponseHelper
   void OnInstrumentDetailsReady(
       const std::string& method_name,
       const std::string& stringified_details) override;
-  void OnInstrumentDetailsError() override;
+  void OnInstrumentDetailsError(const std::string& error_message) override;
 
  private:
   // Called when the AddressNormalizationManager is done, whether any autofill

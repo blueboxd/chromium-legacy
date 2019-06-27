@@ -68,6 +68,9 @@ PaymentResponseHelper::~PaymentResponseHelper() {}
 void PaymentResponseHelper::OnInstrumentDetailsReady(
     const std::string& method_name,
     const std::string& stringified_details) {
+  if (!is_waiting_for_instrument_details_)
+    return;
+
   method_name_ = method_name;
   stringified_details_ = stringified_details;
   is_waiting_for_instrument_details_ = false;
@@ -76,16 +79,27 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
     GeneratePaymentResponse();
 }
 
+void PaymentResponseHelper::OnInstrumentDetailsError(
+    const std::string& error_message) {
+  if (!is_waiting_for_instrument_details_)
+    return;
+
+  is_waiting_for_instrument_details_ = false;
+  is_waiting_for_shipping_address_normalization_ = false;
+  delegate_->OnPaymentResponseError(error_message);
+}
+
 void PaymentResponseHelper::OnAddressNormalized(
     bool success,
     const autofill::AutofillProfile& normalized_profile) {
-  if (is_waiting_for_shipping_address_normalization_) {
-    shipping_address_ = normalized_profile;
-    is_waiting_for_shipping_address_normalization_ = false;
+  if (!is_waiting_for_shipping_address_normalization_)
+    return;
 
-    if (!is_waiting_for_instrument_details_)
-      GeneratePaymentResponse();
-  }
+  shipping_address_ = normalized_profile;
+  is_waiting_for_shipping_address_normalization_ = false;
+
+  if (!is_waiting_for_instrument_details_)
+    GeneratePaymentResponse();
 }
 
 mojom::PayerDetailPtr PaymentResponseHelper::GeneratePayerDetail(

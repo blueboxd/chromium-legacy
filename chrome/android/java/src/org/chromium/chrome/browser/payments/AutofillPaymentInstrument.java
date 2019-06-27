@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.FullCardRequestDelegate;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -268,7 +269,10 @@ public class AutofillPaymentInstrument extends PaymentInstrument
 
     @Override
     public void onFullCardError() {
-        mCallback.onInstrumentDetailsError();
+        // There's no need to disambiguate between user cancelling the CVC unmask and other types of
+        // failures, because a failure to unmask an Autofill card will show the Payment Request UI
+        // again and prompt the user to attempt to complete a transaction using a different card.
+        mCallback.onInstrumentDetailsError(ErrorStrings.USER_CANCELLED);
         mCallback = null;
     }
 

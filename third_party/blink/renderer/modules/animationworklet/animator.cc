@@ -14,14 +14,13 @@
 
 namespace blink {
 
-Animator::Animator(
-    v8::Isolate* isolate,
-    AnimatorDefinition* definition,
-    v8::Local<v8::Value> instance,
-    const String& name,
-    WorkletAnimationOptions options,
-    const std::vector<base::Optional<base::TimeDelta>>& local_times,
-    const Vector<Timing>& timings)
+Animator::Animator(v8::Isolate* isolate,
+                   AnimatorDefinition* definition,
+                   v8::Local<v8::Value> instance,
+                   const String& name,
+                   WorkletAnimationOptions options,
+                   const Vector<base::Optional<base::TimeDelta>>& local_times,
+                   const Vector<Timing>& timings)
     : definition_(definition),
       instance_(isolate, instance),
       name_(name),
@@ -64,17 +63,8 @@ bool Animator::Animate(
     return false;
   }
 
-  output->local_times = GetLocalTimes();
+  GetLocalTimes(output->local_times);
   return true;
-}
-
-std::vector<base::Optional<base::TimeDelta>> Animator::GetLocalTimes() const {
-  std::vector<base::Optional<base::TimeDelta>> local_times;
-  local_times.reserve(group_effect_->getChildren().size());
-  for (const auto& effect : group_effect_->getChildren()) {
-    local_times.push_back(effect->local_time());
-  }
-  return local_times;
 }
 
 Vector<Timing> Animator::GetTimings() const {

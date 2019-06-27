@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_RESPOND_WITH_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_RESPOND_WITH_OBSERVER_H_
 
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
@@ -38,6 +39,11 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
   void OnNoResponse() override;
 
   void Trace(blink::Visitor*) override;
+
+ private:
+  void Respond(const String& method_name,
+               const String& stringified_details,
+               payments::mojom::blink::PaymentEventResponseType response_type);
 };
 
 }  // namespace blink

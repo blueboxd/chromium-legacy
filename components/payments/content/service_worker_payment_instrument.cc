@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -291,11 +292,23 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
 
 void ServiceWorkerPaymentInstrument::OnPaymentAppInvoked(
     mojom::PaymentHandlerResponsePtr response) {
-  if (delegate_ != nullptr) {
+  if (!delegate_)
+    return;
+
+  if (response->response_type ==
+      mojom::PaymentEventResponseType::PAYMENT_EVENT_SUCCESS) {
+    DCHECK(!response->method_name.empty());
+    DCHECK(!response->stringified_details.empty());
     delegate_->OnInstrumentDetailsReady(response->method_name,
                                         response->stringified_details);
-    delegate_ = nullptr;
+  } else {
+    DCHECK(response->method_name.empty());
+    DCHECK(response->stringified_details.empty());
+    delegate_->OnInstrumentDetailsError(std::string(
+        ConvertPaymentEventResponseTypeToErrorString(response->response_type)));
   }
+
+  delegate_ = nullptr;
 }
 
 bool ServiceWorkerPaymentInstrument::IsCompleteForPayment() const {

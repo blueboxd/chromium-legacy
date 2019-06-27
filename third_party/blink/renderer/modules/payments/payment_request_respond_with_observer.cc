@@ -17,6 +17,11 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+namespace {
+
+using payments::mojom::blink::PaymentEventResponseType;
+
+}  // namespace
 
 PaymentRequestRespondWithObserver* PaymentRequestRespondWithObserver::Create(
     ExecutionContext* context,
@@ -30,11 +35,10 @@ void PaymentRequestRespondWithObserver::OnResponseRejected(
     mojom::ServiceWorkerResponseError error) {
   PaymentHandlerUtils::ReportResponseError(GetExecutionContext(),
                                            "PaymentRequestEvent", error);
-
-  To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(
-          event_id_,
-          payments::mojom::blink::PaymentHandlerResponse::New("", ""));
+  Respond("", "",
+          error == mojom::ServiceWorkerResponseError::kPromiseRejected
+              ? PaymentEventResponseType::PAYMENT_EVENT_REJECT
+              : PaymentEventResponseType::PAYMENT_EVENT_INTERNAL_ERROR);
 }
 
 void PaymentRequestRespondWithObserver::OnResponseFulfilled(
@@ -55,14 +59,30 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   }
 
   // Check payment response validity.
-  if (!response->hasMethodName() || !response->hasDetails()) {
+  if (!response->hasMethodName() || response->methodName().IsEmpty() ||
+      !response->hasDetails() || response->details().IsNull() ||
+      !response->details().IsObject()) {
     GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kError,
                                "'PaymentHandlerResponse.methodName' and "
                                "'PaymentHandlerResponse.details' must not "
                                "be empty in payment response."));
-    OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);
+  }
+
+  if (!response->hasMethodName() || response->methodName().IsEmpty()) {
+    Respond("", "", PaymentEventResponseType::PAYMENT_METHOD_NAME_EMPTY);
+    return;
+  }
+
+  if (!response->hasDetails()) {
+    Respond("", "", PaymentEventResponseType::PAYMENT_DETAILS_ABSENT);
+    return;
+  }
+
+  if (response->details().IsNull() || !response->details().IsObject() ||
+      response->details().IsEmpty()) {
+    Respond("", "", PaymentEventResponseType::PAYMENT_DETAILS_NOT_OBJECT);
     return;
   }
 
@@ -75,21 +95,19 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
         mojom::ConsoleMessageLevel::kError,
         "Failed to stringify PaymentHandlerResponse.details in payment "
         "response."));
-    OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);
+    Respond("", "", PaymentEventResponseType::PAYMENT_DETAILS_STRINGIFY_ERROR);
     return;
   }
-  To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(
-          event_id_, payments::mojom::blink::PaymentHandlerResponse::New(
-                         response->methodName(), ToCoreString(details_value)));
+
+  String details = ToCoreString(details_value);
+  DCHECK(!details.IsEmpty());
+
+  Respond(response->methodName(), details,
+          PaymentEventResponseType::PAYMENT_EVENT_SUCCESS);
 }
 
 void PaymentRequestRespondWithObserver::OnNoResponse() {
-  DCHECK(GetExecutionContext());
-  To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(
-          event_id_,
-          payments::mojom::blink::PaymentHandlerResponse::New("", ""));
+  Respond("", "", PaymentEventResponseType::PAYMENT_EVENT_NO_RESPONSE);
 }
 
 PaymentRequestRespondWithObserver::PaymentRequestRespondWithObserver(
@@ -100,6 +118,17 @@ PaymentRequestRespondWithObserver::PaymentRequestRespondWithObserver(
 
 void PaymentRequestRespondWithObserver::Trace(blink::Visitor* visitor) {
   RespondWithObserver::Trace(visitor);
+}
+
+void PaymentRequestRespondWithObserver::Respond(
+    const String& method_name,
+    const String& stringified_details,
+    PaymentEventResponseType response_type) {
+  DCHECK(GetExecutionContext());
+  To<ServiceWorkerGlobalScope>(GetExecutionContext())
+      ->RespondToPaymentRequestEvent(
+          event_id_, payments::mojom::blink::PaymentHandlerResponse::New(
+                         method_name, stringified_details, response_type));
 }
 
 }  // namespace blink

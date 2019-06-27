@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_RESPONSE_HELPER_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_RESPONSE_HELPER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/address_normalizer.h"
@@ -28,6 +30,8 @@ class PaymentResponseHelper
 
     virtual void OnPaymentResponseReady(
         mojom::PaymentResponsePtr payment_response) = 0;
+
+    virtual void OnPaymentResponseError(const std::string& error_message) = 0;
   };
 
   // The spec, selected_instrument and delegate cannot be null.
@@ -44,7 +48,7 @@ class PaymentResponseHelper
   void OnInstrumentDetailsReady(
       const std::string& method_name,
       const std::string& stringified_details) override;
-  void OnInstrumentDetailsError() override {}
+  void OnInstrumentDetailsError(const std::string& error_message) override;
 
   mojom::PayerDetailPtr GeneratePayerDetail(
       const autofill::AutofillProfile* selected_contact_profile) const;

@@ -62,7 +62,8 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
           &PaymentResponseHelper::AddressNormalizationCompleted, AsWeakPtr()));
 }
 
-void PaymentResponseHelper::OnInstrumentDetailsError() {
+void PaymentResponseHelper::OnInstrumentDetailsError(
+    const std::string& error_message) {
   [consumer_ paymentResponseHelperDidFailToReceivePaymentMethodDetails];
 }
 

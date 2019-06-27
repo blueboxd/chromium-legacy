@@ -43,7 +43,7 @@ class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
     on_instrument_details_ready_called_ = true;
   }
 
-  void OnInstrumentDetailsError() override {
+  void OnInstrumentDetailsError(const std::string& error_message) override {
     if (run_loop_)
       run_loop_->Quit();
     on_instrument_details_error_called_ = true;

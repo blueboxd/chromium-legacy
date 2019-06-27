@@ -10,6 +10,8 @@ jumbo_static_library("content") {
     "can_make_payment_query_factory.h",
     "payment_details_converter.cc",
     "payment_details_converter.h",
+    "payment_event_response_util.cc",
+    "payment_event_response_util.h",
     "payment_handler_host.cc",
     "payment_handler_host.h",
     "payment_request_converter.cc",

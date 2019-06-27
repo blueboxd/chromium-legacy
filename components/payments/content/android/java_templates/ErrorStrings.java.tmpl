@@ -22,9 +22,31 @@ public abstract class ErrorStrings {{
 
     public static final String INVALID_VALIDATION_ERRORS = "Invalid payment validation errors.";
 
-    public static final String TAB_OVERVIEW_MODE = "Tab overview mode dismissed UI.";
+    public static final String TAB_OVERVIEW_MODE =
+            "Tab overview mode dismissed Payment Request UI.";
+
+    public static final String TAB_SWITCH =
+            "Tab switch dismissed Payment Request UI.";
 
     public static final String ACTIVITY_NOT_FOUND = "Unable to find Chrome activity.";
+
+    public static final String PAYMENT_APP_LAUNCH_FAIL = "Unable to invoke the payment app.";
+
+    public static final String PAYMENT_APP_PRIVATE_ACTIVITY =
+            "Payment app does not have android:exported=\"true\" on the PAY activity.";
+
+    public static final String MISSING_INTENT_DATA =
+            "Payment app returned an invalid result. Missing intent data.";
+
+    public static final String MISSING_INTENT_EXTRAS =
+            "Payment app returned an invalid result. Missing intent extras.";
+
+    public static final String RESULT_CANCELED  =
+            "Payment app returned RESULT_CANCELED code. This is how payment apps "
+            + "can close their activity programmatically.";
+
+    public static final String UNRECOGNIZED_ACTIVITY_RESULT  =
+            "Payment app returned unrecognized activity result %d.";
 
     // Prevent instantiation.
     private ErrorStrings() {{}}

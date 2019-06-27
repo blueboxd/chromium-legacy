@@ -133,20 +133,20 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   bool allowed_origin =
       UrlUtil::IsOriginAllowedToUseWebPaymentApis(last_committed_url);
   if (!allowed_origin) {
-    prohibited_origin_or_invalid_ssl_error_message_ = errors::kProhibitedOrigin;
+    reject_show_error_message_ = errors::kProhibitedOrigin;
   }
 
   bool invalid_ssl = false;
   if (last_committed_url.SchemeIsCryptographic()) {
-    DCHECK(prohibited_origin_or_invalid_ssl_error_message_.empty());
-    prohibited_origin_or_invalid_ssl_error_message_ =
+    DCHECK(reject_show_error_message_.empty());
+    reject_show_error_message_ =
         delegate_->GetInvalidSslCertificateErrorMessage();
-    invalid_ssl = !prohibited_origin_or_invalid_ssl_error_message_.empty();
+    invalid_ssl = !reject_show_error_message_.empty();
   }
 
   if (!allowed_origin || invalid_ssl) {
     // Intentionally don't set |spec_| and |state_|, so the UI is never shown.
-    log_.Error(prohibited_origin_or_invalid_ssl_error_message_);
+    log_.Error(reject_show_error_message_);
     log_.Error(errors::kProhibitedOriginOrInvalidSslExplanation);
     return;
   }
@@ -489,8 +489,8 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED,
-                     !prohibited_origin_or_invalid_ssl_error_message_.empty()
-                         ? prohibited_origin_or_invalid_ssl_error_message_
+                     !reject_show_error_message_.empty()
+                         ? reject_show_error_message_
                          : GetNotSupportedErrorMessage(spec_.get()));
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();
@@ -531,16 +531,11 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
 
 void PaymentRequest::OnPaymentResponseAvailable(
     mojom::PaymentResponsePtr response) {
+  DCHECK(!response->method_name.empty());
+  DCHECK(!response->stringified_details.empty());
+
   journey_logger_.SetEventOccurred(
       JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
-
-  // Do not send invalid response to client.
-  if (response->method_name.empty() || response->stringified_details.empty()) {
-    RecordFirstAbortReason(
-        JourneyLogger::ABORT_REASON_INSTRUMENT_DETAILS_ERROR);
-    delegate_->ShowErrorMessage();
-    return;
-  }
 
   // Log the correct "selected instrument" metric according to its type and
   // the method name in response.
@@ -572,6 +567,17 @@ void PaymentRequest::OnPaymentResponseAvailable(
     delegate_->ShowProcessingSpinner();
 
   client_->OnPaymentResponse(std::move(response));
+}
+
+void PaymentRequest::OnPaymentResponseError(const std::string& error_message) {
+  journey_logger_.SetEventOccurred(
+      JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
+  RecordFirstAbortReason(JourneyLogger::ABORT_REASON_INSTRUMENT_DETAILS_ERROR);
+
+  reject_show_error_message_ = error_message;
+  delegate_->ShowErrorMessage();
+  // When the user dismisses the error message, UserCancelled() will reject
+  // PaymentRequest.show() with |reject_show_error_message_|.
 }
 
 void PaymentRequest::OnShippingOptionIdSelected(
@@ -607,7 +613,9 @@ void PaymentRequest::UserCancelled() {
 
   // This sends an error to the renderer, which informs the API user.
   client_->OnError(mojom::PaymentErrorReason::USER_CANCEL,
-                   errors::kUserCancelled);
+                   !reject_show_error_message_.empty()
+                       ? reject_show_error_message_
+                       : errors::kUserCancelled);
 
   // We close all bindings and ask to be destroyed.
   client_.reset();

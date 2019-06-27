@@ -80,10 +80,19 @@ extern const char kMethodDataRequired[];
 // Used when non-empty "supportedMethods": "" is required, but not provided.
 extern const char kMethodNameRequired[];
 
+// The payment handler responded with an empty "details" field.
+extern const char kMissingDetailsFromPaymentApp[];
+
+// The payment handler responded with an empty "methodName" field.
+extern const char kMissingMethodNameFromPaymentApp[];
+
 // The format for the message about multiple payment methods that are not
 // supported. This format should be used with base::ReplaceChars() function,
 // where "$" is the character to replace.
 extern const char kMultiplePaymentMethodsNotSupportedFormat[];
+
+// Payment handler did not respond to the "paymentrequest" event.
+extern const char kNoResponseToPaymentEvent[];
 
 // The PaymentRequest API is available only on secure origins.
 extern const char kNotInASecureOrigin[];
@@ -94,10 +103,37 @@ extern const char kNotInitialized[];
 // Used when PaymentRequest::Show() has not been called, but should have been.
 extern const char kNotShown[];
 
+// Payment handler passed a non-object field "details" in response to the
+// "paymentrequest" event.
+extern const char kPaymentDetailsNotObject[];
+
+// Payment handler passed a non-stringifiable field "details" in response to the
+// "paymentrequest" event.
+extern const char kPaymentDetailsStringifyError[];
+
+// Used when the browser failed to fire the "paymentrequest" event without any
+// actionable corrective action from the web developer.
+extern const char kPaymentEventBrowserError[];
+
+// Service worker timed out or stopped for some reason or was killed before the
+// payment handler could respond to the "paymentrequest" event.
+extern const char kPaymentEventServiceWorkerError[];
+
+// Service worker timed out while responding to "paymentrequest" event.
+extern const char kPaymentEventTimeout[];
+
+// Payment handler encountered an internal error when handling the
+// "paymentrequest" event.
+extern const char kPaymentEventInternalError[];
+
+// Payment handler rejected the promise passed into
+// PaymentRequestEvent.respondWith() method.
+extern const char kPaymentEventRejected[];
+
 // Chrome provides payment information only to a whitelist of origin types.
 extern const char kProhibitedOrigin[];
 
-// A long form explanation of Chrome's behavior in the case of kProhibitedOrigin
+// A long form explanation of Chrome"s behavior in the case of kProhibitedOrigin
 // or kInvalidSslCertificate error.
 extern const char kProhibitedOriginOrInvalidSslExplanation[];
 

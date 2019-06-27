@@ -422,12 +422,16 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
 
     @CalledByNative
     private static void onPaymentAppInvoked(PaymentInstrument.InstrumentDetailsCallback callback,
-            String methodName, String stringifiedDetails) {
+            String methodName, String stringifiedDetails, String errorMessage) {
         ThreadUtils.assertOnUiThread();
 
-        if (TextUtils.isEmpty(methodName) || TextUtils.isEmpty(stringifiedDetails)) {
-            callback.onInstrumentDetailsError();
+        if (!TextUtils.isEmpty(errorMessage)) {
+            assert TextUtils.isEmpty(methodName);
+            assert TextUtils.isEmpty(stringifiedDetails);
+            callback.onInstrumentDetailsError(errorMessage);
         } else {
+            assert !TextUtils.isEmpty(methodName);
+            assert !TextUtils.isEmpty(stringifiedDetails);
             callback.onInstrumentDetailsReady(methodName, stringifiedDetails);
         }
     }

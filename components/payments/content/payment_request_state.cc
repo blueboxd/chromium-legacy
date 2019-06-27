@@ -169,6 +169,11 @@ void PaymentRequestState::OnPaymentResponseReady(
   delegate_->OnPaymentResponseAvailable(std::move(payment_response));
 }
 
+void PaymentRequestState::OnPaymentResponseError(
+    const std::string& error_message) {
+  delegate_->OnPaymentResponseError(error_message);
+}
+
 void PaymentRequestState::OnSpecUpdated() {
   autofill::AutofillProfile* selected_shipping_profile =
       selected_shipping_profile_;

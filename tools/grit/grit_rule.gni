@@ -98,7 +98,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/gcc_toolchain.gni")  # For enable_resource_whitelist_generation
 import("//third_party/closure_compiler/closure_args.gni")
-import("//ui/base/ui_features.gni")
 if (enable_resource_whitelist_generation) {
   assert(target_os == "android" || target_os == "win",
          "unsupported platform for resource whitelist generation")
@@ -108,13 +107,6 @@ if (enable_resource_whitelist_generation) {
 }
 
 grit_defines = []
-
-if (enable_hidpi) {
-  grit_defines += [
-    "-D",
-    "scale_factors=2x",
-  ]
-}
 
 # Mac and iOS want Title Case strings.
 use_titlecase_in_grd_files = is_mac || is_ios
@@ -145,6 +137,8 @@ if (is_chromeos) {
   grit_defines += [
     "-D",
     "chromeos",
+    "-D",
+    "scale_factors=2x",
   ]
 }
 
@@ -187,6 +181,13 @@ if (is_android) {
   grit_defines += [
     "-E",
     "ANDROID_JAVA_TAGGED_ONLY=true",
+  ]
+}
+
+if (is_mac || is_ios) {
+  grit_defines += [
+    "-D",
+    "scale_factors=2x",
   ]
 }
 

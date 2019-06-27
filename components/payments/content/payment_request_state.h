@@ -67,6 +67,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
     virtual void OnPaymentResponseAvailable(
         mojom::PaymentResponsePtr response) = 0;
 
+    // Called when the invoked payment app failed.
+    virtual void OnPaymentResponseError(const std::string& error_message) = 0;
+
     // Called when the shipping option has changed to |shipping_option_id|.
     virtual void OnShippingOptionIdSelected(std::string shipping_option_id) = 0;
 
@@ -114,6 +117,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // PaymentResponseHelper::Delegate
   void OnPaymentResponseReady(
       mojom::PaymentResponsePtr payment_response) override;
+  void OnPaymentResponseError(const std::string& error_message) override;
 
   // PaymentRequestSpec::Observer
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override {}

@@ -33,7 +33,9 @@ class PaymentInstrument {
         const std::string& method_name,
         const std::string& stringified_details) = 0;
 
-    virtual void OnInstrumentDetailsError() = 0;
+    // Should be called with a developer-facing error message to be used when
+    // rejecting PaymentRequest.show().
+    virtual void OnInstrumentDetailsError(const std::string& error_message) = 0;
   };
 
   virtual ~PaymentInstrument();

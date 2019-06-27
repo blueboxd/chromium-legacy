@@ -47,6 +47,9 @@ class PaymentResponseHelperTest : public testing::Test,
     payment_response_ = std::move(response);
   }
 
+  // PaymentRequestState::Delegate:
+  void OnPaymentResponseError(const std::string& error_message) override {}
+
   // Convenience method to create a PaymentRequestSpec with specified |details|
   // and |method_data|.
   void RecreateSpecWithOptionsAndDetails(

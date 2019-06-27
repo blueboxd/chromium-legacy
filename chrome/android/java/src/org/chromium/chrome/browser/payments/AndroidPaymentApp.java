@@ -25,6 +25,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
@@ -42,6 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -289,7 +291,7 @@ public class AndroidPaymentApp
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         if (activity == null) {
-            notifyErrorInvokingPaymentApp();
+            notifyErrorInvokingPaymentApp(ErrorStrings.ACTIVITY_NOT_FOUND);
             return;
         }
 
@@ -302,8 +304,10 @@ public class AndroidPaymentApp
                                         schemelessIframeOrigin, certificateChain, methodDataMap,
                                         total, displayItems, modifiers))
                 .setNegativeButton(R.string.cancel,
-                        (OnClickListener) (dialog, which) -> notifyErrorInvokingPaymentApp())
-                .setOnCancelListener(dialog -> notifyErrorInvokingPaymentApp())
+                        (OnClickListener) (dialog, which)
+                                -> notifyErrorInvokingPaymentApp(ErrorStrings.USER_CANCELLED))
+                .setOnCancelListener(
+                        dialog -> notifyErrorInvokingPaymentApp(ErrorStrings.USER_CANCELLED))
                 .show();
     }
 
@@ -319,13 +323,13 @@ public class AndroidPaymentApp
         assert mInstrumentDetailsCallback != null;
 
         if (mWebContents.isDestroyed()) {
-            notifyErrorInvokingPaymentApp();
+            notifyErrorInvokingPaymentApp(ErrorStrings.PAYMENT_APP_LAUNCH_FAIL);
             return;
         }
 
         WindowAndroid window = mWebContents.getTopLevelNativeWindow();
         if (window == null) {
-            notifyErrorInvokingPaymentApp();
+            notifyErrorInvokingPaymentApp(ErrorStrings.PAYMENT_APP_LAUNCH_FAIL);
             return;
         }
 
@@ -333,11 +337,11 @@ public class AndroidPaymentApp
                 methodDataMap, total, displayItems, modifiers));
         try {
             if (!window.showIntent(mPayIntent, this, R.string.payments_android_app_error)) {
-                notifyErrorInvokingPaymentApp();
+                notifyErrorInvokingPaymentApp(ErrorStrings.PAYMENT_APP_LAUNCH_FAIL);
             }
         } catch (SecurityException e) {
             // Payment app does not have android:exported="true" on the PAY activity.
-            notifyErrorInvokingPaymentApp();
+            notifyErrorInvokingPaymentApp(ErrorStrings.PAYMENT_APP_PRIVATE_ACTIVITY);
         }
     }
 
@@ -426,8 +430,8 @@ public class AndroidPaymentApp
         return result;
     }
 
-    private void notifyErrorInvokingPaymentApp() {
-        mHandler.post(() -> mInstrumentDetailsCallback.onInstrumentDetailsError());
+    private void notifyErrorInvokingPaymentApp(String errorMessage) {
+        mHandler.post(() -> mInstrumentDetailsCallback.onInstrumentDetailsError(errorMessage));
     }
 
     private static String deprecatedSerializeDetails(
@@ -547,8 +551,15 @@ public class AndroidPaymentApp
     public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
         ThreadUtils.assertOnUiThread();
         window.removeIntentCallback(this);
-        if (data == null || data.getExtras() == null || resultCode != Activity.RESULT_OK) {
-            mInstrumentDetailsCallback.onInstrumentDetailsError();
+        if (data == null) {
+            mInstrumentDetailsCallback.onInstrumentDetailsError(ErrorStrings.MISSING_INTENT_DATA);
+        } else if (data.getExtras() == null) {
+            mInstrumentDetailsCallback.onInstrumentDetailsError(ErrorStrings.MISSING_INTENT_EXTRAS);
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+            mInstrumentDetailsCallback.onInstrumentDetailsError(ErrorStrings.RESULT_CANCELED);
+        } else if (resultCode != Activity.RESULT_OK) {
+            mInstrumentDetailsCallback.onInstrumentDetailsError(String.format(
+                    Locale.US, ErrorStrings.UNRECOGNIZED_ACTIVITY_RESULT, resultCode));
         } else {
             String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
             if (details == null) {

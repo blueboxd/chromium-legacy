@@ -44,8 +44,10 @@ public abstract class PaymentInstrument extends EditableOption {
 
         /**
          * Called if unable to retrieve instrument details.
+         * @param errorMessage Developer-facing error message to be used when rejecting the promise
+         *                     returned from PaymentRequest.show().
          */
-        void onInstrumentDetailsError();
+        void onInstrumentDetailsError(String errorMessage);
     }
 
     /** The interface for the requester to abort payment. */

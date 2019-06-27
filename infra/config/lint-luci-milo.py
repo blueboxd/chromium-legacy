@@ -72,8 +72,8 @@ def main():
   # Check that every referenced subwaterfall has its own console, unless it's
   # explicitly excluded below.
   excluded_names = [
-      # This is the chrome/chromium.chrome console in src-internal.
-      'chromium.chrome',
+      # This is the chrome console in src-internal.
+      'chrome',
   ]
   all_console_names = [console.id for console in project.consoles]
   referenced_names = set(subwaterfalls.keys())

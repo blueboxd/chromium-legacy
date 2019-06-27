@@ -32,6 +32,8 @@
 namespace content {
 namespace {
 
+using payments::mojom::PaymentEventResponseType;
+
 using ServiceWorkerStartCallback =
     base::OnceCallback<void(scoped_refptr<ServiceWorkerVersion>,
                             blink::ServiceWorkerStatusCode)>;
@@ -161,15 +163,15 @@ class RespondWithCallbacks
     delete this;
   }
 
-  void OnErrorStatus(blink::ServiceWorkerStatusCode service_worker_status) {
+  void RespondWithErrorAndDeleteSelf(PaymentEventResponseType response_type) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(service_worker_status != blink::ServiceWorkerStatusCode::kOk);
 
     if (event_type_ == ServiceWorkerMetrics::EventType::PAYMENT_REQUEST) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(std::move(invoke_payment_app_callback_),
-                         payments::mojom::PaymentHandlerResponse::New()));
+                         payments::mojom::PaymentHandlerResponse::New(
+                             "", "", response_type)));
     } else if (event_type_ ==
                    ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT ||
                event_type_ == ServiceWorkerMetrics::EventType::ABORT_PAYMENT) {
@@ -185,13 +187,31 @@ class RespondWithCallbacks
     delete this;
   }
 
+  void OnErrorStatus(blink::ServiceWorkerStatusCode service_worker_status) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(service_worker_status != blink::ServiceWorkerStatusCode::kOk);
+
+    PaymentEventResponseType response_type =
+        PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR;
+    if (service_worker_status ==
+        blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected) {
+      response_type = PaymentEventResponseType::PAYMENT_EVENT_REJECT;
+    } else if (service_worker_status ==
+               blink::ServiceWorkerStatusCode::kErrorTimeout) {
+      response_type = PaymentEventResponseType::PAYMENT_EVENT_TIMEOUT;
+    }
+
+    RespondWithErrorAndDeleteSelf(response_type);
+  }
+
   int request_id() { return request_id_; }
 
   void AbortPaymentSinceOpennedWindowClosing() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     service_worker_version_->FinishRequest(request_id_, false);
-    OnErrorStatus(blink::ServiceWorkerStatusCode::kErrorAbort);
+    RespondWithErrorAndDeleteSelf(
+        PaymentEventResponseType::PAYMENT_HANDLER_WINDOW_CLOSING);
   }
 
  private:
@@ -311,8 +331,11 @@ void DispatchPaymentRequestEvent(
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(std::move(callback),
-                       payments::mojom::PaymentHandlerResponse::New()));
+        base::BindOnce(
+            std::move(callback),
+            payments::mojom::PaymentHandlerResponse::New(
+                "", "",
+                PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR)));
     return;
   }
 
@@ -389,7 +412,8 @@ void OnInstallPaymentApp(payments::mojom::PaymentRequestEventDataPtr event_data,
         browser_context, registration_id, std::move(event_data),
         std::move(callback));
   } else {
-    std::move(callback).Run(payments::mojom::PaymentHandlerResponse::New());
+    std::move(callback).Run(payments::mojom::PaymentHandlerResponse::New(
+        "", "", PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR));
   }
 }
 
@@ -488,8 +512,11 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
   if (!url.is_valid() || !scope.is_valid() || method.empty()) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(std::move(callback),
-                       payments::mojom::PaymentHandlerResponse::New()));
+        base::BindOnce(
+            std::move(callback),
+            payments::mojom::PaymentHandlerResponse::New(
+                "", "",
+                PaymentEventResponseType::PAYMENT_EVENT_BROWSER_ERROR)));
     return;
   }
 

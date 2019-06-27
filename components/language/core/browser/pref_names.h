@@ -10,8 +10,10 @@ namespace prefs {
 
 extern const char kAcceptLanguages[];
 
+#if defined(OS_CHROMEOS)
 extern const char kPreferredLanguages[];
 extern const char kPreferredLanguagesSyncable[];
+#endif
 
 extern const char kUserLanguageProfile[];
 

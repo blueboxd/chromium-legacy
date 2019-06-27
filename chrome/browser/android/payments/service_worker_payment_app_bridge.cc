@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_handler_host.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
@@ -168,7 +169,10 @@ void OnPaymentAppInvoked(
   Java_ServiceWorkerPaymentAppBridge_onPaymentAppInvoked(
       env, jcallback,
       ConvertUTF8ToJavaString(env, handler_response->method_name),
-      ConvertUTF8ToJavaString(env, handler_response->stringified_details));
+      ConvertUTF8ToJavaString(env, handler_response->stringified_details),
+      ConvertUTF8ToJavaString(
+          env, payments::ConvertPaymentEventResponseTypeToErrorString(
+                   handler_response->response_type)));
 }
 
 void OnPaymentAppAborted(const JavaRef<jobject>& jweb_contents,

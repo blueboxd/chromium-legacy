@@ -71,8 +71,8 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
     const String& name,
     WorkletAnimationOptions options,
     scoped_refptr<SerializedScriptValue> serialized_state,
-    const std::vector<base::Optional<base::TimeDelta>>& local_times,
-    const WTF::Vector<Timing>& timings) {
+    const Vector<base::Optional<base::TimeDelta>>& local_times,
+    const Vector<Timing>& timings) {
   DCHECK(!animators_.at(animation_id));
   Animator* animator =
       CreateInstance(name, options, serialized_state, local_times, timings);
@@ -107,13 +107,13 @@ void AnimationWorkletGlobalScope::UpdateAnimatorsList(
     }
 
     // Down casting to blink type
-    WTF::Vector<Timing> timings = (static_cast<WorkletAnimationEffectTimings*>(
-                                       animation.effect_timings.get()))
-                                      ->GetTimings()
-                                      ->data;
+    Vector<Timing> timings = (static_cast<WorkletAnimationEffectTimings*>(
+                                  animation.effect_timings.get()))
+                                 ->GetTimings()
+                                 ->data;
     DCHECK_GE(timings.size(), 1u);
 
-    std::vector<base::Optional<base::TimeDelta>> local_times(
+    Vector<base::Optional<base::TimeDelta>> local_times(
         static_cast<int>(timings.size()), base::nullopt);
 
     CreateAnimatorFor(id, name, options, nullptr /* serialized_state */,
@@ -163,7 +163,7 @@ void AnimationWorkletGlobalScope::UpdateAnimators(
 
     AnimationWorkletDispatcherOutput::AnimationState animation_output(
         worklet_animation_id);
-    animation_output.local_times = animator->GetLocalTimes();
+    animator->GetLocalTimes(animation_output.local_times);
     output->animations.push_back(animation_output);
   }
 }
@@ -243,8 +243,8 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
     const String& name,
     WorkletAnimationOptions options,
     scoped_refptr<SerializedScriptValue> serialized_state,
-    const std::vector<base::Optional<base::TimeDelta>>& local_times,
-    const WTF::Vector<Timing>& timings) {
+    const Vector<base::Optional<base::TimeDelta>>& local_times,
+    const Vector<Timing>& timings) {
   DCHECK(IsContextThread());
   AnimatorDefinition* definition = animator_definitions_.at(name);
   if (!definition)
@@ -328,9 +328,11 @@ void AnimationWorkletGlobalScope::MigrateAnimatorsTo(
       }
     }
 
+    Vector<base::Optional<base::TimeDelta>> local_times;
+    animator->GetLocalTimes(local_times);
     target_global_scope->CreateAnimatorFor(
         animation_id, animator->name(), animator->options(), serialized_state,
-        animator->GetLocalTimes(), animator->GetTimings());
+        std::move(local_times), animator->GetTimings());
   }
   animators_.clear();
 }

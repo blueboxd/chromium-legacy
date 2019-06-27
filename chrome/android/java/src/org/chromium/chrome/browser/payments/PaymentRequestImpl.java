@@ -221,7 +221,8 @@ public class PaymentRequestImpl
     private final TabModelSelectorObserver mSelectorObserver = new EmptyTabModelSelectorObserver() {
         @Override
         public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-            onDismiss();
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
+            disconnectFromClientWithDebugMessage(ErrorStrings.TAB_SWITCH);
         }
     };
 
@@ -229,7 +230,10 @@ public class PaymentRequestImpl
     private final TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
         public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-            if (tab == null || tab.getId() != lastId) onDismiss();
+            if (tab == null || tab.getId() != lastId) {
+                mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
+                disconnectFromClientWithDebugMessage(ErrorStrings.TAB_SWITCH);
+            }
         }
     };
 
@@ -237,7 +241,8 @@ public class PaymentRequestImpl
     private final OverviewModeObserver mOverviewModeObserver = new EmptyOverviewModeObserver() {
         @Override
         public void onOverviewModeStartedShowing(boolean showToolbar) {
-            onDismiss();
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
+            disconnectFromClientWithDebugMessage(ErrorStrings.TAB_OVERVIEW_MODE);
         }
     };
 
@@ -2119,13 +2124,15 @@ public class PaymentRequestImpl
      * Called if unable to retrieve instrument details.
      */
     @Override
-    public void onInstrumentDetailsError() {
+    public void onInstrumentDetailsError(String errorMessage) {
         if (mClient == null) return;
         mInvokedPaymentInstrument = null;
-        // When skipping UI, any errors/cancel from fetching instrument details should be
-        // equivalent to a cancel.
+        // When skipping UI, any errors/cancel from fetching instrument details should abort
+        // payment.
         if (mShouldSkipShowingPaymentRequestUi) {
-            onDismiss();
+            assert !TextUtils.isEmpty(errorMessage);
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
+            disconnectFromClientWithDebugMessage(errorMessage);
         } else {
             mUI.onPayButtonProcessingCancelled();
         }

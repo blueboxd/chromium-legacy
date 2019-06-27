@@ -20,6 +20,21 @@ enum PaymentHandlerStatus {
   FETCH_PAYMENT_APP_INFO_FAILED,
 };
 
+enum PaymentEventResponseType {
+  PAYMENT_EVENT_SUCCESS,
+  PAYMENT_EVENT_REJECT,
+  PAYMENT_EVENT_SERVICE_WORKER_ERROR,
+  PAYMENT_HANDLER_WINDOW_CLOSING,
+  PAYMENT_EVENT_INTERNAL_ERROR,
+  PAYMENT_EVENT_NO_RESPONSE,
+  PAYMENT_DETAILS_STRINGIFY_ERROR,
+  PAYMENT_METHOD_NAME_EMPTY,
+  PAYMENT_DETAILS_ABSENT,
+  PAYMENT_DETAILS_NOT_OBJECT,
+  PAYMENT_EVENT_BROWSER_ERROR,
+  PAYMENT_EVENT_TIMEOUT,
+};
+
 // This struct is provided to hold a payment instrument from render
 // side (PaymentInstrument.idl).
 struct PaymentInstrument {
@@ -88,6 +103,7 @@ struct PaymentRequestEventData {
 struct PaymentHandlerResponse {
   string method_name;
   string stringified_details;
+  PaymentEventResponseType response_type;
 };
 
 // This interface is provided to pass a payment handler response from payment

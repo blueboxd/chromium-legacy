@@ -88,6 +88,7 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // PaymentRequestState::Delegate:
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override;
+  void OnPaymentResponseError(const std::string& error_message) override;
   void OnShippingOptionIdSelected(std::string shipping_option_id) override;
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
   void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
@@ -224,7 +225,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   bool skip_ui_for_non_url_payment_method_identifiers_for_test_ = false;
 
   // If not empty, use this error message for rejecting PaymentRequest.show().
-  std::string prohibited_origin_or_invalid_ssl_error_message_;
+  std::string reject_show_error_message_;
 
   base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
 

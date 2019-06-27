@@ -29,6 +29,9 @@
 // The current availability of the torch.
 @property(nonatomic, readwrite, assign, getter=isTorchAvailable)
     BOOL torchAvailable;
+// The state of KVO for the camera. Used to stop observing on dealloc.
+@property(nonatomic, readwrite, assign, getter=isObservingCamera)
+    BOOL observingCamera;
 // The capture session for recording video and detecting QR codes.
 @property(nonatomic, readwrite) AVCaptureSession* captureSession;
 // The metadata output attached to the capture session.
@@ -69,7 +72,7 @@
   self = [super init];
   if (self) {
     DCHECK(delegate);
-    self.cameraState = qr_scanner::CAMERA_NOT_LOADED;
+    _cameraState = qr_scanner::CAMERA_NOT_LOADED;
     _delegate = delegate;
     std::string queueName =
         base::StringPrintf("%s.chrome.ios.QRScannerCaptureSessionQueue",
@@ -202,7 +205,7 @@
 - (void)continueLoadCaptureSession:(AVCaptureVideoPreviewLayer*)previewLayer {
   // Get the back camera.
   NSArray* videoCaptureDevices = nil;
-  NSString* cameraType = @"AVCaptureDeviceTypeBuiltInWideAngleCamera";
+  NSString* cameraType = AVCaptureDeviceTypeBuiltInWideAngleCamera;
   AVCaptureDeviceDiscoverySession* discoverySession =
       [AVCaptureDeviceDiscoverySession
           discoverySessionWithDeviceTypes:@[ cameraType ]
@@ -331,18 +334,17 @@
            forKeyPath:@"torchActive"
               options:NSKeyValueObservingOptionNew
               context:nil];
+  self.observingCamera = YES;
 }
 
 - (void)stopReceivingNotifications {
   // We only start receiving notifications if the camera is available.
-  if (!self.isCameraAvailable) {
-    return;
+  if ([self isObservingCamera]) {
+    AVCaptureDevice* camera = [self getCamera];
+    [camera removeObserver:self forKeyPath:@"hasTorch"];
+    [camera removeObserver:self forKeyPath:@"torchAvailable"];
+    [camera removeObserver:self forKeyPath:@"torchActive"];
   }
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  AVCaptureDevice* camera = [self getCamera];
-  [camera removeObserver:self forKeyPath:@"hasTorch"];
-  [camera removeObserver:self forKeyPath:@"torchAvailable"];
-  [camera removeObserver:self forKeyPath:@"torchActive"];
 }
 
 - (AVCaptureDevice*)getCamera {

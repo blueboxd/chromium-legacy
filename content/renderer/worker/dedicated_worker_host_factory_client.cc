@@ -11,6 +11,7 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
@@ -43,13 +44,24 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebURL& script_url,
     const blink::WebSecurityOrigin& script_origin,
     network::mojom::CredentialsMode credentials_mode,
+    const blink::WebSecurityOrigin& fetch_client_security_origin,
+    network::mojom::ReferrerPolicy fetch_client_referrer_policy,
+    const blink::WebURL& fetch_client_outgoing_referrer,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   blink::mojom::DedicatedWorkerHostFactoryClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
 
+  auto outside_fetch_client_settings_object =
+      blink::mojom::FetchClientSettingsObject::New();
+  outside_fetch_client_settings_object->referrer_policy =
+      fetch_client_referrer_policy;
+  outside_fetch_client_settings_object->outgoing_referrer =
+      fetch_client_outgoing_referrer;
+
   factory_->CreateWorkerHostAndStartScriptLoad(
       script_url, script_origin, credentials_mode,
+      std::move(outside_fetch_client_settings_object),
       blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
       std::move(client_ptr));

@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -150,6 +149,16 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
   DCHECK(context->IsContextThread());
   DCHECK(script_request_url_.IsValid());
   DCHECK(context_proxy_);
+
+  // For nested workers, ensure the inside ResourceFetcher because it may not
+  // have been used yet.
+  // For documents, the ResourceFetcher is always already valid.
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(*context))
+    scope->EnsureFetcher();
+
+  outside_fetch_client_settings_object_ =
+      MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          context->Fetcher()->GetProperties().GetFetchClientSettingsObject());
 }
 
 DedicatedWorker::~DedicatedWorker() {
@@ -209,8 +218,6 @@ void DedicatedWorker::Start() {
   // calling into the debugger can cause a breakpoint.
   v8_stack_trace_id_ = ThreadDebugger::From(GetExecutionContext()->GetIsolate())
                            ->StoreCurrentStackTrace("Worker Created");
-  if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
-    scope->EnsureFetcher();
   if (blink::features::IsPlzDedicatedWorkerEnabled()) {
     // For classic script, always use "same-origin" credentials mode.
     // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
@@ -234,7 +241,12 @@ void DedicatedWorker::Start() {
     factory_client_->CreateWorkerHost(
         script_request_url_,
         WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()),
-        credentials_mode, blob_url_token.PassInterface().PassHandle());
+        credentials_mode,
+        WebSecurityOrigin(
+            outside_fetch_client_settings_object_->GetSecurityOrigin()),
+        outside_fetch_client_settings_object_->GetReferrerPolicy(),
+        KURL(outside_fetch_client_settings_object_->GetOutgoingReferrer()),
+        blob_url_token.PassInterface().PassHandle());
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;
   }
@@ -410,17 +422,11 @@ void DedicatedWorker::ContinueStart(
     network::mojom::ReferrerPolicy referrer_policy,
     base::Optional<mojom::IPAddressSpace> response_address_space,
     const String& source_code) {
-  auto* outside_settings_object =
-      MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-          GetExecutionContext()
-              ->Fetcher()
-              ->GetProperties()
-              .GetFetchClientSettingsObject());
   context_proxy_->StartWorkerGlobalScope(
       CreateGlobalScopeCreationParams(script_url, off_main_thread_fetch_option,
                                       referrer_policy, response_address_space),
-      options_, script_url, *outside_settings_object, v8_stack_trace_id_,
-      source_code);
+      options_, script_url, *outside_fetch_client_settings_object_,
+      v8_stack_trace_id_, source_code);
 }
 
 std::unique_ptr<GlobalScopeCreationParams>
@@ -525,8 +531,9 @@ void DedicatedWorker::ContextLifecycleStateChanged(
 }
 
 void DedicatedWorker::Trace(blink::Visitor* visitor) {
-  visitor->Trace(context_proxy_);
   visitor->Trace(options_);
+  visitor->Trace(outside_fetch_client_settings_object_);
+  visitor->Trace(context_proxy_);
   visitor->Trace(classic_script_loader_);
   AbstractWorker::Trace(visitor);
 }

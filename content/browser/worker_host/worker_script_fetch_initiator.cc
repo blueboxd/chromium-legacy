@@ -35,6 +35,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
@@ -53,6 +54,8 @@ void WorkerScriptFetchInitiator::Start(
     const GURL& script_url,
     const url::Origin& request_initiator,
     network::mojom::CredentialsMode credentials_mode,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
     ResourceType resource_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     AppCacheNavigationHandleCore* appcache_handle_core,
@@ -89,16 +92,24 @@ void WorkerScriptFetchInitiator::Start(
           process_id, storage_partition, constructor_uses_file_url);
 
   // NetworkService (PlzWorker):
-  // Create a resource request for initiating shared worker script fetch from
-  // the browser process.
+  // Create a resource request for initiating worker script fetch from the
+  // browser process.
   std::unique_ptr<network::ResourceRequest> resource_request;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(nhiroki): Populate more fields like referrer.
-    // (https://crbug.com/715632)
+    // Determine the referrer for the worker script request based on the spec.
+    // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+    Referrer sanitized_referrer = Referrer::SanitizeForRequest(
+        script_url,
+        Referrer(outside_fetch_client_settings_object->outgoing_referrer,
+                 outside_fetch_client_settings_object->referrer_policy));
+
     resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = script_url;
     resource_request->site_for_cookies = script_url;
     resource_request->request_initiator = request_initiator;
+    resource_request->referrer = sanitized_referrer.url,
+    resource_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
+        outside_fetch_client_settings_object->referrer_policy);
     resource_request->resource_type = static_cast<int>(resource_type);
 
     // When the credentials mode is "omit", clear |allow_credentials| and set

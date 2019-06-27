@@ -37,6 +37,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
@@ -121,8 +122,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, frame_id);
   if (!render_frame_host) {
-    // TODO(nhiroki): Support the case where the requester is a worker (i.e.,
-    // nested worker) (https://crbug.com/31666).
+    // TODO(crbug.com/31666): Support the case where the requester is a worker
+    // (i.e., nested worker).
     client->OnScriptLoadFailed();
     return;
   }
@@ -213,14 +214,22 @@ void SharedWorkerServiceImpl::CreateWorker(
   // Fetch classic shared worker script with "same-origin" credentials mode.
   // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
   //
-  // TODO(nhiroki): The document's renderer should provide credentials mode
-  // specified by WorkerOptions for module script.
-  // (https://crbug.com/824646, https://crbug.com/907749)
+  // TODO(crbug.com/824646, crbug.com/907749): The document should provide the
+  // credentials mode specified by WorkerOptions for module script.
   const auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
+
+  // This is a dummy fetch client settings object for top-level shared worker
+  // script fetch.
+  // TODO(crbug.com/937177): The document should pass a proper fetch client
+  // settings object.
+  blink::mojom::FetchClientSettingsObjectPtr
+      outside_fetch_client_settings_object =
+          blink::mojom::FetchClientSettingsObject::New();
 
   WorkerScriptFetchInitiator::Start(
       process_id, weak_host->instance()->url(),
       weak_host->instance()->constructor_origin(), credentials_mode,
+      std::move(outside_fetch_client_settings_object),
       ResourceType::kSharedWorker, service_worker_context_,
       appcache_handle_core, std::move(blob_url_loader_factory),
       url_loader_factory_override_, storage_partition_,

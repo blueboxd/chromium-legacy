@@ -7,6 +7,7 @@ module blink.mojom;
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
+import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
@@ -75,15 +76,19 @@ interface DedicatedWorkerHostFactory {
   // PlzDedicatedWorker is enabled.
   //
   // Creates a new DedicatedWorkerHost, and requests to start top-level worker
-  // script loading for |script_url|. |origin| must either be unique or match
-  // the origin of the creating context (Document or
-  // DedicatedWorkerGlobalScope). |blob_url_token| should be non-null when
-  // |script_url| is a blob URL. |client| is used for notifying the renderer
-  // process of results of worker host creation and script loading.
+  // script loading for |script_url| using |credentials_mode| and
+  // |outside_fetch_client_settings_object|.
+  // |origin| must either be unique or match the origin of the creating context
+  // (Document or DedicatedWorkerGlobalScope).
+  // |blob_url_token| should be non-null when |script_url| is a blob URL.
+  // |client| is used for notifying the renderer process of results of worker
+  // host creation and script loading.
   CreateWorkerHostAndStartScriptLoad(
       url.mojom.Url script_url,
       url.mojom.Origin origin,
       network.mojom.CredentialsMode credentials_mode,
+      blink.mojom.FetchClientSettingsObject
+          outside_fetch_client_settings_object,
       blink.mojom.BlobURLToken? blob_url_token,
       DedicatedWorkerHostFactoryClient client);
 };

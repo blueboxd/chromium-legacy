@@ -60,6 +60,7 @@ mojom("mojom_platform") {
     "keyboard_lock/keyboard_lock.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/code_cache.mojom",
+    "loader/fetch_client_settings_object.mojom",
     "loader/navigation_predictor.mojom",
     "loader/pause_subresource_loading_handle.mojom",
     "loader/previews_resource_loading_hints.mojom",

@@ -25,6 +25,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/origin.h"
 
@@ -69,6 +70,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
       network::mojom::CredentialsMode credentials_mode,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -102,7 +105,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
     WorkerScriptFetchInitiator::Start(
         process_id_, script_url, request_initiator_origin, credentials_mode,
-        ResourceType::kWorker,
+        std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
         appcache_handle_->core(), std::move(blob_url_loader_factory), nullptr,
         storage_partition_impl,
@@ -331,6 +334,8 @@ class DedicatedWorkerHostFactoryImpl
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
       network::mojom::CredentialsMode credentials_mode,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -354,8 +359,9 @@ class DedicatedWorkerHostFactoryImpl
             mojo::MakeRequest(&interface_provider)));
     client->OnWorkerHostCreated(std::move(interface_provider));
     host_raw->StartScriptLoad(script_url, request_initiator_origin,
-                              credentials_mode, std::move(blob_url_token),
-                              std::move(client));
+                              credentials_mode,
+                              std::move(outside_fetch_client_settings_object),
+                              std::move(blob_url_token), std::move(client));
   }
 
  private:

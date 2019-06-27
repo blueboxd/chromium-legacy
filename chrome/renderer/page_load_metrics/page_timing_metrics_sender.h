@@ -61,6 +61,10 @@ class PageTimingMetricsSender {
   void DidCompleteResponse(int resource_id,
                            const network::URLLoaderCompletionStatus& status);
   void DidCancelResponse(int resource_id);
+  void DidLoadResourceFromMemoryCache(const GURL& response_url,
+                                      int request_id,
+                                      int64_t encoded_body_length,
+                                      const std::string& mime_type);
 
   // TODO(ericrobinson): There should probably be a name change here:
   // * Send: Sends immediately, functions as SendNow.

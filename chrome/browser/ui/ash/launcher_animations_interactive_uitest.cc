@@ -232,7 +232,7 @@ class LauncherAnimationsFullscreenSearchTest
  private:
   // LauncherAnimationsTestBase:
   std::string GetAnimationSmoothnessMetricsName() const override {
-    return "Half.ClamshellMode";
+    return "FullscreenSearch.ClamshellMode";
   }
 
   DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsFullscreenSearchTest);

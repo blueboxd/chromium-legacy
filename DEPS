@@ -142,7 +142,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a7b224d3a31a2267fb554bba4f1351d12b2163d9',
+  'skia_revision': '1958fbbcffac700c0fff991c5ff49a56bdd21cff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -169,7 +169,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': '92b7c89e6e8ba82924b57153bea68241cc45f658',
+  'boringssl_revision': 'cfcb0060e8b8fba92d275fa4ac27d369890ea9bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -1196,7 +1196,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' +  '488e12201c4ab2545055558147320c8023fe3823',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' +  'a6fca4a26e13619398c16e7344913307c495e870',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1364,7 +1364,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '36c8ef625ee8f3f86963988064c69aff6eb2c32b',
+    Var('webrtc_git') + '/src.git' + '@' + 'c2f56862a607c75ae35e36410aaf3df5d1befca7',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1405,7 +1405,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@abcebe9277b16e4495d065b8ac2c4e33504355ad',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3fb7f9675a89653b10cd353c815004ec4bec7868',
     'condition': 'checkout_src_internal',
   },
 

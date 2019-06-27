@@ -21,6 +21,15 @@
 
 namespace net {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class FTPStartResult : int {
+  kSuccessNoAuth = 0,
+  kSuccessAuth = 1,
+  kFailed = 2,
+  kMaxValue = kFailed
+};
+
 class NetworkDelegate;
 class FtpTransactionFactory;
 class FtpAuthCache;
@@ -33,15 +42,14 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
                    NetworkDelegate* network_delegate,
                    FtpTransactionFactory* ftp_transaction_factory,
                    FtpAuthCache* ftp_auth_cache);
+  ~URLRequestFtpJob() override;
+  void Start() override;
 
  protected:
-  ~URLRequestFtpJob() override;
-
   // Overridden from URLRequestJob:
   bool IsSafeRedirect(const GURL& location) override;
   bool GetMimeType(std::string* mime_type) const override;
   IPEndPoint GetResponseRemoteEndpoint() const override;
-  void Start() override;
   void Kill() override;
   void GetResponseInfo(HttpResponseInfo* info) override;
 
@@ -68,6 +76,8 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   int ReadRawData(IOBuffer* buf, int buf_size) override;
 
   void HandleAuthNeededResponse();
+
+  void LogFtpStartResult(FTPStartResult result);
 
   ProxyResolutionService* proxy_resolution_service_;
   ProxyInfo proxy_info_;

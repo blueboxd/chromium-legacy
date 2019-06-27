@@ -32,7 +32,9 @@ CreateDataReductionProxyResource(bool was_cached,
                                  double compression_ratio) {
   auto resource_data_update =
       page_load_metrics::mojom::ResourceDataUpdate::New();
-  resource_data_update->was_fetched_via_cache = was_cached;
+  resource_data_update->cache_type =
+      was_cached ? page_load_metrics::mojom::CacheType::kHttp
+                 : page_load_metrics::mojom::CacheType::kNotCached;
   resource_data_update->delta_bytes = was_cached ? 0 : delta_bytes;
   resource_data_update->encoded_body_length = delta_bytes;
   resource_data_update->is_complete = is_complete;

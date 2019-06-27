@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "components/drive/file_errors.h"
@@ -211,7 +211,7 @@ class FileCache {
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  base::CancellationFlag in_shutdown_;
+  base::AtomicFlag in_shutdown_;
 
   ResourceMetadataStorage* storage_;
 

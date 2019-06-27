@@ -12,7 +12,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "components/drive/chromeos/drive_file_util.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive.pb.h"
@@ -129,7 +129,7 @@ class ChangeListProcessor::ChangeListToEntryMapUMAStats {
 ChangeListProcessor::ChangeListProcessor(const std::string& team_drive_id,
                                          const base::FilePath& root_entry_path,
                                          ResourceMetadata* resource_metadata,
-                                         base::CancellationFlag* in_shutdown)
+                                         base::AtomicFlag* in_shutdown)
     : resource_metadata_(resource_metadata),
       in_shutdown_(in_shutdown),
       changed_files_(new FileChange),

@@ -41,7 +41,6 @@ group("closure_compile") {
     "braille_ime:closure_compile",
     "internet_config_dialog:closure_compile",
     "internet_detail_dialog:closure_compile",
-    "kiosk_next_home:closure_compile",
     "login:closure_compile",
     "machine_learning:closure_compile",
     "multidevice_setup:closure_compile",

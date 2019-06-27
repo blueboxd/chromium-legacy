@@ -3,31 +3,30 @@
     Use of this source code is governed by a BSD-style license that can be
     found in the LICENSE file. -->
 
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <LinearLayout
-        style="@style/SuggestionCardModern"
+    <FrameLayout
+        style="@style/Card"
         android:id="@+id/empty_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="@dimen/selectable_list_layout_row_padding"
+        android:layout_marginStart="@dimen/selectable_list_layout_row_padding"
         android:gravity="center"
-        android:padding="@dimen/snippets_padding" >
+        android:padding="@dimen/card_padding" >
 
         <org.chromium.ui.widget.TextViewWithLeading
-            style="@style/SuggestionCardBodyModern"
             android:id="@+id/empty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
             android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.BlackBody"
             app:leading="@dimen/text_size_medium_leading"/>
-    </LinearLayout>
+
+    </FrameLayout>
 
     <org.chromium.chrome.browser.widget.LoadingView
         android:id="@+id/loading"

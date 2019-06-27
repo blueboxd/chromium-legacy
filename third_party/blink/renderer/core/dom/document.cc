@@ -6510,10 +6510,13 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     // load local resources. The latter lets about:blank iframes in
     // file:// URL documents load images and other resources from
     // the file system.
+    //
+    // Note: Sandboxed about:srcdoc iframe without "allow-same-origin" aren't
+    // allowed to load user's file, even if its parent can.
     if (initializer.OwnerDocument()) {
       if (document_origin->IsPotentiallyTrustworthy())
         sandboxed_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
-      if (document_origin->CanLoadLocalResources())
+      if (document_origin->CanLoadLocalResources() && !IsSrcdocDocument())
         sandboxed_origin->GrantLoadLocalResources();
       if (url_.IsEmpty()) {
         last_origin_document_csp_ =

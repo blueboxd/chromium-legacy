@@ -39,12 +39,6 @@ String MediaControlsResourceLoader::GetMediaControlsAndroidCSS() const {
 }
 
 // static
-String MediaControlsResourceLoader::GetShadowTimelineStyleSheet() {
-  return UncompressResourceAsString(
-      IDR_SHADOWSTYLE_MEDIA_CONTROLS_TIMELINE_CSS);
-}
-
-// static
 String MediaControlsResourceLoader::GetShadowLoadingStyleSheet() {
   return UncompressResourceAsString(IDR_SHADOWSTYLE_MEDIA_CONTROLS_LOADING_CSS);
 }

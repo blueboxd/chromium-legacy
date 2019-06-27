@@ -21,7 +21,7 @@
 #include "google_apis/drive/drive_common_callbacks.h"
 
 namespace base {
-class CancellationFlag;
+class AtomicFlag;
 class SequencedTaskRunner;
 class Time;
 }  // namespace base
@@ -154,7 +154,7 @@ class ChangeListLoader {
 
   EventLogger* logger_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  std::unique_ptr<base::CancellationFlag> in_shutdown_;
+  std::unique_ptr<base::AtomicFlag> in_shutdown_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   RootFolderIdLoader* root_folder_id_loader_;      // Not owned.

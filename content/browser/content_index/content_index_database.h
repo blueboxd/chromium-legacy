@@ -10,18 +10,23 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
-#include "url/origin.h"
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace content {
 
+// Handles interacting with the Service Worker Database for Content Index
+// entries. This is owned by the ContentIndexContext.
 class CONTENT_EXPORT ContentIndexDatabase {
  public:
-  ContentIndexDatabase(
-      const url::Origin& origin,
+  explicit ContentIndexDatabase(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~ContentIndexDatabase();
 
   void AddEntry(int64_t service_worker_registration_id,
+                const url::Origin& origin,
                 blink::mojom::ContentDescriptionPtr description,
                 const SkBitmap& icon,
                 blink::mojom::ContentIndexService::AddCallback callback);
@@ -45,7 +50,6 @@ class CONTENT_EXPORT ContentIndexDatabase {
       const std::vector<std::string>& data,
       blink::ServiceWorkerStatusCode status);
 
-  url::Origin origin_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_;
 

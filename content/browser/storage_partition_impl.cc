@@ -895,6 +895,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       base::MakeRefCounted<DevToolsBackgroundServicesContextImpl>(
           context, partition->service_worker_context_);
 
+  partition->content_index_context_ = base::MakeRefCounted<ContentIndexContext>(
+      context, partition->service_worker_context_);
+
   partition->background_fetch_context_ =
       base::MakeRefCounted<BackgroundFetchContext>(
           context, partition->service_worker_context_,
@@ -1136,6 +1139,10 @@ StoragePartitionImpl::GetDevToolsBackgroundServicesContext() {
 NativeFileSystemManagerImpl*
 StoragePartitionImpl::GetNativeFileSystemManager() {
   return native_file_system_manager_.get();
+}
+
+ContentIndexContext* StoragePartitionImpl::GetContentIndexContext() {
+  return content_index_context_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(

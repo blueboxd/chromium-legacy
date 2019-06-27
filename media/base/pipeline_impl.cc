@@ -506,10 +506,6 @@ void PipelineImpl::RendererWrapper::SetDuration(base::TimeDelta duration) {
   // implementations call DemuxerHost on the media thread.
   media_log_->AddEvent(media_log_->CreateTimeEvent(MediaLogEvent::DURATION_SET,
                                                    "duration", duration));
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Media.Duration2", duration, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromDays(1), 50 /* bucket_count */);
-
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnDurationChange, weak_pipeline_,
                                 duration));

@@ -270,7 +270,7 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
     void OnDispatchMessage(const Message& message);
 
     // Sends |message| from appropriate thread.
-    void Send(Message* message, const char* debug_name);
+    void Send(Message* message);
 
     // Adds |task_runner| for the task to be executed later.
     void AddListenerTaskRunner(
@@ -324,8 +324,7 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
     void CreateChannel(std::unique_ptr<ChannelFactory> factory);
 
     // Methods called on the IO thread.
-    void OnSendMessage(std::unique_ptr<Message> message_ptr,
-                       const char* debug_name);
+    void OnSendMessage(std::unique_ptr<Message> message_ptr);
     void OnAddFilter();
     void OnRemoveFilter(MessageFilter* filter);
 
@@ -411,7 +410,7 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
   bool did_init() const { return did_init_; }
 
   // A Send() which doesn't DCHECK if the message is synchronous.
-  void SendInternal(Message* message, const char* debug_name);
+  void SendInternal(Message* message);
 
  private:
   friend class IpcSecurityTestUtil;

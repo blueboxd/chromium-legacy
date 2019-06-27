@@ -45,7 +45,8 @@ void TabRestorePageLoadMetricsObserver::OnResourceDataUseObserved(
         resources) {
   for (auto const& resource : resources) {
     if (resource->is_complete) {
-      if (!resource->was_fetched_via_cache)
+      if (resource->cache_type ==
+          page_load_metrics::mojom::CacheType::kNotCached)
         network_bytes_ += resource->encoded_body_length;
       else
         cache_bytes_ += resource->encoded_body_length;

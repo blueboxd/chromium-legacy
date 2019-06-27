@@ -178,6 +178,32 @@ void MetricsRenderFrameObserver::DidReceiveTransferSizeUpdate(
   }
 }
 
+void MetricsRenderFrameObserver::DidLoadResourceFromMemoryCache(
+    const GURL& response_url,
+    int request_id,
+    int64_t encoded_body_length,
+    const std::string& mime_type,
+    bool from_archive) {
+  // Resources from archives, such as subresources from a MHTML archive, do not
+  // have valid request ids and should not be reported to PLM.
+  if (from_archive)
+    return;
+
+  // Some resources are reported that never went to the network stack and do not
+  // have a |request_id| or |encoded_body_length|. See
+  // ResourceFetcher::EmulateLoadStartedForInspector(). Do not report these
+  // resources to PLM.
+  if (!encoded_body_length && !request_id)
+    return;
+
+  // A provisional frame resource cannot be serviced from the memory cache, so
+  // we do not need to check |provisional_frame_resource_data_use_|.
+  if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->DidLoadResourceFromMemoryCache(
+        response_url, request_id, encoded_body_length, mime_type);
+  }
+}
+
 void MetricsRenderFrameObserver::FrameDetached() {
   page_timing_metrics_sender_.reset();
 }

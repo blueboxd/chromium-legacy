@@ -93,10 +93,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
       const BluetoothDevice* device) const;
 
   std::vector<CableDiscoveryData> discovery_data_;
+  // active_authenticator_eids_ contains authenticator EIDs for which a
+  // handshake is currently running. Further advertisements for the same EIDs
+  // will be ignored.
+  std::set<EidArray> active_authenticator_eids_;
+  // active_devices_ contains the BLE addresses of devices for which a handshake
+  // is already running. Further advertisements from these devices will be
+  // ignored. However, devices may rotate their BLE address at will so this is
+  // not completely effective.
+  std::set<std::string> active_devices_;
   size_t advertisement_success_counter_ = 0;
   size_t advertisement_failure_counter_ = 0;
   std::map<EidArray, scoped_refptr<BluetoothAdvertisement>> advertisements_;
-  std::map<std::string, std::unique_ptr<FidoCableHandshakeHandler>>
+  std::vector<std::unique_ptr<FidoCableHandshakeHandler>>
       cable_handshake_handlers_;
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_;
 

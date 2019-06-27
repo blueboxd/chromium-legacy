@@ -915,11 +915,14 @@
         <item name="android:windowExitAnimation">@null</item>
     </style>
 
-    <!-- Content and Site Suggestions -->
-    <style name="SuggestionCardModern">
-        <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>
+
+    <!-- Card for General Use -->
+    <style name="Card">
         <item name="android:background">@drawable/hairline_border_card_background</item>
-        <item name="android:foreground">@drawable/button_borderless_compat</item>
+      </style>
+    <!-- Content and Site Suggestions -->
+    <style name="SuggestionCardModern" parent="Card">
+        <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>
     </style>
     <!-- TODO(twellington): Use standard line height for SuggestionsCard*. Updating the leading
      for these requires updating the NTP article suggestions thumbnail size as well. -->

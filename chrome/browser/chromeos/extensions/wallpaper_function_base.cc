@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/task/lazy_task_runner.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/image_decoder.h"
@@ -121,7 +121,7 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
 
  private:
   scoped_refptr<WallpaperFunctionBase> function_;
-  base::CancellationFlag cancel_flag_;
+  base::AtomicFlag cancel_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(UnsafeWallpaperDecoder);
 };

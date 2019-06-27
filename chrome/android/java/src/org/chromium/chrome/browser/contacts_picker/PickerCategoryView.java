@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -136,8 +135,6 @@ public class PickerCategoryView extends RelativeLayout
         mSelectableListLayout =
                 (SelectableListLayout<ContactDetails>) root.findViewById(R.id.selectable_list);
         mSelectableListLayout.initializeEmptyView(
-                VectorDrawableCompat.create(
-                        mActivity.getResources(), R.drawable.contacts_big, mActivity.getTheme()),
                 R.string.contacts_picker_no_contacts_found,
                 R.string.contacts_picker_no_contacts_found);
 

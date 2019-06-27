@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.bookmarks;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
@@ -143,8 +142,6 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
                 mMainView.findViewById(R.id.selectable_list);
         mSelectableListLayout = selectableList;
         mEmptyView = mSelectableListLayout.initializeEmptyView(
-                VectorDrawableCompat.create(
-                        mActivity.getResources(), R.drawable.bookmark_big, mActivity.getTheme()),
                 R.string.bookmarks_folder_empty, R.string.bookmark_no_result);
 
         mAdapter = new BookmarkItemsAdapter(activity);

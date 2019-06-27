@@ -11,7 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -70,7 +70,7 @@ class FileFlusher::Job {
   const base::Closure callback_;
 
   bool started_ = false;
-  base::CancellationFlag cancel_flag_;
+  base::AtomicFlag cancel_flag_;
   bool finish_scheduled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Job);

@@ -1,3 +1,6 @@
+knollr@chromium.org
+rayankans@chromium.org
+
 file://content/browser/push_messaging/OWNERS
 
 per-file *_type_converter*.*=set noparent

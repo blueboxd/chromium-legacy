@@ -5,10 +5,6 @@
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (closure_compile) {
@@ -109,24 +105,6 @@ if (!is_android) {
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
       defines += [ "enable_hangout_services_extension" ]
-    }
-
-    if (is_chromeos) {
-      if (enable_kiosk_next) {
-        defines += [ "_kiosk_next" ]
-      }
-
-      # The .grd contains references to generated files.
-      source_is_generated = true
-
-      deps = [
-        "//chrome/browser/resources/chromeos/kiosk_next_home:mojom_bin",
-      ]
-
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
     }
 
     outputs = [

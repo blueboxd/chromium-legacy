@@ -96,6 +96,10 @@ void FrameData::ProcessResourceLoadInFrame(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
     int process_id,
     const page_load_metrics::ResourceTracker& resource_tracker) {
+  // TODO(968141): Update these metrics to include resources loaded by the
+  // memory cache.
+  if (resource->cache_type == page_load_metrics::mojom::CacheType::kMemory)
+    return;
   bool is_same_origin = origin_.IsSameOriginWith(resource->origin);
   bytes_ += resource->delta_bytes;
   network_bytes_ += resource->delta_bytes;
@@ -107,7 +111,8 @@ void FrameData::ProcessResourceLoadInFrame(
     num_resources_++;
 
   // Report cached resource body bytes to overall frame bytes.
-  if (resource->is_complete && resource->was_fetched_via_cache) {
+  if (resource->is_complete &&
+      resource->cache_type != page_load_metrics::mojom::CacheType::kNotCached) {
     bytes_ += resource->encoded_body_length;
     if (is_same_origin)
       same_origin_bytes_ += resource->encoded_body_length;
@@ -122,7 +127,8 @@ void FrameData::ProcessResourceLoadInFrame(
     ad_network_bytes_ += resource->delta_bytes;
     ad_bytes_ += resource->delta_bytes;
     // Report cached resource body bytes to overall frame bytes.
-    if (resource->is_complete && resource->was_fetched_via_cache)
+    if (resource->is_complete &&
+        resource->cache_type != page_load_metrics::mojom::CacheType::kNotCached)
       ad_bytes_ += resource->encoded_body_length;
 
     ResourceMimeType mime_type = GetResourceMimeType(resource);

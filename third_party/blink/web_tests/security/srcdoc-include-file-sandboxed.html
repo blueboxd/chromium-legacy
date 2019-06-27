@@ -29,30 +29,25 @@
   };
 
   async_test(async function(t) {
-    // 1. During the initial navigation to about:srcdoc. The file is
-    //    successfully loaded.
-    //    TODO(https://crbug.com/977186): This should probably be blocked.
-    assert_equals("loaded", await message());
+    // 1. Initial navigation to about:srcdoc.
+    assert_equals("error", await message());
 
-    // 2. Repeating the same navigation, by setting the srcdoc attribute.
-    //    TODO(https://crbug.com/977186): This should probably be blocked.
-    iframe.srcdoc = iframe.srcdoc
-    assert_equals("loaded", await message());
+    // 2. Repeating the same navigation, by modifying the srcdoc attribute.
+    iframe.srcdoc = iframe.srcdoc;
+    assert_equals("error", await message());
 
-    // 3. History navigation to about:srcdoc. This time, it fails, probably
-    //    because of https://crbug.com/949510.
+    // 3. History navigation to about:srcdoc.
     //
     //    button.click() navigates to back.html which will execute
     //    history.back() and navigate back to the about:srcdoc page.
     button.click();
     assert_equals("error", await message());
 
-    // 4. Same as (2). This time its fails, because (3) removed the defaults
-    //    loaders.
-    iframe.srcdoc = iframe.srcdoc
+    // 4. Same as (2). This used to be useful, because (3) had side effects on
+    //    (4).
+    iframe.srcdoc = iframe.srcdoc;
     assert_equals("error", await message());
 
     t.done();
   });
 </script>
-

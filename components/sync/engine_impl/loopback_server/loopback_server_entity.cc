@@ -155,7 +155,13 @@ void LoopbackServerEntity::SerializeBaseProtoFields(
   // LoopbackServerEntity fields
   sync_entity->set_id_string(id_);
   sync_entity->set_version(version_);
-  sync_entity->set_name(name_);
+  // Match the real server behavior by assigning a "tombstone" string as the
+  // name of tombstone entities.
+  if (IsDeleted()) {
+    sync_entity->set_name("tombstone");
+  } else {
+    sync_entity->set_name(name_);
+  }
 
   // Data via accessors
   sync_entity->set_deleted(IsDeleted());

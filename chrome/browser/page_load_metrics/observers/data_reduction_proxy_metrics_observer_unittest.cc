@@ -305,7 +305,8 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   int64_t insecure_ocl_bytes = 0;
   int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
-    if (!request->was_fetched_via_cache) {
+    if (request->cache_type ==
+        page_load_metrics::mojom::CacheType::kNotCached) {
       if (request->is_secure_scheme) {
         secure_network_bytes += request->delta_bytes;
         secure_ocl_bytes +=
@@ -322,7 +323,9 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
     }
     if (request->proxy_used) {
       drp_bytes += request->delta_bytes;
-      if (!request->was_fetched_via_cache && request->is_complete)
+      if (request->cache_type ==
+              page_load_metrics::mojom::CacheType::kNotCached &&
+          request->is_complete)
         ++drp_resources;
     }
   }
@@ -368,7 +371,8 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   int64_t insecure_ocl_bytes = 0;
   int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
-    if (!request->was_fetched_via_cache) {
+    if (request->cache_type ==
+        page_load_metrics::mojom::CacheType::kNotCached) {
       if (request->is_secure_scheme) {
         secure_network_bytes += request->delta_bytes;
         secure_ocl_bytes +=
@@ -388,7 +392,9 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
         secure_drp_bytes += request->delta_bytes;
       else
         drp_bytes += request->delta_bytes;
-      if (!request->was_fetched_via_cache && request->is_complete)
+      if (request->cache_type ==
+              page_load_metrics::mojom::CacheType::kNotCached &&
+          request->is_complete)
         ++drp_resources;
     }
   }

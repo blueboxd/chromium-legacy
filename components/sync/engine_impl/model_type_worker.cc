@@ -345,8 +345,8 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     data->specifics = specifics;
     // Legacy clients populates the name field in the SyncEntity instead of the
     // title field in the BookmarkSpecifics.
-    if (model_type == BOOKMARKS && !specifics.bookmark().has_title() &&
-        !update_entity.name().empty()) {
+    if (model_type == BOOKMARKS && !update_entity.deleted() &&
+        !specifics.bookmark().has_title() && !update_entity.name().empty()) {
       data->specifics.mutable_bookmark()->set_title(update_entity.name());
     }
     response_data->entity = std::move(data);

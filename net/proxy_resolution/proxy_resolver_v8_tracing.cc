@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -220,7 +220,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   CompletionOnceCallback callback_;
 
   // Flag to indicate whether the request has been cancelled.
-  base::CancellationFlag cancelled_;
+  base::AtomicFlag cancelled_;
 
   // The operation that this Job is running.
   // Initialized on origin thread and then accessed from both threads.

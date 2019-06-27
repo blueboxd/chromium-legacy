@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -15,6 +16,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_auth_cache.h"
+#include "net/ftp/ftp_network_transaction.h"
 #include "net/ftp/ftp_response_info.h"
 #include "net/ftp/ftp_transaction_factory.h"
 #include "net/http/http_response_headers.h"
@@ -182,12 +184,20 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
     set_expected_content_size(
         ftp_transaction_->GetResponseInfo()->expected_content_size);
 
+    if (auth_data_ && auth_data_->state == AUTH_STATE_HAVE_AUTH) {
+      LogFtpStartResult(FTPStartResult::kSuccessAuth);
+    } else {
+      LogFtpStartResult(FTPStartResult::kSuccessNoAuth);
+    }
+
     NotifyHeadersComplete();
   } else if (ftp_transaction_ /* May be null if creation fails. */ &&
              ftp_transaction_->GetResponseInfo()->needs_auth) {
     HandleAuthNeededResponse();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+
+    LogFtpStartResult(FTPStartResult::kFailed);
   }
 }
 
@@ -286,8 +296,12 @@ void URLRequestFtpJob::HandleAuthNeededResponse() {
       return;
     }
 
-    if (ftp_transaction_ && auth_data_->state == AUTH_STATE_HAVE_AUTH)
+    if (ftp_transaction_ && auth_data_->state == AUTH_STATE_HAVE_AUTH) {
       ftp_auth_cache_->Remove(origin, auth_data_->credentials);
+
+      // The user entered invalid auth
+      LogFtpStartResult(FTPStartResult::kFailed);
+    }
   } else {
     auth_data_ = std::make_unique<AuthData>();
   }
@@ -303,6 +317,10 @@ void URLRequestFtpJob::HandleAuthNeededResponse() {
     // Prompt for a username/password.
     NotifyHeadersComplete();
   }
+}
+
+void URLRequestFtpJob::LogFtpStartResult(FTPStartResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Net.FTP.StartResult", result);
 }
 
 }  // namespace net

@@ -29,7 +29,7 @@
 class RegistryEntry;
 
 namespace base {
-class CancellationFlag;
+class AtomicFlag;
 class CommandLine;
 }
 
@@ -580,7 +580,7 @@ class ShellUtil {
       const base::FilePath& old_target_exe,
       const base::FilePath& new_target_exe);
 
-  typedef base::RefCountedData<base::CancellationFlag> SharedCancellationFlag;
+  typedef base::RefCountedData<base::AtomicFlag> SharedCancellationFlag;
 
   // Appends Chrome shortcuts with non-whitelisted arguments to |shortcuts| if
   // not NULL. If |do_removal|, also removes non-whitelisted arguments from

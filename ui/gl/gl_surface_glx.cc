@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -279,7 +279,7 @@ class SGIVideoSyncProviderThreadShim {
       XDestroyWindow(vsync_thread_->GetDisplay(), window_);
   }
 
-  base::CancellationFlag* cancel_vsync_flag() { return &cancel_vsync_flag_; }
+  base::AtomicFlag* cancel_vsync_flag() { return &cancel_vsync_flag_; }
 
   base::Lock* vsync_lock() { return &vsync_lock_; }
 
@@ -348,7 +348,7 @@ class SGIVideoSyncProviderThreadShim {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::CancellationFlag cancel_vsync_flag_;
+  base::AtomicFlag cancel_vsync_flag_;
   base::Lock vsync_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncProviderThreadShim);
@@ -420,7 +420,7 @@ class SGIVideoSyncVSyncProvider
   // Raw pointers to sync primitives owned by the shim_.
   // These will only be referenced before we post a task to destroy
   // the shim_, so they are safe to access.
-  base::CancellationFlag* cancel_vsync_flag_;
+  base::AtomicFlag* cancel_vsync_flag_;
   base::Lock* vsync_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncVSyncProvider);

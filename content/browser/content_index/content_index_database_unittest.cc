@@ -77,7 +77,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     ASSERT_NE(service_worker_registration_id_,
               blink::mojom::kInvalidServiceWorkerRegistrationId);
     database_ = std::make_unique<ContentIndexDatabase>(
-        origin_, embedded_worker_test_helper_.context_wrapper());
+        embedded_worker_test_helper_.context_wrapper());
   }
 
   blink::mojom::ContentDescriptionPtr CreateDescription(const std::string& id) {
@@ -91,7 +91,8 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     base::RunLoop run_loop;
     blink::mojom::ContentIndexError error;
     database_->AddEntry(
-        service_worker_registration_id_, std::move(description), SkBitmap(),
+        service_worker_registration_id_, origin_, std::move(description),
+        SkBitmap(),
         base::BindOnce(&DatabaseErrorCallback, run_loop.QuitClosure(), &error));
     run_loop.Run();
 

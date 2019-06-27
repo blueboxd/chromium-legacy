@@ -10,6 +10,7 @@
 #include "content/browser/content_index/content_index.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -66,16 +67,15 @@ blink::mojom::ContentDescriptionPtr DescriptionFromProto(
 }  // namespace
 
 ContentIndexDatabase::ContentIndexDatabase(
-    const url::Origin& origin,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : origin_(origin),
-      service_worker_context_(std::move(service_worker_context)),
+    : service_worker_context_(std::move(service_worker_context)),
       weak_ptr_factory_(this) {}
 
 ContentIndexDatabase::~ContentIndexDatabase() = default;
 
 void ContentIndexDatabase::AddEntry(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     blink::mojom::ContentDescriptionPtr description,
     const SkBitmap& icon,
     blink::mojom::ContentIndexService::AddCallback callback) {
@@ -85,7 +85,7 @@ void ContentIndexDatabase::AddEntry(
 
   // TODO(crbug.com/973844): Serialize and store icon.
   service_worker_context_->StoreRegistrationUserData(
-      service_worker_registration_id, origin_.GetURL(),
+      service_worker_registration_id, origin.GetURL(),
       {{std::move(key), std::move(value)}},
       base::BindOnce(&ContentIndexDatabase::DidAddEntry,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

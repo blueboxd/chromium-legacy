@@ -220,42 +220,44 @@ const char kHistogramFirstNonScrollInputAfterFirstPaint[] =
 const char kHistogramFirstScrollInputAfterFirstPaint[] =
     "PageLoad.InputTiming.NavigationToFirstScroll.AfterPaint";
 
-const char kHistogramPageLoadTotalBytes[] = "PageLoad.Experimental.Bytes.Total";
+const char kHistogramPageLoadTotalBytes[] =
+    "PageLoad.Experimental.Bytes.Total2";
 const char kHistogramPageLoadNetworkBytes[] =
     "PageLoad.Experimental.Bytes.Network";
-const char kHistogramPageLoadCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
+const char kHistogramPageLoadCacheBytes[] =
+    "PageLoad.Experimental.Bytes.Cache2";
 const char kHistogramPageLoadNetworkBytesIncludingHeaders[] =
     "PageLoad.Experimental.Bytes.NetworkIncludingHeaders";
 const char kHistogramPageLoadUnfinishedBytes[] =
     "PageLoad.Experimental.Bytes.Unfinished";
 
 const char kHistogramLoadTypeTotalBytesForwardBack[] =
-    "PageLoad.Experimental.Bytes.Total.LoadType.ForwardBackNavigation";
+    "PageLoad.Experimental.Bytes.Total2.LoadType.ForwardBackNavigation";
 const char kHistogramLoadTypeNetworkBytesForwardBack[] =
     "PageLoad.Experimental.Bytes.Network.LoadType.ForwardBackNavigation";
 const char kHistogramLoadTypeCacheBytesForwardBack[] =
-    "PageLoad.Experimental.Bytes.Cache.LoadType.ForwardBackNavigation";
+    "PageLoad.Experimental.Bytes.Cache2.LoadType.ForwardBackNavigation";
 
 const char kHistogramLoadTypeTotalBytesReload[] =
-    "PageLoad.Experimental.Bytes.Total.LoadType.Reload";
+    "PageLoad.Experimental.Bytes.Total2.LoadType.Reload";
 const char kHistogramLoadTypeNetworkBytesReload[] =
     "PageLoad.Experimental.Bytes.Network.LoadType.Reload";
 const char kHistogramLoadTypeCacheBytesReload[] =
-    "PageLoad.Experimental.Bytes.Cache.LoadType.Reload";
+    "PageLoad.Experimental.Bytes.Cache2.LoadType.Reload";
 
 const char kHistogramLoadTypeTotalBytesNewNavigation[] =
-    "PageLoad.Experimental.Bytes.Total.LoadType.NewNavigation";
+    "PageLoad.Experimental.Bytes.Total2.LoadType.NewNavigation";
 const char kHistogramLoadTypeNetworkBytesNewNavigation[] =
     "PageLoad.Experimental.Bytes.Network.LoadType.NewNavigation";
 const char kHistogramLoadTypeCacheBytesNewNavigation[] =
-    "PageLoad.Experimental.Bytes.Cache.LoadType.NewNavigation";
+    "PageLoad.Experimental.Bytes.Cache2.LoadType.NewNavigation";
 
 const char kHistogramTotalCompletedResources[] =
-    "PageLoad.Experimental.CompletedResources.Total";
+    "PageLoad.Experimental.CompletedResources.Total2";
 const char kHistogramNetworkCompletedResources[] =
     "PageLoad.Experimental.CompletedResources.Network";
 const char kHistogramCacheCompletedResources[] =
-    "PageLoad.Experimental.CompletedResources.Cache";
+    "PageLoad.Experimental.CompletedResources.Cache2";
 
 const char kHistogramInputToNavigation[] =
     "PageLoad.Experimental.InputTiming.InputToNavigationStart";
@@ -769,7 +771,8 @@ void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
         resources) {
   for (auto const& resource : resources) {
     if (resource->is_complete) {
-      if (!resource->was_fetched_via_cache) {
+      if (resource->cache_type ==
+          page_load_metrics::mojom::CacheType::kNotCached) {
         network_bytes_ += resource->encoded_body_length;
         num_network_resources_++;
       } else {

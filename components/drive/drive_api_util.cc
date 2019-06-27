@@ -17,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -139,7 +139,7 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
 }
 
 std::string GetMd5Digest(const base::FilePath& file_path,
-                         const base::CancellationFlag* cancellation_flag) {
+                         const base::AtomicFlag* cancellation_flag) {
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
     return std::string();

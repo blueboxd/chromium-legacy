@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/change_list_processor.h"
 #include "components/drive/chromeos/loader_controller.h"
@@ -32,7 +32,7 @@ namespace {
 // metadata.
 FileError AddOrUpdateTeamDrives(ResourceEntryVector team_drives,
                                 ResourceMetadata* metadata,
-                                base::CancellationFlag* in_shutdown) {
+                                base::AtomicFlag* in_shutdown) {
   DCHECK(metadata);
   DCHECK(in_shutdown);
   for (const auto& entry : team_drives) {
@@ -77,7 +77,7 @@ FileError AddOrUpdateTeamDrives(ResourceEntryVector team_drives,
 // Remove the supplied list of team drives from the resource metadata.
 FileError RemoveTeamDrives(ResourceEntryVector team_drives,
                            ResourceMetadata* metadata,
-                           base::CancellationFlag* in_shutdown) {
+                           base::AtomicFlag* in_shutdown) {
   DCHECK(metadata);
   DCHECK(in_shutdown);
   FileError result = FILE_ERROR_OK;
@@ -110,7 +110,7 @@ TeamDriveListLoader::TeamDriveListLoader(
     LoaderController* apply_task_controller)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
-      in_shutdown_(new base::CancellationFlag),
+      in_shutdown_(new base::AtomicFlag),
       pending_load_callbacks_(),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),

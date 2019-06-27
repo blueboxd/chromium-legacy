@@ -19,7 +19,7 @@
 #include "google_apis/drive/drive_api_requests.h"
 
 namespace base {
-class CancellationFlag;
+class AtomicFlag;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -85,7 +85,7 @@ class TeamDriveListLoader {
 
   EventLogger* logger_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  std::unique_ptr<base::CancellationFlag> in_shutdown_;
+  std::unique_ptr<base::AtomicFlag> in_shutdown_;
   std::vector<std::unique_ptr<ChangeList>> change_lists_;
   std::vector<FileOperationCallback> pending_load_callbacks_;
   bool loaded_ = false;

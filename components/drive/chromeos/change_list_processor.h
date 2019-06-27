@@ -19,7 +19,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class CancellationFlag;
+class AtomicFlag;
 }  // namespace base
 
 namespace google_apis {
@@ -126,7 +126,7 @@ class ChangeListProcessor {
   ChangeListProcessor(const std::string& team_drive_id,
                       const base::FilePath& root_entry_path,
                       ResourceMetadata* resource_metadata,
-                      base::CancellationFlag* in_shutdown);
+                      base::AtomicFlag* in_shutdown);
   ~ChangeListProcessor();
 
   // Applies user's change lists or full resource lists to
@@ -203,7 +203,7 @@ class ChangeListProcessor {
   void UpdateChangedDirs(const ResourceEntry& entry);
 
   ResourceMetadata* resource_metadata_;  // Not owned.
-  base::CancellationFlag* in_shutdown_;  // Not owned.
+  base::AtomicFlag* in_shutdown_;        // Not owned.
 
   ResourceEntryMap entry_map_;
   ParentResourceIdMap parent_resource_id_map_;

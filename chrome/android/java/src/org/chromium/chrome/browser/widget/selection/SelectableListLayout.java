@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.widget.selection;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.ViewCompat;
@@ -226,18 +225,15 @@ public class SelectableListLayout<E>
     /**
      * Initializes the view shown when the selectable list is empty.
      *
-     * @param emptyDrawable The Drawable to show when the selectable list is empty.
      * @param emptyStringResId The string to show when the selectable list is empty.
      * @param searchEmptyStringResId The string to show when the selectable list is empty during
      *                               a search.
      * @return The {@link TextView} displayed when the list is empty.
      */
-    public TextView initializeEmptyView(
-            Drawable emptyDrawable, int emptyStringResId, int searchEmptyStringResId) {
+    public TextView initializeEmptyView(int emptyStringResId, int searchEmptyStringResId) {
         mEmptyStringResId = emptyStringResId;
         mSearchEmptyStringResId = searchEmptyStringResId;
 
-        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
         mEmptyView.setText(mEmptyStringResId);
 
         // Dummy listener to have the touch events dispatched to this view tree for navigation UI.

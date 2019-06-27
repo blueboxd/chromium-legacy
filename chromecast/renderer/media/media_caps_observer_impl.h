@@ -34,7 +34,7 @@ class MediaCapsObserverImpl : public mojom::MediaCapsObserver {
   void AddSupportedCodecProfileLevel(
       mojom::CodecProfileLevelPtr codec_profile_level) override;
 
-  std::unique_ptr<SupportedCodecProfileLevelsMemo> supported_profiles_;
+  SupportedCodecProfileLevelsMemo* supported_profiles_;
   mojo::Binding<mojom::MediaCapsObserver> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCapsObserverImpl);

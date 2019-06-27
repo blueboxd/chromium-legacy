@@ -27,7 +27,7 @@
             android:layout_alignWithParentIfMissing="true"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:padding="@dimen/snippets_padding"
+            android:padding="@dimen/card_padding"
             android:orientation="vertical">
 
             <org.chromium.ui.widget.TextViewWithLeading

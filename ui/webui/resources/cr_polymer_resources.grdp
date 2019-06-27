@@ -21,9 +21,6 @@
   <structure name="IDR_WEBUI_HTML_LIST_PROPERTY_UPDATE_BEHAVIOR"
              file="html/list_property_update_behavior.html" type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_WEBUI_HTML_MD_SELECT_CSS_HTML"
-             file="html/md_select_css.html" type="chrome_html"
-             compress="gzip" flattenhtml="true" />
   <structure name="IDR_WEBUI_HTML_POLYMER"
              file="html/polymer.html" type="chrome_html" compress="gzip" />
   <structure name="IDR_WEBUI_HTML_WEBUI_LISTENER_BEHAVIOR"

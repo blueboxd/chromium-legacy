@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -27,7 +28,10 @@ MediaToolbarButtonView::~MediaToolbarButtonView() = default;
 
 void MediaToolbarButtonView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
-  // TODO(https://crbug.com/973491): Toggle the MediaDialogView.
+  if (MediaDialogView::IsShowing())
+    MediaDialogView::HideDialog();
+  else
+    MediaDialogView::ShowDialog(this, connector_);
 }
 
 void MediaToolbarButtonView::Show() {

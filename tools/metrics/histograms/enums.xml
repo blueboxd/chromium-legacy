@@ -25410,6 +25410,13 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="OS/2">Obsolete, no longer detected or supported.</int>
 </enum>
 
+<enum name="FTPStartResult">
+  <summary>Result of attempting to start an FTP request</summary>
+  <int value="0" label="Succeeded anonymously"/>
+  <int value="1" label="Succeeded with credentials"/>
+  <int value="2" label="Failed / credentials rejected"/>
+</enum>
+
 <enum name="GaiaSessionRestoreOutcome">
   <int value="0" label="Undefined"/>
   <int value="1" label="Success"/>

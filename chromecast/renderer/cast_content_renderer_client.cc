@@ -74,7 +74,8 @@ constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
 #endif  // defined(OS_ANDROID)
 
 CastContentRendererClient::CastContentRendererClient()
-    : supported_profiles_(new media::SupportedCodecProfileLevelsMemo()),
+    : supported_profiles_(
+          std::make_unique<media::SupportedCodecProfileLevelsMemo>()),
       app_media_capabilities_observer_binding_(this),
       supported_bitstream_audio_codecs_(kBitstreamAudioCodecNone) {
 #if defined(OS_ANDROID)

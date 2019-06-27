@@ -5628,6 +5628,7 @@ test("net_unittests") {
     "url_request/url_request_file_dir_job_unittest.cc",
     "url_request/url_request_file_job_unittest.cc",
     "url_request/url_request_filter_unittest.cc",
+    "url_request/url_request_ftp_job_unittest.cc",
     "url_request/url_request_http_job_unittest.cc",
     "url_request/url_request_job_factory_impl_unittest.cc",
     "url_request/url_request_job_unittest.cc",
@@ -5944,6 +5945,7 @@ test("net_unittests") {
       "ftp/ftp_directory_listing_parser_windows_unittest.cc",
       "ftp/ftp_network_transaction_unittest.cc",
       "ftp/ftp_util_unittest.cc",
+      "url_request/url_request_ftp_job_unittest.cc",
     ]
   }
 

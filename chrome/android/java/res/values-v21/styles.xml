@@ -150,4 +150,11 @@
              half is way brighter than the bottom), so we use our own. -->
         <item name="android:textCursorDrawable">@drawable/text_cursor_lowend</item>
     </style>
-</resources>
+
+    <!-- This overrides the v17 style in order to use button_borderless_compat foreground -->
+    <!-- Card for General Use -->
+    <style name="Card">
+        <item name="android:background">@drawable/hairline_border_card_background</item>
+        <item name="android:foreground">@drawable/button_borderless_compat</item>
+    </style>
+  </resources>

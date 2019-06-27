@@ -716,7 +716,6 @@ jumbo_component("base") {
     "sync_socket_win.cc",
     "synchronization/atomic_flag.cc",
     "synchronization/atomic_flag.h",
-    "synchronization/cancellation_flag.h",
     "synchronization/condition_variable.h",
     "synchronization/condition_variable_win.cc",
     "synchronization/lock.cc",

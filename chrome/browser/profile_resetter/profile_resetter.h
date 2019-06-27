@@ -26,7 +26,7 @@
 class Profile;
 
 namespace base {
-class CancellationFlag;
+class AtomicFlag;
 }
 
 namespace {
@@ -129,7 +129,7 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
 // Path to shortcut and command line arguments.
 typedef std::pair<base::FilePath, base::string16> ShortcutCommand;
 
-typedef base::RefCountedData<base::CancellationFlag> SharedCancellationFlag;
+typedef base::RefCountedData<base::AtomicFlag> SharedCancellationFlag;
 
 #if defined(OS_WIN)
 // On Windows returns all the shortcuts which launch Chrome and corresponding

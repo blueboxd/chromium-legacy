@@ -365,9 +365,14 @@ void MediaNotificationView::UpdateActionButtonsVisibility() {
 
   for (auto* view : button_row_->children()) {
     views::Button* action_button = views::Button::AsButton(view);
-    action_button->SetVisible(
-        base::Contains(visible_actions,
-                       static_cast<MediaSessionAction>(action_button->tag())));
+    bool should_show = base::Contains(
+        visible_actions, static_cast<MediaSessionAction>(action_button->tag()));
+    bool should_invalidate = should_show != action_button->GetVisible();
+
+    action_button->SetVisible(should_show);
+
+    if (should_invalidate)
+      action_button->InvalidateLayout();
   }
 }
 

@@ -9,7 +9,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Handler;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
@@ -203,9 +202,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
                 mMainView.findViewById(R.id.selectable_list);
 
         mSelectableListLayout.initializeEmptyView(
-                VectorDrawableCompat.create(
-                        mActivity.getResources(), R.drawable.downloads_big, mActivity.getTheme()),
-                R.string.download_manager_ui_empty, R.string.download_manager_no_results);
+                R.string.download_manager_no_downloads, R.string.download_manager_no_results);
 
         mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);

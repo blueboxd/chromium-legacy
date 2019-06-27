@@ -355,7 +355,7 @@
     <dimen name="snippets_thumbnail_size">124dp</dimen>
     <!-- The default padding for the peeking card and the amount the card peeks by in the current
          peeking card animation (the calculations assume this is the same). -->
-    <dimen name="snippets_padding">16dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="snippets_publisher_margin_top">8dp</dimen>
     <!-- This is in sp because we want the icon to scale with the TextView it sits alongside. -->

@@ -66,7 +66,8 @@ void PendingAppManager::SynchronizeInstalledApps(
   if (urls_to_remove.empty() && desired_apps_install_options.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), SynchronizeResult::kSuccess));
+        base::BindOnce(std::move(callback), std::map<GURL, InstallResultCode>(),
+                       std::map<GURL, bool>()));
     return;
   }
 
@@ -89,29 +90,49 @@ void PendingAppManager::SynchronizeInstalledApps(
 void PendingAppManager::InstallForSynchronizeCallback(InstallSource source,
                                                       const GURL& app_url,
                                                       InstallResultCode code) {
-  OnAppSynchronized(source, code == InstallResultCode::kSuccess ||
-                                code == InstallResultCode::kAlreadyInstalled);
+  switch (code) {
+    case InstallResultCode::kSuccess:
+    case InstallResultCode::kAlreadyInstalled:
+      break;
+    default:
+      LOG(ERROR) << app_url << " from install source "
+                 << static_cast<int>(source)
+                 << " failed to install with reason " << static_cast<int>(code);
+      break;
+  }
+
+  auto source_and_request = synchronize_requests_.find(source);
+  DCHECK(source_and_request != synchronize_requests_.end());
+  SynchronizeRequest& request = source_and_request->second;
+  request.install_results[app_url] = code;
+
+  OnAppSynchronized(source, app_url);
 }
 
 void PendingAppManager::UninstallForSynchronizeCallback(InstallSource source,
                                                         const GURL& app_url,
                                                         bool succeeded) {
-  OnAppSynchronized(source, succeeded);
+  auto source_and_request = synchronize_requests_.find(source);
+  DCHECK(source_and_request != synchronize_requests_.end());
+  SynchronizeRequest& request = source_and_request->second;
+  request.uninstall_results[app_url] = succeeded;
+
+  OnAppSynchronized(source, app_url);
 }
 
 void PendingAppManager::OnAppSynchronized(InstallSource source,
-                                          bool succeeded) {
-  auto it = synchronize_requests_.find(source);
-  DCHECK(it != synchronize_requests_.end());
+                                          const GURL& app_url) {
+  auto source_and_request = synchronize_requests_.find(source);
+  DCHECK(source_and_request != synchronize_requests_.end());
 
-  SynchronizeRequest& request = it->second;
-  if (!succeeded)
-    request.result = SynchronizeResult::kFailed;
-
+  SynchronizeRequest& request = source_and_request->second;
   DCHECK_GT(request.remaining_requests, 0);
+
   if (--request.remaining_requests == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(request.callback), request.result));
+        FROM_HERE, base::BindOnce(std::move(request.callback),
+                                  std::move(request.install_results),
+                                  std::move(request.uninstall_results)));
     synchronize_requests_.erase(source);
   }
 }

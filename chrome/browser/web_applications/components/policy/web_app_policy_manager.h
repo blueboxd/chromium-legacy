@@ -27,6 +27,9 @@ namespace web_app {
 // apps to install, uninstall, and update, via a PendingAppManager.
 class WebAppPolicyManager {
  public:
+  static constexpr char kInstallResultHistogramName[] =
+      "Webapp.InstallResult.Policy";
+
   // Constructs a WebAppPolicyManager instance that uses
   // |pending_app_manager| to manage apps. |pending_app_manager| should outlive
   // this class.
@@ -43,7 +46,8 @@ class WebAppPolicyManager {
   void InitChangeRegistrarAndRefreshPolicyInstalledApps();
 
   void RefreshPolicyInstalledApps();
-  void OnAppsSynchronized(PendingAppManager::SynchronizeResult result);
+  void OnAppsSynchronized(std::map<GURL, InstallResultCode> install_results,
+                          std::map<GURL, bool> uninstall_results);
 
   Profile* profile_;
   PrefService* pref_service_;

@@ -121,7 +121,7 @@ class BASE_EXPORT TaskQueueImpl {
   bool BlockedByFence() const;
 
   // Implementation of TaskQueue::SetObserver.
-  void SetOnNextWakeUpChangedCallback(OnNextWakeUpChangedCallback callback);
+  void SetObserver(TaskQueue::Observer* observer);
 
   void UnregisterTaskQueue();
 
@@ -333,8 +333,7 @@ class BASE_EXPORT TaskQueueImpl {
     // See description inside struct AnyThread for details.
     TimeDomain* time_domain;
 
-    // Callback corresponding to TaskQueue::Observer::OnQueueNextChanged.
-    OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;
+    TaskQueue::Observer* task_queue_observer = nullptr;
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
@@ -429,6 +428,8 @@ class BASE_EXPORT TaskQueueImpl {
     // MainThreadOnly. It can be changed only from main thread, so it should be
     // locked before accessing from other threads.
     TimeDomain* time_domain;
+
+    TaskQueue::Observer* task_queue_observer = nullptr;
 
     TaskDeque immediate_incoming_queue;
 

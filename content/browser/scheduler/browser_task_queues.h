@@ -6,9 +6,11 @@
 #define CONTENT_BROWSER_SCHEDULER_BROWSER_TASK_QUEUES_H_
 
 #include <array>
+#include <set>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequence_manager/task_queue.h"
+#include "base/thread_annotations.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -63,20 +65,45 @@ class CONTENT_EXPORT BrowserTaskQueues {
   static constexpr size_t kNumQueueTypes =
       static_cast<size_t>(QueueType::kMaxValue) + 1;
 
+  // Per queue interface for validating PostTasks. Validation is only enabled if
+  // DCHECKs are on.
+  class Validator {
+   public:
+    virtual ~Validator() = default;
+
+    // This should check fail if there's a problem.
+    virtual void ValidatePostTask(const base::Location& from_here) = 0;
+  };
+
+#if DCHECK_IS_ON()
+  class CONTENT_EXPORT ValidatorSet
+      : public base::sequence_manager::TaskQueue::Observer {
+   public:
+    ValidatorSet();
+    ~ValidatorSet() override;
+
+    void AddValidator(Validator* validator);
+    void RemoveValidator(Validator* validator);
+
+    // base::sequence_manager::TaskQueue::Observer:
+    void OnPostTask(base::Location from_here, base::TimeDelta delay) override;
+    void OnQueueNextWakeUpChanged(base::TimeTicks next_wake_up) override;
+
+   private:
+    base::Lock lock_;
+    std::set<Validator*> validators_ GUARDED_BY(lock_);
+  };
+#endif
+
   // Handle to a BrowserTaskQueues instance that can be used from any thread
   // as all operations are thread safe.
   //
   // If the underlying BrowserTaskQueues is destroyed all methods of this
   // class become no-ops, that is it is safe for this class to outlive its
   // parent BrowserTaskQueues.
-  class CONTENT_EXPORT Handle {
+  class CONTENT_EXPORT Handle : public base::RefCountedThreadSafe<Handle> {
    public:
-    // Handles can be copied / moved around.
-    Handle(Handle&&) noexcept;
-    Handle(const Handle&);
-    ~Handle();
-    Handle& operator=(Handle&&) noexcept;
-    Handle& operator=(const Handle&);
+    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
     // Returns the task runner that should be returned by
     // ThreadTaskRunnerHandle::Get().
@@ -118,9 +145,20 @@ class CONTENT_EXPORT BrowserTaskQueues {
     void ScheduleRunAllPendingTasksForTesting(
         base::OnceClosure on_pending_task_ran);
 
+    // Adds a Validator for |queue_type|.
+    void AddValidator(QueueType queue_type, Validator* validator);
+
+    // Removes a Validator previously added by AddValidator.
+    void RemoveValidator(QueueType queue_type, Validator* validator);
+
    private:
+    friend base::RefCountedThreadSafe<Handle>;
+
     // Only BrowserTaskQueues can create new instances
     friend class BrowserTaskQueues;
+
+    ~Handle();
+
     explicit Handle(BrowserTaskQueues* task_queues);
 
     // |outer_| can only be safely used from a task posted to one of the
@@ -130,6 +168,9 @@ class CONTENT_EXPORT BrowserTaskQueues {
     scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
     std::array<scoped_refptr<base::SingleThreadTaskRunner>, kNumQueueTypes>
         browser_task_runners_;
+#if DCHECK_IS_ON()
+    std::array<ValidatorSet, kNumQueueTypes> validator_sets_;
+#endif
   };
 
   // |sequence_manager| and |time_domain| must outlive this instance.
@@ -141,7 +182,7 @@ class CONTENT_EXPORT BrowserTaskQueues {
   // Destroys all queues.
   ~BrowserTaskQueues();
 
-  Handle CreateHandle() { return Handle(this); }
+  scoped_refptr<Handle> GetHandle() { return handle_; }
 
  private:
   // All these methods can only be called from the associated thread. To make
@@ -156,17 +197,20 @@ class CONTENT_EXPORT BrowserTaskQueues {
   void PostFeatureListInitializationSetup();
 
   base::sequence_manager::TaskQueue* GetBrowserTaskQueue(QueueType type) const {
-    return browser_queues_and_voters_[static_cast<size_t>(type)].first.get();
+    return queue_data_[static_cast<size_t>(type)].task_queue.get();
   }
 
   std::array<scoped_refptr<base::SingleThreadTaskRunner>, kNumQueueTypes>
   CreateBrowserTaskRunners() const;
 
-  using QueueVoterPair = std::pair<
-      scoped_refptr<base::sequence_manager::TaskQueue>,
-      std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>>;
+  struct QueueData {
+    QueueData();
+    ~QueueData();
+    scoped_refptr<base::sequence_manager::TaskQueue> task_queue;
+    std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter> voter;
+  };
+  std::array<QueueData, kNumQueueTypes> queue_data_;
 
-  std::array<QueueVoterPair, kNumQueueTypes> browser_queues_and_voters_;
   // Helper queue to make sure private methods run on the associated thread. the
   // control queue has maximum priority and will never be disabled.
   scoped_refptr<base::sequence_manager::TaskQueue> control_queue_;
@@ -180,6 +224,8 @@ class CONTENT_EXPORT BrowserTaskQueues {
   // Helper queue to run all pending tasks.
   scoped_refptr<base::sequence_manager::TaskQueue> run_all_pending_tasks_queue_;
   int run_all_pending_nesting_level_ = 0;
+
+  scoped_refptr<Handle> handle_;
 };
 
 }  // namespace content

@@ -49,6 +49,10 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
    public:
     virtual ~Observer() = default;
 
+    // Notify observer that a task has been posted on the TaskQueue. Can be
+    // called on any thread.
+    virtual void OnPostTask(Location from_here, TimeDelta delay) = 0;
+
     // Notify observer that the time at which this queue wants to run
     // the next task has changed. |next_wakeup| can be in the past
     // (e.g. TimeTicks() can be used to notify about immediate work).
@@ -58,8 +62,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     //
     // TODO(altimin): Make it Optional<TimeTicks> to tell
     // observer about cancellations.
-    virtual void OnQueueNextWakeUpChanged(TaskQueue* queue,
-                                          TimeTicks next_wake_up) = 0;
+    virtual void OnQueueNextWakeUpChanged(TimeTicks next_wake_up) = 0;
   };
 
   // Shuts down the queue. All tasks currently queued will be discarded.

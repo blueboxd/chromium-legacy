@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_ARC_CAMERA_ARC_CAMERA_BRIDGE_H_
 #define COMPONENTS_ARC_CAMERA_ARC_CAMERA_BRIDGE_H_
 
+#include <map>
+#include <memory>
+
 #include "base/macros.h"
 #include "components/arc/common/camera.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,7 +36,13 @@ class ArcCameraBridge : public KeyedService, public mojom::CameraHost {
   void StartCameraService(StartCameraServiceCallback callback) override;
 
  private:
+  class PendingStartCameraServiceResult;
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
+  std::map<PendingStartCameraServiceResult*,
+           std::unique_ptr<PendingStartCameraServiceResult>>
+      pending_start_camera_service_results_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcCameraBridge);
 };

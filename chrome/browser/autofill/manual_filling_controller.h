@@ -46,7 +46,8 @@ class ManualFillingController {
     AUTOFILL,
     PASSWORD_FALLBACKS,
     CREDIT_CARD_FALLBACKS,
-    ADDRESS_FALLBACKS
+    ADDRESS_FALLBACKS,
+    TOUCH_TO_FILL,
   };
 
   ManualFillingController() = default;
@@ -83,10 +84,6 @@ class ManualFillingController {
   // options. The controller then updates the UI visibility accordingly.
   virtual void UpdateSourceAvailability(FillingSource source,
                                         bool has_suggestions) = 0;
-
-  // Requests to show the touch to fill sheet.
-  virtual void ShowTouchToFillSheet(
-      const autofill::AccessorySheetData& data) = 0;
 
   // Explicitly hides all manual filling UI without checking any filling source.
   // E.g. after autofilling suggestions, or generating a password.

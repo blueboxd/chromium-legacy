@@ -50,7 +50,7 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
             sequence_manager_.get(), sequence_manager_->GetRealTimeDomain());
 
     default_task_runner_ =
-        browser_ui_thread_scheduler->GetHandle().GetDefaultTaskRunner();
+        browser_ui_thread_scheduler->GetHandle()->GetDefaultTaskRunner();
 
     sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
 
@@ -307,7 +307,7 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());
       DeferredInitFromSubclass(
-          browser_ui_thread_scheduler->GetHandle().GetBrowserTaskRunner(
+          browser_ui_thread_scheduler->GetHandle()->GetBrowserTaskRunner(
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),

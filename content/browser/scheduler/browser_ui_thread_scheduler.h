@@ -39,7 +39,7 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
 
   using QueueType = BrowserTaskQueues::QueueType;
 
-  Handle GetHandle() const { return handle_; }
+  scoped_refptr<Handle> GetHandle() const { return handle_; }
 
  private:
   friend class BrowserTaskExecutor;
@@ -57,7 +57,7 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
       owned_sequence_manager_;
 
   BrowserTaskQueues task_queues_;
-  Handle handle_;
+  scoped_refptr<Handle> handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserUIThreadScheduler);
 };

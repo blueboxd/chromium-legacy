@@ -54,9 +54,8 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
     return CSSKeywordValue::FromCSSValue(value);
   if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
     return CSSNumericValue::FromCSSValue(*primitive_value);
-  if (auto* image_value = DynamicTo<CSSImageValue>(value)) {
-    return CSSURLImageValue::FromCSSValue(*image_value->Clone());
-  }
+  if (auto* image_value = DynamicTo<CSSImageValue>(value))
+    return MakeGarbageCollected<CSSURLImageValue>(*image_value->Clone());
   return nullptr;
 }
 

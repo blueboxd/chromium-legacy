@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_MEDIA_RECORDER_HANDLER_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_MEDIA_RECORDER_HANDLER_CLIENT_H_
 
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+
 namespace WTF {
 class String;
 }
@@ -12,7 +14,7 @@ class String;
 namespace blink {
 
 // Interface used by a MediaRecorder to get errors and recorded data delivered.
-class MediaRecorderHandlerClient {
+class MediaRecorderHandlerClient : public GarbageCollectedMixin {
  public:
   virtual void WriteData(const char* data,
                          size_t length,

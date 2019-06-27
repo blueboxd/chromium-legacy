@@ -108,13 +108,7 @@ const char* GetDefaultQueueName(BrowserThread::ID thread_id) {
 
 }  // namespace
 
-BrowserTaskQueues::Handle::Handle(Handle&&) = default;
-BrowserTaskQueues::Handle::Handle(const Handle&) = default;
 BrowserTaskQueues::Handle::~Handle() = default;
-BrowserTaskQueues::Handle& BrowserTaskQueues::Handle::operator=(Handle&&) =
-    default;
-BrowserTaskQueues::Handle& BrowserTaskQueues::Handle::operator=(const Handle&) =
-    default;
 
 BrowserTaskQueues::Handle::Handle(BrowserTaskQueues* outer)
     : outer_(outer),
@@ -152,18 +146,66 @@ void BrowserTaskQueues::Handle::ScheduleRunAllPendingTasksForTesting(
           base::ScopedClosureRunner(std::move(on_pending_task_ran))));
 }
 
+#if DCHECK_IS_ON()
+
+void BrowserTaskQueues::Handle::AddValidator(QueueType queue_type,
+                                             Validator* validator) {
+  validator_sets_[static_cast<size_t>(queue_type)].AddValidator(validator);
+}
+
+void BrowserTaskQueues::Handle::RemoveValidator(QueueType queue_type,
+                                                Validator* validator) {
+  validator_sets_[static_cast<size_t>(queue_type)].RemoveValidator(validator);
+}
+
+BrowserTaskQueues::ValidatorSet::ValidatorSet() = default;
+
+BrowserTaskQueues::ValidatorSet::~ValidatorSet() {
+  // Note the queue has already been shut down by the time we're deleted so we
+  // don't need to unregister.
+  DCHECK(validators_.empty());
+}
+
+void BrowserTaskQueues::ValidatorSet::AddValidator(Validator* validator) {
+  base::AutoLock lock(lock_);
+  DCHECK_EQ(validators_.count(validator), 0u)
+      << "Validator added more than once";
+  validators_.insert(validator);
+}
+
+void BrowserTaskQueues::ValidatorSet::RemoveValidator(Validator* validator) {
+  base::AutoLock lock(lock_);
+  size_t num_erased = validators_.erase(validator);
+  DCHECK_EQ(num_erased, 1u) << "Validator not in set";
+}
+
+void BrowserTaskQueues::ValidatorSet::OnPostTask(base::Location from_here,
+                                                 base::TimeDelta delay) {
+  base::AutoLock lock(lock_);
+  for (Validator* validator : validators_) {
+    validator->ValidatePostTask(from_here);
+  }
+}
+
+void BrowserTaskQueues::ValidatorSet::OnQueueNextWakeUpChanged(
+    base::TimeTicks next_wake_up) {}
+
+#endif  // DCHECK_IS_ON()
+
+BrowserTaskQueues::QueueData::QueueData() = default;
+BrowserTaskQueues::QueueData::~QueueData() = default;
+
 BrowserTaskQueues::BrowserTaskQueues(
     BrowserThread::ID thread_id,
     base::sequence_manager::SequenceManager* sequence_manager,
     base::sequence_manager::TimeDomain* time_domain) {
-  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
-    browser_queues_and_voters_[i].first = sequence_manager->CreateTaskQueue(
+  for (size_t i = 0; i < queue_data_.size(); ++i) {
+    queue_data_[i].task_queue = sequence_manager->CreateTaskQueue(
         base::sequence_manager::TaskQueue::Spec(
             GetTaskQueueName(thread_id, static_cast<QueueType>(i)))
             .SetTimeDomain(time_domain));
-    browser_queues_and_voters_[i].second =
-        browser_queues_and_voters_[i].first->CreateQueueEnabledVoter();
-    browser_queues_and_voters_[i].second->SetVoteToEnable(false);
+    queue_data_[i].voter = queue_data_[i].task_queue->CreateQueueEnabledVoter();
+    queue_data_[i].voter->SetVoteToEnable(false);
   }
 
   // Default task queue
@@ -189,11 +231,24 @@ BrowserTaskQueues::BrowserTaskQueues(
           .SetTimeDomain(time_domain));
   run_all_pending_tasks_queue_->SetQueuePriority(
       QueuePriority::kBestEffortPriority);
+
+  handle_ = base::AdoptRef(new Handle(this));
+
+#if DCHECK_IS_ON()
+  for (size_t i = 0; i < queue_data_.size(); ++i) {
+    queue_data_[i].task_queue->SetObserver(&handle_->validator_sets_[i]);
+  }
+
+  // Treat the |default_task_queue_| the same as the USER_BLOCKING task queue
+  // from a validation point of view.
+  default_task_queue_->SetObserver(
+      &handle_->validator_sets_[static_cast<int>(QueueType::kUserBlocking)]);
+#endif
 }
 
 BrowserTaskQueues::~BrowserTaskQueues() {
-  for (auto& queue : browser_queues_and_voters_) {
-    queue.first->ShutdownTaskQueue();
+  for (auto& queue : queue_data_) {
+    queue.task_queue->ShutdownTaskQueue();
   }
   control_queue_->ShutdownTaskQueue();
   default_task_queue_->ShutdownTaskQueue();
@@ -205,8 +260,8 @@ std::array<scoped_refptr<base::SingleThreadTaskRunner>,
 BrowserTaskQueues::CreateBrowserTaskRunners() const {
   std::array<scoped_refptr<base::SingleThreadTaskRunner>, kNumQueueTypes>
       task_runners;
-  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
-    task_runners[i] = browser_queues_and_voters_[i].first->task_runner();
+  for (size_t i = 0; i < queue_data_.size(); ++i) {
+    task_runners[i] = queue_data_[i].task_queue->task_runner();
   }
   return task_runners;
 }
@@ -224,15 +279,15 @@ void BrowserTaskQueues::PostFeatureListInitializationSetup() {
 }
 
 void BrowserTaskQueues::EnableAllQueues() {
-  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
-    browser_queues_and_voters_[i].second->SetVoteToEnable(true);
+  for (size_t i = 0; i < queue_data_.size(); ++i) {
+    queue_data_[i].voter->SetVoteToEnable(true);
   }
 }
 
 void BrowserTaskQueues::EnableAllExceptBestEffortQueues() {
-  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
+  for (size_t i = 0; i < queue_data_.size(); ++i) {
     if (i != static_cast<size_t>(QueueType::kBestEffort))
-      browser_queues_and_voters_[i].second->SetVoteToEnable(true);
+      queue_data_[i].voter->SetVoteToEnable(true);
   }
 }
 
@@ -250,8 +305,8 @@ void BrowserTaskQueues::EnableAllExceptBestEffortQueues() {
 void BrowserTaskQueues::StartRunAllPendingTasksForTesting(
     base::ScopedClosureRunner on_pending_task_ran) {
   ++run_all_pending_nesting_level_;
-  for (const auto& queue : browser_queues_and_voters_) {
-    queue.first->InsertFence(InsertFencePosition::kNow);
+  for (const auto& queue : queue_data_) {
+    queue.task_queue->InsertFence(InsertFencePosition::kNow);
   }
   default_task_queue_->InsertFence(InsertFencePosition::kNow);
   run_all_pending_tasks_queue_->task_runner()->PostTask(
@@ -264,8 +319,8 @@ void BrowserTaskQueues::EndRunAllPendingTasksForTesting(
     base::ScopedClosureRunner on_pending_task_ran) {
   --run_all_pending_nesting_level_;
   if (run_all_pending_nesting_level_ == 0) {
-    for (const auto& queue : browser_queues_and_voters_) {
-      queue.first->RemoveFence();
+    for (const auto& queue : queue_data_) {
+      queue.task_queue->RemoveFence();
     }
     default_task_queue_->RemoveFence();
   }

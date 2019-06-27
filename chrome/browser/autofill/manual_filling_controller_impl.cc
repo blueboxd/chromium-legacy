@@ -39,6 +39,7 @@ FillingSource GetSourceForTab(const AccessorySheetData& accessory_sheet) {
     case AccessoryTabType::ADDRESSES:
       return FillingSource::ADDRESS_FALLBACKS;
     case AccessoryTabType::TOUCH_TO_FILL:
+      return FillingSource::TOUCH_TO_FILL;
     case AccessoryTabType::ALL:
     case AccessoryTabType::COUNT:
       break;  // Intentional failure.
@@ -140,12 +141,6 @@ void ManualFillingControllerImpl::UpdateSourceAvailability(
     available_sources_.erase(source);
 
   UpdateVisibility();
-}
-
-void ManualFillingControllerImpl::ShowTouchToFillSheet(
-    const AccessorySheetData& data) {
-  view_->OnItemsAvailable(data);
-  view_->ShowTouchToFillSheet();
 }
 
 void ManualFillingControllerImpl::Hide() {
@@ -264,7 +259,10 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
 
 void ManualFillingControllerImpl::UpdateVisibility() {
   if (ShouldShowAccessory()) {
-    view_->ShowWhenKeyboardIsVisible();
+    if (available_sources_.contains(FillingSource::TOUCH_TO_FILL))
+      view_->ShowTouchToFillSheet();
+    else
+      view_->ShowWhenKeyboardIsVisible();
   } else {
     view_->Hide();
   }

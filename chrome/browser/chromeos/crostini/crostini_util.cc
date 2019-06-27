@@ -279,6 +279,10 @@ bool IsCrostiniRunning(Profile* profile) {
       kCrostiniDefaultVmName);
 }
 
+bool IsCrostiniAnsibleInfrastructureEnabled() {
+  return base::FeatureList::IsEnabled(features::kCrostiniAnsibleInfrastructure);
+}
+
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id) {

@@ -37,8 +37,8 @@ class PendingAppManagerTest : public testing::Test {
     pending_app_manager_.SynchronizeInstalledApps(
         std::move(install_options_list), InstallSource::kInternal,
         base::BindLambdaForTesting(
-            [&run_loop](PendingAppManager::SynchronizeResult result) {
-              ASSERT_EQ(PendingAppManager::SynchronizeResult::kSuccess, result);
+            [&run_loop, urls](std::map<GURL, InstallResultCode> install_results,
+                              std::map<GURL, bool> uninstall_results) {
               run_loop.Quit();
             }));
     // Wait for SynchronizeInstalledApps to finish.
@@ -107,10 +107,8 @@ TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
     pending_app_manager->SynchronizeInstalledApps(
         std::move(install_options_list), InstallSource::kInternal,
         base::BindLambdaForTesting(
-            [&](PendingAppManager::SynchronizeResult result) {
-              ASSERT_EQ(PendingAppManager::SynchronizeResult::kSuccess, result);
-              run_loop.Quit();
-            }));
+            [&](std::map<GURL, InstallResultCode> install_results,
+                std::map<GURL, bool> uninstall_results) { run_loop.Quit(); }));
     run_loop.Run();
   }
 

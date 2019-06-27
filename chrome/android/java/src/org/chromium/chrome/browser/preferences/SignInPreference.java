@@ -15,9 +15,7 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.preferences.sync.SyncPreferenceUtils;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
@@ -224,9 +222,7 @@ public class SignInPreference
         setLayoutResource(R.layout.account_management_account_row);
         setTitle(R.string.sign_in_to_chrome);
 
-        boolean unifiedConsent = ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT);
-        setSummary(
-                unifiedConsent ? R.string.signin_pref_summary : R.string.sign_in_to_chrome_summary);
+        setSummary(R.string.signin_pref_summary);
 
         setFragment(null);
         setIcon(AppCompatResources.getDrawable(getContext(), R.drawable.logo_avatar_anonymous));
@@ -248,14 +244,10 @@ public class SignInPreference
 
         setLayoutResource(R.layout.account_management_account_row);
         setTitle(profileData.getFullNameOrEmail());
-        boolean unifiedConsent = ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT);
-        setSummary(unifiedConsent ? accountName
-                                  : SyncPreferenceUtils.getSyncStatusSummary(getContext()));
+        setSummary(accountName);
         setFragment(AccountManagementFragment.class.getName());
         setIcon(profileData.getImage());
-        boolean showSyncError =
-                !unifiedConsent && SyncPreferenceUtils.showSyncErrorIcon(getContext());
-        setWidgetLayoutResource(showSyncError ? R.layout.sync_error_widget : 0);
+        setWidgetLayoutResource(0);
         setViewEnabled(true);
 
         mSigninPromoController = null;
@@ -290,12 +282,6 @@ public class SignInPreference
                             true);
                     update();
                 });
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            View divider = view.findViewById(R.id.divider);
-            assert divider != null;
-            divider.setVisibility(View.GONE);
-        }
     }
 
     // ProfileSyncServiceListener implementation.

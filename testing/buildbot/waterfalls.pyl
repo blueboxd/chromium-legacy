@@ -1909,7 +1909,7 @@
           'linux-xenial',
         ],
         'test_suites': {
-          'gtest_tests': 'fieldtrial_browser_tests',
+          'gtest_tests': 'fieldtrial_gtests',
         },
       },
       'linux-tcmalloc-rel': {

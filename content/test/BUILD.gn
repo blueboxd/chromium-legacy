@@ -1744,6 +1744,7 @@ test("content_unittests") {
     "../browser/scheduler/responsiveness/jank_monitor_unittest.cc",
     "../browser/scheduler/responsiveness/metric_source_unittest.cc",
     "../browser/scheduler/responsiveness/watcher_unittest.cc",
+    "../browser/scheduler/scoped_do_not_use_ui_default_queue_from_io_unittest.cc",
     "../browser/screen_orientation/screen_orientation_provider_unittest.cc",
     "../browser/screenlock_monitor/screenlock_monitor_unittest.cc",
     "../browser/service_worker/embedded_worker_instance_unittest.cc",

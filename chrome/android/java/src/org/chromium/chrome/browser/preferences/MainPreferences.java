@@ -117,12 +117,7 @@ public class MainPreferences extends PreferenceFragment
         PreferenceUtils.addPreferencesFromResource(this, R.xml.main_preferences);
         cachePreferences();
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            mSignInPreference.setOnStateChangedCallback(this::onSignInPreferenceStateChanged);
-        } else {
-            getPreferenceScreen().removePreference(findPreference(PREF_ACCOUNT_SECTION));
-            getPreferenceScreen().removePreference(findPreference(PREF_SYNC_AND_SERVICES));
-        }
+        mSignInPreference.setOnStateChangedCallback(this::onSignInPreferenceStateChanged);
 
         updatePasswordsPreference();
 
@@ -238,8 +233,6 @@ public class MainPreferences extends PreferenceFragment
     }
 
     private void updateSyncAndServicesPreference() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) return;
-
         ChromeBasePreference syncAndServices =
                 (ChromeBasePreference) findPreference(PREF_SYNC_AND_SERVICES);
         syncAndServices.setIcon(SyncPreferenceUtils.getSyncStatusIcon(getActivity()));

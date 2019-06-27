@@ -58,6 +58,9 @@ class SystemWebAppManager {
     kOnVersionChange,
   };
 
+  static constexpr char kInstallResultHistogramName[] =
+      "Webapp.InstallResult.System";
+
   // Constructs a SystemWebAppManager instance that uses
   // |pending_app_manager| to manage apps. |pending_app_manager| should outlive
   // this class.
@@ -100,7 +103,8 @@ class SystemWebAppManager {
 
  private:
   void OnAppsSynchronized(std::set<SystemAppType> already_installed,
-                          PendingAppManager::SynchronizeResult result);
+                          std::map<GURL, InstallResultCode> install_results,
+                          std::map<GURL, bool> uninstall_results);
   bool NeedsUpdate() const;
 
   // TODO(calamity): Move migration into the install task once the install task

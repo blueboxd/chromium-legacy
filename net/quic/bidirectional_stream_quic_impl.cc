@@ -210,15 +210,34 @@ NextProto BidirectionalStreamQuicImpl::GetProtocol() const {
 }
 
 int64_t BidirectionalStreamQuicImpl::GetTotalReceivedBytes() const {
-  if (stream_)
-    return headers_bytes_received_ + stream_->stream_bytes_read();
-  return headers_bytes_received_ + closed_stream_received_bytes_;
+  // When QPACK is enabled, headers are sent and received on the stream, so
+  // the headers bytes do not need to be accounted for independently.
+  int64_t total_received_bytes =
+      quic::VersionUsesQpack(session_->GetQuicVersion())
+          ? 0
+          : headers_bytes_received_;
+  if (stream_) {
+    DCHECK_LE(stream_->NumBytesConsumed(), stream_->stream_bytes_read());
+    // Only count the uniquely received bytes.
+    total_received_bytes += stream_->NumBytesConsumed();
+  } else {
+    total_received_bytes += closed_stream_received_bytes_;
+  }
+  return total_received_bytes;
 }
 
 int64_t BidirectionalStreamQuicImpl::GetTotalSentBytes() const {
-  if (stream_)
-    return headers_bytes_sent_ + stream_->stream_bytes_written();
-  return headers_bytes_sent_ + closed_stream_sent_bytes_;
+  // When QPACK is enabled, headers are sent and received on the stream, so
+  // the headers bytes do not need to be accounted for independently.
+  int64_t total_sent_bytes = quic::VersionUsesQpack(session_->GetQuicVersion())
+                                 ? 0
+                                 : headers_bytes_sent_;
+  if (stream_) {
+    total_sent_bytes += stream_->stream_bytes_written();
+  } else {
+    total_sent_bytes += closed_stream_sent_bytes_;
+  }
+  return total_sent_bytes;
 }
 
 bool BidirectionalStreamQuicImpl::GetLoadTimingInfo(

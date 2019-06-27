@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -300,6 +301,42 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_FALSE(IsInstalled(kAppUrl1));
   EXPECT_TRUE(IsInstalled(kAppUrl2));
   EXPECT_TRUE(IsInstalled(kAppUrl3));
+}
+
+TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
+  base::HistogramTester histograms;
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+    system_web_app_manager()->SetSystemApps(system_apps);
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 0);
+    system_web_app_manager()->Start(ui_delegate());
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 1);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kSuccess, 1);
+  }
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+    system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
+    system_web_app_manager()->SetSystemApps(system_apps);
+    pending_app_manager()->SetInstallResultCode(
+        InstallResultCode::kInstallManagerDestroyed);
+
+    system_web_app_manager()->Start(ui_delegate());
+    base::RunLoop().RunUntilIdle();
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 3);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kInstallManagerDestroyed, 2);
+  }
 }
 
 }  // namespace web_app

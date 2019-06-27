@@ -26,6 +26,8 @@ class WebContents;
 
 namespace web_app {
 
+enum class InstallResultCode;
+
 struct BitmapAndSource;
 struct InstallOptions;
 
@@ -96,6 +98,10 @@ void RecordAppBanner(content::WebContents* contents, const GURL& app_url);
 
 WebappInstallSource ConvertOptionsToMetricsInstallSource(
     const InstallOptions& options);
+
+void RecordExternalAppInstallResultCode(
+    const char* histogram_name,
+    std::map<GURL, InstallResultCode> install_results);
 
 }  // namespace web_app
 

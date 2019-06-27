@@ -94,9 +94,7 @@ class PLATFORM_EXPORT BudgetPoolController {
 // See IncreaseThrottleRefCount & DecreaseThrottleRefCount.
 //
 // This class is main-thread only.
-class PLATFORM_EXPORT TaskQueueThrottler
-    : public base::sequence_manager::TaskQueue::Observer,
-      public BudgetPoolController {
+class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
  public:
   // We use tracing controller from ThreadSchedulerImpl because an instance
   // of this class is always its member, so has the same lifetime.
@@ -105,9 +103,8 @@ class PLATFORM_EXPORT TaskQueueThrottler
 
   ~TaskQueueThrottler() override;
 
-  // TaskQueue::Observer implementation:
   void OnQueueNextWakeUpChanged(base::sequence_manager::TaskQueue* queue,
-                                base::TimeTicks wake_up) override;
+                                base::TimeTicks wake_up);
 
   // BudgetPoolController implementation:
   void AddQueueToBudgetPool(base::sequence_manager::TaskQueue* queue,
@@ -159,12 +156,36 @@ class PLATFORM_EXPORT TaskQueueThrottler
                    base::TimeTicks now) const;
 
  private:
-  struct Metadata {
-    Metadata() : throttling_ref_count(0) {}
+  class Metadata : public base::sequence_manager::TaskQueue::Observer {
+   public:
+    Metadata(base::sequence_manager::TaskQueue* queue,
+             TaskQueueThrottler* throttler);
 
-    size_t throttling_ref_count;
+    ~Metadata() override;
 
-    std::unordered_set<BudgetPool*> budget_pools;
+    // Returns true if |throttling_ref_count_| was zero.
+    bool IncrementRefCount();
+
+    // Returns true if |throttling_ref_count_| is now zero.
+    bool DecrementRefCount();
+
+    // TaskQueue::Observer implementation:
+    void OnPostTask(base::Location from_here, base::TimeDelta delay) override;
+    void OnQueueNextWakeUpChanged(base::TimeTicks wake_up) override;
+
+    size_t throttling_ref_count() const { return throttling_ref_count_; }
+
+    const std::unordered_set<BudgetPool*>& budget_pools() const {
+      return budget_pools_;
+    }
+
+    std::unordered_set<BudgetPool*>& budget_pools() { return budget_pools_; }
+
+   private:
+    base::sequence_manager::TaskQueue* const queue_;
+    TaskQueueThrottler* const throttler_;
+    size_t throttling_ref_count_ = 0;
+    std::unordered_set<BudgetPool*> budget_pools_;
   };
   using TaskQueueMap =
       std::unordered_map<base::sequence_manager::TaskQueue*, Metadata>;

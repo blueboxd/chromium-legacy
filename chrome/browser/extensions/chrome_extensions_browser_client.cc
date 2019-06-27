@@ -13,6 +13,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -361,8 +362,13 @@ void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
 ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
   if (!extension_cache_.get()) {
 #if defined(OS_CHROMEOS)
+    base::TaskPriority task_priority =
+        chromeos::ProfileHelper::IsSigninProfileInitialized() &&
+                chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions()
+            ? base::TaskPriority::USER_VISIBLE
+            : base::TaskPriority::BEST_EFFORT;
     extension_cache_.reset(new ExtensionCacheImpl(
-        std::make_unique<ChromeOSExtensionCacheDelegate>()));
+        std::make_unique<ChromeOSExtensionCacheDelegate>(), task_priority));
 #else
     extension_cache_.reset(new NullExtensionCache());
 #endif

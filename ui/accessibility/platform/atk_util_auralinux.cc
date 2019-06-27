@@ -16,7 +16,11 @@
 
 namespace {
 
-const char kAccessibilityEnabled[] = "ACCESSIBILITY_ENABLED";
+const char* kAccessibilityEnabledVariables[] = {
+    "ACCESSIBILITY_ENABLED",
+    "GNOME_ACCESSIBILITY",
+    "QT_ACCESSIBILITY",
+};
 
 }  // namespace
 
@@ -127,10 +131,13 @@ AtkUtilAuraLinux* AtkUtilAuraLinux::GetInstance() {
 
 bool AtkUtilAuraLinux::ShouldEnableAccessibility() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string enable_accessibility;
-  env->GetVar(kAccessibilityEnabled, &enable_accessibility);
-  if (enable_accessibility == "1" || PlatformShouldEnableAccessibility())
-    return true;
+  for (const auto* variable : kAccessibilityEnabledVariables) {
+    std::string enable_accessibility;
+    env->GetVar(variable, &enable_accessibility);
+    if (enable_accessibility == "1")
+      return true;
+  }
+
   return false;
 }
 
@@ -150,7 +157,7 @@ void AtkUtilAuraLinux::InitializeAsync() {
 
 void AtkUtilAuraLinux::InitializeForTesting() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(kAccessibilityEnabled, "1");
+  env->SetVar(kAccessibilityEnabledVariables[0], "1");
 
   InitializeAsync();
 }

@@ -39,7 +39,6 @@ class ManualFillingControllerImpl
   void OnFilledIntoFocusedField(autofill::mojom::FillingStatus status) override;
   void UpdateSourceAvailability(FillingSource source,
                                 bool has_suggestions) override;
-  void ShowTouchToFillSheet(const autofill::AccessorySheetData& data) override;
   void Hide() override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(autofill::AccessoryTabType type,

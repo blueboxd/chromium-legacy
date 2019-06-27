@@ -57,7 +57,6 @@ class AX_EXPORT AtkUtilAuraLinux {
 
   bool ShouldEnableAccessibility();
 
-  bool PlatformShouldEnableAccessibility();
   void PlatformInitializeAsync();
 
   DISALLOW_COPY_AND_ASSIGN(AtkUtilAuraLinux);

@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -67,6 +68,8 @@ void ParseInstallOptionsFromPolicyEntry(const base::Value& entry,
 }
 
 }  // namespace
+
+const char WebAppPolicyManager::kInstallResultHistogramName[];
 
 WebAppPolicyManager::WebAppPolicyManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
@@ -163,10 +166,14 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
 }
 
 void WebAppPolicyManager::OnAppsSynchronized(
-    PendingAppManager::SynchronizeResult result) {
+    std::map<GURL, InstallResultCode> install_results,
+    std::map<GURL, bool> uninstall_results) {
   is_refreshing_ = false;
   if (needs_refresh_)
     RefreshPolicyInstalledApps();
+
+  RecordExternalAppInstallResultCode(kInstallResultHistogramName,
+                                     install_results);
 }
 
 }  // namespace web_app

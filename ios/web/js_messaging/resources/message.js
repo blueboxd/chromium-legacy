@@ -82,16 +82,6 @@ __gCrWeb.message.invokeOnHost = function(command) {
 };
 
 /**
- * Returns the message queue as a string.
- * @return {string} The current message queue as a JSON string.
- */
-__gCrWeb.message.getMessageQueue = function() {
-  var messageQueueString = __gCrWeb.common.JSONStringify(messageQueue_.queue);
-  messageQueue_.reset();
-  return messageQueueString;
-};
-
-/**
  * Sends both queues if they contain messages.
  */
 __gCrWeb.message.invokeQueues = function() {

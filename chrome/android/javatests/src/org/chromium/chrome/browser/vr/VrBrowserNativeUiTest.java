@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -793,6 +794,7 @@ public class VrBrowserNativeUiTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/979145")
     @Feature({"Browser", "RenderTest"})
     public void testSecurityTokenOnHttp() throws InterruptedException, IOException {
         mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
@@ -804,6 +806,7 @@ public class VrBrowserNativeUiTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/979145")
     @Feature({"Browser", "RenderTest"})
     public void testSecurityTokenOnHttps() throws InterruptedException, IOException {
         mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
@@ -817,6 +820,7 @@ public class VrBrowserNativeUiTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/979145")
     @Feature({"Browser", "RenderTest"})
     public void testSecurityTokenOnHttpsBadCertificate() throws InterruptedException, IOException {
         mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);

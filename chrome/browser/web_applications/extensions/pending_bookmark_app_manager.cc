@@ -229,11 +229,12 @@ void PendingBookmarkAppManager::OnUrlLoaded(
 
 void PendingBookmarkAppManager::OnInstalled(
     BookmarkAppInstallationTask::Result result) {
-  CurrentInstallationFinished(result.app_id);
+  CurrentInstallationFinished(result.app_id, result.code);
 }
 
 void PendingBookmarkAppManager::CurrentInstallationFinished(
-    const base::Optional<web_app::AppId>& app_id) {
+    const base::Optional<web_app::AppId>& app_id,
+    web_app::InstallResultCode code) {
   // Post a task to avoid InstallableManager crashing and do so before
   // running the callback in case the callback tries to install another
   // app.
@@ -244,14 +245,10 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
       base::BindOnce(&PendingBookmarkAppManager::MaybeStartNextInstallation,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  auto install_result_code =
-      app_id ? web_app::InstallResultCode::kSuccess
-             : web_app::InstallResultCode::kFailedUnknownReason;
-
   std::unique_ptr<TaskAndCallback> task_and_callback;
   task_and_callback.swap(current_task_and_callback_);
   std::move(task_and_callback->callback)
-      .Run(task_and_callback->task->install_options().url, install_result_code);
+      .Run(task_and_callback->task->install_options().url, code);
 }
 
 }  // namespace extensions

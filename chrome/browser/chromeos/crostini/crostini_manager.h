@@ -641,19 +641,19 @@ class CrostiniManager : public KeyedService,
   // service method finishes.
   void OnCreateDiskImage(
       CreateDiskImageCallback callback,
-      base::Optional<vm_tools::concierge::CreateDiskImageResponse> reply);
+      base::Optional<vm_tools::concierge::CreateDiskImageResponse> response);
 
   // Callback for ConciergeClient::DestroyDiskImage. Called after the Concierge
   // service method finishes.
   void OnDestroyDiskImage(
       BoolCallback callback,
-      base::Optional<vm_tools::concierge::DestroyDiskImageResponse> reply);
+      base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response);
 
   // Callback for ConciergeClient::ListVmDisks. Called after the Concierge
   // service method finishes.
   void OnListVmDisks(
       ListVmDisksCallback callback,
-      base::Optional<vm_tools::concierge::ListVmDisksResponse> reply);
+      base::Optional<vm_tools::concierge::ListVmDisksResponse> response);
 
   // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
   // service method finishes.  Updates running containers list then calls the
@@ -662,7 +662,7 @@ class CrostiniManager : public KeyedService,
   void OnStartTerminaVm(
       std::string vm_name,
       BoolCallback callback,
-      base::Optional<vm_tools::concierge::StartVmResponse> reply);
+      base::Optional<vm_tools::concierge::StartVmResponse> response);
 
   // Callback for ConciergeClient::TremplinStartedSignal. Called after the
   // Tremplin service starts. Updates running containers list and then calls the
@@ -673,7 +673,7 @@ class CrostiniManager : public KeyedService,
   // service method finishes.
   void OnStopVm(std::string vm_name,
                 CrostiniResultCallback callback,
-                base::Optional<vm_tools::concierge::StopVmResponse> reply);
+                base::Optional<vm_tools::concierge::StopVmResponse> response);
 
   // Callback for CrostiniManager::InstallCrostiniComponent. Must be called on
   // the UI thread.
@@ -698,82 +698,83 @@ class CrostiniManager : public KeyedService,
       std::string vm_name,
       std::string container_name,
       CrostiniResultCallback callback,
-      base::Optional<vm_tools::cicerone::CreateLxdContainerResponse> reply);
+      base::Optional<vm_tools::cicerone::CreateLxdContainerResponse> response);
 
   // Callback for CiceroneClient::DeleteLxdContainer.
   void OnDeleteLxdContainer(
       std::string vm_name,
       std::string container_name,
       BoolCallback callback,
-      base::Optional<vm_tools::cicerone::DeleteLxdContainerResponse> reply);
+      base::Optional<vm_tools::cicerone::DeleteLxdContainerResponse> response);
 
   // Callback for CiceroneClient::StartLxdContainer.
   void OnStartLxdContainer(
       std::string vm_name,
       std::string container_name,
       CrostiniResultCallback callback,
-      base::Optional<vm_tools::cicerone::StartLxdContainerResponse> reply);
+      base::Optional<vm_tools::cicerone::StartLxdContainerResponse> response);
 
   // Callback for CiceroneClient::SetUpLxdContainerUser.
   void OnSetUpLxdContainerUser(
       std::string vm_name,
       std::string container_name,
       BoolCallback callback,
-      base::Optional<vm_tools::cicerone::SetUpLxdContainerUserResponse> reply);
+      base::Optional<vm_tools::cicerone::SetUpLxdContainerUserResponse>
+          response);
 
   // Callback for CiceroneClient::ExportLxdContainer.
   void OnExportLxdContainer(
       std::string vm_name,
       std::string container_name,
-      base::Optional<vm_tools::cicerone::ExportLxdContainerResponse> reply);
+      base::Optional<vm_tools::cicerone::ExportLxdContainerResponse> response);
 
   // Callback for CiceroneClient::ImportLxdContainer.
   void OnImportLxdContainer(
       std::string vm_name,
       std::string container_name,
-      base::Optional<vm_tools::cicerone::ImportLxdContainerResponse> reply);
+      base::Optional<vm_tools::cicerone::ImportLxdContainerResponse> response);
 
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
       BoolCallback callback,
       base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>
-          reply);
+          response);
 
   // Callback for CrostiniManager::GetContainerAppIcons. Called after the
   // Concierge service finishes.
   void OnGetContainerAppIcons(
       GetContainerAppIconsCallback callback,
-      base::Optional<vm_tools::cicerone::ContainerAppIconResponse> reply);
+      base::Optional<vm_tools::cicerone::ContainerAppIconResponse> response);
 
   // Callback for CrostiniManager::GetLinuxPackageInfo and
   // CrostiniManager::GetLinuxPackageInfoFromApt.
   void OnGetLinuxPackageInfo(
       GetLinuxPackageInfoCallback callback,
-      base::Optional<vm_tools::cicerone::LinuxPackageInfoResponse> reply);
+      base::Optional<vm_tools::cicerone::LinuxPackageInfoResponse> response);
 
   // Callback for CrostiniManager::InstallLinuxPackage.
   void OnInstallLinuxPackage(
       InstallLinuxPackageCallback callback,
-      base::Optional<vm_tools::cicerone::InstallLinuxPackageResponse> reply);
+      base::Optional<vm_tools::cicerone::InstallLinuxPackageResponse> response);
 
   // Callback for CrostiniManager::UninstallPackageOwningFile.
   void OnUninstallPackageOwningFile(
       CrostiniResultCallback callback,
       base::Optional<vm_tools::cicerone::UninstallPackageOwningFileResponse>
-          reply);
+          response);
 
   // Callback for CrostiniManager::GetContainerSshKeys. Called after the
   // Concierge service finishes.
   void OnGetContainerSshKeys(
       GetContainerSshKeysCallback callback,
-      base::Optional<vm_tools::concierge::ContainerSshKeysResponse> reply);
+      base::Optional<vm_tools::concierge::ContainerSshKeysResponse> response);
 
   // Callback for CrostiniManager::OnAttachUsbDeviceOpen
   void OnAttachUsbDevice(
       const std::string& vm_name,
       device::mojom::UsbDeviceInfoPtr device,
       AttachUsbDeviceCallback callback,
-      base::Optional<vm_tools::concierge::AttachUsbDeviceResponse> reply);
+      base::Optional<vm_tools::concierge::AttachUsbDeviceResponse> response);
 
   // Callback for CrostiniManager::DetachUsbDevice
   void OnDetachUsbDevice(
@@ -781,17 +782,18 @@ class CrostiniManager : public KeyedService,
       uint8_t guest_port,
       device::mojom::UsbDeviceInfoPtr device,
       BoolCallback callback,
-      base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> reply);
+      base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> response);
 
   // Callback for CrostiniManager::ListUsbDevices
   void OnListUsbDevices(
       const std::string& vm_name,
       ListUsbDevicesCallback callback,
-      base::Optional<vm_tools::concierge::ListUsbDeviceResponse> reply);
+      base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response);
 
   // Callback for CrostiniManager::SearchApp.
-  void OnSearchApp(SearchAppCallback callback,
-                   base::Optional<vm_tools::cicerone::AppSearchResponse> reply);
+  void OnSearchApp(
+      SearchAppCallback callback,
+      base::Optional<vm_tools::cicerone::AppSearchResponse> response);
 
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.

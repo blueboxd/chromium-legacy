@@ -171,6 +171,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
     any_thread_.unregistered = true;
     any_thread_.time_domain = nullptr;
     immediate_incoming_queue.swap(any_thread_.immediate_incoming_queue);
+    any_thread_.task_queue_observer = nullptr;
   }
 
   if (main_thread_only().time_domain)
@@ -178,8 +179,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
 
   main_thread_only().on_task_completed_handler = OnTaskCompletedHandler();
   main_thread_only().time_domain = nullptr;
-  main_thread_only().on_next_wake_up_changed_callback =
-      OnNextWakeUpChangedCallback();
+  main_thread_only().task_queue_observer = nullptr;
   empty_queues_to_reload_handle_.ReleaseAtomicFlag();
 
   // It is possible for a task to hold a scoped_refptr to this, which
@@ -264,6 +264,8 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     // See https://crbug.com/901800
     base::internal::CheckedAutoLock lock(any_thread_lock_);
     TimeTicks now;
+    if (any_thread_.task_queue_observer)
+      any_thread_.task_queue_observer->OnPostTask(task.location, TimeDelta());
     bool add_queue_time_to_tasks = sequence_manager_->GetAddQueueTimeToTasks();
     if (delayed_fence_allowed_ || add_queue_time_to_tasks) {
       now = any_thread_.time_domain->Now();
@@ -341,9 +343,12 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
 
     TimeTicks time_domain_now = main_thread_only().time_domain->Now();
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
-    if (sequence_manager_->GetAddQueueTimeToTasks()) {
-      task.queue_time = time_domain_now;
+    if (main_thread_only().task_queue_observer) {
+      main_thread_only().task_queue_observer->OnPostTask(task.location,
+                                                         task.delay);
     }
+    if (sequence_manager_->GetAddQueueTimeToTasks())
+      task.queue_time = time_domain_now;
 
     PushOntoDelayedIncomingQueueFromMainThread(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number,
@@ -360,11 +365,12 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
     {
       base::internal::CheckedAutoLock lock(any_thread_lock_);
       time_domain_now = any_thread_.time_domain->Now();
+      if (any_thread_.task_queue_observer)
+        any_thread_.task_queue_observer->OnPostTask(task.location, task.delay);
     }
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
-    if (sequence_manager_->GetAddQueueTimeToTasks()) {
+    if (sequence_manager_->GetAddQueueTimeToTasks())
       task.queue_time = time_domain_now;
-    }
 
     PushOntoDelayedIncomingQueue(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number,
@@ -433,9 +439,9 @@ void TaskQueueImpl::ReloadEmptyImmediateWorkQueue() {
   DCHECK(main_thread_only().immediate_work_queue->Empty());
   main_thread_only().immediate_work_queue->TakeImmediateIncomingQueueTasks();
 
-  if (!main_thread_only().on_next_wake_up_changed_callback.is_null() &&
-      IsQueueEnabled()) {
-    main_thread_only().on_next_wake_up_changed_callback.Run(TimeTicks());
+  if (main_thread_only().task_queue_observer && IsQueueEnabled()) {
+    main_thread_only().task_queue_observer->OnQueueNextWakeUpChanged(
+        TimeTicks());
   }
 }
 
@@ -897,10 +903,10 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
   }
 
   if (enable) {
-    if (has_pending_immediate_work &&
-        !main_thread_only().on_next_wake_up_changed_callback.is_null()) {
+    if (has_pending_immediate_work && main_thread_only().task_queue_observer) {
       // Delayed work notification will be issued via time domain.
-      main_thread_only().on_next_wake_up_changed_callback.Run(TimeTicks());
+      main_thread_only().task_queue_observer->OnQueueNextWakeUpChanged(
+          TimeTicks());
     }
 
     // Note the selector calls SequenceManager::OnTaskQueueEnabled which posts
@@ -915,10 +921,10 @@ void TaskQueueImpl::UpdateCrossThreadQueueStateLocked() {
   any_thread_.immediate_work_queue_empty =
       main_thread_only().immediate_work_queue->Empty();
 
-  if (main_thread_only().on_next_wake_up_changed_callback) {
-    // If there's a callback we need a DoWork for the callback to be issued by
-    // ReloadEmptyImmediateWorkQueue. The callback isn't
-    // sent for disabled queues.
+  if (main_thread_only().task_queue_observer) {
+    // If there's an observer we need a DoWork for the callback to be issued by
+    // ReloadEmptyImmediateWorkQueue. The callback isn't sent for disabled
+    // queues.
     any_thread_.post_immediate_task_should_schedule_work = IsQueueEnabled();
   } else {
     // Otherwise we need PostImmediateTaskImpl to ScheduleWork unless the queue
@@ -987,16 +993,17 @@ void TaskQueueImpl::RequeueDeferredNonNestableTask(
   }
 }
 
-void TaskQueueImpl::SetOnNextWakeUpChangedCallback(
-    TaskQueueImpl::OnNextWakeUpChangedCallback callback) {
-#if DCHECK_IS_ON()
-  if (callback) {
-    DCHECK(main_thread_only().on_next_wake_up_changed_callback.is_null())
+void TaskQueueImpl::SetObserver(TaskQueue::Observer* observer) {
+  if (observer) {
+    DCHECK(!main_thread_only().task_queue_observer)
         << "Can't assign two different observers to "
-           "blink::scheduler::TaskQueue";
+           "base::sequence_manager:TaskQueue";
   }
-#endif
-  main_thread_only().on_next_wake_up_changed_callback = callback;
+
+  main_thread_only().task_queue_observer = observer;
+
+  base::internal::CheckedAutoLock lock(any_thread_lock_);
+  any_thread_.task_queue_observer = observer;
 }
 
 void TaskQueueImpl::UpdateDelayedWakeUp(LazyNow* lazy_now) {
@@ -1009,10 +1016,10 @@ void TaskQueueImpl::UpdateDelayedWakeUpImpl(LazyNow* lazy_now,
     return;
   main_thread_only().scheduled_wake_up = wake_up;
 
-  if (wake_up &&
-      !main_thread_only().on_next_wake_up_changed_callback.is_null() &&
+  if (wake_up && main_thread_only().task_queue_observer &&
       !HasPendingImmediateWork()) {
-    main_thread_only().on_next_wake_up_changed_callback.Run(wake_up->time);
+    main_thread_only().task_queue_observer->OnQueueNextWakeUpChanged(
+        wake_up->time);
   }
 
   WakeUpResolution resolution = has_pending_high_resolution_tasks()

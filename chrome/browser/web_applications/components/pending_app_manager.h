@@ -32,11 +32,6 @@ class AppRegistrar;
 // should wait for the update request to finish before uninstalling the app.
 class PendingAppManager {
  public:
-  enum class SynchronizeResult {
-    kSuccess = 0,
-    kFailed = 1,
-  };
-
   using OnceInstallCallback =
       base::OnceCallback<void(const GURL& app_url, InstallResultCode code)>;
   using RepeatingInstallCallback =
@@ -45,7 +40,8 @@ class PendingAppManager {
   using UninstallCallback =
       base::RepeatingCallback<void(const GURL& app_url, bool succeeded)>;
   using SynchronizeCallback =
-      base::OnceCallback<void(SynchronizeResult result)>;
+      base::OnceCallback<void(std::map<GURL, InstallResultCode> install_results,
+                              std::map<GURL, bool> uninstall_results)>;
 
   explicit PendingAppManager(AppRegistrar* registrar);
   virtual ~PendingAppManager();
@@ -109,7 +105,8 @@ class PendingAppManager {
 
     SynchronizeCallback callback;
     int remaining_requests;
-    SynchronizeResult result = SynchronizeResult::kSuccess;
+    std::map<GURL, InstallResultCode> install_results;
+    std::map<GURL, bool> uninstall_results;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SynchronizeRequest);
@@ -121,7 +118,7 @@ class PendingAppManager {
   void UninstallForSynchronizeCallback(InstallSource source,
                                        const GURL& app_url,
                                        bool succeeded);
-  void OnAppSynchronized(InstallSource source, bool succeeded);
+  void OnAppSynchronized(InstallSource source, const GURL& app_url);
 
   AppRegistrar* registrar_;
 

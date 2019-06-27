@@ -43,17 +43,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"
 
-    // http://crbug.com/244774
-    "race:webrtc::RTPReceiver::ProcessBitrate\n"
-    "race:webrtc::RTPSender::ProcessBitrate\n"
-    "race:webrtc::VideoCodingModuleImpl::Decode\n"
-    "race:webrtc::RTPSender::SendOutgoingData\n"
-    "race:webrtc::LibvpxVp8Encoder::GetEncodedPartitions\n"
-    "race:webrtc::LibvpxVp8Encoder::Encode\n"
-    "race:webrtc::ViEEncoder::DeliverFrame\n"
-    "race:webrtc::vcm::VideoReceiver::Decode\n"
-    "race:webrtc::VCMReceiver::FrameForDecoding\n"
-
     // http://crbug.com/244856
     "race:libpulsecommon*.so\n"
 

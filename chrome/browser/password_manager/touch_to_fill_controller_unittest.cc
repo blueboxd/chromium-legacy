@@ -64,7 +64,7 @@ TEST_F(TouchToFillControllerTest, Show) {
   bob.label = bob_realm;
 
   EXPECT_CALL(manual_filling_controller(),
-              ShowTouchToFillSheet(
+              RefreshSuggestions(
                   autofill::AccessorySheetData::Builder(
                       autofill::AccessoryTabType::TOUCH_TO_FILL,
                       base::ASCIIToUTF16("Touch to Fill"))

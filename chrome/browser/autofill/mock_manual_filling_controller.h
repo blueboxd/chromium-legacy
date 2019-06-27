@@ -22,7 +22,6 @@ class MockManualFillingController
   MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::mojom::FillingStatus));
   MOCK_METHOD2(UpdateSourceAvailability,
                void(ManualFillingController::FillingSource, bool));
-  MOCK_METHOD1(ShowTouchToFillSheet, void(const autofill::AccessorySheetData&));
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
   MOCK_METHOD2(OnFillingTriggered,

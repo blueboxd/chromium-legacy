@@ -63,8 +63,7 @@ void TouchToFillController::Show(
                         /*is_selectable=*/false);
   }
 
-  GetManualFillingController()->ShowTouchToFillSheet(
-      std::move(builder).Build());
+  GetManualFillingController()->RefreshSuggestions(std::move(builder).Build());
 }
 
 void TouchToFillController::OnFillingTriggered(

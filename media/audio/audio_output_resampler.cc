@@ -109,56 +109,6 @@ static void RecordStats(const AudioParameters& output_params) {
       static_cast<AudioSampleRate>(kAudioSampleRateMax + 1));
 }
 
-// Record UMA statistics for input/output rebuffering.
-static void RecordRebufferingStats(const AudioParameters& input_params,
-                                   const AudioParameters& output_params) {
-  const int input_buffer_size = input_params.frames_per_buffer();
-  const int output_buffer_size = output_params.frames_per_buffer();
-  DCHECK_NE(0, input_buffer_size);
-  DCHECK_NE(0, output_buffer_size);
-
-  // Buffer size mismatch; see Media.Audio.Render.BrowserCallbackRegularity
-  // histogram for explanation.
-  int value = 0;
-  if (input_buffer_size >= output_buffer_size) {
-    // 0 if input size is a multiple of output size; otherwise -1.
-    value = (input_buffer_size % output_buffer_size) ? -1 : 0;
-  } else {
-    value = (output_buffer_size / input_buffer_size - 1) * 2;
-    if (output_buffer_size % input_buffer_size) {
-      // One more callback is issued periodically.
-      value += 1;
-    }
-  }
-
-  const int value_cap = (4096 / 128 - 1) * 2 + 1;
-  if (value > value_cap)
-    value = value_cap;
-
-  switch (input_params.latency_tag()) {
-    case AudioLatency::LATENCY_EXACT_MS:
-      base::UmaHistogramSparse(
-          "Media.Audio.Render.BrowserCallbackRegularity.LatencyExactMs", value);
-      return;
-    case AudioLatency::LATENCY_INTERACTIVE:
-      base::UmaHistogramSparse(
-          "Media.Audio.Render.BrowserCallbackRegularity.LatencyInteractive",
-          value);
-      return;
-    case AudioLatency::LATENCY_RTC:
-      base::UmaHistogramSparse(
-          "Media.Audio.Render.BrowserCallbackRegularity.LatencyRtc", value);
-      return;
-    case AudioLatency::LATENCY_PLAYBACK:
-      base::UmaHistogramSparse(
-          "Media.Audio.Render.BrowserCallbackRegularity.LatencyPlayback",
-          value);
-      return;
-    default:
-      DVLOG(1) << "Latency tag is not set";
-  }
-}
-
 // Only Windows has a high latency output driver that is not the same as the low
 // latency path.
 #if defined(OS_WIN)
@@ -481,9 +431,7 @@ OnMoreDataConverter::OnMoreDataConverter(
       error_occurred_(false),
       input_buffer_size_(input_params.frames_per_buffer()),
       output_buffer_size_(output_params.frames_per_buffer()),
-      debug_recorder_(std::move(debug_recorder)) {
-  RecordRebufferingStats(input_params, output_params);
-}
+      debug_recorder_(std::move(debug_recorder)) {}
 
 OnMoreDataConverter::~OnMoreDataConverter() {
   // Ensure Stop() has been called so we don't end up with an AudioOutputStream

@@ -151,6 +151,17 @@ TEST_F(ManualFillingControllerTest, AlwaysShowsAccessoryForPasswordFields) {
   controller()->RefreshSuggestions(empty_passwords_sheet());
 }
 
+TEST_F(ManualFillingControllerTest, TouchToFillSheetHasPreference) {
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::TOUCH_TO_FILL));
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::PASSWORDS));
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
+
+  EXPECT_CALL(*view(), ShowTouchToFillSheet());
+  controller()->RefreshSuggestions(empty_passwords_sheet());
+}
+
 TEST_F(ManualFillingControllerTest,
        HidesAccessoryWithoutSuggestionsOnNonPasswordFields) {
   SetSuggestionsAndClearExpectations(
@@ -225,12 +236,6 @@ TEST_F(ManualFillingControllerTest, ShowsAndHidesAccessoryForPasswords) {
   EXPECT_CALL(*view(), Hide());
   controller()->UpdateSourceAvailability(FillingSource::PASSWORD_FALLBACKS,
                                          /*has_suggestions=*/false);
-}
-
-TEST_F(ManualFillingControllerTest, RelaysShowTouchToFillSheet) {
-  EXPECT_CALL(*view(), OnItemsAvailable(empty_passwords_sheet()));
-  EXPECT_CALL(*view(), ShowTouchToFillSheet);
-  controller()->ShowTouchToFillSheet(empty_passwords_sheet());
 }
 
 TEST_F(ManualFillingControllerTest, HidesAccessoryWithoutAvailableSources) {

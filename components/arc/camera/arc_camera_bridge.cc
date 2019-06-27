@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/dbus/arc_camera_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -43,6 +44,52 @@ class ArcCameraBridgeFactory
 
 }  // namespace
 
+// Runs the callback after verifying the connection to the service.
+class ArcCameraBridge::PendingStartCameraServiceResult {
+ public:
+  PendingStartCameraServiceResult(
+      ArcCameraBridge* owner,
+      mojo::ScopedMessagePipeHandle pipe,
+      ArcCameraBridge::StartCameraServiceCallback callback)
+      : owner_(owner),
+        service_(mojom::CameraServicePtrInfo(std::move(pipe), 0u)),
+        callback_(std::move(callback)) {
+    service_.set_connection_error_handler(
+        base::Bind(&PendingStartCameraServiceResult::OnError,
+                   weak_ptr_factory_.GetWeakPtr()));
+    service_.QueryVersion(
+        base::Bind(&PendingStartCameraServiceResult::OnVersionReady,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  ~PendingStartCameraServiceResult() = default;
+
+ private:
+  void OnVersionReady(uint32_t version) { Finish(); }
+
+  void OnError() {
+    LOG(ERROR) << "Failed to query the camera service version.";
+    // Run the callback anyways. The same error will be delivered to the Android
+    // side error handler.
+    Finish();
+  }
+
+  // Runs the callback and removes this object from the owner.
+  void Finish() {
+    DCHECK(callback_);
+    std::move(callback_).Run(std::move(service_));
+    // Destructs |this|.
+    owner_->pending_start_camera_service_results_.erase(this);
+  }
+
+  ArcCameraBridge* const owner_;
+  mojom::CameraServicePtr service_;
+  ArcCameraBridge::StartCameraServiceCallback callback_;
+  base::WeakPtrFactory<PendingStartCameraServiceResult> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(PendingStartCameraServiceResult);
+};
+
 // static
 ArcCameraBridge* ArcCameraBridge::GetForBrowserContext(
     content::BrowserContext* context) {
@@ -68,11 +115,13 @@ void ArcCameraBridge::StartCameraService(StartCameraServiceCallback callback) {
   mojo::PlatformChannel channel;
   mojo::ScopedMessagePipeHandle server_pipe =
       invitation.AttachMessagePipe(token);
-  // Run the callback now.
-  // When an error occurs, it'll be communicated via the pipe.
-  mojom::CameraServicePtr service;
-  service.Bind(mojom::CameraServicePtrInfo(std::move(server_pipe), 0u));
-  std::move(callback).Run(std::move(service));
+
+  // Run the callback after verifying the connection to the service process.
+  auto pending_result = std::make_unique<PendingStartCameraServiceResult>(
+      this, std::move(server_pipe), std::move(callback));
+  auto* pending_result_ptr = pending_result.get();
+  pending_start_camera_service_results_[pending_result_ptr] =
+      std::move(pending_result);
 
   mojo::OutgoingInvitation::Send(std::move(invitation),
                                  base::kNullProcessHandle,

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/banners/app_banner_manager.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -225,6 +227,13 @@ WebappInstallSource ConvertOptionsToMetricsInstallSource(
   }
 
   return metrics_install_source;
+}
+
+void RecordExternalAppInstallResultCode(
+    const char* histogram_name,
+    std::map<GURL, InstallResultCode> install_results) {
+  for (const auto& url_and_result : install_results)
+    base::UmaHistogramEnumeration(histogram_name, url_and_result.second);
 }
 
 }  // namespace web_app

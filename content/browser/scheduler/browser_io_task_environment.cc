@@ -33,7 +33,7 @@ void BrowserIOTaskEnvironment::Init(
   task_queues_ = std::make_unique<BrowserTaskQueues>(
       BrowserThread::IO, sequence_manager,
       sequence_manager->GetRealTimeDomain());
-  default_task_runner_ = task_queues_->CreateHandle().GetDefaultTaskRunner();
+  default_task_runner_ = task_queues_->GetHandle()->GetDefaultTaskRunner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

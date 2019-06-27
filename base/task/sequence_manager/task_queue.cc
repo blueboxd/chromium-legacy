@@ -136,7 +136,7 @@ void TaskQueue::ShutdownTaskQueueGracefully() {
 
   // If we've not been unregistered then this must occur on the main thread.
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  impl_->SetOnNextWakeUpChangedCallback(RepeatingCallback<void(TimeTicks)>());
+  impl_->SetObserver(nullptr);
   impl_->sequence_manager()->ShutdownTaskQueueGracefully(TakeTaskQueueImpl());
 }
 
@@ -323,15 +323,10 @@ void TaskQueue::SetObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return;
-  if (observer) {
-    // Observer is guaranteed to outlive TaskQueue and TaskQueueImpl lifecycle
-    // is controlled by |this|.
-    impl_->SetOnNextWakeUpChangedCallback(
-        BindRepeating(&TaskQueue::Observer::OnQueueNextWakeUpChanged,
-                      Unretained(observer), Unretained(this)));
-  } else {
-    impl_->SetOnNextWakeUpChangedCallback(RepeatingCallback<void(TimeTicks)>());
-  }
+
+  // Observer is guaranteed to outlive TaskQueue and TaskQueueImpl lifecycle is
+  // controlled by |this|.
+  impl_->SetObserver(observer);
 }
 
 bool TaskQueue::IsOnMainThread() const {

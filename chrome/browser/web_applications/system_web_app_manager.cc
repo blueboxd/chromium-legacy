@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -70,6 +71,8 @@ InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info,
 }
 
 }  // namespace
+
+const char SystemWebAppManager::kInstallResultHistogramName[];
 
 SystemWebAppManager::SystemWebAppManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
@@ -183,11 +186,15 @@ const base::Version& SystemWebAppManager::CurrentVersion() const {
 
 void SystemWebAppManager::OnAppsSynchronized(
     std::set<SystemAppType> already_installed,
-    PendingAppManager::SynchronizeResult result) {
+    std::map<GURL, InstallResultCode> install_results,
+    std::map<GURL, bool> uninstall_results) {
   if (IsEnabled()) {
     pref_service_->SetString(prefs::kSystemWebAppLastUpdateVersion,
                              CurrentVersion().GetString());
   }
+
+  RecordExternalAppInstallResultCode(kInstallResultHistogramName,
+                                     install_results);
 
   MigrateSystemWebApps(already_installed);
 

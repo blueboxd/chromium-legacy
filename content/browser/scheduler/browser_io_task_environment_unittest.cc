@@ -21,14 +21,14 @@ TEST(BrowserIOTaskEnvironmentTest, CanPostTasksToThread) {
 
   auto env = std::make_unique<BrowserIOTaskEnvironment>();
   auto handle = env->CreateHandle();
-  handle.EnableAllQueues();
+  handle->EnableAllQueues();
 
   base::Thread::Options options;
   options.task_environment = env.release();
   thread.StartWithOptions(options);
 
   auto runner =
-      handle.GetBrowserTaskRunner(BrowserTaskQueues::QueueType::kDefault);
+      handle->GetBrowserTaskRunner(BrowserTaskQueues::QueueType::kDefault);
 
   base::WaitableEvent event;
   runner->PostTask(FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,

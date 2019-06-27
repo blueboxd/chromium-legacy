@@ -89,7 +89,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
 
   void OnInstalled(BookmarkAppInstallationTask::Result result);
 
-  void CurrentInstallationFinished(const base::Optional<std::string>& app_id);
+  void CurrentInstallationFinished(const base::Optional<std::string>& app_id,
+                                   web_app::InstallResultCode code);
 
   Profile* profile_;
   web_app::InstallFinalizer* install_finalizer_;

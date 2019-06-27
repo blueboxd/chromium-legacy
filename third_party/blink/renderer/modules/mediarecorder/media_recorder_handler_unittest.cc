@@ -70,12 +70,24 @@ static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
     {true, true, "video/webm", "vp9,opus", true},
 };
 
-class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
-                                 public MediaRecorderHandlerClient {
+class MockMediaRecorderHandlerClient
+    : public GarbageCollectedFinalized<MockMediaRecorderHandlerClient>,
+      public MediaRecorderHandlerClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MockMediaRecorderHandlerClient);
+
+ public:
+  virtual ~MockMediaRecorderHandlerClient() = default;
+
+  MOCK_METHOD4(WriteData, void(const char*, size_t, bool, double));
+  MOCK_METHOD1(OnError, void(const String& message));
+};
+
+class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams> {
  public:
   MediaRecorderHandlerTest()
       : media_recorder_handler_(MediaRecorderHandler::Create(
             scheduler::GetSingleThreadTaskRunnerForTesting())),
+        client_(MakeGarbageCollected<MockMediaRecorderHandlerClient>()),
         audio_source_(kTestAudioChannels,
                       440 /* freq */,
                       kTestAudioSampleRate) {
@@ -88,9 +100,6 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     registry_.reset();
     ThreadState::Current()->CollectAllGarbageForTesting();
   }
-
-  MOCK_METHOD4(WriteData, void(const char*, size_t, bool, double));
-  MOCK_METHOD1(OnError, void(const String& message));
 
   bool recording() const { return media_recorder_handler_->recording_; }
   bool hasVideoRecorders() const {
@@ -139,6 +148,8 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
 
   // The Class under test. Needs to be scoped_ptr to force its destruction.
   Persistent<MediaRecorderHandler> media_recorder_handler_;
+
+  Persistent<MockMediaRecorderHandlerClient> client_;
 
   // For generating test AudioBuses
   media::SineWaveAudioSource audio_source_;
@@ -205,8 +216,8 @@ TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   AddTracks();
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
-  EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
-                                                  mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_FALSE(recording());
   EXPECT_FALSE(hasVideoRecorders());
   EXPECT_FALSE(hasAudioRecorders());
@@ -236,8 +247,8 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
 
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
-  EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
-                                                  mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
 
   InSequence s;
@@ -250,9 +261,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    EXPECT_CALL(*this, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -267,9 +278,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*this, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -287,15 +298,15 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*this, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(quit_closure));
     if (GetParam().encoder_supports_alpha) {
-      EXPECT_CALL(*this, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+      EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+      EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
           .Times(1)
           .WillOnce(RunClosure5(std::move(quit_closure)));
     }
@@ -324,8 +335,8 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
 
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
-  EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
-                                                  mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
 
   InSequence s;
@@ -344,9 +355,9 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    EXPECT_CALL(*this, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -361,9 +372,9 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*this, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -387,8 +398,8 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
 
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
-  EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
-                                                  mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
 
   InSequence s;
@@ -399,8 +410,8 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     const size_t kEncodedSizeThreshold = 16;
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*this, WriteData(_, _, _, _)).Times(AtLeast(1));
-    EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*client_, WriteData(_, _, _, _)).Times(AtLeast(1));
+    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -413,8 +424,8 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*this, WriteData(_, _, _, _)).Times(0);
-    EXPECT_CALL(*this, OnError(_))
+    EXPECT_CALL(*client_, WriteData(_, _, _, _)).Times(0);
+    EXPECT_CALL(*client_, OnError(_))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -430,8 +441,8 @@ TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
   AddTracks();
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
-  EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
-                                                  mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
 
   StringBuilder actual_mime_type;
   actual_mime_type.Append(GetParam().mime_type);

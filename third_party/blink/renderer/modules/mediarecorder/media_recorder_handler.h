@@ -133,7 +133,7 @@ class MODULES_EXPORT MediaRecorderHandler
   HeapVector<Member<MediaStreamComponent>> audio_tracks_;
 
   // |client_| is a weak pointer, and is valid for the lifetime of this object.
-  MediaRecorderHandlerClient* client_;
+  Member<MediaRecorderHandlerClient> client_;
 
   HeapVector<Member<VideoTrackRecorder>> video_recorders_;
   HeapVector<Member<AudioTrackRecorder>> audio_recorders_;

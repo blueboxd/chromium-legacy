@@ -11,10 +11,8 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
-import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
@@ -76,9 +74,7 @@ public final class FirstRunSignInProcessor {
         signinManager.signIn(accountName, activity, new SignInCallback() {
             @Override
             public void onSignInComplete() {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                    UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
-                }
+                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
                 // Show sync settings if user pressed the "Settings" button.
                 if (setUp) {
                     openSignInSettings(activity);
@@ -101,13 +97,8 @@ public final class FirstRunSignInProcessor {
     private static void openSignInSettings(Activity activity) {
         final Class<? extends Fragment> fragment;
         final Bundle arguments;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            fragment = SyncAndServicesPreferences.class;
-            arguments = SyncAndServicesPreferences.createArguments(true);
-        } else {
-            fragment = AccountManagementFragment.class;
-            arguments = null;
-        }
+        fragment = SyncAndServicesPreferences.class;
+        arguments = SyncAndServicesPreferences.createArguments(true);
         PreferencesLauncher.launchSettingsPage(activity, fragment, arguments);
     }
 

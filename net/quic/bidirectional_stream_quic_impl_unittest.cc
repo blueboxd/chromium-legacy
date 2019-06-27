@@ -25,6 +25,7 @@
 #include "net/log/test_net_log_util.h"
 #include "net/quic/address_utils.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
+#include "net/quic/platform/impl/quic_test_impl.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
@@ -33,6 +34,7 @@
 #include "net/quic/quic_server_info.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/quic/quic_test_packet_maker.h"
+#include "net/quic/quic_test_packet_printer.h"
 #include "net/quic/test_task_runner.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
@@ -431,7 +433,9 @@ class BidirectionalStreamQuicImplTest
                       quic::Perspective::IS_SERVER,
                       false),
         random_generator_(0),
+        printer_(version_),
         destination_(kDefaultServerHostName, kDefaultServerPort) {
+    SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
@@ -483,6 +487,7 @@ class BidirectionalStreamQuicImplTest
     socket_data_.reset(new StaticSocketDataProvider(
         base::span<MockRead>(),
         base::make_span(mock_writes_.get(), writes_.size())));
+    socket_data_->set_printer(&printer_);
 
     std::unique_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
         socket_data_.get(), net_log().bound().net_log()));
@@ -809,6 +814,7 @@ class BidirectionalStreamQuicImplTest
   }
 
  protected:
+  QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   BoundTestNetLog net_log_;
@@ -832,6 +838,7 @@ class BidirectionalStreamQuicImplTest
   IPEndPoint self_addr_;
   IPEndPoint peer_addr_;
   quic::test::MockRandom random_generator_;
+  QuicPacketPrinter printer_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   std::unique_ptr<StaticSocketDataProvider> socket_data_;
   std::vector<PacketToWrite> writes_;
@@ -839,11 +846,23 @@ class BidirectionalStreamQuicImplTest
   HostPortPair destination_;
 };
 
+// TODO(nharper): Make these tests work with TLS.
+quic::ParsedQuicVersionVector AllSupportedVersionsWithQuicCrypto() {
+  quic::ParsedQuicVersionVector versions;
+  for (const auto& version : quic::AllSupportedVersions()) {
+    if (version.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
+      versions.push_back(version);
+    }
+  }
+  return versions;
+}
+
 INSTANTIATE_TEST_SUITE_P(
     Version,
     BidirectionalStreamQuicImplTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
-                       ::testing::Bool()));
+    ::testing::Combine(
+        ::testing::ValuesIn(AllSupportedVersionsWithQuicCrypto()),
+        ::testing::Bool()));
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
@@ -907,8 +926,10 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   spdy::SpdyHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody));
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody));
+  }
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, trailers.Clone(),
                                                 &spdy_trailers_frame_length));
@@ -1128,8 +1149,10 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody));
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody));
+  }
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, trailers.Clone(),
                                                 &spdy_trailers_frame_length));
@@ -1243,8 +1266,10 @@ TEST_P(BidirectionalStreamQuicImplTest,
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody));
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody));
+  }
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, trailers.Clone(),
                                                 &spdy_trailers_frame_length));
@@ -1372,8 +1397,10 @@ TEST_P(BidirectionalStreamQuicImplTest,
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody));
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody));
+  }
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, trailers.Clone(),
                                                 &spdy_trailers_frame_length));
@@ -1540,8 +1567,10 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody));
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody));
+  }
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, trailers.Clone(),
                                                 &spdy_trailers_frame_length));
@@ -1632,8 +1661,10 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody));
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody));
+  }
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, trailers.Clone(),
                                                 &spdy_trailers_frame_length));
@@ -2324,8 +2355,10 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody));
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody));
+  }
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, trailers.Clone(),
                                                 &spdy_trailers_frame_length));

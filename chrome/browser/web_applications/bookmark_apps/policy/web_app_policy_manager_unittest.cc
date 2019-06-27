@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
@@ -471,6 +472,43 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
   EXPECT_EQ(1u, apps.size());
   for (auto& it : apps)
     EXPECT_EQ(it.second, kTabbedUrl);
+}
+
+TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
+  base::HistogramTester histograms;
+  policy_manager()->Start();
+  {
+    base::Value list(base::Value::Type::LIST);
+    list.GetList().push_back(GetWindowedItem());
+    profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
+
+    histograms.ExpectTotalCount(
+        WebAppPolicyManager::kInstallResultHistogramName, 0);
+
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectTotalCount(
+        WebAppPolicyManager::kInstallResultHistogramName, 1);
+    histograms.ExpectBucketCount(
+        WebAppPolicyManager::kInstallResultHistogramName,
+        InstallResultCode::kSuccess, 1);
+  }
+  {
+    base::Value list(base::Value::Type::LIST);
+    list.GetList().push_back(GetTabbedItem());
+    list.GetList().push_back(GetNoContainerItem());
+    pending_app_manager()->SetInstallResultCode(
+        InstallResultCode::kInstallManagerDestroyed);
+
+    profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
+
+    base::RunLoop().RunUntilIdle();
+    histograms.ExpectTotalCount(
+        WebAppPolicyManager::kInstallResultHistogramName, 3);
+    histograms.ExpectBucketCount(
+        WebAppPolicyManager::kInstallResultHistogramName,
+        InstallResultCode::kInstallManagerDestroyed, 2);
+  }
 }
 
 }  // namespace web_app

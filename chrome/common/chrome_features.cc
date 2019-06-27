@@ -195,6 +195,11 @@ const base::Feature kCrostiniAppSearch{"CrostiniAppSearch",
 const base::Feature kCrostiniAppUninstallGui{"CrostiniAppUninstallGui",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables infrastructure for applying Ansible playbook to default Crostini
+// container.
+const base::Feature kCrostiniAnsibleInfrastructure{
+    "CrostiniAnsibleInfrastructure", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the UI overhaul for Cups Printers in settings page.
 const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

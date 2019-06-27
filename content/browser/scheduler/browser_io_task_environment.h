@@ -48,7 +48,7 @@ class CONTENT_EXPORT BrowserIOTaskEnvironment
   // tests.
   void SetAllowBlockingForTesting() { allow_blocking_for_testing_ = true; }
 
-  Handle CreateHandle() { return task_queues_->CreateHandle(); }
+  scoped_refptr<Handle> CreateHandle() { return task_queues_->GetHandle(); }
 
  private:
   explicit BrowserIOTaskEnvironment(

@@ -285,10 +285,13 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, ExtensionsEnabled) {
 // Tests that a background page is created for the installed sign-in profile
 // app.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
+  EXPECT_FALSE(
+      chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
   ExtensionBackgroundPageReadyObserver page_observer(kNotWhitelistedAppId);
   AddExtensionForForceInstallation(kNotWhitelistedAppId,
                                    kNotWhitelistedUpdateManifestPath);
   page_observer.Wait();
+  EXPECT_TRUE(chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
 }
 
 // Tests installation of multiple sign-in profile apps.

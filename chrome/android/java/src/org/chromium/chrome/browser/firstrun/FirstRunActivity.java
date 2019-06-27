@@ -18,7 +18,6 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
@@ -155,11 +154,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
         // An optional sign-in page.
         if (mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                mPages.add(SigninFirstRunFragment::new);
-            } else {
-                mPages.add(AccountFirstRunFragment::new);
-            }
+            mPages.add(SigninFirstRunFragment::new);
             mFreProgressStates.add(FRE_PROGRESS_SIGNIN_SHOWN);
             notifyAdapter = true;
         }

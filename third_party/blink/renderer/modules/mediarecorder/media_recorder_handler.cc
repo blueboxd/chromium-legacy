@@ -569,6 +569,7 @@ void MediaRecorderHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_stream_);
   visitor->Trace(video_tracks_);
   visitor->Trace(audio_tracks_);
+  visitor->Trace(client_);
   visitor->Trace(video_recorders_);
   visitor->Trace(audio_recorders_);
 }

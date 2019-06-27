@@ -151,7 +151,7 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());
       DeferredInitFromSubclass(
-          browser_ui_thread_scheduler->GetHandle().GetBrowserTaskRunner(
+          browser_ui_thread_scheduler->GetHandle()->GetBrowserTaskRunner(
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),

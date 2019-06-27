@@ -44,9 +44,9 @@ base::OnceClosure PostOnDestruction(
 TEST(BrowserUIThreadSchedulerTest, DestructorPostChainDuringShutdown) {
   auto browser_ui_thread_scheduler_ =
       std::make_unique<BrowserUIThreadScheduler>();
-  browser_ui_thread_scheduler_->GetHandle().EnableAllQueues();
+  browser_ui_thread_scheduler_->GetHandle()->EnableAllQueues();
   auto task_queue =
-      browser_ui_thread_scheduler_->GetHandle().GetBrowserTaskRunner(
+      browser_ui_thread_scheduler_->GetHandle()->GetBrowserTaskRunner(
           BrowserUIThreadScheduler::QueueType::kDefault);
 
   bool run = false;

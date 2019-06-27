@@ -99,7 +99,7 @@ void BrowserTaskExecutor::CreateInternal(
   base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
                              g_browser_task_executor);
   g_browser_task_executor->browser_ui_thread_handle_
-      .EnableAllExceptBestEffortQueues();
+      ->EnableAllExceptBestEffortQueues();
 
 #if defined(OS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerReady();
@@ -126,9 +126,9 @@ void BrowserTaskExecutor::PostFeatureListSetup() {
   DCHECK(g_browser_task_executor->browser_ui_thread_scheduler_);
   DCHECK(g_browser_task_executor->browser_io_task_environment_);
   g_browser_task_executor->browser_ui_thread_handle_
-      .PostFeatureListInitializationSetup();
+      ->PostFeatureListInitializationSetup();
   g_browser_task_executor->browser_io_thread_handle_
-      .PostFeatureListInitializationSetup();
+      ->PostFeatureListInitializationSetup();
 }
 
 // static
@@ -158,11 +158,11 @@ void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
   switch (identifier) {
     case BrowserThread::UI:
       g_browser_task_executor->browser_ui_thread_handle_
-          .ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
+          ->ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
       break;
     case BrowserThread::IO: {
       g_browser_task_executor->browser_io_thread_handle_
-          .ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
+          ->ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
       break;
     }
     case BrowserThread::ID_COUNT:
@@ -220,11 +220,11 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
 
   switch (id_and_queue.thread_id) {
     case BrowserThread::UI: {
-      return browser_ui_thread_handle_.GetBrowserTaskRunner(
+      return browser_ui_thread_handle_->GetBrowserTaskRunner(
           id_and_queue.queue_type);
     }
     case BrowserThread::IO:
-      return browser_io_thread_handle_.GetBrowserTaskRunner(
+      return browser_io_thread_handle_->GetBrowserTaskRunner(
           id_and_queue.queue_type);
     case BrowserThread::ID_COUNT:
       NOTREACHED();
@@ -251,15 +251,15 @@ BrowserTaskExecutor::GetThreadIdAndQueueType(const base::TaskTraits& traits) {
 // static
 void BrowserTaskExecutor::EnableAllQueues() {
   DCHECK(g_browser_task_executor);
-  g_browser_task_executor->browser_ui_thread_handle_.EnableAllQueues();
-  g_browser_task_executor->browser_io_thread_handle_.EnableAllQueues();
+  g_browser_task_executor->browser_ui_thread_handle_->EnableAllQueues();
+  g_browser_task_executor->browser_io_thread_handle_->EnableAllQueues();
 }
 
 // static
 void BrowserTaskExecutor::InitializeIOThread() {
   DCHECK(g_browser_task_executor);
   g_browser_task_executor->browser_io_thread_handle_
-      .EnableAllExceptBestEffortQueues();
+      ->EnableAllExceptBestEffortQueues();
 }
 
 std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
@@ -287,5 +287,59 @@ std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
     LOG(FATAL) << "Failed to start BrowserThread:IO";
   return io_thread;
 }
+
+#if DCHECK_IS_ON()
+
+// static
+void BrowserTaskExecutor::AddValidator(
+    const base::TaskTraits& traits,
+    BrowserTaskQueues::Validator* validator) {
+  if (!g_browser_task_executor)
+    return;
+
+  auto id_and_queue = g_browser_task_executor->GetThreadIdAndQueueType(traits);
+  switch (id_and_queue.thread_id) {
+    case BrowserThread::ID::IO:
+      g_browser_task_executor->browser_io_thread_handle_->AddValidator(
+          id_and_queue.queue_type, validator);
+      break;
+
+    case BrowserThread::ID::UI:
+      g_browser_task_executor->browser_ui_thread_handle_->AddValidator(
+          id_and_queue.queue_type, validator);
+      break;
+
+    case BrowserThread::ID::ID_COUNT:
+      NOTREACHED();
+      break;
+  }
+}
+
+// static
+void BrowserTaskExecutor::RemoveValidator(
+    const base::TaskTraits& traits,
+    BrowserTaskQueues::Validator* validator) {
+  if (!g_browser_task_executor)
+    return;
+
+  auto id_and_queue = g_browser_task_executor->GetThreadIdAndQueueType(traits);
+  switch (id_and_queue.thread_id) {
+    case BrowserThread::ID::IO:
+      g_browser_task_executor->browser_io_thread_handle_->RemoveValidator(
+          id_and_queue.queue_type, validator);
+      break;
+
+    case BrowserThread::ID::UI:
+      g_browser_task_executor->browser_ui_thread_handle_->RemoveValidator(
+          id_and_queue.queue_type, validator);
+      break;
+
+    case BrowserThread::ID::ID_COUNT:
+      NOTREACHED();
+      break;
+  }
+}
+
+#endif
 
 }  // namespace content

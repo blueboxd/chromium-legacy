@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   install_options.require_manifest = true;
   InstallApp(std::move(install_options));
 
-  EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,
+  EXPECT_EQ(web_app::InstallResultCode::kNotValidManifestForWebApp,
             result_code_.value());
   base::Optional<web_app::AppId> id =
       web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())

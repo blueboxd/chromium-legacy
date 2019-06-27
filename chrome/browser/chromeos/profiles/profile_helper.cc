@@ -27,10 +27,12 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 
 namespace chromeos {
@@ -180,6 +182,25 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 bool ProfileHelper::IsSigninProfile(const Profile* profile) {
   return profile &&
          profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+}
+
+// static
+bool ProfileHelper::IsSigninProfileInitialized() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager &&
+         profile_manager->GetProfileByPath(GetSigninProfileDir());
+}
+
+// static
+bool ProfileHelper::SigninProfileHasLoginScreenExtensions() {
+  DCHECK(IsSigninProfileInitialized());
+  const Profile* profile = GetSigninProfile();
+  const PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs->GetInitializationStatus() ==
+         PrefService::INITIALIZATION_STATUS_SUCCESS);
+  const base::DictionaryValue* pref_value =
+      prefs->GetDictionary(extensions::pref_names::kLoginScreenExtensions);
+  return !pref_value->DictEmpty();
 }
 
 // static

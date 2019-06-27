@@ -570,8 +570,7 @@ void It2MeNativeMessagingHostTest::StartHost() {
   pipe_->Start(std::move(it2me_host), std::move(channel));
 
   // Notify the test that the host has finished starting up.
-  test_message_loop_->task_runner()->PostTask(
-      FROM_HERE, test_run_loop_->QuitClosure());
+  test_run_loop_->Quit();
 }
 
 void It2MeNativeMessagingHostTest::ExitTest() {

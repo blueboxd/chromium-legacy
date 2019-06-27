@@ -151,22 +151,11 @@ void RunLoop::RunWithTimeout(TimeDelta timeout) {
         FROM_HERE, cancelable_timeout.callback(), run_timeout->timeout());
   }
 
-  // It is okay to access this RunLoop from another sequence while Run() is
-  // active as this RunLoop won't touch its state until after that returns (if
-  // the RunLoop's state is accessed while processing Run(), it will be re-bound
-  // to the accessing sequence for the remainder of that Run() -- accessing from
-  // multiple sequences is still disallowed).
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-
   DCHECK_EQ(this, delegate_->active_run_loops_.top());
   const bool application_tasks_allowed =
       delegate_->active_run_loops_.size() == 1U ||
       type_ == Type::kNestableTasksAllowed;
   delegate_->Run(application_tasks_allowed, timeout);
-
-  // Rebind this RunLoop to the current thread after Run().
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   AfterRun();
 }
@@ -213,25 +202,23 @@ void RunLoop::QuitWhenIdle() {
 }
 
 Closure RunLoop::QuitClosure() {
-  // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Obtaining the QuitClosure() is not thread-safe; either post the
+  // QuitClosure() from the run thread or invoke Quit() directly (which is
+  // thread-safe).
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
 
-  // Need to use ProxyToTaskRunner() as WeakPtrs vended from
-  // |weak_factory_| may only be accessed on |origin_task_runner_|.
-  // TODO(gab): It feels wrong that QuitClosure() is bound to a WeakPtr.
   return Bind(&ProxyToTaskRunner, origin_task_runner_,
               Bind(&RunLoop::Quit, weak_factory_.GetWeakPtr()));
 }
 
 Closure RunLoop::QuitWhenIdleClosure() {
-  // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Obtaining the QuitWhenIdleClosure() is not thread-safe; either post the
+  // QuitWhenIdleClosure() from the run thread or invoke QuitWhenIdle() directly
+  // (which is thread-safe).
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
 
-  // Need to use ProxyToTaskRunner() as WeakPtrs vended from
-  // |weak_factory_| may only be accessed on |origin_task_runner_|.
-  // TODO(gab): It feels wrong that QuitWhenIdleClosure() is bound to a WeakPtr.
   return Bind(&ProxyToTaskRunner, origin_task_runner_,
               Bind(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr()));
 }

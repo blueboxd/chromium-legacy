@@ -1042,11 +1042,17 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
   // Need to use FlushAsyncForTesting instead of FlushForTesting because the IO
   // thread doesn't support nested message loops.
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindLambdaForTesting([&]() {
-                             filter->GetCookieManager()->FlushAsyncForTesting(
-                                 run_loop.QuitClosure());
-                           }));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindLambdaForTesting(
+          [filter, quit_closure = run_loop.QuitClosure()]() {
+            filter->GetCookieManager()->FlushAsyncForTesting(
+                std::move(quit_closure));
+          }));
+  // TODO(flaken): This Run() was omitted in a previous iteration of this test,
+  // yet the test passed unflakily; figure out whether the above
+  // FlushAsyncForTesting() is needed.
+  run_loop.Run();
 
   // content_shell uses in-memory cookie database, so the value saved earlier
   // won't persist across crashes. What matters is that new access works.

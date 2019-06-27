@@ -584,10 +584,15 @@ bool ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
     const std::string& mime_type,
     const std::string& request_origin,
     int64_t content_length,
+    bool is_transient,
     content::WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(url,
+  // For background service downloads we don't want offline pages backend to
+  // intercept the download. |is_transient| flag is used to determine whether
+  // the download corresponds to background service.
+  if (!is_transient &&
+      offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(url,
                                                                 mime_type)) {
     offline_pages::OfflinePageUtils::ScheduleDownload(
         web_contents, offline_pages::kDownloadNamespace, url,

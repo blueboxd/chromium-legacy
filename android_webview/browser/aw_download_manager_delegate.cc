@@ -71,6 +71,7 @@ bool AwDownloadManagerDelegate::InterceptDownloadIfApplicable(
     const std::string& mime_type,
     const std::string& request_origin,
     int64_t content_length,
+    bool is_transient,
     content::WebContents* web_contents) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return false;

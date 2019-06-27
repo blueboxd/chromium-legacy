@@ -360,8 +360,7 @@ void Me2MeNativeMessagingHostTest::StartHost() {
   native_messaging_pipe_->Start(std::move(host), std::move(channel));
 
   // Notify the test that the host has finished starting up.
-  test_message_loop_->task_runner()->PostTask(
-      FROM_HERE, test_run_loop_->QuitClosure());
+  test_run_loop_->Quit();
 }
 
 void Me2MeNativeMessagingHostTest::StopHost() {

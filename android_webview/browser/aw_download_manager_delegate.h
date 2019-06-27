@@ -41,6 +41,7 @@ class AwDownloadManagerDelegate : public content::DownloadManagerDelegate,
       const std::string& mime_type,
       const std::string& request_origin,
       int64_t content_length,
+      bool is_transient,
       content::WebContents* web_contents) override;
   void GetNextId(const content::DownloadIdCallback& callback) override;
 };

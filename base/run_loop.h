@@ -101,7 +101,7 @@ class BASE_EXPORT RunLoop {
   // Quit() quits an earlier call to Run() immediately. QuitWhenIdle() quits an
   // earlier call to Run() when there aren't any tasks or messages in the queue.
   //
-  // These methods are thread-safe but note that Quit() is best-effort when
+  // These methods are thread-safe but note that Quit() is asynchronous when
   // called from another thread (will quit soon but tasks that were already
   // queued on this RunLoop will get to run first).
   //
@@ -112,23 +112,35 @@ class BASE_EXPORT RunLoop {
   // RunLoop has already finished running has no effect.
   //
   // WARNING: You must NEVER assume that a call to Quit() or QuitWhenIdle() will
-  // terminate the targetted message loop. If a nested RunLoop continues
+  // terminate the targeted message loop. If a nested RunLoop continues
   // running, the target may NEVER terminate. It is very easy to livelock (run
   // forever) in such a case.
   void Quit();
   void QuitWhenIdle();
 
-  // Convenience methods to get a closure that safely calls Quit() or
-  // QuitWhenIdle() (has no effect if the RunLoop instance is gone).
+  // Returns a Closure that safely calls Quit() or QuitWhenIdle() (has no effect
+  // if the RunLoop instance is gone).
   //
-  // The resulting Closure is thread-safe (note however that invoking the
-  // QuitClosure() from another thread than this RunLoop's will result in an
-  // asynchronous rather than immediate Quit()).
+  // These methods must be called from the thread on which the RunLoop was
+  // created.
+  //
+  // Returned Closures may be safely:
+  //   * Passed to other threads.
+  //   * Run() from other threads, though this will quit the RunLoop
+  //     asynchronously.
+  //   * Run() after the RunLoop has stopped or been destroyed, in which case
+  //     they are a no-op).
+  //   * Run() before RunLoop::Run(), in which case RunLoop::Run() returns
+  //     immediately."
   //
   // Example:
   //   RunLoop run_loop;
-  //   PostTask(run_loop.QuitClosure());
+  //   DoFooAsyncAndNotify(run_loop.QuitClosure());
   //   run_loop.Run();
+  //
+  // Note that Quit() itself is thread-safe and may be invoked directly if you
+  // have access to the RunLoop reference from another thread (e.g. from a
+  // capturing lambda or test observer).
   Closure QuitClosure();
   Closure QuitWhenIdleClosure();
 

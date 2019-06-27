@@ -44,6 +44,7 @@ bool DownloadManagerDelegate::InterceptDownloadIfApplicable(
     const std::string& mime_type,
     const std::string& request_origin,
     int64_t content_length,
+    bool is_transient,
     WebContents* web_contents) {
   return false;
 }

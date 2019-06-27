@@ -237,7 +237,6 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
       EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
 
     base::RunLoop run_loop;
-    base::OnceClosure quit_closure = run_loop.QuitClosure();
     base::Lock lock;
 
     // Intercept network requests and record them.
@@ -248,7 +247,7 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
               *params->url_request.top_frame_origin;
 
           if (params->url_request.url == final_resource)
-            std::move(quit_closure).Run();
+            run_loop.Quit();
           return false;
         }));
 
@@ -850,7 +849,7 @@ class InitiatorInterceptor {
                   params->url_request.request_initiator;
 
               if (params->url_request.url == final_url)
-                std::move(run_loop_.QuitClosure()).Run();
+                run_loop_.Quit();
               return false;
             }));
   }

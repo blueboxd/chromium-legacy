@@ -35,9 +35,9 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
 
   auto deref_proxy = base::BindLambdaForTesting(
       [&proxy_contents](const WebContentsProxy& proxy,
-                        base::RepeatingClosure quit_loop) {
+                        base::OnceClosure quit_loop) {
         proxy_contents = proxy.Get();
-        quit_loop.Run();
+        std::move(quit_loop).Run();
       });
 
   // Bounce over to the PM sequence, retrieve the proxy, bounce back to the UI
@@ -49,13 +49,15 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
   {
     base::RunLoop run_loop;
     PerformanceManager::GetInstance()->CallOnGraph(
-        FROM_HERE, base::BindLambdaForTesting([&run_loop, &deref_proxy,
-                                               page_node](GraphImpl* graph) {
-          base::PostTaskWithTraits(
-              FROM_HERE, {content::BrowserThread::UI},
-              base::BindOnce(deref_proxy, page_node->contents_proxy(),
-                             run_loop.QuitClosure()));
-        }));
+        FROM_HERE,
+        base::BindLambdaForTesting(
+            [&deref_proxy, page_node,
+             quit_loop = run_loop.QuitClosure()](GraphImpl* graph) {
+              base::PostTaskWithTraits(
+                  FROM_HERE, {content::BrowserThread::UI},
+                  base::BindOnce(deref_proxy, page_node->contents_proxy(),
+                                 std::move(quit_loop)));
+            }));
     run_loop.Run();
 
     EXPECT_EQ(contents.get(), proxy_contents);
@@ -67,15 +69,16 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
     base::RunLoop run_loop;
     PerformanceManager::GetInstance()->CallOnGraph(
         FROM_HERE,
-        base::BindLambdaForTesting([&contents, &run_loop, &deref_proxy,
-                                    page_node](GraphImpl* graph) {
+        base::BindLambdaForTesting([&contents, &deref_proxy, page_node,
+                                    quit_loop = run_loop.QuitClosure()](
+                                       GraphImpl* graph) {
           base::PostTaskWithTraits(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindLambdaForTesting([&contents]() { contents.reset(); }));
           base::PostTaskWithTraits(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindOnce(deref_proxy, page_node->contents_proxy(),
-                             run_loop.QuitClosure()));
+                             std::move(quit_loop)));
         }));
     run_loop.Run();
 

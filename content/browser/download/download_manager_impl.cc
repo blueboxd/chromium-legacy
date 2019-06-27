@@ -567,10 +567,10 @@ bool DownloadManagerImpl::InterceptDownload(
     }
   }
 
-  if (delegate_ &&
-      delegate_->InterceptDownloadIfApplicable(
-          info.url(), user_agent, info.content_disposition, info.mime_type,
-          info.request_origin, info.total_bytes, web_contents)) {
+  if (delegate_ && delegate_->InterceptDownloadIfApplicable(
+                       info.url(), user_agent, info.content_disposition,
+                       info.mime_type, info.request_origin, info.total_bytes,
+                       info.transient, web_contents)) {
     if (info.request_handle)
       info.request_handle->CancelRequest(false);
     return true;

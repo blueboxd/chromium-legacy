@@ -105,7 +105,7 @@ void RenderingTest::StartTest() {
 }
 
 void RenderingTest::EndTest() {
-  ui_task_runner_->PostTask(FROM_HERE, run_loop_.QuitWhenIdleClosure());
+  run_loop_.QuitWhenIdle();
 }
 
 content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {

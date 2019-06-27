@@ -44,8 +44,7 @@ class SequencedModelWorkerTest : public testing::Test {
   // This is the work that will be scheduled to be done on the DB sequence.
   SyncerError DoWork() {
     EXPECT_TRUE(task_runner_->RunsTasksInCurrentSequence());
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, run_loop_.QuitClosure());
+    run_loop_.Quit();
     did_do_work_ = true;
     return SyncerError(SyncerError::SYNCER_OK);
   }
@@ -55,8 +54,7 @@ class SequencedModelWorkerTest : public testing::Test {
   void Timeout() {
     ADD_FAILURE()
         << "Timed out waiting for work to be done on the DB sequence.";
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, run_loop_.QuitClosure());
+    run_loop_.Quit();
   }
 
  protected:

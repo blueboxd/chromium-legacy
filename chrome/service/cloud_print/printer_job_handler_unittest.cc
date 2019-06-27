@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_service_helpers.h"
@@ -464,7 +465,7 @@ class PrinterJobHandlerTest : public ::testing::Test {
   void MakeJobFetchReturnNoJobs();
 
   base::MessageLoopForIO loop_;
-  std::unique_ptr<base::RunLoop> active_run_loop_;
+  base::OnceClosure active_run_loop_quit_closure_;
   TestURLFetcherCallback url_callback_;
   MockPrinterJobHandlerDelegate jobhandler_delegate_;
   CloudPrintTokenStore token_store_;
@@ -532,9 +533,10 @@ bool PrinterJobHandlerTest::PostSpoolSuccess() {
 
   // Everything that would be posted on the printer thread queue
   // has been posted, we can tell the main message loop to quit when idle
-  // and not worry about it idling while the print thread does work
+  // and not worry about it idling while the print thread does work.
+  DCHECK(!active_run_loop_quit_closure_.is_null());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, active_run_loop_->QuitWhenIdleClosure());
+      FROM_HERE, std::move(active_run_loop_quit_closure_));
   return true;
 }
 
@@ -602,13 +604,17 @@ void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
 
   job_handler_->Initialize();
 
-  active_run_loop_ = std::make_unique<base::RunLoop>();
+  base::RunLoop run_loop;
+  active_run_loop_quit_closure_ = run_loop.QuitWhenIdleClosure();
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, active_run_loop_->QuitWhenIdleClosure(),
-      base::TimeDelta::FromSeconds(timeout_seconds));
+  base::RunLoop::ScopedRunTimeoutForTest run_timeout(
+      base::TimeDelta::FromSeconds(timeout_seconds),
+      base::BindLambdaForTesting([&]() {
+        ADD_FAILURE();
+        run_loop.QuitWhenIdle();
+      }));
 
-  active_run_loop_->Run();
+  run_loop.Run();
 }
 
 void PrinterJobHandlerTest::SendCapsAndDefaults(

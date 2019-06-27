@@ -2585,8 +2585,10 @@ error::Error GLES2DecoderPassthroughImpl::CheckSwapBuffersResult(
     gfx::SwapResult result,
     const char* function_name) {
   if (result == gfx::SwapResult::SWAP_FAILED) {
+    // If SwapBuffers/SwapBuffersWithBounds/PostSubBuffer failed, we may not
+    // have a current context any more.
     LOG(ERROR) << "Context lost because " << function_name << " failed.";
-    if (!CheckResetStatus()) {
+    if (!context_->IsCurrent(surface_.get()) || !CheckResetStatus()) {
       MarkContextLost(error::kUnknown);
       group_->LoseContexts(error::kUnknown);
       return error::kLostContext;

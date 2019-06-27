@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
+#include "chrome/browser/chromeos/dbus/cryptohome_key_delegate_service_provider.h"
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
@@ -355,6 +356,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<DriveFileStreamServiceProvider>()));
 
+    cryptohome_key_delegate_service_ = CrosDBusService::Create(
+        system_bus, CryptohomeKeyDelegateServiceProvider::kServiceName,
+        dbus::ObjectPath(CryptohomeKeyDelegateServiceProvider::kServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<CryptohomeKeyDelegateServiceProvider>()));
+
     if (arc::IsArcVmEnabled()) {
       libvda_service_ = CrosDBusService::Create(
           system_bus, libvda::kLibvdaServiceName,
@@ -402,6 +409,7 @@ class DBusServices {
     chrome_features_service_.reset();
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
+    cryptohome_key_delegate_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
@@ -419,6 +427,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> chrome_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
+  std::unique_ptr<CrosDBusService> cryptohome_key_delegate_service_;
   std::unique_ptr<CrosDBusService> libvda_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);

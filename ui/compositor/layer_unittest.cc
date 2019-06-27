@@ -30,6 +30,7 @@
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/mirror_layer.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -1509,6 +1510,69 @@ TEST_F(LayerWithNullDelegateTest, AlwaysSendsMaskDamagedRects) {
   EXPECT_EQ(mask->damaged_region_for_testing().bounds(), invalid_rect);
   root->SendDamagedRects();
   EXPECT_EQ(mask->damaged_region_for_testing().bounds(), gfx::Rect());
+}
+
+// Verifies that when a layer is mirroring other layers, mirror count
+// of mirrored layers is updated properly.
+TEST_F(LayerWithNullDelegateTest, MirrorLayer) {
+  std::unique_ptr<Layer> mirrored_layer_1(CreateLayer(LAYER_SOLID_COLOR));
+  auto* mirrored_layer_1_cc = mirrored_layer_1->cc_layer_for_testing();
+
+  std::unique_ptr<Layer> mirrored_layer_2(CreateLayer(LAYER_SOLID_COLOR));
+  auto* mirrored_layer_2_cc = mirrored_layer_2->cc_layer_for_testing();
+
+  std::unique_ptr<Layer> mirror_layer(CreateLayer(LAYER_SOLID_COLOR));
+
+  // Originally, mirror counts should be zero.
+  auto* mirror_layer_cc = mirror_layer->mirror_layer_for_testing();
+  EXPECT_EQ(nullptr, mirror_layer_cc);
+  EXPECT_EQ(0, mirrored_layer_1_cc->mirror_count());
+  EXPECT_EQ(0, mirrored_layer_2_cc->mirror_count());
+
+  // Mirror the first layer. Its mirror count should be increased.
+  mirror_layer->MirrorLayer(mirrored_layer_1.get());
+  mirror_layer_cc = mirror_layer->mirror_layer_for_testing();
+  ASSERT_NE(nullptr, mirror_layer_cc);
+  EXPECT_EQ(mirror_layer->cc_layer_for_testing(), mirror_layer_cc);
+  EXPECT_EQ(mirrored_layer_1_cc, mirror_layer_cc->mirrored_layer());
+  EXPECT_EQ(1, mirrored_layer_1_cc->mirror_count());
+  EXPECT_EQ(0, mirrored_layer_2_cc->mirror_count());
+
+  // Mirror the second layer. Its mirror count should be increased, but mirror
+  // count for the first mirrored layer should be set back to zero.
+  mirror_layer->MirrorLayer(mirrored_layer_2.get());
+  mirror_layer_cc = mirror_layer->mirror_layer_for_testing();
+  ASSERT_NE(nullptr, mirror_layer_cc);
+  EXPECT_EQ(mirror_layer->cc_layer_for_testing(), mirror_layer_cc);
+  EXPECT_EQ(mirrored_layer_2_cc, mirror_layer_cc->mirrored_layer());
+  EXPECT_EQ(0, mirrored_layer_1_cc->mirror_count());
+  EXPECT_EQ(1, mirrored_layer_2_cc->mirror_count());
+
+  // Un-mirror the layer. All mirror counts should be set to zero.
+  mirror_layer->MirrorLayer(nullptr);
+  mirror_layer_cc = mirror_layer->mirror_layer_for_testing();
+  EXPECT_EQ(nullptr, mirror_layer_cc);
+  EXPECT_EQ(0, mirrored_layer_1_cc->mirror_count());
+  EXPECT_EQ(0, mirrored_layer_2_cc->mirror_count());
+}
+
+// Verifies that when a layer is mirroring another layer, its size matches the
+// size of the mirrored layer.
+TEST_F(LayerWithNullDelegateTest, MirrorLayerBounds) {
+  const gfx::Rect mirrored_bounds(0, 0, 50, 50);
+  const gfx::Rect mirror_bounds(0, 50, 10, 10);
+
+  std::unique_ptr<Layer> mirrored_layer(CreateLayer(LAYER_SOLID_COLOR));
+  mirrored_layer->SetBounds(mirrored_bounds);
+
+  std::unique_ptr<Layer> mirror_layer(CreateLayer(LAYER_SOLID_COLOR));
+  mirror_layer->SetBounds(mirror_bounds);
+
+  EXPECT_EQ(mirror_bounds, mirror_layer->bounds());
+
+  mirror_layer->MirrorLayer(mirrored_layer.get());
+  EXPECT_EQ(mirror_bounds.origin(), mirror_layer->bounds().origin());
+  EXPECT_EQ(mirrored_bounds.size(), mirror_layer->bounds().size());
 }
 
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {

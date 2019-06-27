@@ -143,14 +143,22 @@ bool DirectCompositionChildSurfaceWin::Initialize(GLSurfaceFormat format) {
 }
 
 bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
-  // At the end we'll MakeCurrent the same surface but its handle will be
-  // |default_surface_|.
-  ui::ScopedReleaseCurrent release_current;
+  EGLSurface egl_surface = real_surface_;
+  real_surface_ = nullptr;
 
-  if (real_surface_) {
-    eglDestroySurface(GetDisplay(), real_surface_);
-    real_surface_ = nullptr;
-  }
+  // We make current with the same surface (could be the parent), but its
+  // handle has changed to |default_surface_|.
+  gl::GLContext* context = gl::GLContext::GetCurrent();
+  DCHECK(context);
+  gl::GLSurface* surface = gl::GLSurface::GetCurrent();
+  DCHECK(surface);
+  bool result = context->MakeCurrent(surface);
+  // If MakeCurrent fails (probably lost device), we'll want to return failure,
+  // but we still want to reset the rest of the state for consistency.
+  DLOG_IF(ERROR, !result) << "Failed to make current in ReleaseDrawTexture";
+
+  if (egl_surface)
+    eglDestroySurface(GetDisplay(), egl_surface);
 
   if (dcomp_surface_.Get() == g_current_surface)
     g_current_surface = nullptr;
@@ -198,7 +206,7 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       }
     }
   }
-  return true;
+  return result;
 }
 
 void DirectCompositionChildSurfaceWin::Destroy() {
@@ -316,10 +324,6 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     return false;
   }
 
-  // At the end we'll MakeCurrent the same surface but its handle will be
-  // |real_surface_|.
-  ui::ScopedReleaseCurrent release_current;
-
   DXGI_FORMAT dxgi_format = ColorSpaceUtils::GetDXGIFormat(color_space_);
 
   bool force_swap_chain = UseSwapChainFrameStatistics();
@@ -423,6 +427,17 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   if (!real_surface_) {
     DLOG(ERROR) << "eglCreatePbufferFromClientBuffer failed with error "
                 << ui::GetLastEGLErrorString();
+    return false;
+  }
+
+  // We make current with the same surface (could be the parent), but its
+  // handle has changed to |real_surface_|.
+  gl::GLContext* context = gl::GLContext::GetCurrent();
+  DCHECK(context);
+  gl::GLSurface* surface = gl::GLSurface::GetCurrent();
+  DCHECK(surface);
+  if (!context->MakeCurrent(surface)) {
+    DLOG(ERROR) << "Failed to make current in SetDrawRectangle";
     return false;
   }
 

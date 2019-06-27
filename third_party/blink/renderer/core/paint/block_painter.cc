@@ -73,7 +73,10 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
   if (original_phase == PaintPhase::kMask) {
     layout_block_.PaintObject(local_paint_info, paint_offset);
   } else if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
-             original_phase != PaintPhase::kSelfOutlineOnly) {
+             original_phase != PaintPhase::kSelfOutlineOnly &&
+             // For now all scrollers with overlay scrollbars are self-painting
+             // layers, so we don't need to traverse descendants here.
+             original_phase != PaintPhase::kOverlayScrollbars) {
     ScopedBoxContentsPaintState contents_paint_state(paint_state,
                                                      layout_block_);
     layout_block_.PaintObject(contents_paint_state.GetPaintInfo(),
@@ -107,22 +110,12 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     layout_block_.PaintObject(local_paint_info, paint_offset);
   }
 
-  // Our scrollbar widgets paint exactly when we tell them to, so that they work
-  // properly with z-index. We paint after we painted the background/border, so
-  // that the scrollbars will sit above the background/border.
+  // We paint scrollbars after we painted the other things, so that the
+  // scrollbars will sit above them.
   local_paint_info.phase = original_phase;
-  PaintOverflowControlsIfNeeded(local_paint_info, paint_offset);
-}
-
-void BlockPainter::PaintOverflowControlsIfNeeded(
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  if (layout_block_.HasOverflowClip() &&
-      layout_block_.StyleRef().Visibility() == EVisibility::kVisible &&
-      ShouldPaintSelfBlockBackground(paint_info.phase)) {
-    ScrollableAreaPainter(*layout_block_.Layer()->GetScrollableArea())
-        .PaintOverflowControls(paint_info, RoundedIntPoint(paint_offset),
-                               false /* painting_overlay_controls */);
+  if (auto* scrollable_area = layout_block_.GetScrollableArea()) {
+    ScrollableAreaPainter(*scrollable_area)
+        .PaintOverflowControls(local_paint_info, RoundedIntPoint(paint_offset));
   }
 }
 

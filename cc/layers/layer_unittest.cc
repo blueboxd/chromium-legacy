@@ -1654,6 +1654,78 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
   test_layer->SetLayerTreeHost(nullptr);
 }
 
+// Verifies that mirror count is pushed to the LayerImpl.
+TEST_F(LayerTest, MirrorCountIsPushed) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  std::unique_ptr<LayerImpl> impl_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  EXPECT_EQ(0, test_layer->mirror_count());
+  EXPECT_EQ(0, impl_layer->mirror_count());
+
+  test_layer->IncrementMirrorCount();
+  EXPECT_EQ(1, test_layer->mirror_count());
+  EXPECT_EQ(0, impl_layer->mirror_count());
+
+  test_layer->PushPropertiesTo(impl_layer.get());
+  EXPECT_EQ(1, test_layer->mirror_count());
+  EXPECT_EQ(1, impl_layer->mirror_count());
+
+  test_layer->SetLayerTreeHost(nullptr);
+}
+
+// Verifies that when mirror count of the layer is incremented or decremented,
+// SetPropertyTreesNeedRebuild() and SetNeedsPushProperties() are called
+// appropriately.
+TEST_F(LayerTest, UpdateMirrorCount) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  layer_tree_host_->property_trees()->needs_rebuild = false;
+  layer_tree_host_->ClearLayersThatShouldPushProperties();
+  EXPECT_EQ(0, test_layer->mirror_count());
+  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
+  EXPECT_EQ(0u, layer_tree_host_->LayersThatShouldPushProperties().size());
+
+  // Incrementing mirror count from zero should trigger property trees rebuild.
+  test_layer->IncrementMirrorCount();
+  EXPECT_EQ(1, test_layer->mirror_count());
+  EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild);
+  EXPECT_TRUE(base::Contains(layer_tree_host_->LayersThatShouldPushProperties(),
+                             test_layer.get()));
+
+  layer_tree_host_->property_trees()->needs_rebuild = false;
+  layer_tree_host_->ClearLayersThatShouldPushProperties();
+
+  // Incrementing mirror count from non-zero should not trigger property trees
+  // rebuild.
+  test_layer->IncrementMirrorCount();
+  EXPECT_EQ(2, test_layer->mirror_count());
+  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
+  EXPECT_TRUE(base::Contains(layer_tree_host_->LayersThatShouldPushProperties(),
+                             test_layer.get()));
+
+  layer_tree_host_->ClearLayersThatShouldPushProperties();
+
+  // Decrementing mirror count to non-zero should not trigger property trees
+  // rebuild.
+  test_layer->DecrementMirrorCount();
+  EXPECT_EQ(1, test_layer->mirror_count());
+  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
+  EXPECT_TRUE(base::Contains(layer_tree_host_->LayersThatShouldPushProperties(),
+                             test_layer.get()));
+
+  layer_tree_host_->ClearLayersThatShouldPushProperties();
+
+  // Decrementing mirror count to zero should trigger property trees rebuild.
+  test_layer->DecrementMirrorCount();
+  EXPECT_EQ(0, test_layer->mirror_count());
+  EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild);
+  EXPECT_TRUE(base::Contains(layer_tree_host_->LayersThatShouldPushProperties(),
+                             test_layer.get()));
+
+  test_layer->SetLayerTreeHost(nullptr);
+}
+
 class LayerTestWithLayerLists : public LayerTest {
  protected:
   void SetUp() override {

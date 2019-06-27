@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/layers/mirror_layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -238,6 +239,24 @@ std::unique_ptr<Layer> Layer::Mirror() {
   }
 
   return mirror;
+}
+
+void Layer::MirrorLayer(Layer* mirrored_layer) {
+  DCHECK_EQ(type_, LAYER_SOLID_COLOR);
+
+  if (!mirrored_layer) {
+    SetShowSolidColorContent();
+    return;
+  }
+
+  auto new_layer = cc::MirrorLayer::Create(mirrored_layer->cc_layer_);
+  SwitchToLayer(new_layer);
+  mirror_layer_ = new_layer;
+  gfx::Rect bounds = bounds_;
+  bounds.set_size(mirrored_layer->bounds().size());
+  SetBounds(bounds);
+
+  RecomputeDrawsContentAndUVRect();
 }
 
 const Compositor* Layer::GetCompositor() const {
@@ -684,6 +703,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   solid_color_layer_ = nullptr;
   texture_layer_ = nullptr;
   surface_layer_ = nullptr;
+  mirror_layer_ = nullptr;
 
   for (auto* child : children_) {
     DCHECK(child->cc_layer_);

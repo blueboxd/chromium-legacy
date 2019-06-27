@@ -35,6 +35,7 @@
 
 namespace cc {
 class Layer;
+class MirrorLayer;
 class NinePatchLayer;
 class SolidColorLayer;
 class SurfaceLayer;
@@ -81,6 +82,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // with the bounds thereof. Note that children are not mirrored, and that the
   // content is only mirrored if painted by a delegate or backed by a surface.
   std::unique_ptr<Layer> Mirror();
+
+  // Sets up this layer to mirror contents of |mirrored_layer|. This layer
+  // should be of type |LAYER_SOLID_COLOR| and should not be a descendant of the
+  // |mirrored_layer|.
+  void MirrorLayer(Layer* mirrored_layer);
 
   // This method is relevant only if this layer is a mirror destination layer.
   // Sets whether this mirror layer's bounds are synchronized with the source
@@ -437,6 +443,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   bool FillsBoundsCompletely() const override;
   size_t GetApproximateUnsharedMemoryUsage() const override;
 
+  cc::MirrorLayer* mirror_layer_for_testing() { return mirror_layer_.get(); }
   cc::Layer* cc_layer_for_testing() { return cc_layer_; }
   const cc::Layer* cc_layer_for_testing() const { return cc_layer_; }
 
@@ -652,6 +659,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.
   scoped_refptr<cc::PictureLayer> content_layer_;
+  scoped_refptr<cc::MirrorLayer> mirror_layer_;
   scoped_refptr<cc::NinePatchLayer> nine_patch_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;

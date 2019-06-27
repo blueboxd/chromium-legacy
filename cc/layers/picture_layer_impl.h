@@ -52,6 +52,8 @@ class CC_EXPORT PictureLayerImpl
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   void NotifyTileStateChanged(const Tile* tile) override;
+  gfx::Rect GetDamageRect() const override;
+  void ResetChangeTracking() override;
   void ResetRasterScale();
   void DidBeginTracing() override;
   void ReleaseResources() override;
@@ -242,6 +244,10 @@ class CC_EXPORT PictureLayerImpl
 
   gfx::Size content_bounds_;
   TileSizeCalculator tile_size_calculator_;
+
+  // Denotes an area that is damaged and needs redraw. This is in the layer's
+  // space.
+  gfx::Rect damage_rect_;
 };
 
 }  // namespace cc

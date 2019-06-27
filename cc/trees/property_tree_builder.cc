@@ -867,6 +867,14 @@ static inline bool HasCopyRequest(LayerImpl* layer) {
   return !layer->test_properties()->copy_requests.empty();
 }
 
+static inline int MirrorCount(Layer* layer) {
+  return layer->mirror_count();
+}
+
+static inline int MirrorCount(LayerImpl* layer) {
+  return 0;
+}
+
 static inline bool PropertyChanged(Layer* layer) {
   return layer->subtree_property_changed();
 }
@@ -978,6 +986,10 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
   // If we'll make a copy of the layer's contents.
   if (HasCopyRequest(layer))
     return RenderSurfaceReason::kCopyRequest;
+
+  // If the layer is mirrored.
+  if (MirrorCount(layer))
+    return RenderSurfaceReason::kMirrored;
 
   return RenderSurfaceReason::kNone;
 }

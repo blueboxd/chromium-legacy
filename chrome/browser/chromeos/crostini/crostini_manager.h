@@ -30,49 +30,49 @@ class Profile;
 
 namespace crostini {
 
-// Result types for CrostiniManager::StartTerminaVmCallback etc.
+// Result types for various callbacks etc.
 
 // WARNING: Do not remove or re-order these values, as they are used in user
 // visible error messages and logs. New entries should only be added to the end.
 // This message was added during development of M74, error codes from prior
 // versions may differ from the numbering here.
 enum class CrostiniResult {
-  SUCCESS,
-  DBUS_ERROR,
-  UNPARSEABLE_RESPONSE,
-  INSUFFICIENT_DISK,
-  CREATE_DISK_IMAGE_FAILED,
-  VM_START_FAILED,
-  VM_STOP_FAILED,
-  DESTROY_DISK_IMAGE_FAILED,
-  LIST_VM_DISKS_FAILED,
-  CLIENT_ERROR,
-  DISK_TYPE_ERROR,
-  CONTAINER_DOWNLOAD_TIMED_OUT,
-  CONTAINER_CREATE_CANCELLED,
-  CONTAINER_CREATE_FAILED,
-  CONTAINER_START_CANCELLED,
-  CONTAINER_START_FAILED,
-  LAUNCH_CONTAINER_APPLICATION_FAILED,
-  INSTALL_LINUX_PACKAGE_FAILED,
-  BLOCKING_OPERATION_ALREADY_ACTIVE,
-  UNINSTALL_PACKAGE_FAILED,
-  SSHFS_MOUNT_ERROR,
-  OFFLINE_WHEN_UPGRADE_REQUIRED,
-  LOAD_COMPONENT_FAILED,
-  PERMISSION_BROKER_ERROR,
-  ATTACH_USB_FAILED,
-  DETACH_USB_FAILED,
-  LIST_USB_FAILED,
-  CROSTINI_UNINSTALLER_RUNNING,
-  UNKNOWN_USB_DEVICE,
-  UNKNOWN_ERROR,
-  CONTAINER_EXPORT_IMPORT_FAILED,
-  CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED,
-  CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED,
-  CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE,
-  NOT_ALLOWED,
-  CONTAINER_EXPORT_IMPORT_FAILED_SPACE,
+  SUCCESS = 0,
+  DBUS_ERROR = 1,
+  // UNPARSEABLE_RESPONSE = 2,
+  // INSUFFICIENT_DISK = 3,
+  CREATE_DISK_IMAGE_FAILED = 4,
+  VM_START_FAILED = 5,
+  VM_STOP_FAILED = 6,
+  DESTROY_DISK_IMAGE_FAILED = 7,
+  LIST_VM_DISKS_FAILED = 8,
+  CLIENT_ERROR = 9,
+  // DISK_TYPE_ERROR = 10,
+  CONTAINER_DOWNLOAD_TIMED_OUT = 11,
+  CONTAINER_CREATE_CANCELLED = 12,
+  CONTAINER_CREATE_FAILED = 13,
+  CONTAINER_START_CANCELLED = 14,
+  CONTAINER_START_FAILED = 15,
+  LAUNCH_CONTAINER_APPLICATION_FAILED = 16,
+  INSTALL_LINUX_PACKAGE_FAILED = 17,
+  BLOCKING_OPERATION_ALREADY_ACTIVE = 18,
+  UNINSTALL_PACKAGE_FAILED = 19,
+  // SSHFS_MOUNT_ERROR = 20,
+  OFFLINE_WHEN_UPGRADE_REQUIRED = 21,
+  LOAD_COMPONENT_FAILED = 22,
+  PERMISSION_BROKER_ERROR = 23,
+  ATTACH_USB_FAILED = 24,
+  DETACH_USB_FAILED = 25,
+  LIST_USB_FAILED = 26,
+  CROSTINI_UNINSTALLER_RUNNING = 27,
+  // UNKNOWN_USB_DEVICE = 28,
+  UNKNOWN_ERROR = 29,
+  CONTAINER_EXPORT_IMPORT_FAILED = 30,
+  CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED = 31,
+  CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED = 32,
+  CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE = 33,
+  NOT_ALLOWED = 34,
+  CONTAINER_EXPORT_IMPORT_FAILED_SPACE = 35,
 };
 
 enum class InstallLinuxPackageProgressStatus {
@@ -232,30 +232,14 @@ class CrostiniManager : public KeyedService,
       base::OnceCallback<void(CrostiniResult result)>;
   using BoolCallback = base::OnceCallback<void(bool)>;
 
-  // The type of the callback for CrostiniManager::StartConcierge.
-  using StartConciergeCallback = BoolCallback;
-  // The type of the callback for CrostiniManager::StopConcierge.
-  using StopConciergeCallback = BoolCallback;
-  // The type of the callback for CrostiniManager::StartTerminaVm.
-  using StartTerminaVmCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::CreateDiskImage.
   using CreateDiskImageCallback =
       base::OnceCallback<void(CrostiniResult result,
                               vm_tools::concierge::DiskImageStatus,
                               const base::FilePath& disk_path)>;
-  // The type of the callback for CrostiniManager::DestroyDiskImage.
-  using DestroyDiskImageCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::ListVmDisks.
   using ListVmDisksCallback =
       base::OnceCallback<void(CrostiniResult result, int64_t total_size)>;
-  // The type of the callback for CrostiniManager::StopVm.
-  using StopVmCallback = CrostiniResultCallback;
-  // The type of the callback for CrostiniManager::StartContainer.
-  using StartContainerCallback = CrostiniResultCallback;
-  // The type of the callback for CrostiniManager::ShutdownContainer.
-  using ShutdownContainerCallback = base::OnceClosure;
-  // The type of the callback for CrostiniManager::LaunchContainerApplication.
-  using LaunchContainerApplicationCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::GetContainerAppIcons.
   using GetContainerAppIconsCallback =
       base::OnceCallback<void(CrostiniResult result,
@@ -265,24 +249,18 @@ class CrostiniManager : public KeyedService,
       base::OnceCallback<void(const LinuxPackageInfo&)>;
   // The type of the callback for CrostiniManager::InstallLinuxPackage.
   using InstallLinuxPackageCallback = CrostiniResultCallback;
-  // The type of the callback for CrostiniManager::UninstallPackageOwningFile.
-  using UninstallPackageOwningFileCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::GetContainerSshKeys.
   using GetContainerSshKeysCallback =
       base::OnceCallback<void(CrostiniResult result,
                               const std::string& container_public_key,
                               const std::string& host_private_key,
                               const std::string& hostname)>;
-  // The type of the callback for CrostiniManager::RestartCrostini.
-  using RestartCrostiniCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::RemoveCrostini.
   using RemoveCrostiniCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::AttachUsbDevice
   // Note: The guest_port is only valid when the result is ::SUCCESS.
   using AttachUsbDeviceCallback =
       base::OnceCallback<void(uint8_t guest_port, CrostiniResult result)>;
-  // The type of the callback for CrostiniManager::DetachUsbDevice
-  using DetachUsbDeviceCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::ListUsbDevices
   using ListUsbDevicesCallback = base::OnceCallback<void(
       CrostiniResult result,
@@ -291,8 +269,6 @@ class CrostiniManager : public KeyedService,
   // The type of the callback for CrostiniManager::SearchApp.
   using SearchAppCallback =
       base::OnceCallback<void(const std::vector<std::string>& package_names)>;
-
-  using AbortRestartCallback = base::OnceCallback<void()>;
 
   // Observer class for the Crostini restart flow.
   class RestartObserver {
@@ -344,11 +320,11 @@ class CrostiniManager : public KeyedService,
 
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
-  void StartConcierge(StartConciergeCallback callback);
+  void StartConcierge(BoolCallback callback);
 
   // Stops the Concierge service. |callback| is called after the method call
   // finishes.
-  void StopConcierge(StopConciergeCallback callback);
+  void StopConcierge(BoolCallback callback);
 
   // Checks the arguments for creating a new Termina VM disk image. Creates a
   // disk image for a Termina VM via ConciergeClient::CreateDiskImage.
@@ -370,10 +346,9 @@ class CrostiniManager : public KeyedService,
   // |callback| is called if the arguments are bad, or after the method call
   // finishes.
   void DestroyDiskImage(
-      // The path to the disk image, including the name of
-      // the image itself.
+      // The path to the disk image, including the name of the image itself.
       const base::FilePath& disk_path,
-      DestroyDiskImageCallback callback);
+      CrostiniResultCallback callbac);
 
   void ListVmDisks(ListVmDisksCallback callback);
 
@@ -385,12 +360,12 @@ class CrostiniManager : public KeyedService,
       std::string name,
       // Path to the disk image on the host.
       const base::FilePath& disk_path,
-      StartTerminaVmCallback callback);
+      CrostiniResultCallback callback);
 
   // Checks the arguments for stopping a Termina VM. Stops the Termina VM via
   // ConciergeClient::StopVm. |callback| is called if the arguments are bad,
   // or after the method call finishes.
-  void StopVm(std::string name, StopVmCallback callback);
+  void StopVm(std::string name, CrostiniResultCallback callback);
 
   // Checks the arguments for creating an Lxd container via
   // CiceroneClient::CreateLxdContainer. |callback| is called immediately if the
@@ -445,7 +420,7 @@ class CrostiniManager : public KeyedService,
                                   std::string desktop_file_id,
                                   const std::vector<std::string>& files,
                                   bool display_scaled,
-                                  LaunchContainerApplicationCallback callback);
+                                  CrostiniResultCallback callback);
 
   // Asynchronously gets app icons as specified by their desktop file ids.
   // |callback| is called after the method call finishes.
@@ -497,7 +472,7 @@ class CrostiniManager : public KeyedService,
   void UninstallPackageOwningFile(std::string vm_name,
                                   std::string container_name,
                                   std::string desktop_file_id,
-                                  UninstallPackageOwningFileCallback callback);
+                                  CrostiniResultCallback callback);
 
   // Asynchronously gets SSH server public key of container and trusted SSH
   // client private key which can be used to connect to the container.
@@ -518,7 +493,7 @@ class CrostiniManager : public KeyedService,
   void DetachUsbDevice(const std::string& vm_name,
                        device::mojom::UsbDeviceInfoPtr device,
                        uint8_t guest_port,
-                       DetachUsbDeviceCallback callback);
+                       CrostiniResultCallback callback);
 
   // Lists USB devices attached to a guest VM.
   // TODO(jopra): Rename to reflect that this now lists the mount points for USB
@@ -556,24 +531,22 @@ class CrostiniManager : public KeyedService,
   // The optional |observer| tracks progress.
   RestartId RestartCrostini(std::string vm_name,
                             std::string container_name,
-                            RestartCrostiniCallback callback,
+                            CrostiniResultCallback callback,
                             RestartObserver* observer = nullptr);
 
   // Aborts a restart. A "next" restarter with the same <vm_name,
   // container_name> will run, if there is one. |callback| will be called once
   // the restart has finished aborting
-  void AbortRestartCrostini(RestartId restart_id,
-                            AbortRestartCallback callback);
+  void AbortRestartCrostini(RestartId restart_id, base::OnceClosure callback);
 
   // Returns true if the Restart corresponding to |restart_id| is not yet
   // complete.
   bool IsRestartPending(RestartId restart_id);
 
   // Adds a callback to receive notification of container shutdown.
-  void AddShutdownContainerCallback(
-      std::string vm_name,
-      std::string container_name,
-      ShutdownContainerCallback shutdown_callback);
+  void AddShutdownContainerCallback(std::string vm_name,
+                                    std::string container_name,
+                                    base::OnceClosure shutdown_callback);
 
   // Adds a callback to receive uninstall notification.
   void AddRemoveCrostiniCallback(RemoveCrostiniCallback remove_callback);
@@ -640,7 +613,7 @@ class CrostiniManager : public KeyedService,
 
   void RemoveCrostini(std::string vm_name, RemoveCrostiniCallback callback);
 
-  void SetVmState(std::string vm_name, VmState vm_state);
+  void UpdateVmState(std::string vm_name, VmState vm_state);
   bool IsVmRunning(std::string vm_name);
   // Returns null if VM is not running.
   base::Optional<VmInfo> GetVmInfo(std::string vm_name);
@@ -688,7 +661,7 @@ class CrostiniManager : public KeyedService,
   // Callback for ConciergeClient::DestroyDiskImage. Called after the Concierge
   // service method finishes.
   void OnDestroyDiskImage(
-      DestroyDiskImageCallback callback,
+      CrostiniResultCallback callback,
       base::Optional<vm_tools::concierge::DestroyDiskImageResponse> reply);
 
   // Callback for ConciergeClient::ListVmDisks. Called after the Concierge
@@ -703,20 +676,18 @@ class CrostiniManager : public KeyedService,
   // callback to OnStartTremplin.
   void OnStartTerminaVm(
       std::string vm_name,
-      StartTerminaVmCallback callback,
+      CrostiniResultCallback callback,
       base::Optional<vm_tools::concierge::StartVmResponse> reply);
 
   // Callback for ConciergeClient::TremplinStartedSignal. Called after the
   // Tremplin service starts. Updates running containers list and then calls the
-  // |callback|.
-  void OnStartTremplin(std::string vm_name,
-                       StartTerminaVmCallback callback,
-                       CrostiniResult result);
+  // |callback| with SUCCESS.
+  void OnStartTremplin(std::string vm_name, CrostiniResultCallback callback);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.
   void OnStopVm(std::string vm_name,
-                StopVmCallback callback,
+                CrostiniResultCallback callback,
                 base::Optional<vm_tools::concierge::StopVmResponse> reply);
 
   // Callback for CrostiniManager::InstallCrostiniComponent. Must be called on
@@ -729,11 +700,11 @@ class CrostiniManager : public KeyedService,
 
   // Callback for CrostiniClient::StartConcierge. Called after the
   // DebugDaemon service method finishes.
-  void OnStartConcierge(StartConciergeCallback callback, bool success);
+  void OnStartConcierge(BoolCallback callback, bool success);
 
   // Callback for CrostiniClient::StopConcierge. Called after the
   // DebugDaemon service method finishes.
-  void OnStopConcierge(StopConciergeCallback callback, bool success);
+  void OnStopConcierge(BoolCallback callback, bool success);
 
   // Callback for CiceroneClient::CreateLxdContainer. May indicate the container
   // is still being created, in which case we will wait for an
@@ -779,7 +750,7 @@ class CrostiniManager : public KeyedService,
 
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
-      LaunchContainerApplicationCallback callback,
+      CrostiniResultCallback callback,
       base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>
           reply);
 
@@ -802,7 +773,7 @@ class CrostiniManager : public KeyedService,
 
   // Callback for CrostiniManager::UninstallPackageOwningFile.
   void OnUninstallPackageOwningFile(
-      UninstallPackageOwningFileCallback callback,
+      CrostiniResultCallback callback,
       base::Optional<vm_tools::cicerone::UninstallPackageOwningFileResponse>
           reply);
 
@@ -824,7 +795,7 @@ class CrostiniManager : public KeyedService,
       const std::string& vm_name,
       uint8_t guest_port,
       device::mojom::UsbDeviceInfoPtr device,
-      DetachUsbDeviceCallback callback,
+      CrostiniResultCallback callback,
       base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> reply);
 
   // Callback for CrostiniManager::ListUsbDevices
@@ -832,13 +803,6 @@ class CrostiniManager : public KeyedService,
       const std::string& vm_name,
       ListUsbDevicesCallback callback,
       base::Optional<vm_tools::concierge::ListUsbDeviceResponse> reply);
-
-  // Callback for CrostiniManager::OnListUsbDevices
-  void OnListUsbDeviceInfoPtrs(
-      const std::string& vm_name,
-      vm_tools::concierge::ListUsbDeviceResponse response,
-      ListUsbDevicesCallback callback,
-      std::vector<device::mojom::UsbDeviceInfoPtr> device_info);
 
   // Callback for CrostiniManager::SearchApp.
   void OnSearchApp(SearchAppCallback callback,
@@ -855,8 +819,7 @@ class CrostiniManager : public KeyedService,
   void FinishRestart(CrostiniRestarter* restarter, CrostiniResult result);
 
   // Callback for CrostiniManager::AbortRestartCrostini
-  void OnAbortRestartCrostini(RestartId restart_id,
-                              AbortRestartCallback callback);
+  void OnAbortRestartCrostini(RestartId restart_id, base::OnceClosure callback);
 
   // Callback for CrostiniManager::RemoveCrostini.
   void OnRemoveCrostini(CrostiniResult result);
@@ -873,35 +836,28 @@ class CrostiniManager : public KeyedService,
   bool termina_update_check_needed_ = false;
   static bool is_dev_kvm_present_;
 
-  // Pending container started callbacks are keyed by <vm_name, container_name>
-  // string pairs.
-  std::multimap<ContainerId, StartContainerCallback> start_container_callbacks_;
+  // Pending container started callbacks.
+  std::multimap<ContainerId, CrostiniResultCallback> start_container_callbacks_;
 
-  // Pending ShutdownContainer callbacks are keyed by <vm_name, container_name>
-  // string pairs.
-  std::multimap<ContainerId, ShutdownContainerCallback>
-      shutdown_container_callbacks_;
+  // Pending ShutdownContainer callbacks.
+  std::multimap<ContainerId, base::OnceClosure> shutdown_container_callbacks_;
 
-  // Pending CreateLxdContainer callbacks are keyed by <vm_name, container_name>
-  // string pairs. These are used if CreateLxdContainer indicates we need to
-  // wait for an LxdContainerCreate signal.
+  // Pending CreateLxdContainer callbacks, used if CreateLxdContainer indicates
+  // we need to wait for an LxdContainerCreate signal.
   std::multimap<ContainerId, CrostiniResultCallback>
       create_lxd_container_callbacks_;
 
-  // Pending DeleteLxdContainer callbacks are keyed by <vm_name, container_name>
-  // string pairs. These are used if DeleteLxdContainer indicates we need to
-  // wait for an LxdContainerDelete signal.
+  // Pending DeleteLxdContainer callbacks, used if DeleteLxdContainer indicates
+  // we need to wait for an LxdContainerDelete signal.
   std::multimap<ContainerId, CrostiniResultCallback>
       delete_lxd_container_callbacks_;
 
-  // Pending ExportLxdContainer callbacks are keyed by <vm_name, container_name>
-  // string pairs. They are invoked once ExportLxdContainerProgressSignal signal
-  // indicates that export is finished.
+  // Pending ExportLxdContainer callbacks, invoked once
+  // ExportLxdContainerProgressSignal signal indicates that export is finished.
   std::map<ContainerId, CrostiniResultCallback> export_lxd_container_callbacks_;
 
-  // Pending ImportLxdContainer callbacks are keyed by <vm_name, container_name>
-  // string pairs. They are invoked once ImportLxdContainerProgressSignal signal
-  // indicates that import is finished.
+  // Pending ImportLxdContainer callbacks, invoked once
+  // ImportLxdContainerProgressSignal signal indicates that import is finished.
   std::map<ContainerId, CrostiniResultCallback> import_lxd_container_callbacks_;
 
   // Callbacks to run after Tremplin is started, keyed by vm_name. These are
@@ -929,9 +885,9 @@ class CrostiniManager : public KeyedService,
 
   base::ObserverList<VmShutdownObserver> vm_shutdown_observers_;
 
-  // Restarts by <vm_name, container_name>. Only one restarter flow is actually
-  // running for a given container, other restarters will just have their
-  // callback called when the running restarter completes.
+  // Only one restarter flow is actually running for a given container, other
+  // restarters will just have their callback called when the running restarter
+  // completes.
   std::multimap<ContainerId, CrostiniManager::RestartId>
       restarters_by_container_;
 

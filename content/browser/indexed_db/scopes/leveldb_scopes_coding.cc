@@ -6,9 +6,21 @@
 
 #include <utility>
 
+#include "base/big_endian.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 
 namespace content {
+namespace {
+
+void EncodeBigEndianFixed64(uint64_t number, std::string* output) {
+  DCHECK(output);
+  size_t start_index = output->size();
+  output->resize(output->size() + sizeof(uint64_t));
+  base::WriteBigEndian(&(*output)[start_index], number);
+}
+
+}  // namespace
+
 namespace leveldb_scopes {
 
 std::tuple<bool, int64_t> ParseScopeMetadataId(
@@ -114,7 +126,7 @@ leveldb::Slice ScopesEncoder::UndoTaskKey(
     int64_t scope_number,
     int64_t undo_sequence_number) {
   UndoTaskKeyPrefix(scopes_prefix, scope_number);
-  EncodeInt(undo_sequence_number, &key_buffer_);
+  EncodeBigEndianFixed64(undo_sequence_number, &key_buffer_);
   return leveldb::Slice(key_buffer_);
 }
 
@@ -123,20 +135,8 @@ leveldb::Slice ScopesEncoder::CleanupTaskKey(
     int64_t scope_number,
     int64_t cleanup_sequence_number) {
   CleanupTaskKeyPrefix(scopes_prefix, scope_number);
-  EncodeInt(cleanup_sequence_number, &key_buffer_);
+  EncodeBigEndianFixed64(cleanup_sequence_number, &key_buffer_);
   return leveldb::Slice(key_buffer_);
-}
-
-std::tuple<bool, int64_t> ParseScopeMetadata(leveldb::Slice key,
-                                             int prefix_bytes_to_skip) {
-  int64_t scope_id = 0;
-  DCHECK_GE(prefix_bytes_to_skip, 0);
-  if (key.size() < static_cast<size_t>(prefix_bytes_to_skip + 1))
-    return std::make_tuple(false, 0);
-  base::StringPiece part(key.data() + prefix_bytes_to_skip,
-                         key.size() - prefix_bytes_to_skip);
-  bool success = DecodeVarInt(&part, &scope_id);
-  return std::make_tuple(success, scope_id);
 }
 
 }  // namespace content

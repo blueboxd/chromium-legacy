@@ -349,7 +349,6 @@ crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-
 # Subpixel rounding differences that are incorrect.
 crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
-crbug.com/836886 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
 crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure Pass ]
 crbug.com/921105 virtual/disable-blink-gen-property-trees/animations/skew-notsequential-compositor.html [ Skip ]
@@ -359,6 +358,10 @@ crbug.com/946532 external/wpt/css/css-backgrounds/background-clip/clip-text-dyna
 crbug.com/363609 external/wpt/css/css-transforms/rotateY-180deg-with-overflow-scroll.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
+
+# Fixed in CompositeAfterPaint.
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Failure ]
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 

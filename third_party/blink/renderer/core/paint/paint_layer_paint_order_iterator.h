@@ -57,6 +57,14 @@ class CORE_EXPORT PaintLayerPaintOrderIterator {
 
   PaintLayer* Next();
 
+  const Vector<PaintLayer*>* LayersPaintingOverlayScrollbarsAfter(
+      const PaintLayer* layer) const {
+    return root_.stacking_node_
+               ? root_.stacking_node_->LayersPaintingOverlayScrollbarsAfter(
+                     layer)
+               : nullptr;
+  }
+
  private:
   const PaintLayer& root_;
   unsigned remaining_children_;

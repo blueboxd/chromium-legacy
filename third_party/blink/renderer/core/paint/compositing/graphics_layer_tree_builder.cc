@@ -166,9 +166,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     pending_reparents.Set(&layer, child_layers.size());
 
   // Set or overwrite the entry in |pending_reparents| for this scroller.
-  // Overlay controls need to paint on top of all content under the
-  // scroller, so keep overwriting if we find a PaintLayer that is
-  // later in paint order.
+  // Overlay scrollbars need to paint on top of all content under the scroller,
+  // so keep overwriting if we find a PaintLayer that is later in paint order.
   const PaintLayer* scroll_parent = layer.ScrollParent();
   if (style.IsStacked() && scroll_parent &&
       scroll_parent->HasCompositedLayerMapping() &&

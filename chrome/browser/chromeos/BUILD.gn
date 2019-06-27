@@ -763,6 +763,8 @@ source_set("chromeos") {
     "dbus/chrome_features_service_provider.h",
     "dbus/component_updater_service_provider.cc",
     "dbus/component_updater_service_provider.h",
+    "dbus/cryptohome_key_delegate_service_provider.cc",
+    "dbus/cryptohome_key_delegate_service_provider.h",
     "dbus/dbus_helper.cc",
     "dbus/dbus_helper.h",
     "dbus/drive_file_stream_service_provider.cc",

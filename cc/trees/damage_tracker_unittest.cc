@@ -26,6 +26,36 @@
 namespace cc {
 namespace {
 
+class TestLayerImpl : public LayerImpl {
+ public:
+  TestLayerImpl(LayerTreeImpl* tree_impl, int id);
+
+  void AddDamageRect(const gfx::Rect& damage_rect);
+
+  // LayerImpl overrides.
+  gfx::Rect GetDamageRect() const override;
+  void ResetChangeTracking() override;
+
+ private:
+  gfx::Rect damage_rect_;
+};
+
+TestLayerImpl::TestLayerImpl(LayerTreeImpl* tree_impl, int id)
+    : LayerImpl(tree_impl, id) {}
+
+void TestLayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
+  damage_rect_.Union(damage_rect);
+}
+
+gfx::Rect TestLayerImpl::GetDamageRect() const {
+  return damage_rect_;
+}
+
+void TestLayerImpl::ResetChangeTracking() {
+  LayerImpl::ResetChangeTracking();
+  damage_rect_.SetRect(0, 0, 0, 0);
+}
+
 void ExecuteCalculateDrawProperties(LayerImpl* root,
                                     float device_scale_factor,
                                     RenderSurfaceList* render_surface_list) {
@@ -71,16 +101,15 @@ class DamageTrackerTest : public testing::Test {
 
   LayerImpl* CreateTestTreeWithOneSurface(int number_of_children) {
     host_impl_.active_tree()->DetachLayers();
-    std::unique_ptr<LayerImpl> root =
-        LayerImpl::Create(host_impl_.active_tree(), 1);
+    auto root = std::make_unique<TestLayerImpl>(host_impl_.active_tree(), 1);
 
     root->SetBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
     root->test_properties()->force_render_surface = true;
 
     for (int i = 0; i < number_of_children; ++i) {
-      std::unique_ptr<LayerImpl> child =
-          LayerImpl::Create(host_impl_.active_tree(), 2 + i);
+      auto child =
+          std::make_unique<TestLayerImpl>(host_impl_.active_tree(), 2 + i);
       child->test_properties()->position = gfx::PointF(100.f, 100.f);
       child->SetBounds(gfx::Size(30, 30));
       child->SetDrawsContent(true);
@@ -98,16 +127,13 @@ class DamageTrackerTest : public testing::Test {
     // two children of its own.
 
     host_impl_.active_tree()->DetachLayers();
-    std::unique_ptr<LayerImpl> root =
-        LayerImpl::Create(host_impl_.active_tree(), 1);
-    std::unique_ptr<LayerImpl> child1 =
-        LayerImpl::Create(host_impl_.active_tree(), 2);
-    std::unique_ptr<LayerImpl> child2 =
-        LayerImpl::Create(host_impl_.active_tree(), 3);
-    std::unique_ptr<LayerImpl> grand_child1 =
-        LayerImpl::Create(host_impl_.active_tree(), 4);
-    std::unique_ptr<LayerImpl> grand_child2 =
-        LayerImpl::Create(host_impl_.active_tree(), 5);
+    auto root = std::make_unique<TestLayerImpl>(host_impl_.active_tree(), 1);
+    auto child1 = std::make_unique<TestLayerImpl>(host_impl_.active_tree(), 2);
+    auto child2 = std::make_unique<TestLayerImpl>(host_impl_.active_tree(), 3);
+    auto grand_child1 =
+        std::make_unique<TestLayerImpl>(host_impl_.active_tree(), 4);
+    auto grand_child2 =
+        std::make_unique<TestLayerImpl>(host_impl_.active_tree(), 5);
 
     root->SetBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
@@ -276,7 +302,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->test_properties()->children[0];
+  auto* child =
+      static_cast<TestLayerImpl*>(root->test_properties()->children[0]);
 
   // CASE 1: Adding the layer damage rect should cause the corresponding damage
   // to the surface.
@@ -336,7 +363,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->test_properties()->children[0];
+  auto* child =
+      static_cast<TestLayerImpl*>(root->test_properties()->children[0]);
 
   // CASE 1: Adding the layer damage rect and update rect should cause the
   // corresponding damage to the surface.
@@ -547,9 +575,12 @@ TEST_F(DamageTrackerTest, TransformPropertyChangeNoSurface) {
 TEST_F(DamageTrackerTest,
        VerifyDamageForUpdateAndDamageRectsFromContributingContents) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->test_properties()->children[0];
-  LayerImpl* child2 = root->test_properties()->children[1];
-  LayerImpl* grandchild1 = child1->test_properties()->children[0];
+  auto* child1 =
+      static_cast<TestLayerImpl*>(root->test_properties()->children[0]);
+  auto* child2 =
+      static_cast<TestLayerImpl*>(root->test_properties()->children[1]);
+  auto* grandchild1 =
+      static_cast<TestLayerImpl*>(child1->test_properties()->children[0]);
 
   // CASE 1: Adding the layer1's damage rect and update rect should cause the
   // corresponding damage to the surface.
@@ -1912,8 +1943,10 @@ TEST_F(DamageTrackerTest, DamageRectTooBigWithFilter) {
 TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
   LayerImpl* child1 = root->test_properties()->children[0];
-  LayerImpl* grandchild1 = child1->test_properties()->children[0];
-  LayerImpl* grandchild2 = child1->test_properties()->children[1];
+  auto* grandchild1 =
+      static_cast<TestLayerImpl*>(child1->test_properties()->children[0]);
+  auto* grandchild2 =
+      static_cast<TestLayerImpl*>(child1->test_properties()->children[1]);
 
   // Really far left.
   grandchild1->test_properties()->position =
@@ -2002,8 +2035,10 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
 TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
   LayerImpl* child1 = root->test_properties()->children[0];
-  LayerImpl* grandchild1 = child1->test_properties()->children[0];
-  LayerImpl* grandchild2 = child1->test_properties()->children[1];
+  auto* grandchild1 =
+      static_cast<TestLayerImpl*>(child1->test_properties()->children[0]);
+  auto* grandchild2 =
+      static_cast<TestLayerImpl*>(child1->test_properties()->children[1]);
 
   // Set up a moving pixels filter on the child.
   FilterOperations filters;

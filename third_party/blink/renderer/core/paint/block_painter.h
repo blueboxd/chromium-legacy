@@ -32,8 +32,6 @@ class BlockPainter {
   void PaintContents(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintChildren(const PaintInfo&);
   void PaintChild(const LayoutBox&, const PaintInfo&);
-  void PaintOverflowControlsIfNeeded(const PaintInfo&,
-                                     const PhysicalOffset& paint_offset);
 
   // See ObjectPainter::PaintAllPhasesAtomically().
   void PaintAllChildPhasesAtomically(const LayoutBox&, const PaintInfo&);

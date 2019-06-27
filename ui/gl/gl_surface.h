@@ -76,12 +76,15 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
     HDR10,
   };
 
+  // Resizes the surface, returning success. If failed, it is possible that the
+  // context is no longer current.
   virtual bool Resize(const gfx::Size& size,
                       float scale_factor,
                       ColorSpace color_space,
                       bool has_alpha);
 
-  // Recreate the surface without changing the size.
+  // Recreate the surface without changing the size, returning success. If
+  // failed, it is possible that the context is no longer current.
   virtual bool Recreate();
 
   // Unschedule the CommandExecutor and return true to abort the processing of
@@ -99,7 +102,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
       base::OnceCallback<void(const gfx::PresentationFeedback& feedback)>;
 
   // Swaps front and back buffers. This has no effect for off-screen
-  // contexts.
+  // contexts. If it returns SWAP_FAILED, it is possible that the context is no
+  // longer current.
   virtual gfx::SwapResult SwapBuffers(PresentationCallback callback) = 0;
 
   // Get the size of the surface.
@@ -141,12 +145,14 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual void SwapBuffersAsync(SwapCompletionCallback completion_callback,
                                 PresentationCallback presentation_callback);
 
-  // Swap buffers with content bounds.
+  // Swap buffers with content bounds. If it returns SWAP_FAILED, it is possible
+  // that the context is no longer current.
   virtual gfx::SwapResult SwapBuffersWithBounds(
       const std::vector<gfx::Rect>& rects,
       PresentationCallback callback);
 
-  // Copy part of the backbuffer to the frontbuffer.
+  // Copy part of the backbuffer to the frontbuffer. If it returns SWAP_FAILED,
+  // it is possible that the context is no longer current.
   virtual gfx::SwapResult PostSubBuffer(int x,
                                         int y,
                                         int width,
@@ -167,7 +173,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Show overlay planes but don't swap the front and back buffers. This acts
   // like SwapBuffers from the point of view of the client, but is cheaper when
-  // overlays account for all the damage.
+  // overlays account for all the damage. If it returns SWAP_FAILED,
+  // it is possible that the context is no longer current.
   virtual gfx::SwapResult CommitOverlayPlanes(PresentationCallback callback);
 
   // Show overlay planes but don't swap the front and back buffers. On some
@@ -252,6 +259,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool ScheduleDCLayer(const ui::DCRendererLayerParams& params);
 
+  // Enables or disables DC layers, returning success. If failed, it is possible
+  // that the context is no longer current.
   virtual bool SetEnableDCLayers(bool enable);
 
   virtual bool IsSurfaceless() const;
@@ -268,7 +277,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool SupportsProtectedVideo() const;
 
-  // Set the rectangle that will be drawn into on the surface.
+  // Set the rectangle that will be drawn into on the surface, returning
+  // success. If failed, it is possible that the context is no longer current.
   virtual bool SetDrawRectangle(const gfx::Rect& rect);
 
   // This is the amount by which the scissor and viewport rectangles should be

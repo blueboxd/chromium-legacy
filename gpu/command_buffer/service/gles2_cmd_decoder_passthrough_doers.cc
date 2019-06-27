@@ -5015,7 +5015,11 @@ error::Error GLES2DecoderPassthroughImpl::DoSetDrawRectangleCHROMIUM(
   gfx::Rect rect(x, y, width, height);
   if (!surface_->SetDrawRectangle(rect)) {
     InsertError(GL_INVALID_OPERATION, "SetDrawRectangle failed on surface");
-    return error::kNoError;
+    // If SetDrawRectangle failed, we may not have a current context any
+    // more, make sure to report lost context.
+    MarkContextLost(error::kUnknown);
+    group_->LoseContexts(error::kUnknown);
+    return error::kLostContext;
   }
 
   ApplySurfaceDrawOffset();
@@ -5040,7 +5044,11 @@ error::Error GLES2DecoderPassthroughImpl::DoSetEnableDCLayersCHROMIUM(
 
   if (!surface_->SetEnableDCLayers(!!enable)) {
     InsertError(GL_INVALID_OPERATION, "SetEnableDCLayers failed on surface.");
-    return error::kNoError;
+    // If SetEnableDCLayers failed, we may not have a current context any
+    // more, make sure to report lost context.
+    MarkContextLost(error::kUnknown);
+    group_->LoseContexts(error::kUnknown);
+    return error::kLostContext;
   }
 
   return error::kNoError;

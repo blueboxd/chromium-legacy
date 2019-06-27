@@ -71,7 +71,8 @@ Layer::Inputs::Inputs(int layer_id)
       has_will_change_transform_hint(false),
       trilinear_filtering(false),
       hide_layer_and_subtree(false),
-      overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto) {}
+      overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto),
+      mirror_count(0) {}
 
 Layer::Inputs::~Inputs() = default;
 
@@ -1500,6 +1501,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetMasksToBounds(inputs_.masks_to_bounds);
   layer->SetNonFastScrollableRegion(inputs_.non_fast_scrollable_region);
   layer->SetTouchActionRegion(inputs_.touch_action_region);
+  layer->SetMirrorCount(inputs_.mirror_count);
   // TODO(sunxd): Pass the correct region for wheel event handlers, see
   // https://crbug.com/841364.
   EventListenerProperties mouse_wheel_props =
@@ -1691,6 +1693,27 @@ void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
   // it flattens transforms.
   SetSubtreePropertyChanged();
   SetNeedsCommit();
+}
+
+void Layer::IncrementMirrorCount() {
+  SetMirrorCount(mirror_count() + 1);
+}
+
+void Layer::DecrementMirrorCount() {
+  SetMirrorCount(mirror_count() - 1);
+}
+
+void Layer::SetMirrorCount(int mirror_count) {
+  if (inputs_.mirror_count == mirror_count)
+    return;
+
+  DCHECK_LE(0, mirror_count);
+  bool was_mirrored = inputs_.mirror_count > 0;
+  inputs_.mirror_count = mirror_count;
+  bool is_mirrored = inputs_.mirror_count > 0;
+  if (was_mirrored != is_mirrored)
+    SetPropertyTreesNeedRebuild();
+  SetNeedsPushProperties();
 }
 
 ElementListType Layer::GetElementTypeForAnimation() const {

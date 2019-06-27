@@ -1480,26 +1480,44 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
   if (size == GetSize())
     return true;
   size_ = size;
-  {
-    ui::ScopedReleaseCurrent release_current;
-    Destroy();
-    if (!Initialize(format_)) {
-      LOG(ERROR) << "Failed to resize window.";
-      return false;
-    }
+  GLContext* context = GLContext::GetCurrent();
+  DCHECK(context);
+  GLSurface* surface = GLSurface::GetCurrent();
+  DCHECK(surface);
+  // Current surface may not be |this| if it is wrapped, but it should point to
+  // the same handle.
+  DCHECK_EQ(surface->GetHandle(), GetHandle());
+  context->ReleaseCurrent(surface);
+  Destroy();
+  if (!Initialize(format_)) {
+    LOG(ERROR) << "Failed to resize window.";
+    return false;
+  }
+  if (!context->MakeCurrent(surface)) {
+    LOG(ERROR) << "Failed to make current in NativeViewGLSurfaceEGL::Resize";
+    return false;
   }
   SetVSyncEnabled(vsync_enabled_);
   return true;
 }
 
 bool NativeViewGLSurfaceEGL::Recreate() {
-  {
-    ui::ScopedReleaseCurrent release_current;
-    Destroy();
-    if (!Initialize(format_)) {
-      LOG(ERROR) << "Failed to create surface.";
-      return false;
-    }
+  GLContext* context = GLContext::GetCurrent();
+  DCHECK(context);
+  GLSurface* surface = GLSurface::GetCurrent();
+  DCHECK(surface);
+  // Current surface may not be |this| if it is wrapped, but it should point to
+  // the same handle.
+  DCHECK_EQ(surface->GetHandle(), GetHandle());
+  context->ReleaseCurrent(surface);
+  Destroy();
+  if (!Initialize(format_)) {
+    LOG(ERROR) << "Failed to create surface.";
+    return false;
+  }
+  if (!context->MakeCurrent(surface)) {
+    LOG(ERROR) << "Failed to make current in NativeViewGLSurfaceEGL::Recreate";
+    return false;
   }
   SetVSyncEnabled(vsync_enabled_);
   return true;
@@ -1835,10 +1853,22 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size,
 
   size_ = size;
 
-  ui::ScopedReleaseCurrent release_current;
+  GLContext* context = GLContext::GetCurrent();
+  DCHECK(context);
+  GLSurface* surface = GLSurface::GetCurrent();
+  DCHECK(surface);
+  // Current surface may not be |this| if it is wrapped, but it should point to
+  // the same handle.
+  DCHECK_EQ(surface->GetHandle(), GetHandle());
+  context->ReleaseCurrent(surface);
 
   if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to resize pbuffer.";
+    return false;
+  }
+
+  if (!context->MakeCurrent(surface)) {
+    LOG(ERROR) << "Failed to make current in PbufferGLSurfaceEGL::Resize";
     return false;
   }
 

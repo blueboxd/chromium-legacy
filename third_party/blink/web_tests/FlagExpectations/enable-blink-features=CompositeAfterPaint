@@ -455,6 +455,9 @@ crbug.com/931491 compositing/squashing/squash-above-fixed-2.html [ Failure ]
 crbug.com/931491 compositing/squashing/squash-above-fixed-3.html [ Failure ]
 crbug.com/931491 compositing/squashing/squash-paint-invalidation-fixed-position.html [ Failure ]
 
+crbug.com/918155 scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
+
 # Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.
 Bug(none) http/tests/devtools/layers/layer-canvas-log.js [ Crash ]
 Bug(none) http/tests/devtools/layers/layer-replay-scale.js [ Crash ]

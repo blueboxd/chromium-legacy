@@ -764,13 +764,22 @@ bool PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
   if (layer_tree_impl()->IsActiveTree())
-    AddDamageRect(tile->enclosing_layer_rect());
+    damage_rect_.Union(tile->enclosing_layer_rect());
   if (tile->draw_info().NeedsRaster()) {
     PictureLayerTiling* tiling =
         tilings_->FindTilingWithScaleKey(tile->contents_scale_key());
     if (tiling)
       tiling->set_all_tiles_done(false);
   }
+}
+
+gfx::Rect PictureLayerImpl::GetDamageRect() const {
+  return damage_rect_;
+}
+
+void PictureLayerImpl::ResetChangeTracking() {
+  LayerImpl::ResetChangeTracking();
+  damage_rect_.SetRect(0, 0, 0, 0);
 }
 
 void PictureLayerImpl::DidBeginTracing() {

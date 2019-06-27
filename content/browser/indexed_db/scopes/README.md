@@ -70,7 +70,7 @@ To prevent reading uncommitted data, IndexedDB 'locks' objects stores when there
 
 * Allow the 'user' of the scopes system to choose the key prefix (`prefix`).
 * Scope # is a varint
-* Sequence # is a Fixed64
+* Sequence # is a big-endian Fixed64 (to support bytewise sorting)
 
 See [`leveldb_scopes_coding.h`](leveldb_scopes_coding.h) for the key encoding implementation.
 

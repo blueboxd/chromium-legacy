@@ -94,10 +94,10 @@ class CORE_EXPORT PaintLayerPainter {
                                     GraphicsContext&,
                                     const PaintLayerPaintingInfo&,
                                     PaintLayerFlags);
-  void PaintOverflowControlsForFragments(const PaintLayerFragments&,
-                                         GraphicsContext&,
-                                         const PaintLayerPaintingInfo&,
-                                         PaintLayerFlags);
+  void PaintOverlayScrollbarsForFragments(const PaintLayerFragments&,
+                                          GraphicsContext&,
+                                          const PaintLayerPaintingInfo&,
+                                          PaintLayerFlags);
   void PaintMaskForFragments(const PaintLayerFragments&,
                              GraphicsContext&,
                              const PaintLayerPaintingInfo&,

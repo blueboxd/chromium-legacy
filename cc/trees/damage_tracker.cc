@@ -386,7 +386,7 @@ void DamageTracker::AccumulateDamageFromLayer(LayerImpl* layer) {
     // If the layer properties haven't changed, then the the target surface is
     // only affected by the layer's damaged area, which could be empty.
     gfx::Rect damage_rect =
-        gfx::UnionRects(layer->update_rect(), layer->damage_rect());
+        gfx::UnionRects(layer->update_rect(), layer->GetDamageRect());
     damage_rect.Intersect(gfx::Rect(layer->bounds()));
 
     if (!damage_rect.IsEmpty()) {
@@ -416,7 +416,7 @@ void DamageTracker::AccumulateDamageFromLayer(LayerImpl* layer) {
 
   if (layer_is_new || !layer->update_rect().IsEmpty() ||
       layer->LayerPropertyChangedNotFromPropertyTrees() ||
-      !layer->damage_rect().IsEmpty() || property_change_on_non_target_node) {
+      !layer->GetDamageRect().IsEmpty() || property_change_on_non_target_node) {
     has_damage_from_contributing_content_ |= !damage_for_this_update_.IsEmpty();
   }
 }

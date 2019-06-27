@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -491,13 +492,13 @@ PaintResult PaintLayerPainter::PaintLayerContents(
          (is_painting_root_layer &&
           !(paint_flags & kPaintLayerPaintingSkipRootBackground)));
     bool should_paint_neg_z_order_list =
-        (is_painting_scrolling_content && is_painting_overflow_contents) ||
-        (!is_painting_scrolling_content && is_painting_composited_background);
+        !is_painting_overlay_scrollbars &&
+        (is_painting_scrolling_content ? is_painting_overflow_contents
+                                       : is_painting_composited_background);
     bool should_paint_own_contents =
         is_painting_composited_foreground && should_paint_content;
     bool should_paint_normal_flow_and_pos_z_order_lists =
-        is_painting_composited_foreground;
-    bool should_paint_overlay_scrollbars = is_painting_overlay_scrollbars;
+        is_painting_composited_foreground && !is_painting_overlay_scrollbars;
     bool is_video = paint_layer_.GetLayoutObject().IsVideo();
 
     base::Optional<ScopedPaintChunkProperties>
@@ -556,9 +557,13 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         result = kMayBeClippedByCullRect;
     }
 
-    if (should_paint_overlay_scrollbars) {
-      PaintOverflowControlsForFragments(layer_fragments, context,
-                                        local_painting_info, paint_flags);
+    if (paint_layer_.GetScrollableArea() &&
+        paint_layer_.GetScrollableArea()->HasOverlayScrollbars()) {
+      if (is_painting_overlay_scrollbars ||
+          !paint_layer_.NeedsReorderOverlayScrollbars()) {
+        PaintOverlayScrollbarsForFragments(layer_fragments, context,
+                                           local_painting_info, paint_flags);
+      }
     }
 
     if (is_video && should_paint_self_outline) {
@@ -698,44 +703,44 @@ PaintResult PaintLayerPainter::PaintChildren(
     if (PaintLayerPainter(*child).Paint(context, painting_info, paint_flags) ==
         kMayBeClippedByCullRect)
       result = kMayBeClippedByCullRect;
+
+    if (const auto* layers_painting_overlay_scrollbars_after =
+            iterator.LayersPaintingOverlayScrollbarsAfter(child)) {
+      for (auto* reparent_scrollbar_layer :
+           *layers_painting_overlay_scrollbars_after) {
+        DCHECK(reparent_scrollbar_layer->NeedsReorderOverlayScrollbars());
+        if (PaintLayerPainter(*reparent_scrollbar_layer)
+                .Paint(context, painting_info,
+                       kPaintLayerPaintingOverlayScrollbars) ==
+            kMayBeClippedByCullRect)
+          result = kMayBeClippedByCullRect;
+      }
+    }
   }
 
   return result;
 }
 
-void PaintLayerPainter::PaintOverflowControlsForFragments(
+void PaintLayerPainter::PaintOverlayScrollbarsForFragments(
     const PaintLayerFragments& layer_fragments,
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
-  PaintLayerScrollableArea* scrollable_area = paint_layer_.GetScrollableArea();
-  if (!scrollable_area)
+  DCHECK(paint_layer_.GetScrollableArea() &&
+         paint_layer_.GetScrollableArea()->HasOverlayScrollbars());
+
+  // We don't need to paint composited scrollbars.
+  if (paint_layer_.GetScrollableArea()->HasLayerForHorizontalScrollbar() ||
+      paint_layer_.GetScrollableArea()->HasLayerForVerticalScrollbar())
     return;
 
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        ScopedPaintChunkProperties fragment_paint_chunk_properties(
-            context.GetPaintController(),
-            fragment.fragment_data->LocalBorderBoxProperties(), paint_layer_,
-            DisplayItem::kOverflowControls);
-
-        // We need to apply the same clips and transforms that
-        // paintFragmentWithPhase would have.
-        PhysicalRect cull_rect = fragment.background_rect.Rect();
-        PaintInfo paint_info(
-            context, PixelSnappedIntRect(cull_rect),
-            PaintPhase::kSelfBlockBackgroundOnly,
-            painting_info.GetGlobalPaintFlags(), paint_flags,
-            &painting_info.root_layer->GetLayoutObject(),
-            fragment.fragment_data
-                ? fragment.fragment_data->LogicalTopInFlowThread()
-                : LayoutUnit());
-        // We pass IntPoint() as the paint offset here, because
-        // ScrollableArea::paintOverflowControls just ignores it and uses the
-        // offset found in a previous pass.
-        ScrollableAreaPainter(*scrollable_area)
-            .PaintOverflowControls(paint_info, IntPoint(),
-                                   true /* painting_overlay_controls */);
+        if (!fragment.background_rect.IsEmpty()) {
+          PaintFragmentWithPhase(PaintPhase::kOverlayScrollbars, fragment,
+                                 context, fragment.background_rect,
+                                 painting_info, paint_flags);
+        }
       });
 }
 
@@ -940,14 +945,9 @@ void PaintLayerPainter::PaintOverlayScrollbars(
     GraphicsContext& context,
     const CullRect& cull_rect,
     const GlobalPaintFlags paint_flags) {
-  if (!paint_layer_.ContainsDirtyOverlayScrollbars())
-    return;
-
   PaintLayerPaintingInfo painting_info(&paint_layer_, cull_rect, paint_flags,
                                        PhysicalOffset());
   Paint(context, painting_info, kPaintLayerPaintingOverlayScrollbars);
-
-  paint_layer_.SetContainsDirtyOverlayScrollbars(false);
 }
 
 void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,

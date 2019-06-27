@@ -147,7 +147,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_position_update_(!IsRootLayer()),
 #endif
       has3d_transformed_descendant_(false),
-      contains_dirty_overlay_scrollbars_(false),
       needs_ancestor_dependent_compositing_inputs_update_(
           !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()),
       child_needs_compositing_inputs_update_(
@@ -177,7 +176,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_compositing_layer_assignment_(false),
       descendant_needs_compositing_layer_assignment_(false),
       has_self_painting_layer_descendant_(false),
-      is_non_stacked_with_in_flow_stacked_descendant_(false),
+      needs_reorder_overlay_scrollbars_(false),
 #if DCHECK_IS_ON()
       layer_list_mutation_allowed_(true),
 #endif
@@ -222,6 +221,12 @@ PaintLayer::~PaintLayer() {
     DisableCompositingQueryAsserts disabler;
     ClearCompositedLayerMapping(true);
   }
+
+  // Reset this flag before disposing scrollable_area_ to prevent
+  // PaintLayerScrollableArea::WillRemoveScrollbar() from dirtying the z-order
+  // list of the stacking context. If this layer is removed from the parent,
+  // the z-order list should have been invalidated in RemoveChild().
+  needs_reorder_overlay_scrollbars_ = false;
 
   if (scrollable_area_)
     scrollable_area_->Dispose();
@@ -662,13 +667,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_non_contained_absolute_position_descendant_ = false;
     has_stacked_descendant_in_current_stacking_context_ = false;
     has_self_painting_layer_descendant_ = false;
-    is_non_stacked_with_in_flow_stacked_descendant_ = false;
 
     bool can_contain_abs =
         GetLayoutObject().CanContainAbsolutePositionObjects();
-
-    const ComputedStyle& style = GetLayoutObject().StyleRef();
-    bool is_stacked = style.IsStacked();
 
     for (PaintLayer* child = FirstChild(); child;
          child = child->NextSibling()) {
@@ -713,14 +714,6 @@ void PaintLayer::UpdateDescendantDependentFlags() {
           has_self_painting_layer_descendant_ ||
           child->HasSelfPaintingLayerDescendant() ||
           child->IsSelfPaintingLayer();
-
-      if (!is_stacked) {
-        if (child->IsNonStackedWithInFlowStackedDescendant())
-          is_non_stacked_with_in_flow_stacked_descendant_ = true;
-        else if (child_style.IsStacked() &&
-                 !child->GetLayoutObject().IsOutOfFlowPositioned())
-          is_non_stacked_with_in_flow_stacked_descendant_ = true;
-      }
     }
 
     UpdateStackingNode();
@@ -1369,7 +1362,7 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
     // ancestorStackingContextNode() can be null in the case where we're
     // building up generated content layers. This is ok, since the lists will
     // start off dirty in that case anyway.
-    PaintLayerStackingNode::DirtyStackingContextZOrderLists(*child);
+    child->DirtyStackingContextZOrderLists();
     MarkAncestorChainForFlagsUpdate();
   }
 
@@ -1412,7 +1405,7 @@ void PaintLayer::RemoveChild(PaintLayer* old_child) {
         Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     }
     // Dirty the z-order list in which we are contained.
-    PaintLayerStackingNode::DirtyStackingContextZOrderLists(*old_child);
+    old_child->DirtyStackingContextZOrderLists();
     SetNeedsCompositingInputsUpdate();
   }
 
@@ -1445,7 +1438,7 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
     return;
 
   if (old_style && old_style->IsStacked()) {
-    PaintLayerStackingNode::DirtyStackingContextZOrderLists(*this);
+    DirtyStackingContextZOrderLists();
     MarkAncestorChainForFlagsUpdate();
   }
 
@@ -3544,6 +3537,23 @@ const PaintLayer* PaintLayer::CommonAncestor(const PaintLayer* other) const {
   DCHECK(!this_iterator);
   DCHECK(!other_iterator);
   return nullptr;
+}
+
+void PaintLayer::DirtyStackingContextZOrderLists() {
+  auto* stacking_context = AncestorStackingContext();
+  if (!stacking_context)
+    return;
+
+  // This invalidation code intentionally refers to stale state.
+  DisableCompositingQueryAsserts disabler;
+
+  // Changes of stacking may result in graphics layers changing size
+  // due to new contents painting into them.
+  if (auto* mapping = stacking_context->GetCompositedLayerMapping())
+    mapping->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
+
+  if (stacking_context->StackingNode())
+    stacking_context->StackingNode()->DirtyZOrderLists();
 }
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()

@@ -4,7 +4,20 @@
 
 #include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
 
+#include <ostream>
+
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace leveldb {
+std::ostream& operator<<(std::ostream& os, const leveldb::Slice& slice) {
+  os << "0x";
+  for (size_t i = 0; i < slice.size(); ++i) {
+    const char c = slice[i];
+    os << std::hex << std::setfill('0') << std::setw(2) << (int)c;
+  }
+  return os;
+}
+}  // namespace leveldb
 
 namespace content {
 namespace {
@@ -83,8 +96,12 @@ TEST(LevelDBScopesCodingTest, UndoTaskKey) {
   ScopesEncoder encoder;
 
   std::string expected = "AB\x02\x81\x08";
+  // Add the 'undo' type.
   expected.push_back(0x00);
-  expected += "\x01\x04";
+  // Encode the big endian fixed length nunber.
+  for (size_t i = 0; i < 6; ++i)
+    expected.push_back(0x00);
+  expected += "\x04\x01";
   EXPECT_EQ(leveldb::Slice(expected),
             encoder.UndoTaskKey(scopes_prefix, kScopeNumber, kSequenceNumber));
 }
@@ -95,7 +112,11 @@ TEST(LevelDBScopesCodingTest, CleanupTaskKey) {
   std::vector<uint8_t> scopes_prefix = {'A', 'B'};
   ScopesEncoder encoder;
 
-  std::string expected = "AB\x02\x81\x08\x01\x01\x04";
+  std::string expected = "AB\x02\x81\x08\x01";
+  // Encode the big endian fixed length nunber.
+  for (size_t i = 0; i < 6; ++i)
+    expected.push_back(0x00);
+  expected += "\x04\x01";
   EXPECT_EQ(
       leveldb::Slice(expected),
       encoder.CleanupTaskKey(scopes_prefix, kScopeNumber, kSequenceNumber));

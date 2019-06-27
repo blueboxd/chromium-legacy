@@ -80,7 +80,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
       raster_even_if_not_drawn_(false),
-      has_transform_node_(false) {
+      has_transform_node_(false),
+      mirror_count_(0) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -345,6 +346,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->clip_tree_index_ = clip_tree_index_;
   layer->scroll_tree_index_ = scroll_tree_index_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
+  layer->mirror_count_ = mirror_count_;
   layer->scrollbars_hidden_ = scrollbars_hidden_;
   if (needs_show_scrollbars_)
     layer->needs_show_scrollbars_ = needs_show_scrollbars_;
@@ -516,7 +518,6 @@ void LayerImpl::ResetChangeTracking() {
   needs_push_properties_ = false;
 
   update_rect_.SetRect(0, 0, 0, 0);
-  damage_rect_.SetRect(0, 0, 0, 0);
 }
 
 bool LayerImpl::IsActive() const {
@@ -696,12 +697,16 @@ void LayerImpl::SetElementId(ElementId element_id) {
   layer_tree_impl_->AddToElementLayerList(element_id_, this);
 }
 
+void LayerImpl::SetMirrorCount(int mirror_count) {
+  mirror_count_ = mirror_count;
+}
+
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
   update_rect_ = update_rect;
 }
 
-void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
-  damage_rect_.Union(damage_rect);
+gfx::Rect LayerImpl::GetDamageRect() const {
+  return gfx::Rect();
 }
 
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {

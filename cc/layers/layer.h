@@ -651,6 +651,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetTrilinearFiltering(bool trilinear_filtering);
   bool trilinear_filtering() const { return inputs_.trilinear_filtering; }
 
+  // Increments/decrements/gets number of layers mirroring this layer.
+  void IncrementMirrorCount();
+  void DecrementMirrorCount();
+  int mirror_count() const { return inputs_.mirror_count; }
+
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
 
@@ -930,6 +935,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // they are marked as needing to be rebuilt.
   void UpdateScrollOffset(const gfx::ScrollOffset&);
 
+  void SetMirrorCount(int mirror_count);
+
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   struct Inputs {
     explicit Inputs(int layer_id);
@@ -1048,6 +1055,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     OverscrollBehavior overscroll_behavior;
 
     base::Optional<SnapContainerData> snap_container_data;
+
+    int mirror_count;
   };
 
   Layer* parent_;

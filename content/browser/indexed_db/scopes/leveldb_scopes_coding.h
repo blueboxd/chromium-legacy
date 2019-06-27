@@ -107,9 +107,6 @@ class CONTENT_EXPORT ScopesEncoder {
   std::string key_buffer_;
 };
 
-std::tuple<bool, int64_t> ParseScopeMetadata(leveldb::Slice key,
-                                             int prefix_bytes_to_skip);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_

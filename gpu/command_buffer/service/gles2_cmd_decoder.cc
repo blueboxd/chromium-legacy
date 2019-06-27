@@ -9786,9 +9786,12 @@ void GLES2DecoderImpl::DoSetDrawRectangleCHROMIUM(GLint x,
   if (!surface_->SetDrawRectangle(rect)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSetDrawRectangleCHROMIUM",
                        "failed on surface");
+    // If SetDrawRectangle failed, we may not have a current context any
+    // more, make sure to report lost context.
     LOG(ERROR) << "Context lost because SetDrawRectangleCHROMIUM failed.";
     MarkContextLost(error::kUnknown);
     group_->LoseContexts(error::kUnknown);
+    return;
   }
   OnFboChanged();
 }
@@ -9808,6 +9811,11 @@ void GLES2DecoderImpl::DoSetEnableDCLayersCHROMIUM(GLboolean enable) {
   if (!surface_->SetEnableDCLayers(!!enable)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSetEnableDCLayersCHROMIUM",
                        "failed on surface");
+    // If SetEnableDCLayers failed, we may not have a current context any
+    // more, make sure to report lost context.
+    LOG(ERROR) << "Context lost because SetEnableDCLayers failed.";
+    MarkContextLost(error::kUnknown);
+    group_->LoseContexts(error::kUnknown);
   }
 }
 
@@ -16680,8 +16688,10 @@ void GLES2DecoderImpl::FinishAsyncSwapBuffers(
 
 void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
   if (result == gfx::SwapResult::SWAP_FAILED) {
+    // If SwapBuffers/SwapBuffersWithBounds/PostSubBuffer failed, we may not
+    // have a current context any more.
     LOG(ERROR) << "Context lost because SwapBuffers failed.";
-    if (!CheckResetStatus()) {
+    if (!context_->IsCurrent(surface_.get()) || !CheckResetStatus()) {
       MarkContextLost(error::kUnknown);
       group_->LoseContexts(error::kUnknown);
     }

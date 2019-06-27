@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -163,7 +162,7 @@ void PreconnectManager::PreconnectUrl(const GURL& url,
 
   // TODO(mmenke): Use an appropriate NetworkIsolationKey().
   network_context->PreconnectSockets(num_sockets, url, load_flags, privacy_mode,
-                                     base::nullopt);
+                                     net::NetworkIsolationKey());
 }
 
 std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(

@@ -187,6 +187,14 @@ std::string ScriptExecutor::GetStatusMessage() {
   return delegate_->GetStatusMessage();
 }
 
+void ScriptExecutor::SetBubbleMessage(const std::string& message) {
+  delegate_->SetBubbleMessage(message);
+}
+
+std::string ScriptExecutor::GetBubbleMessage() {
+  return delegate_->GetBubbleMessage();
+}
+
 void ScriptExecutor::ClickOrTapElement(
     const Selector& selector,
     ClickAction::ClickType click_type,

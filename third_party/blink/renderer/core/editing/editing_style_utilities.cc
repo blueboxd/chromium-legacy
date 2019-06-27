@@ -232,7 +232,7 @@ const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
         MakeGarbageCollected<CSSComputedStyleDeclaration>(ancestor);
     if (!HasTransparentBackgroundColor(ancestor_style)) {
       return ancestor_style->GetPropertyCSSValue(
-          GetCSSPropertyBackgroundColor());
+          CSSPropertyID::kBackgroundColor);
     }
   }
   return nullptr;

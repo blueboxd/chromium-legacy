@@ -54,6 +54,8 @@ class MockActionDelegate : public ActionDelegate {
 
   MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
   MOCK_METHOD0(GetStatusMessage, std::string());
+  MOCK_METHOD1(SetBubbleMessage, void(const std::string& message));
+  MOCK_METHOD0(GetBubbleMessage, std::string());
   MOCK_METHOD3(ClickOrTapElement,
                void(const Selector& selector,
                     ClickAction::ClickType click_type,

@@ -140,6 +140,15 @@ std::string Controller::GetStatusMessage() const {
   return status_message_;
 }
 
+void Controller::SetBubbleMessage(const std::string& message) {
+  bubble_message_ = message;
+  GetUiController()->OnBubbleMessageChanged(message);
+}
+
+std::string Controller::GetBubbleMessage() const {
+  return bubble_message_;
+}
+
 void Controller::SetDetails(std::unique_ptr<Details> details) {
   details_ = std::move(details);
   GetUiController()->OnDetailsChanged(details_.get());

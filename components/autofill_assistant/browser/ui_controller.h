@@ -37,6 +37,9 @@ class UiController {
   // Report that the status message has changed.
   virtual void OnStatusMessageChanged(const std::string& message);
 
+  // Report that the bubble / tooltip message has changed.
+  virtual void OnBubbleMessageChanged(const std::string& message);
+
   // Autofill Assistant is about to be shut down for this tab.
   //
   // Pointer to UIDelegate will become invalid as soon as this method has

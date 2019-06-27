@@ -1110,10 +1110,18 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // suggestion of some sort".
     if ((i->type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED) &&
         (i->type != AutocompleteMatchType::SEARCH_OTHER_ENGINE)) {
+      // IsInstantExtendedAPIEnabled is a legacy function that we no longer want
+      // to affect the number of search suggestions we provide, but we want to
+      // understand the effect of removing this check, so its impotence is
+      // controlled experimentally.
+      bool instant_check_disabled = base::FeatureList::IsEnabled(
+          omnibox::kOmniboxDisableInstantExtendedLimit);
+      bool skip_suggestion_for_instant_disabled =
+          !(instant_check_disabled || search::IsInstantExtendedAPIEnabled());
       // If we've already hit the limit on non-server-scored suggestions, and
       // this isn't a server-scored suggestion we can add, skip it.
       if ((num_suggestions >= provider_max_matches_) &&
-          (!search::IsInstantExtendedAPIEnabled() ||
+          (skip_suggestion_for_instant_disabled ||
            (i->GetAdditionalInfo(kRelevanceFromServerKey) != kTrue))) {
         continue;
       }

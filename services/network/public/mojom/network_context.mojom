@@ -863,7 +863,7 @@ interface NetworkContext {
                     url.mojom.Url url,
                     int32 load_flags,
                     bool privacy_mode_enabled,
-                    NetworkIsolationKey? network_isolation_key);
+                    NetworkIsolationKey network_isolation_key);
 
   // Creates a P2PSocketManager instance, used for WebRTC.
   CreateP2PSocketManager(P2PTrustedSocketManagerClient client,

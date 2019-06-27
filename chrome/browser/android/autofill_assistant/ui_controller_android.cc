@@ -137,6 +137,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
     // The UI was created for an existing Controller.
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
+    OnBubbleMessageChanged(ui_delegate->GetBubbleMessage());
     OnProgressChanged(ui_delegate->GetProgress());
     OnProgressVisibilityChanged(ui_delegate->GetProgressVisible());
     OnInfoBoxChanged(ui_delegate_->GetInfoBox());
@@ -254,6 +255,15 @@ void UiControllerAndroid::OnStatusMessageChanged(const std::string& message) {
   if (!message.empty()) {
     JNIEnv* env = AttachCurrentThread();
     Java_AssistantHeaderModel_setStatusMessage(
+        env, GetHeaderModel(),
+        base::android::ConvertUTF8ToJavaString(env, message));
+  }
+}
+
+void UiControllerAndroid::OnBubbleMessageChanged(const std::string& message) {
+  if (!message.empty()) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_AssistantHeaderModel_setBubbleMessage(
         env, GetHeaderModel(),
         base::android::ConvertUTF8ToJavaString(env, message));
   }

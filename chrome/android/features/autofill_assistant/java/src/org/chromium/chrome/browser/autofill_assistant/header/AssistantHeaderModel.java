@@ -19,6 +19,9 @@ public class AssistantHeaderModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> STATUS_MESSAGE =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<String> BUBBLE_MESSAGE =
+            new WritableObjectPropertyKey<>();
+
     static final WritableIntPropertyKey PROGRESS = new WritableIntPropertyKey();
 
     @VisibleForTesting
@@ -36,13 +39,18 @@ public class AssistantHeaderModel extends PropertyModel {
     public static final WritableBooleanPropertyKey CHIP_VISIBLE = new WritableBooleanPropertyKey();
 
     public AssistantHeaderModel() {
-        super(STATUS_MESSAGE, PROGRESS, PROGRESS_VISIBLE, SPIN_POODLE, FEEDBACK_BUTTON_CALLBACK,
-                CHIP, CHIP_VISIBLE);
+        super(STATUS_MESSAGE, BUBBLE_MESSAGE, PROGRESS, PROGRESS_VISIBLE, SPIN_POODLE,
+                FEEDBACK_BUTTON_CALLBACK, CHIP, CHIP_VISIBLE);
     }
 
     @CalledByNative
     private void setStatusMessage(String statusMessage) {
         set(STATUS_MESSAGE, statusMessage);
+    }
+
+    @CalledByNative
+    private void setBubbleMessage(String bubbleMessage) {
+        set(BUBBLE_MESSAGE, bubbleMessage);
     }
 
     @CalledByNative

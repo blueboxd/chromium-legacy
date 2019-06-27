@@ -444,7 +444,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
       const CSSComputedStyleDeclaration& style =
           *MakeGarbageCollected<CSSComputedStyleDeclaration>(&node);
       const CSSValue* unicode_bidi =
-          style.GetPropertyCSSValue(GetCSSPropertyUnicodeBidi());
+          style.GetPropertyCSSValue(CSSPropertyID::kUnicodeBidi);
       auto* unicode_bidi_identifier_value =
           DynamicTo<CSSIdentifierValue>(unicode_bidi);
       if (!unicode_bidi_identifier_value)
@@ -482,7 +482,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
     const CSSComputedStyleDeclaration& style =
         *MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
     const CSSValue* unicode_bidi =
-        style.GetPropertyCSSValue(GetCSSPropertyUnicodeBidi());
+        style.GetPropertyCSSValue(CSSPropertyID::kUnicodeBidi);
     auto* unicode_bidi_identifier_value =
         DynamicTo<CSSIdentifierValue>(unicode_bidi);
     if (!unicode_bidi_identifier_value)
@@ -499,7 +499,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
     DCHECK(EditingStyleUtilities::IsEmbedOrIsolate(unicode_bidi_value))
         << static_cast<int>(unicode_bidi_value);
     const CSSValue* direction =
-        style.GetPropertyCSSValue(GetCSSPropertyDirection());
+        style.GetPropertyCSSValue(CSSPropertyID::kDirection);
     auto* direction_identifier_value = DynamicTo<CSSIdentifierValue>(direction);
     if (!direction_identifier_value)
       continue;

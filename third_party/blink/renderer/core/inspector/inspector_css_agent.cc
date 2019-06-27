@@ -2371,11 +2371,11 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
   auto* computed_style_info =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element, true);
   const CSSValue* font_size =
-      computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontSize());
+      computed_style_info->GetPropertyCSSValue(CSSPropertyID::kFontSize);
   if (font_size)
     *computed_font_size = font_size->CssText();
   const CSSValue* font_weight =
-      computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontWeight());
+      computed_style_info->GetPropertyCSSValue(CSSPropertyID::kFontWeight);
   if (font_weight)
     *computed_font_weight = font_weight->CssText();
 }

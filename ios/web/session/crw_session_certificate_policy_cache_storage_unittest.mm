@@ -64,8 +64,13 @@ class CRWSessionCertificatePolicyCacheStorageTest : public PlatformTest {
 // Tests that unarchiving CRWSessionCertificatePolicyCacheStorage data results
 // in an equivalent storage.
 TEST_F(CRWSessionCertificatePolicyCacheStorageTest, EncodeDecode) {
-  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:cache_storage_];
-  id decoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:cache_storage_
+                                       requiringSecureCoding:NO
+                                                       error:nil];
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
+  unarchiver.requiresSecureCoding = NO;
+  id decoded = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   EXPECT_TRUE(CacheStoragesAreEqual(cache_storage_, decoded));
 }
 
@@ -74,15 +79,19 @@ using CRWSessionCertificateStorageTest = PlatformTest;
 // Tests that unarchiving a CRWSessionCertificateStorage returns nil if the
 // certificate data does not correctly decode to a certificate.
 TEST_F(CRWSessionCertificateStorageTest, InvalidCertData) {
-  NSMutableData* data = [[NSMutableData alloc] init];
   NSKeyedArchiver* archiver =
-      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
+      [[NSKeyedArchiver alloc] initRequiringSecureCoding:NO];
   [archiver encodeObject:[@"not a  cert" dataUsingEncoding:NSUTF8StringEncoding]
                   forKey:web::kCertificateSerializationKey];
   [archiver encodeObject:@"host" forKey:web::kHostSerializationKey];
   [archiver encodeObject:@(net::CERT_STATUS_INVALID)
                   forKey:web::kStatusSerializationKey];
   [archiver finishEncoding];
-  id decoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSData* data = [archiver encodedData];
+
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
+  unarchiver.requiresSecureCoding = NO;
+  id decoded = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   EXPECT_FALSE(decoded);
 }

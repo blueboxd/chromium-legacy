@@ -16,8 +16,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
-#include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler_client.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -70,13 +72,32 @@ static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
     {true, true, "video/webm", "vp9,opus", true},
 };
 
-class MockMediaRecorderHandlerClient
-    : public GarbageCollectedFinalized<MockMediaRecorderHandlerClient>,
-      public MediaRecorderHandlerClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockMediaRecorderHandlerClient);
+MediaStream* CreateMediaStream(V8TestingScope& scope) {
+  auto* source = MakeGarbageCollected<MediaStreamSource>(
+      "sourceId", MediaStreamSource::kTypeAudio, "sourceName", false);
+  auto* component =
+      MakeGarbageCollected<MediaStreamComponent>("audioTrack", source);
 
+  auto* track =
+      MediaStreamTrack::Create(scope.GetExecutionContext(), component);
+
+  HeapVector<Member<MediaStreamTrack>> tracks;
+  tracks.push_back(track);
+
+  MediaStream* stream =
+      MediaStream::Create(scope.GetExecutionContext(), tracks);
+
+  return stream;
+}
+
+class MockMediaRecorder : public MediaRecorder {
  public:
-  virtual ~MockMediaRecorderHandlerClient() = default;
+  MockMediaRecorder(V8TestingScope& scope)
+      : MediaRecorder(scope.GetExecutionContext(),
+                      CreateMediaStream(scope),
+                      MediaRecorderOptions::Create(),
+                      scope.GetExceptionState()) {}
+  virtual ~MockMediaRecorder() = default;
 
   MOCK_METHOD4(WriteData, void(const char*, size_t, bool, double));
   MOCK_METHOD1(OnError, void(const String& message));
@@ -87,7 +108,6 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams> {
   MediaRecorderHandlerTest()
       : media_recorder_handler_(MediaRecorderHandler::Create(
             scheduler::GetSingleThreadTaskRunnerForTesting())),
-        client_(MakeGarbageCollected<MockMediaRecorderHandlerClient>()),
         audio_source_(kTestAudioChannels,
                       440 /* freq */,
                       kTestAudioSampleRate) {
@@ -148,8 +168,6 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams> {
 
   // The Class under test. Needs to be scoped_ptr to force its destruction.
   Persistent<MediaRecorderHandler> media_recorder_handler_;
-
-  Persistent<MockMediaRecorderHandlerClient> client_;
 
   // For generating test AudioBuses
   media::SineWaveAudioSource audio_source_;
@@ -214,10 +232,12 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
 // Checks that the initialization-destruction sequence works fine.
 TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   AddTracks();
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(
-      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
+      recorder, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_FALSE(recording());
   EXPECT_FALSE(hasVideoRecorders());
   EXPECT_FALSE(hasAudioRecorders());
@@ -233,6 +253,8 @@ TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   EXPECT_FALSE(hasVideoRecorders());
   EXPECT_FALSE(hasAudioRecorders());
 
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
   media_recorder_handler_ = nullptr;
 }
 
@@ -245,10 +267,12 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
 
   AddTracks();
 
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(
-      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
+      recorder, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
 
   InSequence s;
@@ -261,9 +285,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -278,9 +302,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -298,15 +322,15 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(quit_closure));
     if (GetParam().encoder_supports_alpha) {
-      EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+      EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+      EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
           .Times(1)
           .WillOnce(RunClosure5(std::move(quit_closure)));
     }
@@ -317,6 +341,8 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
 
   media_recorder_handler_->Stop();
 
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
   media_recorder_handler_ = nullptr;
 }
 
@@ -333,10 +359,13 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
 
   AddTracks();
 
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(
-      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
+      recorder, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
 
   InSequence s;
@@ -355,9 +384,9 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -372,9 +401,9 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*client_, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -385,6 +414,8 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
 
   media_recorder_handler_->Stop();
 
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
   media_recorder_handler_ = nullptr;
 }
 
@@ -396,10 +427,13 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
 
   AddTracks();
 
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(
-      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
+      recorder, registry_.test_stream(), mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
 
   InSequence s;
@@ -410,8 +444,8 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     const size_t kEncodedSizeThreshold = 16;
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*client_, WriteData(_, _, _, _)).Times(AtLeast(1));
-    EXPECT_CALL(*client_, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
+    EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(AtLeast(1));
+    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -424,8 +458,8 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*client_, WriteData(_, _, _, _)).Times(0);
-    EXPECT_CALL(*client_, OnError(_))
+    EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(0);
+    EXPECT_CALL(*recorder, OnError(_))
         .Times(1)
         .WillOnce(RunClosure5(std::move(quit_closure)));
 
@@ -433,16 +467,22 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     run_loop.Run();
   }
 
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
   media_recorder_handler_ = nullptr;
 }
 
 // Checks the ActualMimeType() versus the expected.
 TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
   AddTracks();
+
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+
   const String mime_type(GetParam().mime_type);
   const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(
-      client_, registry_.test_stream(), mime_type, codecs, 0, 0));
+      recorder, registry_.test_stream(), mime_type, codecs, 0, 0));
 
   StringBuilder actual_mime_type;
   actual_mime_type.Append(GetParam().mime_type);
@@ -457,6 +497,8 @@ TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
   EXPECT_EQ(media_recorder_handler_->ActualMimeType(),
             actual_mime_type.ToString());
 
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
   media_recorder_handler_ = nullptr;
 }
 

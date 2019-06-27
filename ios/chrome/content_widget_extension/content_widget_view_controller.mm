@@ -142,9 +142,21 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 - (BOOL)updateWidget {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
-  NSDictionary<NSURL*, NTPTile*>* newSites = [NSKeyedUnarchiver
-      unarchiveObjectWithData:[sharedDefaults
-                                  objectForKey:app_group::kSuggestedItems]];
+  NSData* data = [sharedDefaults objectForKey:app_group::kSuggestedItems];
+  NSError* error = nil;
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+
+  if (!unarchiver || error) {
+    DLOG(WARNING) << "Error creating unarchiver for widget extension: "
+                  << base::SysNSStringToUTF8([error description]);
+    return NO;
+  }
+
+  unarchiver.requiresSecureCoding = NO;
+
+  NSDictionary<NSURL*, NTPTile*>* newSites =
+      [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   if ([newSites isEqualToDictionary:self.sites]) {
     return NO;
   }

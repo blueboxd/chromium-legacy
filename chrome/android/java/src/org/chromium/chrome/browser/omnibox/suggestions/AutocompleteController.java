@@ -28,9 +28,6 @@ import java.util.List;
 public class AutocompleteController {
     private static final String TAG = "cr_Autocomplete";
 
-    // Maximum number of search/history suggestions to show.
-    private static final int MAX_DEFAULT_SUGGESTION_COUNT = 5;
-
     // Maximum number of voice suggestions to show.
     private static final int MAX_VOICE_SUGGESTION_COUNT = 3;
 
@@ -220,10 +217,6 @@ public class AutocompleteController {
     @CalledByNative
     protected void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
             String inlineAutocompleteText, long currentNativeAutocompleteResult) {
-        if (suggestions.size() > MAX_DEFAULT_SUGGESTION_COUNT) {
-            // Trim to the default amount of normal suggestions we can have.
-            suggestions.subList(MAX_DEFAULT_SUGGESTION_COUNT, suggestions.size()).clear();
-        }
 
         // Run through new providers to get an updated list of suggestions.
         suggestions = mVoiceSuggestionProvider.addVoiceSuggestions(

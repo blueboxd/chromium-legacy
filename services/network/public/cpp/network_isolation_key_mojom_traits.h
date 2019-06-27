@@ -17,14 +17,6 @@ template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     StructTraits<network::mojom::NetworkIsolationKeyDataView,
                  net::NetworkIsolationKey> {
-  static bool IsNull(const net::NetworkIsolationKey& input) {
-    return input.IsEmpty();
-  }
-
-  static void SetToNull(net::NetworkIsolationKey* out) {
-    *out = net::NetworkIsolationKey();
-  }
-
   static const base::Optional<url::Origin>& top_frame_origin(
       const net::NetworkIsolationKey& input) {
     return input.GetTopFrameOrigin();

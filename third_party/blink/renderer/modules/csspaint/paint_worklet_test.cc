@@ -201,6 +201,203 @@ TEST_F(PaintWorkletTest, NativeAndCustomProperties) {
   EXPECT_TRUE(generator->HasAlpha());
 }
 
+TEST_F(PaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
+  PaintWorklet* paint_worklet_to_test =
+      PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
+
+  Vector<Persistent<PaintWorkletGlobalScope>> global_scopes;
+  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; ++i) {
+    paint_worklet_to_test->AddGlobalScopeForTesting();
+    global_scopes.push_back(
+        PaintWorkletGlobalScopeProxy::From(
+            paint_worklet_to_test->GetGlobalScopesForTesting()[i])
+            ->global_scope());
+  }
+
+  String foo0 = R"JS(registerPaint('foo', class {
+        static get inputProperties() { return ['--foo0']; }
+        paint() {}
+      });)JS";
+  String foo1 = R"JS(registerPaint('foo', class {
+        static get inputProperties() { return ['--foo1']; }
+        paint() {}
+      });)JS";
+  String bar = R"JS(registerPaint('bar', class {
+        static get inputProperties() { return ['--bar']; }
+        paint() {}
+      });)JS";
+
+  global_scopes[0]->ScriptController()->Evaluate(
+      ScriptSourceCode(foo0), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(global_scopes[0]->FindDefinition("foo"));
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+
+  global_scopes[1]->ScriptController()->Evaluate(
+      ScriptSourceCode(foo1), SanitizeScriptErrors::kDoNotSanitize);
+
+  // foo0 and foo1 have the same name but different definitions, therefore
+  // this definition must become invalid.
+  EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+
+  global_scopes[0]->ScriptController()->Evaluate(
+      ScriptSourceCode(bar), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(global_scopes[0]->FindDefinition("bar"));
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("bar"));
+
+  global_scopes[1]->ScriptController()->Evaluate(
+      ScriptSourceCode(bar), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("bar"));
+}
+
+TEST_F(PaintWorkletTest, ConsistentGlobalScopeCrossThread) {
+  PaintWorklet* paint_worklet_to_test =
+      PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
+
+  Vector<Persistent<PaintWorkletGlobalScope>> global_scopes;
+  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; ++i) {
+    paint_worklet_to_test->AddGlobalScopeForTesting();
+    global_scopes.push_back(
+        PaintWorkletGlobalScopeProxy::From(
+            paint_worklet_to_test->GetGlobalScopesForTesting()[i])
+            ->global_scope());
+  }
+
+  String foo0 = R"JS(registerPaint('foo', class {
+        static get inputProperties() { return ['--foo0']; }
+        paint() {}
+      });)JS";
+  String foo1 = R"JS(registerPaint('foo', class {
+        static get inputProperties() { return ['--foo1']; }
+        paint() {}
+      });)JS";
+  String bar0 = R"JS(registerPaint('bar', class {
+        static get inputProperties() { return ['--bar0']; }
+        paint() {}
+      });)JS";
+  String loo0 = R"JS(registerPaint('loo', class {
+        static get inputProperties() { return ['--loo0']; }
+        paint() {}
+      });)JS";
+  String loo1 = R"JS(registerPaint('loo', class {
+        static get inputProperties() { return ['--loo1']; }
+        paint() {}
+      });)JS";
+  String gar0 = R"JS(registerPaint('gar', class {
+        static get inputProperties() { return ['--gar0']; }
+        paint() {}
+      });)JS";
+
+  // Definition invalidated before cross thread check
+  global_scopes[0]->ScriptController()->Evaluate(
+      ScriptSourceCode(foo0), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(global_scopes[0]->FindDefinition("foo"));
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+
+  global_scopes[1]->ScriptController()->Evaluate(
+      ScriptSourceCode(foo1), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+
+  CSSPaintDefinition* definition = global_scopes[0]->FindDefinition("foo");
+  Vector<String> foo_custom_properties;
+  for (const auto& s : definition->CustomInvalidationProperties()) {
+    foo_custom_properties.push_back(s);
+  }
+
+  paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
+      "foo", definition->NativeInvalidationProperties(), foo_custom_properties,
+      definition->InputArgumentTypes(),
+      definition->GetPaintRenderingContext2DSettings()->alpha());
+
+  EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
+
+  // Definition invalidated by cross thread check
+  global_scopes[0]->ScriptController()->Evaluate(
+      ScriptSourceCode(bar0), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(global_scopes[0]->FindDefinition("bar"));
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("bar"));
+
+  global_scopes[1]->ScriptController()->Evaluate(
+      ScriptSourceCode(bar0), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("bar"));
+
+  definition = global_scopes[0]->FindDefinition("bar");
+
+  // Manually change the custom properties
+  Vector<String> bar_custom_properties({"--bar1"});
+
+  paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
+      "bar", definition->NativeInvalidationProperties(), bar_custom_properties,
+      definition->InputArgumentTypes(),
+      definition->GetPaintRenderingContext2DSettings()->alpha());
+
+  // Although the main thread definitions were the same, the definition sent
+  // cross thread differed from the main thread definitions so it must become
+  // invalid.
+  EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("bar"));
+
+  // Definition invalidated by second main thread call after cross thread check
+  global_scopes[0]->ScriptController()->Evaluate(
+      ScriptSourceCode(loo0), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(global_scopes[0]->FindDefinition("loo"));
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("loo"));
+
+  definition = global_scopes[0]->FindDefinition("loo");
+  Vector<String> loo_custom_properties;
+  for (const auto& s : definition->CustomInvalidationProperties()) {
+    loo_custom_properties.push_back(s);
+  }
+
+  paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
+      "loo", definition->NativeInvalidationProperties(), loo_custom_properties,
+      definition->InputArgumentTypes(),
+      definition->GetPaintRenderingContext2DSettings()->alpha());
+
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("loo"));
+
+  global_scopes[1]->ScriptController()->Evaluate(
+      ScriptSourceCode(loo1), SanitizeScriptErrors::kDoNotSanitize);
+
+  // Although the first main thread call and the cross thread definition are the
+  // same, the second main thread call differs so the definition must become
+  // invalid
+  EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("loo"));
+
+  // Definition invalidated by cross thread check before second main thread call
+  global_scopes[0]->ScriptController()->Evaluate(
+      ScriptSourceCode(gar0), SanitizeScriptErrors::kDoNotSanitize);
+
+  EXPECT_TRUE(global_scopes[0]->FindDefinition("gar"));
+  EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("gar"));
+
+  definition = global_scopes[0]->FindDefinition("gar");
+
+  // Manually change custom properties
+  Vector<String> gar_custom_properties({"--gar1"});
+
+  paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
+      "gar", definition->NativeInvalidationProperties(), gar_custom_properties,
+      definition->InputArgumentTypes(),
+      definition->GetPaintRenderingContext2DSettings()->alpha());
+
+  EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("gar"));
+
+  global_scopes[1]->ScriptController()->Evaluate(
+      ScriptSourceCode(gar0), SanitizeScriptErrors::kDoNotSanitize);
+
+  // Although the main thread definitions were the same, the definition sent
+  // cross thread differed from the main thread definitions so it must stay
+  // invalid.
+  EXPECT_FALSE(paint_worklet_to_test->GetDocumentDefinitionMap().at("gar"));
+}
+
 class OffThreadPaintWorkletTest : public PageTestBase,
                                   public ::testing::WithParamInterface<bool> {
  public:

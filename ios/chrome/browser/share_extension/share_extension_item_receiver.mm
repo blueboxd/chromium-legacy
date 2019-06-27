@@ -195,7 +195,18 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (BOOL)receivedData:(NSData*)data withCompletion:(ProceduralBlock)completion {
-  id entryID = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSError* error = nil;
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+  if (!unarchiver || error) {
+    DLOG(WARNING) << "Error creating share extension item unarchiver: "
+                  << base::SysNSStringToUTF8([error description]);
+    return NO;
+  }
+
+  unarchiver.requiresSecureCoding = NO;
+
+  id entryID = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   NSDictionary* entry = base::mac::ObjCCast<NSDictionary>(entryID);
   if (!entry) {
     if (completion) {

@@ -51,6 +51,9 @@ class UiDelegate {
   // Returns the current status message.
   virtual std::string GetStatusMessage() const = 0;
 
+  // Returns the current bubble / tooltip message.
+  virtual std::string GetBubbleMessage() const = 0;
+
   // Returns the current contextual information. May be null if empty.
   virtual const Details* GetDetails() const = 0;
 

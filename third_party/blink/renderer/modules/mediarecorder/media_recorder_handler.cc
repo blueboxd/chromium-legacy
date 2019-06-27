@@ -21,7 +21,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
-#include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler_client.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
@@ -118,7 +118,7 @@ MediaRecorderHandler::MediaRecorderHandler(
       video_codec_id_(VideoTrackRecorder::CodecId::LAST),
       audio_codec_id_(AudioTrackRecorder::CodecId::LAST),
       recording_(false),
-      client_(nullptr),
+      recorder_(nullptr),
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
@@ -173,7 +173,7 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
   return true;
 }
 
-bool MediaRecorderHandler::Initialize(MediaRecorderHandlerClient* client,
+bool MediaRecorderHandler::Initialize(MediaRecorder* recorder,
                                       MediaStreamDescriptor* media_stream,
                                       const String& type,
                                       const String& codecs,
@@ -210,8 +210,8 @@ bool MediaRecorderHandler::Initialize(MediaRecorderHandlerClient* client,
       << static_cast<int>(audio_codec_id_);
 
   media_stream_ = media_stream;
-  DCHECK(client);
-  client_ = client;
+  DCHECK(recorder);
+  recorder_ = recorder;
 
   audio_bits_per_second_ = audio_bits_per_second;
   video_bits_per_second_ = video_bits_per_second;
@@ -388,7 +388,7 @@ void MediaRecorderHandler::EncodingInfo(
 
 String MediaRecorderHandler::ActualMimeType() {
   DCHECK(IsMainThread());
-  DCHECK(client_) << __func__ << " should be called after Initialize()";
+  DCHECK(recorder_) << __func__ << " should be called after Initialize()";
 
   const bool has_video_tracks = media_stream_->NumberOfVideoComponents();
   const bool has_audio_tracks = media_stream_->NumberOfAudioComponents();
@@ -461,7 +461,7 @@ void MediaRecorderHandler::OnEncodedVideo(
   DCHECK(IsMainThread());
 
   if (UpdateTracksAndCheckIfChanged()) {
-    client_->OnError("Amount of tracks in MediaStream has changed.");
+    recorder_->OnError("Amount of tracks in MediaStream has changed.");
     return;
   }
   if (!webm_muxer_)
@@ -470,7 +470,7 @@ void MediaRecorderHandler::OnEncodedVideo(
                                    std::move(encoded_alpha), timestamp,
                                    is_key_frame)) {
     DLOG(ERROR) << "Error muxing video data";
-    client_->OnError("Error muxing video data");
+    recorder_->OnError("Error muxing video data");
   }
 }
 
@@ -481,7 +481,7 @@ void MediaRecorderHandler::OnEncodedAudio(
   DCHECK(IsMainThread());
 
   if (UpdateTracksAndCheckIfChanged()) {
-    client_->OnError("Amount of tracks in MediaStream has changed.");
+    recorder_->OnError("Amount of tracks in MediaStream has changed.");
     return;
   }
   if (!webm_muxer_)
@@ -489,7 +489,7 @@ void MediaRecorderHandler::OnEncodedAudio(
   if (!webm_muxer_->OnEncodedAudio(params, std::move(encoded_data),
                                    timestamp)) {
     DLOG(ERROR) << "Error muxing audio data";
-    client_->OnError("Error muxing audio data");
+    recorder_->OnError("Error muxing audio data");
   }
 }
 
@@ -498,8 +498,9 @@ void MediaRecorderHandler::WriteData(base::StringPiece data) {
   const base::TimeTicks now = base::TimeTicks::Now();
   // Non-buffered mode does not need to check timestamps.
   if (timeslice_.is_zero()) {
-    client_->WriteData(data.data(), data.length(), true /* lastInSlice */,
-                       (now - base::TimeTicks::UnixEpoch()).InMillisecondsF());
+    recorder_->WriteData(
+        data.data(), data.length(), true /* lastInSlice */,
+        (now - base::TimeTicks::UnixEpoch()).InMillisecondsF());
     return;
   }
 
@@ -507,8 +508,8 @@ void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DVLOG_IF(1, last_in_slice) << "Slice finished @ " << now;
   if (last_in_slice)
     slice_origin_timestamp_ = now;
-  client_->WriteData(data.data(), data.length(), last_in_slice,
-                     (now - base::TimeTicks::UnixEpoch()).InMillisecondsF());
+  recorder_->WriteData(data.data(), data.length(), last_in_slice,
+                       (now - base::TimeTicks::UnixEpoch()).InMillisecondsF());
 }
 
 bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
@@ -569,7 +570,7 @@ void MediaRecorderHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_stream_);
   visitor->Trace(video_tracks_);
   visitor->Trace(audio_tracks_);
-  visitor->Trace(client_);
+  visitor->Trace(recorder_);
   visitor->Trace(video_recorders_);
   visitor->Trace(audio_recorders_);
 }

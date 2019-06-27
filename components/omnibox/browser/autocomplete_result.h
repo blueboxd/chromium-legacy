@@ -31,7 +31,7 @@ class AutocompleteResult {
   typedef ACMatches::iterator iterator;
 
   // Max number of matches we'll show from the various providers.
-  static size_t GetMaxMatches();
+  static size_t GetMaxMatches(bool is_zero_suggest = false);
 
   AutocompleteResult();
   ~AutocompleteResult();

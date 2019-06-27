@@ -58,6 +58,9 @@ source_set("display") {
       "GLKit.framework",
       "OpenGLES.framework",
     ]
+
+    # TODO(crbug.com/875022) fix for OpenGLES deprecation.
+    defines = [ "GLES_SILENCE_DEPRECATION" ]
   }
 
   if (is_win) {

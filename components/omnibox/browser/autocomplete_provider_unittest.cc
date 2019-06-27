@@ -584,7 +584,9 @@ TEST_F(AutocompleteProviderTest, Query) {
 
   // Make sure the default match gets set to the highest relevance match.  The
   // highest relevance matches should come from the second provider.
-  EXPECT_EQ(kResultsPerProvider * 2, result_.size());
+  EXPECT_EQ(
+      std::min(AutocompleteResult::GetMaxMatches(), kResultsPerProvider * 2),
+      result_.size());
   ASSERT_NE(result_.end(), result_.default_match());
   EXPECT_EQ(provider2, result_.default_match()->provider);
 }
@@ -594,7 +596,9 @@ TEST_F(AutocompleteProviderTest, AssistedQueryStats) {
   ResetControllerWithTestProviders(false, nullptr, nullptr);
   RunTest();
 
-  ASSERT_EQ(kResultsPerProvider * 2, result_.size());
+  ASSERT_EQ(
+      std::min(AutocompleteResult::GetMaxMatches(), kResultsPerProvider * 2),
+      result_.size());
 
   // Now, check the results from the second provider, as they should not have
   // assisted query stats set.
@@ -603,7 +607,7 @@ TEST_F(AutocompleteProviderTest, AssistedQueryStats) {
         result_.match_at(i)->search_terms_args->assisted_query_stats.empty());
   }
   // The first provider has a test keyword, so AQS should be non-empty.
-  for (size_t i = kResultsPerProvider; i < kResultsPerProvider * 2; ++i) {
+  for (size_t i = kResultsPerProvider; i < result_.size(); ++i) {
     EXPECT_FALSE(
         result_.match_at(i)->search_terms_args->assisted_query_stats.empty());
   }

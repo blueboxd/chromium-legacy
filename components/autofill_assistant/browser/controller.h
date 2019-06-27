@@ -81,6 +81,8 @@ class Controller : public ScriptExecutorDelegate,
   void SetTouchableElementArea(const ElementAreaProto& area) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() const override;
+  void SetBubbleMessage(const std::string& message) override;
+  std::string GetBubbleMessage() const override;
   void SetDetails(std::unique_ptr<Details> details) override;
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
@@ -273,6 +275,9 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current status message, may be empty.
   std::string status_message_;
+
+  // Current bubble / tooltip message, may be empty.
+  std::string bubble_message_;
 
   // Current details, may be null.
   std::unique_ptr<Details> details_;

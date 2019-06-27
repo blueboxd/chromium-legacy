@@ -111,6 +111,8 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() override;
+  void SetBubbleMessage(const std::string& message) override;
+  std::string GetBubbleMessage() override;
   void ClickOrTapElement(
       const Selector& selector,
       ClickAction::ClickType click_type,

@@ -44,8 +44,14 @@ struct MatchGURLHash {
 };
 
 // static
-size_t AutocompleteResult::GetMaxMatches() {
+size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
+#if (defined(OS_ANDROID))
+  constexpr size_t kDefaultMaxAutocompleteMatches = 5;
+  if (is_zero_suggest)
+    return kDefaultMaxAutocompleteMatches;
+#else
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
+#endif  // defined(OS_ANDROID)
 
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kUIExperimentMaxAutocompleteMatches,
@@ -188,7 +194,8 @@ void AutocompleteResult::SortAndCull(
 
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
-  const size_t max_num_matches = std::min(GetMaxMatches(), matches_.size());
+  const size_t max_num_matches =
+      std::min(GetMaxMatches(input.from_omnibox_focus()), matches_.size());
   size_t num_matches;
   for (num_matches = 0u; (num_matches < max_num_matches) &&
        (comparing_object.GetDemotedRelevance(*match_at(num_matches)) > 0);

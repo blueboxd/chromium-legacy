@@ -2044,7 +2044,7 @@ float ApplyStyleCommand::ComputedFontSize(Node* node) {
     return 0;
 
   const auto* value = To<CSSPrimitiveValue>(
-      style->GetPropertyCSSValue(GetCSSPropertyFontSize()));
+      style->GetPropertyCSSValue(CSSPropertyID::kFontSize));
   if (!value)
     return 0;
 

@@ -66,6 +66,7 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
     @Override
     public void checkForOSUpgrade(Context context) {
         try (TraceEvent te = TraceEvent.scoped("BackgroundTaskScheduler.checkForOSUpgrade")) {
+            ThreadUtils.assertOnUiThread();
             int oldSdkInt = BackgroundTaskSchedulerPrefs.getLastSdkVersion();
             int newSdkInt = Build.VERSION.SDK_INT;
 
@@ -98,6 +99,7 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
     @Override
     public void reschedule(Context context) {
         try (TraceEvent te = TraceEvent.scoped("BackgroundTaskScheduler.reschedule")) {
+            ThreadUtils.assertOnUiThread();
             Set<String> scheduledTasksClassNames = BackgroundTaskSchedulerPrefs.getScheduledTasks();
             BackgroundTaskSchedulerPrefs.removeAllTasks();
             for (String className : scheduledTasksClassNames) {

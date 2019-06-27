@@ -49,6 +49,14 @@ class ActionDelegate {
   // the action.
   virtual std::string GetStatusMessage() = 0;
 
+  // Show a bubble / tooltip on the bottom bar. Dismisses the bubble if
+  // |message| is empty.
+  virtual void SetBubbleMessage(const std::string& message) = 0;
+
+  // Returns the current bubble / status message. Usually used to restore a
+  // message after the action.
+  virtual std::string GetBubbleMessage() = 0;
+
   // Checks one or more elements.
   virtual void RunElementChecks(BatchElementChecker* checker) = 0;
 

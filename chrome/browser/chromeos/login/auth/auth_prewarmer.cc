@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -67,7 +67,8 @@ void AuthPrewarmer::DoPrewarm() {
   if (network_context) {
     // Do nothing if NetworkContext isn't available.
     network_context->PreconnectSockets(kConnectionsNeeded, url, kLoadFlags,
-                                       kShouldUsePrivacyMode, base::nullopt);
+                                       kShouldUsePrivacyMode,
+                                       net::NetworkIsolationKey());
   }
   if (!completion_callback_.is_null()) {
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},

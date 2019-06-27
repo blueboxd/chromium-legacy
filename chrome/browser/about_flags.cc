@@ -2627,7 +2627,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
-     flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription, kOsDesktop,
+     flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription,
+     kOsDesktop | kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,

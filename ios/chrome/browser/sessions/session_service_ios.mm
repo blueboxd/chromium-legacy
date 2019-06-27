@@ -138,8 +138,17 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
     if (!data)
       return nil;
 
+    NSError* error = nil;
     NSKeyedUnarchiver* unarchiver =
-        [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
+        [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+    if (!unarchiver || error) {
+      DLOG(WARNING) << "Error creating unarchiver, session file: "
+                    << base::SysNSStringToUTF8(sessionPath) << ": "
+                    << base::SysNSStringToUTF8([error description]);
+      return nil;
+    }
+
+    unarchiver.requiresSecureCoding = NO;
 
     // Register compatibility aliases to support legacy saved sessions.
     [unarchiver cr_registerCompatibilityAliases];
@@ -176,10 +185,11 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
           return;
 
         NSError* error = nil;
-        if (![fileManager removeItemAtPath:sessionPath error:nil])
+        if (![fileManager removeItemAtPath:sessionPath error:&error] || error) {
           CHECK(false) << "Unable to delete session file: "
                        << base::SysNSStringToUTF8(sessionPath) << ": "
                        << base::SysNSStringToUTF8([error description]);
+        }
       }),
       std::move(callback));
 }
@@ -202,7 +212,17 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   SessionIOS* session = factory();
 
   @try {
-    NSData* sessionData = [NSKeyedArchiver archivedDataWithRootObject:session];
+    NSError* error = nil;
+    NSData* sessionData = [NSKeyedArchiver archivedDataWithRootObject:session
+                                                requiringSecureCoding:NO
+                                                                error:&error];
+    if (!sessionData || error) {
+      DLOG(WARNING) << "Error serializing session for path: "
+                    << base::SysNSStringToUTF8(sessionPath) << ": "
+                    << base::SysNSStringToUTF8([error description]);
+      return;
+    }
+
     _taskRunner->PostTask(FROM_HERE, base::BindOnce(^{
                             [self performSaveSessionData:sessionData
                                              sessionPath:sessionPath];

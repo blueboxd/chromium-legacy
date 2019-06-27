@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -994,6 +995,9 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
             initial_move_);
         did_layout = true;
       }
+
+      UpdateGroupForDraggedTabs(to_index);
+
       attached_model->MoveSelectedTabsTo(to_index);
 
       // Move may do nothing in certain situations (such as when dragging pinned
@@ -2056,6 +2060,61 @@ void TabDragController::ClearTabDraggingInfo() {
   dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
   dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
 #endif
+}
+
+void TabDragController::UpdateGroupForDraggedTabs(int to_index) {
+  TabStripModel* attached_model = attached_context_->GetTabStripModel();
+  const ui::ListSelectionModel::SelectedIndices& selected =
+      attached_model->selection_model().selected_indices();
+
+  // TODO(crbug.com/978609): Support multi-select case.
+  if (selected.size() != 1)
+    return;
+
+  const int current_index = selected[0];
+
+  // If the tab hasn't moved, there is no need to update tab group membership.
+  if (current_index == to_index)
+    return;
+  if (!GetTabGroupForTargetIndex(current_index, to_index).has_value()) {
+    attached_model->RemoveFromGroup({current_index});
+  }
+}
+
+base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
+    int current_index,
+    int to_index) {
+  TabStripModel* attached_model = attached_context_->GetTabStripModel();
+  base::Optional<TabGroupId> current_group =
+      attached_model->GetTabGroupForTab(current_index);
+
+  // Keep tab in tab group if dragging all tabs in the tab group.
+  // TODO(crbug.com/978609): Handle multi-select drag case.
+  if ((current_group.has_value() &&
+       attached_model->ListTabsInGroup(current_group.value()).size() == 1)) {
+    return attached_model->GetTabGroupForTab(current_index);
+  }
+
+  // For the currently dragged tab, find the tab index of the tab to the left
+  // (|left_tab_index|) and right (|right_tab_index|)) after this current move
+  // has finished.
+  auto left_tab_index = [](int current_index, int to_index) {
+    return current_index < to_index ? to_index : to_index - 1;
+  };
+  auto right_tab_index = [](int current_index, int to_index) {
+    return current_index < to_index ? to_index + 1 : to_index;
+  };
+
+  base::Optional<TabGroupId> left_group = attached_model->GetTabGroupForTab(
+      left_tab_index(current_index, to_index));
+  base::Optional<TabGroupId> right_group = attached_model->GetTabGroupForTab(
+      right_tab_index(current_index, to_index));
+
+  // If the currently dragged tab will end up without either adjacent tab
+  // sharing its group, ungroup it.
+  return (left_group != current_group && right_group != current_group)
+             ? base::nullopt
+             : current_group;
 }
 
 bool TabDragController::ShouldDisallowDrag(gfx::NativeWindow window) {

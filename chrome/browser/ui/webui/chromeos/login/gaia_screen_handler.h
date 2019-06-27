@@ -12,10 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/chromeos/login/login_client_cert_usage_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/user_manager/user_type.h"
 #include "net/base/net_errors.h"
 
 class AccountId;
@@ -38,6 +40,7 @@ class ActiveDirectoryPasswordChangeScreenHandler;
 class Key;
 class SamlPasswordAttributes;
 class SigninScreenHandler;
+class UserContext;
 
 class GaiaView {
  public:
@@ -293,6 +296,19 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Records whether WebUI is currently in offline mode.
   void SetOfflineLoginIsActive(bool is_active);
 
+  // Builds the UserContext with the information from the given Gaia user
+  // sign-in. On failure, returns false and sets |error_message|.
+  bool BuildUserContextForGaiaSignIn(
+      user_manager::UserType user_type,
+      const AccountId& account_id,
+      bool using_saml,
+      const std::string& password,
+      const std::string& auth_code,
+      const std::string& gaps_cookie,
+      const SamlPasswordAttributes& password_attributes,
+      UserContext* user_context,
+      std::string* error_message);
+
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
 
@@ -377,6 +393,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // The type of Gaia page to show.
   GaiaScreenMode screen_mode_ = GAIA_SCREEN_MODE_DEFAULT;
+
+  std::unique_ptr<LoginClientCertUsageObserver>
+      extension_provided_client_cert_usage_observer_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

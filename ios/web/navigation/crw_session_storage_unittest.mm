@@ -95,7 +95,14 @@ class CRWNSessionStorageTest : public PlatformTest {
 // Tests that unarchiving CRWSessionStorage data results in an equivalent
 // storage.
 TEST_F(CRWNSessionStorageTest, EncodeDecode) {
-  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:session_storage_];
-  id decoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSKeyedArchiver* archiver =
+      [[NSKeyedArchiver alloc] initRequiringSecureCoding:NO];
+  [archiver encodeObject:session_storage_ forKey:NSKeyedArchiveRootObjectKey];
+  [archiver finishEncoding];
+  NSData* data = [archiver encodedData];
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
+  unarchiver.requiresSecureCoding = NO;
+  id decoded = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   EXPECT_TRUE(SessionStoragesAreEqual(session_storage_, decoded));
 }

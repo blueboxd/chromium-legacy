@@ -195,6 +195,9 @@ message SystemProfileProto {
       // Number of logical processors/cores on the current machine, which
       // includes hyperthreaded cores.
       optional uint32 num_cores = 3;
+
+      // Whether the CPU is running in a hypervisor.
+      optional bool is_hypervisor = 4;
     }
     optional CPU cpu = 13;
 

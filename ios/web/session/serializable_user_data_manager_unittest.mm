@@ -43,15 +43,16 @@ TEST_F(SerializableUserDataManagerTest, EncodeDecode) {
       manager()->CreateSerializableUserData();
 
   // Archive the serializable user data.
-  NSMutableData* data = [[NSMutableData alloc] init];
   NSKeyedArchiver* archiver =
-      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
+      [[NSKeyedArchiver alloc] initRequiringSecureCoding:NO];
   user_data->Encode(archiver);
   [archiver finishEncoding];
+  NSData* data = [archiver encodedData];
 
   // Create a new SerializableUserData by unarchiving.
   NSKeyedUnarchiver* unarchiver =
-      [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
+  unarchiver.requiresSecureCoding = NO;
   std::unique_ptr<web::SerializableUserData> decoded_data =
       web::SerializableUserData::Create();
   decoded_data->Decode(unarchiver);
@@ -70,15 +71,17 @@ TEST_F(SerializableUserDataManagerTest, EncodeDecode) {
 // SerializableUserDataManager still allow reading and writing user data
 // (see http://crbug.com/699249 for details).
 TEST_F(SerializableUserDataManagerTest, DecodeNoData) {
-  NSMutableData* data = [[NSMutableData alloc] init];
   NSKeyedArchiver* archiver =
-      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
+      [[NSKeyedArchiver alloc] initRequiringSecureCoding:NO];
   [archiver finishEncoding];
+  NSData* data = [archiver encodedData];
 
   std::unique_ptr<web::SerializableUserData> user_data =
       web::SerializableUserData::Create();
+
   NSKeyedUnarchiver* unarchiver =
-      [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
+  unarchiver.requiresSecureCoding = NO;
   user_data->Decode(unarchiver);
 
   web::TestWebState web_state;

@@ -60,6 +60,7 @@ class UiControllerAndroid : public UiController {
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
+  void OnBubbleMessageChanged(const std::string& message) override;
   void WillShutdown(Metrics::DropOutReason reason) override;
   void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
   void OnPaymentRequestOptionsChanged(

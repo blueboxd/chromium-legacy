@@ -494,6 +494,18 @@ class TabDragController : public views::WidgetObserver {
   // is showing a modal).
   bool ShouldDisallowDrag(gfx::NativeWindow window);
 
+  // Helper method for TabDragController::MoveAttached to update the tab group
+  // membership of selected tabs.
+  // TODO (cyan): Make this work for dragging into a tab group.
+  void UpdateGroupForDraggedTabs(int to_index);
+
+  // Helper method for TabDragController::UpdateGroupForDraggedTabs to decide if
+  // a dragged tab should stay in the tab group. Returns base::nullopt if the
+  // tab should not be in a group. Otherwise returns TabGroupId of the group
+  // being selected.
+  base::Optional<TabGroupId> GetTabGroupForTargetIndex(int index_of_selected,
+                                                       int to_index);
+
   EventSource event_source_;
 
   // The TabDragContext the drag originated from. This is set to null

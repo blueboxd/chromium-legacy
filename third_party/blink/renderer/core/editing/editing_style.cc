@@ -515,7 +515,7 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
           /* important */ false, node->GetDocument().GetSecureContextMode());
     }
     if (const CSSValue* value = computed_style_at_position->GetPropertyCSSValue(
-            GetCSSPropertyWebkitTextDecorationsInEffect())) {
+            CSSPropertyID::kWebkitTextDecorationsInEffect)) {
       mutable_style_->SetProperty(
           CSSPropertyID::kTextDecoration, value->CssText(),
           /* important */ false, node->GetDocument().GetSecureContextMode());
@@ -1451,7 +1451,8 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
         continue;
       if (primitive_value->IsPercentage()) {
         if (const CSSValue* computed_property_value =
-                computed_style_for_element->GetPropertyCSSValue(css_property)) {
+                computed_style_for_element->GetPropertyCSSValue(
+                    property.Name())) {
           from_computed_style->AddRespectingCascade(
               CSSPropertyValue(css_property, *computed_property_value));
         }

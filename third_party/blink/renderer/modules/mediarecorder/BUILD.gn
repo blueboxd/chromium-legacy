@@ -27,7 +27,6 @@ blink_modules_sources("mediarecorder") {
     "media_recorder.h",
     "media_recorder_handler.cc",
     "media_recorder_handler.h",
-    "media_recorder_handler_client.h",
     "vea_encoder.cc",
     "vea_encoder.h",
     "video_track_recorder.cc",

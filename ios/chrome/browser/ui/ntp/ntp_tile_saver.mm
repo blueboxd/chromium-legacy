@@ -149,7 +149,16 @@ void WriteSingleUpdatedTileToDisk(NTPTile* tile) {
 }
 
 void WriteSavedMostVisited(NSDictionary<NSURL*, NTPTile*>* most_visited_data) {
-  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:most_visited_data];
+  NSError* error = nil;
+  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:most_visited_data
+                                       requiringSecureCoding:NO
+                                                       error:&error];
+  if (!data || error) {
+    DLOG(WARNING) << "Error serializing most visited: "
+                  << base::SysNSStringToUTF8([error description]);
+    return;
+  }
+
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
   [sharedDefaults setObject:data forKey:app_group::kSuggestedItems];
 
@@ -159,10 +168,19 @@ void WriteSavedMostVisited(NSDictionary<NSURL*, NTPTile*>* most_visited_data) {
 
 NSDictionary* ReadSavedMostVisited() {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
+  NSError* error = nil;
+  NSKeyedUnarchiver* unarchiver = [[NSKeyedUnarchiver alloc]
+      initForReadingFromData:[sharedDefaults
+                                 objectForKey:app_group::kSuggestedItems]
+                       error:&error];
+  if (!unarchiver || error) {
+    DLOG(WARNING) << "Error creating unarchiver for most visited: "
+                  << base::SysNSStringToUTF8([error description]);
+    return [[NSMutableDictionary alloc] init];
+  }
 
-  return [NSKeyedUnarchiver
-      unarchiveObjectWithData:[sharedDefaults
-                                  objectForKey:app_group::kSuggestedItems]];
+  unarchiver.requiresSecureCoding = NO;
+  return [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
 }
 
 void UpdateSingleFavicon(const GURL& site_url,

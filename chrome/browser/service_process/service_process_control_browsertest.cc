@@ -224,7 +224,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 #else
 #define MAYBE_LaunchAndReconnect LaunchAndReconnect
 #endif
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndReconnect) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       MAYBE_LaunchAndReconnect) {
   LaunchServiceProcessControlAndWait();
 
   // Make sure we are connected to the service process.

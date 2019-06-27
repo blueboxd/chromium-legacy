@@ -116,6 +116,7 @@ let kRTCInboundRtpStreamStats = new RTCStats(kRTCReceivedRtpStreamStats, {
   receiverId: 'string',
   remoteId: 'string',
   framesDecoded: 'number',
+  keyFramesDecoded: 'number',
   qpSum: 'number',
   lastPacketReceivedTimestamp: 'number',
   averageRtcpInterval: 'number',
@@ -180,6 +181,7 @@ let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   targetBitrate: 'number',
   totalEncodedBytesTarget: 'number',
   framesEncoded: 'number',
+  keyFramesEncoded: 'number',
   qpSum: 'number',
   totalEncodeTime: 'number',
   totalPacketSendDelay: 'number',
@@ -335,7 +337,6 @@ let kRTCVideoSenderStats = new RTCStats(kRTCVideoHandlerStats, {
   framesCaptured: 'number',
   framesSent: 'number',
   hugeFramesSent: 'number',
-  keyFramesSent: 'number',
 });
 // TODO(hbos): When sender is implemented, make presence MANDATORY.
 addRTCStatsToWhitelist(Presence.OPTIONAL, 'sender', kRTCVideoSenderStats);
@@ -360,7 +361,6 @@ let kRTCVideoReceiverStats = new RTCStats(kRTCVideoHandlerStats, {
   jitterBufferDelay: 'number',
   jitterBufferEmittedCount: 'number',
   framesReceived: 'number',
-  keyFramesReceived: 'number',
   framesDecoded: 'number',
   framesDropped: 'number',
   partialFramesLost: 'number',

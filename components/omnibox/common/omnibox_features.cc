@@ -269,6 +269,11 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
 const base::Feature kOmniboxMaterialDesignWeatherIcons{
     "OmniboxMaterialDesignWeatherIcons", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Returns whether IsInstantExtendedAPIEnabled should be ignored when deciding
+// the number of Google-provided search suggestions.
+const base::Feature kOmniboxDisableInstantExtendedLimit{
+    "OmniboxDisableInstantExtendedLimit", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
 // This feature's main job is to contain some field trial parameters such as:
 //  - "ZeroSuggestVariant" configures the per-page-classification mode of

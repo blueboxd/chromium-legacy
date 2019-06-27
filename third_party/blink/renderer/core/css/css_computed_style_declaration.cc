@@ -334,13 +334,13 @@ LayoutObject* CSSComputedStyleDeclaration::StyledLayoutObject() const {
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
-    AtomicString custom_property_name) const {
-  Node* styled_node = StyledNode();
-  if (!styled_node)
-    return nullptr;
+    CSSPropertyID property_id) const {
+  return GetPropertyCSSValue(CSSPropertyName(property_id));
+}
 
-  CSSPropertyRef ref(custom_property_name, styled_node->GetDocument());
-  return GetPropertyCSSValue(ref.GetProperty());
+const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
+    AtomicString custom_property_name) const {
+  return GetPropertyCSSValue(CSSPropertyName(custom_property_name));
 }
 
 HeapHashMap<AtomicString, Member<const CSSValue>>
@@ -354,7 +354,7 @@ CSSComputedStyleDeclaration::GetVariables() const {
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
-    const CSSProperty& property_class) const {
+    const CSSPropertyName& property_name) const {
   Node* styled_node = StyledNode();
   if (!styled_node)
     return nullptr;
@@ -370,7 +370,10 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     // TODO(futhark@chromium.org): There is an open question what the computed
     // style should be in a display:none iframe. If the property we are querying
     // is not layout dependent, we will not update the iframe layout box here.
-    if (property_class.IsLayoutDependentProperty() ||
+    bool is_layout_dependent_property =
+        !property_name.IsCustomProperty() &&
+        CSSProperty::Get(property_name.Id()).IsLayoutDependentProperty();
+    if (is_layout_dependent_property ||
         document.GetStyleEngine().HasViewportDependentMediaQueries()) {
       owner->GetDocument().UpdateStyleAndLayout();
       // The style recalc could have caused the styled node to be discarded or
@@ -380,6 +383,11 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   }
 
   document.UpdateStyleAndLayoutTreeForNode(styled_node);
+
+  CSSPropertyRef ref(property_name, document);
+  if (!ref.IsValid())
+    return nullptr;
+  const CSSProperty& property_class = ref.GetProperty();
 
   // The style recalc could have caused the styled node to be discarded or
   // replaced if it was a PseudoElement so we need to update it.
@@ -415,7 +423,7 @@ String CSSComputedStyleDeclaration::GetPropertyValue(
         node_->GetDocument(),
         WebFeature::kGetComputedStyleForWebkitAppearanceExcludeDevTools);
   }
-  const CSSValue* value = GetPropertyCSSValue(CSSProperty::Get(property_id));
+  const CSSValue* value = GetPropertyCSSValue(property_id);
   if (value)
     return value->CssText();
   return "";
@@ -452,7 +460,7 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
         return true;
     }
   }
-  const CSSValue* value = GetPropertyCSSValue(CSSProperty::Get(property_id));
+  const CSSValue* value = GetPropertyCSSValue(property_id);
   return DataEquivalent(value, &property_value);
 }
 
@@ -467,7 +475,7 @@ MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
     const CSSProperty& property = *properties[i];
-    const CSSValue* value = GetPropertyCSSValue(property);
+    const CSSValue* value = GetPropertyCSSValue(property.GetCSSPropertyName());
     if (value)
       list.push_back(CSSPropertyValue(property, *value, false));
   }
@@ -536,7 +544,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     UseCounter::Count(node_->GetDocument(),
                       WebFeature::kGetComputedStyleWebkitAppearance);
   }
-  return GetPropertyCSSValue(CSSProperty::Get(property_id));
+  return GetPropertyCSSValue(property_id);
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(

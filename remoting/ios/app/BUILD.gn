@@ -94,6 +94,8 @@ source_set("common_source_set") {
     "//ui/resources",
   ]
 
+  # TODO(crbug.com/875022) fix for OpenGLES deprecation.
+  defines = [ "GLES_SILENCE_DEPRECATION" ]
   foreach(locale, remoting_locales_with_underscores) {
     deps += [ "//remoting/ios/app/resources:locale_${locale}_bundle_data" ]
   }
@@ -119,6 +121,9 @@ source_set("app_source_set") {
     ":common_source_set",
     "//base",
   ]
+
+  # TODO(crbug.com/875022) fix for OpenGLES deprecation.
+  defines = [ "GLES_SILENCE_DEPRECATION" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

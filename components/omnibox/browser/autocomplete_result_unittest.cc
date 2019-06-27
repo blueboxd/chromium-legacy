@@ -1112,14 +1112,14 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
   result.SortAndCull(input, template_url_service_.get());
 
   TestData expected_data[] = {
-    { 3, 2,  800, true  },  // default match unmoved
-    { 4, 1,  900, false },  // search types
-    { 2, 1,  700, false },
-    { 6, 3, 1100, false },  // other types
-    { 5, 2, 1000, false },
-    { 1, 2,  600, false },
+      {3, 2, 800, true},                         // default match unmoved
+      {4, 1, 900, false},                        // search types
+      {2, 1, 700, false},  {6, 3, 1100, false},  // other types
+      {5, 2, 1000, false}, {1, 2, 600, false},
   };
-  AssertResultMatches(result, expected_data, base::size(expected_data));
+
+  AssertResultMatches(result, expected_data,
+                      AutocompleteResult::GetMaxMatches());
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
@@ -1154,7 +1154,7 @@ TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
     result.AppendMatches(input, matches);
     result.SortAndCull(input, template_url_service_.get());
 
-    EXPECT_EQ(result.size(), 6u);
+    EXPECT_EQ(result.size(), AutocompleteResult::GetMaxMatches());
     AutocompleteMatchType::Type expected_types[] = {
         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         AutocompleteMatchType::SEARCH_HISTORY,
@@ -1190,7 +1190,7 @@ TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
     result.AppendMatches(input, matches);
     result.SortAndCull(input, template_url_service_.get());
 
-    EXPECT_EQ(result.size(), 6u);
+    EXPECT_EQ(result.size(), AutocompleteResult::GetMaxMatches());
     AutocompleteMatchType::Type expected_types[] = {
         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         AutocompleteMatchType::SEARCH_HISTORY,

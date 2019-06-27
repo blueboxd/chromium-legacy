@@ -67,6 +67,14 @@ std::string FakeScriptExecutorDelegate::GetStatusMessage() const {
   return status_message_;
 }
 
+void FakeScriptExecutorDelegate::SetBubbleMessage(const std::string& message) {
+  status_message_ = message;
+}
+
+std::string FakeScriptExecutorDelegate::GetBubbleMessage() const {
+  return status_message_;
+}
+
 void FakeScriptExecutorDelegate::SetDetails(std::unique_ptr<Details> details) {
   details_ = std::move(details);
 }

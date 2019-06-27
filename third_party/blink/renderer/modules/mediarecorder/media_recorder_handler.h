@@ -29,10 +29,10 @@ class WebmMuxer;
 
 namespace blink {
 
+class MediaRecorder;
 class MediaStreamDescriptor;
 struct WebMediaCapabilitiesInfo;
 struct WebMediaConfiguration;
-class MediaRecorderHandlerClient;
 
 // MediaRecorderHandler orchestrates the creation, lifetime management and
 // mapping between:
@@ -61,7 +61,7 @@ class MODULES_EXPORT MediaRecorderHandler
   // encoding."
   // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
   bool CanSupportMimeType(const String& type, const String& web_codecs);
-  bool Initialize(MediaRecorderHandlerClient* client,
+  bool Initialize(MediaRecorder* client,
                   MediaStreamDescriptor* media_stream,
                   const String& type,
                   const String& codecs,
@@ -120,9 +120,9 @@ class MODULES_EXPORT MediaRecorderHandler
   // Audio Codec, OPUS is used by default.
   AudioTrackRecorder::CodecId audio_codec_id_;
 
-  // |client_| has no notion of time, thus may configure us via start(timeslice)
-  // to notify it after a certain |timeslice_| has passed. We use a moving
-  // |slice_origin_timestamp_| to track those time chunks.
+  // |recorder_| has no notion of time, thus may configure us via
+  // start(timeslice) to notify it after a certain |timeslice_| has passed. We
+  // use a moving |slice_origin_timestamp_| to track those time chunks.
   base::TimeDelta timeslice_;
   base::TimeTicks slice_origin_timestamp_;
 
@@ -132,8 +132,7 @@ class MODULES_EXPORT MediaRecorderHandler
   HeapVector<Member<MediaStreamComponent>> video_tracks_;
   HeapVector<Member<MediaStreamComponent>> audio_tracks_;
 
-  // |client_| is a weak pointer, and is valid for the lifetime of this object.
-  Member<MediaRecorderHandlerClient> client_;
+  Member<MediaRecorder> recorder_;
 
   HeapVector<Member<VideoTrackRecorder>> video_recorders_;
   HeapVector<Member<AudioTrackRecorder>> audio_recorders_;

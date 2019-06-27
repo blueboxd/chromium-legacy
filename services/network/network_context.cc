@@ -1553,7 +1553,7 @@ void NetworkContext::PreconnectSockets(
     const GURL& original_url,
     int32_t load_flags,
     bool privacy_mode_enabled,
-    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
+    const net::NetworkIsolationKey& network_isolation_key) {
   GURL url = GetHSTSRedirect(original_url);
 
   // |PreconnectSockets| may receive arguments from the renderer, which is not
@@ -1575,8 +1575,7 @@ void NetworkContext::PreconnectSockets(
   request_info.load_flags = load_flags;
   request_info.privacy_mode = privacy_mode_enabled ? net::PRIVACY_MODE_ENABLED
                                                    : net::PRIVACY_MODE_DISABLED;
-  if (network_isolation_key)
-    request_info.network_isolation_key = *network_isolation_key;
+  request_info.network_isolation_key = network_isolation_key;
 
   net::HttpTransactionFactory* factory =
       url_request_context_->http_transaction_factory();

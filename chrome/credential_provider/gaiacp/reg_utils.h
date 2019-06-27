@@ -51,6 +51,11 @@ HRESULT GetGlobalFlag(const base::string16& name,
 base::string16 GetGlobalFlagOrDefault(const base::string16& reg_key,
                                       const base::string16& default_value);
 
+// Gets global DWORD flag.  Returns |default_value| if no value is set or there
+// was an error fetching the flag.
+DWORD GetGlobalFlagOrDefault(const base::string16& reg_key,
+                             const DWORD& default_value);
+
 // Sets global flag. Used for testing purposes only.
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value);

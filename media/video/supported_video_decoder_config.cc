@@ -52,7 +52,7 @@ bool SupportedVideoDecoderConfig::Matches(
 
 // static
 bool IsVideoDecoderConfigSupported(
-    const std::vector<SupportedVideoDecoderConfig>& supported_configs,
+    const SupportedVideoDecoderConfigs& supported_configs,
     const VideoDecoderConfig& config) {
   for (const auto& c : supported_configs) {
     if (c.Matches(config))

@@ -23,6 +23,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "media/video/supported_video_decoder_config.h"
 
 namespace media {
 
@@ -41,6 +42,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter);
+
+  static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;

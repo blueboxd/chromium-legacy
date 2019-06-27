@@ -19,6 +19,7 @@
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/mojo/services/mojo_media_client.h"
+#include "media/video/supported_video_decoder_config.h"
 
 namespace media {
 
@@ -67,9 +68,12 @@ class GpuMojoMediaClient : public MojoMediaClient {
   AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
   CdmProxyFactoryCB cdm_proxy_factory_cb_;
 #if defined(OS_WIN)
-  base::Optional<std::vector<SupportedVideoDecoderConfig>>
-      d3d11_supported_configs_;
+  base::Optional<SupportedVideoDecoderConfigs> d3d11_supported_configs_;
 #endif  // defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+  base::Optional<SupportedVideoDecoderConfigs> chromeos_supported_configs_;
+#endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(GpuMojoMediaClient);
 };

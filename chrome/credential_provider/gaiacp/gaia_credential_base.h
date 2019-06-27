@@ -72,6 +72,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
     StdParentHandles parent_handles;
   };
 
+  // Returns true if "enable_ad_association" registry key is set to 1.
+  static bool IsAdToGoogleAssociationEnabled();
+
  protected:
   CGaiaCredentialBase();
   ~CGaiaCredentialBase();

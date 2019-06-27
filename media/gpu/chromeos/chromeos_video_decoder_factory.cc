@@ -50,6 +50,27 @@ std::unique_ptr<VideoDecoder> CreateChromeosVideoDecoder(
 }  // namespace
 
 // static
+SupportedVideoDecoderConfigs
+ChromeosVideoDecoderFactory::GetSupportedConfigs() {
+  SupportedVideoDecoderConfigs supported_configs;
+  SupportedVideoDecoderConfigs configs;
+
+#if BUILDFLAG(USE_VAAPI)
+  configs = VaapiVideoDecoder::GetSupportedConfigs();
+  supported_configs.insert(supported_configs.end(), configs.begin(),
+                           configs.end());
+#endif  // BUILDFLAG(USE_VAAPI)
+
+#if BUILDFLAG(USE_V4L2_CODEC)
+  configs = V4L2SliceVideoDecoder::GetSupportedConfigs();
+  supported_configs.insert(supported_configs.end(), configs.begin(),
+                           configs.end());
+#endif  // BUILDFLAG(USE_V4L2_CODEC)
+
+  return supported_configs;
+}
+
+// static
 std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,

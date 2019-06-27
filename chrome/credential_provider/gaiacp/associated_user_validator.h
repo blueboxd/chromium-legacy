@@ -130,6 +130,8 @@ class AssociatedUserValidator {
   // tests).
   bool IsDenyAccessUpdateBlocked() const;
 
+  bool HasInternetConnection() const;
+
  protected:
   // Returns the storage used for the instance pointer.
   static AssociatedUserValidator** GetInstanceStorage();
@@ -148,7 +150,6 @@ class AssociatedUserValidator {
  private:
   bool IsTokenHandleValidForUserInternal(const base::string16& sid);
 
-  bool HasInternetConnection() const;
   void CheckTokenHandleValidity(
       const std::map<base::string16, base::string16>& handles_to_verify);
   void StartTokenValidityQuery(const base::string16& sid,

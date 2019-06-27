@@ -22,6 +22,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/decode_surface_handler.h"
+#include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -43,6 +44,8 @@ class VaapiVideoDecoder : public media::VideoDecoder,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter);
+
+  static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
   // media::VideoDecoder implementation.
   std::string GetDisplayName() const override;

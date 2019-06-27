@@ -184,6 +184,13 @@ base::string16 GetGlobalFlagOrDefault(const base::string16& reg_key,
   return reg_value_buffer;
 }
 
+DWORD GetGlobalFlagOrDefault(const base::string16& reg_key,
+                             const DWORD& default_value) {
+  DWORD value;
+  HRESULT hr = GetGlobalFlag(reg_key, &value);
+  return SUCCEEDED(hr) ? value : default_value;
+}
+
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value) {
   return SetMachineRegString(kGcpRootKeyName, name, value);

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/video/supported_video_decoder_config.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -26,6 +27,8 @@ class VideoDecoder;
 class MEDIA_GPU_EXPORT ChromeosVideoDecoderFactory {
  public:
   using GetCommandBufferStubCB = base::OnceCallback<gpu::CommandBufferStub*()>;
+
+  static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
   // Create VideoDecoder instance that does convert the output VideoFrame
   // to mailbox-backed VideoFrame by CommandBufferHelper.

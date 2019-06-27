@@ -14,6 +14,7 @@
 #include "media/base/scopedfd_helper.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
+#include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
@@ -32,6 +33,13 @@ constexpr size_t kInputBufferMaxSizeFor1080p = 1024 * 1024;
 constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
 constexpr size_t kNumInputBuffers = 16;
 constexpr size_t kNumInputPlanes = 1;
+
+// Input format V4L2 fourccs this class supports.
+constexpr uint32_t kSupportedInputFourccs[] = {
+    V4L2_PIX_FMT_H264_SLICE,
+    V4L2_PIX_FMT_VP8_FRAME,
+    V4L2_PIX_FMT_VP9_FRAME,
+};
 
 // Checks an underlying video frame buffer of |frame| is valid for VIDIOC_DQBUF
 // that requires |target_num_fds| fds.
@@ -118,6 +126,18 @@ std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
   return base::WrapUnique<VideoDecoder>(new V4L2SliceVideoDecoder(
       std::move(client_task_runner), std::move(device), std::move(frame_pool),
       std::move(frame_converter)));
+}
+
+// static
+SupportedVideoDecoderConfigs V4L2SliceVideoDecoder::GetSupportedConfigs() {
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device)
+    return SupportedVideoDecoderConfigs();
+
+  return ConvertFromSupportedProfiles(
+      device->GetSupportedDecodeProfiles(base::size(kSupportedInputFourccs),
+                                         kSupportedInputFourccs),
+      false);
 }
 
 V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(

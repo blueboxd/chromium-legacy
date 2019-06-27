@@ -96,12 +96,6 @@ base::string16 GetEmailDomains() {
   return base::string16(&email_domains[0]);
 }
 
-bool EnableAdToGoogleAssociation() {
-  DWORD enable_ad_association = 0;
-  HRESULT hr = GetGlobalFlag(kRegEnableADAssociation, &enable_ad_association);
-  return SUCCEEDED(hr) && enable_ad_association;
-}
-
 // Use WinHttpUrlFetcher to communicate with the admin sdk and fetch the active
 // directory UPN from the admin configured custom attributes.
 HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
@@ -316,7 +310,7 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     LOGFN(INFO) << "Found existing SID created in GCPW registry entry = "
                 << sid;
     has_existing_user_sid = true;
-  } else if (EnableAdToGoogleAssociation() &&
+  } else if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
              OSUserManager::Get()->IsDeviceDomainJoined()) {
     LOGFN(INFO) << "No existing SID found in the GCPW registry.";
 
@@ -606,6 +600,12 @@ HRESULT CreateNewUser(OSUserManager* manager,
 CGaiaCredentialBase::UIProcessInfo::UIProcessInfo() {}
 
 CGaiaCredentialBase::UIProcessInfo::~UIProcessInfo() {}
+
+// static
+bool CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() {
+  DWORD enable_ad_association = 0;
+  return GetGlobalFlagOrDefault(kRegEnableADAssociation, enable_ad_association);
+}
 
 // static
 HRESULT CGaiaCredentialBase::OnDllRegisterServer() {

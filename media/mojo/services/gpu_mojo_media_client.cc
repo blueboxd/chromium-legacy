@@ -18,10 +18,10 @@
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
+#include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/gpu/ipc/service/vda_video_decoder.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
-#include "media/video/supported_video_decoder_config.h"
 #include "media/video/video_decode_accelerator.h"
 
 #if defined(OS_ANDROID)
@@ -149,7 +149,18 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   }
   supported_config_map[VideoDecoderImplementation::kAlternate] =
       *d3d11_supported_configs_;
-#endif
+
+#elif defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
+    if (!chromeos_supported_configs_) {
+      chromeos_supported_configs_ =
+          ChromeosVideoDecoderFactory::GetSupportedConfigs();
+    }
+    supported_config_map[VideoDecoderImplementation::kDefault] =
+        *chromeos_supported_configs_;
+    return supported_config_map;
+  }
+#endif  // defined(OS_WIN)
 
   auto& default_configs =
       supported_config_map[VideoDecoderImplementation::kDefault];
@@ -164,15 +175,10 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   bool allow_encrypted =
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS;
-  for (const auto& supported_profile : capabilities.supported_profiles) {
-    default_configs.push_back(SupportedVideoDecoderConfig(
-        supported_profile.profile,           // profile_min
-        supported_profile.profile,           // profile_max
-        supported_profile.min_resolution,    // coded_size_min
-        supported_profile.max_resolution,    // coded_size_max
-        allow_encrypted,                     // allow_encrypted
-        supported_profile.encrypted_only));  // require_encrypted
-  }
+  SupportedVideoDecoderConfigs supported_configs = ConvertFromSupportedProfiles(
+      capabilities.supported_profiles, allow_encrypted);
+  default_configs.insert(default_configs.end(), supported_configs.begin(),
+                         supported_configs.end());
 
   return supported_config_map;
 #endif  // defined(OS_ANDROID)

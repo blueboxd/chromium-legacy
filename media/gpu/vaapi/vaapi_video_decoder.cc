@@ -15,6 +15,7 @@
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/format_utils.h"
+#include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_h264_accelerator.h"
@@ -64,6 +65,12 @@ std::unique_ptr<VideoDecoder> VaapiVideoDecoder::Create(
   return base::WrapUnique<VideoDecoder>(
       new VaapiVideoDecoder(std::move(client_task_runner),
                             std::move(frame_pool), std::move(frame_converter)));
+}
+
+// static
+SupportedVideoDecoderConfigs VaapiVideoDecoder::GetSupportedConfigs() {
+  return ConvertFromSupportedProfiles(
+      VaapiWrapper::GetSupportedDecodeProfiles(), false);
 }
 
 VaapiVideoDecoder::VaapiVideoDecoder(

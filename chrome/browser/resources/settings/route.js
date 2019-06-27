@@ -264,8 +264,7 @@ cr.define('settings', function() {
     }
 
     // TODO(hsuregan): Remove once this file is forked.
-    if (loadTimeData.valueExists('showOSSettings') &&
-        loadTimeData.getBoolean('showOSSettings')) {
+    if (loadTimeData.getBoolean('showOSSettings')) {
       r.PERSONALIZATION =
           r.BASIC.createSection('/personalization', 'personalization');
     }
@@ -510,7 +509,10 @@ cr.define('settings', function() {
     // "About" is the only section in About, but we still need to create the
     // route in order to show the subpage on Chrome OS.
     r.ABOUT_ABOUT = r.ABOUT.createSection('/help/about', 'about');
-    r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
+    // TODO(aee): Remove once this file is forked.
+    if (loadTimeData.getBoolean('showOSSettings')) {
+      r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
+    }
     // </if>
 
     return r;

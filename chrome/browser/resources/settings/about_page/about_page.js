@@ -63,8 +63,19 @@ Polymer({
       value: false,
     },
 
-    /** @private */
     showCrostini: Boolean,
+
+    /**
+     * When the SplitSettings feature is disabled, the about page shows the OS-
+     * specific parts. When SplitSettings is enabled, the OS-specific parts
+     * will only show up in chrome://os-settings/help.
+     * TODO(aee): remove after SplitSettings feature flag is removed.
+     * @private
+     */
+    showOsSettings_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('showOSSettings'),
+    },
 
     /** @private */
     showCrostiniLicense_: {
@@ -191,6 +202,10 @@ Polymer({
         settings.LifetimeBrowserProxyImpl.getInstance();
 
     // <if expr="chromeos">
+    if (!this.showOsSettings_) {
+      return;
+    }
+
     this.addEventListener('target-channel-changed', e => {
       this.targetChannel_ = e.detail;
     });
@@ -620,7 +635,8 @@ Polymer({
    * @private
    */
   shouldShowRegulatoryOrSafetyInfo_: function() {
-    return this.shouldShowSafetyInfo_() || this.shouldShowRegulatoryInfo_();
+    return this.showOsSettings_ &&
+        (this.shouldShowSafetyInfo_() || this.shouldShowRegulatoryInfo_());
   },
 
   /** @private */

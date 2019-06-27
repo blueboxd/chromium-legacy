@@ -103,15 +103,19 @@
               src URL -->
             <!-- Set the icon from the iconset (when it's obsolete/EOL and
               when update is done) or set the src (when it's updating). -->
+<if expr="not chromeos">
             <div class="icon-container"
                 hidden="[[!shouldShowIcons_(showUpdateStatus_)]]">
               <iron-icon
-<if expr="not chromeos">
                   icon$="[[getUpdateStatusIcon_(
                       obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
                   src="[[getThrobberSrcIfUpdating_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
 </if>
 <if expr="chromeos">
+            <div class="icon-container"
+                hidden="[[!shouldShowIcons_(showUpdateStatus_,
+                    showOsSettings_)]]">
+              <iron-icon
                   icon$="[[getUpdateStatusIcon_(
                       hasEndOfLife_, currentUpdateStatusEvent_)]]"
                   src="[[getThrobberSrcIfUpdating_(hasEndOfLife_, currentUpdateStatusEvent_)]]">
@@ -223,7 +227,9 @@
 <if expr="chromeos">
           <cr-link-row class="hr" id="detailed-build-info-trigger"
               on-click="onDetailedBuildInfoTap_"
-              label="$i18n{aboutDetailedBuildInfo}"></cr-link-row>
+              label="$i18n{aboutDetailedBuildInfo}"
+              hidden$="[[!showOsSettings_]]">
+          </cr-link-row>
 </if>
           <cr-link-row class="hr" on-click="onManagementPageTap_"
               start-icon="cr:domain" label="$i18n{managementPage}"
@@ -249,10 +255,9 @@
         <div class="info-section">
           <div class="secondary">$i18nRaw{aboutProductLicense}</div>
 <if expr="chromeos">
-          <div class="secondary"
+          <div id="crostiniLicense" class="secondary"
               inner-h-t-m-l="[[getAboutProductOsLicense_(
-                  showCrostiniLicense_)]]">
-          </div>
+                  showCrostiniLicense_)]]" hidden$="[[!showOsSettings_]]"></div>
 </if>
         </div>
 <if expr="_google_chrome">
@@ -261,7 +266,8 @@
       </div>
 <if expr="chromeos">
       <div class="settings-box padded block" id="regulatoryInfo"
-          hidden$="[[!shouldShowRegulatoryOrSafetyInfo_(regulatoryInfo_)]]">
+          hidden$="[[!shouldShowRegulatoryOrSafetyInfo_(regulatoryInfo_,
+              showOsSettings_)]]">
 <if expr="_google_chrome">
         <div class="secondary" hidden$="[[!shouldShowSafetyInfo_()]]">
           <a target="_blank" href="$i18n{aboutProductSafetyURL}">

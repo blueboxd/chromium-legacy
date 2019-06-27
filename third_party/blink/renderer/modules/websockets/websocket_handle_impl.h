@@ -34,6 +34,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
@@ -51,7 +52,7 @@ class WebSocketHandleImpl
                const Vector<String>& protocols,
                const KURL& site_for_cookies,
                const String& user_agent_override,
-               WebSocketHandleClient*,
+               WebSocketChannelImpl*,
                base::SingleThreadTaskRunner*) override;
   void Send(bool fin, MessageType, const char* data, wtf_size_t) override;
   void AddReceiveFlowControlQuota(int64_t quota) override;
@@ -81,7 +82,7 @@ class WebSocketHandleImpl
   void OnClosingHandshake() override;
   void OnFailChannel(const String& reason) override;
 
-  WebSocketHandleClient* client_;
+  WeakPersistent<WebSocketChannelImpl> channel_;
 
   network::mojom::blink::WebSocketPtr websocket_;
   mojo::Binding<network::mojom::blink::WebSocketHandshakeClient>

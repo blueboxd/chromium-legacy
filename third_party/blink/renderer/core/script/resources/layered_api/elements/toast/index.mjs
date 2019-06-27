@@ -10,6 +10,8 @@
  * @package
  */
 
+import * as reflection from '../internal/reflection.mjs';
+
 const DEFAULT_DURATION = 3000;
 
 function stylesheetFactory() {
@@ -77,14 +79,6 @@ export class StdToastElement extends HTMLElement {
     this.toggleAttribute('open', force);
   }
 
-  get open() {
-    return this.hasAttribute('open');
-  }
-
-  set open(val) {
-    this.toggleAttribute('open', Boolean(val));
-  }
-
   attributeChangedCallback(name, oldValue, newValue) {
     switch (name) {
       case 'open':
@@ -99,6 +93,9 @@ export class StdToastElement extends HTMLElement {
     }
   }
 }
+
+reflection.installBool(StdToastElement.prototype, 'open');
+
 customElements.define('std-toast', StdToastElement);
 
 delete StdToastElement.prototype.attributeChangedCallback;

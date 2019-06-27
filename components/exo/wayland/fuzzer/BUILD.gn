@@ -49,6 +49,13 @@ wayland_templater("protocol_graph") {
   protocols = kDefaultWaylandProtocols
 }
 
+wayland_templater("protocol_docs") {
+  sources = [
+    "misc/docs.md.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
+
 wayland_templater("actions_tmpl") {
   sources = [
     "actions.proto.tmpl",

@@ -8,18 +8,11 @@ option optimize_for = LITE_RUNTIME;
 
 package app_list;
 
-// Configuration for an instance of |RecurrenceRanker|.
+// Configuration for a subclass of RecurrencePredictor.
 //
 // Warning: this cannot contain any map fields, as they cannot be relied upon
 // for a consistent hash.
-message RecurrenceRankerConfigProto {
-  required uint32 min_seconds_between_saves = 1;
-
-  required uint32 target_limit = 2;
-  required float target_decay = 3;
-  required uint32 condition_limit = 4;
-  required float condition_decay = 5;
-
+message RecurrencePredictorConfigProto {
   // Config for a fake predictor, used for testing.
   message FakePredictorConfig {}
 
@@ -54,11 +47,27 @@ message RecurrenceRankerConfigProto {
   }
 
   // The choice of which kind of predictor to use, and its configuration.
-  oneof predictor_config {
-    FakePredictorConfig fake_predictor = 10001;
-    FrecencyPredictorConfig frecency_predictor = 10002;
-    DefaultPredictorConfig default_predictor = 10003;
-    HourBinPredictorConfig hour_bin_predictor = 10004;
-    ConditionalFrequencyPredictorConfig conditional_frequency_predictor = 10005;
+  oneof predictor {
+    FakePredictorConfig fake_predictor = 1;
+    FrecencyPredictorConfig frecency_predictor = 2;
+    DefaultPredictorConfig default_predictor = 3;
+    HourBinPredictorConfig hour_bin_predictor = 4;
+    ConditionalFrequencyPredictorConfig conditional_frequency_predictor = 5;
   }
+}
+
+// Configuration for an instance of RecurrenceRanker.
+//
+// Warning: this cannot contain any map fields, as they cannot be relied upon
+// for a consistent hash.
+message RecurrenceRankerConfigProto {
+  required uint32 min_seconds_between_saves = 1;
+
+  required uint32 target_limit = 2;
+  required float target_decay = 3;
+  required uint32 condition_limit = 4;
+  required float condition_decay = 5;
+
+  // The predictor to use for this ranker, and its configuration.
+  required RecurrencePredictorConfigProto predictor = 6;
 }

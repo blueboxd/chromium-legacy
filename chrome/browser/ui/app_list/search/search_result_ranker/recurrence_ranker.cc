@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
 
 namespace app_list {
 namespace {
@@ -71,26 +72,6 @@ std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
     return nullptr;
   }
   return proto;
-}
-
-// Returns a new, configured instance of the predictor defined in |config|.
-std::unique_ptr<RecurrencePredictor> MakePredictor(
-    const RecurrenceRankerConfigProto& config) {
-  if (config.has_fake_predictor())
-    return std::make_unique<FakePredictor>(config.fake_predictor());
-  if (config.has_default_predictor())
-    return std::make_unique<DefaultPredictor>(config.default_predictor());
-  if (config.has_conditional_frequency_predictor())
-    return std::make_unique<ConditionalFrequencyPredictor>(
-        config.conditional_frequency_predictor());
-  if (config.has_frecency_predictor())
-    return std::make_unique<FrecencyPredictor>(config.frecency_predictor());
-  if (config.has_hour_bin_predictor())
-    return std::make_unique<HourBinPredictor>(config.hour_bin_predictor());
-
-  LogConfigurationError(ConfigurationError::kInvalidPredictor);
-  NOTREACHED();
-  return nullptr;
 }
 
 std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
@@ -163,9 +144,10 @@ RecurrenceRanker::RecurrenceRanker(const base::FilePath& filepath,
     // Ephemeral users have no persistent storage, so we don't try and load the
     // proto from disk. Instead, we fall back on using a default (frecency)
     // predictor, which is still useful with only data from the current session.
-    predictor_ = std::make_unique<DefaultPredictor>(config.default_predictor());
+    predictor_ = std::make_unique<DefaultPredictor>(
+        RecurrencePredictorConfigProto::DefaultPredictorConfig());
   } else {
-    predictor_ = MakePredictor(config);
+    predictor_ = MakePredictor(config.predictor());
 
     // Load the proto from disk and finish initialisation in
     // |OnLoadProtoFromDiskComplete|.

@@ -35,7 +35,7 @@ class ASH_EXPORT KioskNextShelfView : public ShelfView {
   void Init() override;
   void CalculateIdealBounds() override;
   std::unique_ptr<BackButton> CreateBackButton() override;
-  std::unique_ptr<AppListButton> CreateHomeButton() override;
+  std::unique_ptr<HomeButton> CreateHomeButton() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskNextShelfView);

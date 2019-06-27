@@ -133,7 +133,7 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
     const web_app::InstallOptions& install_options =
         front->task->install_options();
 
-    if (install_options.always_update) {
+    if (install_options.force_reinstall) {
       StartInstallationTask(std::move(front));
       return;
     }

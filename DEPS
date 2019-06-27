@@ -142,7 +142,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4e2033e84374e3487fa05dd64fd4da143d4498ea',
+  'skia_revision': '98861f69c63d1c666902cb0aa9bb13ea77ab1c0e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -193,7 +193,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '81445c034aca36040b6311dc71a2cbed9548b262',
+  'freetype_revision': '7b1c7585d7ab929d9b29932d6697a22149162c13',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -1405,7 +1405,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@02daa7efc59a9f4305f515933721be36bdd46573',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d712efc691b0957e417c006d14f0f93b6979782d',
     'condition': 'checkout_src_internal',
   },
 

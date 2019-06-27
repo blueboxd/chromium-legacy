@@ -27,8 +27,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_bubble_view_test_api.h"
@@ -390,7 +390,7 @@ class ShelfViewTest : public AshTestBase {
   }
 
   // Similar to SimulateViewPressed, but the index must not be for the app list,
-  // since the app list button is not a ShelfAppButton.
+  // since the home button is not a ShelfAppButton.
   ShelfAppButton* SimulateButtonPressed(ShelfView::Pointer pointer,
                                         int button_index) {
     ShelfAppButton* button = test_api_->GetButton(button_index);
@@ -723,7 +723,7 @@ TEST_P(ShelfViewTextDirectionTest, GetIdealBoundsOfItemIcon) {
   const gfx::Rect bounds_3 = shelf_view_->GetIdealBoundsOfItemIcon(id_3);
 
   EXPECT_EQ(shelf_view_->GetIdealBoundsOfItemIcon(ShelfID(kAppListId)),
-            shelf_view_->GetAppListButton()->GetMirroredBounds());
+            shelf_view_->GetHomeButton()->GetMirroredBounds());
   EXPECT_EQ(shelf_view_->GetIdealBoundsOfItemIcon(ShelfID(kBackButtonId)),
             shelf_view_->GetBackButton()->GetMirroredBounds());
 
@@ -1339,7 +1339,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
 TEST_F(ShelfViewTest, ButtonTitlesTest) {
   AddButtonsUntilOverflow();
   EXPECT_EQ(base::UTF8ToUTF16("Launcher"),
-            shelf_view_->GetAppListButton()->GetAccessibleName());
+            shelf_view_->GetHomeButton()->GetAccessibleName());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE),
             shelf_view_->GetBackButton()->GetAccessibleName());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME),
@@ -1402,10 +1402,10 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   // |AddItem| call seems to sometimes be missing some re-layout steps. We
   // should find out what's going on there.
   shelf_view_->UpdateVisibleShelfItemBoundsUnion();
-  const AppListButton* app_list_button = shelf_view_->GetAppListButton();
+  const HomeButton* home_button = shelf_view_->GetHomeButton();
 
   // Make sure we're not showing the app list.
-  EXPECT_FALSE(app_list_button->IsShowingAppList())
+  EXPECT_FALSE(home_button->IsShowingAppList())
       << "We should not be showing the app list";
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
@@ -1418,10 +1418,10 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
         << "ShelfView tries to hide on button " << i;
   }
 
-  // The tooltip should hide if placed in between the app list button and the
+  // The tooltip should hide if placed in between the home button and the
   // first shelf button.
-  const int left = app_list_button->bounds().right();
-  // Find the first shelf button that's to the right of the app list button.
+  const int left = home_button->bounds().right();
+  // Find the first shelf button that's to the right of the home button.
   int right = 0;
   for (int i = 0; i < test_api_->GetButtonCount(); ++i) {
     ShelfAppButton* button = test_api_->GetButton(i);
@@ -1433,13 +1433,13 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   }
   const int center_x =
       shelf_view_->GetMirroredXInView(left + (right - left) / 2);
-  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
-      center_x, app_list_button->GetMirroredBounds().left_center().y())))
-      << "Tooltip should hide between app list button and first shelf item";
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
+      gfx::Point(center_x, home_button->GetMirroredBounds().left_center().y())))
+      << "Tooltip should hide between home button and first shelf item";
 
   // The tooltip should not hide on the app-list button.
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-      app_list_button->GetMirroredBounds().CenterPoint()));
+      home_button->GetMirroredBounds().CenterPoint()));
 
   // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
   gfx::Rect app_button_rect = GetButtonByID(app_button_id)->GetMirroredBounds();
@@ -1458,7 +1458,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 
     all_area.Union(button->GetMirroredBounds());
   }
-  all_area.Union(shelf_view_->GetAppListButton()->GetMirroredBounds());
+  all_area.Union(shelf_view_->GetHomeButton()->GetMirroredBounds());
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(all_area.origin()));
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
       gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));
@@ -1487,10 +1487,10 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
         << "ShelfView tries to hide on button " << i;
   }
 
-  // The tooltip should hide on the app list button if the app list is visible.
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
+  // The tooltip should hide on the home button if the app list is visible.
+  HomeButton* home_button = shelf_view_->GetHomeButton();
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      app_list_button->GetMirroredBounds().CenterPoint()));
+      home_button->GetMirroredBounds().CenterPoint()));
 }
 
 // Test that by moving the mouse cursor off the button onto the bubble it closes
@@ -1505,8 +1505,8 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Move the mouse over the button and check that it is visible.
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  gfx::Rect bounds = app_list_button->GetBoundsInScreen();
+  HomeButton* home_button = shelf_view_->GetHomeButton();
+  gfx::Rect bounds = home_button->GetBoundsInScreen();
   generator->MoveMouseTo(bounds.CenterPoint());
   // Wait for the timer to go off.
   base::RunLoop().RunUntilIdle();
@@ -1533,7 +1533,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
 }
 
 // Resizing shelf view while an add animation without fade-in is running,
-// which happens when overflow happens. App list button should end up in its
+// which happens when overflow happens. Home button should end up in its
 // new ideal bounds.
 TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   // All buttons should be visible.
@@ -1559,12 +1559,12 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   // Finish the animation.
   test_api_->RunMessageLoopUntilAnimationsDone();
 
-  // App list button should ends up in its new ideal bounds.
-  const int app_list_button_index = test_api_->GetButtonCount() - 1;
+  // Home button should ends up in its new ideal bounds.
+  const int home_button_index = test_api_->GetButtonCount() - 1;
   const gfx::Rect& app_list_ideal_bounds =
-      test_api_->GetIdealBoundsByIndex(app_list_button_index);
+      test_api_->GetIdealBoundsByIndex(home_button_index);
   const gfx::Rect& app_list_bounds =
-      test_api_->GetBoundsByIndex(app_list_button_index);
+      test_api_->GetBoundsByIndex(home_button_index);
   EXPECT_EQ(app_list_ideal_bounds, app_list_bounds);
 }
 
@@ -2109,7 +2109,7 @@ TEST_F(ShelfViewTest, NoContextMenuOnBackButton) {
 
   // Enable tablet mode to show the back button. Wait for tablet mode animations
   // to finish in order for the BackButton to move out from under the
-  // AppListButton.
+  // HomeButton.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
 
@@ -2238,11 +2238,11 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
   EXPECT_EQ(first_app_id, model_->items()[last_index].id);
 }
 
-// Tests that the app list button does shows a context menu on right click.
-TEST_F(ShelfViewTest, AppListButtonDoesShowContextMenu) {
+// Tests that the home button does shows a context menu on right click.
+TEST_F(ShelfViewTest, HomeButtonDoesShowContextMenu) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  const AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
+  const HomeButton* home_button = shelf_view_->GetHomeButton();
+  generator->MoveMouseTo(home_button->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();
   EXPECT_TRUE(test_api_->CloseMenu());
 }
@@ -2305,11 +2305,11 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
   EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   // Now that the apps + overflow button are centered over the available space
   // on the shelf, check that the the distance between the left app and the
-  // app list button is equal to the distance between the overflow button
+  // home button is equal to the distance between the overflow button
   // and the status area.
   ExpectWithinOnePixel(
       app_buttons[0]->GetBoundsInScreen().x() -
-          shelf_view_->GetAppListButton()->GetBoundsInScreen().right(),
+          shelf_view_->GetHomeButton()->GetBoundsInScreen().right(),
       status_area_->GetBoundsInScreen().x() -
           shelf_view_->GetOverflowButton()->GetBoundsInScreen().right());
 }
@@ -2532,14 +2532,14 @@ class ShelfViewVisibleBoundsTest : public ShelfViewTest,
         if (button->GetVisible())
           EXPECT_TRUE(visible_bounds.Contains(button->GetBoundsInScreen()));
       }
-    CheckAppListButtonIsInBounds();
+    CheckHomeButtonIsInBounds();
   }
 
-  void CheckAppListButtonIsInBounds() {
+  void CheckHomeButtonIsInBounds() {
     gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();
-    gfx::Rect app_list_button_bounds =
-        shelf_view_->GetAppListButton()->GetBoundsInScreen();
-    EXPECT_TRUE(visible_bounds.Contains(app_list_button_bounds));
+    gfx::Rect home_button_bounds =
+        shelf_view_->GetHomeButton()->GetBoundsInScreen();
+    EXPECT_TRUE(visible_bounds.Contains(home_button_bounds));
   }
 
  private:
@@ -2671,15 +2671,15 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
  protected:
-  void InitAppListButtonInkDrop() {
-    app_list_button_ = shelf_view_->GetAppListButton();
+  void InitHomeButtonInkDrop() {
+    home_button_ = shelf_view_->GetHomeButton();
 
-    auto app_list_button_ink_drop =
+    auto home_button_ink_drop =
         std::make_unique<InkDropSpy>(std::make_unique<views::InkDropImpl>(
-            app_list_button_, app_list_button_->size()));
-    app_list_button_ink_drop_ = app_list_button_ink_drop.get();
-    views::test::InkDropHostViewTestApi(app_list_button_)
-        .SetInkDrop(std::move(app_list_button_ink_drop), false);
+            home_button_, home_button_->size()));
+    home_button_ink_drop_ = home_button_ink_drop.get();
+    views::test::InkDropHostViewTestApi(home_button_)
+        .SetInkDrop(std::move(home_button_ink_drop), false);
   }
 
   void InitBrowserButtonInkDrop() {
@@ -2693,8 +2693,8 @@ class ShelfViewInkDropTest : public ShelfViewTest {
         .SetInkDrop(std::move(browser_button_ink_drop));
   }
 
-  AppListButton* app_list_button_ = nullptr;
-  InkDropSpy* app_list_button_ink_drop_ = nullptr;
+  HomeButton* home_button_ = nullptr;
+  InkDropSpy* home_button_ink_drop_ = nullptr;
   ShelfAppButton* browser_button_ = nullptr;
   InkDropSpy* browser_button_ink_drop_ = nullptr;
 
@@ -2702,34 +2702,34 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   DISALLOW_COPY_AND_ASSIGN(ShelfViewInkDropTest);
 };
 
-// Tests that changing visibility of the app list transitions app list button's
+// Tests that changing visibility of the app list transitions home button's
 // ink drop states correctly.
-TEST_F(ShelfViewInkDropTest, AppListButtonWhenVisibilityChanges) {
-  InitAppListButtonInkDrop();
+TEST_F(ShelfViewInkDropTest, HomeButtonWhenVisibilityChanges) {
+  InitHomeButtonInkDrop();
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
 
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
   GetAppListTestHelper()->DismissAndRunLoop();
 
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::DEACTIVATED));
 }
 
-// Tests that when the app list is hidden, mouse press on the app list button,
+// Tests that when the app list is hidden, mouse press on the home button,
 // which shows the app list, transitions ink drop states correctly. Also, tests
 // that mouse drag and mouse release does not affect the ink drop state.
-TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
-  InitAppListButtonInkDrop();
+TEST_F(ShelfViewInkDropTest, HomeButtonMouseEventsWhenHidden) {
+  InitHomeButtonInkDrop();
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(home_button_->GetBoundsInScreen().CenterPoint());
 
   // Mouse press on the button, which shows the app list, should end up in the
   // activated state.
@@ -2737,71 +2737,69 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING,
                           views::InkDropState::ACTIVATED));
 
   // Dragging mouse out and back and releasing the button should not change the
   // ink drop state.
-  generator->MoveMouseBy(app_list_button_->width(), 0);
-  generator->MoveMouseBy(-app_list_button_->width(), 0);
+  generator->MoveMouseBy(home_button_->width(), 0);
+  generator->MoveMouseBy(-home_button_->width(), 0);
   generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(), IsEmpty());
 }
 
-// Tests that when the app list is visible, mouse press on the app list button,
+// Tests that when the app list is visible, mouse press on the home button,
 // which dismisses the app list, transitions ink drop states correctly. Also,
 // tests that mouse drag and mouse release does not affect the ink drop state.
-TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
-  InitAppListButtonInkDrop();
+TEST_F(ShelfViewInkDropTest, HomeButtonMouseEventsWhenVisible) {
+  InitHomeButtonInkDrop();
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
   // Mouse press on the button, which dismisses the app list, should end up in
   // the hidden state.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(home_button_->GetBoundsInScreen().CenterPoint());
   generator->PressLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING,
                           views::InkDropState::DEACTIVATED,
                           views::InkDropState::HIDDEN));
 
   // Dragging mouse out and back and releasing the button should not change the
   // ink drop state.
-  generator->MoveMouseBy(app_list_button_->width(), 0);
-  generator->MoveMouseBy(-app_list_button_->width(), 0);
+  generator->MoveMouseBy(home_button_->width(), 0);
+  generator->MoveMouseBy(-home_button_->width(), 0);
   generator->ReleaseLeftButton();
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(), IsEmpty());
 }
 
-// Tests that when the app list is hidden, tapping on the app list button
+// Tests that when the app list is hidden, tapping on the home button
 // transitions ink drop states correctly.
-TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
-  InitAppListButtonInkDrop();
+TEST_F(ShelfViewInkDropTest, HomeButtonGestureTapWhenHidden) {
+  InitHomeButtonInkDrop();
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(home_button_->GetBoundsInScreen().CenterPoint());
 
   // Touch press on the button should end up in the pending state.
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
   // Touch release on the button, which shows the app list, should end up in the
@@ -2810,111 +2808,105 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_TRIGGERED,
                           views::InkDropState::ACTIVATED));
 }
 
-// Tests that when the app list is visible, tapping on the app list button
+// Tests that when the app list is visible, tapping on the home button
 // transitions ink drop states correctly.
-TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
-  InitAppListButtonInkDrop();
+TEST_F(ShelfViewInkDropTest, HomeButtonGestureTapWhenVisible) {
+  InitHomeButtonInkDrop();
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
 
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
   // Touch press and release on the button, which dismisses the app list, should
   // end up in the hidden state.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator->MoveMouseTo(home_button_->GetBoundsInScreen().CenterPoint());
   generator->PressTouch();
   generator->ReleaseTouch();
   GetAppListTestHelper()->WaitUntilIdle();
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::DEACTIVATED,
                           views::InkDropState::HIDDEN));
 }
 
-// Tests that when the app list is hidden, tapping down on the app list button
+// Tests that when the app list is hidden, tapping down on the home button
 // and dragging the touch point transitions ink drop states correctly.
-TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
-  InitAppListButtonInkDrop();
+TEST_F(ShelfViewInkDropTest, HomeButtonGestureTapDragWhenHidden) {
+  InitHomeButtonInkDrop();
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  gfx::Point touch_location =
-      app_list_button_->GetBoundsInScreen().CenterPoint();
+  gfx::Point touch_location = home_button_->GetBoundsInScreen().CenterPoint();
   generator->MoveMouseTo(touch_location);
 
   // Touch press on the button should end up in the pending state.
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
   // Dragging the touch point should hide the pending ink drop.
-  touch_location.Offset(app_list_button_->width(), 0);
+  touch_location.Offset(home_button_->width(), 0);
   generator->MoveTouch(touch_location);
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_TRIGGERED));
 
   // Touch release should not change the ink drop state.
   generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(), IsEmpty());
 }
 
-// Tests that when the app list is visible, tapping down on the app list button
+// Tests that when the app list is visible, tapping down on the home button
 // and dragging the touch point will not change ink drop states.
-TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
-  InitAppListButtonInkDrop();
+TEST_F(ShelfViewInkDropTest, HomeButtonGestureTapDragWhenVisible) {
+  InitHomeButtonInkDrop();
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
 
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
   // Touch press on the button, dragging the touch point, and releasing, which
   // will not dismisses the app list, should end up in the |ACTIVATED| state.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  gfx::Point touch_location =
-      app_list_button_->GetBoundsInScreen().CenterPoint();
+  gfx::Point touch_location = home_button_->GetBoundsInScreen().CenterPoint();
   generator->MoveMouseTo(touch_location);
 
   // Touch press on the button should not change the ink drop state.
   generator->PressTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(), IsEmpty());
 
   // Dragging the touch point should not hide the pending ink drop.
-  touch_location.Offset(app_list_button_->width(), 0);
+  touch_location.Offset(home_button_->width(), 0);
   generator->MoveTouch(touch_location);
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(), IsEmpty());
 
   // Touch release should not change the ink drop state.
   generator->ReleaseTouch();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
+            home_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(home_button_ink_drop_->GetAndResetRequestedStates(), IsEmpty());
 }
 
 // Tests that clicking on a shelf item that does not show a menu transitions ink
@@ -3081,9 +3073,9 @@ TEST_F(ShelfViewInkDropTest, DismissingMenuWithDoubleClickDoesntShowInkDrop) {
 
   views::Button* button = browser_button_;
 
-  // Show a context menu on the app list button.
+  // Show a context menu on the home button.
   generator->MoveMouseTo(
-      shelf_view_->GetAppListButton()->GetBoundsInScreen().CenterPoint());
+      shelf_view_->GetHomeButton()->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();
   generator->ReleaseRightButton();
   EXPECT_TRUE(shelf_view_->IsShowingMenu());
@@ -3606,7 +3598,7 @@ TEST_F(ShelfViewFocusTest, Basic) {
 
   // The home button is focused initially because the back button is only
   // visible in tablet mode.
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
 }
 
 // Tests that the expected views have focus when cycling through shelf items
@@ -3627,7 +3619,7 @@ TEST_F(ShelfViewFocusTest, ForwardCycling) {
 TEST_F(ShelfViewFocusTest, BackwardCycling) {
   // The first element is currently focused. Let's advance to the last element
   // first.
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
   DoTab();
   DoTab();
   DoTab();
@@ -3651,7 +3643,7 @@ TEST_F(ShelfViewFocusTest, OverflowNotActivatedWhenOpened) {
 // Verifies that focus moves as expected between the shelf and the status area.
 TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   // The first element of the shelf (the home button) is focused at start.
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
 
   // Focus the next few elements.
   DoTab();
@@ -3680,7 +3672,7 @@ TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   // And keep going forward, now we should be cycling back to the first shelf
   // element.
   DoTab();
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
   ExpectNotFocused(status_area_);
 }
 
@@ -3731,14 +3723,14 @@ TEST_F(ShelfViewOverflowFocusTest, Basic) {
 
   EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
   EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
 }
 
 TEST_F(ShelfViewOverflowFocusTest, OpenOverflow) {
   OpenOverflow();
   ASSERT_TRUE(overflow_shelf_test_api_);
   EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
 }
 
 // Tests that when cycling through the items with tab, the items in the overflow
@@ -3845,7 +3837,7 @@ TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   // Focus the shelf again.
   DoTab();
   ExpectFocused(shelf_view_);
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
   ExpectNotFocused(status_area_);
 
   // Now advance to the last item on the main shelf.
@@ -3883,7 +3875,7 @@ TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   while (status_area_->GetWidget()->IsActive())
     DoTab();
   // This should have brought focus to the first element on the shelf.
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
 }
 
 class KioskNextShelfViewTest : public ShelfViewTest {
@@ -3937,7 +3929,7 @@ TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
               Shell::Get()->kiosk_next_shell_controller()->shelf_model());
 
   // The home and back buttons are always visible.
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->GetVisible());
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->GetVisible());
   EXPECT_TRUE(shelf_view_->GetBackButton()->GetVisible());
 
   ASSERT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
@@ -3992,7 +3984,7 @@ TEST_F(KioskNextShelfViewTest, ControlButtonsCentered) {
     EXPECT_TRUE(expected_button_area_bounds.Contains(back_button_bounds));
 
     const gfx::Rect home_button_bounds =
-        shelf_view_->GetAppListButton()->ideal_bounds();
+        shelf_view_->GetHomeButton()->ideal_bounds();
     EXPECT_FALSE(home_button_bounds.IsEmpty());
     EXPECT_TRUE(expected_button_area_bounds.Contains(home_button_bounds));
 

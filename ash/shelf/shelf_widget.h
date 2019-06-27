@@ -23,7 +23,7 @@ class ApplicationDragAndDropHost;
 
 namespace ash {
 enum class AnimationChangeType;
-class AppListButton;
+class HomeButton;
 class BackButton;
 class FocusCycler;
 class LoginShelfView;
@@ -87,7 +87,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
 
   // Returns the button that opens the app launcher.
-  AppListButton* GetAppListButton() const;
+  HomeButton* GetHomeButton() const;
 
   // Returns the browser back button.
   BackButton* GetBackButton() const;

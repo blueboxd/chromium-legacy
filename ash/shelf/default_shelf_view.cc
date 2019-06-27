@@ -6,8 +6,8 @@
 
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -96,7 +96,7 @@ void DefaultShelfView::CalculateBackAndHomeButtonsIdealBounds() {
     y = shelf()->PrimaryAxisValue(y, y + kShelfControlSize + button_spacing);
   }
 
-  GetAppListButton()->set_ideal_bounds(gfx::Rect(
+  GetHomeButton()->set_ideal_bounds(gfx::Rect(
       x, y, shelf()->PrimaryAxisValue(kShelfControlSize, kShelfButtonSize),
       shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfControlSize)));
 }
@@ -150,14 +150,14 @@ void DefaultShelfView::CalculateIdealBounds() {
     // Calculate the bounds for the back and home buttons separately.
     CalculateBackAndHomeButtonsIdealBounds();
 
-    int app_list_button_position =
-        shelf()->PrimaryAxisValue(GetAppListButton()->ideal_bounds().right(),
-                                  GetAppListButton()->ideal_bounds().bottom());
+    int home_button_position =
+        shelf()->PrimaryAxisValue(GetHomeButton()->ideal_bounds().right(),
+                                  GetHomeButton()->ideal_bounds().bottom());
 
-    x = shelf()->PrimaryAxisValue(app_list_button_position, 0);
-    y = shelf()->PrimaryAxisValue(0, app_list_button_position);
+    x = shelf()->PrimaryAxisValue(home_button_position, 0);
+    y = shelf()->PrimaryAxisValue(0, home_button_position);
 
-    // A larger minimum padding after the app list button is required:
+    // A larger minimum padding after the home button is required:
     // increment with the necessary extra amount.
     x += shelf()->PrimaryAxisValue(kAppIconGroupMargin - button_spacing, 0);
     y += shelf()->PrimaryAxisValue(0, kAppIconGroupMargin - button_spacing);
@@ -185,8 +185,7 @@ void DefaultShelfView::CalculateIdealBounds() {
           kAppIconGroupMargin + (available_size_for_app_icons - icons_size) / 2;
     }
 
-    if (padding_for_centering >
-        app_list_button_position + kAppIconGroupMargin) {
+    if (padding_for_centering > home_button_position + kAppIconGroupMargin) {
       // Only shift buttons to the right, never let them interfere with the
       // left-aligned system buttons.
       x = shelf()->PrimaryAxisValue(padding_for_centering, 0);
@@ -280,12 +279,12 @@ std::unique_ptr<BackButton> DefaultShelfView::CreateBackButton() {
   return std::make_unique<BackButton>(this);
 }
 
-std::unique_ptr<AppListButton> DefaultShelfView::CreateHomeButton() {
-  return std::make_unique<AppListButton>(this, shelf());
+std::unique_ptr<HomeButton> DefaultShelfView::CreateHomeButton() {
+  return std::make_unique<HomeButton>(this, shelf());
 }
 
 int DefaultShelfView::GetAvailableSpaceForAppIcons() const {
-  // Subtract space already allocated to the app list button, and the back
+  // Subtract space already allocated to the home button, and the back
   // button if applicable.
   return shelf()->PrimaryAxisValue(width(), height()) - kShelfButtonSpacing -
          (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize -
@@ -325,7 +324,7 @@ DefaultShelfView::CalculateAppCenteringStrategy() {
 
   // An easy way to check whether the apps fit at the exact center of the
   // screen is to imagine that we have another status widget on the other
-  // side (the status widget is always bigger than the app list button plus
+  // side (the status widget is always bigger than the home button plus
   // the back button if applicable) and see if the apps can fit in the middle.
   int available_space_for_screen_centering =
       screen_size - 2 * (status_widget_size + kAppIconGroupMargin);

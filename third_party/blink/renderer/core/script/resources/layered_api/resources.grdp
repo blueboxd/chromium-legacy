@@ -7,9 +7,9 @@
        third_party/blink/public/blink_resources.grd.
     -->
   <include name="IDR_LAYERED_API_BLANK_INDEX_MJS" file="../renderer/core/script/resources/layered_api/blank/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
+  <include name="IDR_LAYERED_API_ELEMENTS_INTERNAL_REFLECTION_MJS" file="../renderer/core/script/resources/layered_api/elements/internal/reflection.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_FACE_UTILS_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/face_utils.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
-  <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_REFLECTION_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/reflection.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_STYLE_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/style.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_TRACK_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/track.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_TOAST_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/toast/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>

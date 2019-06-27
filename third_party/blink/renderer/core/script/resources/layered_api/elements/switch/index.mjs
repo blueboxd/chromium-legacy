@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as face from './face_utils.mjs';
-import * as reflection from './reflection.mjs';
+import * as reflection from '../internal/reflection.mjs';
 import { SwitchTrack } from './track.mjs';
 import { styleSheetFactory } from './style.mjs';
 

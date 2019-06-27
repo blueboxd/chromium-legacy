@@ -6,7 +6,7 @@
  * @file Utilities for form-associated custom elements
  */
 
-import * as reflection from './reflection.mjs';
+import * as reflection from '../internal/reflection.mjs';
 
 function installGetter(proto, propName, getter) {
   Object.defineProperty(

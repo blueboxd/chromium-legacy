@@ -31,15 +31,15 @@ bool InstallOptions::operator==(const InstallOptions& other) const {
   return std::tie(url, launch_container, install_source,
                   add_to_applications_menu, add_to_desktop,
                   add_to_quick_launch_bar, override_previous_user_uninstall,
-                  bypass_service_worker_check, require_manifest, always_update,
-                  wait_for_windows_closed, install_placeholder,
+                  bypass_service_worker_check, require_manifest,
+                  force_reinstall, wait_for_windows_closed, install_placeholder,
                   reinstall_placeholder) ==
          std::tie(other.url, other.launch_container, other.install_source,
                   other.add_to_applications_menu, other.add_to_desktop,
                   other.add_to_quick_launch_bar,
                   other.override_previous_user_uninstall,
                   other.bypass_service_worker_check, other.require_manifest,
-                  other.always_update, other.wait_for_windows_closed,
+                  other.force_reinstall, other.wait_for_windows_closed,
                   other.install_placeholder, other.reinstall_placeholder);
 }
 
@@ -59,7 +59,7 @@ std::ostream& operator<<(std::ostream& out,
              << "\n bypass_service_worker_check: "
              << install_options.bypass_service_worker_check
              << "\n require_manifest: " << install_options.require_manifest
-             << "\n always_update: " << install_options.always_update
+             << "\n force_reinstall: " << install_options.force_reinstall
              << "\n wait_for_windows_closed: "
              << install_options.wait_for_windows_closed
              << "\n install_placeholder: "

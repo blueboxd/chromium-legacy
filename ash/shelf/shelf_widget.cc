@@ -16,8 +16,8 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/default_shelf_view.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/kiosk_next_shelf_view.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
@@ -453,7 +453,7 @@ void ShelfWidget::PostCreateShelf() {
 }
 
 bool ShelfWidget::IsShowingAppList() const {
-  return GetAppListButton() && GetAppListButton()->IsShowingAppList();
+  return GetHomeButton() && GetHomeButton()->IsShowingAppList();
 }
 
 bool ShelfWidget::IsShowingMenu() const {
@@ -488,8 +488,8 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
                    bounds.height());
 }
 
-AppListButton* ShelfWidget::GetAppListButton() const {
-  return shelf_view_->GetAppListButton();
+HomeButton* ShelfWidget::GetHomeButton() const {
+  return shelf_view_->GetHomeButton();
 }
 
 BackButton* ShelfWidget::GetBackButton() const {

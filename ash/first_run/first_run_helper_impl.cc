@@ -11,7 +11,7 @@
 #include "ash/first_run/desktop_cleaner.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -43,8 +43,8 @@ FirstRunHelperImpl::~FirstRunHelperImpl() {
 
 gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-  AppListButton* app_button = shelf->shelf_widget()->GetAppListButton();
-  return app_button->GetBoundsInScreen();
+  HomeButton* home_button = shelf->shelf_widget()->GetHomeButton();
+  return home_button->GetBoundsInScreen();
 }
 
 gfx::Rect FirstRunHelperImpl::OpenTrayBubble() {

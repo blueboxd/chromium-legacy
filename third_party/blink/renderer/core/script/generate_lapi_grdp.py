@@ -44,7 +44,10 @@ def main():
     # A list of (name, path)
     modules = []
     for root, _, filenames in sorted(os.walk(input_path)):
-        if 'index.mjs' in filenames:
+        # A directory represents a built-in module if
+        #  - it contains index.mjs (web-exposed module) or
+        #  - the directory name is 'internal' (private module)
+        if 'index.mjs' in filenames or re.search(r'\binternal$', root):
             # Get e.g. "kKvStorage" for kv-storage.
             module_name = os.path.relpath(root, input_path)
             module_name = "k" + re.sub(r'\W', '', module_name.title())

@@ -15,13 +15,13 @@
 
 namespace ash {
 
-class AppListButton;
+class HomeButton;
 class AssistantIconBackground;
 class AssistantIcon;
 
 class ASH_EXPORT AssistantOverlay : public views::View {
  public:
-  explicit AssistantOverlay(AppListButton* host_view);
+  explicit AssistantOverlay(HomeButton* host_view);
   ~AssistantOverlay() override;
 
   void StartAnimation(bool show_icon);
@@ -55,7 +55,7 @@ class ASH_EXPORT AssistantOverlay : public views::View {
   std::unique_ptr<AssistantIcon> icon_layer_;
   std::unique_ptr<AssistantIconBackground> background_layer_;
 
-  AppListButton* host_view_;
+  HomeButton* host_view_;
 
   AnimationState animation_state_ = AnimationState::HIDDEN;
 

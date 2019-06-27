@@ -30,7 +30,7 @@ class ASH_EXPORT FirstRunHelper {
   // should cancel the tutorial (e.g. the device is shutting down).
   static std::unique_ptr<FirstRunHelper> Start(base::OnceClosure on_cancelled);
 
-  // Returns the bounds of the app list button on the primary display in screen
+  // Returns the bounds of the home button on the primary display in screen
   // coordinates.
   virtual gfx::Rect GetAppListButtonBounds() = 0;
 

@@ -38,7 +38,7 @@ class ASH_EXPORT DefaultShelfView : public ShelfView {
   void CalculateIdealBounds() override;
   void LayoutAppListAndBackButtonHighlight() override;
   std::unique_ptr<BackButton> CreateBackButton() override;
-  std::unique_ptr<AppListButton> CreateHomeButton() override;
+  std::unique_ptr<HomeButton> CreateHomeButton() override;
 
  private:
   struct AppCenteringStrategy {
@@ -47,7 +47,7 @@ class ASH_EXPORT DefaultShelfView : public ShelfView {
   };
 
   // Returns the size that's actually available for app icons. Size occupied
-  // by the app list button and back button plus all appropriate margins is
+  // by the home button and back button plus all appropriate margins is
   // not available for app icons.
   int GetAvailableSpaceForAppIcons() const;
 

@@ -278,15 +278,14 @@ class ASH_EXPORT AppListControllerImpl
 
   void SetKeyboardTraversalMode(bool engaged);
 
-  // Handles app list button press event. (Search key should trigger the same
+  // Handles home button press event. (Search key should trigger the same
   // behavior.) All three parameters are only used in clamshell mode.
   // |display_id| is the id of display where app list should toggle.
   // |show_source| is the source of the event. |event_time_stamp| records the
   // event timestamp.
-  ash::ShelfAction OnAppListButtonPressed(
-      int64_t display_id,
-      app_list::AppListShowSource show_source,
-      base::TimeTicks event_time_stamp);
+  ash::ShelfAction OnHomeButtonPressed(int64_t display_id,
+                                       app_list::AppListShowSource show_source,
+                                       base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;

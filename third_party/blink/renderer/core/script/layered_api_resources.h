@@ -29,12 +29,14 @@ struct LayeredAPIResource {
 const LayeredAPIResource kLayeredAPIResources[] = {
     {"blank/index.mjs", IDR_LAYERED_API_BLANK_INDEX_MJS, Module::kBlank},
 
+    {"elements/internal/reflection.mjs",
+     IDR_LAYERED_API_ELEMENTS_INTERNAL_REFLECTION_MJS,
+     Module::kElementsInternal},
+
     {"elements/switch/face_utils.mjs",
      IDR_LAYERED_API_ELEMENTS_SWITCH_FACE_UTILS_MJS, Module::kElementsSwitch},
     {"elements/switch/index.mjs", IDR_LAYERED_API_ELEMENTS_SWITCH_INDEX_MJS,
      Module::kElementsSwitch},
-    {"elements/switch/reflection.mjs",
-     IDR_LAYERED_API_ELEMENTS_SWITCH_REFLECTION_MJS, Module::kElementsSwitch},
     {"elements/switch/style.mjs", IDR_LAYERED_API_ELEMENTS_SWITCH_STYLE_MJS,
      Module::kElementsSwitch},
     {"elements/switch/track.mjs", IDR_LAYERED_API_ELEMENTS_SWITCH_TRACK_MJS,

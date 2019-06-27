@@ -65,7 +65,7 @@ InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info,
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
   install_options.bypass_service_worker_check = true;
-  install_options.always_update = force_update;
+  install_options.force_reinstall = force_update;
   return install_options;
 }
 

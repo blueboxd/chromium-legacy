@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
+
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"

@@ -17,7 +17,6 @@
 #include "base/syslog_logging.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -153,7 +152,7 @@ std::string UploadJobImpl::RandomMimeBoundaryGenerator::GenerateBoundary()
 UploadJobImpl::UploadJobImpl(
     const GURL& upload_url,
     const std::string& account_id,
-    OAuth2TokenService* token_service,
+    OAuth2AccessTokenManager* access_token_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Delegate* delegate,
     std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
@@ -162,7 +161,7 @@ UploadJobImpl::UploadJobImpl(
     : OAuth2AccessTokenManager::Consumer("cros_upload_job"),
       upload_url_(upload_url),
       account_id_(account_id),
-      token_service_(token_service),
+      access_token_manager_(access_token_manager),
       url_loader_factory_(std::move(url_loader_factory)),
       delegate_(delegate),
       boundary_generator_(std::move(boundary_generator)),
@@ -171,7 +170,7 @@ UploadJobImpl::UploadJobImpl(
       retry_(0),
       task_runner_(task_runner),
       weak_factory_(this) {
-  DCHECK(token_service_);
+  DCHECK(access_token_manager_);
   DCHECK(url_loader_factory_);
   DCHECK(delegate_);
   SYSLOG(INFO) << "Upload job created.";
@@ -233,7 +232,7 @@ void UploadJobImpl::RequestAccessToken() {
   OAuth2AccessTokenManager::ScopeSet scope_set;
   scope_set.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   access_token_request_ =
-      token_service_->StartRequest(account_id_, scope_set, this);
+      access_token_manager_->StartRequest(account_id_, scope_set, this);
 }
 
 bool UploadJobImpl::SetUpMultipart() {
@@ -385,8 +384,8 @@ void UploadJobImpl::HandleError(ErrorCode error_code) {
       // Request new token and retry.
       OAuth2AccessTokenManager::ScopeSet scope_set;
       scope_set.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-      token_service_->InvalidateAccessToken(account_id_, scope_set,
-                                            access_token_);
+      access_token_manager_->InvalidateAccessToken(account_id_, scope_set,
+                                                   access_token_);
       access_token_.clear();
       task_runner_->PostDelayedTask(
           FROM_HERE,

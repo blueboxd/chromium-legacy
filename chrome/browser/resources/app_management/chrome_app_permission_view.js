@@ -75,5 +75,5 @@ Polymer({
    */
   hasPermissions_: function(messages) {
     return messages.length > 0;
-  }
+  },
 });

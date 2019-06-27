@@ -235,8 +235,8 @@ enum TabletModeAnimationTransition {
   // Release drag to hide the launcher (launcher animates the rest of the way).
   kDragReleaseHide,
 
-  // Click the AppList button in tablet mode.
-  kAppListButtonShow,
+  // Click the Home button in tablet mode.
+  kHomeButtonShow,
 
   // Activate a window from shelf to hide the launcher in tablet mode.
   kHideHomeLauncherForWindow,

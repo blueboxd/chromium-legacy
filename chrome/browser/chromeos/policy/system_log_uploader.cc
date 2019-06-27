@@ -171,7 +171,8 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
         }
       )");
   return std::make_unique<UploadJobImpl>(
-      upload_url, robot_account_id, device_oauth2_token_service,
+      upload_url, robot_account_id,
+      device_oauth2_token_service->GetAccessTokenManager(),
       g_browser_process->shared_url_loader_factory(), delegate,
       std::make_unique<UploadJobImpl::RandomMimeBoundaryGenerator>(),
       traffic_annotation, task_runner_);

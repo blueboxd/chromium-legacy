@@ -126,7 +126,7 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
         0.8f));
     // TODO(931149): Replace this with a more sophisticated model if the
     // query-based mixed type model is being used.
-    config.mutable_default_predictor();
+    config.mutable_predictor()->mutable_default_predictor();
 
     if (GetFieldTrialParamByFeatureAsBool(
             app_list_features::kEnableQueryBasedMixedTypesRanker,
@@ -163,7 +163,7 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
 
     // Despite not changing any fields, this sets the predictor to the default
     // predictor.
-    config.mutable_default_predictor();
+    config.mutable_predictor()->mutable_default_predictor();
 
     zero_state_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
         profile->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),

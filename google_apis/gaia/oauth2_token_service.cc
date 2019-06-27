@@ -45,6 +45,10 @@ const OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() const {
   return delegate_.get();
 }
 
+OAuth2AccessTokenManager* OAuth2TokenService::GetAccessTokenManager() {
+  return token_manager_.get();
+}
+
 const base::ObserverList<OAuth2AccessTokenManager::DiagnosticsObserver,
                          true>::Unchecked&
 OAuth2TokenService::GetAccessTokenDiagnosticsObservers() {

@@ -122,14 +122,14 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   EXPECT_FALSE(app);
 }
 
-IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, AlwaysUpdate) {
+IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, ForceReinstall) {
   ASSERT_TRUE(embedded_test_server()->Start());
   {
     GURL url(embedded_test_server()->GetURL(
         "/banners/"
         "manifest_test_page.html?manifest=manifest_short_name_only.json"));
     web_app::InstallOptions install_options = CreateInstallOptions(url);
-    install_options.always_update = true;
+    install_options.force_reinstall = true;
     InstallApp(std::move(install_options));
 
     const extensions::Extension* app =
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, AlwaysUpdate) {
     GURL url(
         embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
     web_app::InstallOptions install_options = CreateInstallOptions(url);
-    install_options.always_update = true;
+    install_options.force_reinstall = true;
     InstallApp(std::move(install_options));
 
     const extensions::Extension* app =

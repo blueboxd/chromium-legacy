@@ -173,6 +173,8 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   OAuth2TokenServiceDelegate* GetDelegate();
   const OAuth2TokenServiceDelegate* GetDelegate() const;
 
+  OAuth2AccessTokenManager* GetAccessTokenManager();
+
   // TODO(https://crbug.com/967598): Remove this. It's opened only for
   // OAuth2TokenServiceTest.
   int GetTokenCacheCount();

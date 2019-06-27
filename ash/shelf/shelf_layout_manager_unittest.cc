@@ -32,7 +32,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_controller.h"
@@ -88,8 +88,8 @@
 namespace ash {
 namespace {
 
-void PressAppListButton() {
-  Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+void PressHomeButton() {
+  Shell::Get()->app_list_controller()->OnHomeButtonPressed(
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       app_list::AppListShowSource::kShelfButton, base::TimeTicks());
 }
@@ -1862,7 +1862,7 @@ TEST_F(ShelfLayoutManagerTest, MouseDrag) {
 
   // Calculate drag start point and end point. |start_point| and |target_point|
   // make sure that mouse event is received by Shelf/AppListView instead of
-  // child views (like AppListButton and SearchBoxView).
+  // child views (like HomeButton and SearchBoxView).
   int x = shelf_bounds_in_screen.x() + shelf_bounds_in_screen.width() / 4;
   int y = shelf_bounds_in_screen.CenterPoint().y();
   gfx::Point start_point(x, y);
@@ -2686,7 +2686,7 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
       &update_event, GetShelfWidget()->GetNativeView());
 
   // Emulate to press the AppList button while dragging the Shelf.
-  PressAppListButton();
+  PressHomeButton();
   EXPECT_TRUE(GetPrimaryShelf()->IsVisible());
 
   // Release the press.
@@ -2708,7 +2708,7 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
   // things:
   // (1) Shelf is hidden
   // (2) Shelf has correct bounds in screen coordinate.
-  PressAppListButton();
+  PressHomeButton();
   EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
                 gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
             GetPrimaryShelf()
@@ -2742,10 +2742,10 @@ TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
   GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&update_event);
 
   // Press the AppList button by mouse.
-  views::View* app_list_button =
-      GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
+  views::View* home_button =
+      GetPrimaryShelf()->GetShelfViewForTesting()->GetHomeButton();
   GetEventGenerator()->MoveMouseTo(
-      app_list_button->GetBoundsInScreen().CenterPoint());
+      home_button->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->ClickLeftButton();
 
   // End the gesture event.
@@ -3024,14 +3024,14 @@ TEST_F(ShelfLayoutManagerTest, TapShelfItemInAutoHideShelf) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Tap app list button should not open the app list and shelf should keep
+  // Tap home button should not open the app list and shelf should keep
   // hidden.
-  gfx::Rect app_list_button_bounds =
-      shelf->GetShelfViewForTesting()->GetAppListButton()->GetBoundsInScreen();
+  gfx::Rect home_button_bounds =
+      shelf->GetShelfViewForTesting()->GetHomeButton()->GetBoundsInScreen();
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  app_list_button_bounds.Intersect(display_bounds);
-  GetEventGenerator()->GestureTapAt(app_list_button_bounds.CenterPoint());
+  home_button_bounds.Intersect(display_bounds);
+  GetEventGenerator()->GestureTapAt(home_button_bounds.CenterPoint());
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }

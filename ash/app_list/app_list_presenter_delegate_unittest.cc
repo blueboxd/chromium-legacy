@@ -1385,8 +1385,8 @@ class AppListPresenterDelegateHomeLauncherTest
     GetAppListTestHelper()->WaitUntilIdle();
   }
 
-  void PressAppListButton() {
-    Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+  void PressHomeButton() {
+    Shell::Get()->app_list_controller()->OnHomeButtonPressed(
         GetPrimaryDisplayId(), app_list::AppListShowSource::kShelfButton,
         base::TimeTicks());
     GetAppListTestHelper()->WaitUntilIdle();
@@ -1762,9 +1762,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the app list button will minimize all windows.
-TEST_F(AppListPresenterDelegateHomeLauncherTest,
-       AppListButtonMinimizeAllWindows) {
+// Tests that the home button will minimize all windows.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, HomeButtonMinimizeAllWindows) {
   // Show app list in tablet mode. Maximize all windows.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -1788,8 +1787,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   auto ordering =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
 
-  // Press app list button.
-  PressAppListButton();
+  // Press home button.
+  PressHomeButton();
   EXPECT_TRUE(state1->IsMinimized());
   EXPECT_TRUE(state2->IsMinimized());
   EXPECT_TRUE(state3->IsMinimized());
@@ -1801,9 +1800,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   EXPECT_TRUE(std::equal(ordering.begin(), ordering.end(), new_order.begin()));
 }
 
-// Tests that the app list button will end split view mode.
-TEST_F(AppListPresenterDelegateHomeLauncherTest,
-       AppListButtonEndSplitViewMode) {
+// Tests that the home button will end split view mode.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndSplitViewMode) {
   // Show app list in tablet mode. Enter split view mode.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -1813,14 +1811,14 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
-  // Press app list button.
-  PressAppListButton();
+  // Press home button.
+  PressHomeButton();
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the app list button will end overview mode.
-TEST_F(AppListPresenterDelegateHomeLauncherTest, AppListButtonEndOverviewMode) {
+// Tests that the home button will end overview mode.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndOverviewMode) {
   // Show app list in tablet mode. Enter overview mode.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -1829,8 +1827,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, AppListButtonEndOverviewMode) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  // Press app list button.
-  PressAppListButton();
+  // Press home button.
+  PressHomeButton();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   GetAppListTestHelper()->CheckVisibility(true);
 }

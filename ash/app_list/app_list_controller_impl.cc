@@ -84,7 +84,7 @@ app_list::TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
       return app_list::TabletModeAnimationTransition::
           kHideHomeLauncherForWindow;
     case HomeScreenDelegate::AnimationTrigger::kLauncherButton:
-      return app_list::TabletModeAnimationTransition::kAppListButtonShow;
+      return app_list::TabletModeAnimationTransition::kHomeButtonShow;
     case HomeScreenDelegate::AnimationTrigger::kDragRelease:
       return launcher_should_show
                  ? app_list::TabletModeAnimationTransition::kDragReleaseShow
@@ -809,7 +809,7 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
     focused_view->SchedulePaint();
 }
 
-ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
+ash::ShelfAction AppListControllerImpl::OnHomeButtonPressed(
     int64_t display_id,
     app_list::AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {

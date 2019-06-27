@@ -48,7 +48,7 @@ InstallOptions GetWindowedInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.bypass_service_worker_check = true;
-  options.always_update = true;
+  options.force_reinstall = true;
   return options;
 }
 
@@ -235,7 +235,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, install_requests.size());
-  EXPECT_TRUE(install_requests[0].always_update);
+  EXPECT_TRUE(install_requests[0].force_reinstall);
   EXPECT_TRUE(IsInstalled(kAppUrl1));
 
   // Create another app. The version hasn't changed, but we should immediately
@@ -247,8 +247,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3u, install_requests.size());
-  EXPECT_FALSE(install_requests[1].always_update);
-  EXPECT_FALSE(install_requests[2].always_update);
+  EXPECT_FALSE(install_requests[1].force_reinstall);
+  EXPECT_FALSE(install_requests[2].force_reinstall);
   EXPECT_TRUE(IsInstalled(kAppUrl1));
   EXPECT_TRUE(IsInstalled(kAppUrl2));
 
@@ -259,8 +259,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(5u, install_requests.size());
-  EXPECT_TRUE(install_requests[3].always_update);
-  EXPECT_TRUE(install_requests[4].always_update);
+  EXPECT_TRUE(install_requests[3].force_reinstall);
+  EXPECT_TRUE(install_requests[4].force_reinstall);
   EXPECT_TRUE(IsInstalled(kAppUrl1));
   EXPECT_TRUE(IsInstalled(kAppUrl2));
 
@@ -282,8 +282,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(7u, install_requests.size());
-  EXPECT_FALSE(install_requests[5].always_update);
-  EXPECT_FALSE(install_requests[6].always_update);
+  EXPECT_FALSE(install_requests[5].force_reinstall);
+  EXPECT_FALSE(install_requests[6].force_reinstall);
   EXPECT_TRUE(IsInstalled(kAppUrl1));
   EXPECT_TRUE(IsInstalled(kAppUrl2));
 
@@ -295,8 +295,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(9u, install_requests.size());
-  EXPECT_FALSE(install_requests[7].always_update);
-  EXPECT_FALSE(install_requests[8].always_update);
+  EXPECT_FALSE(install_requests[7].force_reinstall);
+  EXPECT_FALSE(install_requests[8].force_reinstall);
   EXPECT_FALSE(IsInstalled(kAppUrl1));
   EXPECT_TRUE(IsInstalled(kAppUrl2));
   EXPECT_TRUE(IsInstalled(kAppUrl3));

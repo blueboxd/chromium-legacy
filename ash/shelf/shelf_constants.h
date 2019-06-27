@@ -21,7 +21,7 @@ constexpr int kShelfSize = 56;
 // Size of the icons within shelf buttons.
 constexpr int kShelfButtonIconSize = 44;
 
-// Size for controls like the app list button, back button, etc.
+// Size for controls like the home button, back button, etc.
 constexpr int kShelfControlSize = 40;
 
 ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =

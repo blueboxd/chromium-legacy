@@ -107,6 +107,29 @@ def NeedsListener(interface):
   return interface.find('event') is not None
 
 
+def GetDocumentation(element):
+  """Return this element's documentation as a list of strings.
+
+  Args:
+    element: the xml.etree.ElementTree node you want the documentation for.
+
+  Returns:
+    A list of strings, containing the data from this node's "summary" attribute,
+    or its "description" subelement.
+  """
+  doc = element.find('description')
+  if doc is None:
+    summary = element.get('summary')
+    return [summary] if summary is not None else []
+  ret = [doc.get('summary')]
+  if doc.text:
+    ret += [l.strip() for l in doc.text.split('\n')]
+    # Remove blank lines from the tail only.
+    while not ret[-1]:
+      ret.pop()
+  return ret
+
+
 def ParseOpts(argv):
   """Parses the given command line arguments for the templater.
 

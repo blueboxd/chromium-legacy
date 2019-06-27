@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -16,6 +17,7 @@
 #include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -23,6 +25,11 @@
 using apps::mojom::OptionalBool;
 
 namespace {
+
+constexpr char const* kAppIdsWithHiddenMoreSettings[] = {
+    extension_misc::kFilesManagerAppId,
+    extensions::kWebStoreAppId,
+};
 
 app_management::mojom::ExtensionAppPermissionMessagePtr
 CreateExtensionAppPermissionMessage(
@@ -33,6 +40,10 @@ CreateExtensionAppPermissionMessage(
   }
   return app_management::mojom::ExtensionAppPermissionMessage::New(
       base::UTF16ToUTF8(message.message()), std::move(submessages));
+}
+
+bool ShouldHideMoreSettings(const std::string app_id) {
+  return base::Contains(kAppIdsWithHiddenMoreSettings, app_id);
 }
 
 }  // namespace
@@ -201,6 +212,8 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
                               ? OptionalBool::kTrue
                               : OptionalBool::kFalse;
 #endif
+
+  app->hide_more_settings = ShouldHideMoreSettings(app->id);
 
   return app;
 }

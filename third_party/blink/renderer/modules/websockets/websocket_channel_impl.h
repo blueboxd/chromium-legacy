@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
-#include "third_party/blink/renderer/modules/websockets/websocket_handle_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -61,8 +60,7 @@ class WebSocketHandshakeThrottle;
 // This is an implementation of WebSocketChannel. This is created on the main
 // thread for Document, or on the worker thread for WorkerGlobalScope. All
 // functions must be called on the execution context's thread.
-class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
-                                                  public WebSocketHandleClient {
+class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
  public:
   // You can specify the source file and the line number information
   // explicitly by passing the last parameter.
@@ -109,6 +107,52 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
 
   ExecutionContext* GetExecutionContext();
 
+  // Called when the handle is opened.
+  void DidConnect(WebSocketHandle* handle,
+                  const String& selected_protocol,
+                  const String& extensions,
+                  uint64_t receive_quota_threshold);
+
+  // Called when the browser starts the opening handshake.
+  // This notification can be omitted when the inspector is not active.
+  void DidStartOpeningHandshake(
+      WebSocketHandle*,
+      network::mojom::blink::WebSocketHandshakeRequestPtr);
+
+  // Called when the browser finishes the opening handshake.
+  // This notification precedes didConnect.
+  // This notification can be omitted when the inspector is not active.
+  void DidFinishOpeningHandshake(
+      WebSocketHandle*,
+      network::mojom::blink::WebSocketHandshakeResponsePtr);
+
+  // Called when the browser is required to fail the connection.
+  // |message| can be displayed in the inspector, but should not be passed
+  // to scripts.
+  // This message also implies that channel is closed with
+  // (wasClean = false, code = 1006, reason = "") and
+  // |handle| becomes unavailable.
+  void DidFail(WebSocketHandle*, const String& message);
+
+  // Called when data are received.
+  void DidReceiveData(WebSocketHandle*,
+                      bool fin,
+                      WebSocketHandle::MessageType,
+                      const char* data,
+                      size_t);
+
+  // Called when the handle is closed.
+  // |handle| becomes unavailable once this notification arrives.
+  void DidClose(WebSocketHandle* handle,
+                bool was_clean,
+                uint16_t code,
+                const String& reason);
+  void AddSendFlowControlQuota(WebSocketHandle*, int64_t quota);
+
+  // Called when the browser receives a Close frame from the remote
+  // server. Not called when the renderer initiates the closing handshake.
+  void DidStartClosingHandshake(WebSocketHandle*);
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -153,30 +197,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   }
   void AbortAsyncOperations();
   void HandleDidClose(bool was_clean, uint16_t code, const String& reason);
-
-  // WebSocketHandleClient functions.
-  void DidConnect(WebSocketHandle*,
-                  const String& selected_protocol,
-                  const String& extensions,
-                  uint64_t receive_quota_threshold) override;
-  void DidStartOpeningHandshake(
-      WebSocketHandle*,
-      network::mojom::blink::WebSocketHandshakeRequestPtr) override;
-  void DidFinishOpeningHandshake(
-      WebSocketHandle*,
-      network::mojom::blink::WebSocketHandshakeResponsePtr) override;
-  void DidFail(WebSocketHandle*, const String& message) override;
-  void DidReceiveData(WebSocketHandle*,
-                      bool fin,
-                      WebSocketHandle::MessageType,
-                      const char* data,
-                      size_t) override;
-  void DidClose(WebSocketHandle*,
-                bool was_clean,
-                uint16_t code,
-                const String& reason) override;
-  void AddSendFlowControlQuota(WebSocketHandle*, int64_t quota) override;
-  void DidStartClosingHandshake(WebSocketHandle*) override;
 
   // Completion callback. It is called with the results of throttling.
   void OnCompletion(const base::Optional<WebString>& error);
@@ -224,7 +244,8 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   base::Optional<uint64_t> receive_quota_threshold_;
 };
 
-std::ostream& operator<<(std::ostream&, const WebSocketChannelImpl*);
+MODULES_EXPORT std::ostream& operator<<(std::ostream&,
+                                        const WebSocketChannelImpl*);
 
 }  // namespace blink
 

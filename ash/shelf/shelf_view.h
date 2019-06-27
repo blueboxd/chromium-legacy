@@ -47,7 +47,7 @@ class MenuRunner;
 }  // namespace views
 
 namespace ash {
-class AppListButton;
+class HomeButton;
 class BackButton;
 class DragImageView;
 class OverflowBubble;
@@ -151,7 +151,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   void set_focused_button(ShelfButton* focused) { focused_button_ = focused; }
 
-  AppListButton* GetAppListButton() const;
+  HomeButton* GetHomeButton() const;
   BackButton* GetBackButton() const;
   OverflowButton* GetOverflowButton() const;
 
@@ -270,7 +270,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The three methods below return the first or last focusable child of the
   // set including both the main shelf and the overflow shelf it it's showing.
-  // - The first focusable child is either the app list button, or the back
+  // - The first focusable child is either the home button, or the back
   //   button in tablet mode.
   // - The last focusable child can be either 1) the last app icon on the main
   //   shelf if there aren't enough apps to overflow, 2) the overflow button
@@ -341,7 +341,7 @@ class ASH_EXPORT ShelfView : public views::View,
   virtual views::View* CreateViewForItem(const ShelfItem& item);
 
   virtual std::unique_ptr<BackButton> CreateBackButton() = 0;
-  virtual std::unique_ptr<AppListButton> CreateHomeButton() = 0;
+  virtual std::unique_ptr<HomeButton> CreateHomeButton() = 0;
 
   // Lays out control buttons background.
   // Child classes should implement this method if control buttons background
@@ -567,7 +567,7 @@ class ASH_EXPORT ShelfView : public views::View,
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
   BackButton* back_button_ = nullptr;
-  AppListButton* home_button_ = nullptr;
+  HomeButton* home_button_ = nullptr;
   OverflowButton* overflow_button_ = nullptr;
 
   std::unique_ptr<OverflowBubble> overflow_bubble_;

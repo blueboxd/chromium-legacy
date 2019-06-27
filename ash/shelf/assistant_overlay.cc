@@ -11,7 +11,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -592,7 +592,7 @@ class AssistantIconBackground : public ui::Layer, public ui::LayerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AssistantIconBackground);
 };
 
-AssistantOverlay::AssistantOverlay(AppListButton* host_view)
+AssistantOverlay::AssistantOverlay(HomeButton* host_view)
     : ripple_layer_(std::make_unique<ui::Layer>()),
       icon_layer_(std::make_unique<AssistantIcon>()),
       background_layer_(std::make_unique<AssistantIconBackground>()),

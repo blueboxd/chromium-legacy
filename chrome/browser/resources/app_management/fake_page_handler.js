@@ -93,6 +93,7 @@ cr.define('app_management', function() {
         isPolicyPinned: apps.mojom.OptionalBool.kFalse,
         installSource: apps.mojom.InstallSource.kUser,
         permissions: {},
+        hideMoreSettings: false,
       };
 
       if (optConfig) {

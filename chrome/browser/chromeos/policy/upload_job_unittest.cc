@@ -63,6 +63,12 @@ class RepeatingMimeBoundaryGenerator
   DISALLOW_COPY_AND_ASSIGN(RepeatingMimeBoundaryGenerator);
 };
 
+// TODO(https://crbug.com/967598): Change this to be a mock
+// OAuth2AccessTokenManager class (marking the necessary methods of
+// OAuth2AccessTokenManager virtual) as part of changing
+// OAuth2AccessTokenManager::{StartRequestForClientWithContext(),
+// InvalidateAccessToken()} to directly call the methods being overridden here
+// rather than calling through to OAuth2TokenService.
 class MockOAuth2TokenService : public FakeOAuth2TokenService {
  public:
   MockOAuth2TokenService();
@@ -200,8 +206,9 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
       std::unique_ptr<UploadJobImpl::MimeBoundaryGenerator>
           mime_boundary_generator) {
     std::unique_ptr<UploadJob> upload_job(new UploadJobImpl(
-        GetServerURL(), kRobotAccountId, &oauth2_service_, url_loader_factory_,
-        this, std::move(mime_boundary_generator), TRAFFIC_ANNOTATION_FOR_TESTS,
+        GetServerURL(), kRobotAccountId,
+        oauth2_service_.GetAccessTokenManager(), url_loader_factory_, this,
+        std::move(mime_boundary_generator), TRAFFIC_ANNOTATION_FOR_TESTS,
         base::ThreadTaskRunnerHandle::Get()));
 
     std::map<std::string, std::string> header_entries;

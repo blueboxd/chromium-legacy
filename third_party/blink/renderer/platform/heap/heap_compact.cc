@@ -372,10 +372,6 @@ HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
 bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
                                 BlinkGC::MarkingType marking_type,
                                 BlinkGC::GCReason reason) {
-  if (!RuntimeEnabledFeatures::HeapCompactionEnabled()) {
-    return false;
-  }
-
   DCHECK_NE(BlinkGC::MarkingType::kTakeSnapshot, marking_type);
   if (marking_type == BlinkGC::MarkingType::kAtomicMarking &&
       stack_state == BlinkGC::StackState::kHeapPointersOnStack) {
@@ -391,6 +387,10 @@ bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
     return true;
   }
 
+  if (!RuntimeEnabledFeatures::HeapCompactionEnabled()) {
+    return false;
+  }
+
   // Only enable compaction when in a memory reduction garbage collection as it
   // may significantly increase the final garbage collection pause.
   if (reason == BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC) {
@@ -401,7 +401,7 @@ bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
 }
 
 void HeapCompact::Initialize(ThreadState* state) {
-  CHECK(RuntimeEnabledFeatures::HeapCompactionEnabled());
+  CHECK(force_for_next_gc_ || RuntimeEnabledFeatures::HeapCompactionEnabled());
   CHECK(!do_compact_);
   CHECK(!fixups_);
   LOG_HEAP_COMPACTION() << "Compacting: free=" << free_list_size_;

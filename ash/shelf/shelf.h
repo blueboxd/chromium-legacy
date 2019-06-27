@@ -232,7 +232,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // (animation value = 0.0). This is because this is set to true when we
   // enter/exit tablet mode but the animation is not started until a shelf
   // OnBoundsChanged is called because of tablet mode. Use this value to sync
-  // the animation for AppListButton.
+  // the animation for HomeButton.
   bool is_tablet_mode_animation_running_ = false;
 
   // Used by ScopedAutoHideLock to maintain the state of the lock for auto-hide

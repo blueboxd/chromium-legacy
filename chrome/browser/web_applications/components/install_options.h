@@ -63,7 +63,7 @@ struct InstallOptions {
   bool require_manifest = false;
 
   // Whether the app should be reinstalled even if it is already installed.
-  bool always_update = false;
+  bool force_reinstall = false;
 
   // Whether we should wait for all app windows being closed before reinstalling
   // the placeholder.

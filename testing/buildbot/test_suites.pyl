@@ -3234,6 +3234,15 @@
           '--test-launcher-retry-limit=0'
         ],
       },
+      'dawn_end2end_validation_layers_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--enable-backend-validation',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
       'dawn_end2end_wire_tests': {
         'desktop_args': [
           '--use-gpu-in-tests',
@@ -3254,6 +3263,15 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0'
         ],
+      },
+      'dawn_end2end_validation_layers_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--enable-backend-validation',
+        ],
+        'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_wire_tests': {
         'desktop_args': [

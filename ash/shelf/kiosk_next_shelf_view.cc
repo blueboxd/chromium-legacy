@@ -9,8 +9,8 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -63,17 +63,17 @@ class KioskNextBackButton : public BackButton {
 };
 
 // Kiosk Next home button with permanent round rectangle background.
-class KioskNextHomeButton : public AppListButton {
+class KioskNextHomeButton : public HomeButton {
  public:
   KioskNextHomeButton(ShelfView* shelf_view, Shelf* shelf)
-      : AppListButton(shelf_view, shelf) {}
+      : HomeButton(shelf_view, shelf) {}
   ~KioskNextHomeButton() override = default;
 
  private:
-  // views::AppListButton:
+  // views::HomeButton:
   void PaintButtonContents(gfx::Canvas* canvas) override {
     PaintBackground(canvas, GetContentsBounds());
-    AppListButton::PaintButtonContents(canvas);
+    HomeButton::PaintButtonContents(canvas);
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
@@ -151,7 +151,7 @@ void KioskNextShelfView::CalculateIdealBounds() {
   GetBackButton()->set_ideal_bounds(gfx::Rect(
       x, y, kKioskNextShelfControlWidthDp, kKioskNextShelfControlHeightDp));
   x += (kKioskNextShelfControlWidthDp + control_buttons_spacing);
-  GetAppListButton()->set_ideal_bounds(gfx::Rect(
+  GetHomeButton()->set_ideal_bounds(gfx::Rect(
       x, y, kKioskNextShelfControlWidthDp, kKioskNextShelfControlHeightDp));
 }
 
@@ -159,7 +159,7 @@ std::unique_ptr<BackButton> KioskNextShelfView::CreateBackButton() {
   return std::make_unique<KioskNextBackButton>(this);
 }
 
-std::unique_ptr<AppListButton> KioskNextShelfView::CreateHomeButton() {
+std::unique_ptr<HomeButton> KioskNextShelfView::CreateHomeButton() {
   return std::make_unique<KioskNextHomeButton>(this, shelf());
 }
 

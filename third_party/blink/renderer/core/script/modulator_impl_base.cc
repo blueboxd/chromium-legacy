@@ -64,6 +64,9 @@ bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
     case layered_api::Module::kKvStorage:
       return RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
           GetExecutionContext());
+    case layered_api::Module::kElementsInternal:
+      // Union of conditions of KElementsSwitch and kElementsToast.
+      return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
     case layered_api::Module::kElementsSwitch:
       return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
     case layered_api::Module::kElementsToast:
@@ -77,6 +80,8 @@ void ModulatorImplBase::BuiltInModuleUseCount(
   DCHECK(BuiltInModuleEnabled(module));
   switch (module) {
     case layered_api::Module::kBlank:
+      break;
+    case layered_api::Module::kElementsInternal:
       break;
     case layered_api::Module::kElementsSwitch:
       UseCounter::Count(GetExecutionContext(),

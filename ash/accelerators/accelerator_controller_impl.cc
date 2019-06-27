@@ -43,7 +43,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -549,7 +549,7 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
 
   Shelf::ForWindow(Shell::GetRootWindowForNewWindows())
       ->shelf_widget()
-      ->GetAppListButton()
+      ->GetHomeButton()
       ->OnPressed(show_source, accelerator.time_stamp());
 }
 

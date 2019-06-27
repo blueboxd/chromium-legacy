@@ -34,8 +34,8 @@ class ShelfViewTestAPI {
   // Number of icons displayed.
   int GetButtonCount();
 
-  // Retrieve the button at |index|, doesn't support the app list button,
-  // because the app list button is not a ShelfAppButton.
+  // Retrieve the button at |index|, doesn't support the home button,
+  // because the home button is not a ShelfAppButton.
   ShelfAppButton* GetButton(int index);
 
   // Retrieve the view at |index|.

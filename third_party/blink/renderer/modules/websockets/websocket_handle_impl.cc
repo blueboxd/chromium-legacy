@@ -6,7 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/modules/websockets/websocket_handle_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -22,7 +22,9 @@ const uint16_t kAbnormalShutdownOpCode = 1006;
 }  // namespace
 
 WebSocketHandleImpl::WebSocketHandleImpl()
-    : client_(nullptr), handshake_client_binding_(this), client_binding_(this) {
+    : channel_(nullptr),
+      handshake_client_binding_(this),
+      client_binding_(this) {
   NETWORK_DVLOG(1) << this << " created";
 }
 
@@ -38,7 +40,7 @@ void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
                                   const Vector<String>& protocols,
                                   const KURL& site_for_cookies,
                                   const String& user_agent_override,
-                                  WebSocketHandleClient* client,
+                                  WebSocketChannelImpl* channel,
                                   base::SingleThreadTaskRunner* task_runner) {
   DCHECK(!websocket_);
   websocket_ = std::move(websocket);
@@ -48,9 +50,9 @@ void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
 
   NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ")";
 
-  DCHECK(!client_);
-  DCHECK(client);
-  client_ = client;
+  DCHECK(!channel_);
+  DCHECK(channel);
+  channel_ = channel;
 
   network::mojom::blink::WebSocketHandshakeClientPtr handshake_client_proxy;
   Vector<network::mojom::blink::HttpHeaderPtr> additional_headers;
@@ -122,7 +124,7 @@ void WebSocketHandleImpl::Close(uint16_t code, const String& reason) {
 
 void WebSocketHandleImpl::Disconnect() {
   websocket_.reset();
-  client_ = nullptr;
+  channel_ = nullptr;
 }
 
 void WebSocketHandleImpl::OnConnectionError(uint32_t custom_reason,
@@ -141,12 +143,12 @@ void WebSocketHandleImpl::OnConnectionError(uint32_t custom_reason,
 void WebSocketHandleImpl::OnFailChannel(const String& message) {
   NETWORK_DVLOG(1) << this << " OnFailChannel(" << message << ")";
 
-  WebSocketHandleClient* client = client_;
+  WebSocketChannelImpl* channel = channel_;
   Disconnect();
-  if (!client)
+  if (!channel)
     return;
 
-  client->DidFail(this, message);
+  channel->DidFail(this, message);
   // |this| can be deleted here.
 }
 
@@ -154,14 +156,14 @@ void WebSocketHandleImpl::OnStartOpeningHandshake(
     network::mojom::blink::WebSocketHandshakeRequestPtr request) {
   NETWORK_DVLOG(1) << this << " OnStartOpeningHandshake("
                    << request->url.GetString() << ")";
-  client_->DidStartOpeningHandshake(this, std::move(request));
+  channel_->DidStartOpeningHandshake(this, std::move(request));
 }
 
 void WebSocketHandleImpl::OnFinishOpeningHandshake(
     network::mojom::blink::WebSocketHandshakeResponsePtr response) {
   NETWORK_DVLOG(1) << this << " OnFinishOpeningHandshake("
                    << response->url.GetString() << ")";
-  client_->DidFinishOpeningHandshake(this, std::move(response));
+  channel_->DidFinishOpeningHandshake(this, std::move(response));
 }
 
 void WebSocketHandleImpl::OnAddChannelResponse(
@@ -171,10 +173,10 @@ void WebSocketHandleImpl::OnAddChannelResponse(
   NETWORK_DVLOG(1) << this << " OnAddChannelResponse(" << protocol << ", "
                    << extensions << ", " << receive_quota_threshold << ")";
 
-  if (!client_)
+  if (!channel_)
     return;
 
-  client_->DidConnect(this, protocol, extensions, receive_quota_threshold);
+  channel_->DidConnect(this, protocol, extensions, receive_quota_threshold);
   // |this| can be deleted here.
 }
 
@@ -184,7 +186,7 @@ void WebSocketHandleImpl::OnDataFrame(
     base::span<const uint8_t> data) {
   NETWORK_DVLOG(1) << this << " OnDataFrame(" << fin << ", " << type << ", "
                    << "(data size = " << data.size() << "))";
-  if (!client_)
+  if (!channel_)
     return;
 
   WebSocketHandle::MessageType type_to_pass =
@@ -202,16 +204,16 @@ void WebSocketHandleImpl::OnDataFrame(
   }
   const char* data_to_pass =
       reinterpret_cast<const char*>(data.empty() ? nullptr : data.data());
-  client_->DidReceiveData(this, fin, type_to_pass, data_to_pass, data.size());
+  channel_->DidReceiveData(this, fin, type_to_pass, data_to_pass, data.size());
   // |this| can be deleted here.
 }
 
 void WebSocketHandleImpl::AddSendFlowControlQuota(int64_t quota) {
   NETWORK_DVLOG(1) << this << " AddSendFlowControlQuota(" << quota << ")";
-  if (!client_)
+  if (!channel_)
     return;
 
-  client_->AddSendFlowControlQuota(this, quota);
+  channel_->AddSendFlowControlQuota(this, quota);
   // |this| can be deleted here.
 }
 
@@ -221,21 +223,21 @@ void WebSocketHandleImpl::OnDropChannel(bool was_clean,
   NETWORK_DVLOG(1) << this << " OnDropChannel(" << was_clean << ", " << code
                    << ", " << reason << ")";
 
-  WebSocketHandleClient* client = client_;
+  WebSocketChannelImpl* channel = channel_;
   Disconnect();
-  if (!client)
+  if (!channel)
     return;
 
-  client->DidClose(this, was_clean, code, reason);
+  channel->DidClose(this, was_clean, code, reason);
   // |this| can be deleted here.
 }
 
 void WebSocketHandleImpl::OnClosingHandshake() {
   NETWORK_DVLOG(1) << this << " OnClosingHandshake()";
-  if (!client_)
+  if (!channel_)
     return;
 
-  client_->DidStartClosingHandshake(this);
+  channel_->DidStartClosingHandshake(this);
   // |this| can be deleted here.
 }
 

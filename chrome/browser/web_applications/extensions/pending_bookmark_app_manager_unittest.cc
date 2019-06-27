@@ -651,11 +651,11 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  auto get_always_update_info = []() {
+  auto get_force_reinstall_info = []() {
     web_app::InstallOptions options(kFooWebAppUrl,
                                     web_app::LaunchContainer::kWindow,
                                     web_app::InstallSource::kExternalPolicy);
-    options.always_update = true;
+    options.force_reinstall = true;
     return options;
   };
 
@@ -663,13 +663,13 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), get_always_update_info());
+        InstallAndWait(pending_app_manager.get(), get_force_reinstall_info());
 
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
     EXPECT_EQ(kFooWebAppUrl, url);
 
     EXPECT_EQ(1u, install_run_count());
-    EXPECT_EQ(get_always_update_info(), last_install_options());
+    EXPECT_EQ(get_force_reinstall_info(), last_install_options());
   }
 
   task_factory()->SetNextInstallationTaskResult(
@@ -680,14 +680,14 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), get_always_update_info());
+        InstallAndWait(pending_app_manager.get(), get_force_reinstall_info());
 
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
     EXPECT_EQ(kFooWebAppUrl, url);
 
-    // The app should be installed again because of the |always_update| flag.
+    // The app should be installed again because of the |force_reinstall| flag.
     EXPECT_EQ(2u, install_run_count());
-    EXPECT_EQ(get_always_update_info(), last_install_options());
+    EXPECT_EQ(get_force_reinstall_info(), last_install_options());
   }
 }
 

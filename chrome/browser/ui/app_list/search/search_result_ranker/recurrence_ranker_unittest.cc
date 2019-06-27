@@ -61,7 +61,7 @@ class RecurrenceRankerTest : public testing::Test {
     // Even if empty, the setting of the oneof |predictor_config| in
     // RecurrenceRankerConfigProto is used to determine which predictor is
     // constructed.
-    config.mutable_fake_predictor();
+    config.mutable_predictor()->mutable_fake_predictor();
     return config;
   }
 
@@ -326,7 +326,7 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
   // Construct a second ranker with a slightly different config.
   RecurrenceRankerConfigProto other_config;
   PartiallyPopulateConfig(&other_config);
-  other_config.mutable_fake_predictor();
+  other_config.mutable_predictor()->mutable_fake_predictor();
   other_config.set_min_seconds_between_saves(1234);
 
   RecurrenceRanker other_ranker(ranker_filepath_, other_config, false);
@@ -355,7 +355,7 @@ TEST_F(RecurrenceRankerTest, EphemeralUsersUseDefaultPredictor) {
 TEST_F(RecurrenceRankerTest, IntegrationWithDefaultPredictor) {
   RecurrenceRankerConfigProto config;
   PartiallyPopulateConfig(&config);
-  config.mutable_default_predictor();
+  config.mutable_predictor()->mutable_default_predictor();
 
   RecurrenceRanker ranker(ranker_filepath_, config, false);
   Wait();
@@ -375,7 +375,7 @@ TEST_F(RecurrenceRankerTest, IntegrationWithDefaultPredictor) {
 TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
   RecurrenceRankerConfigProto config;
   PartiallyPopulateConfig(&config);
-  auto* predictor = config.mutable_frecency_predictor();
+  auto* predictor = config.mutable_predictor()->mutable_frecency_predictor();
   predictor->set_decay_coeff(0.5f);
 
   RecurrenceRanker ranker(ranker_filepath_, config, false);

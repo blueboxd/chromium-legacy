@@ -31,8 +31,6 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
-class OAuth2TokenService;
-
 namespace policy {
 
 // This implementation of UploadJob uses the OAuth2AccessTokenManager to acquire
@@ -67,7 +65,7 @@ class UploadJobImpl : public UploadJob,
   UploadJobImpl(
       const GURL& upload_url,
       const std::string& account_id,
-      OAuth2TokenService* token_service,
+      OAuth2AccessTokenManager* access_token_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Delegate* delegate,
       std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
@@ -141,8 +139,8 @@ class UploadJobImpl : public UploadJob,
   // The account ID that will be used for the access token fetch.
   const std::string account_id_;
 
-  // The token service used to retrieve the access token.
-  OAuth2TokenService* const token_service_;
+  // The token manager used to retrieve the access token.
+  OAuth2AccessTokenManager* const access_token_manager_;
 
   // This is used to initialize the network::SimpleURLLoader object.
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

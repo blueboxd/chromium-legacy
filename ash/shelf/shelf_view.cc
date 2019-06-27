@@ -20,9 +20,9 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/default_shelf_view.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -167,7 +167,7 @@ class ShelfFocusSearch : public views::FocusSearch {
     if (IsTabletModeEnabled())
       focusable_views.push_back(main_shelf->GetBackButton());
 
-    focusable_views.push_back(main_shelf->GetAppListButton());
+    focusable_views.push_back(main_shelf->GetHomeButton());
     for (int i = main_shelf->first_visible_index();
          i <= main_shelf->last_visible_index(); ++i) {
       focusable_views.push_back(main_shelf->view_model()->view_at(i));
@@ -353,7 +353,7 @@ void ShelfView::Init() {
   ConfigureChildView(back_button_ptr.get());
   back_button_ = AddChildView(std::move(back_button_ptr));
 
-  std::unique_ptr<AppListButton> home_button_ptr = CreateHomeButton();
+  std::unique_ptr<HomeButton> home_button_ptr = CreateHomeButton();
   ConfigureChildView(home_button_ptr.get());
   home_button_ = AddChildView(std::move(home_button_ptr));
   home_button_->set_context_menu_controller(this);
@@ -378,7 +378,7 @@ void ShelfView::Init() {
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
   if (id == ShelfID(kAppListId))
-    return GetMirroredRect(GetAppListButton()->ideal_bounds());
+    return GetMirroredRect(GetHomeButton()->ideal_bounds());
   if (id == ShelfID(kBackButtonId))
     return GetMirroredRect(GetBackButton()->ideal_bounds());
 
@@ -416,7 +416,7 @@ bool ShelfView::IsShowingOverflowBubble() const {
   return overflow_bubble_.get() && overflow_bubble_->IsShowing();
 }
 
-AppListButton* ShelfView::GetAppListButton() const {
+HomeButton* ShelfView::GetHomeButton() const {
   return home_button_;
 }
 
@@ -444,21 +444,21 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
 }
 
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
-  // If this is the app list button, only show the tooltip if the app list is
+  // If this is the home button, only show the tooltip if the app list is
   // not already showing.
-  const AppListButton* app_list_button = GetAppListButton();
-  if (app_list_button &&
-      app_list_button->GetMirroredBounds().Contains(cursor_location)) {
-    return app_list_button->IsShowingAppList();
+  const HomeButton* home_button = GetHomeButton();
+  if (home_button &&
+      home_button->GetMirroredBounds().Contains(cursor_location)) {
+    return home_button->IsShowingAppList();
   }
   return !visible_shelf_item_bounds_union_.Contains(cursor_location);
 }
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
-  // If this is the app list button, only show the tooltip if the app list is
+  // If this is the home button, only show the tooltip if the app list is
   // not already showing.
-  if (view == GetAppListButton())
-    return !GetAppListButton()->IsShowingAppList();
+  if (view == GetHomeButton())
+    return !GetHomeButton()->IsShowingAppList();
   if (view == overflow_button_)
     return true;
   // Don't show a tooltip for a view that's currently being dragged.
@@ -516,10 +516,10 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   if (model_->item_count() == 0) {
     // There are no apps.
     return shelf_->IsHorizontalAlignment()
-               ? gfx::Size(GetAppListButton()->bounds().right(),
+               ? gfx::Size(GetHomeButton()->bounds().right(),
                            ShelfConstants::shelf_size())
                : gfx::Size(ShelfConstants::shelf_size(),
-                           GetAppListButton()->bounds().bottom());
+                           GetHomeButton()->bounds().bottom());
   }
 
   int last_button_index = last_visible_index_;
@@ -632,13 +632,13 @@ void ShelfView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender == GetAppListButton()) {
+  if (sender == GetHomeButton()) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
     const app_list::AppListShowSource show_source =
         event.IsShiftDown() ? app_list::kShelfButtonFullscreen
                             : app_list::kShelfButton;
-    GetAppListButton()->OnPressed(show_source, event.time_stamp());
+    GetHomeButton()->OnPressed(show_source, event.time_stamp());
     return;
   }
 
@@ -858,14 +858,14 @@ views::View* ShelfView::FindFirstFocusableChild() {
   if (is_overflow_mode())
     return main_shelf()->FindFirstFocusableChild();
   return IsTabletModeEnabled() ? static_cast<views::View*>(GetBackButton())
-                               : static_cast<views::View*>(GetAppListButton());
+                               : static_cast<views::View*>(GetHomeButton());
 }
 
 views::View* ShelfView::FindLastFocusableChild() {
   if (IsShowingOverflowBubble())
     return overflow_shelf()->FindLastFocusableChild();
   if (view_model_->view_size() == 0)
-    return static_cast<views::View*>(GetAppListButton());
+    return static_cast<views::View*>(GetHomeButton());
   return overflow_button_->GetVisible()
              ? overflow_button_
              : view_model_->view_at(last_visible_index());
@@ -1041,7 +1041,7 @@ bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
 
   // The back and app buttons are not part of the view model, treat them
   // separately.
-  if (view == GetAppListButton() || view == GetBackButton())
+  if (view == GetHomeButton() || view == GetBackButton())
     return !repost;
 
   // Ignore if this is a repost event on the last pressed shelf item.
@@ -1103,7 +1103,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
     return;  // View is being deleted, ignore request.
 
   // The home and back buttons should be handled separately.
-  DCHECK(view != GetAppListButton() || view != GetBackButton());
+  DCHECK(view != GetHomeButton() || view != GetBackButton());
 
   // Only when the repost event occurs on the same shelf item, we should ignore
   // the call in ShelfView::ButtonPressed(...).
@@ -1214,7 +1214,7 @@ void ShelfView::AnimateToIdealBounds() {
   // Handle back and home separately.
   ShelfControlButton* back = GetBackButton();
   bounds_animator_->AnimateViewTo(back, back->ideal_bounds());
-  ShelfControlButton* home = GetAppListButton();
+  ShelfControlButton* home = GetHomeButton();
   bounds_animator_->AnimateViewTo(home, home->ideal_bounds());
   if (home->border())
     home->SetBorder(views::NullBorder());
@@ -1632,7 +1632,7 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
 bool ShelfView::ShouldFocusOut(bool reverse, views::View* button) {
   // The logic here seems backwards, but is actually correct. For instance if
   // the ShelfView's internal focus cycling logic attemmpts to focus the first
-  // child (e.g. app list button) after hitting Tab, we intercept that and
+  // child (e.g. home button) after hitting Tab, we intercept that and
   // instead, advance through to the status area.
   return (reverse && button == FindLastFocusableChild()) ||
          (!reverse && button == FindFirstFocusableChild());
@@ -2048,10 +2048,10 @@ void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
   tooltip_.Close();
   if (overflow_bubble_)
     overflow_bubble_->Hide();
-  // For crbug.com/587931, because AppListButton layout logic is in OnPaint.
-  AppListButton* app_list_button = GetAppListButton();
-  if (app_list_button)
-    app_list_button->SchedulePaint();
+  // For crbug.com/587931, because HomeButton layout logic is in OnPaint.
+  HomeButton* home_button = GetHomeButton();
+  if (home_button)
+    home_button->SchedulePaint();
 
   AnnounceShelfAlignment();
 }

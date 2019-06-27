@@ -690,7 +690,6 @@
     },
     {
       name: "HeapCompaction",
-      status: "stable",
     },
     {
       name: "HeapConcurrentMarking",

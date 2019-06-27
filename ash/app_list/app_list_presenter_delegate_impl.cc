@@ -18,8 +18,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -178,13 +178,13 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
       return;
   }
 
-  // If the event happened on the app list button, it'll get handled by the
+  // If the event happened on the home button, it'll get handled by the
   // button.
   Shelf* shelf = Shelf::ForWindow(target);
-  AppListButton* app_list_button = shelf->shelf_widget()->GetAppListButton();
-  if (app_list_button && app_list_button->GetWidget() &&
-      target == app_list_button->GetWidget()->GetNativeWindow() &&
-      app_list_button->bounds().Contains(event->location())) {
+  HomeButton* home_button = shelf->shelf_widget()->GetHomeButton();
+  if (home_button && home_button->GetWidget() &&
+      target == home_button->GetWidget()->GetNativeWindow() &&
+      home_button->bounds().Contains(event->location())) {
     return;
   }
 

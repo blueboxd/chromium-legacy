@@ -16,15 +16,15 @@
 
 namespace app_list {
 
-using FakePredictorConfig = RecurrenceRankerConfigProto::FakePredictorConfig;
+using FakePredictorConfig = RecurrencePredictorConfigProto::FakePredictorConfig;
 using DefaultPredictorConfig =
-    RecurrenceRankerConfigProto::DefaultPredictorConfig;
+    RecurrencePredictorConfigProto::DefaultPredictorConfig;
 using ConditionalFrequencyPredictorConfig =
-    RecurrenceRankerConfigProto::ConditionalFrequencyPredictorConfig;
+    RecurrencePredictorConfigProto::ConditionalFrequencyPredictorConfig;
 using FrecencyPredictorConfig =
-    RecurrenceRankerConfigProto::FrecencyPredictorConfig;
+    RecurrencePredictorConfigProto::FrecencyPredictorConfig;
 using HourBinPredictorConfig =
-    RecurrenceRankerConfigProto::HourBinPredictorConfig;
+    RecurrencePredictorConfigProto::HourBinPredictorConfig;
 
 // |RecurrencePredictor| is the interface for all predictors used by
 // |RecurrenceRanker| to drive rankings. If a predictor has some form of

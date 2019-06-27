@@ -11,8 +11,8 @@ instantiates the template based on the wayland content.
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys
 import os
+import sys
 
 import jinja2
 import wayland_utils as wlu
@@ -104,6 +104,7 @@ def GetArg(arg):
       'proto_type': proto_type_conversions[ty],
       'cpp_type': GetCppType(arg),
       'interface': arg.get('interface'),
+      'doc': wlu.GetDocumentation(arg),
   }
 
 
@@ -113,6 +114,8 @@ def GetMessage(message, context):
   return {
       'name':
           name,
+      'tag':
+          message.tag,
       'idx':
           context.GetAndIncrementCount('message_index'),
       'args': [GetArg(a) for a in message.findall('arg')],
@@ -124,6 +127,8 @@ def GetMessage(message, context):
           constructed,
       'constructed_has_listener':
           constructed in context.interfaces_with_listeners,
+      'doc':
+          wlu.GetDocumentation(message),
   }
 
 
@@ -143,7 +148,9 @@ def GetInterface(interface, context):
           GetMessage(m, context) for m in interface.findall('request')
       ],
       'has_listener':
-          wlu.NeedsListener(interface)
+          wlu.NeedsListener(interface),
+      'doc':
+          wlu.GetDocumentation(interface),
   }
 
 
@@ -154,7 +161,7 @@ def GetTemplateData(protocol_paths):
   for p in protocols:
     for i in p.findall('interface'):
       interfaces.append(GetInterface(i, context))
-  assert all(p.endswith(".xml") for p in protocol_paths)
+  assert all(p.endswith('.xml') for p in protocol_paths)
   return {
       'protocol_names': [str(os.path.basename(p))[:-4] for p in protocol_paths],
       'interfaces':

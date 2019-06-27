@@ -274,7 +274,7 @@ void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
           "DragReleaseHide",
           value);
       break;
-    case TabletModeAnimationTransition::kAppListButtonShow:
+    case TabletModeAnimationTransition::kHomeButtonShow:
       UMA_HISTOGRAM_PERCENTAGE(
           "Apps.HomeLauncherTransition.AnimationSmoothness."
           "PressAppListButtonShow",

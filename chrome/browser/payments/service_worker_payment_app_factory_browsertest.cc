@@ -237,8 +237,15 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   void ExpectInstallablePaymentAppInScope(const std::string& scope) {
     ASSERT_FALSE(installable_apps().empty());
     WebAppInstallationInfo* app = nullptr;
+
+    const GURL expected_scope(scope);
+    url::Replacements<char> clear_port;
+    clear_port.ClearPort();
+
     for (const auto& it : installable_apps()) {
-      if (it.second->sw_scope == scope) {
+      // |sw_scope| may contain the test server port. Ignore it in comparison.
+      if (GURL(it.second->sw_scope).ReplaceComponents(clear_port) ==
+          expected_scope) {
         app = it.second.get();
         break;
       }

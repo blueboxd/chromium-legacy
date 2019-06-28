@@ -101,6 +101,10 @@ class PaymentManifestDownloader {
   void DownloadWebAppManifest(const GURL& url,
                               PaymentManifestDownloadCallback callback);
 
+  // Overridden in TestDownloader to convert |url| to a test server URL. The
+  // default implementation here simply returns |url|.
+  virtual GURL FindTestServerURL(const GURL& url) const;
+
  private:
   friend class PaymentMethodManifestDownloaderTest;
   friend class TestDownloader;

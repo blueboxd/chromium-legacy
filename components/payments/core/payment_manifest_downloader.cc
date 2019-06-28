@@ -158,6 +158,10 @@ void PaymentManifestDownloader::DownloadWebAppManifest(
                    std::move(callback));
 }
 
+GURL PaymentManifestDownloader::FindTestServerURL(const GURL& url) const {
+  return url;
+}
+
 PaymentManifestDownloader::Download::Download() {}
 
 PaymentManifestDownloader::Download::~Download() {}

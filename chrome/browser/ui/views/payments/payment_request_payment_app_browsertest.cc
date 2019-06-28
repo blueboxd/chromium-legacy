@@ -34,9 +34,14 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
   PaymentRequestPaymentAppTest()
       : alicepay_(net::EmbeddedTestServer::TYPE_HTTPS),
         bobpay_(net::EmbeddedTestServer::TYPE_HTTPS),
-        frankpay_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    scoped_feature_list_.InitAndEnableFeature(
-        ::features::kServiceWorkerPaymentApps);
+        frankpay_(net::EmbeddedTestServer::TYPE_HTTPS),
+        kylepay_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    scoped_feature_list_.InitWithFeatures(
+        // enabled features
+        {::features::kServiceWorkerPaymentApps,
+         features::kAlwaysAllowJustInTimePaymentApp},
+        // disabled features
+        {});
   }
 
   PermissionRequestManager* GetPermissionRequestManager() {
@@ -51,6 +56,7 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
     ASSERT_TRUE(StartTestServer("alicepay.com", &alicepay_));
     ASSERT_TRUE(StartTestServer("bobpay.com", &bobpay_));
     ASSERT_TRUE(StartTestServer("frankpay.com", &frankpay_));
+    ASSERT_TRUE(StartTestServer("kylepay.com", &kylepay_));
 
     GetPermissionRequestManager()->set_auto_response_for_test(
         PermissionRequestManager::ACCEPT_ALL);
@@ -104,8 +110,8 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
                                         std::string(), CONTENT_SETTING_BLOCK);
   }
 
-  // Sets a TestDownloader for alicepay.com, bobpay.com and frankpay.com to
-  // ServiceWorkerPaymentAppFactory, and ignores port in app scope.
+  // Sets a TestDownloader for ServiceWorkerPaymentAppFactory and ignores port
+  // in app scope.
   void SetDownloaderAndIgnorePortInOriginComparisonForTesting() {
     content::BrowserContext* context = browser()
                                            ->tab_strip_model()
@@ -120,6 +126,8 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
                                  bobpay_.GetURL("bobpay.com", "/"));
     downloader->AddTestServerURL("https://frankpay.com/",
                                  frankpay_.GetURL("frankpay.com", "/"));
+    downloader->AddTestServerURL("https://kylepay.com/",
+                                 kylepay_.GetURL("kylepay.com", "/"));
     ServiceWorkerPaymentAppFactory::GetInstance()
         ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
             std::move(downloader));
@@ -147,6 +155,9 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
 
   // https://frankpay.com/webpay supports payment apps from any origin.
   net::EmbeddedTestServer frankpay_;
+
+  // https://kylepay.com/webpay hosts a just-in-time installable payment app.
+  net::EmbeddedTestServer kylepay_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -554,4 +565,23 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
+                       AlwaysAllowJustInTimeInstall) {
+  SetDownloaderAndIgnorePortInOriginComparisonForTesting();
+
+  // Trigger a request that specifies both kylepay.com and basic-card.
+  NavigateTo("/payment_request_bobpay_and_cards_test.html");
+
+  ResetEventWaiterForDialogOpened();
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
+                                     "testInstallableAppAndCard();"));
+  WaitForObservedEvent();
+
+  ResetEventWaiterForSequence(
+      {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
+  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
+
+  // kylepay should be installed just-in-time and used for testing.
+  ExpectBodyContains({"kylepay.com/webpay"});
+}
 }  // namespace payments

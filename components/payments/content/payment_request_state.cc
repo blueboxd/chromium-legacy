@@ -24,6 +24,7 @@
 #include "components/payments/core/features.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "content/public/common/content_features.h"
 
 namespace payments {
@@ -61,12 +62,15 @@ PaymentRequestState::PaymentRequestState(
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
     DCHECK(web_contents);
     get_all_instruments_finished_ = false;
+    bool may_crawl_for_installable_payment_apps =
+        PaymentsExperimentalFeatures::IsEnabled(
+            features::kAlwaysAllowJustInTimePaymentApp) ||
+        !spec_->supports_basic_card();
+
     ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
         web_contents,
         payment_request_delegate_->GetPaymentManifestWebDataService(),
-        spec_->method_data(),
-        /*may_crawl_for_installable_payment_apps=*/
-        !spec_->supports_basic_card(),
+        spec_->method_data(), may_crawl_for_installable_payment_apps,
         base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
                        weak_ptr_factory_.GetWeakPtr(), web_contents,
                        top_level_origin, frame_origin),

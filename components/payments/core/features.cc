@@ -34,6 +34,9 @@ const base::Feature kWebPaymentsSingleAppUiSkip{
 const base::Feature kWebPaymentsJustInTimePaymentApp{
     "WebPaymentsJustInTimePaymentApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAlwaysAllowJustInTimePaymentApp{
+    "AlwaysAllowJustInTimePaymentApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota{
     "WebPaymentsPerMethodCanMakePaymentQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};

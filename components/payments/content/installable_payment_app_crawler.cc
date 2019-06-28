@@ -312,6 +312,17 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
     return false;
   }
 
+  // If this is called by tests, convert service worker URLs back to test server
+  // URLs so the service worker code can be fetched and installed. This is done
+  // last so same-origin checks are performed on the "logical" URLs instead of
+  // real test URLs with ports.
+  if (ignore_port_in_origin_comparison_for_testing_) {
+    app_info->sw_js_url =
+        downloader_->FindTestServerURL(GURL(app_info->sw_js_url)).spec();
+    app_info->sw_scope =
+        downloader_->FindTestServerURL(GURL(app_info->sw_scope)).spec();
+  }
+
   installable_apps_[method_manifest_url] = std::move(app_info);
 
   return true;

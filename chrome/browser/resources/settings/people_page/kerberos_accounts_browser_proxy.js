@@ -16,7 +16,8 @@ cr.exportPath('settings');
  *   config: string,
  *   isSignedIn: boolean,
  *   isActive: boolean,
- *   hasRememberedPassword: boolean,
+ *   isManaged: boolean,
+ *   passwordWasRemembered: boolean,
  *   pic: string,
  * }}
  */

@@ -218,8 +218,7 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   if (IsTabletMode() && presenter_->IsShowingEmbeddedAssistantUI()) {
     auto* contents_view =
         presenter_->GetView()->app_list_main_view()->contents_view();
-    if (target == contents_view->GetWidget()->GetNativeWindow() &&
-        contents_view->bounds().Contains(event->location())) {
+    if (contents_view->bounds().Contains(event->location())) {
       // Keep Assistant open if event happen inside.
       return;
     }

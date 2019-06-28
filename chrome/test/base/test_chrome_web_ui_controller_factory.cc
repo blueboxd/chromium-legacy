@@ -34,7 +34,8 @@ void TestChromeWebUIControllerFactory::RemoveFactoryOverride(
 }
 
 WebUI::TypeID TestChromeWebUIControllerFactory::GetWebUIType(
-    content::BrowserContext* browser_context, const GURL& url) const {
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   WebUIProvider* provider = GetWebUIProvider(profile, url);
   return provider ? reinterpret_cast<WebUI::TypeID>(provider) :
@@ -44,7 +45,7 @@ WebUI::TypeID TestChromeWebUIControllerFactory::GetWebUIType(
 std::unique_ptr<WebUIController>
 TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
     content::WebUI* web_ui,
-    const GURL& url) const {
+    const GURL& url) {
   Profile* profile = Profile::FromWebUI(web_ui);
   WebUIProvider* provider = GetWebUIProvider(profile, url);
   return provider ? provider->NewWebUI(web_ui, url)

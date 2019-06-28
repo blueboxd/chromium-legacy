@@ -20,6 +20,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -63,6 +64,7 @@ void RecordSecurityLevel(
 
 }  // namespace
 
+using password_manager::metrics_util::PasswordType;
 using safe_browsing::SafeBrowsingUIManager;
 
 SecurityStateTabHelper::SecurityStateTabHelper(
@@ -174,9 +176,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
 #if defined(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
-                    web_contents(),
-                    safe_browsing::LoginReputationClientRequest::
-                        PasswordReuseEvent::SIGN_IN_PASSWORD)) {
+                    web_contents(), PasswordType::PRIMARY_ACCOUNT_PASSWORD)) {
           return security_state::
               MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
         }
@@ -188,9 +188,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
 #if defined(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
-                    web_contents(),
-                    safe_browsing::LoginReputationClientRequest::
-                        PasswordReuseEvent::ENTERPRISE_PASSWORD)) {
+                    web_contents(), PasswordType::ENTERPRISE_PASSWORD)) {
           return security_state::
               MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE;
         }

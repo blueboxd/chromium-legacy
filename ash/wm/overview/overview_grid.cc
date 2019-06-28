@@ -950,7 +950,7 @@ void OverviewGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
 void OverviewGrid::OnScreenCopiedBeforeRotation() {
   for (auto& window : window_list()) {
     window->set_disable_mask(true);
-    window->UpdateMaskAndShadow();
+    window->UpdateRoundedCornersAndShadow();
     window->StopWidgetAnimation();
   }
 }
@@ -960,7 +960,7 @@ void OverviewGrid::OnScreenRotationAnimationFinished(
     bool canceled) {
   for (auto& window : window_list())
     window->set_disable_mask(false);
-  Shell::Get()->overview_controller()->DelayedUpdateMaskAndShadow();
+  Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
 }
 
 void OverviewGrid::OnStartingAnimationComplete(bool canceled) {

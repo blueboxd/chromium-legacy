@@ -4128,7 +4128,7 @@ class TouchIdAuthenticatorRequestDelegate
       : config_(std::move(config)) {}
 
   base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
-      const override {
+      override {
     return config_;
   }
 

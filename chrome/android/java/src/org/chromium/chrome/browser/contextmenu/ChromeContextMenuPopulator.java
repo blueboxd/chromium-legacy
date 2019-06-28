@@ -246,7 +246,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         // being loaded. Only use native URL formatting methods
         // if the native libraries have been loaded.
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             return UrlFormatter.formatUrlForDisplayOmitHTTPScheme(params.getLinkUrl());
         }
         return params.getLinkUrl();
@@ -401,7 +401,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         if (!groupedItems.isEmpty()
                 && BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                           .isStartupSuccessfullyCompleted()) {
+                           .isFullBrowserStarted()) {
             if (!hasSaveImage) {
                 ContextMenuUma.recordSaveImageUma(params.isImage()
                                 ? ContextMenuUma.TypeSaveImage.DISABLED_AND_IS_IMAGE_PARAM
@@ -546,7 +546,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      */
     private void recordSaveImageContextMenuResult(boolean isDownloadableScheme) {
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             return;
         }
 

@@ -1137,8 +1137,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          # NOTE explicit use of 10.13 for these bots.
-          'mac_mini_intel_gpu_experimental',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
@@ -1159,8 +1158,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          # NOTE explicit use of 10.13 for these bots.
-          'mac_mini_intel_gpu_experimental',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
@@ -2900,12 +2898,12 @@
             # TODO(kbr): figure out how to use mixins for these.
             {
               'gpu': '8086:0a2e',
-              'os': 'Mac-10.13.6',
+              'os': 'mac-intel-stable',
             },
             {
               'gpu': '1002:6821',
               'hidpi': '1',
-              'os': 'Mac-10.13.6',
+              'os': 'mac-amd-stable',
               'pool': 'Chrome-GPU',
             },
           ],

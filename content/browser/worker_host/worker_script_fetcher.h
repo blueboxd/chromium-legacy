@@ -28,8 +28,8 @@ class WorkerScriptLoaderFactory;
 // NetworkService (PlzWorker):
 // This is an implementation of the URLLoaderClient for web worker's main script
 // fetch. The loader and client bounded with this class are to be unbound and
-// forwarded to the renderer process on OnReceiveResponse, and the resource
-// loader in the renderer process will take them over.
+// forwarded to the renderer process on OnStartLoadingResponseBody, and the
+// resource loader in the renderer process will take them over.
 //
 // WorkerScriptFetcher deletes itself when the ownership of the loader and
 // client is passed to the renderer, or on failure. It lives on the IO thread.
@@ -90,6 +90,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
 
   std::vector<net::RedirectInfo> redirect_infos_;
   std::vector<network::ResourceResponseHead> redirect_response_heads_;
+  network::ResourceResponseHead response_head_;
 };
 
 }  // namespace content

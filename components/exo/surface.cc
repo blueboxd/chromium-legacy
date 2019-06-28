@@ -50,6 +50,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/display/output_protection_delegate.h"
 #include "ash/wm/desks/desks_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -570,6 +571,12 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         pending_state_.buffer_scale != state_.buffer_scale ||
         pending_state_.buffer_transform != state_.buffer_transform;
 
+#if defined(OS_CHROMEOS)
+    bool needs_output_protection =
+        pending_state_.only_visible_on_secure_output !=
+        state_.only_visible_on_secure_output;
+#endif  // defined(OS_CHROMEOS)
+
     bool pending_invert_y = false;
 
     // If the current state is fully transparent, the last submitted frame will
@@ -585,6 +592,21 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         (state_.input_region.has_value() && state_.input_region->IsEmpty())
             ? aura::EventTargetingPolicy::kDescendantsOnly
             : aura::EventTargetingPolicy::kTargetAndDescendants);
+
+#if defined(OS_CHROMEOS)
+    if (needs_output_protection) {
+      if (!output_protection_) {
+        output_protection_ =
+            std::make_unique<ash::OutputProtectionDelegate>(window_.get());
+      }
+
+      uint32_t protection_mask = state_.only_visible_on_secure_output
+                                     ? display::CONTENT_PROTECTION_METHOD_HDCP
+                                     : display::CONTENT_PROTECTION_METHOD_NONE;
+
+      output_protection_->SetProtection(protection_mask, base::DoNothing());
+    }
+#endif  // defined(OS_CHROMEOS)
 
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {

@@ -173,8 +173,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // the shadow is hidden.
   void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
 
-  // Updates the mask and shadow on this overview window item.
-  void UpdateMaskAndShadow();
+  // Updates the rounded corners and shadow on this overview window item.
+  void UpdateRoundedCornersAndShadow();
 
   // Called when the starting animation is completed, or called immediately
   // if there was no starting animation.
@@ -261,7 +261,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   friend class OverviewSessionRoundedCornerTest;
   friend class OverviewSessionTest;
   class OverviewCloseButton;
-  class WindowSurfaceCacheObserver;
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
@@ -364,9 +363,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
   std::unique_ptr<ui::Shadow> shadow_;
-
-  // The observer to observe the window that has cached its render surface.
-  std::unique_ptr<WindowSurfaceCacheObserver> window_surface_cache_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewItem);
 };

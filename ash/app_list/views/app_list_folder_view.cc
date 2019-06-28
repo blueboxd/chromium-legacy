@@ -642,14 +642,21 @@ void AppListFolderView::RecordAnimationSmoothness() {
   // Do not record animation smoothness if |compositor| is nullptr.
   if (!compositor)
     return;
+  // Do not record if the start frame number doesn't exist; either animation is
+  // not scheduled or the record happens.
+  if (!animation_start_frame_number_.has_value())
+    return;
 
   const int end_frame_number = GetCompositorActivatedFrameCount(compositor);
-  if (end_frame_number > animation_start_frame_number_) {
+  if (end_frame_number > *animation_start_frame_number_) {
     RecordFolderShowHideAnimationSmoothness(
-        end_frame_number - animation_start_frame_number_,
+        end_frame_number - *animation_start_frame_number_,
         AppListConfig::instance().folder_transition_in_duration_ms(),
         compositor->refresh_rate());
   }
+  // Resets the frame number so that further invocation won't record the
+  // metrics.
+  animation_start_frame_number_.reset();
 }
 
 void AppListFolderView::UpdateBackgroundMask(int corner_radius,

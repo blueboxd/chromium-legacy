@@ -150,9 +150,10 @@ void PrefetchURLLoader::OnReceiveResponse(
     signed_exchange_prefetch_handler_ =
         std::make_unique<SignedExchangePrefetchHandler>(
             frame_tree_node_id_getter_, resource_request_, response,
-            std::move(loader_), client_binding_.Unbind(),
-            network_loader_factory_, url_loader_throttles_getter_,
-            resource_context_, request_context_getter_, this,
+            mojo::ScopedDataPipeConsumerHandle(), std::move(loader_),
+            client_binding_.Unbind(), network_loader_factory_,
+            url_loader_throttles_getter_, resource_context_,
+            request_context_getter_, this,
             signed_exchange_prefetch_metric_recorder_, accept_langs_);
     return;
   }

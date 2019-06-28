@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 
+#include <algorithm>
+
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 

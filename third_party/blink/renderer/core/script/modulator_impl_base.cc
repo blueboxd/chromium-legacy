@@ -112,32 +112,9 @@ void ModulatorImplBase::FetchTree(
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
-  // <spec label="fetch-a-module-script-tree" step="2">Perform the internal
-  // module script graph fetching procedure given url, settings object,
-  // destination, options, settings object, visited set, "client", and with the
-  // top-level module fetch flag set. If the caller of this algorithm specified
-  // custom perform the fetch steps, pass those along as well.</spec>
-
-  // <spec label="fetch-a-module-worker-script-tree" step="3">Perform the
-  // internal module script graph fetching procedure given url, fetch client
-  // settings object, destination, options, module map settings object, visited
-  // set, "client", and with the top-level module fetch flag set. If the caller
-  // of this algorithm specified custom perform the fetch steps, pass those
-  // along as well.</spec>
-
   ModuleTreeLinker::Fetch(url, fetch_client_settings_object_fetcher,
                           destination, options, this, custom_fetch_type,
                           tree_linker_registry_, client);
-
-  // <spec label="fetch-a-module-script-tree" step="3">When the internal module
-  // script graph fetching procedure asynchronously completes with result,
-  // asynchronously complete this algorithm with result.</spec>
-
-  // <spec label="fetch-a-module-worker-script-tree" step="4">When the internal
-  // module script graph fetching procedure asynchronously completes with
-  // result, asynchronously complete this algorithm with result.</spec>
-
-  // Note: We delegate to ModuleTreeLinker to notify ModuleTreeClient.
 }
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
@@ -284,11 +261,11 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
       module_record_resolver_->GetHostDefined(record);
   DCHECK(module_script);
 
-  // <spec step="2">Let urlString be module script's base URL,
+  // <spec step="3">Let urlString be module script's base URL,
   // serialized.</spec>
   String url_string = module_script->BaseURL().GetString();
 
-  // <spec step="3">Return « Record { [[Key]]: "url", [[Value]]: urlString }
+  // <spec step="4">Return « Record { [[Key]]: "url", [[Value]]: urlString }
   // ».</spec>
   return ModuleImportMeta(url_string);
 }

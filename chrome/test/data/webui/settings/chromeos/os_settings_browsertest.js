@@ -158,3 +158,22 @@ TEST_F('OSSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
   mocha.run();
 });
 GEN('#endif');
+
+// Tests for the Reset section.
+// eslint-disable-next-line no-var
+var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_lifetime_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_reset_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      'os_reset_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsResetPageTest', 'AllJavascriptTests', function() {
+  mocha.run();
+});

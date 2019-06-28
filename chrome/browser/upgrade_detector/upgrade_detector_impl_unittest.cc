@@ -208,10 +208,6 @@ TEST_F(UpgradeDetectorImplTest, VariationsCriticalChanges) {
 // elevated: 16h
 // high: 24h
 TEST_F(UpgradeDetectorImplTest, TestPeriodChanges) {
-  // Fast forward a little bit to get away from zero ticks, which has special
-  // meaning in the detector.
-  FastForwardBy(base::TimeDelta::FromHours(1));
-
   TestUpgradeDetectorImpl upgrade_detector(GetMockClock(), GetMockTickClock());
   ::testing::StrictMock<MockUpgradeObserver> mock_observer(&upgrade_detector);
 
@@ -405,10 +401,6 @@ TEST_P(UpgradeDetectorImplTimerTest, TestNotificationTimer) {
   using Notifications = std::vector<TimeAndStage>;
   static constexpr base::TimeDelta kTwentyMinues =
       base::TimeDelta::FromMinutes(20);
-
-  // Fast forward a little bit to get away from zero ticks, which has special
-  // meaning in the detector.
-  FastForwardBy(base::TimeDelta::FromHours(1));
 
   TestUpgradeDetectorImpl detector(GetMockClock(), GetMockTickClock());
   ::testing::StrictMock<MockUpgradeObserver> mock_observer(&detector);

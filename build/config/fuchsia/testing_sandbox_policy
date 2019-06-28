@@ -13,6 +13,7 @@
       "fuchsia.media.Audio",
       "fuchsia.media.drm.WidevineContentDecryptionModule",
       "fuchsia.mediacodec.CodecFactory",
+      "fuchsia.net.NameLookup",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider",

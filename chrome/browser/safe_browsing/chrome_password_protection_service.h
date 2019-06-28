@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/sessions/core/session_id.h"
@@ -42,13 +43,14 @@ class VerdictCacheManager;
 
 using OnWarningDone = base::OnceCallback<void(WarningAction)>;
 using StringProvider = base::RepeatingCallback<std::string()>;
+using password_manager::metrics_util::PasswordType;
 using url::Origin;
 
 // Shows the platform-specific password reuse modal dialog.
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     OnWarningDone done_callback);
 
 // Called by ChromeContentBrowserClient to create a
@@ -94,7 +96,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // show password reuse warning.
   static bool ShouldShowPasswordReusePageInfoBubble(
       content::WebContents* web_contents,
-      ReusedPasswordType password_type);
+      PasswordType password_type);
 
   // Called by ChromeWebUIControllerFactory class to determine if Chrome should
   // show chrome://reset-password page.
@@ -102,14 +104,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void ShowModalWarning(content::WebContents* web_contents,
                         const std::string& verdict_token,
-                        ReusedPasswordType password_type) override;
+                        PasswordType password_type) override;
 
   void ShowInterstitial(content::WebContents* web_contens,
-                        ReusedPasswordType password_type) override;
+                        PasswordType password_type) override;
 
   // Called when user interacts with password protection UIs.
   void OnUserAction(content::WebContents* web_contents,
-                    ReusedPasswordType password_type,
+                    PasswordType password_type,
                     WarningUIType ui_type,
                     WarningAction action);
 
@@ -123,7 +125,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // is not in incognito mode.
   void MaybeStartThreatDetailsCollection(content::WebContents* web_contents,
                                          const std::string& token,
-                                         ReusedPasswordType password_type);
+                                         PasswordType password_type);
 
   // Sends threat details if user has extended reporting enabled and is not in
   // incognito mode.
@@ -167,12 +169,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Gets the detailed warning text that should show in the modal warning dialog
   // and page info bubble.
-  base::string16 GetWarningDetailText(ReusedPasswordType password_type) const;
+  base::string16 GetWarningDetailText(PasswordType password_type) const;
 
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
   // returns an empty string.
-  std::string GetOrganizationName(ReusedPasswordType password_type) const;
+  std::string GetOrganizationName(PasswordType password_type) const;
 
   // If the browser is not incognito and the user is reusing their enterprise
   // password or is a GSuite user, triggers
@@ -181,7 +183,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // saved-password reuse. No validation has been done on it.
   void MaybeReportPasswordReuseDetected(content::WebContents* web_contents,
                                         const std::string& username,
-                                        ReusedPasswordType reused_password_type,
+                                        PasswordType password_type,
                                         bool is_phishing_url) override;
 
   // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordChanged" API.
@@ -198,7 +200,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // reused |password_type|, |verdict| and |receive_time|.
   void CacheVerdict(const GURL& url,
                     LoginReputationClientRequest::TriggerType trigger_type,
-                    ReusedPasswordType password_type,
+                    PasswordType password_type,
                     const LoginReputationClientResponse& verdict,
                     const base::Time& receive_time) override;
 
@@ -211,8 +213,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   LoginReputationClientResponse::VerdictType GetCachedVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
-      ReusedPasswordType password_type,
+      PasswordType password_type,
       LoginReputationClientResponse* out_response) override;
+
+  // Gets |account_info_| based on |profile_|.
+  AccountInfo GetAccountInfo() const override;
 
  protected:
   // PasswordProtectionService overrides.
@@ -231,11 +236,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Checks if pinging should be enabled based on the |trigger_type|,
   // |password_type| and user state, updates |reason| accordingly.
   bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
-                        ReusedPasswordType password_type,
+                        PasswordType password_type,
                         RequestOutcome* reason) override;
 
   // If user enabled history syncing.
   bool IsHistorySyncEnabled() override;
+
+  // If current user account is syncing.
+  bool IsAccountSyncing() override;
 
   // If user is under advanced protection.
   bool IsUnderAdvancedProtection() override;
@@ -252,22 +260,19 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // |threat_type| and reused |password_type|, such that page info bubble will
   // show appropriate status when user clicks on the security chip.
   void UpdateSecurityState(SBThreatType threat_type,
-                           ReusedPasswordType password_type,
+                           PasswordType password_type,
                            content::WebContents* web_contents) override;
 
   void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
       bool all_history,
       const history::URLRows& deleted_rows) override;
 
-  // Gets |account_info_| based on |profile_|.
-  virtual AccountInfo GetAccountInfo() const;
-
   void HandleUserActionOnModalWarning(content::WebContents* web_contents,
-                                      ReusedPasswordType password_type,
+                                      PasswordType password_type,
                                       WarningAction action);
 
   void HandleUserActionOnPageInfo(content::WebContents* web_contents,
-                                  ReusedPasswordType password_type,
+                                  PasswordType password_type,
                                   WarningAction action);
 
   void HandleUserActionOnSettings(content::WebContents* web_contents,
@@ -287,7 +292,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // previous request outcome, the reused |password_type| and the
   // |main_frame_url|.
   bool CanShowInterstitial(RequestOutcome reason,
-                           ReusedPasswordType password_type,
+                           PasswordType password_type,
                            const GURL& main_frame_url) override;
 
   // Unit tests

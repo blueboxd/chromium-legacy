@@ -22,7 +22,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
-#include "content/browser/webauth/authenticator_type_converters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
@@ -1493,7 +1492,7 @@ BrowserContext* AuthenticatorCommon::browser_context() const {
 namespace {
 std::unique_ptr<device::fido::mac::TouchIdAuthenticator>
 CreateTouchIdAuthenticatorIfAvailable(
-    const AuthenticatorRequestClientDelegate* request_delegate) {
+    AuthenticatorRequestClientDelegate* request_delegate) {
   // Not all embedders may provide an authenticator config.
   auto opt_authenticator_config =
       request_delegate->GetTouchIdAuthenticatorConfig();

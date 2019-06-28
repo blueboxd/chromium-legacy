@@ -148,7 +148,7 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
   // redundant child label text is not also spoken.
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
   GetViewAccessibility().OverrideIsLeaf(true);
-  accessible_name_ = description_label_view_->text() +
+  accessible_name_ = description_label_view_->GetText() +
                      base::ASCIIToUTF16(", ") + accessible_string;
 }
 

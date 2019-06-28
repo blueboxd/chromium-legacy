@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace blink {
 
@@ -178,6 +180,16 @@ void VideoFrameSubmitter::OnBeginFrame(
   for (const auto& pair : timing_details) {
     if (viz::FrameTokenGT(pair.key, *next_frame_token_))
       continue;
+
+    if (base::Contains(frame_token_to_timestamp_map_, pair.key) &&
+        !(pair.value->presentation_feedback->flags &
+          gfx::PresentationFeedback::kFailure)) {
+      UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter",
+                          pair.value->presentation_feedback->timestamp -
+                              frame_token_to_timestamp_map_[pair.key]);
+      frame_token_to_timestamp_map_.erase(pair.key);
+    }
+
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
         "media", "VideoFrameSubmitter", pair.key,
         pair.value->presentation_feedback->timestamp);
@@ -501,6 +513,10 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
                                             *next_frame_token_, value);
     TRACE_EVENT_ASYNC_STEP_PAST0("media", "VideoFrameSubmitter",
                                  *next_frame_token_, "Pre-submit buffering");
+
+    frame_token_to_timestamp_map_[*next_frame_token_] = value;
+    UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter.PreSubmitBuffering",
+                        base::TimeTicks::Now() - value);
   } else {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "media", "VideoFrameSubmitter", *next_frame_token_,

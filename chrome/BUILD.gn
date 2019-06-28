@@ -261,8 +261,8 @@ if (!is_android && !is_mac) {
         ]
 
         if (current_cpu == "x64") {
-          # Increase the initial stack size. The default is 1MB, this is 2MB.
-          ldflags += [ "/STACK:2097152" ]
+          # Increase the initial stack size. The default is 1MB, this is 8MB.
+          ldflags += [ "/STACK:8388608" ]
         }
       }
 
@@ -1647,6 +1647,7 @@ group("extra_resources") {
       "//chrome/browser/resources:os_settings_resources",
       "//chrome/browser/resources/chromeos:cellular_setup_resources",
       "//chrome/browser/resources/chromeos:multidevice_setup_resources",
+      "//chrome/browser/resources/chromeos/autoclick:build",
       "//chrome/browser/resources/chromeos/chromevox",
       "//chrome/browser/resources/chromeos/select_to_speak:build",
       "//chrome/browser/resources/chromeos/switch_access:build",

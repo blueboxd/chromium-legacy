@@ -19,10 +19,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/mouse_watcher.h"
 
-namespace ui {
-class LayerOwner;
-}
-
 namespace views {
 class BoxLayout;
 class View;
@@ -180,7 +176,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // Overridden from views::BubbleDialogDelegateView.
   int GetDialogButtons() const override;
   ax::mojom::Role GetAccessibleWindowRole() override;
-  void SizeToContents() override;
 
   // Overridden from views::View.
   void ChildPreferredSizeChanged(View* child) override;
@@ -222,7 +217,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // the latter ensures we don't leak it before passing off ownership.
   views::BubbleBorder* bubble_border_;
   std::unique_ptr<views::BubbleBorder> owned_bubble_border_;
-  std::unique_ptr<ui::LayerOwner> bubble_content_mask_;
   bool is_gesture_dragging_;
 
   // True once the mouse cursor was actively moved by the user over the bubble.

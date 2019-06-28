@@ -1,10 +1,10 @@
-# The tests in the encoding/ directory are setup to use
+# The tests in the encoding/ and bindings/ directories are setup to use
 # base from mini_chromium, as well as gmock / gtest.
 # Within the Chromium tree, we can use these dependencies
 # directly but this requires an exception here.
 
 specific_include_rules = {
-  '^.*encoding_test_helper\.h$': [
+  '^.*_test_helper\.h$': [
     '+base',
     '+testing/gtest/include',
     '+testing/gmock/include',

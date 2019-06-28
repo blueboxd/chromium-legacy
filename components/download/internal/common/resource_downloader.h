@@ -56,8 +56,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       std::vector<GURL> url_chain,
-      const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
+      const scoped_refptr<network::ResourceResponse>& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
@@ -98,9 +99,10 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
 
   // Intercepts the navigation response.
   void InterceptResponse(
-      const scoped_refptr<network::ResourceResponse>& response,
       std::vector<GURL> url_chain,
       net::CertStatus cert_status,
+      const scoped_refptr<network::ResourceResponse>& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   // UrlDownloadHandler implementations.

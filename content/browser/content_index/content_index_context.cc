@@ -4,6 +4,9 @@
 
 #include "content/browser/content_index/content_index_context.h"
 
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
+
 namespace content {
 
 ContentIndexContext::ContentIndexContext(
@@ -16,6 +19,19 @@ ContentIndexContext::ContentIndexContext(
 
 void ContentIndexContext::InitializeOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  content_index_database_.InitializeProviderWithEntries();
+}
+
+void ContentIndexContext::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ContentIndexContext::ShutdownOnIO, this));
+}
+
+void ContentIndexContext::ShutdownOnIO() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  content_index_database_.Shutdown();
 }
 
 ContentIndexDatabase& ContentIndexContext::database() {

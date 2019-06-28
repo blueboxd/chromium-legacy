@@ -132,6 +132,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint);
 
+  cc::TextureLayer* layer_for_testing() { return layer_.get(); }
+
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
   enum HibernationEvent {
@@ -206,7 +208,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   mutable SnapshotState snapshot_state_;
 
   CanvasResourceHost* resource_host_;
-  viz::TransferableResource previous_frame_resource_;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
 

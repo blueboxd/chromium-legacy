@@ -69,8 +69,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void AddObserver(OverviewObserver* observer);
   void RemoveObserver(OverviewObserver* observer);
 
-  // Post a task to update the shadow and mask of overview windows.
-  void DelayedUpdateMaskAndShadow();
+  // Post a task to update the shadow and rounded corners of overview windows.
+  void DelayedUpdateRoundedCornersAndShadow();
 
   // OverviewDelegate:
   void AddExitAnimationObserver(
@@ -133,7 +133,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void OnEndingAnimationComplete(bool canceled);
   void ResetPauser();
 
-  void UpdateMaskAndShadow();
+  void UpdateRoundedCornersAndShadow();
 
   // Collection of DelayedAnimationObserver objects that own widgets that may be
   // still animating after overview mode ends. If shell needs to shut down while

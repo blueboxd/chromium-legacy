@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -405,6 +406,47 @@ TEST_F(FallbackCursorEventManagerTest, MouseDownOnEditor) {
 
   EXPECT_EQ(GetFallbackCursorChromeClient().cursor_visible_, true);
   EXPECT_FALSE(GetDocument().FocusedElement());
+}
+
+// Ensure the cursor causes correct locking and scrolling when the web page is
+// zoomed in and the visual viewport is offset.
+TEST_F(FallbackCursorEventManagerTest, ZoomedIn) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0px;
+    }
+    .big {
+      height: 10000px;
+      width: 10000px;
+    }
+    </style>
+    <div class='big'></div>
+  )HTML");
+  TurnOnFallbackCursorMode();
+  VisualViewport& visual_viewport =
+      GetDocument().GetPage()->GetVisualViewport();
+  visual_viewport.SetScaleAndLocation(4, /*is_pinch_gesture_active=*/false,
+                                      FloatPoint(400, 300));
+
+  ASSERT_EQ(IntSize(800, 600), GetDocument().View()->Size());
+  ASSERT_EQ(FloatSize(200, 150), visual_viewport.VisibleRect().Size());
+
+  // Note: MouseMove position is specified in root frame coordinates. To
+  // determine the coordinates in the visual viewport, subtract the visual
+  // viewport offset (400, 300) from the MouseMove position.
+
+  // Move to the center of the viewport.
+  MouseMove(500, 375);
+  ExpectLock(false, false, false, false);
+
+  // Move below the scroll down line.
+  MouseMove(500, 430);
+  ExpectLock(false, false, false, true);
+
+  // Move to the left of scroll left line.
+  MouseMove(450, 375);
+  ExpectLock(true, false, false, false);
 }
 
 TEST_F(FallbackCursorEventManagerTest, NotInCursorMode) {

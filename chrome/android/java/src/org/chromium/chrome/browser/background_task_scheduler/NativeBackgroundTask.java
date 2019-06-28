@@ -247,12 +247,12 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
 
     /** Whether the native part of the browser is loaded in Full Browser Mode. */
     private boolean isNativeLoadedInFullBrowserMode() {
-        return getBrowserStartupController().isStartupSuccessfullyCompleted();
+        return getBrowserStartupController().isFullBrowserStarted();
     }
 
     /** Whether the native part of the browser is loaded in Service Manager Only Mode. */
     private boolean isNativeLoadedInServiceManagerOnlyMode() {
-        return getBrowserStartupController().isServiceManagerSuccessfullyStarted();
+        return getBrowserStartupController().isRunningInServiceManagerMode();
     }
 
     @VisibleForTesting

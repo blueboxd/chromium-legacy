@@ -80,7 +80,7 @@ Element* AXImageMapLink::ActionElement() const {
 }
 
 Element* AXImageMapLink::AnchorElement() const {
-  return GetNode() ? ToElement(GetNode()) : nullptr;
+  return To<Element>(GetNode());
 }
 
 KURL AXImageMapLink::Url() const {

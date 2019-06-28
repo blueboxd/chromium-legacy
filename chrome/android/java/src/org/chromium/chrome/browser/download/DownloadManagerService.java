@@ -1184,7 +1184,7 @@ public class DownloadManagerService
         if (mNativeDownloadManagerService == 0) {
             boolean startupCompleted =
                     BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isStartupSuccessfullyCompleted();
+                            .isFullBrowserStarted();
             mNativeDownloadManagerService = nativeInit(startupCompleted);
             if (!startupCompleted) {
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
@@ -1197,7 +1197,7 @@ public class DownloadManagerService
     @Override
     public void onSuccess() {
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             nativeOnFullBrowserStarted(mNativeDownloadManagerService);
         }
     }
@@ -1248,7 +1248,7 @@ public class DownloadManagerService
         }
 
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             Profile profile = info.isOffTheRecord()
                     ? Profile.getLastUsedProfile().getOffTheRecordProfile()
                     : Profile.getLastUsedProfile().getOriginalProfile();

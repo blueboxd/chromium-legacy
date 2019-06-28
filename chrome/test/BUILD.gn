@@ -1324,6 +1324,7 @@ if (!is_android) {
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/media/router:test_support",
+        "//chrome/browser/resources/chromeos/autoclick:browser_tests",
         "//chrome/browser/resources/chromeos/chromevox:browser_tests",
         "//chrome/browser/resources/chromeos/login:browser_tests",
         "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
@@ -2195,9 +2196,6 @@ if (!is_android) {
         sources +=
             [ "../browser/ui/ash/assistant/assistant_context_browsertest.cc" ]
       }
-      if (enable_kiosk_next) {
-        sources += [ "../browser/chromeos/kiosk_next/kiosk_next_browser_factory_browsertest.cc" ]
-      }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
         "../browser/policy/policy_startup_browsertest.cc",
@@ -2784,6 +2782,7 @@ test("unit_tests") {
     "../browser/download/download_status_updater_unittest.cc",
     "../browser/download/download_target_determiner_unittest.cc",
     "../browser/download/download_ui_controller_unittest.cc",
+    "../browser/download/offline_item_utils_unittest.cc",
     "../browser/engagement/important_sites_usage_counter_unittest.cc",
     "../browser/engagement/important_sites_util_unittest.cc",
     "../browser/engagement/site_engagement_helper_unittest.cc",
@@ -2936,7 +2935,6 @@ test("unit_tests") {
     "../browser/performance_manager/performance_manager_unittest.cc",
     "../browser/performance_manager/persistence/site_data/exponential_moving_average_unittest.cc",
     "../browser/performance_manager/persistence/site_data/leveldb_site_data_store_unittest.cc",
-    "../browser/performance_manager/persistence/site_data/non_recording_site_data_cache_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_cache_factory_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_cache_impl_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_impl_unittest.cc",
@@ -3296,6 +3294,7 @@ test("unit_tests") {
     "//components/mirroring:mirroring_tests",
     "//components/nacl/common:buildflags",
     "//components/ntp_snippets:test_support",
+    "//components/offline_items_collection/core/test_support",
     "//components/offline_pages/task:test_support",
     "//components/optimization_guide",
     "//components/os_crypt:test_support",

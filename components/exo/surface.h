@@ -27,6 +27,10 @@
 
 class SkPath;
 
+namespace ash {
+class OutputProtectionDelegate;
+}
+
 namespace base {
 namespace trace_event {
 class TracedValue;
@@ -433,6 +437,10 @@ class Surface final : public ui::PropertyHandler {
 
   // Whether this surface is tracking occlusion for the client.
   bool is_tracking_occlusion_ = false;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<ash::OutputProtectionDelegate> output_protection_;
+#endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

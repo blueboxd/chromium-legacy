@@ -209,7 +209,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   // Allocates and returns a texture id that contains a copy of the contents
   // of the current RenderPass being drawn.
-  uint32_t GetBackdropTexture(const gfx::Rect& window_rect);
+  uint32_t GetBackdropTexture(const gfx::Rect& window_rect,
+                              GLenum* internal_format);
 
   static bool ShouldApplyBackdropFilters(
       const cc::FilterOperations* backdrop_filters);

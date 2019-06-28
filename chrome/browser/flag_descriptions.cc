@@ -862,6 +862,10 @@ const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
 const char kEnableSyncUSSBookmarksDescription[] =
     "Enables the new, experimental implementation of bookmark sync";
 
+const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
+const char kEnableSyncUSSNigoriDescription[] =
+    "Enables the new, experimental implementation of sync encryption keys";
+
 const char kEnableSyncUSSPasswordsName[] = "Enable USS for passwords sync";
 const char kEnableSyncUSSPasswordsDescription[] =
     "Enables the new, experimental implementation of passwords sync";

@@ -511,6 +511,9 @@ extern const char kEnableSensorContentSettingDescription[];
 extern const char kEnableSyncUSSBookmarksName[];
 extern const char kEnableSyncUSSBookmarksDescription[];
 
+extern const char kEnableSyncUSSNigoriName[];
+extern const char kEnableSyncUSSNigoriDescription[];
+
 extern const char kEnableSyncUSSPasswordsName[];
 extern const char kEnableSyncUSSPasswordsDescription[];
 

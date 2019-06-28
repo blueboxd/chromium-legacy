@@ -404,7 +404,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         boolean hasOffTheRecordProfile =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()
+                        .isFullBrowserStarted()
                 && Profile.getLastUsedProfile().hasOffTheRecordProfile();
 
         boolean shouldShowIncognitoDisclosure =

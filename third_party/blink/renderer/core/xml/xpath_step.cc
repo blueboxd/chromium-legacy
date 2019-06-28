@@ -376,10 +376,10 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
     }
 
     case kAttributeAxis: {
-      if (!context->IsElementNode())
+      auto* context_element = DynamicTo<Element>(context);
+      if (!context_element)
         return;
 
-      Element* context_element = ToElement(context);
       // Avoid lazily creating attribute nodes for attributes that we do not
       // need anyway.
       if (GetNodeTest().GetKind() == NodeTest::kNameTest &&

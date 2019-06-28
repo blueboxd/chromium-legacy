@@ -30,11 +30,12 @@ class CONTENT_EXPORT FontUniqueNameLookup {
  public:
   FontUniqueNameLookup() = delete;
 
-  // Retrieve an initialized instance of FontUniqueNameLookup that has read the
-  // table from cache if there was one, updated the lookup table if needed
-  // (i.e. if there was an Android firmware update) from the standard Android
-  // font directories, and written the updated lookup table back to file. It is
-  // ready to use with FontTableMatcher.
+  // Retrieve an instance of FontUniqueNameLookup. On the first call to
+  // GetInstance() this that will start a task reading the lookup table from
+  // cache if there was a cached one, updating the lookup table if needed
+  // (i.e. if there was an Android firmware update or no cached one existed)
+  // from the standard Android font directories, and writing the updated lookup
+  // table back to file.
   static FontUniqueNameLookup& GetInstance();
 
   // Construct a FontUniqueNameLookup given a cache directory path

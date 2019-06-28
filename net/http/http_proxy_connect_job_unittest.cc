@@ -61,10 +61,6 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
         field_trial_list_(nullptr) {
-    // Set an initial delay to ensure that calls to TimeTicks::Now() do not
-    // return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
-
     // Used a mock HostResolver that does not have a cache.
     session_deps_.host_resolver = std::make_unique<MockHostResolver>();
 

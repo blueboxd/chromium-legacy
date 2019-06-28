@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ui/aura/client/aura_constants.h"
@@ -234,7 +233,7 @@ void CaptionContainerView::SetShowPreview(bool show) {
 
 void CaptionContainerView::UpdatePreviewRoundedCorners(bool show,
                                                        float rounding) {
-  if (!preview_view_ || !ash::features::ShouldUseShaderRoundedCorner())
+  if (!preview_view_)
     return;
 
   const float scale = preview_view_->layer()->transform().Scale2d().x();

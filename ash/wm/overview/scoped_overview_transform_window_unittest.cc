@@ -337,40 +337,4 @@ TEST_F(ScopedOverviewTransformWindowTest, EventTargetingPolicy) {
   EXPECT_EQ(etp::kTargetAndDescendants, transient2->event_targeting_policy());
 }
 
-class ScopedOverviewTransformWindowWithMaskTest
-    : public ScopedOverviewTransformWindowTest {
- public:
-  ScopedOverviewTransformWindowWithMaskTest() = default;
-  ~ScopedOverviewTransformWindowWithMaskTest() override = default;
-
-  void SetUp() override {
-    ScopedOverviewTransformWindowTest::SetUp();
-    scoped_feature_list_.InitAndDisableFeature(
-        ash::features::kUseShaderRoundedCorner);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedOverviewTransformWindowWithMaskTest);
-};
-
-// Verify that if the window's bounds are changed while it's in overview mode,
-// the rounded edge mask's bounds are also changed accordingly.
-TEST_F(ScopedOverviewTransformWindowWithMaskTest, WindowBoundsChangeTest) {
-  UpdateDisplay("400x400");
-  const gfx::Rect bounds(10, 10, 200, 200);
-  std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
-  ScopedOverviewTransformWindow scoped_window(nullptr, window.get());
-  scoped_window.UpdateMask(true);
-
-  EXPECT_TRUE(scoped_window.mask_);
-  EXPECT_EQ(window->bounds(), scoped_window.GetMaskBoundsForTesting());
-  EXPECT_EQ(bounds, scoped_window.GetMaskBoundsForTesting());
-
-  wm::GetWindowState(window.get())->Maximize();
-  EXPECT_EQ(window->bounds(), scoped_window.GetMaskBoundsForTesting());
-  EXPECT_NE(bounds, scoped_window.GetMaskBoundsForTesting());
-}
-
 }  // namespace ash

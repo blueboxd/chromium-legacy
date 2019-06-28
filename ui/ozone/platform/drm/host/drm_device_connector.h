@@ -39,6 +39,7 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
   void OnChannelDestroyed(int host_id) override;
   void OnMessageReceived(const IPC::Message& message) override;
   void OnGpuServiceLaunched(
+      int host_id,
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       GpuHostBindInterfaceCallback binder,
@@ -64,6 +65,9 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
   // This will be used if we are operating under content/gpu without a service
   // manager.
   GpuHostBindInterfaceCallback binder_callback_;
+
+  // The host_id from the last call to OnGpuServiceLaunched.
+  int host_id_ = 0;
 
   const scoped_refptr<HostDrmDevice> host_drm_device_;
   scoped_refptr<base::SingleThreadTaskRunner> ws_runner_;

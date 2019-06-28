@@ -21,7 +21,6 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
@@ -385,9 +384,6 @@ class AppListBackgroundShieldView : public views::View {
   ~AppListBackgroundShieldView() override = default;
 
   void UpdateBackground(bool use_blur) {
-    DCHECK(!(use_blur && background_mask_))
-        << "Avoid requesting blur when it already exists.";
-
     DestroyLayer();
     SetPaintToLayer(use_blur ? ui::LAYER_SOLID_COLOR : ui::LAYER_TEXTURED);
     layer()->SetFillsBoundsOpaquely(false);
@@ -395,20 +391,9 @@ class AppListBackgroundShieldView : public views::View {
       layer()->SetColor(color_);
       layer()->SetBackgroundBlur(AppListConfig::instance().blur_radius());
       layer()->SetBackdropFilterQuality(kAppListBlurQuality);
-      if (ash::features::ShouldUseShaderRoundedCorner()) {
-        layer()->SetRoundedCornerRadius(
-            {kAppListBackgroundRadius, kAppListBackgroundRadius, 0, 0});
-      } else {
-        if (!background_mask_) {
-          background_mask_ = views::Painter::CreatePaintedLayer(
-              views::Painter::CreateSolidRoundRectPainter(
-                  SK_ColorBLACK, kAppListBackgroundRadius));
-          background_mask_->layer()->SetFillsBoundsOpaquely(false);
-        }
-        layer()->SetMaskLayer(background_mask_->layer());
-      }
+      layer()->SetRoundedCornerRadius(
+          {kAppListBackgroundRadius, kAppListBackgroundRadius, 0, 0});
     } else {
-      background_mask_.reset();
       layer()->SetBackgroundBlur(0);
     }
   }
@@ -432,13 +417,6 @@ class AppListBackgroundShieldView : public views::View {
     gfx::Rect new_bounds = bounds;
     new_bounds.Inset(0, 0, 0, -kAppListBackgroundRadius * 2);
     SetBoundsRect(new_bounds);
-
-    // Update the |background_mask_| with the same shape and size if their size
-    // doesn't match.
-    if (background_mask_ &&
-        layer()->size() != background_mask_->layer()->size()) {
-      background_mask_->layer()->SetBounds(new_bounds);
-    }
   }
 
   // Overridden from views::View:
@@ -456,9 +434,6 @@ class AppListBackgroundShieldView : public views::View {
   }
 
  private:
-  // Prevents background blur from showing around the rounded corners when blur
-  // is enabled.
-  std::unique_ptr<ui::LayerOwner> background_mask_;
   SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListBackgroundShieldView);

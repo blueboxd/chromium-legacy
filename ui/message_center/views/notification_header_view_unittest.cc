@@ -13,12 +13,6 @@
 
 namespace message_center {
 
-namespace {
-
-constexpr base::TimeDelta kTimeAdvance = base::TimeDelta::FromMilliseconds(1);
-
-}  // namespace
-
 class NotificationHeaderViewTest : public views::ViewsTestBase {
  public:
   NotificationHeaderViewTest() = default;
@@ -31,10 +25,6 @@ class NotificationHeaderViewTest : public views::ViewsTestBase {
         ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
         ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
     set_scoped_task_environment(base::WrapUnique(scoped_task_environment_));
-
-    // Advance time a little bit so that TimeTicks::Now().is_null() becomes
-    // false.
-    scoped_task_environment_->FastForwardBy(kTimeAdvance);
 
     ViewsTestBase::SetUp();
 

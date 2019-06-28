@@ -49,7 +49,6 @@
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
@@ -208,7 +207,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chromeos::ime::mojom::InputEngineManager,
                 chromeos::machine_learning::mojom::PageHandler,
                 chromeos::media_perception::mojom::MediaPerception,
-                chromeos::supervision::mojom::OnboardingController,
                 cros::mojom::CrosImageCapture,
 #endif
                 contextual_search::mojom::ContextualSearchJsApiService,

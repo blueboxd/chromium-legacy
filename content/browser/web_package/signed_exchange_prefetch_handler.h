@@ -46,6 +46,7 @@ class SignedExchangePrefetchHandler final
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       const network::ResourceRequest& resource_request,
       const network::ResourceResponseHead& response,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,

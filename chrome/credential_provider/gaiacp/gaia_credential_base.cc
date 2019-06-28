@@ -100,10 +100,13 @@ base::string16 GetEmailDomains() {
 // directory UPN from the admin configured custom attributes.
 HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
                                    const std::string& access_token,
-                                   std::string* ad_upn) {
+                                   std::string* ad_upn,
+                                   BSTR* error_text) {
   DCHECK(email.size() > 0);
   DCHECK(access_token.size() > 0);
   DCHECK(ad_upn);
+  DCHECK(error_text);
+  *error_text = nullptr;
 
   std::string escape_url_encoded_email =
       net::EscapeUrlEncodedData(base::UTF16ToUTF8(email), true);
@@ -125,6 +128,8 @@ HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
       std::string(cd_user_response.begin(), cd_user_response.end());
   if (FAILED(hr)) {
     LOGFN(INFO) << "fetcher->Fetch hr=" << putHR(hr);
+    *error_text =
+        CGaiaCredentialBase::AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
   }
 
@@ -137,9 +142,12 @@ HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
 // Request a downscoped access token using the refresh token provided in the
 // input.
 HRESULT RequestDownscopedAccessToken(const std::string& refresh_token,
-                                     std::string* access_token) {
+                                     std::string* access_token,
+                                     BSTR* error_text) {
   DCHECK(refresh_token.size() > 0);
   DCHECK(access_token);
+  DCHECK(error_text);
+  *error_text = nullptr;
 
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   std::string enc_client_id =
@@ -165,6 +173,8 @@ HRESULT RequestDownscopedAccessToken(const std::string& refresh_token,
   HRESULT oauth_hr = oauth_fetcher->Fetch(&oauth_response);
   if (FAILED(oauth_hr)) {
     LOGFN(ERROR) << "oauth_fetcher.Fetch hr=" << putHR(oauth_hr);
+    *error_text =
+        CGaiaCredentialBase::AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return oauth_hr;
   }
 
@@ -174,6 +184,8 @@ HRESULT RequestDownscopedAccessToken(const std::string& refresh_token,
                                                {kKeyAccessToken});
   if (access_token->empty()) {
     LOGFN(ERROR) << "Fetched access token with new scopes is empty.";
+    *error_text =
+        CGaiaCredentialBase::AllocErrorString(IDS_EMPTY_ACCESS_TOKEN_BASE);
     return E_FAIL;
   }
   return S_OK;
@@ -200,10 +212,16 @@ HRESULT RequestDownscopedAccessToken(const std::string& refresh_token,
 HRESULT FindAdUserSidIfAvailable(const std::string& refresh_token,
                                  const base::string16& email,
                                  wchar_t* sid,
-                                 const DWORD sid_length) {
+                                 const DWORD sid_length,
+                                 BSTR* error_text) {
+  DCHECK(sid);
+  DCHECK(error_text);
+  *error_text = nullptr;
+
   // Step 1: Get the downscoped access token with required admin sdk scopes.
   std::string access_token;
-  HRESULT hr = RequestDownscopedAccessToken(refresh_token, &access_token);
+  HRESULT hr =
+      RequestDownscopedAccessToken(refresh_token, &access_token, error_text);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "RequestDownscopedAccessToken hr=" << putHR(hr);
@@ -213,7 +231,7 @@ HRESULT FindAdUserSidIfAvailable(const std::string& refresh_token,
   // Step 2: Make a get call to admin sdk using the fetched access_token and
   // retrieve the ad_upn.
   std::string ad_upn;
-  hr = GetAdUpnFromCloudDirectory(email, access_token, &ad_upn);
+  hr = GetAdUpnFromCloudDirectory(email, access_token, &ad_upn, error_text);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "GetAdUpnFromCloudDirectory hr=" << putHR(hr);
     return hr;
@@ -236,6 +254,8 @@ HRESULT FindAdUserSidIfAvailable(const std::string& refresh_token,
   // Values fetched from custom attribute shouldn't be empty.
   if (tokens.size() != 2) {
     LOGFN(ERROR) << "Found unparseable ad_upn in cloud directory : " << ad_upn;
+    *error_text =
+        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_AD_UPN_BASE);
     return E_FAIL;
   }
 
@@ -258,6 +278,8 @@ HRESULT FindAdUserSidIfAvailable(const std::string& refresh_token,
     return S_OK;
   } else {
     LOGFN(ERROR) << "No existing sid found with UPN : " << ad_upn;
+    *error_text =
+        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_AD_UPN_BASE);
     return E_FAIL;
   }
 }
@@ -278,12 +300,14 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
                                DWORD domain_length,
                                wchar_t* sid,
                                DWORD sid_length,
-                               bool* is_consumer_account) {
+                               bool* is_consumer_account,
+                               BSTR* error_text) {
   DCHECK(gaia_id);
   DCHECK(username);
   DCHECK(domain);
   DCHECK(sid);
   DCHECK(is_consumer_account);
+  DCHECK(error_text);
 
   // Determine if the email is a consumer domain (gmail.com or googlemail.com).
   base::string16 email = GetDictString(result, kKeyEmail);
@@ -315,9 +339,11 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     LOGFN(INFO) << "No existing SID found in the GCPW registry.";
 
     std::string refresh_token = GetDictStringUTF8(result, kKeyRefreshToken);
-    hr = FindAdUserSidIfAvailable(refresh_token, email, sid, sid_length);
+    hr = FindAdUserSidIfAvailable(refresh_token, email, sid, sid_length,
+                                  error_text);
     if (FAILED(hr)) {
-      LOGFN(ERROR) << "FindAdUserSidIfAvailable hr=" << putHR(hr);
+      LOGFN(ERROR) << "Failed finding AD user sid for GCPW user. hr="
+                   << putHR(hr);
       return hr;
     } else if (hr == S_OK) {
       has_existing_user_sid = true;
@@ -1884,13 +1910,10 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
   HRESULT hr = MakeUsernameForAccount(
       result, &gaia_id, found_username, base::size(found_username),
       found_domain, base::size(found_domain), found_sid, base::size(found_sid),
-      &is_consumer_account);
+      &is_consumer_account, error_text);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "MakeUsernameForAccount hr=" << putHR(hr);
-    // TODO(crbug.com/976406): Set the error text appropriate messages
-    // instead of falling back to IDS_INTERNAL_ERROR_BASE.
-    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
   }
 

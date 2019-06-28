@@ -32,6 +32,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "cc/layers/texture_layer.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_decode_cache.h"
 #include "components/viz/common/resources/single_release_callback.h"
@@ -1372,17 +1373,18 @@ TEST_F(Canvas2DLayerBridgeTestNoMockGL,
 
   bridge->Canvas()->clear(SK_ColorRED);
   DrawSomething(bridge.get());
+  ASSERT_TRUE(bridge->layer_for_testing());
 
   viz::TransferableResource resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   EXPECT_TRUE(bridge->PrepareTransferableResource(nullptr, &resource,
                                                   &release_callback));
+  bridge->layer_for_testing()->SetTransferableResource(
+      resource, std::move(release_callback));
 
   std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
   EXPECT_FALSE(bridge->PrepareTransferableResource(nullptr, &resource,
                                                    &release_callback2));
-
-  release_callback->Run(gpu::SyncToken(), false);
   EXPECT_EQ(release_callback2, nullptr);
 }
 

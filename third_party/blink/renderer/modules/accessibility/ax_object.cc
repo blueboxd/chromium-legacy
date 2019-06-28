@@ -1060,9 +1060,10 @@ const AXObject* AXObject::InertRoot() const {
   while (object && !object->IsAXNodeObject())
     object = object->ParentObject();
   Node* node = object->GetNode();
-  Element* element = node->IsElementNode()
-                         ? ToElement(node)
-                         : FlatTreeTraversal::ParentElement(*node);
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
+    element = FlatTreeTraversal::ParentElement(*node);
+
   while (element) {
     if (element->hasAttribute(kInertAttr))
       return AXObjectCache().GetOrCreate(element);
@@ -1305,7 +1306,8 @@ bool AXObject::CanSetFocusAttribute() const {
       RoleValue() == ax::mojom::Role::kMenuListOption)
     return true;
 
-  return node->IsElementNode() && ToElement(node)->SupportsFocus();
+  auto* element = DynamicTo<Element>(node);
+  return element && element->SupportsFocus();
 }
 
 // From ARIA 1.1.
@@ -1554,9 +1556,10 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   if (!document || !document->GetFrame())
     return false;
   if (Node* node = GetNode()) {
-    if (node->isConnected() && node->IsElementNode()) {
+    auto* element = DynamicTo<Element>(node);
+    if (element && node->isConnected()) {
       scoped_refptr<ComputedStyle> style =
-          document->EnsureStyleResolver().StyleForElement(ToElement(node));
+          document->EnsureStyleResolver().StyleForElement(element);
       return style->Display() == EDisplay::kNone ||
              style->Visibility() != EVisibility::kVisible;
     }
@@ -2500,8 +2503,7 @@ void AXObject::AddAccessibleNodeChildren() {
 }
 
 Element* AXObject::GetElement() const {
-  Node* node = GetNode();
-  return node && node->IsElementNode() ? ToElement(node) : nullptr;
+  return DynamicTo<Element>(GetNode());
 }
 
 Document* AXObject::GetDocument() const {

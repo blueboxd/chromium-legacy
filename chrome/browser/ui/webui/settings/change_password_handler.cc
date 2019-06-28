@@ -7,12 +7,14 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
 namespace settings {
 
+using password_manager::metrics_util::PasswordType;
 using safe_browsing::ChromePasswordProtectionService;
 
 ChangePasswordHandler::ChangePasswordHandler(
@@ -54,8 +56,7 @@ void ChangePasswordHandler::HandleInitialize(const base::ListValue* args) {
 
 void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
   service_->OnUserAction(web_ui()->GetWebContents(),
-                         safe_browsing::LoginReputationClientRequest::
-                             PasswordReuseEvent::SIGN_IN_PASSWORD,
+                         PasswordType::PRIMARY_ACCOUNT_PASSWORD,
                          safe_browsing::WarningUIType::CHROME_SETTINGS,
                          safe_browsing::WarningAction::CHANGE_PASSWORD);
 }

@@ -90,12 +90,12 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
         // the full browser starts. So we can use it to checks whether the
         // {@link mFullBrowserStartupDone} has been set to true.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertTrue("The native service manager has not been started.",
+            Assert.assertTrue("Native has not been started.",
                     BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isServiceManagerSuccessfullyStarted());
+                            .isNativeStarted());
             Assert.assertFalse("The full browser is started instead of ServiceManager only.",
                     BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isStartupSuccessfullyCompleted());
+                            .isFullBrowserStarted());
         });
     }
 
@@ -105,9 +105,10 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
         // the full browser starts. So we can use it to checks whether the
         // {@link mFullBrowserStartupDone} has been set to true.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertTrue("The full browser has not been started",
+                ()
+                        -> Assert.assertTrue("The full browser has not been started",
                                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                        .isStartupSuccessfullyCompleted()));
+                                        .isFullBrowserStarted()));
     }
 
     public void assertPersistentHistogramsOnDiskSystemProfile() {

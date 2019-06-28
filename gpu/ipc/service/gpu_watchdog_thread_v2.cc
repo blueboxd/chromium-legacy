@@ -32,8 +32,8 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2()
       weak_factory_(this) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
   weak_ptr_ = weak_factory_.GetWeakPtr();
-  watchdog_start_time_ = base::TimeTicks::Now();
   Arm();
+  watchdog_start_time_ = base::TimeTicks::Now();
 }
 
 GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
@@ -59,6 +59,9 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
 // Do not add power observer during watchdog init, PowerMonitor might not be up
 // running yet.
 void GpuWatchdogThreadImplV2::AddPowerObserver() {
+  // Forward it to the watchdog thread. Call PowerMonitor::AddObserver on the
+  // watchdog thread so that  OnSuspend and OnResume will be called on watchdog
+  // thread.
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&GpuWatchdogThreadImplV2::OnAddPowerObserver,
                                 base::Unretained(this)));
@@ -112,11 +115,14 @@ void GpuWatchdogThreadImplV2::DidProcessTask(
 
 void GpuWatchdogThreadImplV2::OnSuspend() {
   in_power_suspension_ = true;
+  // Revoke any pending watchdog timeout task
+  weak_factory_.InvalidateWeakPtrs();
   suspend_time_ = base::TimeTicks::Now();
 }
 
 void GpuWatchdogThreadImplV2::OnResume() {
   in_power_suspension_ = false;
+  RestartWatchdogTimeoutTask();
   resume_time_ = base::TimeTicks::Now();
 }
 
@@ -129,13 +135,28 @@ void GpuWatchdogThreadImplV2::OnAddPowerObserver() {
 // Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnWatchdogBackgrounded() {
   is_backgrounded_ = true;
+  // Revoke any pending watchdog timeout task
+  weak_factory_.InvalidateWeakPtrs();
   backgrounded_time_ = base::TimeTicks::Now();
 }
 
 // Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnWatchdogForegrounded() {
   is_backgrounded_ = false;
+  RestartWatchdogTimeoutTask();
   foregrounded_time_ = base::TimeTicks::Now();
+}
+
+void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
+  if (!is_backgrounded_ && !in_power_suspension_) {
+    // Make the timeout twice long. The system/gpu might be very slow right
+    // after resume or foregrounded.
+    weak_ptr_ = weak_factory_.GetWeakPtr();
+    task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
+        watchdog_timeout_ * 2);
+  }
 }
 
 void GpuWatchdogThreadImplV2::Arm() {
@@ -161,6 +182,8 @@ void GpuWatchdogThreadImplV2::InProgress() {
 }
 
 void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
+  DCHECK(!is_backgrounded_);
+  DCHECK(!in_power_suspension_);
   base::subtle::Atomic32 arm_disarm_counter =
       base::subtle::NoBarrier_Load(&arm_disarm_counter_);
 
@@ -197,6 +220,8 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&resume_time_);
   base::debug::Alias(&backgrounded_time_);
   base::debug::Alias(&foregrounded_time_);
+  base::debug::Alias(&in_power_suspension_);
+  base::debug::Alias(&is_backgrounded_);
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0xdeadface;

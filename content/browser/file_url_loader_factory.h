@@ -31,10 +31,10 @@ class CONTENT_EXPORT FileURLLoaderFactory
   // |shared_cors_origin_access_list| can be nullptr if only "no-cors" requests
   // will be made. Thread pool tasks posted by the constructed
   // FileURLLoadedFactory use |priority|.
-  FileURLLoaderFactory(const base::FilePath& profile_path,
-                       scoped_refptr<const SharedCorsOriginAccessList>
-                           shared_cors_origin_access_list,
-                       base::TaskPriority task_priority);
+  FileURLLoaderFactory(
+      const base::FilePath& profile_path,
+      scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
+      base::TaskPriority task_priority);
   ~FileURLLoaderFactory() override;
 
  private:
@@ -55,7 +55,7 @@ class CONTENT_EXPORT FileURLLoaderFactory
                                     bool cors_flag);
 
   const base::FilePath profile_path_;
-  const scoped_refptr<const SharedCorsOriginAccessList>
+  const scoped_refptr<SharedCorsOriginAccessList>
       shared_cors_origin_access_list_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;

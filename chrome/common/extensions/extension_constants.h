@@ -194,6 +194,11 @@ enum AppLaunchBucket {
 #if defined(OS_CHROMEOS)
 // The extension id of the Assessment Assistant extension.
 extern const char kAssessmentAssistantExtensionId[];
+// The extension id of the Automatic Clicks extension.
+extern const char kAutoclickExtensionId[];
+// Path to preinstalled Automatic Clicks extension (relative to
+// |chrome::DIR_RESOURCES|).
+extern const char kAutoclickExtensionPath[];
 // Path to preinstalled ChromeVox screen reader extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kChromeVoxExtensionPath[];

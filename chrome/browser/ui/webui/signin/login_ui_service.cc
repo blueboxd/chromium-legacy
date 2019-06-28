@@ -112,8 +112,7 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
       UserManagerProfileDialog::DisplayErrorMessage();
   } else if (browser) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
-        error_message.empty() ? BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN
-                              : BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR,
+        BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
         signin::ManageAccountsParams(),
         signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS, false);
   }

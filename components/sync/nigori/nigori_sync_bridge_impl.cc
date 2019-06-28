@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/location.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/nigori/nigori.h"
@@ -101,6 +102,89 @@ base::Optional<NigoriSpecifics> MakeDefaultKeystoreNigori(
   return specifics;
 }
 
+KeyDerivationMethod GetKeyDerivationMethodFromSpecifics(
+    const sync_pb::NigoriSpecifics& specifics) {
+  KeyDerivationMethod key_derivation_method = ProtoKeyDerivationMethodToEnum(
+      specifics.custom_passphrase_key_derivation_method());
+  if (key_derivation_method == KeyDerivationMethod::SCRYPT_8192_8_11 &&
+      base::FeatureList::IsEnabled(
+          switches::kSyncForceDisableScryptForCustomPassphrase)) {
+    // Because scrypt is explicitly disabled, just behave as if it is an
+    // unsupported method.
+    key_derivation_method = KeyDerivationMethod::UNSUPPORTED;
+  }
+
+  return key_derivation_method;
+}
+
+std::string GetScryptSaltFromSpecifics(
+    const sync_pb::NigoriSpecifics& specifics) {
+  DCHECK_EQ(specifics.custom_passphrase_key_derivation_method(),
+            sync_pb::NigoriSpecifics::SCRYPT_8192_8_11);
+  std::string decoded_salt;
+  bool result = base::Base64Decode(
+      specifics.custom_passphrase_key_derivation_salt(), &decoded_salt);
+  DCHECK(result);
+  return decoded_salt;
+}
+
+KeyDerivationParams GetKeyDerivationParamsFromSpecifics(
+    const sync_pb::NigoriSpecifics& specifics) {
+  KeyDerivationMethod method = GetKeyDerivationMethodFromSpecifics(specifics);
+  switch (method) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return KeyDerivationParams::CreateForPbkdf2();
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      return KeyDerivationParams::CreateForScrypt(
+          GetScryptSaltFromSpecifics(specifics));
+    case KeyDerivationMethod::UNSUPPORTED:
+      break;
+  }
+
+  return KeyDerivationParams::CreateWithUnsupportedMethod();
+}
+
+void UpdateSpecificsFromKeyDerivationParams(
+    const KeyDerivationParams& params,
+    sync_pb::NigoriSpecifics* specifics) {
+  DCHECK_EQ(specifics->passphrase_type(),
+            sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
+  DCHECK_NE(params.method(), KeyDerivationMethod::UNSUPPORTED);
+  specifics->set_custom_passphrase_key_derivation_method(
+      EnumKeyDerivationMethodToProto(params.method()));
+  if (params.method() == KeyDerivationMethod::SCRYPT_8192_8_11) {
+    // Persist the salt used for key derivation in Nigori if we're using scrypt.
+    std::string encoded_salt;
+    base::Base64Encode(params.scrypt_salt(), &encoded_salt);
+    specifics->set_custom_passphrase_key_derivation_salt(encoded_salt);
+  }
+}
+
+bool SpecificsHasValidKeyDerivationParams(const NigoriSpecifics& specifics) {
+  switch (GetKeyDerivationMethodFromSpecifics(specifics)) {
+    case KeyDerivationMethod::UNSUPPORTED:
+      DLOG(ERROR) << "Unsupported key derivation method encountered: "
+                  << specifics.custom_passphrase_key_derivation_method();
+      return false;
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return true;
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      if (!specifics.has_custom_passphrase_key_derivation_salt()) {
+        DLOG(ERROR) << "Missed key derivation salt while key derivation "
+                    << "method is SCRYPT_8192_8_11.";
+        return false;
+      }
+      std::string temp;
+      if (!base::Base64Decode(specifics.custom_passphrase_key_derivation_salt(),
+                              &temp)) {
+        DLOG(ERROR) << "Key derivation salt is not a valid base64 encoded "
+                       "string.";
+        return false;
+      }
+      return true;
+  }
+}
+
 // Validates given |specifics| assuming it's not specifics received from the
 // server during first-time sync for current user (i.e. it's not a default
 // specifics).
@@ -132,8 +216,12 @@ bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
         return false;
       }
       break;
-    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      if (!SpecificsHasValidKeyDerivationParams(specifics)) {
+        return false;
+      }
+      FALLTHROUGH;
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
       if (!specifics.encrypt_everything()) {
         DLOG(ERROR) << "Nigori with explicit passphrase type should have "
                        "enabled encrypt_everything.";
@@ -324,6 +412,8 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
   DCHECK(cryptographer_.is_ready());
   passphrase_type_ = NigoriSpecifics::CUSTOM_PASSPHRASE;
   cryptographer_.AddKey({KeyDerivationParams::CreateForPbkdf2(), passphrase});
+  custom_passphrase_key_derivation_params_ =
+      KeyDerivationParams::CreateForPbkdf2();
   encrypt_everything_ = true;
   custom_passphrase_time_ = base::Time::Now();
   processor_->Put(GetData());
@@ -355,11 +445,7 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
   // pending keys exposed by OnPassphraseRequired()).
   DCHECK(!passphrase.empty());
   DCHECK(cryptographer_.has_pending_keys());
-  // has_pending_keys() should mean it's an explicit passphrase user.
-  DCHECK(passphrase_type_ == NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE ||
-         passphrase_type_ == NigoriSpecifics::CUSTOM_PASSPHRASE);
-
-  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), passphrase};
+  KeyParams key_params = {GetKeyDerivationParamsForPendingKeys(), passphrase};
   // The line below should set given |passphrase| as default key and cause
   // decryption of pending keys.
   if (!cryptographer_.AddKey(key_params)) {
@@ -385,8 +471,6 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
     observer.OnPassphraseAccepted();
   }
   // TODO(crbug.com/922900): persist |passphrase| in corresponding storage.
-  // TODO(crbug.com/922900): support SCRYPT key derivation method and
-  // corresponding migration code.
   // TODO(crbug.com/922900): we may need to rewrite encryption_keybag in Nigori
   // node in case we have some keys in |cryptographer_| which is not stored in
   // encryption_keybag yet.
@@ -569,8 +653,11 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
       }
       break;
     }
-    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      custom_passphrase_key_derivation_params_ =
+          GetKeyDerivationParamsFromSpecifics(specifics);
+      FALLTHROUGH;
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
       UpdateCryptographerFromExplicitPassphraseNigori(encryption_keybag);
   }
 
@@ -596,15 +683,10 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   if (cryptographer_.has_pending_keys()) {
     // Update with keystore Nigori shouldn't reach this point, since it should
     // report model error if it has pending keys.
-    DCHECK(passphrase_type_ == NigoriSpecifics::CUSTOM_PASSPHRASE ||
-           passphrase_type_ == NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE);
     for (auto& observer : observers_) {
-      // TODO(crbug.com/922900): pass correct key_derivation_params once SCRYPT
-      // support is added.
-      observer.OnPassphraseRequired(
-          /*reason=*/REASON_DECRYPTION,
-          /*key_derivation_params=*/KeyDerivationParams::CreateForPbkdf2(),
-          /*pending_keys=*/cryptographer_.GetPendingKeys());
+      observer.OnPassphraseRequired(REASON_DECRYPTION,
+                                    GetKeyDerivationParamsForPendingKeys(),
+                                    cryptographer_.GetPendingKeys());
     }
   }
   return base::nullopt;
@@ -672,6 +754,11 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
     UpdateNigoriSpecificsFromEncryptedTypes(EncryptableUserTypes(), &specifics);
   }
   specifics.set_passphrase_type(passphrase_type_);
+  if (passphrase_type_ == NigoriSpecifics::CUSTOM_PASSPHRASE) {
+    DCHECK(custom_passphrase_key_derivation_params_);
+    UpdateSpecificsFromKeyDerivationParams(
+        *custom_passphrase_key_derivation_params_, &specifics);
+  }
   if (passphrase_type_ == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
     cryptographer_.EncryptString(cryptographer_.GetDefaultNigoriKeyData(),
                                  specifics.mutable_keystore_decryptor_token());
@@ -727,6 +814,22 @@ base::Time NigoriSyncBridgeImpl::GetExplicitPassphraseTime() const {
   }
   NOTREACHED();
   return custom_passphrase_time_;
+}
+
+KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
+    const {
+  switch (passphrase_type_) {
+    case NigoriSpecifics::UNKNOWN:
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      NOTREACHED();
+      return KeyDerivationParams::CreateWithUnsupportedMethod();
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+      return KeyDerivationParams::CreateForPbkdf2();
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      DCHECK(custom_passphrase_key_derivation_params_);
+      return *custom_passphrase_key_derivation_params_;
+  }
 }
 
 }  // namespace syncer

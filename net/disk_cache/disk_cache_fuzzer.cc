@@ -89,12 +89,6 @@ struct InitGlobals {
         base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
         base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
 
-    // Work around for a DCHECK issue: DCHECK(!TimeTicks::Now().is_null())
-    // Since MOCK_TIME starts at 0 the starting time is considered null.
-    // So make it non-zero.
-    scoped_task_environment_->FastForwardBy(
-        base::TimeDelta::FromMilliseconds(1));
-
     // Disable noisy logging as per "libFuzzer in Chrome" documentation:
     // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.
     logging::SetMinLogLevel(logging::LOG_FATAL);

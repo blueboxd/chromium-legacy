@@ -9,10 +9,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 
 import org.junit.Before;
@@ -32,14 +33,14 @@ import org.chromium.chrome.R;
 public class ReauthenticationManagerTest {
     private FragmentManager mFragmentManager;
 
-    private Activity mTestActivity;
+    private FragmentActivity mTestActivity;
 
     @Before
     public void setUp() {
-        mTestActivity = Robolectric.setupActivity(Activity.class);
+        mTestActivity = Robolectric.setupActivity(FragmentActivity.class);
         PasswordReauthenticationFragment.preventLockingForTesting();
 
-        mFragmentManager = mTestActivity.getFragmentManager();
+        mFragmentManager = mTestActivity.getSupportFragmentManager();
 
         // Prepare a dummy Fragment and commit a FragmentTransaction with it.
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();

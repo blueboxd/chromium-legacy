@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+
 namespace blink {
 namespace {
 
@@ -25,20 +27,22 @@ class SimpleColorClassifier : public DarkModeColorClassifier {
  public:
   static std::unique_ptr<SimpleColorClassifier> NeverInvert() {
     return std::unique_ptr<SimpleColorClassifier>(
-        new SimpleColorClassifier(false));
+        new SimpleColorClassifier(DarkModeClassification::kDoNotApplyFilter));
   }
 
   static std::unique_ptr<SimpleColorClassifier> AlwaysInvert() {
     return std::unique_ptr<SimpleColorClassifier>(
-        new SimpleColorClassifier(true));
+        new SimpleColorClassifier(DarkModeClassification::kApplyFilter));
   }
 
-  bool ShouldInvertColor(const Color& color) override { return value_; }
+  DarkModeClassification ShouldInvertColor(const Color& color) override {
+    return value_;
+  }
 
  private:
-  SimpleColorClassifier(bool value) : value_(value) {}
+  SimpleColorClassifier(DarkModeClassification value) : value_(value) {}
 
-  bool value_;
+  DarkModeClassification value_;
 };
 
 class InvertLowBrightnessColorsClassifier : public DarkModeColorClassifier {
@@ -49,8 +53,10 @@ class InvertLowBrightnessColorsClassifier : public DarkModeColorClassifier {
     DCHECK_LT(brightness_threshold_, 256);
   }
 
-  bool ShouldInvertColor(const Color& color) override {
-    return CalculateColorBrightness(color) < brightness_threshold_;
+  DarkModeClassification ShouldInvertColor(const Color& color) override {
+    if (CalculateColorBrightness(color) < brightness_threshold_)
+      return DarkModeClassification::kApplyFilter;
+    return DarkModeClassification::kDoNotApplyFilter;
   }
 
  private:

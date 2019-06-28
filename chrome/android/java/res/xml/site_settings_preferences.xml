@@ -98,4 +98,8 @@
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="clipboard" />
+    <!-- Bluetooth Scanning -->
+    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:key="bluetooth_scanning" />
 </android.support.v7.preference.PreferenceScreen>

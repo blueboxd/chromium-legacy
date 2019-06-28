@@ -112,10 +112,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       NetworkIsolationKey())),
         common_connect_job_params_(session_->CreateCommonConnectJobParams()) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
-
-    // Set an initial delay to ensure that the first call to TimeTicks::Now()
-    // before incrementing the counter does not return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
   ~SSLConnectJobTest() override = default;

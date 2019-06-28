@@ -176,6 +176,27 @@ FYI_BUILDERS = {
       'os': 'Windows-10',
     },
   },
+  'chromeos-kevin-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 4,
+        'extra_args': [
+            '--test-shard-map-filename=chromeos-kevin-perf-fyi_map.json',
+        ],
+      },
+    ],
+    'platform': 'chromeos',
+    'target_bits': 32,
+    'dimension': {
+      'pool': 'luci.chrome.cros-dut',
+      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+      # chromium_swarming recipe_module ignore this dimension.
+      'gpu': None,
+      'os': 'ChromeOS',
+      'device_type': 'kevin',
+    },
+  },
 }
 
 # These configurations are taken from chromium_perf.py in
@@ -1053,6 +1074,8 @@ def generate_telemetry_args(tester_config):
     browser_name = 'android-chromium'
   elif tester_config['platform'].startswith('android-'):
     browser_name = tester_config['platform']
+  elif tester_config['platform'] == 'chromeos':
+    browser_name = 'cros-chrome'
   elif (tester_config['platform'] == 'win'
     and tester_config['target_bits'] == 64):
     browser_name = 'release_x64'

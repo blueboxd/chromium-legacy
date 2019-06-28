@@ -74,14 +74,19 @@ public class NativeBackgroundTaskTest {
         public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {}
 
         @Override
-        public boolean isStartupSuccessfullyCompleted() {
+        public boolean isFullBrowserStarted() {
             mCallCount++;
             return mStartupSucceeded;
         }
 
         @Override
-        public boolean isServiceManagerSuccessfullyStarted() {
+        public boolean isNativeStarted() {
             return mStartupSucceeded;
+        }
+
+        @Override
+        public boolean isRunningInServiceManagerMode() {
+            return false;
         }
 
         @Override

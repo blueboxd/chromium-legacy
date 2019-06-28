@@ -57,18 +57,27 @@ const char kSyncPasswordPageInfoHistogram[] =
 const char kSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.SyncPasswordEntry";
 
-void LogPasswordEntryRequestOutcome(RequestOutcome outcome,
-                                    ReusedPasswordType password_type,
-                                    SyncAccountType sync_account_type) {
+void LogPasswordEntryRequestOutcome(
+    RequestOutcome outcome,
+    ReusedPasswordAccountType password_account_type) {
   UMA_HISTOGRAM_ENUMERATION(kAnyPasswordEntryRequestOutcomeHistogram, outcome);
-  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD) {
-    if (sync_account_type == PasswordReuseEvent::GSUITE) {
+
+  bool is_gsuite_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
+  bool is_gmail_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
+  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
+  // TODO(crbug/914410): Differentiate between primary and syncing accounts for
+  // UMA.
+  if (is_primary_account_password) {
+    if (is_gsuite_user) {
       UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordEntryRequestOutcomeHistogram,
                                 outcome);
     }
     UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogram,
                               outcome);
-  } else if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
+  } else if (password_account_type.account_type() ==
+             ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
     UMA_HISTOGRAM_ENUMERATION(kEnterprisePasswordEntryRequestOutcomeHistogram,
                               outcome);
   } else {
@@ -81,15 +90,22 @@ void LogPasswordOnFocusRequestOutcome(RequestOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, outcome);
 }
 
-void LogPasswordAlertModeOutcome(RequestOutcome outcome,
-                                 ReusedPasswordType password_type) {
-  DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
-         password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
-  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD) {
+void LogPasswordAlertModeOutcome(
+    RequestOutcome outcome,
+    ReusedPasswordAccountType password_account_type) {
+  bool is_gsuite_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
+  bool is_gmail_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
+  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
+
+  if (is_primary_account_password) {
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordProtection.PasswordAlertModeOutcome.GSuiteSyncPasswordEntry",
         outcome);
   } else {
+    DCHECK_EQ(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE,
+              password_account_type.account_type());
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordProtection.PasswordAlertModeOutcome."
         "NonGaiaEnterprisePasswordEntry",
@@ -99,23 +115,26 @@ void LogPasswordAlertModeOutcome(RequestOutcome outcome,
 
 void LogNoPingingReason(LoginReputationClientRequest::TriggerType trigger_type,
                         RequestOutcome reason,
-                        ReusedPasswordType password_type,
-                        SyncAccountType sync_account_type) {
+                        ReusedPasswordAccountType password_account_type) {
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
   if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, reason);
   } else {
-    LogPasswordEntryRequestOutcome(reason, password_type, sync_account_type);
+    LogPasswordEntryRequestOutcome(reason, password_account_type);
   }
 }
 
 void LogPasswordProtectionVerdict(
     LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordType password_type,
-    SyncAccountType sync_account_type,
+    ReusedPasswordAccountType password_account_type,
     VerdictType verdict_type) {
+  bool is_gsuite_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
+  bool is_gmail_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
+  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
   switch (trigger_type) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
       UMA_HISTOGRAM_ENUMERATION(
@@ -126,8 +145,8 @@ void LogPasswordProtectionVerdict(
       UMA_HISTOGRAM_ENUMERATION(
           kAnyPasswordEntryVerdictHistogram, verdict_type,
           LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-      if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD) {
-        if (sync_account_type == PasswordReuseEvent::GSUITE) {
+      if (is_primary_account_password) {
+        if (is_gsuite_user) {
           UMA_HISTOGRAM_ENUMERATION(
               kGSuiteSyncPasswordEntryVerdictHistogram, verdict_type,
               LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
@@ -135,7 +154,8 @@ void LogPasswordProtectionVerdict(
         UMA_HISTOGRAM_ENUMERATION(
             kSyncPasswordEntryVerdictHistogram, verdict_type,
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-      } else if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
+      } else if (password_account_type.account_type() ==
+                 ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
         UMA_HISTOGRAM_ENUMERATION(
             kEnterprisePasswordEntryVerdictHistogram, verdict_type,
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
@@ -171,20 +191,22 @@ void LogPasswordProtectionNetworkResponseAndDuration(
 
 void LogWarningAction(WarningUIType ui_type,
                       WarningAction action,
-                      ReusedPasswordType password_type,
-                      SyncAccountType sync_account_type) {
+                      ReusedPasswordAccountType password_account_type) {
   // |password_type| can be unknown if user directly navigates to
   // chrome://reset-password page. In this case, do not record user action.
-  if (password_type == PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN &&
+  if (password_account_type.account_type() ==
+          ReusedPasswordAccountType::UNKNOWN &&
       ui_type == WarningUIType::INTERSTITIAL) {
     return;
   }
-  bool is_sign_in_password =
-      password_type == PasswordReuseEvent::SIGN_IN_PASSWORD;
-  bool is_gsuite_user = sync_account_type == PasswordReuseEvent::GSUITE;
+  bool is_gsuite_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
+  bool is_gmail_user =
+      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
+  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
   switch (ui_type) {
     case WarningUIType::PAGE_INFO:
-      if (is_sign_in_password) {
+      if (is_primary_account_password) {
         UMA_HISTOGRAM_ENUMERATION(kSyncPasswordPageInfoHistogram, action);
         if (is_gsuite_user) {
           UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordPageInfoHistogram,
@@ -195,7 +217,7 @@ void LogWarningAction(WarningUIType ui_type,
       }
       break;
     case WarningUIType::MODAL_DIALOG:
-      if (is_sign_in_password) {
+      if (is_primary_account_password) {
         UMA_HISTOGRAM_ENUMERATION(kSyncPasswordWarningDialogHistogram, action);
         if (is_gsuite_user) {
           UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordWarningDialogHistogram,
@@ -207,11 +229,11 @@ void LogWarningAction(WarningUIType ui_type,
       }
       break;
     case WarningUIType::CHROME_SETTINGS:
-      DCHECK(is_sign_in_password);
+      DCHECK(is_primary_account_password);
       UMA_HISTOGRAM_ENUMERATION(kSyncPasswordChromeSettingsHistogram, action);
       break;
     case WarningUIType::INTERSTITIAL:
-      if (is_sign_in_password) {
+      if (is_primary_account_password) {
         UMA_HISTOGRAM_ENUMERATION(kSyncPasswordInterstitialHistogram, action);
         if (is_gsuite_user) {
           UMA_HISTOGRAM_ENUMERATION(kGSuiteSyncPasswordInterstitialHistogram,

@@ -12,9 +12,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/allowlist_checker_client.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/visual_utils.h"
@@ -37,6 +39,9 @@ using content::BrowserThread;
 using content::WebContents;
 
 namespace safe_browsing {
+
+using ReusedPasswordAccountType =
+    LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
 
 namespace {
 
@@ -66,7 +71,8 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
     const std::string& username,
-    ReusedPasswordType reused_password_type,
+    PasswordType password_type,
+    bool is_account_syncing,
     const std::vector<std::string>& matching_domains,
     LoginReputationClientRequest::TriggerType type,
     bool password_field_exists,
@@ -77,7 +83,8 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_form_action_(password_form_action),
       password_form_frame_url_(password_form_frame_url),
       username_(username),
-      reused_password_type_(reused_password_type),
+      password_type_(password_type),
+      is_primary_account_syncing_(is_account_syncing),
       matching_domains_(matching_domains),
       trigger_type_(type),
       password_field_exists_(password_field_exists),
@@ -91,8 +98,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
   DCHECK(trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type_ == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
   DCHECK(trigger_type_ != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
-         reused_password_type_ !=
-             LoginReputationClientRequest::PasswordReuseEvent::SAVED_PASSWORD ||
+         password_type_ != PasswordType::SAVED_PASSWORD ||
          matching_domains_.size() > 0);
 
   request_proto_->set_trigger_type(trigger_type_);
@@ -159,8 +165,7 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
   std::unique_ptr<LoginReputationClientResponse> cached_response =
       std::make_unique<LoginReputationClientResponse>();
   auto verdict = password_protection_service_->GetCachedVerdict(
-      main_frame_url_, trigger_type_, reused_password_type_,
-      cached_response.get());
+      main_frame_url_, trigger_type_, password_type_, cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
     Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));
   else
@@ -213,12 +218,13 @@ void PasswordProtectionRequest::FillRequestProto() {
       main_frame->set_has_password_field(password_field_exists_);
       LoginReputationClientRequest::PasswordReuseEvent* reuse_event =
           request_proto_->mutable_password_reuse_event();
-      bool matches_sync_password =
-          reused_password_type_ ==
-          LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD;
-      reuse_event->set_is_chrome_signin_password(matches_sync_password);
-      reuse_event->set_reused_password_type(reused_password_type_);
-      if (matches_sync_password) {
+      bool matches_signin_password =
+          password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD;
+      reuse_event->set_is_chrome_signin_password(matches_signin_password);
+      reuse_event->set_reused_password_type(
+          password_protection_service_->GetPasswordProtectionReusedPasswordType(
+              password_type_));
+      if (matches_signin_password) {
         reuse_event->set_sync_account_type(
             password_protection_service_->GetSyncAccountType());
         LogSyncAccountType(reuse_event->sync_account_type());
@@ -232,6 +238,15 @@ void PasswordProtectionRequest::FillRequestProto() {
             break;
         }
       }
+      if (base::FeatureList::IsEnabled(
+              safe_browsing::kPasswordProtectionForSignedInUsers)) {
+        ReusedPasswordAccountType* reused_password_account_type =
+            reuse_event->mutable_reused_password_account_type();
+        // TODO(crbug/914410): Add account_type.
+        reused_password_account_type->set_is_account_syncing(
+            is_primary_account_syncing_);
+      }
+
       break;
     }
     default:
@@ -446,24 +461,24 @@ void PasswordProtectionRequest::Finish(
   // If the request is canceled, the PasswordProtectionService is already
   // partially destroyed, and we won't be able to log accurate metrics.
   if (outcome != RequestOutcome::CANCELED) {
+    ReusedPasswordAccountType password_account_type =
+        password_protection_service_
+            ->GetPasswordProtectionReusedPasswordAccountType(
+                password_type_,
+                (password_protection_service_->GetAccountInfo()).hosted_domain);
     if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
       LogPasswordOnFocusRequestOutcome(outcome);
     } else {
-      LogPasswordEntryRequestOutcome(
-          outcome, reused_password_type_,
-          password_protection_service_->GetSyncAccountType());
-      if (reused_password_type_ ==
-          LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD) {
+      LogPasswordEntryRequestOutcome(outcome, password_account_type);
+      if (password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
         password_protection_service_->MaybeLogPasswordReuseLookupEvent(
             web_contents_, outcome, response.get());
       }
     }
 
     if (outcome == RequestOutcome::SUCCEEDED && response) {
-      LogPasswordProtectionVerdict(
-          trigger_type_, reused_password_type_,
-          password_protection_service_->GetSyncAccountType(),
-          response->verdict_type());
+      LogPasswordProtectionVerdict(trigger_type_, password_account_type,
+                                   response->verdict_type());
     }
   }
 

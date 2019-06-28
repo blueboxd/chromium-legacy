@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
@@ -59,6 +60,16 @@ OfflineItemFilter MimeTypeToOfflineItemFilter(const std::string& mime_type) {
   }
 
   return filter;
+}
+
+bool IsInterruptedDownloadAutoResumable(download::DownloadItem* item) {
+  int auto_resumption_size_limit = 0;
+#if defined(OS_ANDROID)
+  auto_resumption_size_limit = DownloadUtils::GetAutoResumptionSizeLimit();
+#endif
+
+  return download::AutoResumptionHandler::IsInterruptedDownloadAutoResumable(
+      item, auto_resumption_size_limit);
 }
 
 }  // namespace
@@ -122,18 +133,29 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
       item.state = OfflineItemState::CANCELLED;
       break;
     case DownloadItem::INTERRUPTED: {
-      item.state =
-          download_item->IsPaused()
-              ? OfflineItemState::PAUSED
-              : (download_item->CanResume() ? OfflineItemState::INTERRUPTED
-                                            : OfflineItemState::FAILED);
+      bool is_auto_resumable =
+          IsInterruptedDownloadAutoResumable(download_item);
+      bool max_retry_limit_reached =
+          download_item->GetAutoResumeCount() >=
+          download::DownloadItemImpl::kMaxAutoResumeAttempts;
+
+      if (download_item->IsDone()) {
+        item.state = OfflineItemState::FAILED;
+      } else if (download_item->IsPaused() || max_retry_limit_reached) {
+        item.state = OfflineItemState::PAUSED;
+      } else if (is_auto_resumable) {
+        item.state = OfflineItemState::PENDING;
+      } else {
+        item.state = OfflineItemState::INTERRUPTED;
+      }
+
     } break;
     default:
       NOTREACHED();
   }
 
   // TODO(crbug.com/857549): Set pending_state correctly.
-  item.pending_state = item.state == OfflineItemState::INTERRUPTED
+  item.pending_state = item.state == OfflineItemState::PENDING
                            ? PendingState::PENDING_NETWORK
                            : PendingState::NOT_PENDING;
   item.progress.value = download_item->GetReceivedBytes();

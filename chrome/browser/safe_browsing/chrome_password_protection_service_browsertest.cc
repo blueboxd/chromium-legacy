@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -43,7 +44,6 @@ const char kChangePasswordUrl[] = "/safe_browsing/change_password_page.html";
 }  // namespace
 
 namespace safe_browsing {
-using PasswordReuseEvent = LoginReputationClientRequest::PasswordReuseEvent;
 
 class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
  public:
@@ -166,14 +166,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Shows modal dialog on current web_contents.
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Change Password" button on the modal dialog.
-  service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
                         WarningUIType::MODAL_DIALOG,
                         WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
@@ -224,14 +224,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Shows modal dialog on current web_contents.
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   base::RunLoop().RunUntilIdle();
   // Change password card on chrome settings page should NOT show.
   ASSERT_FALSE(
@@ -251,24 +251,24 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Shows modal dialog on current web_contents.
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Ignore" button on the modal dialog.
-  service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
                         WarningUIType::MODAL_DIALOG,
                         WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
@@ -276,19 +276,19 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
-  service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
                         WarningUIType::PAGE_INFO,
                         WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   EXPECT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
@@ -304,10 +304,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Shows modal dialog on current web_contents.
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   base::RunLoop().RunUntilIdle();
   // Simulates clicking "Ignore" to close dialog.
-  service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
                         WarningUIType::MODAL_DIALOG,
                         WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
@@ -316,13 +316,13 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           browser()->profile()));
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Change Password" in the page info bubble.
-  service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
                         WarningUIType::PAGE_INFO,
                         WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       browser2->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser2, GURL("data:text/html,<html></html>"));
   service->ShowModalWarning(new_web_contents, "unused_token",
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u,
             profile->GetPrefs()
@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
@@ -523,7 +523,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // Shows interstitial on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowInterstitial(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD);
+  service->ShowInterstitial(web_contents,
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(new_web_contents,
@@ -568,8 +569,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // Shows interstitial on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowInterstitial(web_contents,
-                            PasswordReuseEvent::ENTERPRISE_PASSWORD);
+  service->ShowInterstitial(web_contents, PasswordType::ENTERPRISE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(new_web_contents,
@@ -636,12 +636,12 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                                embedded_test_server()->GetURL(kLoginPageUrl));
   // Shows modal dialog on current web_contents.
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::ENTERPRISE_PASSWORD);
+                            PasswordType::ENTERPRISE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   // Enterprise password reuse should not trigger warning in Chrome settings UI.
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD));
+          web_contents, PasswordType::ENTERPRISE_PASSWORD));
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
@@ -651,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Change Password" button on the modal dialog.
-  service->OnUserAction(web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::ENTERPRISE_PASSWORD,
                         WarningUIType::MODAL_DIALOG,
                         WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
@@ -675,20 +675,20 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Shows modal dialog on current web_contents.
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::ENTERPRISE_PASSWORD);
+                            PasswordType::ENTERPRISE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
-  service->OnUserAction(web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::ENTERPRISE_PASSWORD,
                         WarningUIType::PAGE_INFO,
                         WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD));
+          web_contents, PasswordType::ENTERPRISE_PASSWORD));
   EXPECT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
@@ -706,11 +706,11 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Shows modal dialog on current web_contents.
   service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordReuseEvent::ENTERPRISE_PASSWORD);
+                            PasswordType::ENTERPRISE_PASSWORD);
   base::RunLoop().RunUntilIdle();
 
   // Simulates clicking on "Change Password" in the page info bubble.
-  service->OnUserAction(web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD,
+  service->OnUserAction(web_contents, PasswordType::ENTERPRISE_PASSWORD,
                         WarningUIType::PAGE_INFO,
                         WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();

@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -31,6 +32,14 @@
 
       #account-list-header {
         padding-bottom: 1em;
+      }
+
+      .account-policy-indicator {
+        margin-inline-start: 1em;
+      }
+
+      #add-account-policy-indicator {
+        margin-inline-end: 1em;
       }
 
       #add-account-icon {
@@ -63,7 +72,13 @@
       <div id="account-list-header" class="flex">
         <h2>$i18n{kerberosAccountsListHeader}</h2>
       </div>
-      <cr-button id="add-account-button" on-click="onAddAccountClick_">
+      <template is="dom-if" if="[[!addAccountsAllowed_]]">
+        <cr-policy-indicator id="add-account-policy-indicator"
+            indicator-type="userPolicy">
+        </cr-policy-indicator>
+      </template>
+      <cr-button id="add-account-button" on-click="onAddAccountClick_"
+          disabled="[[!addAccountsAllowed_]]">
         <div id="add-account-icon"></div>
         $i18n{kerberosAccountsAddAccountLabel}
       </cr-button>
@@ -71,7 +86,7 @@
 
     <div id="outer" class="layout vertical nowrap">
       <template is="dom-repeat" id="account-list" items="[[accounts_]]">
-        <div class="settings-box">
+        <div class="settings-box account-list-item">
 
           <div class="profile-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]">
@@ -97,8 +112,15 @@
             $i18n{kerberosAccountsReauthenticationLabel}
           </cr-button>
 
+          <template is="dom-if" if="[[item.isManaged]]">
+            <cr-policy-indicator class="account-policy-indicator"
+                indicator-type="userPolicy">
+            </cr-policy-indicator>
+          </template>
+
           <!-- Hamburger menu -->
-          <cr-icon-button class="icon-more-vert" title="$i18n{moreActions}"
+          <cr-icon-button class="icon-more-vert more-actions"
+              title="$i18n{moreActions}"
               on-click="onAccountActionsMenuButtonClick_">
           </cr-icon-button>
         </div>
@@ -113,7 +135,8 @@
         <button class="dropdown-item" on-click="onSetAsActiveAccountClick_">
           $i18n{kerberosAccountsSetAsActiveAccountLabel}
         </button>
-        <button class="dropdown-item" on-click="onRemoveAccountClick_">
+        <button class="dropdown-item" on-click="onRemoveAccountClick_"
+            disabled="[[selectedAccount_.isManaged]]">
           $i18n{kerberosAccountsRemoveAccountLabel}
         </button>
       </cr-action-menu>

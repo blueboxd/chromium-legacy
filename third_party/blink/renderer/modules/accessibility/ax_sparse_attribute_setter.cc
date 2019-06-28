@@ -54,10 +54,10 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
     if (value.IsNull() || value.IsEmpty())
       return;
 
-    Node* node = obj.GetNode();
-    if (!node || !node->IsElementNode())
+    auto* element = DynamicTo<Element>(obj.GetNode());
+    if (!element)
       return;
-    Element* target = ToElement(node)->GetTreeScope().getElementById(value);
+    Element* target = element->GetTreeScope().getElementById(value);
     if (!target)
       return;
     AXObject* ax_target = obj.AXObjectCache().GetOrCreate(target);

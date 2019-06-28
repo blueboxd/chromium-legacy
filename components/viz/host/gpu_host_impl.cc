@@ -341,7 +341,8 @@ void GpuHostImpl::InitOzone() {
 
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupportHost()
-        ->OnGpuServiceLaunched(params_.main_thread_task_runner,
+        ->OnGpuServiceLaunched(params_.restart_id,
+                               params_.main_thread_task_runner,
                                host_thread_task_runner_, interface_binder,
                                std::move(terminate_callback));
   } else {

@@ -136,6 +136,12 @@
       <message name="IDS_WINDOWS_PASSWORD_FIELD_LABEL" desc="">
         Windows Password
       </message>
+      <message name="IDS_EMPTY_ACCESS_TOKEN" desc="">
+        Only Gsuite Enterprise users are allowed to login.
+      </message>
+      <message name="IDS_INVALID_AD_UPN" desc="">
+        No Domain user could be found for your account. Please contact your administrator.
+      </message>
     </messages>
   </release>
 </grit>

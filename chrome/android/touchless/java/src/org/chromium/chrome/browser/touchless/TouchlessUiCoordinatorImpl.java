@@ -9,6 +9,7 @@ import android.view.KeyEvent;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -41,6 +42,8 @@ public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserv
     private TooltipView mTooltipView;
     private ProgressBarView mProgressBarView;
 
+    private ActivityTabProvider.ActivityTabTabObserver mOpenLastTabObserver;
+
     /** The class that enables zooming for all websites and handles touchless zooming. */
     private TouchlessZoomHelper mTouchlessZoomHelper;
 
@@ -65,6 +68,9 @@ public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserv
 
         mProgressBarCoordinator =
                 new ProgressBarCoordinator(mProgressBarView, mActivity.getActivityTabProvider());
+
+        mOpenLastTabObserver = OpenLastTabMediator.createActivityScopedObserver(
+                mActivity, mActivity.getActivityTabProvider());
     }
 
     @Override
@@ -126,5 +132,6 @@ public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserv
         if (mKeyFunctionsIPHCoordinator != null) mKeyFunctionsIPHCoordinator.destroy();
         if (mTouchlessZoomHelper != null) mTouchlessZoomHelper.destroy();
         if (mProgressBarCoordinator != null) mProgressBarCoordinator.destroy();
+        if (mOpenLastTabObserver != null) mOpenLastTabObserver.destroy();
     }
 }

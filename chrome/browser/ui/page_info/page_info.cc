@@ -57,8 +57,10 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -97,10 +99,7 @@ using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using base::UTF8ToUTF16;
 using content::BrowserThread;
-#if defined(FULL_SAFE_BROWSING)
-using PasswordReuseEvent =
-    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
-#endif  // FULL_SAFE_BROWSING
+using password_manager::metrics_util::PasswordType;
 
 namespace {
 
@@ -129,10 +128,8 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_USB_GUARD,
 #if !defined(OS_ANDROID)
     CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
-    // settings and page info on Android.
-    CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
 #endif
+    CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
 };
 
 // Checks whether this permission is currently the factory default, as set by
@@ -562,8 +559,8 @@ void PageInfo::OnChangePasswordButtonPressed(
   password_protection_service_->OnUserAction(
       web_contents,
       safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE
-          ? PasswordReuseEvent::SIGN_IN_PASSWORD
-          : PasswordReuseEvent::ENTERPRISE_PASSWORD,
+          ? PasswordType::PRIMARY_ACCOUNT_PASSWORD
+          : PasswordType::ENTERPRISE_PASSWORD,
       safe_browsing::WarningUIType::PAGE_INFO,
       safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
@@ -579,8 +576,8 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
   password_protection_service_->OnUserAction(
       web_contents,
       safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE
-          ? PasswordReuseEvent::SIGN_IN_PASSWORD
-          : PasswordReuseEvent::ENTERPRISE_PASSWORD,
+          ? PasswordType::PRIMARY_ACCOUNT_PASSWORD
+          : PasswordType::ENTERPRISE_PASSWORD,
       safe_browsing::WarningUIType::PAGE_INFO,
       safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
@@ -988,16 +985,20 @@ void PageInfo::RecordPasswordReuseEvent() {
     safe_browsing::LogWarningAction(
         safe_browsing::WarningUIType::PAGE_INFO,
         safe_browsing::WarningAction::SHOWN,
-        safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-            SIGN_IN_PASSWORD,
-        password_protection_service_->GetSyncAccountType());
+        password_protection_service_
+            ->GetPasswordProtectionReusedPasswordAccountType(
+                PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+                (password_protection_service_->GetAccountInfo())
+                    .hosted_domain));
   } else {
     safe_browsing::LogWarningAction(
         safe_browsing::WarningUIType::PAGE_INFO,
         safe_browsing::WarningAction::SHOWN,
-        safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-            ENTERPRISE_PASSWORD,
-        password_protection_service_->GetSyncAccountType());
+        password_protection_service_
+            ->GetPasswordProtectionReusedPasswordAccountType(
+                PasswordType::ENTERPRISE_PASSWORD,
+                (password_protection_service_->GetAccountInfo())
+                    .hosted_domain));
   }
 }
 #endif
@@ -1042,7 +1043,7 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
       // |password_protection_service_| may be null in test.
       *details = password_protection_service_
                      ? password_protection_service_->GetWarningDetailText(
-                           PasswordReuseEvent::SIGN_IN_PASSWORD)
+                           PasswordType::PRIMARY_ACCOUNT_PASSWORD)
                      : base::string16();
 #endif
       break;
@@ -1052,7 +1053,7 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
       // |password_protection_service_| maybe null in test.
       *details = password_protection_service_
                      ? password_protection_service_->GetWarningDetailText(
-                           PasswordReuseEvent::ENTERPRISE_PASSWORD)
+                           PasswordType::ENTERPRISE_PASSWORD)
                      : base::string16();
 #endif
       break;

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.developer;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.Preference;
@@ -37,7 +38,7 @@ public class TracingCategoriesPreferences
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(MSG_CATEGORY_SELECTION_TITLE);
         PreferenceScreen preferenceScreen =
-                getPreferenceManager().createPreferenceScreen(getPreferenceManager().getContext());
+                getPreferenceManager().createPreferenceScreen(getStyledContext());
         preferenceScreen.setOrderingAsAdded(true);
 
         mType = getArguments().getInt(EXTRA_CATEGORY_TYPE);
@@ -54,7 +55,8 @@ public class TracingCategoriesPreferences
     }
 
     private CheckBoxPreference createPreference(String category) {
-        CheckBoxPreference preference = new ChromeBaseCheckBoxPreferenceCompat(getActivity(), null);
+        CheckBoxPreference preference =
+                new ChromeBaseCheckBoxPreferenceCompat(getStyledContext(), null);
         preference.setKey(category);
         preference.setTitle(category.startsWith(TracingPreferences.NON_DEFAULT_CATEGORY_PREFIX)
                         ? category.substring(
@@ -76,5 +78,9 @@ public class TracingCategoriesPreferences
         }
         TracingPreferences.setEnabledCategories(mType, mEnabledCategories);
         return true;
+    }
+
+    private Context getStyledContext() {
+        return getPreferenceManager().getContext();
     }
 }

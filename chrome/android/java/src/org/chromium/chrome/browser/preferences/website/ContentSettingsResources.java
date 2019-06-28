@@ -117,6 +117,12 @@ public class ContentSettingsResources {
                             R.string.background_sync_permission_title, ContentSettingValues.ALLOW,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_allowed_recommended, 0));
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+                    new ResourceItem(R.drawable.ic_bluetooth_searching_black_24dp,
+                            R.string.website_settings_bluetooth_scanning,
+                            R.string.website_settings_bluetooth_scanning, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK,
+                            R.string.website_settings_category_bluetooth_scanning_ask, 0));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
                     new ResourceItem(R.drawable.ic_content_paste_grey600_24dp,
                             R.string.clipboard_permission_title,

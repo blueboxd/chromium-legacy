@@ -204,10 +204,10 @@ void PrintContext::CollectLinkedDestinations(Node* node) {
   for (Node* i = node->firstChild(); i; i = i->nextSibling())
     CollectLinkedDestinations(i);
 
-  if (!node->IsLink() || !node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!node->IsLink() || !element)
     return;
-  const AtomicString& href =
-      ToElement(node)->getAttribute(html_names::kHrefAttr);
+  const AtomicString& href = element->getAttribute(html_names::kHrefAttr);
   if (href.IsNull())
     return;
   KURL url = node->GetDocument().CompleteURL(href);

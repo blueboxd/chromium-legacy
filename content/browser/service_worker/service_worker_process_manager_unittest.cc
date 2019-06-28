@@ -34,7 +34,7 @@ class SiteInstanceRenderProcessHostFactory : public RenderProcessHostFactory {
 
   RenderProcessHost* CreateRenderProcessHost(
       BrowserContext* browser_context,
-      SiteInstance* site_instance) const override {
+      SiteInstance* site_instance) override {
     processes_.push_back(
         std::make_unique<MockRenderProcessHost>(browser_context));
 

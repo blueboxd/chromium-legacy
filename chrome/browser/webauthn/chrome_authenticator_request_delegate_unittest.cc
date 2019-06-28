@@ -67,28 +67,28 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 
 #if defined(OS_MACOSX)
 std::string TouchIdMetadataSecret(
-    const ChromeAuthenticatorRequestDelegate& delegate) {
+    ChromeAuthenticatorRequestDelegate* delegate) {
   base::Optional<
       content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
-      config = delegate.GetTouchIdAuthenticatorConfig();
+      config = delegate->GetTouchIdAuthenticatorConfig();
   return config->metadata_secret;
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TouchIdMetadataSecret) {
   ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
-  std::string secret = TouchIdMetadataSecret(delegate);
+  std::string secret = TouchIdMetadataSecret(&delegate);
   EXPECT_EQ(secret.size(), 32u);
-  EXPECT_EQ(secret, TouchIdMetadataSecret(delegate));
+  EXPECT_EQ(secret, TouchIdMetadataSecret(&delegate));
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_EqualForSameProfile) {
   // Different delegates on the same BrowserContext (Profile) should return the
   // same secret.
-  EXPECT_EQ(TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                main_rfh(), kRelyingPartyID)),
-            TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                main_rfh(), kRelyingPartyID)));
+  ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
+  ChromeAuthenticatorRequestDelegate delegate2(main_rfh(), kRelyingPartyID);
+  EXPECT_EQ(TouchIdMetadataSecret(&delegate1),
+            TouchIdMetadataSecret(&delegate2));
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
@@ -98,15 +98,13 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   auto browser_context = base::WrapUnique(CreateBrowserContext());
   auto web_contents = content::WebContentsTester::CreateTestWebContents(
       browser_context.get(), nullptr);
-  EXPECT_NE(TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                main_rfh(), kRelyingPartyID)),
-            TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                web_contents->GetMainFrame(), kRelyingPartyID)));
+  ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
+  ChromeAuthenticatorRequestDelegate delegate2(web_contents->GetMainFrame(),
+                                               kRelyingPartyID);
+  EXPECT_NE(TouchIdMetadataSecret(&delegate1),
+            TouchIdMetadataSecret(&delegate2));
   // Ensure this second secret is actually valid.
-  EXPECT_EQ(32u, TouchIdMetadataSecret(
-                     ChromeAuthenticatorRequestDelegate(
-                         web_contents->GetMainFrame(), kRelyingPartyID))
-                     .size());
+  EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
 }
 #endif
 

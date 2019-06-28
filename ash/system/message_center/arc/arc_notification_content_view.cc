@@ -499,21 +499,9 @@ void ArcNotificationContentView::ShowCopiedSurface() {
   surface_copy_->root()->SetBounds(size);
   layer()->Add(surface_copy_->root());
 
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    surface_copy_->root()->SetRoundedCornerRadius(
-        {top_radius_, top_radius_, bottom_radius_, bottom_radius_});
-    surface_copy_->root()->SetIsFastRoundedCorner(true);
-  } else {
-    if (!surface_copy_mask_) {
-      surface_copy_mask_ = views::Painter::CreatePaintedLayer(
-          std::make_unique<message_center::NotificationBackgroundPainter>(
-              top_radius_, bottom_radius_));
-      surface_copy_mask_->layer()->SetBounds(size);
-      surface_copy_mask_->layer()->SetFillsBoundsOpaquely(false);
-    }
-    DCHECK(!surface_copy_mask_->layer()->parent());
-    surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
-  }
+  surface_copy_->root()->SetRoundedCornerRadius(
+      {top_radius_, top_radius_, bottom_radius_, bottom_radius_});
+  surface_copy_->root()->SetIsFastRoundedCorner(true);
 
   // Changes the opacity instead of setting the visibility, to keep
   // |EventFowarder| working.

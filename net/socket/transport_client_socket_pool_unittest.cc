@@ -2176,11 +2176,7 @@ class TransportClientSocketPoolMockNowSourceTest
       : TransportClientSocketPoolTest(
             base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
             base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME) {
-    // Forward the clock by a non-zero amount to avoid triggering DCHECKs that
-    // verify that certain timestamps are non-null.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
-  }
+                MAIN_THREAD_MOCK_TIME) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolMockNowSourceTest);

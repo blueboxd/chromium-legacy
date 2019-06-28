@@ -302,7 +302,8 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
 
   EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
   device->Disconnect({});
-  EXPECT_TRUE(device->IsConnected());
+  // Should declare device as not connected after disconnect starts
+  EXPECT_FALSE(device->IsConnected());
 
   EXPECT_CALL(*observer_, OnConnectChanged(device, false));
   delegate->OnConnectChanged(kTestAddr1, true /* status */,

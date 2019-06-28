@@ -67,6 +67,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -797,6 +798,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
     interceptor_index_ = 0;
     received_response_ = false;
+    head_ = network::ResourceResponseHead();
     MaybeStartLoader(nullptr /* interceptor */,
                      {} /* single_request_handler */);
   }
@@ -1115,6 +1117,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(const network::ResourceResponseHead& head) override {
+    // When NavigationImmediateResponseBody is enabled, wait for
+    // OnStartLoadingResponseBody() before sending anything to the renderer
+    // process.
+    if (IsNavigationImmediateResponseBodyEnabled() &&
+        !response_body_.is_valid()) {
+      head_ = head;
+      return;
+    }
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
@@ -1258,8 +1268,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
                        response->DeepCopy(),
                        std::move(url_loader_client_endpoints),
-                       global_request_id_, is_download, ui_to_io_time_,
-                       base::Time::Now()));
+                       std::move(response_body_), global_request_id_,
+                       is_download, ui_to_io_time_, base::Time::Now()));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1309,14 +1319,31 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
-                        OnUploadProgressCallback callback) override {}
-  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {}
+                        OnUploadProgressCallback callback) override {
+    NOTREACHED();
+  }
+
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
+    // No cached metadata is ever sent for the main resource. The
+    // NavigationImmediateResponse feature does not support it.
+    CHECK(false);
+  }
+
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
 
-  void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle) override {
-    // Not reached. At this point, the loader and client endpoints must have
-    // been unbound and forwarded to the renderer.
-    CHECK(false);
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle response_body) override {
+    // When NavigationImmediateResponseBody is disabled, this is not reached.
+    // Instead, the loader and client endpoints must have been unbound and
+    // forwarded to the renderer.
+    CHECK(IsNavigationImmediateResponseBodyEnabled());
+
+    // When NavigationImmediateResponseBody is enabled, the NavigationURLLoader
+    // waits for OnStartLoadingResponseBody() instead of OnReceiveResponse()
+    // before delegating the load to an URLLoaderClientImpl in the renderer
+    // process.
+    response_body_ = std::move(response_body);
+    OnReceiveResponse(head_);
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
@@ -1368,14 +1395,15 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderClientRequest response_client_request;
       bool skip_other_interceptors = false;
       if (interceptor->MaybeCreateLoaderForResponse(
-              *resource_request_, response, &response_url_loader_,
-              &response_client_request, url_loader_.get(),
-              &skip_other_interceptors)) {
+              *resource_request_, response, &response_body_,
+              &response_url_loader_, &response_client_request,
+              url_loader_.get(), &skip_other_interceptors)) {
         if (response_loader_binding_.is_bound())
           response_loader_binding_.Close();
         response_loader_binding_.Bind(std::move(response_client_request));
         default_loader_used_ = false;
-        url_loader_.reset();
+        url_loader_.reset();     // Consumed above.
+        response_body_.reset();  // Consumed above.
         if (skip_other_interceptors) {
           std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
               new_interceptors;
@@ -1535,6 +1563,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // Only used when NavigationLoaderOnUI is enabled:
   BrowserContext* browser_context_;
+
+  network::ResourceResponseHead head_;
+  mojo::ScopedDataPipeConsumerHandle response_body_;
 
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
@@ -1766,8 +1797,9 @@ void NavigationURLLoaderImpl::FollowRedirect(
 void NavigationURLLoaderImpl::ProceedWithResponse() {}
 
 void NavigationURLLoaderImpl::OnReceiveResponse(
-    scoped_refptr<network::ResourceResponse> response,
+    scoped_refptr<network::ResourceResponse> response_head,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     const GlobalRequestID& global_request_id,
     bool is_download,
     base::TimeDelta total_ui_to_io_time,
@@ -1789,18 +1821,18 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   // TODO(scottmg): This needs to do more of what
   // NavigationResourceHandler::OnResponseStarted() does.
   delegate_->OnResponseStarted(
-      std::move(response), std::move(url_loader_client_endpoints),
-      global_request_id, is_download, download_policy_,
-      request_controller_->TakeSubresourceLoaderParams());
+      std::move(url_loader_client_endpoints), std::move(response_head),
+      std::move(response_body), global_request_id, is_download,
+      download_policy_, request_controller_->TakeSubresourceLoaderParams());
 }
 
 void NavigationURLLoaderImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    scoped_refptr<network::ResourceResponse> response,
+    scoped_refptr<network::ResourceResponse> response_head,
     base::Time io_post_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   io_to_ui_time_ += (base::Time::Now() - io_post_time);
-  delegate_->OnRequestRedirected(redirect_info, std::move(response));
+  delegate_->OnRequestRedirected(redirect_info, std::move(response_head));
 }
 
 void NavigationURLLoaderImpl::OnComplete(

@@ -62,12 +62,12 @@
   return _webStateList.get();
 }
 
-- (Tab*)insertTabWithLoadParams:
-            (const web::NavigationManager::WebLoadParams&)loadParams
-                         opener:(Tab*)parentTab
-                    openedByDOM:(BOOL)openedByDOM
-                        atIndex:(NSUInteger)index
-                   inBackground:(BOOL)inBackground {
+- (web::WebState*)insertWebStateWithLoadParams:
+                      (const web::NavigationManager::WebLoadParams&)loadParams
+                                        opener:(web::WebState*)parentWebState
+                                   openedByDOM:(BOOL)openedByDOM
+                                       atIndex:(NSUInteger)index
+                                  inBackground:(BOOL)inBackground {
   int insertionIndex = WebStateList::kInvalidIndex;
   int insertionFlags = WebStateList::INSERT_NO_FLAGS;
   if (index != TabModelConstants::kTabPositionAutomatically) {
@@ -91,8 +91,7 @@
   webState->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   _webStateList->InsertWebState(insertionIndex, std::move(webState),
-                                insertionFlags,
-                                WebStateOpener(parentTab.webState));
+                                insertionFlags, WebStateOpener(parentWebState));
 
   return nil;
 }

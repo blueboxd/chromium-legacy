@@ -489,7 +489,8 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
       GetPasswordProtectionService();
   if (pps) {
     pps->MaybeStartPasswordFieldOnFocusRequest(
-        web_contents(), GetMainFrameURL(), form_action, frame_url);
+        web_contents(), GetMainFrameURL(), form_action, frame_url,
+        pps->GetAccountInfo().hosted_domain);
   }
 }
 
@@ -500,7 +501,7 @@ ChromePasswordManagerClient::GetPasswordProtectionService() const {
 }
 
 void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
-    PasswordType reused_password_type,
+    PasswordType password_type,
     const std::string& username,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
@@ -508,11 +509,16 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
       GetPasswordProtectionService();
   if (!pps)
     return;
+
+  syncer::SyncService* sync = ProfileSyncServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  bool is_account_syncing =
+      (password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD) &&
+      (sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled());
   pps->MaybeStartProtectedPasswordEntryRequest(
-      web_contents(), GetMainFrameURL(), username,
-      safe_browsing::PasswordProtectionService::
-          GetPasswordProtectionReusedPasswordType(reused_password_type),
-      matching_domains, password_field_exists);
+      web_contents(), GetMainFrameURL(), username, password_type,
+      pps->GetAccountInfo().hosted_domain, is_account_syncing, matching_domains,
+      password_field_exists);
 }
 
 void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {

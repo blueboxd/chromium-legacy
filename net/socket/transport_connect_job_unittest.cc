@@ -54,11 +54,7 @@ class TransportConnectJobTest : public WithScopedTaskEnvironment,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             &net_log_,
-            nullptr /* websocket_endpoint_lock_manager */) {
-    // Set an initial delay to ensure that calls to TimeTicks::Now() do not
-    // return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
-  }
+            nullptr /* websocket_endpoint_lock_manager */) {}
 
   ~TransportConnectJobTest() override {}
 

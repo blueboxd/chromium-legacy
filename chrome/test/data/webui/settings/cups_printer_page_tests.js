@@ -379,8 +379,8 @@ suite('CupsAddPrinterDialogTests', function() {
     return cupsPrintersBrowserProxy.whenCalled('getPrinterInfo')
         .then(function(result) {
           // The general error should be showing.
-          assertTrue(addDialog.showGeneralError_);
-          assertFalse(addDialog.$$('#general-error').hidden);
+          assertTrue(!!addDialog.errorText_);
+          assertFalse(addDialog.$$('#general-error-container').hidden);
         });
   });
 

@@ -60,7 +60,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('keydown', this.handleKeyDown);
 
       if (!this.hasAttribute('role')) {
-        this.setAttribute('role', 'group');
+        this.setAttribute('role', 'tree');
       }
     },
 

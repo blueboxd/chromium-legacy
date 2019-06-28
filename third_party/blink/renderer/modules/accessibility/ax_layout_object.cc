@@ -222,7 +222,8 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   // ARIA 1.2 (and Core-AAM 1.1) state that elements which are focusable
   // and not hidden must be included in the accessibility tree.
   if (layout_object_->IsTableSection()) {
-    if (node && node->IsElementNode() && ToElement(node)->SupportsFocus())
+    auto* element = DynamicTo<Element>(node);
+    if (element && element->SupportsFocus())
       return ax::mojom::Role::kGroup;
     return ax::mojom::Role::kIgnored;
   }
@@ -344,9 +345,9 @@ bool AXLayoutObject::IsEditable() const {
   // hopefully the standardized version will, in which case a more performant
   // implementation will be required, e.g. cache it or only expose on ancestor,
   // having browser-side propagate it.
-  const Element* elem = node->IsElementNode()
-                            ? ToElement(node)
-                            : FlatTreeTraversal::ParentElement(*node);
+  const auto* elem = DynamicTo<Element>(node);
+  if (!elem)
+    elem = FlatTreeTraversal::ParentElement(*node);
   if (elem && elem->hasAttribute("aria-goog-editable")) {
     auto editable = elem->getAttribute("aria-goog-editable");
     return !EqualIgnoringASCIICase("false", editable);
@@ -392,9 +393,9 @@ bool AXLayoutObject::IsRichlyEditable() const {
   // hopefully the standardized version will, in which case a more performant
   // implementation will be required, e.g. cache it or only expose on ancestor,
   // having browser-side propagate it.
-  const Element* elem = node->IsElementNode()
-                            ? ToElement(node)
-                            : FlatTreeTraversal::ParentElement(*node);
+  const Element* elem = DynamicTo<Element>(node);
+  if (!elem)
+    elem = FlatTreeTraversal::ParentElement(*node);
   if (elem && elem->hasAttribute("aria-goog-editable")) {
     auto editable = elem->getAttribute("aria-goog-editable");
     return !EqualIgnoringASCIICase("false", editable);
@@ -785,11 +786,9 @@ bool AXLayoutObject::CanIgnoreSpaceNextTo(LayoutObject* layout,
   // False negatives are acceptable in that they merely lead to extra whitespace
   // static text nodes.
   // TODO(aleventhal) Do we want this? Is it too hard/complex for Braille/Cvox?
-  Node* node = layout->GetNode();
-  if (node && node->IsElementNode()) {
-    Element* elem = ToElement(node);
-    if (HasAriaCellRole(elem))
-      return true;
+  auto* elem = DynamicTo<Element>(layout->GetNode());
+  if (elem && HasAriaCellRole(elem)) {
+    return true;
   }
 
   // Test against the appropriate child text node.
@@ -850,12 +849,10 @@ bool AXLayoutObject::CanIgnoreTextAsEmpty() const {
 //
 
 const AtomicString& AXLayoutObject::AccessKey() const {
-  Node* node = layout_object_->GetNode();
-  if (!node)
+  auto* element = DynamicTo<Element>(layout_object_->GetNode());
+  if (!element)
     return g_null_atom;
-  if (!node->IsElementNode())
-    return g_null_atom;
-  return ToElement(node)->getAttribute(kAccesskeyAttr);
+  return element->getAttribute(kAccesskeyAttr);
 }
 
 RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
@@ -2048,8 +2045,7 @@ void AXLayoutObject::AddChildren() {
   if (IsDetached())
     return;
 
-  if (GetNode() && GetNode()->IsElementNode()) {
-    Element* element = ToElement(GetNode());
+  if (auto* element = DynamicTo<Element>(GetNode())) {
     if (!IsHTMLMapElement(*element) &&   // Handled in AddImageMapChildren (img)
         !IsHTMLRubyElement(*element) &&  // Special layout handling
         !IsHTMLTableElement(*element) &&  // thead/tfoot move around
@@ -2058,9 +2054,7 @@ void AXLayoutObject::AddChildren() {
       return;
     }
   }
-  Element* element = nullptr;
-  if (GetNode() && GetNode()->IsElementNode())
-    element = ToElement(GetNode());
+
   // If the need to add more children in addition to existing children arises,
   // childrenChanged should have been called, leaving the object with no
   // children.

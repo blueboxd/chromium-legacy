@@ -67,8 +67,6 @@
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
@@ -683,8 +681,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (UIView*)footerView;
 // Returns the appropriate frame for the NTP.
 - (CGRect)ntpFrameForWebState:(web::WebState*)webState;
-// Returns web contents frame without including primary toolbar.
-- (CGRect)visibleFrameForTab:(Tab*)tab;
 // Sets the frame for the headers.
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset;
@@ -908,12 +904,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (BOOL)canShowFindBar {
   // Make sure web controller can handle find in page.
-  Tab* tab = [self.tabModel currentTab];
-  if (!tab) {
+  web::WebState* webState = self.currentWebState;
+  if (!webState) {
     return NO;
   }
 
-  auto* helper = FindTabHelper::FromWebState(tab.webState);
+  auto* helper = FindTabHelper::FromWebState(webState);
   return (helper && helper->CurrentPageSupportsFindInPage() &&
           !helper->IsFindUIActive());
 }
@@ -923,7 +919,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (web::UserAgentType)userAgentType {
-  web::WebState* webState = [self.tabModel currentTab].webState;
+  web::WebState* webState = self.currentWebState;
   if (!webState)
     return web::UserAgentType::NONE;
   web::NavigationItem* visibleItem =
@@ -1087,7 +1083,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (web::WebState*)currentWebState {
-  return self.tabModel.webStateList->GetActiveWebState();
+  return self.tabModel.webStateList
+             ? self.tabModel.webStateList->GetActiveWebState()
+             : nullptr;
 }
 
 - (BOOL)usesSafeInsetsForViewportAdjustments {
@@ -2286,12 +2284,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _sadTabCoordinator.dispatcher = self.dispatcher;
   _sadTabCoordinator.overscrollDelegate = self;
 
-  // If there are any existing SadTabHelpers in |self.tabModel|, update the
-  // helpers delegate with the new |_sadTabCoordinator|.
+  // If there are any existing SadTabHelpers in |self.tabModel.webStateList|,
+  // update the helpers delegate with the new |_sadTabCoordinator|.
   DCHECK(_sadTabCoordinator);
-  for (NSUInteger i = 0; i < self.tabModel.count; i++) {
+  WebStateList* webStateList = self.tabModel.webStateList;
+  for (int i = 0; i < webStateList->count(); i++) {
     SadTabTabHelper* sadTabHelper =
-        SadTabTabHelper::FromWebState([self.tabModel tabAtIndex:i].webState);
+        SadTabTabHelper::FromWebState(webStateList->GetWebStateAt(i));
     sadTabHelper->SetDelegate(_sadTabCoordinator);
   }
 
@@ -2603,12 +2602,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return UIEdgeInsetsInsetRect(self.contentArea.bounds, viewportInsets);
 }
 
-- (CGRect)visibleFrameForTab:(Tab*)tab {
-  UIView* tabView = [self viewForWebState:tab.webState];
-  return UIEdgeInsetsInsetRect(tabView.bounds,
-                               [self viewportInsetsForView:tabView]);
-}
-
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset {
   CGFloat height = self.headerOffset;
@@ -2680,7 +2673,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!self.currentWebState) {
     return;
   }
-  auto* helper = FindTabHelper::FromWebState(self.currentWebState);
+  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
   if (helper && helper->IsFindUIActive()) {
     if (initialUpdate && !_isOffTheRecord) {
       helper->RestoreSearchTerm();
@@ -2989,13 +2982,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (NSArray<UIView*>*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
            snapshotOverlaysForWebState:(web::WebState*)webState {
   DCHECK(webState);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
+  DCHECK(self.tabModel.webStateList->GetIndexOfWebState(webState) !=
+         WebStateList::kInvalidIndex);
   if (!self.webUsageEnabled)
     return @[];
 
   NSMutableArray<UIView*>* overlays = [NSMutableArray array];
-  UIView* infoBarView = [self infoBarOverlayViewForTab:tab];
+  UIView* infoBarView = [self infoBarOverlayViewForWebState:webState];
   if (infoBarView) {
     [overlays addObject:infoBarView];
   }
@@ -3063,9 +3056,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Provides a view that encompasses currently displayed infobar(s) or nil
 // if no infobar is presented.
-- (UIView*)infoBarOverlayViewForTab:(Tab*)tab {
-  if (tab && self.tabModel.currentTab == tab) {
-    DCHECK(self.currentWebState);
+- (UIView*)infoBarOverlayViewForWebState:(web::WebState*)webState {
+  if (webState && self.currentWebState == webState) {
     DCHECK(self.infobarContainerCoordinator);
     if ([self.infobarContainerCoordinator
             isInfobarPresentingForWebState:self.currentWebState]) {
@@ -3081,7 +3073,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                         fromTabId:(NSString*)tabId {
   // Check if the call comes from currently visible tab.
   NSString* visibleTabId =
-      TabIdTabHelper::FromWebState(self.tabModel.currentTab.webState)->tab_id();
+      TabIdTabHelper::FromWebState(self.currentWebState)->tab_id();
   if ([tabId isEqual:visibleTabId]) {
     [self addChildViewController:viewController];
     [self.view addSubview:viewController.view];
@@ -3120,13 +3112,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   // Requested web state should not be blocked from opening.
-  Tab* currentTab = LegacyTabHelper::GetTabForWebState(webState);
-  SnapshotTabHelper::FromWebState(currentTab.webState)
-      ->UpdateSnapshotWithCallback(nil);
+  SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(nil);
 
-  Tab* childTab = [[self tabModel] insertOpenByDOMTabWithOpener:currentTab];
+  web::WebState* childWebState =
+      [[self tabModel] insertOpenByDOMWebStateWithOpener:webState];
 
-  return childTab.webState;
+  return childWebState;
 }
 
 - (void)closeWebState:(web::WebState*)webState {
@@ -3152,27 +3143,28 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   switch (params.disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
-      Tab* tab = [[self tabModel]
-          insertTabWithLoadParams:loadParams
-                           opener:LegacyTabHelper::GetTabForWebState(webState)
-                      openedByDOM:NO
-                          atIndex:TabModelConstants::kTabPositionAutomatically
-                     inBackground:(params.disposition ==
-                                   WindowOpenDisposition::NEW_BACKGROUND_TAB)];
-      return tab.webState;
+      return [[self tabModel]
+          insertWebStateWithLoadParams:loadParams
+                                opener:webState
+                           openedByDOM:NO
+                               atIndex:TabModelConstants::
+                                           kTabPositionAutomatically
+                          inBackground:
+                              (params.disposition ==
+                               WindowOpenDisposition::NEW_BACKGROUND_TAB)];
     }
     case WindowOpenDisposition::CURRENT_TAB: {
       webState->GetNavigationManager()->LoadURLWithParams(loadParams);
       return webState;
     }
     case WindowOpenDisposition::NEW_POPUP: {
-      Tab* tab = [[self tabModel]
-          insertTabWithLoadParams:loadParams
-                           opener:LegacyTabHelper::GetTabForWebState(webState)
-                      openedByDOM:YES
-                          atIndex:TabModelConstants::kTabPositionAutomatically
-                     inBackground:NO];
-      return tab.webState;
+      return [[self tabModel]
+          insertWebStateWithLoadParams:loadParams
+                                opener:webState
+                           openedByDOM:YES
+                               atIndex:TabModelConstants::
+                                           kTabPositionAutomatically
+                          inBackground:NO];
     }
     default:
       NOTIMPLEMENTED();
@@ -4021,7 +4013,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return NO;
   }
 
-  auto* helper = FindTabHelper::FromWebState(self.currentWebState);
+  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
   return (helper && helper->CurrentPageSupportsFindInPage());
 }
 
@@ -4210,33 +4202,31 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #if !defined(NDEBUG)
 - (void)viewSource {
-  Tab* tab = self.tabModel.currentTab;
-  DCHECK(tab);
+  DCHECK(self.currentWebState);
   NSString* script = @"document.documentElement.outerHTML;";
-  __weak Tab* weakTab = tab;
   __weak BrowserViewController* weakSelf = self;
   auto completionHandlerBlock = ^(id result, NSError*) {
-    Tab* strongTab = weakTab;
-    if (!strongTab)
+    web::WebState* webState = weakSelf.currentWebState;
+    if (!webState)
       return;
     if (![result isKindOfClass:[NSString class]])
       result = @"Not an HTML page";
     std::string base64HTML;
     base::Base64Encode(base::SysNSStringToUTF8(result), &base64HTML);
     GURL URL(std::string("data:text/plain;charset=utf-8;base64,") + base64HTML);
-    web::Referrer referrer(strongTab.webState->GetLastCommittedURL(),
+    web::Referrer referrer(webState->GetLastCommittedURL(),
                            web::ReferrerPolicyDefault);
 
     [[weakSelf tabModel]
-        insertTabWithURL:URL
-                referrer:referrer
-              transition:ui::PAGE_TRANSITION_LINK
-                  opener:strongTab
-             openedByDOM:YES
-                 atIndex:TabModelConstants::kTabPositionAutomatically
-            inBackground:NO];
+        insertWebStateWithURL:URL
+                     referrer:referrer
+                   transition:ui::PAGE_TRANSITION_LINK
+                       opener:webState
+                  openedByDOM:YES
+                      atIndex:TabModelConstants::kTabPositionAutomatically
+                 inBackground:NO];
   };
-  [tab.webState->GetJSInjectionReceiver()
+  [self.currentWebState->GetJSInjectionReceiver()
       executeJavaScript:script
       completionHandler:completionHandlerBlock];
 }
@@ -4269,9 +4259,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _findBarController.dispatcher = self.dispatcher;
   }
 
-  Tab* tab = self.tabModel.currentTab;
-  DCHECK(tab);
-  auto* helper = FindTabHelper::FromWebState(tab.webState);
+  DCHECK(self.currentWebState);
+  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
   DCHECK(!helper->IsFindUIActive());
   helper->SetResponseDelegate(self);
   helper->SetFindUIActive(true);
@@ -4289,7 +4278,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)searchFindInPage {
   DCHECK(self.currentWebState);
-  auto* helper = FindTabHelper::FromWebState(self.currentWebState);
+  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
   __weak BrowserViewController* weakSelf = self;
   helper->StartFinding(
       [_findBarController searchTerm], ^(FindInPageModel* model) {
@@ -4713,8 +4702,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return self.contentArea;
 }
 
-- (void)sideSwipeRedisplayTab:(Tab*)tab {
-  [self displayWebState:tab.webState];
+- (void)sideSwipeRedisplayWebState:(web::WebState*)webState {
+  [self displayWebState:webState];
 }
 
 - (BOOL)preventSideSwipe {
@@ -4893,13 +4882,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
             (CaptivePortalDetectorTabHelper*)tabHelper
                  connectWithLandingURL:(const GURL&)landingURL {
   [self.tabModel
-      insertTabWithLoadParams:web_navigation_util::CreateWebLoadParams(
-                                  landingURL, ui::PAGE_TRANSITION_TYPED,
-                                  nullptr)
-                       opener:nil
-                  openedByDOM:NO
-                      atIndex:self.tabModel.count
-                 inBackground:NO];
+      insertWebStateWithLoadParams:web_navigation_util::CreateWebLoadParams(
+                                       landingURL, ui::PAGE_TRANSITION_TYPED,
+                                       nullptr)
+                            opener:nil
+                       openedByDOM:NO
+                           atIndex:self.tabModel.webStateList->count()
+                      inBackground:NO];
 }
 
 #pragma mark - PageInfoPresentation

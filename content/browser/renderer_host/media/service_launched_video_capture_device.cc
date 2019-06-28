@@ -35,7 +35,7 @@ ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
 }
 
 void ServiceLaunchedVideoCaptureDevice::GetPhotoState(
-    media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
+    media::VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   subscription_->GetPhotoState(base::BindOnce(
       &ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse,

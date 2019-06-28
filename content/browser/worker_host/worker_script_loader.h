@@ -97,7 +97,8 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // response, i.e. return a different response. For e.g. AppCache may have
   // fallback content.
   bool MaybeCreateLoaderForResponse(
-      const network::ResourceResponseHead& response,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* response_url_loader,
       network::mojom::URLLoaderClientRequest* response_client_request,
       ThrottlingURLLoader* url_loader);

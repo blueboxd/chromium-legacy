@@ -293,6 +293,11 @@ const base::Feature kMouseSubframeNoImplicitCapture{
 const base::Feature kNavigationLoaderOnUI{"NavigationLoaderOnUI",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Transmit the response body datapipe to the renderer process in
+// CommitNavigation() so that it can start reading earlier.
+const base::Feature kNavigationImmediateResponseBody{
+    "NavigationImmediateResponseBody", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess {
   "NetworkServiceInProcess",

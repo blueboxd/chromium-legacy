@@ -311,6 +311,7 @@ crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/textur
 crbug.com/angleproject/2930 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
+crbug.com/979641 [ win nvidia vulkan passthrough ] conformance/canvas/viewport-unchanged-upon-resize.html [ Failure ]
 
 # Vulkan / Win10 / NVIDIA GeForce GTX 1660 / Passthrough command decoder
 crbug.com/964331 [ win10 nvidia-0x2184 vulkan passthrough ] conformance/ogles/GL/pow/pow_009_to_016.html [ Failure ]

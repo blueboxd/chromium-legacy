@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -15,6 +16,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory.Type;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,6 +119,10 @@ public class SiteSettingsPreferences
             }
             websitePrefs.add(Type.AUTOMATIC_DOWNLOADS);
             websitePrefs.add(Type.BACKGROUND_SYNC);
+            CommandLine commandLine = CommandLine.getInstance();
+            if (commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+                websitePrefs.add(Type.BLUETOOTH_SCANNING);
+            }
             websitePrefs.add(Type.CAMERA);
             if (!FeatureUtilities.isNoTouchModeEnabled()) {
                 websitePrefs.add(Type.CLIPBOARD);

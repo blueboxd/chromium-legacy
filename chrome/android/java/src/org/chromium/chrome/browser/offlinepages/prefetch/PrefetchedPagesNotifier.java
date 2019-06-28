@@ -182,7 +182,7 @@ public class PrefetchedPagesNotifier {
     private static void runWhenChromeLoadsNative(final Runnable r) {
         BrowserStartupController browserStartup =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
-        if (!browserStartup.isStartupSuccessfullyCompleted()) {
+        if (!browserStartup.isFullBrowserStarted()) {
             browserStartup.addStartupCompletedObserver(new StartupCallback() {
                 @Override
                 public void onSuccess() {

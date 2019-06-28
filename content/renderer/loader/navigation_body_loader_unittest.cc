@@ -43,7 +43,9 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     blink::WebNavigationParams navigation_params;
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         CommonNavigationParams(), CommitNavigationParams(), 1 /* request_id */,
-        network::ResourceResponseHead(), std::move(endpoints),
+        network::ResourceResponseHead(),
+        mojo::ScopedDataPipeConsumerHandle() /* response_body */,
+        std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
     loader_ = std::move(navigation_params.body_loader);

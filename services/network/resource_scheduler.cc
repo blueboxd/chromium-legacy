@@ -383,12 +383,14 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   }
 
   ~Client() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (network_quality_estimator_)
       network_quality_estimator_->RemoveEffectiveConnectionTypeObserver(this);
   }
 
   void ScheduleRequest(const net::URLRequest& url_request,
                        ScheduledResourceRequestImpl* request) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     SetRequestAttributes(request, DetermineRequestAttributes(request));
     ShouldStartReqResult should_start = ShouldStartRequest(request);
     if (should_start == START_REQUEST) {
@@ -400,6 +402,8 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   }
 
   void RemoveRequest(ScheduledResourceRequestImpl* request) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
     if (pending_requests_.IsQueued(request)) {
       pending_requests_.Erase(request);
       DCHECK(!base::Contains(in_flight_requests_, request));
@@ -417,6 +421,8 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   }
 
   RequestSet StartAndRemoveAllRequests() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
     // First start any pending requests so that they will be moved into
     // in_flight_requests_. This may exceed the limits
     // kDefaultMaxNumDelayableRequestsPerClient and
@@ -444,6 +450,8 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   void ReprioritizeRequest(ScheduledResourceRequestImpl* request,
                            RequestPriorityParams old_priority_params,
                            RequestPriorityParams new_priority_params) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
     request->url_request()->SetPriority(new_priority_params.priority);
     request->set_request_priority_params(new_priority_params);
     SetRequestAttributes(request, DetermineRequestAttributes(request));
@@ -465,6 +473,8 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   // Updates the params based on the current network quality estimate.
   void UpdateParamsForNetworkQuality() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
     params_for_network_quality_ =
         resource_scheduler_->resource_scheduler_params_manager_
             .GetParamsForEffectiveConnectionType(
@@ -474,13 +484,18 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   }
 
   void OnLongQueuedRequestsDispatchTimerFired() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     LoadAnyStartablePendingRequests(
         RequestStartTrigger::LONG_QUEUED_REQUESTS_TIMER_FIRED);
   }
 
-  bool HasNoPendingRequests() const { return pending_requests_.IsEmpty(); }
+  bool HasNoPendingRequests() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return pending_requests_.IsEmpty();
+  }
 
   bool IsActiveResourceSchedulerClient() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return (!pending_requests_.IsEmpty() || !in_flight_requests_.empty());
   }
 
@@ -494,6 +509,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   // net::EffectiveConnectionTypeObserver implementation:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType effective_connection_type) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     UpdateParamsForNetworkQuality();
   }
 
@@ -1034,6 +1050,8 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   // Time when the last non-delayble request ended in this client.
   base::Optional<base::TimeTicks> last_non_delayable_request_end_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_;
 };

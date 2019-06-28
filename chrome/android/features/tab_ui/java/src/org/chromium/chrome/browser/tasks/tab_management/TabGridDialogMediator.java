@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -245,5 +246,15 @@ public class TabGridDialogMediator {
             mCurrentTabId = tabId;
             updateDialog();
         }
+    }
+
+    @VisibleForTesting
+    int getCurrentTabIdForTest() {
+        return mCurrentTabId;
+    }
+
+    @VisibleForTesting
+    void setCurrentTabIdForTest(int tabId) {
+        mCurrentTabId = tabId;
     }
 }

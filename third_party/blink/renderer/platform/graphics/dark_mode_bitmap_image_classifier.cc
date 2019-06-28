@@ -47,7 +47,7 @@ DarkModeClassification DarkModeBitmapImageClassifier::Classify(
     const FloatRect& src_rect) {
   if (src_rect.Width() < kMinImageSizeForClassification1D ||
       src_rect.Height() < kMinImageSizeForClassification1D)
-    return DarkModeClassification::kApplyDarkModeFilter;
+    return DarkModeClassification::kApplyFilter;
 
   Vector<float> features;
   Vector<SkColor> sampled_pixels;
@@ -55,7 +55,7 @@ DarkModeClassification DarkModeBitmapImageClassifier::Classify(
     // TODO(https://crbug.com/945434): Do not cache the classification when
     // the correct resource is not loaded
     image.SetShouldCacheDarkModeClassification(sampled_pixels.size() != 0);
-    return DarkModeClassification::kDoNotApplyDarkModeFilter;
+    return DarkModeClassification::kDoNotApplyFilter;
   }
 
   return ClassifyImage(features);
@@ -95,15 +95,22 @@ bool DarkModeBitmapImageClassifier::GetBitmap(Image& image,
   if (!src_rect.Width() || !src_rect.Height())
     return false;
 
+  DCHECK(bitmap);
+
   SkScalar sx = SkFloatToScalar(src_rect.X());
   SkScalar sy = SkFloatToScalar(src_rect.Y());
   SkScalar sw = SkFloatToScalar(src_rect.Width());
   SkScalar sh = SkFloatToScalar(src_rect.Height());
   SkRect src = {sx, sy, sx + sw, sy + sh};
   SkRect dest = {0, 0, sw, sh};
-  bitmap->allocPixels(SkImageInfo::MakeN32(static_cast<int>(src_rect.Width()),
-                                           static_cast<int>(src_rect.Height()),
-                                           kPremul_SkAlphaType));
+
+  if (!bitmap ||
+      !bitmap->tryAllocPixels(SkImageInfo::MakeN32(
+          static_cast<int>(src_rect.Width()),
+          static_cast<int>(src_rect.Height()), kPremul_SkAlphaType))) {
+    return false;
+  }
+
   SkCanvas canvas(*bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.drawImageRect(image.PaintImageForCurrentFrame().GetSkImage(), src,
@@ -285,11 +292,11 @@ DarkModeBitmapImageClassifier::ClassifyImageUsingDecisionTree(
 
   // Very few colors means it's not a photo, apply the filter.
   if (color_count_ratio < low_color_count_threshold)
-    return DarkModeClassification::kApplyDarkModeFilter;
+    return DarkModeClassification::kApplyFilter;
 
   // Too many colors means it's probably photorealistic, do not apply it.
   if (color_count_ratio > high_color_count_threshold)
-    return DarkModeClassification::kDoNotApplyDarkModeFilter;
+    return DarkModeClassification::kDoNotApplyFilter;
 
   // In-between, decision tree cannot give a precise result.
   return DarkModeClassification::kNotClassified;
@@ -307,8 +314,8 @@ DarkModeClassification DarkModeBitmapImageClassifier::ClassifyImage(
     darkmode_tfnative_model::FixedAllocations nn_temp;
     float nn_out;
     darkmode_tfnative_model::Inference(&features[0], &nn_out, &nn_temp);
-    result = nn_out > 0 ? DarkModeClassification::kApplyDarkModeFilter
-                        : DarkModeClassification::kDoNotApplyDarkModeFilter;
+    result = nn_out > 0 ? DarkModeClassification::kApplyFilter
+                        : DarkModeClassification::kDoNotApplyFilter;
   }
 
   return result;

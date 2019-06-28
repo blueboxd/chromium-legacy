@@ -363,6 +363,9 @@ class AccessibilityManager
   void PostLoadSwitchAccess();
   void PostUnloadSwitchAccess();
 
+  void PostLoadAutoclick();
+  void PostUnloadAutoclick();
+
   void UpdateAlwaysShowMenuFromPref();
   void OnLargeCursorChanged();
   void OnStickyKeysChanged();
@@ -376,6 +379,7 @@ class AccessibilityManager
   void OnTapDraggingChanged();
   void OnSelectToSpeakChanged();
   void UpdateSwitchAccessFromPref();
+  void OnAutoclickChanged();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
@@ -428,6 +432,7 @@ class AccessibilityManager
   bool spoken_feedback_enabled_;
   bool select_to_speak_enabled_;
   bool switch_access_enabled_;
+  bool autoclick_enabled_;
 
   AccessibilityStatusCallbackList callback_list_;
 
@@ -453,6 +458,8 @@ class AccessibilityManager
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  std::unique_ptr<AccessibilityExtensionLoader> autoclick_extension_loader_;
 
   std::unique_ptr<AccessibilityExtensionLoader> chromevox_loader_;
 

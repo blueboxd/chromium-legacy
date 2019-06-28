@@ -67,7 +67,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
 
   // content::BackgroundSyncController overrides.
   void GetParameterOverrides(
-      content::BackgroundSyncParameters* parameters) const override;
+      content::BackgroundSyncParameters* parameters) override;
   void NotifyBackgroundSyncRegistered(const url::Origin& origin,
                                       bool can_fire,
                                       bool is_reregistered) override;
@@ -81,7 +81,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       int64_t min_interval,
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,
-      content::BackgroundSyncParameters* parameters) const override;
+      content::BackgroundSyncParameters* parameters) override;
   std::unique_ptr<BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() override;
 

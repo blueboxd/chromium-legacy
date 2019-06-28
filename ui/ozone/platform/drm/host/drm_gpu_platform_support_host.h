@@ -42,6 +42,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
       base::RepeatingCallback<void(IPC::Message*)> send_callback) override;
   void OnChannelDestroyed(int host_id) override;
   void OnGpuServiceLaunched(
+      int host_id,
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       GpuHostBindInterfaceCallback binder,

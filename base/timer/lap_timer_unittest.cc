@@ -30,9 +30,6 @@ TEST(LapTimer, UsageExample) {
       ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
       ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
 
-  // Advance time a little bit so that TimeTicks::Now().is_null() becomes false.
-  scoped_task_environment.FastForwardBy(kTimeAdvance);
-
   LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
 
   EXPECT_FALSE(timer.HasTimeLimitExpired());

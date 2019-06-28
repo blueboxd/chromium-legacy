@@ -171,7 +171,7 @@ public final class DefaultBrowserInfo {
      */
     public static void logDefaultBrowserStats() {
         assert BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isStartupSuccessfullyCompleted();
+                .isFullBrowserStarted();
 
         try {
             new AsyncTask<DefaultInfo>() {

@@ -108,10 +108,10 @@ std::unique_ptr<AXRelatedNode> RelatedNodeForAXObject(const AXObject& ax_object,
     return nullptr;
   std::unique_ptr<AXRelatedNode> related_node =
       AXRelatedNode::create().setBackendDOMNodeId(backend_node_id).build();
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return related_node;
 
-  Element* element = ToElement(node);
   String idref = element->GetIdAttribute();
   if (!idref.IsEmpty())
     related_node->setIdref(idref);

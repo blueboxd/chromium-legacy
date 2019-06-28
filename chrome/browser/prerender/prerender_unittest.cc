@@ -1260,10 +1260,9 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
   std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderFromExternalRequest(
           url, content::Referrer(), nullptr, gfx::Rect(kSize)));
-  EXPECT_FALSE(prerender_handle);
-  EXPECT_FALSE(prerender_contents->prerendering_has_started());
-  histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",
-                                        FINAL_STATUS_CELLULAR_NETWORK, 1);
+  EXPECT_TRUE(prerender_handle);
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  histogram_tester().ExpectTotalCount("Prerender.FinalStatus", 0);
 }
 
 // Verify that the external prerender requests are allowed on cellular

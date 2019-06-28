@@ -170,6 +170,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   const bool enable_surface_synchronization_;
   viz::FrameTokenGenerator next_frame_token_;
 
+  // Timestamps indexed by frame token for histogram purposes.
+  using FrameTokenType = decltype(*std::declval<viz::FrameTokenGenerator>());
+  base::flat_map<FrameTokenType, base::TimeTicks> frame_token_to_timestamp_map_;
+
   THREAD_CHECKER(thread_checker_);
 
   // Weak factory that's used to cancel empty frame callbacks.

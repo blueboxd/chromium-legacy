@@ -29,28 +29,31 @@ class PLATFORM_EXPORT DarkModeFilter {
   DarkModeFilter();
   ~DarkModeFilter();
 
+  bool IsDarkModeActive() const;
+
   const DarkModeSettings& settings() const { return settings_; }
   void UpdateSettings(const DarkModeSettings& new_settings);
 
-  Color InvertColorIfNeeded(const Color& color);
+  // TODO(gilmanmh): Add a role for shadows. In general, we don't want to
+  // invert shadows, but we may need to do some other kind of processing for
+  // them.
+  enum class ElementRole { kText, kBackground };
+  Color InvertColorIfNeeded(const Color& color, ElementRole element_role);
+  base::Optional<cc::PaintFlags> ApplyToFlagsIfNeeded(
+      const cc::PaintFlags& flags,
+      ElementRole element_role);
 
   // |image| and |flags| must not be null.
   void ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
                                  Image* image,
                                  cc::PaintFlags* flags);
 
-  base::Optional<cc::PaintFlags> ApplyToFlagsIfNeeded(
-      const cc::PaintFlags& flags);
-
-  bool ShouldInvertTextColor(const Color& color) const;
-
-  bool IsDarkModeActive() const;
-
  private:
   DarkModeSettings settings_;
 
-  std::unique_ptr<DarkModeColorClassifier> text_classifier_;
+  bool ShouldApplyToColor(const Color& color, ElementRole role);
 
+  std::unique_ptr<DarkModeColorClassifier> text_classifier_;
   std::unique_ptr<DarkModeColorFilter> color_filter_;
   sk_sp<SkColorFilter> image_filter_;
 };

@@ -49,9 +49,9 @@ class TestNavigationURLLoader
 
   void CallOnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<network::ResourceResponse>& response);
+      const scoped_refptr<network::ResourceResponse>& response_head);
   void CallOnResponseStarted(
-      const scoped_refptr<network::ResourceResponse>& response);
+      const scoped_refptr<network::ResourceResponse>& response_head);
 
   int redirect_count() { return redirect_count_; }
 

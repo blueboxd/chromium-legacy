@@ -27,6 +27,7 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -230,7 +231,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   void set_net_error(net::Error net_error) { net_error_ = net_error; }
 
   const std::string& GetMimeType() {
-    return response_ ? response_->head.mime_type : base::EmptyString();
+    return response_head_ ? response_head_->head.mime_type
+                          : base::EmptyString();
   }
 
   // The RenderFrameHost that will commit the navigation or an error page.
@@ -249,7 +251,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return render_frame_host_;
   }
 
-  const network::ResourceResponse* response() { return response_.get(); }
+  const network::ResourceResponse* response() { return response_head_.get(); }
   const GlobalRequestID& request_id() const { return request_id_; }
   bool is_download() const { return is_download_; }
   const base::Optional<net::SSLInfo>& ssl_info() { return ssl_info_; }
@@ -465,10 +467,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<network::ResourceResponse>& response) override;
+      const scoped_refptr<network::ResourceResponse>& response_head) override;
   void OnResponseStarted(
-      const scoped_refptr<network::ResourceResponse>& response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      const scoped_refptr<network::ResourceResponse>& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       const GlobalRequestID& request_id,
       bool is_download,
       NavigationDownloadPolicy download_policy,
@@ -796,7 +799,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Holds objects received from OnResponseStarted while the WillProcessResponse
   // checks are performed by the NavigationHandle. Once the checks have been
   // completed, these objects will be used to continue the navigation.
-  scoped_refptr<network::ResourceResponse> response_;
+  scoped_refptr<network::ResourceResponse> response_head_;
+  mojo::ScopedDataPipeConsumerHandle response_body_;
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<net::AuthChallengeInfo> auth_challenge_info_;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_load_stats.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -22,7 +23,8 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
     int request_id,
-    const network::ResourceResponseHead& head,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int render_frame_id,
@@ -65,27 +67,30 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     url = redirect_info.new_url;
   }
 
-  WebURLLoaderImpl::PopulateURLResponse(url, head, &navigation_params->response,
-                                        false /* report_security_info */,
-                                        request_id);
+  WebURLLoaderImpl::PopulateURLResponse(
+      url, response_head, &navigation_params->response,
+      false /* report_security_info */, request_id);
   if (url.SchemeIs(url::kDataScheme))
     navigation_params->response.SetHttpStatusCode(200);
 
   if (url_loader_client_endpoints) {
     navigation_params->body_loader.reset(new NavigationBodyLoader(
-        head, std::move(url_loader_client_endpoints), task_runner,
-        render_frame_id, std::move(resource_load_info)));
+        response_head, std::move(response_body),
+        std::move(url_loader_client_endpoints), task_runner, render_frame_id,
+        std::move(resource_load_info)));
   }
 }
 
 NavigationBodyLoader::NavigationBodyLoader(
-    const network::ResourceResponseHead& head,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int render_frame_id,
     mojom::ResourceLoadInfoPtr resource_load_info)
     : render_frame_id_(render_frame_id),
-      head_(head),
+      response_head_(response_head),
+      response_body_(std::move(response_body)),
       endpoints_(std::move(endpoints)),
       task_runner_(std::move(task_runner)),
       resource_load_info_(std::move(resource_load_info)),
@@ -177,7 +182,7 @@ void NavigationBodyLoader::StartLoadingBody(
   client_ = client;
 
   NotifyResourceResponseReceived(render_frame_id_, resource_load_info_.get(),
-                                 head_, content::PREVIEWS_OFF);
+                                 response_head_, content::PREVIEWS_OFF);
 
   if (use_isolated_code_cache) {
     code_cache_loader_ = std::make_unique<CodeCacheLoaderImpl>();
@@ -185,23 +190,25 @@ void NavigationBodyLoader::StartLoadingBody(
         blink::mojom::CodeCacheType::kJavascript, resource_load_info_->url,
         base::BindOnce(&NavigationBodyLoader::CodeCacheReceived,
                        weak_factory_.GetWeakPtr()));
-  } else {
-    BindURLLoaderAndContinue();
+    return;
   }
+
+  BindURLLoaderAndStartLoadingResponseBodyIfPossible();
 }
 
 void NavigationBodyLoader::CodeCacheReceived(base::Time response_time,
                                              base::span<const uint8_t> data) {
-  if (head_.response_time == response_time && client_) {
+  if (response_head_.response_time == response_time && client_) {
     base::WeakPtr<NavigationBodyLoader> weak_self = weak_factory_.GetWeakPtr();
     client_->BodyCodeCacheReceived(data);
     if (!weak_self)
       return;
   }
   code_cache_loader_.reset();
+
   // TODO(dgozman): we should explore retrieveing code cache in parallel with
   // receiving response or reading the first data chunk.
-  BindURLLoaderAndContinue();
+  BindURLLoaderAndStartLoadingResponseBodyIfPossible();
 }
 
 void NavigationBodyLoader::BindURLLoaderAndContinue() {
@@ -309,6 +316,24 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
       status_.completion_time, status_.encoded_data_length,
       status_.encoded_body_length, status_.decoded_body_length,
       status_.should_report_corb_blocking, error);
+}
+
+void NavigationBodyLoader::
+    BindURLLoaderAndStartLoadingResponseBodyIfPossible() {
+  // Bind the mojo::URLLoaderClient interface in advance, because when
+  // NavigationImmediateResponse is enabled we will start to read from the data
+  // pipe immediately which may potentially postpone the method calls from the
+  // remote. That causes the flakiness of some layout tests.
+  // TODO(minggang): The binding was executed after OnStartLoadingResponseBody
+  // when NavigationImmediateResponse is enabled, we should try to
+  // put it back if all the webkit_layout_tests can pass in that way.
+  BindURLLoaderAndContinue();
+
+  if (response_body_.is_valid()) {
+    DCHECK(IsNavigationImmediateResponseBodyEnabled());
+    OnStartLoadingResponseBody(std::move(response_body_));
+    // Don't use |this| here as it might have been destroyed.
+  }
 }
 
 }  // namespace content

@@ -28,15 +28,7 @@ namespace internal {
 bool CORE_EXPORT
 IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object) {
   DCHECK(layout_object);
-
-  const Node* node = layout_object->GetNode();
-  if (!node)
-    return false;
-
-  if (!node->IsElementNode())
-    return false;
-
-  const Element* element = ToElement(node);
+  const auto* element = DynamicTo<Element>(layout_object->GetNode());
   if (!element)
     return false;
 
@@ -107,7 +99,8 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   // Background images could cause |node| to not be an element. For example,
   // style applied to body causes this node to be a Document Node. Therefore,
   // bail out if that is the case.
-  if (!frame || !node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!frame || !element)
     return;
 
   // We do not expose elements in shadow trees, for now. We might expose
@@ -119,7 +112,6 @@ void ImageElementTiming::NotifyImagePaintedInternal(
 
   FloatRect intersection_rect = ComputeIntersectionRect(
       frame, layout_object, current_paint_chunk_properties);
-  Element* element = ToElement(node);
   const AtomicString attr =
       element->FastGetAttribute(html_names::kElementtimingAttr);
 

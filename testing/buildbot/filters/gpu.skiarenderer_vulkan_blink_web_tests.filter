@@ -192,7 +192,7 @@ compositing/reflections/nested-reflection-transformed.html
 compositing/reflections/nested-reflection-transformed2.html
 compositing/reflections/nested-reflection-transition.html
 compositing/reflections/nested-reflection.html
-compositing/reflections/reflection-on-composited.html
+# compositing/reflections/reflection-on-composited.html
 compositing/reflections/reflection-opacity.html
 compositing/reflections/reflection-ordering.html
 compositing/reflections/reflection-positioning.html

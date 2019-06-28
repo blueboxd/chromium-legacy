@@ -10,16 +10,14 @@
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 
 class CrostiniAppContextMenu;
-class CrostiniAppIconLoader;
 
 namespace app_list {
 
 // Result of CrostiniSearchProvider.
-class CrostiniAppResult : public AppResult, public AppIconLoaderDelegate {
+class CrostiniAppResult : public AppResult {
  public:
   CrostiniAppResult(Profile* profile,
                     const std::string& app_id,
@@ -34,16 +32,10 @@ class CrostiniAppResult : public AppResult, public AppIconLoaderDelegate {
   void ExecuteLaunchCommand(int event_flags) override;
   SearchResultType GetSearchResultType() const override;
 
-  // AppIconLoaderDelegate overrides:
-  void OnAppImageUpdated(const std::string& app_id,
-                         const gfx::ImageSkia& image) override;
-
  private:
   // ChromeSearchResult overrides:
   AppContextMenu* GetAppContextMenu() override;
 
-  std::unique_ptr<CrostiniAppIconLoader> icon_loader_;
-  std::unique_ptr<CrostiniAppIconLoader> chip_icon_loader_;
   std::unique_ptr<CrostiniAppContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppResult);

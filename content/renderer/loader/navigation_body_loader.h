@@ -52,7 +52,8 @@ class CONTENT_EXPORT NavigationBodyLoader
       const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
       int request_id,
-      const network::ResourceResponseHead& head,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       int render_frame_id,
@@ -91,7 +92,8 @@ class CONTENT_EXPORT NavigationBodyLoader
   static constexpr uint32_t kMaxNumConsumedBytesInTask = 64 * 1024;
 
   NavigationBodyLoader(
-      const network::ResourceResponseHead& head,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       int render_frame_id,
@@ -103,9 +105,11 @@ class CONTENT_EXPORT NavigationBodyLoader
                         bool use_isolated_code_cache) override;
 
   // network::mojom::URLLoaderClient
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(
+      const network::ResourceResponseHead& response_head) override;
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
@@ -124,10 +128,12 @@ class CONTENT_EXPORT NavigationBodyLoader
   // BodyDataReceived synchronously.
   void ReadFromDataPipe();
   void NotifyCompletionIfAppropriate();
+  void BindURLLoaderAndStartLoadingResponseBodyIfPossible();
 
   // Navigation parameters.
   const int render_frame_id_;
-  const network::ResourceResponseHead head_;
+  const network::ResourceResponseHead response_head_;
+  mojo::ScopedDataPipeConsumerHandle response_body_;
   network::mojom::URLLoaderClientEndpointsPtr endpoints_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

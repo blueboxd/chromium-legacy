@@ -67,9 +67,9 @@ CONTENT_EXPORT void CreateFileURLLoader(
 // passed, all file accesses are permitted even for CORS requests. This list
 // does not affect no-cors requests.
 CONTENT_EXPORT std::unique_ptr<network::mojom::URLLoaderFactory>
-CreateFileURLLoaderFactory(const base::FilePath& profile_path,
-                           scoped_refptr<const SharedCorsOriginAccessList>
-                               shared_cors_origin_access_list);
+CreateFileURLLoaderFactory(
+    const base::FilePath& profile_path,
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list);
 
 }  // namespace content
 

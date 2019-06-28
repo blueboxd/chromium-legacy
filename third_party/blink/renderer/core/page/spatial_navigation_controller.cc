@@ -368,7 +368,7 @@ bool SpatialNavigationController::AdvanceWithinContainer(
     return ScrollInDirection(&container, direction);
   }
 
-  Element* element = ToElement(candidate.focusable_node);
+  auto* element = To<Element>(candidate.focusable_node.Get());
   DCHECK(element);
   MoveInterestTo(element);
   return true;
@@ -413,7 +413,7 @@ Node* SpatialNavigationController::StartingNode() {
 
 void SpatialNavigationController::MoveInterestTo(Node* next_node) {
   DCHECK(!next_node || next_node->IsElementNode());
-  Element* element = ToElement(next_node);
+  auto* element = To<Element>(next_node);
 
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
     if (interest_element_) {

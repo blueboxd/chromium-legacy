@@ -44,10 +44,10 @@ class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
 
   // ChromeWebUIFactory overrides.
   content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
-                                      const GURL& url) const override;
+                                      const GURL& url) override;
   std::unique_ptr<content::WebUIController> CreateWebUIControllerForURL(
       content::WebUI* web_ui,
-      const GURL& url) const override;
+      const GURL& url) override;
 
  private:
   // Return the WebUIProvider for the |url|'s host if it exists, otherwise NULL.

@@ -75,34 +75,18 @@
 
 <dom-module id="add-printer-manually-dialog">
   <template>
-    <style include="cups-printer-shared">
-      #general-error-container {
-        height: 20px;
-        margin-inline-start: 20px;
-      }
-
-      #general-error-icon {
-       --iron-icon-fill-color: var(--google-red-600);
-      }
-
-      #general-error-message {
-        color: var(--google-red-600);
-        display: inline-block;
-        font-size: 10px;
-        margin-inline-start: 5px;
-      }
-    </style>
+    <style include="cups-printer-shared"></style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{addPrintersManuallyTitle}</div>
-      <div slot="dialog-body">
-        <div id="general-error-container">
-            <div id="general-error" hidden="[[!showGeneralError_]]">
-              <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
-              <div id="general-error-message">
-                $i18n{generalPrinterDialogError}
-              </div>
+        <div id="general-error-container" hidden="[[!errorText_]]">
+          <div id="general-error">
+            <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+            <div id="general-error-message">
+              [[errorText_]]
             </div>
+          </div>
         </div>
+      <div slot="dialog-body">
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
             id="printerNameInput" value="{{newPrinter.printerName}}"
@@ -170,7 +154,16 @@
       }
     </style>
     <add-printer-dialog>
-      <div slot="dialog-title">$i18n{manufacturerAndModelDialogTitle}</div>
+      <div slot="dialog-title">$i18n{manufacturerAndModelDialogTitle}
+        <div id="general-error-container" hidden="[[!errorText_]]">
+            <div id="general-error">
+              <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+              <div id="general-error-message">
+                [[errorText_]]
+              </div>
+            </div>
+        </div>
+      </div>
       <div slot="dialog-body">
         <div class="subtext" id="makeModelTextInfo">
           <span>[[getManufacturerAndModelSubtext_(activePrinter.*)]]

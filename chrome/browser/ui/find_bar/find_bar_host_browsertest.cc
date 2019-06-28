@@ -130,7 +130,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   void EnsureFindBoxOpenForBrowser(Browser* browser) {
-    chrome::ShowFindBar(browser);
+    chrome::Find(browser);
     gfx::Point position;
     bool fully_visible = false;
     EXPECT_TRUE(GetFindBarWindowInfoForBrowser(
@@ -840,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url2 = GetURL(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -861,7 +861,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_FALSE(fully_visible);
 
   // Open the find bar again.
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   // Make sure it is open.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
@@ -879,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindStayVisibleOnAnchorLoad) {
   GURL url = GetURL(kAnchorPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -906,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   GURL url = GetURL(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   // This is needed on GTK because the reposition operation is asynchronous.
   base::RunLoop().RunUntilIdle();
@@ -1034,7 +1034,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   // Simulate a user clearing the search string. Ideally, we should be
   // simulating keypresses here for searching for something and pressing

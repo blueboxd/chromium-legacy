@@ -7,7 +7,6 @@
 #include <limits>
 #include <string>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
@@ -21,14 +20,11 @@
 #include "build/build_config.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace performance_manager {
 
 namespace {
-
-bool g_use_in_memory_db_for_testing = false;
 
 // The name of the following histograms is the same as the one used in the
 // //c/b/resource_coordinator version of this file. It's fine to keep the same
@@ -173,10 +169,6 @@ class LevelDBSiteDataStore::AsyncHelper {
 
   // Implementation for the OpenOrCreateDatabase function.
   OpeningType OpenOrCreateDatabaseImpl();
-
-  // A levelDB environment that gets used for testing. This allows using an
-  // in-memory database when needed.
-  std::unique_ptr<leveldb::Env> env_for_testing_;
 
   // The on disk location of the database.
   const base::FilePath db_path_;
@@ -370,12 +362,6 @@ LevelDBSiteDataStore::AsyncHelper::OpenOrCreateDatabaseImpl() {
 
   leveldb_env::Options options;
   options.create_if_missing = true;
-
-  if (g_use_in_memory_db_for_testing) {
-    env_for_testing_ = leveldb_chrome::NewMemEnv("LevelDBSiteDataStore");
-    options.env = env_for_testing_.get();
-  }
-
   leveldb::Status status =
       leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
 
@@ -488,13 +474,6 @@ bool LevelDBSiteDataStore::DatabaseIsInitializedForTesting() {
 
 leveldb::DB* LevelDBSiteDataStore::GetDBForTesting() {
   return async_helper_->GetDBForTesting();
-}
-
-// static
-std::unique_ptr<base::AutoReset<bool>>
-LevelDBSiteDataStore::UseInMemoryDBForTesting() {
-  return std::make_unique<base::AutoReset<bool>>(
-      &g_use_in_memory_db_for_testing, true);
 }
 
 }  // namespace performance_manager

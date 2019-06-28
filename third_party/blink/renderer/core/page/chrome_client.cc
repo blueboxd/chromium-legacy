@@ -214,17 +214,15 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
   // Lastly, some elements provide default tooltip strings.  e.g. <input
   // type="file" multiple> shows a tooltip for the selected filenames.
   if (tool_tip.IsNull()) {
-    if (Node* node = result.InnerNode()) {
-      if (node->IsElementNode()) {
-        tool_tip = ToElement(node)->DefaultToolTip();
+    if (auto* element = DynamicTo<Element>(result.InnerNode())) {
+      tool_tip = element->DefaultToolTip();
 
-        // FIXME: We should obtain text direction of tooltip from
-        // ChromeClient or platform. As of October 2011, all client
-        // implementations don't use text direction information for
-        // ChromeClient::setToolTip. We'll work on tooltip text
-        // direction during bidi cleanup in form inputs.
-        tool_tip_direction = TextDirection::kLtr;
-      }
+      // FIXME: We should obtain text direction of tooltip from
+      // ChromeClient or platform. As of October 2011, all client
+      // implementations don't use text direction information for
+      // ChromeClient::setToolTip. We'll work on tooltip text
+      // direction during bidi cleanup in form inputs.
+      tool_tip_direction = TextDirection::kLtr;
     }
   }
 

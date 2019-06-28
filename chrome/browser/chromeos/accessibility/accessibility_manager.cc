@@ -306,6 +306,12 @@ AccessibilityManager::AccessibilityManager()
   base::FilePath resources_path;
   if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_path))
     NOTREACHED();
+  autoclick_extension_loader_ =
+      base::WrapUnique(new AccessibilityExtensionLoader(
+          extension_misc::kAutoclickExtensionId,
+          resources_path.Append(extension_misc::kAutoclickExtensionPath),
+          base::BindRepeating(&AccessibilityManager::PostUnloadAutoclick,
+                              weak_ptr_factory_.GetWeakPtr())));
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kChromeVoxExtensionId,
       resources_path.Append(extension_misc::kChromeVoxExtensionPath),
@@ -661,6 +667,40 @@ void AccessibilityManager::EnableAutoclick(bool enabled) {
 bool AccessibilityManager::IsAutoclickEnabled() const {
   return profile_ && profile_->GetPrefs()->GetBoolean(
                          ash::prefs::kAccessibilityAutoclickEnabled);
+}
+
+void AccessibilityManager::OnAutoclickChanged() {
+  if (!profile_)
+    return;
+
+  const bool enabled = profile_->GetPrefs()->GetBoolean(
+      ash::prefs::kAccessibilityAutoclickEnabled);
+
+  // The Autoclick extension work is behind a flag. Don't load the extension
+  // if the flag is not set.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilityAutoclick)) {
+    return;
+  }
+
+  if (enabled)
+    autoclick_extension_loader_->SetProfile(
+        profile_, base::Closure() /* done_callback */);
+
+  if (autoclick_enabled_ == enabled)
+    return;
+
+  autoclick_enabled_ = enabled;
+  if (enabled) {
+    autoclick_extension_loader_->Load(
+        profile_, base::BindRepeating(&AccessibilityManager::PostLoadAutoclick,
+                                      weak_ptr_factory_.GetWeakPtr()));
+    // TODO: Construct a delegate to connect Autoclick and its controller in
+    // ash.
+  } else {
+    autoclick_extension_loader_->Unload();
+  }
 }
 
 void AccessibilityManager::EnableVirtualKeyboard(bool enabled) {
@@ -1090,6 +1130,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         ash::prefs::kAccessibilitySwitchAccessEnabled,
         base::Bind(&AccessibilityManager::UpdateSwitchAccessFromPref,
                    base::Unretained(this)));
+    pref_change_registrar_->Add(
+        ash::prefs::kAccessibilityAutoclickEnabled,
+        base::Bind(&AccessibilityManager::OnAutoclickChanged,
+                   base::Unretained(this)));
 
     local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
@@ -1125,6 +1169,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   // ash.
   OnSpokenFeedbackChanged();
   OnSelectToSpeakChanged();
+  OnAutoclickChanged();
 }
 
 void AccessibilityManager::ActiveUserChanged(
@@ -1442,6 +1487,15 @@ void AccessibilityManager::PostUnloadSwitchAccess() {
 void AccessibilityManager::OnSwitchAccessPanelDestroying() {
   switch_access_panel_widget_observer_.reset(nullptr);
   switch_access_panel_ = nullptr;
+}
+
+void AccessibilityManager::PostLoadAutoclick() {
+  InitializeFocusRings(extension_misc::kAutoclickExtensionId);
+}
+
+void AccessibilityManager::PostUnloadAutoclick() {
+  // Clear the accessibility focus ring.
+  RemoveFocusRings(extension_misc::kAutoclickExtensionId);
 }
 
 void AccessibilityManager::SetKeyboardListenerExtensionId(

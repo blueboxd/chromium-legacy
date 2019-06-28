@@ -107,8 +107,7 @@ GURL AppendUrlSeparator(const GURL& url) {
 // NetworkService is disabled. If NetworkService is enabled, callers can access
 // the lists directly on the main thread.
 bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
-    scoped_refptr<const SharedCorsOriginAccessList>
-        shared_cors_origin_access_list,
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
     const url::Origin origin,
     const GURL url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -718,8 +717,7 @@ class FileURLLoader : public network::mojom::URLLoader {
 
 FileURLLoaderFactory::FileURLLoaderFactory(
     const base::FilePath& profile_path,
-    scoped_refptr<const SharedCorsOriginAccessList>
-        shared_cors_origin_access_list,
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
     base::TaskPriority task_priority)
     : profile_path_(profile_path),
       shared_cors_origin_access_list_(
@@ -875,8 +873,7 @@ void CreateFileURLLoader(
 
 std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
     const base::FilePath& profile_path,
-    scoped_refptr<const SharedCorsOriginAccessList>
-        shared_cors_origin_access_list) {
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list) {
   // TODO(crbug.com/924416): Re-evaluate TaskPriority: Should the caller provide
   // it?
   return std::make_unique<content::FileURLLoaderFactory>(

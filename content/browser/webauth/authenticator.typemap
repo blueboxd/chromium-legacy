@@ -5,13 +5,13 @@
 mojom = "//third_party/blink/public/mojom/webauthn/authenticator.mojom"
 public_headers = [
   "//device/fido/authenticator_selection_criteria.h",
-  "//device/fido/fido_constants.h",
   "//device/fido/fido_transport_protocol.h",
   "//device/fido/cable/cable_discovery_data.h",
   "//device/fido/public_key_credential_descriptor.h",
   "//device/fido/public_key_credential_params.h",
   "//device/fido/public_key_credential_rp_entity.h",
   "//device/fido/public_key_credential_user_entity.h",
+  "//device/fido/fido_types.h",
 ]
 traits_headers = [ "//content/browser/webauth/authenticator_mojom_traits.h" ]
 sources = [

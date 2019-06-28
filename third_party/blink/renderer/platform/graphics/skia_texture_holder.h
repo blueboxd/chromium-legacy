@@ -21,10 +21,14 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
 
   // TextureHolder impl.
   IntSize Size() const final {
-    return IntSize(image_->width(), image_->height());
+    if (image_)
+      return IntSize(image_->width(), image_->height());
+    return IntSize();
   }
   bool IsValid() const final;
-  bool CurrentFrameKnownToBeOpaque() const final { return image_->isOpaque(); }
+  bool CurrentFrameKnownToBeOpaque() const final {
+    return image_ && image_->isOpaque();
+  }
 
   const sk_sp<SkImage>& GetSkImage() const { return image_; }
 

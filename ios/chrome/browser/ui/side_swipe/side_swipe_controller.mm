@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -418,7 +419,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         ->CancelPlaceholderForNextNavigation();
 
     // Redisplay the view if it was in overlay preview mode.
-    [swipeDelegate_ sideSwipeRedisplayTab:[model_ currentTab]];
+    [swipeDelegate_ sideSwipeRedisplayWebState:self.activeWebState];
     [self.tabStripDelegate setHighlightsSelectedTab:NO];
     [self deleteGreyCache];
     [[NSNotificationCenter defaultCenter]

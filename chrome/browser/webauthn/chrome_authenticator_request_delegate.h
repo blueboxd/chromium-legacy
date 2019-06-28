@@ -53,7 +53,7 @@ class ChromeAuthenticatorRequestDelegate
 
 #if defined(OS_MACOSX)
   base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
-      const override;
+      override;
 #endif  // defined(OS_MACOSX)
 
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();

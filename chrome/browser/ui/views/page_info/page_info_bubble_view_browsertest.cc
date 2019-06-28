@@ -27,6 +27,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -50,6 +51,8 @@
 #include "ui/views/test/widget_test.h"
 
 namespace {
+
+using password_manager::metrics_util::PasswordType;
 
 constexpr char kExpiredCertificateFile[] = "expired_cert.pem";
 
@@ -355,7 +358,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     PageInfoBubbleView* page_info_bubble_view =
         static_cast<PageInfoBubbleView*>(
             PageInfoBubbleView::GetPageInfoBubble());
-    return page_info_bubble_view->certificate_button_->title()->text();
+    return page_info_bubble_view->certificate_button_->title()->GetText();
   }
 
  private:
@@ -459,8 +462,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   service->ShowModalWarning(contents, "token",
-                            safe_browsing::LoginReputationClientRequest::
-                                PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
@@ -526,8 +528,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   service->ShowModalWarning(contents, "token",
-                            safe_browsing::LoginReputationClientRequest::
-                                PasswordReuseEvent::ENTERPRISE_PASSWORD);
+                            PasswordType::ENTERPRISE_PASSWORD);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(

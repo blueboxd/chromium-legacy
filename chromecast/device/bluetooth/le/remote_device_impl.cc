@@ -220,7 +220,7 @@ void RemoteDeviceImpl::ConnectionParameterUpdate(int min_interval,
 }
 
 bool RemoteDeviceImpl::IsConnected() {
-  return connected_;
+  return connected_ && !disconnect_pending_;
 }
 
 bool RemoteDeviceImpl::IsBonded() {

@@ -9,13 +9,14 @@
 
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
 bool PLATFORM_EXPORT IsLight(const Color& color);
 
-class DarkModeColorClassifier {
+class PLATFORM_EXPORT DarkModeColorClassifier {
  public:
   // TODO(https://crbug.com/968340): Add methods to create classifiers for other
   // types of elements/shapes.
@@ -28,7 +29,7 @@ class DarkModeColorClassifier {
   // whether to invert a color. The background is likely to be dark, so a lower
   // opacity will usually decrease the effective brightness of both the original
   // and the inverted colors.
-  virtual bool ShouldInvertColor(const Color& color) = 0;
+  virtual DarkModeClassification ShouldInvertColor(const Color& color) = 0;
 };
 
 }  // namespace blink

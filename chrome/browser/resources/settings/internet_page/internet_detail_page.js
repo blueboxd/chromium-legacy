@@ -1439,7 +1439,7 @@ Polymer({
    * @private
    */
   getDeviceFields_: function() {
-    if (!this.networkProperties ||
+    if (!this.networkProperties_ ||
         this.networkProperties_.Type !== CrOnc.Type.CELLULAR) {
       return [];
     }

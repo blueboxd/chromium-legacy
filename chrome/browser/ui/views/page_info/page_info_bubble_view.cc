@@ -42,6 +42,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -81,6 +82,7 @@
 using bubble_anchor_util::AnchorConfiguration;
 using bubble_anchor_util::GetPageInfoAnchorConfiguration;
 using bubble_anchor_util::GetPageInfoAnchorRect;
+using password_manager::metrics_util::PasswordType;
 
 namespace {
 
@@ -997,10 +999,8 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
           GetPasswordProtectionService(profile_)
               ->GetWarningDetailText(
                   is_enterprise_password
-                      ? safe_browsing::LoginReputationClientRequest::
-                            PasswordReuseEvent::ENTERPRISE_PASSWORD
-                      : safe_browsing::LoginReputationClientRequest::
-                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+                      ? PasswordType::ENTERPRISE_PASSWORD
+                      : PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   return security_description;
 }
 #endif

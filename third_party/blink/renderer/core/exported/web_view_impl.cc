@@ -2504,12 +2504,19 @@ void WebViewImpl::SetIgnoreViewportTagScaleLimits(bool ignore) {
   PageScaleConstraints constraints =
       GetPageScaleConstraintsSet().UserAgentConstraints();
   if (ignore) {
-    constraints.minimum_scale =
-        GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
+    // Don't ignore the minimum limits in touchless mode to prevent wide
+    // loading elements from causing us to zoom pages out beyond their layout
+    // which is fairly common.
+    if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+      constraints.minimum_scale =
+          GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
+    }
     constraints.maximum_scale =
         GetPageScaleConstraintsSet().DefaultConstraints().maximum_scale;
   } else {
-    constraints.minimum_scale = -1;
+    if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+      constraints.minimum_scale = -1;
+    }
     constraints.maximum_scale = -1;
   }
   GetPage()->SetUserAgentPageScaleConstraints(constraints);

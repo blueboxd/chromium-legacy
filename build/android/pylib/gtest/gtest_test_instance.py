@@ -257,13 +257,14 @@ class GtestTestInstance(test_instance.TestInstance):
     # TODO(jbudorick): Support multiple test suites.
     if len(args.suite_name) > 1:
       raise ValueError('Platform mode currently supports only 1 gtest suite')
-    self._isolated_script_test_perf_output = (
-        args.isolated_script_test_perf_output)
+    self._coverage_dir = args.coverage_dir
     self._exe_dist_dir = None
     self._external_shard_index = args.test_launcher_shard_index
     self._extract_test_list_from_filter = args.extract_test_list_from_filter
     self._filter_tests_lock = threading.Lock()
     self._gs_test_artifacts_bucket = args.gs_test_artifacts_bucket
+    self._isolated_script_test_perf_output = (
+        args.isolated_script_test_perf_output)
     self._shard_timeout = args.shard_timeout
     self._store_tombstones = args.store_tombstones
     self._suite = args.suite_name[0]
@@ -366,6 +367,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def app_files(self):
     return self._app_data_files
+
+  @property
+  def coverage_dir(self):
+    return self._coverage_dir
 
   @property
   def enable_xml_result_parsing(self):

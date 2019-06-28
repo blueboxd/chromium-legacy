@@ -269,12 +269,18 @@ enum class ExportPasswordsResult {
 enum class PasswordType {
   // Passwords saved by password manager.
   SAVED_PASSWORD = 0,
-  // Passwords used for Chrome sign-in.
-  SYNC_PASSWORD = 1,
+  // Passwords used for Chrome sign-in and is closest ("blessed") to be set to
+  // sync when signed into multiple profiles if user wants to set up sync.
+  // The primary account is equivalent to the "sync account" if this profile has
+  // enabled sync.
+  PRIMARY_ACCOUNT_PASSWORD = 1,
   // Other Gaia passwords used in Chrome other than the sync password.
   OTHER_GAIA_PASSWORD = 2,
   // Passwords captured from enterprise login page.
   ENTERPRISE_PASSWORD = 3,
+  // Unknown password type. Used by downstream code to indicate there was not a
+  // password reuse.
+  PASSWORD_TYPE_UNKNOWN = 4,
   PASSWORD_TYPE_COUNT
 };
 

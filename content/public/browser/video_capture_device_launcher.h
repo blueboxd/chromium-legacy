@@ -60,7 +60,7 @@ class CONTENT_EXPORT LaunchedVideoCaptureDevice
  public:
   // Device operation methods.
   virtual void GetPhotoState(
-      media::VideoCaptureDevice::GetPhotoStateCallback callback) const = 0;
+      media::VideoCaptureDevice::GetPhotoStateCallback callback) = 0;
   virtual void SetPhotoOptions(
       media::mojom::PhotoSettingsPtr settings,
       media::VideoCaptureDevice::SetPhotoOptionsCallback callback) = 0;

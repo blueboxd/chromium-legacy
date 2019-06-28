@@ -125,13 +125,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
-                                                  access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(
+      kAuthCodeValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -148,13 +148,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
-                                                      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(
+      kRefreshTokenValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -169,18 +169,20 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
                   kValidTokenInfoResponse, net::HTTP_OK, net::OK);
 
-  std::unique_ptr<base::RunLoop> run_loop;
-  run_loop.reset(new base::RunLoop());
-  AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop->QuitClosure());
-
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
-                                                  access_token_callback);
 
-  run_loop->Run();
+  {
+    base::RunLoop run_loop;
+    AccessTokenCallback access_token_callback =
+        base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                       base::Unretained(this), run_loop.QuitClosure());
+
+    access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
+    access_token_fetcher.GetAccessTokenFromAuthCode(
+        kAuthCodeValue, std::move(access_token_callback));
+
+    run_loop.Run();
+  }
 
   EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
   EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
@@ -193,32 +195,36 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                   kRefreshTokenExchangeValidResponse, net::HTTP_OK, net::OK);
 
-  run_loop.reset(new base::RunLoop());
-  access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop->QuitClosure());
+  {
+    base::RunLoop run_loop;
+    AccessTokenCallback access_token_callback =
+        base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                   base::Unretained(this), run_loop.QuitClosure());
 
-  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
-                                                      access_token_callback);
+    access_token_fetcher.GetAccessTokenFromRefreshToken(
+        kRefreshTokenValue, std::move(access_token_callback));
 
-  run_loop->Run();
+    run_loop.Run();
+  }
 
   EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
   EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
 
-  run_loop.reset(new base::RunLoop());
-  access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop->QuitClosure());
+  {
+    base::RunLoop run_loop;
+    AccessTokenCallback access_token_callback =
+        base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                   base::Unretained(this), run_loop.QuitClosure());
 
-  // Reset our token data for the next iteration.
-  access_token_retrieved_.clear();
-  refresh_token_retrieved_.clear();
+    // Reset our token data for the next iteration.
+    access_token_retrieved_.clear();
+    refresh_token_retrieved_.clear();
 
-  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
-                                                      access_token_callback);
+    access_token_fetcher.GetAccessTokenFromRefreshToken(
+        kRefreshTokenValue, std::move(access_token_callback));
 
-  run_loop->Run();
+    run_loop.Run();
+  }
 
   EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
   EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
@@ -231,13 +237,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
-                                                  access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(
+      kAuthCodeValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -253,13 +259,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
-                                                      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(
+      kRefreshTokenValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -275,13 +281,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
-                                                  access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(
+      kAuthCodeValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -297,13 +303,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
-                                                      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(
+      kRefreshTokenValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -321,13 +327,13 @@ TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
-                                                  access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(
+      kAuthCodeValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -342,13 +348,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
-                                                  access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(
+      kAuthCodeValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -366,13 +372,13 @@ TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
-                                                      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(
+      kRefreshTokenValue, std::move(access_token_callback));
 
   run_loop.Run();
 
@@ -387,13 +393,13 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken_EmptyToken) {
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
-      base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
   access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
-  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
-                                                      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(
+      kRefreshTokenValue, std::move(access_token_callback));
 
   run_loop.Run();
 

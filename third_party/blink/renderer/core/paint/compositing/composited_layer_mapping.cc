@@ -367,7 +367,7 @@ void CompositedLayerMapping::UpdateStickyConstraints(
   constraint.top_offset = constraints.top_offset;
   constraint.bottom_offset = constraints.bottom_offset;
   constraint.constraint_box_rect =
-      GetLayoutObject().ComputeStickyConstrainingRect();
+      RoundedIntRect(GetLayoutObject().ComputeStickyConstrainingRect());
   constraint.scroll_container_relative_sticky_box_rect =
       RoundedIntRect(constraints.scroll_container_relative_sticky_box_rect);
   constraint.scroll_container_relative_containing_block_rect = RoundedIntRect(

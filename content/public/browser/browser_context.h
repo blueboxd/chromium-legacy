@@ -322,7 +322,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       base::OnceClosure closure);
 
   // Returns a SharedCorsOriginAccessList instance.
-  virtual const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList();
+  virtual SharedCorsOriginAccessList* GetSharedCorsOriginAccessList();
 
   // Handles a service request for a service expected to run an instance per
   // BrowserContext.

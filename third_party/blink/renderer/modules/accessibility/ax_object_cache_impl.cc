@@ -344,11 +344,12 @@ AXObject* AXObjectCacheImpl::Get(AccessibleNode* accessible_node) {
 // FIXME: This probably belongs on Node.
 // FIXME: This should take a const char*, but one caller passes g_null_atom.
 static bool NodeHasRole(Node* node, const String& role) {
-  if (!node || !node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return false;
 
   // TODO(accessibility) support role strings with multiple roles.
-  return EqualIgnoringASCIICase(ToElement(node)->getAttribute(kRoleAttr), role);
+  return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), role);
 }
 
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
@@ -1443,8 +1444,9 @@ bool AXObjectCacheImpl::InlineTextBoxAccessibilityEnabled() {
 
 const Element* AXObjectCacheImpl::RootAXEditableElement(const Node* node) {
   const Element* result = RootEditableElement(*node);
-  const Element* element =
-      node->IsElementNode() ? ToElement(node) : node->parentElement();
+  const auto* element = DynamicTo<Element>(node);
+  if (!element)
+    element = node->parentElement();
 
   for (; element; element = element->parentElement()) {
     if (NodeIsTextControl(element))
@@ -1484,15 +1486,13 @@ bool AXObjectCacheImpl::NodeIsTextControl(const Node* node) {
 }
 
 bool IsNodeAriaVisible(Node* node) {
-  if (!node)
-    return false;
-
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return false;
 
   bool is_null = true;
   bool hidden = AccessibleNode::GetPropertyOrARIAAttribute(
-      ToElement(node), AOMBooleanProperty::kHidden, is_null);
+      element, AOMBooleanProperty::kHidden, is_null);
   return !is_null && !hidden;
 }
 

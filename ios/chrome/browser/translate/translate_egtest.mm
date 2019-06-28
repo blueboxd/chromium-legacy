@@ -1102,8 +1102,15 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       performAction:grey_tap()];
 
   // Make sure the "Always Translate French" entry is now selected and tap it.
+  id<GREYMatcher> selectedMatcher = ElementIsSelected(YES);
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/979079): "Always Translate French" is actually invisible
+    // due to a real bug in the options menu. Remove the line below when the bug
+    // is fixed.
+    selectedMatcher = grey_accessibilityTrait(UIAccessibilityTraitSelected);
+  }
   [[[EarlGrey selectElementWithMatcher:AlwaysTranslate(@"French")]
-      assertWithMatcher:ElementIsSelected(YES)] performAction:grey_tap()];
+      assertWithMatcher:selectedMatcher] performAction:grey_tap()];
 
   // Make sure that French to English translation is no longer whitelisted.
   GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),

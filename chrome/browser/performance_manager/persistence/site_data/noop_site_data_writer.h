@@ -30,9 +30,8 @@ class NoopSiteDataWriter : public SiteDataWriter {
       uint64_t private_footprint_kb_estimate) override;
 
  private:
-  friend class NonRecordingSiteDataCache;
-  // Private constructor, these objects are meant to be created by a
-  // NonRecordingSiteDataCache.
+  // Private constructor, these objects are meant to be created by a noop site
+  // data store.
   NoopSiteDataWriter();
 
   DISALLOW_COPY_AND_ASSIGN(NoopSiteDataWriter);

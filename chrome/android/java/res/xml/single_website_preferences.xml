@@ -72,6 +72,8 @@
         android:key="midi_sysex_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="clipboard_permission_list" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="bluetooth_scanning_permission_list" />
 
     <org.chromium.chrome.browser.preferences.ButtonPreference
         android:key="reset_site_button"

@@ -137,6 +137,8 @@ _ANDROID_PIXEL2_FYI_BENCHMARK_NAMES = frozenset([
     'speedometer2',
     'octane',
     'jetstream'])
+_CHROMEOS_KEVIN_FYI_BENCHMARK_NAMES = frozenset([
+    'rendering.desktop'])
 
 # Linux
 LINUX = PerfPlatform(
@@ -206,6 +208,10 @@ ANDROID_PIXEL2_PERF_FYI = PerfPlatform(
     'android-pixel2-perf-fyi', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_FYI_BENCHMARK_NAMES,
     num_shards=4, platform_os='android', is_fyi=True)
+CHROMEOS_KEVIN_PERF_FYI = PerfPlatform(
+    'chromeos-kevin-perf-fyi', '',
+    _CHROMEOS_KEVIN_FYI_BENCHMARK_NAMES,
+    num_shards=4, platform_os='chromeos', is_fyi=True)
 
 # TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use
 # the sharding map.

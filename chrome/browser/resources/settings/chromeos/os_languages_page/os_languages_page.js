@@ -306,6 +306,8 @@ Polymer({
     this.isChangeInProgress_ = true;
     this.languageHelper.setProspectiveUILanguage(
         this.detailLanguage_.language.code);
+    this.languageHelper.moveLanguageToFront(this.detailLanguage_.language.code);
+
     this.closeMenuSoon_();
   },
 

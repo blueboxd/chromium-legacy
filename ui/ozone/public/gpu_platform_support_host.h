@@ -55,6 +55,7 @@ class COMPONENT_EXPORT(OZONE_BASE) GpuPlatformSupportHost {
   // Called when the GPU service is launched.
   // Called from the browser IO thread.
   virtual void OnGpuServiceLaunched(
+      int host_id,
       scoped_refptr<base::SingleThreadTaskRunner> host_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       GpuHostBindInterfaceCallback binder,

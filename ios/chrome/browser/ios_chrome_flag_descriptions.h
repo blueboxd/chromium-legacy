@@ -174,6 +174,9 @@ extern const char kEnableSyncUSSBookmarksDescription[];
 extern const char kEnableSyncUSSPasswordsName[];
 extern const char kEnableSyncUSSPasswordsDescription[];
 
+extern const char kEnableSyncUSSNigoriName[];
+extern const char kEnableSyncUSSNigoriDescription[];
+
 // Title and description for the flag to enable invaliations delivery via FCM.
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];

@@ -21,7 +21,7 @@ public class NativeStartupBridge {
     @CalledByNative
     private static void loadFullBrowser() {
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             return;
         }
         final BrowserParts parts = new EmptyBrowserParts() {};

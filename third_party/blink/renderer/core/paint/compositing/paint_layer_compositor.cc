@@ -581,10 +581,9 @@ void PaintLayerCompositor::AttachRootLayerViaChromeClient() {
 }
 
 static void RestartAnimationOnCompositor(const LayoutObject& layout_object) {
-  Node* node = layout_object.GetNode();
-  ElementAnimations* element_animations =
-      (node && node->IsElementNode()) ? ToElement(node)->GetElementAnimations()
-                                      : nullptr;
+  ElementAnimations* element_animations = nullptr;
+  if (auto* element = DynamicTo<Element>(layout_object.GetNode()))
+    element_animations = element->GetElementAnimations();
   if (element_animations)
     element_animations->RestartAnimationOnCompositor();
 }

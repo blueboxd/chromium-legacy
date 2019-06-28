@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/PageInfoController_jni.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "url/origin.h"
 
 using base::android::ConvertUTF16ToJavaString;
@@ -122,6 +124,9 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_ADS);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SOUND);
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (cmd->HasSwitch(switches::kEnableWebBluetoothScanning))
+    permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;

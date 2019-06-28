@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_messages.mojom.h"
 #include "content/public/common/child_process_host.h"
@@ -97,11 +98,13 @@ class FakeNavigationClient : public mojom::NavigationClient {
  private:
   // mojom::NavigationClientPtr implementation:
   void CommitNavigation(
-      const network::ResourceResponseHead& head,
       const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      const CommitNavigationParams& request_params,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
       base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
@@ -213,9 +216,10 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
           loop.QuitClosure(), &received_info)),
       mojo::MakeRequest(&navigation_client_));
   navigation_client_->CommitNavigation(
-      network::ResourceResponseHead(), content::CommonNavigationParams(),
-      content::CommitNavigationParams(), nullptr, nullptr, base::nullopt,
-      nullptr, std::move(info), nullptr, base::UnguessableToken::Create(),
+      CommonNavigationParams(), CommitNavigationParams(),
+      network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),
+      nullptr, nullptr, base::nullopt, nullptr, std::move(info), nullptr,
+      base::UnguessableToken::Create(),
       base::BindOnce(
           [](std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
                  validated_params,

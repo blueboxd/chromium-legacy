@@ -112,8 +112,8 @@ void HomePageUndoBubble::Init() {
       base::JoinString(message, base::StringPiece16(base::ASCIIToUTF16(" "))),
       this);
 
-  gfx::Range undo_range(label->text().length() - undo_string.length(),
-                        label->text().length());
+  gfx::Range undo_range(label->GetText().length() - undo_string.length(),
+                        label->GetText().length());
   label->AddStyleRange(undo_range,
                        views::StyledLabel::RangeStyleInfo::CreateForLink());
 

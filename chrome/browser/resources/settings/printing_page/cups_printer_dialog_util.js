@@ -108,11 +108,45 @@ cr.define('settings.printing', function() {
         second.printerName.toLocaleLowerCase());
   }
 
+  /**
+   * Return the error string corresponding to the result code.
+   * @param {!PrinterSetupResult} result
+   * @return {string}
+   */
+  function getErrorText(result) {
+    switch (result) {
+      case PrinterSetupResult.FATAL_ERROR:
+        return loadTimeData.getString('printerAddedFatalErrorMessage');
+      case PrinterSetupResult.PRINTER_UNREACHABLE:
+        return loadTimeData.getString('printerAddedUnreachableMessage');
+      case PrinterSetupResult.DBUS_ERROR:
+        // Simply return a generic error message as this error should only
+        // occur when a call to Dbus fails which isn't meaningful to the user.
+        return loadTimeData.getString('printerAddedFailedMessage');
+      case PrinterSetupResult.NATIVE_PRINTERS_NOT_ALLOWED:
+        return loadTimeData.getString(
+            'printerAddedNativePrintersNotAllowedMessage');
+      case PrinterSetupResult.INVALID_PRINTER_UPDATE:
+        return loadTimeData.getString('editPrinterInvalidPrinterUpdate');
+      case PrinterSetupResult.PPD_TOO_LARGE:
+        return loadTimeData.getString('printerAddedPpdTooLargeMessage');
+      case PrinterSetupResult.INVALID_PPD:
+        return loadTimeData.getString('printerAddedInvalidPpdMessage');
+      case PrinterSetupResult.PPD_NOT_FOUND:
+        return loadTimeData.getString('printerAddedPpdNotFoundMessage');
+      case PrinterSetupResult.PPD_UNRETRIEVABLE:
+        return loadTimeData.getString('printerAddedPpdUnretrievableMessage');
+      default:
+        assertNotReached();
+    }
+  }
+
   return {
     isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,
     isPPDInfoValid: isPPDInfoValid,
     getBaseName: getBaseName,
     alphabeticalSort: alphabeticalSort,
+    getErrorText: getErrorText,
   };
 });

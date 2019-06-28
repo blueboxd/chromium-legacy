@@ -1733,7 +1733,7 @@ void LockContentsView::ShowAuthErrorMessage() {
 
   views::StyledLabel* label = new views::StyledLabel(error_text, this);
   MakeSectionBold(label, error_text, bold_start, bold_length);
-  label->set_auto_color_readability_enabled(false);
+  label->SetAutoColorReadabilityEnabled(false);
 
   auto* learn_more_button = new AuthErrorLearnMoreButton(auth_error_bubble_);
 

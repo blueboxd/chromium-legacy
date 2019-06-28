@@ -42,7 +42,10 @@
     },
 
     "encoding_lib": {
-        "header": "third_party/inspector_protocol/encoding/encoding.h",
-        "namespace": ["inspector_protocol_encoding"]
+        "namespace": "inspector_protocol_encoding"
+    },
+
+    "bindings_lib": {
+        "namespace": "inspector_protocol_bindings"
     }
 }

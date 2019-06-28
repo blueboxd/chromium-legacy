@@ -41,9 +41,10 @@ void SetTooltipAndAccessibleName(views::Button* parent,
                                  int taken_width,
                                  bool set_tooltip) {
   const base::string16 accessible_name =
-      second == nullptr ? first->text()
-                        : base::JoinString({first->text(), second->GetText()},
-                                           base::ASCIIToUTF16("\n"));
+      second == nullptr
+          ? first->GetText()
+          : base::JoinString({first->GetText(), second->GetText()},
+                             base::ASCIIToUTF16("\n"));
   if (set_tooltip) {
     const int available_width = available_space.width() - taken_width;
 
@@ -371,7 +372,7 @@ void HoverButton::SetStyle(Style style) {
     // White text on |gfx::kGoogleBlue500| would be adjusted by
     // AutoColorRedability. However, this specific combination has an
     // exception (http://go/mdcontrast). So, disable AutoColorReadability.
-    title_->set_auto_color_readability_enabled(false);
+    title_->SetAutoColorReadabilityEnabled(false);
     SetTitleTextStyle(views::style::STYLE_DIALOG_BUTTON_DEFAULT,
                       background_color);
     SetSubtitleColor(GetNativeTheme()->GetSystemColor(

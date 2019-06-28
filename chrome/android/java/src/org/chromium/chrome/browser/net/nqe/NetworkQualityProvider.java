@@ -68,7 +68,7 @@ public class NetworkQualityProvider {
 
     protected void doNativeInit() {
         assert BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isStartupSuccessfullyCompleted();
+                .isFullBrowserStarted();
         mNativeNetworkQualityProvider = nativeInit();
     }
 

@@ -174,7 +174,8 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =
       std::make_unique<SignedExchangeLoader>(
-          resource_request, response, std::move(client), std::move(endpoints),
+          resource_request, response, mojo::ScopedDataPipeConsumerHandle(),
+          std::move(client), std::move(endpoints),
           network::mojom::kURLLoadOptionNone,
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
           nullptr /* reporter */, CreateMockPingLoaderFactory(),

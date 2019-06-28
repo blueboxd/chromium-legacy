@@ -51,7 +51,7 @@ void NGFragmentPainter::AddPDFURLRectIfNeeded(
       paint_fragment_.Style().Visibility() != EVisibility::kVisible)
     return;
 
-  KURL url = ToElement(paint_fragment_.GetNode())->HrefURL();
+  KURL url = To<Element>(paint_fragment_.GetNode())->HrefURL();
   if (!url.IsValid())
     return;
 

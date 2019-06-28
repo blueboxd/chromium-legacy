@@ -39,9 +39,8 @@ extern const char kSyncPasswordInterstitialHistogram[];
 extern const char kSyncPasswordPageInfoHistogram[];
 extern const char kSyncPasswordWarningDialogHistogram[];
 
-using PasswordReuseEvent = LoginReputationClientRequest::PasswordReuseEvent;
-using ReusedPasswordType =
-    LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType;
+using ReusedPasswordAccountType =
+    LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
 using SyncAccountType =
     LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType;
 using VerdictType = LoginReputationClientResponse::VerdictType;
@@ -133,30 +132,29 @@ enum class WarningUIType {
 
 // Logs the |outcome| to several UMA metrics, depending on the value
 // of |password_type| and |sync_account_type|.
-void LogPasswordEntryRequestOutcome(RequestOutcome outcome,
-                                    ReusedPasswordType password_type,
-                                    SyncAccountType sync_account_type);
+void LogPasswordEntryRequestOutcome(
+    RequestOutcome outcome,
+    ReusedPasswordAccountType password_account_type);
 
 // Logs the |outcome| to several UMA metrics for password on focus pings.
 void LogPasswordOnFocusRequestOutcome(RequestOutcome outcome);
 
 // Logs the |outcome| to several UMA metrics for password alert mode.
-void LogPasswordAlertModeOutcome(RequestOutcome outcome,
-                                 ReusedPasswordType password_type);
+void LogPasswordAlertModeOutcome(
+    RequestOutcome outcome,
+    ReusedPasswordAccountType password_account_type);
 
 // Logs password protection verdict based on |trigger_type|, |password_type|,
 // and |sync_account_type|.
 void LogPasswordProtectionVerdict(
     LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordType password_type,
-    SyncAccountType sync_account_type,
+    ReusedPasswordAccountType password_account_type,
     VerdictType verdict_type);
 
 // Logs |reason| for why there's no ping sent out.
 void LogNoPingingReason(LoginReputationClientRequest::TriggerType trigger_type,
                         RequestOutcome reason,
-                        ReusedPasswordType password_type,
-                        SyncAccountType sync_account_type);
+                        ReusedPasswordAccountType password_account_type);
 
 // Logs the type of sync account.
 void LogSyncAccountType(SyncAccountType sync_account_type);
@@ -169,8 +167,7 @@ void LogPasswordProtectionNetworkResponseAndDuration(
 // Records user action on warnings to corresponding UMA histograms.
 void LogWarningAction(WarningUIType ui_type,
                       WarningAction action,
-                      ReusedPasswordType password_type,
-                      SyncAccountType sync_account_type);
+                      ReusedPasswordAccountType password_account_type);
 
 // Logs the number of verdict migrated to the new caching structure.
 void LogNumberOfVerdictMigrated(size_t verdicts_migrated);

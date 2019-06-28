@@ -26,10 +26,31 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace worker_thread_scheduler_unittest {
 
+namespace {
+
 void NopTask() {}
 
+// Instantiated at the beginning of each test. |timeline_start_ticks_| can be
+// used to offset the original Now() against future timings to helper
+// readability of the test cases.
+class ScopedSaveStartTicks {
+ public:
+  ScopedSaveStartTicks(base::TimeTicks now) {
+    DCHECK(timeline_start_ticks_.is_null());
+    timeline_start_ticks_ = now;
+  }
+
+  ~ScopedSaveStartTicks() { timeline_start_ticks_ = base::TimeTicks(); }
+
+  static base::TimeTicks timeline_start_ticks_;
+};
+
+// static
+base::TimeTicks ScopedSaveStartTicks::timeline_start_ticks_;
+
 int TimeTicksToIntMs(const base::TimeTicks& time) {
-  return static_cast<int>((time - base::TimeTicks()).InMilliseconds());
+  return static_cast<int>(
+      (time - ScopedSaveStartTicks::timeline_start_ticks_).InMilliseconds());
 }
 
 void RecordTimelineTask(std::vector<std::string>* timeline,
@@ -133,8 +154,6 @@ class WorkerThreadSchedulerTest : public testing::Test {
             sequence_manager_.get(),
             task_environment_.GetMockTickClock(),
             &timeline_)) {
-    // Null clock might trigger some assertions.
-    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
     scheduler_->Init();
     default_task_queue_ = scheduler_->CreateTaskQueue("test_tq");
     default_task_runner_ = default_task_queue_->CreateTaskRunner(0);
@@ -193,6 +212,9 @@ class WorkerThreadSchedulerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
+  // Needs to be initialized immediately after |task_environment_|, specifically
+  // before |scheduler_|.
+  ScopedSaveStartTicks save_start_ticks_{task_environment_.NowTicks()};
   std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
       sequence_manager_;
   std::vector<std::string> timeline_;
@@ -203,6 +225,8 @@ class WorkerThreadSchedulerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadSchedulerTest);
 };
+
+}  // namespace
 
 TEST_F(WorkerThreadSchedulerTest, TestPostDefaultTask) {
   std::vector<std::string> run_order;
@@ -264,12 +288,12 @@ TEST_F(WorkerThreadSchedulerTest, TestIdleTaskWhenIsNotQuiescent) {
   RunUntilIdle();
 
   std::string expected_timeline[] = {
-      "CanEnterLongIdlePeriod @ 5",   "Post default task",
-      "RunUntilIdle begin @ 5",       "run RecordTimelineTask @ 5",
-      "RunUntilIdle end @ 5",         "Post idle task",
-      "RunUntilIdle begin @ 5",       "IsNotQuiescent @ 5",
-      "CanEnterLongIdlePeriod @ 305", "run TimelineIdleTestTask deadline 355",
-      "RunUntilIdle end @ 305"};
+      "CanEnterLongIdlePeriod @ 0",   "Post default task",
+      "RunUntilIdle begin @ 0",       "run RecordTimelineTask @ 0",
+      "RunUntilIdle end @ 0",         "Post idle task",
+      "RunUntilIdle begin @ 0",       "IsNotQuiescent @ 0",
+      "CanEnterLongIdlePeriod @ 300", "run TimelineIdleTestTask deadline 350",
+      "RunUntilIdle end @ 300"};
 
   EXPECT_THAT(timeline_, ElementsAreArray(expected_timeline));
 }
@@ -289,13 +313,13 @@ TEST_F(WorkerThreadSchedulerTest, TestIdleDeadlineWithPendingDelayedTask) {
   RunUntilIdle();
 
   std::string expected_timeline[] = {
-      "CanEnterLongIdlePeriod @ 5",
+      "CanEnterLongIdlePeriod @ 0",
       "Post delayed and idle tasks",
-      "RunUntilIdle begin @ 5",
-      "CanEnterLongIdlePeriod @ 5",
-      "run TimelineIdleTestTask deadline 25",  // Note the short 20ms deadline.
-      "run RecordTimelineTask @ 25",
-      "RunUntilIdle end @ 25"};
+      "RunUntilIdle begin @ 0",
+      "CanEnterLongIdlePeriod @ 0",
+      "run TimelineIdleTestTask deadline 20",  // Note the short 20ms deadline.
+      "run RecordTimelineTask @ 20",
+      "RunUntilIdle end @ 20"};
 
   EXPECT_THAT(timeline_, ElementsAreArray(expected_timeline));
 }
@@ -316,13 +340,13 @@ TEST_F(WorkerThreadSchedulerTest,
   RunUntilIdle();
 
   std::string expected_timeline[] = {
-      "CanEnterLongIdlePeriod @ 5",
+      "CanEnterLongIdlePeriod @ 0",
       "Post delayed and idle tasks",
-      "RunUntilIdle begin @ 5",
-      "CanEnterLongIdlePeriod @ 5",
-      "run TimelineIdleTestTask deadline 55",  // Note the full 50ms deadline.
-      "run RecordTimelineTask @ 505",
-      "RunUntilIdle end @ 505"};
+      "RunUntilIdle begin @ 0",
+      "CanEnterLongIdlePeriod @ 0",
+      "run TimelineIdleTestTask deadline 50",  // Note the full 50ms deadline.
+      "run RecordTimelineTask @ 500",
+      "RunUntilIdle end @ 500"};
 
   EXPECT_THAT(timeline_, ElementsAreArray(expected_timeline));
 }
@@ -391,20 +415,20 @@ TEST_F(WorkerThreadSchedulerTest, TestLongIdlePeriodTimeline) {
                      base::Unretained(task_environment_.GetMockTickClock())));
   RunUntilIdle();
 
-  std::string expected_timeline[] = {"CanEnterLongIdlePeriod @ 5",
+  std::string expected_timeline[] = {"CanEnterLongIdlePeriod @ 0",
                                      "PostFirstIdleTask",
-                                     "RunUntilIdle begin @ 55",
-                                     "CanEnterLongIdlePeriod @ 55",
-                                     "run TimelineIdleTestTask deadline 85",
-                                     "run PostIdleTask @ 85",
-                                     "IsNotQuiescent @ 85",
-                                     "CanEnterLongIdlePeriod @ 385",
-                                     "run TimelineIdleTestTask deadline 435",
-                                     "RunUntilIdle end @ 385",
+                                     "RunUntilIdle begin @ 50",
+                                     "CanEnterLongIdlePeriod @ 50",
+                                     "run TimelineIdleTestTask deadline 80",
+                                     "run PostIdleTask @ 80",
+                                     "IsNotQuiescent @ 80",
+                                     "CanEnterLongIdlePeriod @ 380",
+                                     "run TimelineIdleTestTask deadline 430",
+                                     "RunUntilIdle end @ 380",
                                      "Post RecordTimelineTask",
-                                     "RunUntilIdle begin @ 385",
-                                     "run RecordTimelineTask @ 385",
-                                     "RunUntilIdle end @ 385"};
+                                     "RunUntilIdle begin @ 380",
+                                     "run RecordTimelineTask @ 380",
+                                     "RunUntilIdle end @ 380"};
 
   EXPECT_THAT(timeline_, ElementsAreArray(expected_timeline));
 }

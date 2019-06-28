@@ -30,6 +30,16 @@
 // is no such tab.
 + (NSError*)switchToTabWithID:(NSString*)ID;
 
+// Executes the given JavaScript function in the current tab. This must be a
+// function that takes a single argument, and uses this argument as a
+// completion handler. Returns the value passed to the completion handler. If
+// script execution does not complete within |timeout| seconds, returns nil.
++ (NSString*)executeAsyncJavaScriptFunction:(NSString*)function
+                           timeoutInSeconds:(NSTimeInterval)timeout;
+
+// Allows script to open tabs using "window.open" JavaScript calls.
++ (void)enablePopups;
+
 @end
 
 #endif  // IOS_CHROME_TEST_WPT_CWT_WEBDRIVER_APP_INTERFACE_H_

@@ -53,7 +53,7 @@ BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
 BackgroundSyncControllerImpl::~BackgroundSyncControllerImpl() = default;
 
 void BackgroundSyncControllerImpl::GetParameterOverrides(
-    content::BackgroundSyncParameters* parameters) const {
+    content::BackgroundSyncParameters* parameters) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_ANDROID)
@@ -197,7 +197,7 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
     int64_t min_interval,
     int num_attempts,
     blink::mojom::BackgroundSyncType sync_type,
-    content::BackgroundSyncParameters* parameters) const {
+    content::BackgroundSyncParameters* parameters) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(parameters);
 

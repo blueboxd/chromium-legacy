@@ -7,21 +7,20 @@ package org.chromium.chrome.browser.touchless;
 import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 import static android.text.format.DateUtils.getRelativeTimeSpanString;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.net.Uri;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.HistoryProvider;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -32,6 +31,7 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.touchless.R;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -44,10 +44,7 @@ import java.util.List;
 // TODO(crbug.com/948858): Add unit tests for this behavior.
 class OpenLastTabMediator extends EmptyTabObserver
         implements HistoryProvider.BrowsingHistoryObserver, FocusableComponent {
-    private static final String LAST_REMOVED_VISIT_TIMESTAMP_KEY =
-            "TOUCHLESS_LAST_REMOVED_VISIT_TIMESTAMP";
-    // Used to match URLs in Chome's history to PWA launches via webapk.
-    private static final String WEBAPK_CLASS_NAME = "org.chromium.webapk.shell_apk";
+    private static final String LAST_TAB_URL = "TOUCHLESS_LAST_TAB_URL";
 
     private final Context mContext;
     private final Profile mProfile;
@@ -60,8 +57,34 @@ class OpenLastTabMediator extends EmptyTabObserver
     private final LargeIconBridge mIconBridge;
 
     private HistoryItem mHistoryItem;
+    private List<HistoryItem> mHistoryResult;
     private boolean mPreferencesRead;
-    private long mLastRemovedVisitTimestamp = Long.MIN_VALUE;
+    private String mLastTabUrl;
+
+    /**
+     * Sets up an observer on the tab to track the last tab that was opened. The purpose of this is
+     * to filter out history results that come from other activities, like PWAs.
+     * @param activity the activity to lookup shared prefs with.
+     * @param activityTabProvider the source of the tab navigation events.
+     * @return a new observer that can be destroyed on shutdown.
+     */
+    public static ActivityTabProvider.ActivityTabTabObserver createActivityScopedObserver(
+            Activity activity, ActivityTabProvider activityTabProvider) {
+        return new ActivityTabProvider.ActivityTabTabObserver(activityTabProvider) {
+            @Override
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                String url = tab.getUrl();
+                if (navigation.isInMainFrame() && !NativePageFactory.isNativePageUrl(url, false)) {
+                    PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
+                        SharedPreferences prefs = getSharedPreferences(activity);
+                        prefs.edit()
+                                .putString(OpenLastTabMediator.LAST_TAB_URL, tab.getUrl())
+                                .apply();
+                    });
+                }
+            }
+        };
+    }
 
     OpenLastTabMediator(Context context, Profile profile, NativePageHost nativePageHost,
             PropertyModel model, OpenLastTabView view) {
@@ -86,15 +109,18 @@ class OpenLastTabMediator extends EmptyTabObserver
     }
 
     private SharedPreferences getSharedPreferences() {
-        return mNativePageHost.getActiveTab().getActivity().getPreferences(Context.MODE_PRIVATE);
+        return getSharedPreferences(mNativePageHost.getActiveTab().getActivity());
+    }
+
+    private static SharedPreferences getSharedPreferences(Activity activity) {
+        return activity.getPreferences(Context.MODE_PRIVATE);
     }
 
     private void readPreferences() {
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
             // Check if this is a first launch of Chrome.
             SharedPreferences prefs = getSharedPreferences();
-            mLastRemovedVisitTimestamp =
-                    prefs.getLong(LAST_REMOVED_VISIT_TIMESTAMP_KEY, Long.MIN_VALUE);
+            mLastTabUrl = prefs.getString(LAST_TAB_URL, null);
             PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
                 mPreferencesRead = true;
                 updateModel();
@@ -134,23 +160,10 @@ class OpenLastTabMediator extends EmptyTabObserver
     @Override
     public void onQueryHistoryComplete(List<HistoryItem> items, boolean hasMorePotentialMatches) {
         mHistoryItem = null;
-        if (items.size() > 0) {
-            for (int i = 0; i < items.size(); i++) {
-                HistoryItem currentItem = items.get(i);
-                // Filter for history items that correspond to PWAs launched through webapk.
-                if (historyItemMatchesWebApkIntent(currentItem)) {
-                    continue;
-                } else {
-                    mHistoryItem = currentItem;
-                    break;
-                }
-            }
-
-            if (mHistoryItem == null && hasMorePotentialMatches) {
-                mHistoryBridge.queryHistoryContinuation();
-                return;
-            }
-        }
+        mHistoryResult = items;
+        // Ignore |hasMorePotentialMatches|, it's possible a user with a lot of PWA  history does
+        // not get a match in the first query. In this case, we'll simply not show the last tab
+        // button. It probably isn't really recent anyways.
 
         if (mPreferencesRead) {
             updateModel();
@@ -160,7 +173,17 @@ class OpenLastTabMediator extends EmptyTabObserver
     // updateModel is only called after preferences are read. It populates model with data from
     // mHistoryItem.
     private void updateModel() {
-        if (mHistoryItem == null || mHistoryItem.getTimestamp() <= mLastRemovedVisitTimestamp) {
+        if (mHistoryResult != null) {
+            for (HistoryItem item : mHistoryResult) {
+                if (item.getUrl().equals(mLastTabUrl)) {
+                    mHistoryItem = item;
+                    break;
+                }
+            }
+            mHistoryResult = null;
+        }
+
+        if (mHistoryItem == null) {
             // Consider the case where the history has nothing in it to be a failure.
             mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS, false);
             return;
@@ -223,16 +246,15 @@ class OpenLastTabMediator extends EmptyTabObserver
 
                     @Override
                     public void removeItem() {
-                        mLastRemovedVisitTimestamp = mHistoryItem.getTimestamp();
                         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
                             SharedPreferences prefs = getSharedPreferences();
-                            prefs.edit()
-                                    .putLong(LAST_REMOVED_VISIT_TIMESTAMP_KEY,
-                                            mLastRemovedVisitTimestamp)
-                                    .apply();
+                            prefs.edit().remove(LAST_TAB_URL).apply();
                         });
                         mHistoryBridge.markItemForRemoval(mHistoryItem);
                         mHistoryBridge.removeItems();
+                        mHistoryItem = null;
+                        mLastTabUrl = null;
+                        updateModel();
                     }
 
                     @Override
@@ -256,31 +278,5 @@ class OpenLastTabMediator extends EmptyTabObserver
                     }
                 };
         mModel.set(OpenLastTabProperties.CONTEXT_MENU_DELEGATE, delegate);
-    }
-
-    /**
-     * @param item The HistoryItem to check.
-     * @return True if the HistoryItem corresponds to a PWA launched through webapk.
-     */
-    private boolean historyItemMatchesWebApkIntent(HistoryItem item) {
-        Uri uri = Uri.parse(item.getUrl());
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-
-        List<ResolveInfo> resolveInfo = mContext.getPackageManager().queryIntentActivities(
-                intent, PackageManager.MATCH_ALL);
-        if (resolveInfo == null || resolveInfo.isEmpty()) {
-            return false;
-        }
-        for (ResolveInfo info : resolveInfo) {
-            if (info.activityInfo == null) {
-                continue;
-            }
-
-            if (info.activityInfo.name.contains(WEBAPK_CLASS_NAME)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

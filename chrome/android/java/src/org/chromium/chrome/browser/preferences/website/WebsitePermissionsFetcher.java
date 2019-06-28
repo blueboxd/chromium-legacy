@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.preferences.website;
 import android.util.Pair;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -126,6 +128,12 @@ public class WebsitePermissionsFetcher {
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CLIPBOARD));
         // Sensors permission is per-origin.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
+        CommandLine commandLine = CommandLine.getInstance();
+        if (commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+            // Bluetooth scanning permission is per-origin.
+            queue.add(new ExceptionInfoFetcher(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING));
+        }
 
         queue.add(new PermissionsAvailableCallbackRunner(callback));
 
@@ -208,6 +216,13 @@ public class WebsitePermissionsFetcher {
         } else if (category.showSites(SiteSettingsCategory.Type.SENSORS)) {
             // Sensors permission is per-origin.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
+        } else if (category.showSites(SiteSettingsCategory.Type.BLUETOOTH_SCANNING)) {
+            CommandLine commandLine = CommandLine.getInstance();
+            if (commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+                // Bluetooth scanning permission is per-origin.
+                queue.add(new ExceptionInfoFetcher(
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING));
+            }
         }
         queue.add(new PermissionsAvailableCallbackRunner(callback));
         queue.next();

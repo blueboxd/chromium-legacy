@@ -97,78 +97,6 @@ class ScopedOverviewTransformWindow::LayerCachingAndFilteringObserver
   DISALLOW_COPY_AND_ASSIGN(LayerCachingAndFilteringObserver);
 };
 
-// WindowMask is applied to overview windows to give them rounded edges while
-// they are in overview mode.
-class ScopedOverviewTransformWindow::WindowMask : public ui::LayerDelegate,
-                                                  public aura::WindowObserver {
- public:
-  explicit WindowMask(aura::Window* window)
-      : layer_(ui::LAYER_TEXTURED), window_(window) {
-    window_->AddObserver(this);
-    layer_.set_delegate(this);
-    layer_.SetFillsBoundsOpaquely(false);
-  }
-
-  ~WindowMask() override {
-    if (window_)
-      window_->RemoveObserver(this);
-    layer_.set_delegate(nullptr);
-  }
-
-  void set_top_inset(int top_inset) { top_inset_ = top_inset; }
-  ui::Layer* layer() { return &layer_; }
-
- private:
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    cc::PaintFlags flags;
-    flags.setAlpha(255);
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-
-    // The amount of round applied on the mask gets scaled as |window_| gets
-    // transformed, so reverse the transform so the final scaled round matches
-    // |kOverviewWindowRoundingDp|.
-    const gfx::Vector2dF scale = window_->transform().Scale2d();
-    const SkScalar r_x =
-        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.x()));
-    const SkScalar r_y =
-        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.y()));
-
-    SkPath path;
-    SkScalar radii[8] = {r_x, r_y, r_x, r_y, r_x, r_y, r_x, r_y};
-    gfx::Rect bounds(layer()->size());
-    bounds.Inset(0, top_inset_, 0, 0);
-    path.addRoundRect(gfx::RectToSkRect(bounds), radii);
-
-    ui::PaintRecorder recorder(context, layer()->size());
-    recorder.canvas()->DrawPath(path, flags);
-  }
-
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-
-  // aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override {
-    layer_.SetBounds(new_bounds);
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    window_->RemoveObserver(this);
-    window_ = nullptr;
-  }
-
-  ui::Layer layer_;
-  int top_inset_ = 0;
-  // Pointer to the window of which this is a mask to.
-  aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowMask);
-};
-
 ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
     OverviewItem* overview_item,
     aura::Window* window)
@@ -459,31 +387,17 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = window_->layer();
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    const float scale = layer->transform().Scale2d().x();
-    const gfx::RoundedCornersF radii(show ? kOverviewWindowRoundingDp / scale
-                                          : 0.0f);
-    layer->SetRoundedCornerRadius(radii);
-    layer->SetIsFastRoundedCorner(true);
-    int top_inset = GetTopInset();
-    if (top_inset > 0) {
-      gfx::Rect clip_rect(window_->bounds().size());
-      clip_rect.Inset(0, top_inset, 0, 0);
-      layer->SetClipRect(clip_rect);
-    }
-    return;
+  const float scale = layer->transform().Scale2d().x();
+  const gfx::RoundedCornersF radii(show ? kOverviewWindowRoundingDp / scale
+                                        : 0.0f);
+  layer->SetRoundedCornerRadius(radii);
+  layer->SetIsFastRoundedCorner(true);
+  int top_inset = GetTopInset();
+  if (top_inset > 0) {
+    gfx::Rect clip_rect(window_->bounds().size());
+    clip_rect.Inset(0, top_inset, 0, 0);
+    layer->SetClipRect(clip_rect);
   }
-
-  if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
-      !show) {
-    mask_.reset();
-    return;
-  }
-
-  mask_ = std::make_unique<WindowMask>(window_);
-  mask_->layer()->SetBounds(layer->bounds());
-  mask_->set_top_inset(GetTopInset());
-  layer->SetMaskLayer(mask_->layer());
 }
 
 void ScopedOverviewTransformWindow::CancelAnimationsListener() {
@@ -494,11 +408,11 @@ void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
     ui::LayerAnimationSequence* sequence) {
   // Remove the mask before animating because masks affect animation
   // performance. The mask will be added back once the animation is completed.
-  overview_item_->UpdateMaskAndShadow();
+  overview_item_->UpdateRoundedCornersAndShadow();
 }
 
 void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {
-  overview_item_->UpdateMaskAndShadow();
+  overview_item_->UpdateRoundedCornersAndShadow();
   overview_item_->OnDragAnimationCompleted();
 }
 
@@ -524,12 +438,6 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   auto it = targeting_policy_map_.find(transient_child);
   transient_child->SetEventTargetingPolicy(it->second);
   targeting_policy_map_.erase(it);
-}
-
-gfx::Rect ScopedOverviewTransformWindow::GetMaskBoundsForTesting() const {
-  if (!mask_)
-    return gfx::Rect();
-  return mask_->layer()->bounds();
 }
 
 void ScopedOverviewTransformWindow::CloseWidget() {

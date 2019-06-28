@@ -82,7 +82,8 @@
         </cr-search-field>
       </template>
       <template is="dom-if" if="[[showSpinner]]">
-        <paper-spinner-lite active></paper-spinner-lite>
+        <paper-spinner-lite active title$="[[spinnerTitle]]">
+        </paper-spinner-lite>
       </template>
     </div>
     <slot></slot>

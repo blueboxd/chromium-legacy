@@ -154,6 +154,9 @@ class NewStyle {
 
 #### Testing Mockable Natives
 
+(Currently JniMocker only works for junit/robolectric tests, and is not yet
+ready for instrumentation tests.)
+
 1. Add the `JniMocker` rule to your test.
 2. Call `JniMocker#mock` in a `setUp()` method for each interface you want to
    stub out.

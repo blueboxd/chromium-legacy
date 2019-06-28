@@ -561,7 +561,7 @@ void OffTheRecordProfileImpl::SetCorsOriginAccessListForOrigin(
       << "CorsOriginAccessList should not be modified in incognito profiles";
 }
 
-const content::SharedCorsOriginAccessList*
+content::SharedCorsOriginAccessList*
 OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() {
   return profile_->GetSharedCorsOriginAccessList();
 }

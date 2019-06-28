@@ -108,6 +108,15 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /**
+     * The error text to be displayed on the dialog.
+     * @private
+     */
+    errorText_: {
+      type: String,
+      value: '',
+    },
   },
 
   observers: [
@@ -188,14 +197,25 @@ Polymer({
   },
 
   /**
+   * Handler for update|reconfigureCupsPrinter success.
    * @param {!PrinterSetupResult} result
    * @private
    */
-  onPrinterEdited_: function(result) {
+  onPrinterEditSucceeded_: function(result) {
     this.fire(
         'show-cups-printer-toast',
         {resultCode: result, printerName: this.activePrinter.printerName});
     this.$$('add-printer-dialog').close();
+  },
+
+  /**
+   * Handler for update|reconfigureCupsPrinter failure.
+   * @param {*} result
+   * @private
+   */
+  onPrinterEditFailed_: function(result) {
+    this.errorText_ = settings.printing.getErrorText(
+        /** @type {PrinterSetupResult} */ (result));
   },
 
   /** @private */
@@ -207,14 +227,16 @@ Polymer({
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .updateCupsPrinter(
               this.activePrinter.printerId, this.activePrinter.printerName)
-          .then(this.onPrinterEdited_.bind(this));
+          .then(
+              this.onPrinterEditSucceeded_.bind(this),
+              this.onPrinterEditFailed_.bind(this));
     } else {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .reconfigureCupsPrinter(this.activePrinter)
-          .then(this.onPrinterEdited_.bind(this));
+          .then(
+              this.onPrinterEditSucceeded_.bind(this),
+              this.onPrinterEditFailed_.bind(this));
     }
-
-    this.$$('add-printer-dialog').close();
   },
 
   /**

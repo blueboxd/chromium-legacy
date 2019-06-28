@@ -94,8 +94,7 @@ bool NodeRespondsToTapGesture(Node* node) {
   if (node->WillRespondToMouseClickEvents() ||
       node->WillRespondToMouseMoveEvents())
     return true;
-  if (node->IsElementNode()) {
-    Element* element = ToElement(node);
+  if (auto* element = DynamicTo<Element>(node)) {
     // Tapping on a text field or other focusable item should trigger
     // adjustment, except that iframe elements are hard-coded to support focus
     // but the effect is often invisible so they should be excluded.

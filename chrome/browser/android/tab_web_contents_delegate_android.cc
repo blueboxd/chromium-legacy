@@ -33,6 +33,7 @@
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
+#include "chrome/browser/ui/android/bluetooth_scanning_prompt_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
@@ -162,6 +163,13 @@ TabWebContentsDelegateAndroid::RunBluetoothChooser(
     return nullptr;
   }
   return std::make_unique<BluetoothChooserAndroid>(frame, event_handler);
+}
+
+std::unique_ptr<content::BluetoothScanningPrompt>
+TabWebContentsDelegateAndroid::ShowBluetoothScanningPrompt(
+    content::RenderFrameHost* frame,
+    const content::BluetoothScanningPrompt::EventHandler& event_handler) {
+  return std::make_unique<BluetoothScanningPromptAndroid>(frame, event_handler);
 }
 
 void TabWebContentsDelegateAndroid::CloseContents(

@@ -83,13 +83,15 @@ class CastMetricsHelperTest : public ::testing::Test {
 };
 
 TEST_F(CastMetricsHelperTest, RecordEventWithValue) {
-  const base::TimeDelta time = base::TimeDelta::FromSeconds(5);
-  scoped_task_environment_.FastForwardBy(time);
+  const auto expected_time = scoped_task_environment_.NowTicks();
 
-  EXPECT_CALL(metrics_sink_,
-              OnAction(AllOf(HasString("name", kEvent),
-                             HasDouble("time", time.InMicroseconds()),
-                             HasInt("value", kValue))));
+  EXPECT_CALL(
+      metrics_sink_,
+      OnAction(
+          AllOf(HasString("name", kEvent),
+                HasDouble("time",
+                          (expected_time - base::TimeTicks()).InMicroseconds()),
+                HasInt("value", kValue))));
   metrics_helper_.RecordApplicationEventWithValue(kEvent, kValue);
 }
 
@@ -98,13 +100,14 @@ TEST_F(CastMetricsHelperTest, RecordApplicationEvent) {
   metrics_helper_.DidCompleteLoad(kAppId1, kSessionId1);
   metrics_helper_.UpdateSDKInfo(kSdkVersion);
 
-  const base::TimeDelta time = base::TimeDelta::FromSeconds(5);
-  scoped_task_environment_.FastForwardBy(time);
+  const auto expected_time = scoped_task_environment_.NowTicks();
 
   EXPECT_CALL(
       metrics_sink_,
       OnAction(AllOf(
-          HasString("name", kEvent), HasDouble("time", time.InMicroseconds()),
+          HasString("name", kEvent),
+          HasDouble("time",
+                    (expected_time - base::TimeTicks()).InMicroseconds()),
           HasString("app_id", kAppId1), HasString("session_id", kSessionId1),
           HasString("sdk_version", kSdkVersion))));
   metrics_helper_.RecordApplicationEvent(kEvent);
@@ -115,13 +118,14 @@ TEST_F(CastMetricsHelperTest, RecordApplicationEventWithValue) {
   metrics_helper_.DidCompleteLoad(kAppId1, kSessionId1);
   metrics_helper_.UpdateSDKInfo(kSdkVersion);
 
-  const base::TimeDelta time = base::TimeDelta::FromSeconds(5);
-  scoped_task_environment_.FastForwardBy(time);
+  const auto expected_time = scoped_task_environment_.NowTicks();
 
   EXPECT_CALL(
       metrics_sink_,
       OnAction(AllOf(
-          HasString("name", kEvent), HasDouble("time", time.InMicroseconds()),
+          HasString("name", kEvent),
+          HasDouble("time",
+                    (expected_time - base::TimeTicks()).InMicroseconds()),
           HasString("app_id", kAppId1), HasString("session_id", kSessionId1),
           HasString("sdk_version", kSdkVersion), HasInt("value", kValue))));
   metrics_helper_.RecordApplicationEventWithValue(kEvent, kValue);
@@ -131,12 +135,12 @@ TEST_F(CastMetricsHelperTest, LogTimeToFirstPaint) {
   metrics_helper_.DidStartLoad(kAppId1);
   metrics_helper_.DidCompleteLoad(kAppId1, kSessionId1);
 
-  const base::TimeDelta time_to_first_paint = base::TimeDelta::FromSeconds(5);
-  scoped_task_environment_.FastForwardBy(time_to_first_paint);
+  constexpr base::TimeDelta kTimeToFirstPaint = base::TimeDelta::FromSeconds(5);
+  scoped_task_environment_.FastForwardBy(kTimeToFirstPaint);
 
   EXPECT_CALL(metrics_sink_, OnTimeEvent(AllOf(HasSubstr(kAppId1),
                                                HasSubstr("TimeToFirstPaint")),
-                                         time_to_first_paint, _, _, _));
+                                         kTimeToFirstPaint, _, _, _));
   metrics_helper_.LogTimeToFirstPaint();
 }
 
@@ -144,12 +148,12 @@ TEST_F(CastMetricsHelperTest, LogTimeToFirstAudio) {
   metrics_helper_.DidStartLoad(kAppId1);
   metrics_helper_.DidCompleteLoad(kAppId1, kSessionId1);
 
-  const base::TimeDelta time_to_first_audio = base::TimeDelta::FromSeconds(5);
-  scoped_task_environment_.FastForwardBy(time_to_first_audio);
+  constexpr base::TimeDelta kTimeToFirstAudio = base::TimeDelta::FromSeconds(5);
+  scoped_task_environment_.FastForwardBy(kTimeToFirstAudio);
 
   EXPECT_CALL(metrics_sink_, OnTimeEvent(AllOf(HasSubstr(kAppId1),
                                                HasSubstr("TimeToFirstAudio")),
-                                         time_to_first_audio, _, _, _));
+                                         kTimeToFirstAudio, _, _, _));
   metrics_helper_.LogTimeToFirstAudio();
 }
 

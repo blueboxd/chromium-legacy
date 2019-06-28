@@ -395,8 +395,14 @@ cr.define('languages_page_tests', function() {
 
         return new Promise(resolve => {
           actionMenu.addEventListener('close', () => {
-            // Restart button is attached to 'sw' list item and is active.
-            assertTrue(!!swListItem.querySelector('#restartButton'));
+            // Restart button is attached to the first list item and is active.
+            const firstListItem =
+                languagesCollapse.querySelectorAll('.list-item')[0];
+            const domRepeat = languagesCollapse.querySelector('dom-repeat');
+            assertTrue(
+                domRepeat.modelForElement(firstListItem).item.language.code ==
+                'sw');
+            assertTrue(!!firstListItem.querySelector('#restartButton'));
             assertRestartButtonActiveState(true);
             resolve();
           });

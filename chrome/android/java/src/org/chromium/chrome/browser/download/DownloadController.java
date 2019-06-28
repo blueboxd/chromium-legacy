@@ -249,7 +249,7 @@ public class DownloadController {
     @CalledByNative
     private static void onDownloadStarted() {
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             return;
         }
         if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;

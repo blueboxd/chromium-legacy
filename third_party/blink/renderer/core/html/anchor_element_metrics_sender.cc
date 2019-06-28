@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
 
 namespace blink {
 
@@ -67,11 +68,13 @@ void AnchorElementMetricsSender::SendClickedAnchorMetricsToBrowser(
 }
 
 void AnchorElementMetricsSender::SendAnchorMetricsVectorToBrowser(
-    Vector<mojom::blink::AnchorElementMetricsPtr> metrics) {
+    Vector<mojom::blink::AnchorElementMetricsPtr> metrics,
+    const IntSize& viewport_size) {
   if (!AssociateInterface())
     return;
 
-  metrics_host_->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  metrics_host_->ReportAnchorElementMetricsOnLoad(std::move(metrics),
+                                                  viewport_size);
   has_onload_report_sent_ = true;
   anchor_elements_.clear();
 }

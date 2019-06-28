@@ -73,6 +73,25 @@ class CWTRequestHandler {
   // Otherwise, returns the ids of the remaining tabs.
   base::Value CloseCurrentTab();
 
+  // Executes the given script in the current tab. Returns an error if script
+  // execution times out. Otherwise, returns the result of script execution.
+  // When |is_async_function| is true, the given script must be the body of a
+  // function that uses its last argument (that is, the argument at
+  // "arguments[arguments.length - 1]") as a completion handler that it calls
+  // (possibly asynchronously) with the result to be returned. When
+  // |is_async_function| is false, the given script must be the body of a
+  // function whose return value is the result to be returned.
+  //
+  // Examples:
+  // 1) |script| is "arguments[arguments.length - 1].call(7)" and
+  //    |is_async_function| is true. In this case, the return value is |7|.
+  // 2) |script| is "return 'hello';" and |is_async_function| is false. In this
+  //    case, the return value is |'hello'|.
+  // 3) |script| is "document.title = 'hello world';" and |is_async_function| is
+  //    false. In this case, the script's return value is "undefined" so the
+  //    value returned by this method is a default-constructed base::Value.
+  base::Value ExecuteScript(const base::Value* script, bool is_async_function);
+
   // Processes the given command, HTTP method, and request content. Returns the
   // result of processing the command, or nullopt_t if the command is unknown.
   base::Optional<base::Value> ProcessCommand(

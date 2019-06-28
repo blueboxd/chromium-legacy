@@ -9,11 +9,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,12 +53,12 @@ public class PasswordReauthenticationFragmentTest {
         // replaces PasswordReauthentication after popBackStack is called.
         Fragment mockPasswordEntryEditor = new Fragment();
 
-        Activity testActivity = Robolectric.setupActivity(Activity.class);
+        FragmentActivity testActivity = Robolectric.setupActivity(FragmentActivity.class);
         Intent returnIntent = new Intent();
         returnIntent.putExtra("result", "This is the result");
         PasswordReauthenticationFragment.preventLockingForTesting();
 
-        FragmentManager fragmentManager = testActivity.getFragmentManager();
+        FragmentManager fragmentManager = testActivity.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(mockPasswordEntryEditor, "password_entry_editor");
         fragmentTransaction.addToBackStack("add_password_entry_editor");

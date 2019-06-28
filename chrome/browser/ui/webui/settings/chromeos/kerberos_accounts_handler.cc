@@ -80,7 +80,8 @@ void KerberosAccountsHandler::OnListAccounts(
     account_dict.SetBoolean("isSignedIn", account.tgt_validity_seconds() > 0);
     account_dict.SetBoolean("isActive",
                             account.principal_name() == active_principal);
-    account_dict.SetBoolean("hasRememberedPassword",
+    account_dict.SetBoolean("isManaged", account.is_managed());
+    account_dict.SetBoolean("passwordWasRemembered",
                             account.password_was_remembered());
     account_dict.SetString("pic", default_icon);
     accounts.GetList().push_back(std::move(account_dict));

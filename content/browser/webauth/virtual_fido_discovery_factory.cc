@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "content/browser/webauth/authenticator_type_converters.h"
 #include "content/browser/webauth/virtual_authenticator.h"
 #include "content/browser/webauth/virtual_discovery.h"
 #include "device/fido/fido_discovery_base.h"
@@ -123,9 +122,7 @@ void VirtualFidoDiscoveryFactory::CreateAuthenticator(
     blink::test::mojom::VirtualAuthenticatorOptionsPtr options,
     CreateAuthenticatorCallback callback) {
   auto* authenticator = CreateAuthenticator(
-      mojo::ConvertTo<::device::ProtocolVersion>(options->protocol),
-      mojo::ConvertTo<::device::FidoTransportProtocol>(options->transport),
-      mojo::ConvertTo<::device::AuthenticatorAttachment>(options->attachment),
+      options->protocol, options->transport, options->attachment,
       options->has_resident_key, options->has_user_verification);
 
   std::move(callback).Run(GetMojoPtrToVirtualAuthenticator(authenticator));

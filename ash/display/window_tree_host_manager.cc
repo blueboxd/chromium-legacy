@@ -64,6 +64,9 @@ namespace {
 // This is initialized in the constructor, and then in CreatePrimaryHost().
 int64_t primary_display_id = -1;
 
+// The default memory limit: 512mb.
+const char kUICompositorDefaultMemoryLimitMB[] = "512";
+
 display::DisplayManager* GetDisplayManager() {
   return Shell::Get()->display_manager();
 }
@@ -90,33 +93,6 @@ void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host) {
 aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
   CHECK(ash_host->AsWindowTreeHost());
   return ash_host->AsWindowTreeHost()->window();
-}
-
-const char* GetUICompositorMemoryLimitMB() {
-  bool uses_shader_rounded_corner = features::ShouldUseShaderRoundedCorner();
-  // TODO(oshima): Cleanup once new rounded corners is launched.
-  // Uses 512mb which is default.
-  if (uses_shader_rounded_corner)
-    return "512";
-
-  display::DisplayManager* display_manager =
-      ash::Shell::Get()->display_manager();
-  int width;
-  if (display::Display::HasInternalDisplay()) {
-    // If the device has an internal display, use it even if
-    // it's disabled (can happen when booted in docked mode.
-    const display::ManagedDisplayInfo& display_info =
-        display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
-    width = display_info.size_in_pixel().width();
-  } else {
-    // Otherwise just use the primary.
-    width = display::Screen::GetScreen()
-                ->GetPrimaryDisplay()
-                .GetSizeInPixel()
-                .width();
-  }
-
-  return width >= 3000 ? "1024" : "512";
 }
 
 }  // namespace
@@ -262,7 +238,7 @@ void WindowTreeHostManager::CreatePrimaryHost(
           switches::kUiCompositorMemoryLimitWhenVisibleMB)) {
     command_line->AppendSwitchASCII(
         switches::kUiCompositorMemoryLimitWhenVisibleMB,
-        GetUICompositorMemoryLimitMB());
+        kUICompositorDefaultMemoryLimitMB);
   }
 
   const display::Display& primary_candidate =

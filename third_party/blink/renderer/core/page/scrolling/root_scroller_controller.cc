@@ -426,13 +426,14 @@ void RootScrollerController::ConsiderForImplicit(Node& node) {
   if (document_->GetPage()->GetChromeClient().IsPopup())
     return;
 
-  if (!node.IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return;
 
-  if (!IsValidImplicitCandidate(ToElement(node)))
+  if (!IsValidImplicitCandidate(*element))
     return;
 
-  implicit_candidates_.insert(&ToElement(node));
+  implicit_candidates_.insert(element);
 }
 
 template <typename Function>

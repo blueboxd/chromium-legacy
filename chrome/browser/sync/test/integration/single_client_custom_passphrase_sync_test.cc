@@ -215,7 +215,7 @@ class SingleClientCustomPassphraseForceDisableScryptSyncTest
 };
 
 class SingleClientCustomPassphraseDoNotUseScryptSyncTest
-    : public SingleClientCustomPassphraseSyncTest {
+    : public SingleClientCustomPassphraseSyncTestWithUssTests {
  public:
   SingleClientCustomPassphraseDoNotUseScryptSyncTest()
       : features_(/*force_disabled=*/false, /*use_for_new_passphrases=*/false) {
@@ -271,7 +271,7 @@ INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientCustomPassphraseSyncTestWithUssTests,
                          testing::Values(false, true));
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        CommitsEncryptedDataUsingPbkdf2WhenScryptDisabled) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseUseScryptSyncTest,
       /*passphrase=*/"hunter2"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
   KeyParams key_params = {
       KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/true));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        DoesNotLeakUnencryptedData) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   DatatypeCommitCountingFakeServerObserver observer(GetFakeServer());
@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
@@ -402,5 +402,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForEncryptedServerBookmarks(
       expected, {KeyDerivationParams::CreateForPbkdf2(), "hunter2"}));
 }
+
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+                         testing::Values(false, true));
 
 }  // namespace

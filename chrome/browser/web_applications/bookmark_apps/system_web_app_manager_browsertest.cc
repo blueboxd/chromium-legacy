@@ -105,21 +105,21 @@ class TestWebUIControllerFactory : public content::WebUIControllerFactory {
 
   std::unique_ptr<content::WebUIController> CreateWebUIControllerForURL(
       content::WebUI* web_ui,
-      const GURL& url) const override {
+      const GURL& url) override {
     return std::make_unique<TestWebUIController>(web_ui);
   }
 
   content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
-                                      const GURL& url) const override {
+                                      const GURL& url) override {
     return reinterpret_cast<content::WebUI::TypeID>(1);
   }
 
   bool UseWebUIForURL(content::BrowserContext* browser_context,
-                      const GURL& url) const override {
+                      const GURL& url) override {
     return true;
   }
   bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
-                              const GURL& url) const override {
+                              const GURL& url) override {
     return true;
   }
 

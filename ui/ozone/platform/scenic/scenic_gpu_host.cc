@@ -79,6 +79,7 @@ void ScenicGpuHost::OnGpuProcessLaunched(
 void ScenicGpuHost::OnChannelDestroyed(int host_id) {}
 
 void ScenicGpuHost::OnGpuServiceLaunched(
+    int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,

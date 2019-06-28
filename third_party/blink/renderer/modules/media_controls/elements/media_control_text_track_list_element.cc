@@ -89,7 +89,7 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event& event) {
 
     GetMediaControls().GetTextTrackManager().DisableShowingTextTracks();
     int track_index =
-        ToElement(target)->GetIntegralAttribute(TrackIndexAttrName());
+        To<Element>(target)->GetIntegralAttribute(TrackIndexAttrName());
     if (track_index != kTrackIndexOffValue) {
       DCHECK_GE(track_index, 0);
       GetMediaControls().GetTextTrackManager().ShowTextTrackAtIndex(

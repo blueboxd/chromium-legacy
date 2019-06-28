@@ -503,7 +503,7 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
 
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     BrowserContext* browser_context,
-    SiteInstance* site_instance) const {
+    SiteInstance* site_instance) {
   std::unique_ptr<MockRenderProcessHost> host =
       std::make_unique<MockRenderProcessHost>(browser_context);
   host->OverrideURLLoaderFactory(default_mock_url_loader_factory_.get());

@@ -42,8 +42,8 @@ _DEX_HEADER_FMT = (
     ('data_off', 'I'),
 )
 
-_DexHeader = collections.namedtuple('DexHeader',
-                                    ','.join(t[0] for t in _DEX_HEADER_FMT))
+DexHeader = collections.namedtuple('DexHeader',
+                                   ','.join(t[0] for t in _DEX_HEADER_FMT))
 
 # Simple memory items.
 _TypeIdItem = collections.namedtuple('TypeIdItem', 'descriptor_idx')
@@ -111,27 +111,21 @@ class _MemoryItemList(object):
 
 class _TypeIdItemList(_MemoryItemList):
 
-  def __init__(self, reader):
-    offset = reader.header.type_ids_off
-    size = reader.header.type_ids_size
+  def __init__(self, reader, offset, size):
     factory = lambda x: _TypeIdItem(x.ReadUInt())
     super(_TypeIdItemList, self).__init__(reader, offset, size, factory)
 
 
 class _ProtoIdItemList(_MemoryItemList):
 
-  def __init__(self, reader):
-    offset = reader.header.proto_ids_off
-    size = reader.header.proto_ids_size
+  def __init__(self, reader, offset, size):
     factory = lambda x: _ProtoIdItem(x.ReadUInt(), x.ReadUInt(), x.ReadUInt())
     super(_ProtoIdItemList, self).__init__(reader, offset, size, factory)
 
 
 class _MethodIdItemList(_MemoryItemList):
 
-  def __init__(self, reader):
-    offset = reader.header.method_ids_off
-    size = reader.header.method_ids_size
+  def __init__(self, reader, offset, size):
     factory = (
         lambda x: _MethodIdItem(x.ReadUShort(), x.ReadUShort(), x.ReadUInt()))
     super(_MethodIdItemList, self).__init__(reader, offset, size, factory)
@@ -139,9 +133,7 @@ class _MethodIdItemList(_MemoryItemList):
 
 class _StringItemList(_MemoryItemList):
 
-  def __init__(self, reader):
-    offset = reader.header.string_ids_off
-    size = reader.header.string_ids_size
+  def __init__(self, reader, offset, size):
     reader.Seek(offset)
     string_item_offsets = iter([reader.ReadUInt() for _ in xrange(size)])
 
@@ -195,9 +187,9 @@ class _DexMapList(object):
   # https://source.android.com/devices/tech/dalvik/dex-format#type-codes
   TYPE_TYPE_LIST = 0x1001
 
-  def __init__(self, reader):
+  def __init__(self, reader, offset):
     self._map = {}
-    reader.Seek(reader.header.map_off)
+    reader.Seek(offset)
     self._size = reader.ReadUInt()
     for _ in xrange(self._size):
       item = _DexMapItem(reader)
@@ -218,7 +210,6 @@ class _DexReader(object):
   def __init__(self, data):
     self._data = data
     self._pos = 0
-    self.header = self._ReadHeader()
 
   def Seek(self, offset):
     self._pos = offset
@@ -245,9 +236,9 @@ class _DexReader(object):
     if off_by:
       self.Seek(self._pos + align_unit - off_by)
 
-  def _ReadHeader(self):
+  def ReadHeader(self):
     header_fmt = '<' + ''.join(t[1] for t in _DEX_HEADER_FMT)
-    return _DexHeader._make(struct.unpack_from(header_fmt, self._data))
+    return DexHeader._make(struct.unpack_from(header_fmt, self._data))
 
   def _ReadData(self, fmt):
     ret = struct.unpack_from(fmt, self._data, self._pos)[0]
@@ -336,6 +327,7 @@ class DexFile(object):
 
   Fields:
     reader: _DexReader object used to decode dex file contents.
+    header: DexHeader for this dex file.
     map_list: _DexMapList object containing list of dex file contents.
     type_item_list: _TypeIdItemList containing type_id_items.
     proto_item_list: _ProtoIdItemList containing proto_id_items.
@@ -353,11 +345,16 @@ class DexFile(object):
       data: bytearray containing the contents of a dex file.
     """
     self.reader = _DexReader(data)
-    self.map_list = _DexMapList(self.reader)
-    self.type_item_list = _TypeIdItemList(self.reader)
-    self.proto_item_list = _ProtoIdItemList(self.reader)
-    self.method_item_list = _MethodIdItemList(self.reader)
-    self.string_item_list = _StringItemList(self.reader)
+    self.header = self.reader.ReadHeader()
+    self.map_list = _DexMapList(self.reader, self.header.map_off)
+    self.type_item_list = _TypeIdItemList(self.reader, self.header.type_ids_off,
+                                          self.header.type_ids_size)
+    self.proto_item_list = _ProtoIdItemList(
+        self.reader, self.header.proto_ids_off, self.header.proto_ids_size)
+    self.method_item_list = _MethodIdItemList(
+        self.reader, self.header.method_ids_off, self.header.method_ids_size)
+    self.string_item_list = _StringItemList(
+        self.reader, self.header.string_ids_off, self.header.string_ids_size)
 
     type_list_key = _DexMapList.TYPE_TYPE_LIST
     if type_list_key in self.map_list:
@@ -377,7 +374,7 @@ class DexFile(object):
 
   def __repr__(self):
     items = [
-        self.reader.header,
+        self.header,
         self.map_list,
         self.type_item_list,
         self.proto_item_list,

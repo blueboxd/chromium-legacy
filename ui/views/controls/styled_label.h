@@ -89,9 +89,8 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   ~StyledLabel() override;
 
   // Sets the text to be displayed, and clears any previous styling.
+  const base::string16& GetText() const;
   void SetText(const base::string16& text);
-
-  const base::string16& text() const { return text_; }
 
   // Returns the font list that results from the default text context and style
   // for ranges. This can be used as the basis for a range |custom_font|.
@@ -104,30 +103,30 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Passes ownership of a custom view for use by RangeStyleInfo structs.
   void AddCustomView(std::unique_ptr<View> custom_view);
 
-  // Set the context of this text. All ranges have the same context.
+  // Get/Set the context of this text. All ranges have the same context.
   // |text_context| must be a value from views::style::TextContext.
+  int GetTextContext() const;
   void SetTextContext(int text_context);
 
   // Set the default text style.
   // |text_style| must be a value from views::style::TextStyle.
+  int GetDefaultTextStyle() const;
   void SetDefaultTextStyle(int text_style);
 
   // Get or set the distance in pixels between baselines of multi-line text.
   // Default is 0, indicating the distance between lines should be the standard
   // one for the label's text, font list, and platform.
+  int GetLineHeight() const;
   void SetLineHeight(int height);
 
-  // Sets the color of the background on which the label is drawn. This won't
-  // be explicitly drawn, but the label will force the text color to be
+  // Gets/Sets the color of the background on which the label is drawn. This
+  // won't be explicitly drawn, but the label will force the text color to be
   // readable over it.
+  SkColor GetDisplayedOnBackgroundColor() const;
   void SetDisplayedOnBackgroundColor(SkColor color);
-  SkColor displayed_on_background_color() const {
-    return displayed_on_background_color_;
-  }
 
-  void set_auto_color_readability_enabled(bool auto_color_readability) {
-    auto_color_readability_enabled_ = auto_color_readability;
-  }
+  bool GetAutoColorReadabilityEnabled() const;
+  void SetAutoColorReadabilityEnabled(bool auto_color_readability);
 
   // Resizes the label so its width is set to the width of the longest line and
   // its height deduced accordingly.

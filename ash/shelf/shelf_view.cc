@@ -14,7 +14,6 @@
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -2299,17 +2298,9 @@ void ShelfView::UpdateBackButton() {
 void ShelfView::SetDragImageBlur(const gfx::Size& size, int blur_radius) {
   drag_image_->SetPaintToLayer();
   drag_image_->layer()->SetFillsBoundsOpaquely(false);
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    const uint32_t radius = std::round(size.width() / 2.f);
-    drag_image_->layer()->SetRoundedCornerRadius(
-        {radius, radius, radius, radius});
-  } else {
-    drag_image_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    size.width() / 2.0f));
-    drag_image_mask_->layer()->SetBounds(gfx::Rect(size));
-    drag_image_->layer()->SetMaskLayer(drag_image_mask_->layer());
-  }
+  const uint32_t radius = std::round(size.width() / 2.f);
+  drag_image_->layer()->SetRoundedCornerRadius(
+      {radius, radius, radius, radius});
   drag_image_->layer()->SetBackgroundBlur(blur_radius);
 }
 

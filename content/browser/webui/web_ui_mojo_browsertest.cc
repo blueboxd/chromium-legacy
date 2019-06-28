@@ -194,7 +194,7 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
 
   std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
       WebUI* web_ui,
-      const GURL& url) const override {
+      const GURL& url) override {
     if (!web_ui_enabled_ || !url.SchemeIs(kChromeUIScheme))
       return nullptr;
 
@@ -206,7 +206,7 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
   }
 
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                             const GURL& url) const override {
+                             const GURL& url) override {
     if (!web_ui_enabled_ || !url.SchemeIs(kChromeUIScheme))
       return WebUI::kNoWebUI;
 
@@ -214,11 +214,11 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
   }
 
   bool UseWebUIForURL(BrowserContext* browser_context,
-                      const GURL& url) const override {
+                      const GURL& url) override {
     return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
   }
   bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+                              const GURL& url) override {
     return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
   }
 

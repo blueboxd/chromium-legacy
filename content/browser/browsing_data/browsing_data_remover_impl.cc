@@ -149,7 +149,7 @@ void BrowsingDataRemoverImpl::SetEmbedderDelegate(
 bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
     int origin_type_mask,
     const url::Origin& origin,
-    storage::SpecialStoragePolicy* policy) const {
+    storage::SpecialStoragePolicy* policy) {
   BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
   if (embedder_delegate_)
     embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();

@@ -24,8 +24,8 @@ void PaintRenderingContext2DTest::SetUp() {
   PaintRenderingContext2DSettings* context_settings =
       PaintRenderingContext2DSettings::Create();
   context_settings->setAlpha(false);
-  ctx_ = MakeGarbageCollected<PaintRenderingContext2D>(
-      IntSize(kWidth, kHeight), CanvasColorParams(), context_settings, kZoom);
+  ctx_ = MakeGarbageCollected<PaintRenderingContext2D>(IntSize(kWidth, kHeight),
+                                                       context_settings, kZoom);
 }
 
 void TrySettingStrokeStyle(PaintRenderingContext2D* ctx,

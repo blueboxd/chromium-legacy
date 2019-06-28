@@ -436,10 +436,6 @@ TEST_F(ScopedTaskEnvironmentTest, CrossThreadTaskPostingDoesntAffectMockTime) {
       ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
       ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
 
-  // ThreadPool WorkerThreads don't like when TimeTicks::Now() evaluates to 0.
-  // TODO(gab): Make ScopedTaskEnvironment not start at 0.
-  scoped_task_environment.FastForwardBy(TimeDelta::FromMilliseconds(100));
-
   int count = 0;
 
   // Post tasks delayd between 0 and 999 seconds.

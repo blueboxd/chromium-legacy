@@ -3330,9 +3330,10 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 // mojom::FrameNavigationControl implementation --------------------------------
 
 void RenderFrameImpl::CommitNavigation(
-    const network::ResourceResponseHead& head,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -3348,7 +3349,7 @@ void RenderFrameImpl::CommitNavigation(
   // IsPerNavigationMojoInterfaceEnabled() == true, for non-committed
   // interstitials where no NavigationRequest was created. Therefore, no DCHECK.
   CommitNavigationInternal(
-      head, common_params, commit_params,
+      common_params, commit_params, response_head, std::move(response_body),
       std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),
@@ -3358,9 +3359,10 @@ void RenderFrameImpl::CommitNavigation(
 }
 
 void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
-    const network::ResourceResponseHead& head,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -3375,7 +3377,7 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
   DCHECK(navigation_client_impl_);
   DCHECK(IsPerNavigationMojoInterfaceEnabled());
   CommitNavigationInternal(
-      head, common_params, commit_params,
+      common_params, commit_params, response_head, std::move(response_body),
       std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),
@@ -3385,9 +3387,10 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
 }
 
 void RenderFrameImpl::CommitNavigationInternal(
-    const network::ResourceResponseHead& head,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -3432,15 +3435,15 @@ void RenderFrameImpl::CommitNavigationInternal(
   // document state. In view source mode, we effectively let the user
   // see the source of the server's error page instead of using custom
   // one derived from the metrics saved to document state.
-  const network::ResourceResponseHead* response_head = nullptr;
-  if (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
-    response_head = &head;
+  const network::ResourceResponseHead* document_state_response_head =
+      (!frame_->Parent() && !frame_->IsViewSourceModeEnabled()) ? &response_head
+                                                                : nullptr;
   int request_id = ResourceDispatcher::MakeRequestID();
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       common_params, commit_params, base::TimeTicks::Now(), std::move(callback),
-      std::move(per_navigation_mojo_interface_callback), response_head,
-      std::move(navigation_client_impl_), request_id,
-      was_initiated_in_this_frame);
+      std::move(per_navigation_mojo_interface_callback),
+      document_state_response_head, std::move(navigation_client_impl_),
+      request_id, was_initiated_in_this_frame);
 
   // Check if the navigation being committed originated as a client redirect.
   bool is_client_redirect =
@@ -3497,8 +3500,8 @@ void RenderFrameImpl::CommitNavigationInternal(
                                             WebString::FromUTF8(charset), data);
   } else {
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        common_params, commit_params, request_id, head,
-        std::move(url_loader_client_endpoints),
+        common_params, commit_params, request_id, response_head,
+        std::move(response_body), std::move(url_loader_client_endpoints),
         GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
         !frame_->Parent(), navigation_params.get());
   }
@@ -3506,8 +3509,9 @@ void RenderFrameImpl::CommitNavigationInternal(
   // The MHTML mime type should be same as the one we check in the browser
   // process's download_utils::MustDownload.
   bool is_mhtml_archive =
-      base::LowerCaseEqualsASCII(head.mime_type, "multipart/related") ||
-      base::LowerCaseEqualsASCII(head.mime_type, "message/rfc822");
+      base::LowerCaseEqualsASCII(response_head.mime_type,
+                                 "multipart/related") ||
+      base::LowerCaseEqualsASCII(response_head.mime_type, "message/rfc822");
   if (is_mhtml_archive && navigation_params->body_loader) {
     // Load full mhtml archive before committing navigation.
     // We need this to retrieve the document mime type prior to committing.
@@ -4544,6 +4548,11 @@ void RenderFrameImpl::SetMouseCapture(bool capture) {
 
 void RenderFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
   Send(new FrameHostMsg_SetNeedsOcclusionTracking(routing_id_, needs_tracking));
+}
+
+void RenderFrameImpl::LifecycleStateChanged(
+    blink::mojom::FrameLifecycleState state) {
+  GetFrameHost()->LifecycleStateChanged(state);
 }
 
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(

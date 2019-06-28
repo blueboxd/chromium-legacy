@@ -175,6 +175,11 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
       const viz::SharedBitmapId& id,
       scoped_refptr<CrossThreadSharedBitmap> bitmap) override;
 
+  viz::TransferableResource current_transferable_resource() const {
+    return holder_ref_ ? holder_ref_->holder()->resource()
+                       : viz::TransferableResource();
+  }
+
  protected:
   explicit TextureLayer(TextureLayerClient* client);
   ~TextureLayer() override;

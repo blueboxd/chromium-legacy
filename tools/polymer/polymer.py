@@ -79,6 +79,11 @@ def _rewrite_dependency_path(dep):
 
   dep = dep.replace(r'.html', '.m.js')
 
+  # Prepend "./" if |dep| refers to the same folder as the processed file. This
+  # prefix is necessary for JS modules paths.
+  if not re.match('chrome://', dep) and os.path.dirname(dep) == '':
+    dep = './' + dep
+
   return dep
 
 

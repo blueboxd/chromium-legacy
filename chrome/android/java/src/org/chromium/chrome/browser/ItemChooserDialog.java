@@ -176,7 +176,8 @@ public class ItemChooserDialog implements DeviceItemAdapter.Observer {
             mDialog.dismiss();
         });
 
-        mItemAdapter = new DeviceItemAdapter(mActivity, R.layout.item_chooser_dialog_row);
+        mItemAdapter = new DeviceItemAdapter(
+                mActivity, /*itemsSelectable=*/true, R.layout.item_chooser_dialog_row);
         mItemAdapter.setNotifyOnChange(true);
         mItemAdapter.setObserver(this);
         mListView.setAdapter(mItemAdapter);

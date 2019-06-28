@@ -168,7 +168,8 @@ static jboolean JNI_PrefServiceBridge_IsContentSettingEnabled(
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD);
+         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
   return GetBooleanForContentSetting(type);
@@ -184,11 +185,13 @@ static void JNI_PrefServiceBridge_SetContentSettingEnabled(
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD);
+         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
 
   ContentSetting value = CONTENT_SETTING_BLOCK;
   if (allow) {
-    if (content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD) {
+    if (content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
+        content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING) {
       value = CONTENT_SETTING_ASK;
     } else {
       value = CONTENT_SETTING_ALLOW;

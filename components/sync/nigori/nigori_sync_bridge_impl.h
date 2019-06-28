@@ -89,6 +89,11 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   base::Time GetExplicitPassphraseTime() const;
 
+  // Returns key derivation params based on |passphrase_type_| and
+  // |custom_passphrase_key_derivation_params_|. Should be called only if
+  // |passphrase_type_| is an explicit passphrase.
+  KeyDerivationParams GetKeyDerivationParamsForPendingKeys() const;
+
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
 
   // Base64 encoded keystore keys. The last element is the current keystore
@@ -101,6 +106,11 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   bool encrypt_everything_;
   base::Time custom_passphrase_time_;
   base::Time keystore_migration_time_;
+
+  // The key derivation params we are using for the custom passphrase. Set iff
+  // |passphrase_type_| is CUSTOM_PASSPHRASE, otherwise key derivation method
+  // is always PBKDF2.
+  base::Optional<KeyDerivationParams> custom_passphrase_key_derivation_params_;
 
   // TODO(crbug/922900): consider using checked ObserverList once
   // SyncEncryptionHandlerImpl is no longer needed or consider refactoring old

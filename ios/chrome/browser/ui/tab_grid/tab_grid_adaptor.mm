@@ -42,7 +42,7 @@
   return self.tabGridViewController;
 }
 
-- (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
+- (void)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
                         withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                                   atIndex:(NSUInteger)position {
   NSUInteger tabIndex = position;
@@ -50,19 +50,17 @@
     tabIndex = targetModel.count;
 
   // Create the new tab.
-  Tab* tab = [targetModel insertTabWithLoadParams:urlLoadParams.web_params
-                                           opener:nil
-                                      openedByDOM:NO
-                                          atIndex:tabIndex
-                                     inBackground:NO];
+  [targetModel insertWebStateWithLoadParams:urlLoadParams.web_params
+                                     opener:nil
+                                openedByDOM:NO
+                                    atIndex:tabIndex
+                               inBackground:NO];
 
   // Tell the delegate to display the tab.
   DCHECK(self.delegate);
   [self.delegate tabSwitcher:self
       shouldFinishWithActiveModel:targetModel
                      focusOmnibox:NO];
-
-  return tab;
 }
 
 - (void)setOtrTabModel:(TabModel*)otrModel {

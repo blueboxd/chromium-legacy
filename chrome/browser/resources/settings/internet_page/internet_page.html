@@ -122,7 +122,8 @@
 
       <template is="dom-if" route-path="/networks" no-search restamp>
         <settings-subpage page-title="[[getNetworksPageTitle_(subpageType_)]]"
-            show-spinner="[[showSpinner_]]">
+            show-spinner="[[showSpinner_]]"
+            spinner-title="$i18n{networkScanningLabel}">
           <settings-internet-subpage
               default-network="[[defaultNetwork]]"
               device-state="[[getDeviceState_(subpageType_, deviceStates)]]"

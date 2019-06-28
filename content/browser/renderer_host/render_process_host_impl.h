@@ -431,10 +431,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // factory must be set back to nullptr before it's destroyed; ownership is not
   // transferred.
   static void set_render_process_host_factory_for_testing(
-      const RenderProcessHostFactory* rph_factory);
+      RenderProcessHostFactory* rph_factory);
   // Gets the global factory used to create new RenderProcessHosts in unit
   // tests.
-  static const RenderProcessHostFactory*
+  static RenderProcessHostFactory*
   get_render_process_host_factory_for_testing();
 
   // Tracks which sites frames are hosted in which RenderProcessHosts.

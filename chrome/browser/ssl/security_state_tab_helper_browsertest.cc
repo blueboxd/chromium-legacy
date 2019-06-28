@@ -38,6 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -93,6 +94,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+using password_manager::metrics_util::PasswordType;
 
 const char kCreateFilesystemUrlJavascript[] =
     "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
@@ -1014,8 +1017,7 @@ IN_PROC_BROWSER_TEST_F(
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
   service->ShowModalWarning(contents, "unused-token",
-                            safe_browsing::LoginReputationClientRequest::
-                                PasswordReuseEvent::SIGN_IN_PASSWORD);
+                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
   observer.WaitForDidChangeVisibleSecurityState();
 
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
@@ -1060,8 +1062,7 @@ IN_PROC_BROWSER_TEST_F(
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
   service->ShowModalWarning(contents, "unused-token",
-                            safe_browsing::LoginReputationClientRequest::
-                                PasswordReuseEvent::ENTERPRISE_PASSWORD);
+                            PasswordType::ENTERPRISE_PASSWORD);
   observer.WaitForDidChangeVisibleSecurityState();
 
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =

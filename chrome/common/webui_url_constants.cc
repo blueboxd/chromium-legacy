@@ -14,8 +14,8 @@ namespace chrome {
 
 // Please keep this file in the same order as the header.
 
-// Note: Add hosts to |kChromeHostURLs| at the bottom of this file to be listed by
-// chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
+// Note: Add hosts to |kChromeHostURLs| at the bottom of this file to be listed
+// by chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
 
 const char kChromeUIAboutHost[] = "about";
 const char kChromeUIAboutURL[] = "chrome://about/";
@@ -367,14 +367,15 @@ const char kAccountManagerSubPage[] = "accountManager";
 const char kAndroidAppsDetailsSubPage[] = "androidApps/details";
 const char kAssistantSubPage[] = "googleAssistant";
 const char kBluetoothSubPage[] = "bluetoothDevices";
+// 'multidevice/features' is a child of the 'multidevice' route
+const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kCrostiniSharedUsbDevicesSubPage[] = "crostini/sharedUsbDevices";
 const char kDateTimeSubPage[] = "dateTime";
 const char kDisplaySubPage[] = "display";
 const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";
-// 'multidevice/features' is a child of the 'multidevice' route
-const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kLockScreenSubPage[] = "lockScreen";
+const char kKerberosAccountsSubPage[] = "kerberosAccounts";
 const char kNativePrintingSettingsSubPage[] = "cupsPrinters";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kNetworksSubPage[] = "networks";
@@ -394,12 +395,13 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
                                           kAndroidAppsDetailsSubPage,
                                           kAssistantSubPage,
                                           kBluetoothSubPage,
+                                          kConnectedDevicesSubPage,
                                           kCrostiniSharedUsbDevicesSubPage,
                                           kDateTimeSubPage,
                                           kDisplaySubPage,
                                           kHelpSubPage,
                                           kInternetSubPage,
-                                          kConnectedDevicesSubPage,
+                                          kKerberosAccountsSubPage,
                                           kLockScreenSubPage,
                                           kNetworkDetailSubPage,
                                           kNetworksSubPage,

@@ -255,7 +255,8 @@ void WorkerScriptLoader::OnComplete(
 // URLLoaderClient end ---------------------------------------------------------
 
 bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
-    const network::ResourceResponseHead& response,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* response_url_loader,
     network::mojom::URLLoaderClientRequest* response_client_request,
     ThrottlingURLLoader* url_loader) {
@@ -269,8 +270,9 @@ bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
   for (auto& interceptor : interceptors_) {
     bool skip_other_interceptors = false;
     if (interceptor->MaybeCreateLoaderForResponse(
-            resource_request_, response, response_url_loader,
-            response_client_request, url_loader, &skip_other_interceptors)) {
+            resource_request_, response_head, response_body,
+            response_url_loader, response_client_request, url_loader,
+            &skip_other_interceptors)) {
       // Both ServiceWorkerRequestHandler and AppCacheRequestHandler don't set
       // skip_other_interceptors.
       DCHECK(!skip_other_interceptors);

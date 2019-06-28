@@ -58,7 +58,8 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // redirect to the fallback URL.
   SignedExchangeLoader(
       const network::ResourceRequest& outer_request,
-      const network::ResourceResponseHead& outer_response,
+      const network::ResourceResponseHead& outer_response_head,
+      mojo::ScopedDataPipeConsumerHandle outer_response_body,
       network::mojom::URLLoaderClientPtr forwarding_client,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       uint32_t url_loader_options,
@@ -139,7 +140,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   const network::ResourceRequest outer_request_;
 
   // The outer response of signed HTTP exchange which was received from network.
-  const network::ResourceResponseHead outer_response_;
+  const network::ResourceResponseHead outer_response_head_;
 
   // This client is alive until OnHTTPExchangeFound() is called.
   network::mojom::URLLoaderClientPtr forwarding_client_;

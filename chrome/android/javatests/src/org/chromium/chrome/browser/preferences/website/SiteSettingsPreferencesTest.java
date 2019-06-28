@@ -495,7 +495,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesShown() throws Exception {
         // If you add a category in the SiteSettings UI, please add a test for it below.
-        Assert.assertEquals(18, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);
 
         String[] nullArray = new String[0];
         String[] binaryToggle = new String[] {"binary_toggle"};
@@ -532,6 +532,8 @@ public class SiteSettingsPreferencesTest {
                 new Pair<>(binaryToggleWithException, binaryToggleWithException));
         testCases.put(SiteSettingsCategory.Type.USB, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.USE_STORAGE, new Pair<>(nullArray, nullArray));
+        testCases.put(SiteSettingsCategory.Type.BLUETOOTH_SCANNING,
+                new Pair<>(binaryToggle, binaryToggle));
 
         for (@SiteSettingsCategory.Type int key = 0; key < SiteSettingsCategory.Type.NUM_ENTRIES;
                 ++key) {

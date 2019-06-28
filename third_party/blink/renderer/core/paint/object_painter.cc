@@ -70,7 +70,7 @@ void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
       layout_object_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  KURL url = ToElement(layout_object_.GetNode())->HrefURL();
+  KURL url = To<Element>(layout_object_.GetNode())->HrefURL();
   if (!url.IsValid())
     return;
 

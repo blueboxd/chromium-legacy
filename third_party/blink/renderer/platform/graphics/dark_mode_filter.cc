@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrix.h"
 
@@ -104,10 +105,11 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
       DarkModeColorClassifier::MakeTextColorClassifier(settings_);
 }
 
-Color DarkModeFilter::InvertColorIfNeeded(const Color& color) {
-  if (!IsDarkModeActive())
-    return color;
-  return color_filter_->InvertColor(color);
+Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
+                                          ElementRole role) {
+  if (IsDarkModeActive() && ShouldApplyToColor(color, role))
+    return color_filter_->InvertColor(color);
+  return color;
 }
 
 // TODO(gilmanmh): Investigate making |image| a const reference. This code
@@ -122,14 +124,15 @@ void DarkModeFilter::ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
 }
 
 base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
-    const cc::PaintFlags& flags) {
+    const cc::PaintFlags& flags,
+    ElementRole role) {
   if (!IsDarkModeActive())
     return base::nullopt;
 
   cc::PaintFlags dark_mode_flags = flags;
   if (flags.HasShader()) {
     dark_mode_flags.setColorFilter(color_filter_->ToSkColorFilter());
-  } else {
+  } else if (ShouldApplyToColor(flags.getColor(), role)) {
     Color inverted_color = color_filter_->InvertColor(flags.getColor());
     dark_mode_flags.setColor(
         SkColorSetARGB(inverted_color.Alpha(), inverted_color.Red(),
@@ -139,16 +142,22 @@ base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
   return base::make_optional<cc::PaintFlags>(std::move(dark_mode_flags));
 }
 
-bool DarkModeFilter::ShouldInvertTextColor(const Color& color) const {
-  if (IsDarkModeActive()) {
-    DCHECK(text_classifier_);
-    return text_classifier_->ShouldInvertColor(color);
-  }
-  return false;
-}
-
 bool DarkModeFilter::IsDarkModeActive() const {
   return !!color_filter_;
+}
+
+// We don't check IsDarkModeActive() because the caller is expected to have
+// already done so. This allows the caller to exit earlier if it needs to
+// perform some other logic in between confirming dark mode is active and
+// checking the color classifiers.
+bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
+  if (role == ElementRole::kBackground)
+    return true;
+
+  DCHECK_EQ(role, ElementRole::kText);
+  DCHECK_NE(text_classifier_, nullptr);
+  return text_classifier_->ShouldInvertColor(color) ==
+         DarkModeClassification::kApplyFilter;
 }
 
 }  // namespace blink

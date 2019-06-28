@@ -350,6 +350,10 @@ cr_slider.SliderTick;
       const stopDragging = this.stopDragging_.bind(this, event.pointerId);
 
       this.draggingEventTracker_.add(this, 'pointermove', e => {
+        // Prevent unwanted text selection to occur while moving the pointer,
+        // this is important.
+        e.preventDefault();
+
         // If the left-button on the mouse is pressed by itself, then update.
         // Otherwise stop capturing the mouse events because the drag operation
         // is complete.

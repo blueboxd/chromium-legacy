@@ -1050,16 +1050,13 @@ void XMLDocumentParser::EndElementNs() {
     return;
 
   ContainerNode* n = current_node_;
-  if (current_node_->IsElementNode())
-    ToElement(n)->FinishParsingChildren();
-
-  if (!n->IsElementNode()) {
+  auto* element = DynamicTo<Element>(n);
+  if (!element) {
     PopCurrentNode();
     return;
   }
 
-  Element* element = ToElement(n);
-
+  element->FinishParsingChildren();
   if (element->IsScriptElement() &&
       !ScriptingContentIsAllowed(GetParserContentPolicy())) {
     PopCurrentNode();

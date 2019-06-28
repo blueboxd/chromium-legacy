@@ -674,6 +674,7 @@ public class PrefServiceBridge {
 
         switch (contentSettingsType) {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
@@ -729,6 +730,7 @@ public class PrefServiceBridge {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
             // Returns true if websites are allowed to request permission to access USB devices.
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
                 return isContentSettingEnabled(contentSettingsType);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
                 return nativeGetAutomaticDownloadsEnabled();

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,11 +37,9 @@ class RoundedLabelView : public views::View {
     layer()->SetColor(background_color);
     layer()->SetFillsBoundsOpaquely(false);
 
-    if (ash::features::ShouldUseShaderRoundedCorner()) {
-      const gfx::RoundedCornersF radii(rounding_dp);
-      layer()->SetRoundedCornerRadius(radii);
-      layer()->SetIsFastRoundedCorner(true);
-    }
+    const gfx::RoundedCornersF radii(rounding_dp);
+    layer()->SetRoundedCornerRadius(radii);
+    layer()->SetIsFastRoundedCorner(true);
 
     label_ = new views::Label(l10n_util::GetStringUTF16(message_id),
                               views::style::CONTEXT_LABEL);

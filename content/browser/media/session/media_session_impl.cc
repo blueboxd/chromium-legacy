@@ -30,6 +30,7 @@
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
+#include "ui/gfx/favicon_size.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/media/session/media_session_android.h"
@@ -224,9 +225,6 @@ void MediaSessionImpl::DidUpdateFaviconURL(
   std::vector<media_session::MediaImage> icons;
 
   for (auto& icon : candidates) {
-    if (icon.icon_sizes.empty() || !icon.icon_url.is_valid())
-      continue;
-
     // We only want either favicons or the touch icons. There is another type of
     // touch icon which is "precomposed". This means it might have rounded
     // corners, etc. but it is not predictable so we cannot show them in the UI.
@@ -235,9 +233,19 @@ void MediaSessionImpl::DidUpdateFaviconURL(
       continue;
     }
 
+    std::vector<gfx::Size> sizes = icon.icon_sizes;
+
+    // If we are a favicon and we do not have a size then we should assume the
+    // default size for favicons.
+    if (icon.icon_type == FaviconURL::IconType::kFavicon && sizes.empty())
+      sizes.push_back(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
+
+    if (sizes.empty() || !icon.icon_url.is_valid())
+      continue;
+
     media_session::MediaImage image;
     image.src = icon.icon_url;
-    image.sizes = icon.icon_sizes;
+    image.sizes = sizes;
     icons.push_back(image);
   }
 

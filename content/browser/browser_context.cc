@@ -825,8 +825,7 @@ void BrowserContext::SetCorsOriginAccessListForOrigin(
                   "with NetworkService to bypass CORS checks.";
 }
 
-const SharedCorsOriginAccessList*
-BrowserContext::GetSharedCorsOriginAccessList() {
+SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList() {
   // Need to return a valid instance regardless of CORS bypass supports.
   static const base::NoDestructor<scoped_refptr<SharedCorsOriginAccessList>>
       empty_list(SharedCorsOriginAccessList::Create());

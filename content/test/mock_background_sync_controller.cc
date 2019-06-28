@@ -19,7 +19,7 @@ void MockBackgroundSyncController::RunInBackground() {
 }
 
 void MockBackgroundSyncController::GetParameterOverrides(
-    BackgroundSyncParameters* parameters) const {
+    BackgroundSyncParameters* parameters) {
   *parameters = background_sync_parameters_;
 }
 
@@ -31,7 +31,7 @@ base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
     int64_t min_interval,
     int num_attempts,
     blink::mojom::BackgroundSyncType sync_type,
-    BackgroundSyncParameters* parameters) const {
+    BackgroundSyncParameters* parameters) {
   DCHECK(parameters);
 
   if (!num_attempts) {

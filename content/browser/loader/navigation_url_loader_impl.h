@@ -57,8 +57,9 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   void ProceedWithResponse() override;
 
   void OnReceiveResponse(
-      scoped_refptr<network::ResourceResponse> response,
+      scoped_refptr<network::ResourceResponse> response_head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       const GlobalRequestID& global_request_id,
       bool is_download,
       base::TimeDelta total_ui_to_io_time,

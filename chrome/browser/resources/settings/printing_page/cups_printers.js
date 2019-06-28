@@ -123,44 +123,8 @@ Polymer({
             loadTimeData.getStringF('printerEditedSuccessfulMessage',
                                     printerName);
         break;
-      case PrinterSetupResult.FATAL_ERROR:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedFatalErrorMessage');
-        break;
-      case PrinterSetupResult.PRINTER_UNREACHABLE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedUnreachableMessage');
-        break;
-      case PrinterSetupResult.DBUS_ERROR:
-        // Simply display a generic error message as this error should only
-        // occur when a call to Dbus fails which isn't meaningful to the user.
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedFailedMessage');
-        break;
-      case PrinterSetupResult.NATIVE_PRINTERS_NOT_ALLOWED:
-        this.addPrinterResultText_ = loadTimeData.getString(
-            'printerAddedNativePrintersNotAllowedMessage');
-        break;
-      case PrinterSetupResult.INVALID_PRINTER_UPDATE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('editPrinterInvalidPrinterUpdate');
-        break;
-      case PrinterSetupResult.PPD_TOO_LARGE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedPpdTooLargeMessage');
-        break;
-      case PrinterSetupResult.INVALID_PPD:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedInvalidPpdMessage');
-        break;
-      case PrinterSetupResult.PPD_NOT_FOUND:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedPpdNotFoundMessage');
-        break;
-      case PrinterSetupResult.PPD_UNRETRIEVABLE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedPpdUnretrievableMessage');
-        break;
+      default:
+        assertNotReached();
       }
 
     this.$.errorToast.show();

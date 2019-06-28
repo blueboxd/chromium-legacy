@@ -64,7 +64,7 @@ bool AuthenticatorRequestClientDelegate::ShouldDisablePlatformAuthenticators() {
 
 #if defined(OS_MACOSX)
 base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
-AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() const {
+AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() {
   return base::nullopt;
 }
 #endif

@@ -578,28 +578,30 @@ Win10 Release (CoolNewGPUType)".
 1.  After your CLs land you should be able to find and run `win-myproject-rel` on CLs
     using Choose Trybots in Gerrit.
 
-### How to test and deploy a driver update
+### How to test and deploy a driver and/or OS update
 
-Let's say that you want to roll out an update to the graphics drivers on one of
-the configurations like the Win10 NVIDIA bots. In order to verify that the new
-driver won't destabilize Chromium's commit queue, it's necessary to run the new
-driver on one of the waterfalls for a day or two to make sure the tests are
-reliably green before rolling out the driver update. To do this:
+Let's say that you want to roll out an update to the graphics drivers or the OS
+on one of the configurations like the Linux NVIDIA bots. In order to verify
+that the new driver or OS won't destabilize Chromium's commit queue,
+it's necessary to run the new driver or OS on one of the waterfalls for a day
+or two to make sure the tests are reliably green before rolling out the driver
+or OS update. To do this:
 
 1.  Make sure that all of the current Swarming jobs for this OS and GPU
-    configuration are targeted at the "stable" version of the driver in
-    [waterfalls.pyl] and [mixins.pyl]. Make sure that there is a "named" stable
-    version of the driver there, which targets the _TARGETED_DRIVER_VERSIONS
-    dictionary in [bot_config.py] (Google internal).
-1.  File a `Build Infrastructure` bug, component `Infra>Labs`, to have ~4 of the
-    physical machines already in the Swarming pool upgraded to the new version
-    of the driver.
+    configuration are targeted at the "stable" version of the driver and the OS
+    in [waterfalls.pyl] and [mixins.pyl]. Make sure that there are "named"
+    stable versions of the driver and the OS there, which target the
+    _TARGETED_DRIVER_VERSIONS and _TARGETED_OS_VERSIONS dictionaries
+    in [bot_config.py] (Google internal).
+1.  File a `Build Infrastructure` bug, component `Infra>Labs`, to have ~4 of
+    the physical machines already in the Swarming pool upgraded to the new
+    version of the driver or the OS.
 1.  If an "experimental" version of this bot doesn't yet exist, follow the
     instructions above for [How to add a new tester bot to the chromium.gpu.fyi
     waterfall](#How-to-add-a-new-tester-bot-to-the-chromium_gpu_fyi-waterfall)
     to deploy one.
-1.  Have this experimental bot target the new version of the driver in
-    [waterfalls.pyl] and [mixins.pyl].
+1.  Have this experimental bot target the new version of the driver or the OS
+    in [waterfalls.pyl] and [mixins.pyl].
 1.  Hopefully, the new machine will pass the pixel tests. If it doesn't, then
     unfortunately, it'll be necessary to follow the instructions on
     [updating the pixel tests] to temporarily suppress the failures on this
@@ -608,6 +610,7 @@ reliably green before rolling out the driver update. To do this:
 1.  Watch the new machine for a day or two to make sure it's stable.
 1.  When it is, update [bot_config.py] (Google internal) to *add* a mapping
     between the new driver version and the "stable" version. For example:
+
     ```
     _TARGETED_DRIVER_VERSIONS = {
       # NVIDIA Quadro P400, Ubuntu Stable version
@@ -618,15 +621,29 @@ reliably green before rolling out the driver update. To do this:
     }
     ```
 
-    The new driver version should match the one just added for the
+    And/or a mapping between the new OS version and the "stable" version.
+    For example:
+
+    ```
+    _TARGETED_OS_VERSIONS = {
+      # Linux NVIDIA Quadro P400
+      '10de:1cb3': {
+        'Ubuntu-14.04': 'linux-nvidia-stable',
+        'Ubuntu-19.04': 'linux-nvidia-stable',
+      },
+      # ...
+    }
+    ```
+
+    The new driver or OS version should match the one just added for the
     experimental bot. Get this CL reviewed and landed.
 1.  After it lands, ask the Chrome Infrastructure Labs team to roll out the
     driver update across all of the similarly configured bots in the swarming
     pool.
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
-1.  Remove the old driver version from [bot_config.py], leaving the "stable"
-    driver version pointing at the newly upgraded version.
+1.  Remove the old driver or OS version from [bot_config.py], leaving the
+    "stable" driver version pointing at the newly upgraded version.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as

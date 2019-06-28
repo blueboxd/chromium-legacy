@@ -235,48 +235,51 @@ void PendingScript::ExecuteScriptBlockInternal(
     IgnoreDestructiveWriteCountIncrementer incrementer(
         needs_increment ? context_document : nullptr);
 
-    // <spec step="4">Let old script element be the value to which the script
-    // element's node document's currentScript object was most recently
+    // <spec step="4.A.1">Let old script element be the value to which the
+    // script element's node document's currentScript object was most recently
     // set.</spec>
     //
     // This is implemented as push/popCurrentScript().
 
-    // <spec step="5">Switch on the script's type:</spec>
+    // <spec step="4">Switch on the script's type:</spec>
+
+    // <spec step="4.A">"classic"</spec>
     //
-    // <spec step="5.A">"classic"</spec>
-    //
-    // <spec step="5.A.1">If the script element's root is not a shadow root,
+    // <spec step="4.A.2">If the script element's root is not a shadow root,
     // then set the script element's node document's currentScript attribute to
     // the script element. Otherwise, set it to null.</spec>
     //
-    // <spec step="5.B">"module"</spec>
+    // Note: The shadow root check is implemented in
+    // HTMLScriptElement::SetScriptElementForBinding().
+
+    // <spec step="4.B">"module"</spec>
     //
-    // <spec step="5.B.1">Set the script element's node document's currentScript
-    // attribute to null.</spec>
+    // <spec step="4.B.1">Assert: The script element's node document's
+    // currentScript attribute is null.</spec>
     ScriptElementBase* current_script = nullptr;
     if (script->GetScriptType() == mojom::ScriptType::kClassic)
       current_script = element;
     context_document->PushCurrentScript(current_script);
 
-    // <spec step="5.A">"classic"</spec>
+    // <spec step="4.A">"classic"</spec>
     //
-    // <spec step="5.A.2">Run the classic script given by the script's
+    // <spec step="4.A.3">Run the classic script given by the script's
     // script.</spec>
     //
     // Note: This is where the script is compiled and actually executed.
     //
-    // <spec step="5.B">"module"</spec>
+    // <spec step="4.B">"module"</spec>
     //
-    // <spec step="5.B.2">Run the module script given by the script's
+    // <spec step="4.B.2">Run the module script given by the script's
     // script.</spec>
     script->RunScript(context_document->GetFrame(),
                       element_document.GetSecurityOrigin());
 
-    // <spec step="6">Set the script element's node document's currentScript
+    // <spec step="4.A.4">Set the script element's node document's currentScript
     // attribute to old script element.</spec>
     context_document->PopCurrentScript(current_script);
 
-    // <spec step="7">Decrement the ignore-destructive-writes counter of
+    // <spec step="5">Decrement the ignore-destructive-writes counter of
     // neutralized doc, if it was incremented in the earlier step.</spec>
     //
     // Implemented as the scope out of IgnoreDestructiveWriteCountIncrementer.
@@ -293,7 +296,7 @@ void PendingScript::ExecuteScriptBlockInternal(
             created_during_document_write);
   }
 
-  // <spec step="8">If the script is from an external file, then fire an event
+  // <spec step="6">If the script is from an external file, then fire an event
   // named load at the script element.</spec>
   if (is_external)
     element->DispatchLoadEvent();

@@ -3,18 +3,19 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Tests local NTP custom backgrounds.
+ * @fileoverview Tests local NTP custom backgrounds and the original background
+ * customization menu.
  */
 
 /**
  * Local NTP's object for test and setup functions.
  */
-test.customize = {};
+test.customBackgrounds = {};
 
 /**
  * Sets up the page for each individual test.
  */
-test.customize.setUp = function() {
+test.customBackgrounds.setUp = function() {
   setUpPage('local-ntp-template');
 };
 
@@ -26,7 +27,7 @@ test.customize.setUp = function() {
  * Tests that the edit custom background button is visible if both the flag is
  * enabled and no custom theme is being used.
  */
-test.customize.testShowEditCustomBackground = function() {
+test.customBackgrounds.testShowEditCustomBackground = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   assertTrue(elementIsVisible($('edit-bg')));
@@ -35,7 +36,7 @@ test.customize.testShowEditCustomBackground = function() {
 /**
  * Tests that clicking on the gear icon opens the background option dialog.
  */
-test.customize.testClickGearIcon = function() {
+test.customBackgrounds.testClickGearIcon = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -47,7 +48,7 @@ test.customize.testClickGearIcon = function() {
  * Test that clicking on the "Chrome backgrounds" option results in a correct
  * selection dialog.
  */
-test.customize.testClickChromeBackgrounds = function() {
+test.customBackgrounds.testClickChromeBackgrounds = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -61,7 +62,7 @@ test.customize.testClickChromeBackgrounds = function() {
  * Test that clicking the cancel button on the collection selection dialog
  * closes the dialog.
  */
-test.customize.testCollectionDialogCancel = function() {
+test.customBackgrounds.testCollectionDialogCancel = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -76,7 +77,7 @@ test.customize.testCollectionDialogCancel = function() {
  * Test that clicking the done button on the collection selection dialog does
  * nothing.
  */
-test.customize.testCollectionDialogDone = function() {
+test.customBackgrounds.testCollectionDialogDone = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -91,7 +92,7 @@ test.customize.testCollectionDialogDone = function() {
  * Test that clicking on a collection tile opens and loads the image selection
  * dialog.
  */
-test.customize.testCollectionDialogTileClick = function() {
+test.customBackgrounds.testCollectionDialogTileClick = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -107,7 +108,7 @@ test.customize.testCollectionDialogTileClick = function() {
 /**
  * Test that clicking cancel on the image selection dialog closes the dialog.
  */
-test.customize.testImageDialogCancel = function() {
+test.customBackgrounds.testImageDialogCancel = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -125,7 +126,7 @@ test.customize.testImageDialogCancel = function() {
  * Test that clicking the back button on the image selection dialog results in
  * the collection selection dialog being displayed.
  */
-test.customize.testImageDialogBack = function() {
+test.customBackgrounds.testImageDialogBack = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -142,7 +143,7 @@ test.customize.testImageDialogBack = function() {
 /**
  * Test that clicking on an image tile applies the selected styling.
  */
-test.customize.testImageTileClick = function() {
+test.customBackgrounds.testImageTileClick = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -159,7 +160,7 @@ test.customize.testImageTileClick = function() {
 /**
  * Test that clicking done with no image selected does nothing.
  */
-test.customize.testImageDoneClickNoneSelected = function() {
+test.customBackgrounds.testImageDoneClickNoneSelected = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -176,7 +177,7 @@ test.customize.testImageDoneClickNoneSelected = function() {
 /**
  * Test that clicking done with an image selected closes the dialog.
  */
-test.customize.testImageDoneClick = function() {
+test.customBackgrounds.testImageDoneClick = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();
@@ -194,7 +195,7 @@ test.customize.testImageDoneClick = function() {
 /**
  * Test that no custom background option will be shown when offline.
  */
-test.customize.testHideCustomBackgroundOffline = function() {
+test.customBackgrounds.testHideCustomBackgroundOffline = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   let event = new Event('offline', {});
@@ -208,7 +209,7 @@ test.customize.testHideCustomBackgroundOffline = function() {
  * Test that clicking collection when offline will trigger an error
  * notification.
  */
-test.customize.testClickCollectionOfflineShowErrorMsg = function() {
+test.customBackgrounds.testClickCollectionOfflineShowErrorMsg = function() {
   initLocalNTP(/*isGooglePage=*/true);
 
   $('edit-bg').click();

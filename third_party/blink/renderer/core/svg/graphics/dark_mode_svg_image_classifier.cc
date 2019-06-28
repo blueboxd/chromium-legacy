@@ -11,7 +11,7 @@ DarkModeSVGImageClassifier::DarkModeSVGImageClassifier() {}
 DarkModeClassification DarkModeSVGImageClassifier::Classify(
     SVGImage* image,
     const FloatRect& src_rect) {
-  return DarkModeClassification::kApplyDarkModeFilter;
+  return DarkModeClassification::kApplyFilter;
 }
 
 }  // namespace blink

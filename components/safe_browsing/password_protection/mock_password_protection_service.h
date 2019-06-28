@@ -29,34 +29,31 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_CONST_METHOD0(GetPasswordProtectionWarningTriggerPref,
                      PasswordProtectionTrigger());
   MOCK_CONST_METHOD0(GetCurrentContentAreaSize, gfx::Size());
+  MOCK_CONST_METHOD0(GetAccountInfo, AccountInfo());
   MOCK_CONST_METHOD2(IsURLWhitelistedForPasswordEntry,
                      bool(const GURL&, RequestOutcome*));
 
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
+  MOCK_METHOD0(IsAccountSyncing, bool());
   MOCK_METHOD0(IsUnderAdvancedProtection, bool());
   MOCK_METHOD0(ReportPasswordChanged, void());
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
-  MOCK_METHOD2(ShowInterstitial,
-               void(content::WebContents*, ReusedPasswordType));
+  MOCK_METHOD2(ShowInterstitial, void(content::WebContents*, PasswordType));
   MOCK_METHOD3(IsPingingEnabled,
                bool(LoginReputationClientRequest::TriggerType,
-                    ReusedPasswordType,
+                    PasswordType,
                     RequestOutcome*));
   MOCK_METHOD3(ShowModalWarning,
-               void(content::WebContents*,
-                    const std::string&,
-                    ReusedPasswordType));
-  MOCK_METHOD4(MaybeReportPasswordReuseDetected,
-               void(content::WebContents*,
-                    const std::string&,
-                    ReusedPasswordType,
-                    bool));
+               void(content::WebContents*, const std::string&, PasswordType));
+  MOCK_METHOD4(
+      MaybeReportPasswordReuseDetected,
+      void(content::WebContents*, const std::string&, PasswordType, bool));
   MOCK_METHOD3(UpdateSecurityState,
                void(safe_browsing::SBThreatType,
-                    ReusedPasswordType,
+                    PasswordType,
                     content::WebContents*));
   MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
                void(bool, const history::URLRows&));
@@ -69,15 +66,20 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                     RequestOutcome,
                     const safe_browsing::LoginReputationClientResponse*));
   MOCK_METHOD3(CanShowInterstitial,
-               bool(RequestOutcome, ReusedPasswordType, const GURL&));
-  MOCK_METHOD4(
-      MaybeStartPasswordFieldOnFocusRequest,
-      void(content::WebContents*, const GURL&, const GURL&, const GURL&));
-  MOCK_METHOD6(MaybeStartProtectedPasswordEntryRequest,
+               bool(RequestOutcome, PasswordType, const GURL&));
+  MOCK_METHOD5(MaybeStartPasswordFieldOnFocusRequest,
+               void(content::WebContents*,
+                    const GURL&,
+                    const GURL&,
+                    const GURL&,
+                    const std::string&));
+  MOCK_METHOD8(MaybeStartProtectedPasswordEntryRequest,
                void(content::WebContents*,
                     const GURL&,
                     const std::string&,
-                    ReusedPasswordType,
+                    PasswordType,
+                    const std::string,
+                    bool,
                     const std::vector<std::string>&,
                     bool));
 

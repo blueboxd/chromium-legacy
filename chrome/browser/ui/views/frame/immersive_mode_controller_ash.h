@@ -11,9 +11,9 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -24,7 +24,7 @@ class Window;
 class ImmersiveModeControllerAsh
     : public ImmersiveModeController,
       public ash::ImmersiveFullscreenControllerDelegate,
-      public content::NotificationObserver,
+      public FullscreenObserver,
       public aura::WindowObserver {
  public:
   ImmersiveModeControllerAsh();
@@ -59,12 +59,10 @@ class ImmersiveModeControllerAsh
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
 
-  // content::NotificationObserver override:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // FullscreenObserver:
+  void OnFullscreenStateChanged() override;
 
-  // aura::WindowObserver override:
+  // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
@@ -82,7 +80,8 @@ class ImmersiveModeControllerAsh
   // the top-of-window views are not revealed.
   double visible_fraction_ = 1.0;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<FullscreenController, FullscreenObserver> fullscreen_observer_{
+      this};
 
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_{this};
 

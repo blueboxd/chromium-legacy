@@ -181,10 +181,10 @@ bool AXRelationCache::MayHaveHTMLLabelViaForAttribute(
 void AXRelationCache::GetReverseRelated(
     Node* target,
     HeapVector<Member<AXObject>>& source_objects) {
-  if (!target || !target->IsElementNode())
+  auto* element = DynamicTo<Element>(target);
+  if (!element)
     return;
 
-  Element* element = ToElement(target);
   if (!element->HasID())
     return;
 

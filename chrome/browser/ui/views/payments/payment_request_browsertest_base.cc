@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -96,13 +97,14 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   https_server_->ServeFilesFromSourceDirectory("components/test/data/payments");
   https_server_->StartAcceptingConnections();
 
+  Observe(GetActiveWebContents());
+
   // Starting now, PaymentRequest Mojo messages sent by the renderer will
   // create PaymentRequest objects via this test's CreatePaymentRequestForTest,
   // allowing the test to inject itself as a dialog observer.
-  Observe(GetActiveWebContents());
-  registry_.AddInterface<payments::mojom::PaymentRequest>(
-      base::Bind(&PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
-                 base::Unretained(this)));
+  payments::SetPaymentRequestFactoryForTesting(base::BindRepeating(
+      &PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
+      base::Unretained(this)));
 
   // Set a test sync service so that all types of cards work.
   GetDataManager()->SetSyncServiceForTest(&sync_service_);
@@ -798,7 +800,7 @@ const base::string16& PaymentRequestBrowserTestBase::GetStyledLabelText(
     DialogViewID view_id) {
   views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
-  return static_cast<views::StyledLabel*>(view)->text();
+  return static_cast<views::StyledLabel*>(view)->GetText();
 }
 
 const base::string16& PaymentRequestBrowserTestBase::GetErrorLabelForType(

@@ -470,7 +470,7 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   request.SetRequestContext(blink::mojom::RequestContextType::SCRIPT);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
-  response_override->response.mime_type = kMimeType;
+  response_override->response_head.mime_type = kMimeType;
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
   request.SetExtraData(std::move(extra_data));
@@ -483,7 +483,7 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
 
   response_override = dispatcher()->TakeNavigationResponseOverrideParams();
   ASSERT_TRUE(response_override);
-  peer()->OnReceivedResponse(response_override->response);
+  peer()->OnReceivedResponse(response_override->response_head);
 
   EXPECT_TRUE(client()->did_receive_response());
 

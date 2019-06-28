@@ -34,7 +34,6 @@
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
@@ -120,9 +119,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // A background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
   ui::Layer opaque_background_;
-
-  // A mask to show rounded corners when appropriate.
-  std::unique_ptr<ui::LayerOwner> mask_ = nullptr;
 
   // When true, the default focus of the shelf is the last focusable child.
   bool default_last_focusable_child_ = false;
@@ -233,46 +229,25 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   // To achieve this, we extend the layer in the same direction where the shelf
   // is aligned (downwards for a bottom shelf, etc.).
   const int radius = kShelfRoundedCornerRadius;
-  // With shader rounded corners, we can easily round only 2 corners out of
-  // 4 which means we don't need as much extra shelf height.
-  const int safety_margin = ash::features::ShouldUseShaderRoundedCorner()
-                                ? kShelfMaxOvershootHeight
-                                : 3 * radius;
+  // We can easily round only 2 corners out of 4 which means we don't need as
+  // much extra shelf height.
+  const int safety_margin = kShelfMaxOvershootHeight;
   opaque_background_bounds.Inset(
       -shelf->SelectValueForShelfAlignment(0, safety_margin, 0), 0,
       -shelf->SelectValueForShelfAlignment(0, 0, safety_margin),
       -shelf->SelectValueForShelfAlignment(safety_margin, 0, 0));
 
   // Show rounded corners except in maximized (which includes split view) mode.
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
-      opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
-    } else {
-      opaque_background_.SetRoundedCornerRadius({
-          shelf->SelectValueForShelfAlignment(radius, 0, radius),
-          shelf->SelectValueForShelfAlignment(radius, radius, 0),
-          shelf->SelectValueForShelfAlignment(0, radius, 0),
-          shelf->SelectValueForShelfAlignment(0, 0, radius),
-      });
-      opaque_background_.AddCacheRenderSurfaceRequest();
-    }
+  if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
+    opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
   } else {
-    if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
-      if (mask_)
-        opaque_background_.RemoveCacheRenderSurfaceRequest();
-      mask_ = nullptr;
-      opaque_background_.SetMaskLayer(nullptr);
-    } else {
-      if (!mask_) {
-        mask_ = views::Painter::CreatePaintedLayer(
-            views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
-        mask_->layer()->SetFillsBoundsOpaquely(false);
-        opaque_background_.SetMaskLayer(mask_->layer());
-        opaque_background_.AddCacheRenderSurfaceRequest();
-      }
-      if (mask_->layer()->bounds() != opaque_background_bounds)
-        mask_->layer()->SetBounds(opaque_background_bounds);
-    }
+    opaque_background_.SetRoundedCornerRadius({
+        shelf->SelectValueForShelfAlignment(radius, 0, radius),
+        shelf->SelectValueForShelfAlignment(radius, radius, 0),
+        shelf->SelectValueForShelfAlignment(0, radius, 0),
+        shelf->SelectValueForShelfAlignment(0, 0, radius),
+    });
+    opaque_background_.AddCacheRenderSurfaceRequest();
   }
   opaque_background_.SetBounds(opaque_background_bounds);
   UpdateBackgroundBlur();

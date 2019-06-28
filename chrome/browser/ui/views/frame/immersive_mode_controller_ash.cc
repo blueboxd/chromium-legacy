@@ -7,15 +7,12 @@
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/macros.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -83,12 +80,10 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
   if (controller_.IsEnabled() == enabled)
     return;
 
-  if (registrar_.IsEmpty()) {
-    content::Source<FullscreenController> source(
-        browser_view_->browser()
-            ->exclusive_access_manager()
-            ->fullscreen_controller());
-    registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
+  if (!fullscreen_observer_.IsObservingSources()) {
+    fullscreen_observer_.Add(browser_view_->browser()
+                                 ->exclusive_access_manager()
+                                 ->fullscreen_controller());
   }
 
   ash::ImmersiveFullscreenController::EnableForWidget(browser_view_->frame(),
@@ -221,16 +216,14 @@ std::vector<gfx::Rect> ImmersiveModeControllerAsh::GetVisibleBoundsInScreen()
   return bounds_in_screen;
 }
 
-void ImmersiveModeControllerAsh::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
+void ImmersiveModeControllerAsh::OnFullscreenStateChanged() {
   if (!controller_.IsEnabled())
     return;
 
   // Auto hide the shelf in immersive browser fullscreen.
-  bool in_tab_fullscreen = content::Source<FullscreenController>(source)
+  bool in_tab_fullscreen = browser_view_->browser()
+                               ->exclusive_access_manager()
+                               ->fullscreen_controller()
                                ->IsWindowFullscreenForTabOrPending();
   browser_view_->GetNativeWindow()->SetProperty(
       ash::kHideShelfWhenFullscreenKey, in_tab_fullscreen);

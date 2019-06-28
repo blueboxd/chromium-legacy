@@ -93,8 +93,8 @@ class MojoVideoFrameHandleReleaser
   VideoFrame::ReleaseMailboxCB CreateReleaseMailboxCB(
       const base::UnguessableToken& release_token) {
     DVLOG(3) << __func__ << "(" << release_token.ToString() << ")";
-    return base::BindRepeating(&MojoVideoFrameHandleReleaser::ReleaseVideoFrame,
-                               this, release_token);
+    return base::BindOnce(&MojoVideoFrameHandleReleaser::ReleaseVideoFrame,
+                          this, release_token);
   }
 
  private:

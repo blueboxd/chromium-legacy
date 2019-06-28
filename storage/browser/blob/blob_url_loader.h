@@ -69,6 +69,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   bool sent_headers_ = false;
 
   std::unique_ptr<BlobDataHandle> blob_handle_;
+  mojo::ScopedDataPipeProducerHandle response_body_producer_handle_;
   mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
 
   base::WeakPtrFactory<BlobURLLoader> weak_factory_;

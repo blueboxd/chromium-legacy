@@ -22,58 +22,38 @@ TEST(DarkModeFilterTest, DoNotApplyFilterWhenDarkModeIsOff) {
   settings.mode = DarkMode::kOff;
   filter.UpdateSettings(settings);
 
-  EXPECT_EQ(Color::kWhite, filter.InvertColorIfNeeded(Color::kWhite));
-  EXPECT_EQ(Color::kBlack, filter.InvertColorIfNeeded(Color::kBlack));
+  EXPECT_EQ(Color::kWhite,
+            filter.InvertColorIfNeeded(
+                Color::kWhite, DarkModeFilter::ElementRole::kBackground));
+  EXPECT_EQ(Color::kBlack,
+            filter.InvertColorIfNeeded(
+                Color::kBlack, DarkModeFilter::ElementRole::kBackground));
 
-  EXPECT_EQ(base::nullopt, filter.ApplyToFlagsIfNeeded(cc::PaintFlags()));
-
-  EXPECT_FALSE(filter.ShouldInvertTextColor(Color::kWhite));
-  EXPECT_FALSE(filter.ShouldInvertTextColor(Color::kBlack));
+  EXPECT_EQ(base::nullopt,
+            filter.ApplyToFlagsIfNeeded(
+                cc::PaintFlags(), DarkModeFilter::ElementRole::kBackground));
 }
 
-TEST(DarkModeFilterTest, ApplyDarkModeToColorsFlagsAndText) {
+TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
   DarkModeFilter filter;
 
   DarkModeSettings settings;
   settings.mode = DarkMode::kSimpleInvertForTesting;
   filter.UpdateSettings(settings);
 
-  EXPECT_EQ(Color::kBlack, filter.InvertColorIfNeeded(Color::kWhite));
-  EXPECT_EQ(Color::kWhite, filter.InvertColorIfNeeded(Color::kBlack));
+  EXPECT_EQ(Color::kBlack,
+            filter.InvertColorIfNeeded(
+                Color::kWhite, DarkModeFilter::ElementRole::kBackground));
+  EXPECT_EQ(Color::kWhite,
+            filter.InvertColorIfNeeded(
+                Color::kBlack, DarkModeFilter::ElementRole::kBackground));
 
   cc::PaintFlags flags;
   flags.setColor(SK_ColorWHITE);
-  auto flags_or_nullopt = filter.ApplyToFlagsIfNeeded(flags);
+  auto flags_or_nullopt = filter.ApplyToFlagsIfNeeded(
+      flags, DarkModeFilter::ElementRole::kBackground);
   ASSERT_NE(flags_or_nullopt, base::nullopt);
   EXPECT_EQ(SK_ColorBLACK, flags_or_nullopt.value().getColor());
-
-  EXPECT_TRUE(filter.ShouldInvertTextColor(Color::kWhite));
-  EXPECT_TRUE(filter.ShouldInvertTextColor(Color::kBlack));
-}
-
-TEST(DarkModeFilterTest, ApplyFilterToDarkTextOnly) {
-  DarkModeFilter filter;
-
-  DarkModeSettings settings;
-  settings.mode = DarkMode::kSimpleInvertForTesting;
-  settings.text_brightness_threshold = 200;
-  filter.UpdateSettings(settings);
-
-  EXPECT_FALSE(filter.ShouldInvertTextColor(Color::kWhite));
-  EXPECT_TRUE(filter.ShouldInvertTextColor(Color::kBlack));
-
-  EXPECT_FALSE(filter.ShouldInvertTextColor(Color(
-      settings.text_brightness_threshold, settings.text_brightness_threshold,
-      settings.text_brightness_threshold)));
-
-  EXPECT_TRUE(filter.ShouldInvertTextColor(
-      Color(settings.text_brightness_threshold - 5,
-            settings.text_brightness_threshold - 5,
-            settings.text_brightness_threshold - 5)));
-  EXPECT_FALSE(filter.ShouldInvertTextColor(
-      Color(settings.text_brightness_threshold + 5,
-            settings.text_brightness_threshold + 5,
-            settings.text_brightness_threshold + 5)));
 }
 
 }  // namespace

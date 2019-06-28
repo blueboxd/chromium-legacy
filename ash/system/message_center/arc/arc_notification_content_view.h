@@ -199,7 +199,6 @@ class ArcNotificationContentView
   base::Optional<gfx::Insets> mask_insets_;
 
   std::unique_ptr<ui::LayerTreeOwner> surface_copy_;
-  std::unique_ptr<ui::LayerOwner> surface_copy_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationContentView);
 };

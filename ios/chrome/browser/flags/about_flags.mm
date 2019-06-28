@@ -588,6 +588,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOptionalArticleThumbnailName,
      flag_descriptions::kOptionalArticleThumbnailDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kOptionalArticleThumbnail)},
+    {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,
+     flag_descriptions::kEnableSyncUSSNigoriDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSNigori)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -9,6 +9,7 @@
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -52,7 +53,8 @@ class CORE_EXPORT AnchorElementMetricsSender final
 
   // Sends metrics of visible anchor elements to the browser.
   void SendAnchorMetricsVectorToBrowser(
-      Vector<mojom::blink::AnchorElementMetricsPtr> metrics);
+      Vector<mojom::blink::AnchorElementMetricsPtr> metrics,
+      const IntSize& viewport_size);
 
   // Adds an anchor element to |anchor_elements_|.
   void AddAnchorElement(HTMLAnchorElement& element);

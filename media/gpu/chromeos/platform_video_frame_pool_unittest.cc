@@ -20,10 +20,6 @@ class PlatformVideoFramePoolTest
   PlatformVideoFramePoolTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
-    // Seed test clock with some dummy non-zero value to avoid confusion with
-    // empty base::TimeTicks values.
-    test_clock_.Advance(base::TimeDelta::FromSeconds(1234));
-
     pool_.reset(new PlatformVideoFramePool(
         base::BindRepeating(&VideoFrame::CreateZeroInitializedFrame),
         &test_clock_));

@@ -36,11 +36,6 @@ class MemoryPurgeManagerTest : public testing::Test {
         std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
             &MemoryPurgeManagerTest::OnMemoryPressure, base::Unretained(this)));
     base::MemoryPressureListener::SetNotificationsSuppressed(false);
-
-    // Set an initial delay to ensure that the first call to
-    // base::TimeTicks::Now() before incrementing the counter does not return a
-    // null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
   void TearDown() override {

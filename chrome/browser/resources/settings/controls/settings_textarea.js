@@ -11,13 +11,24 @@ Polymer({
 
   properties: {
     /**
-       Whether the text area should automatically get focus when the page
-       loads.
+     * Whether the text area should automatically get focus when the page
+     * loads.
      */
     autofocus: {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
+    },
+
+    /**
+     * Whether the text area is disabled. When disabled, the text area loses
+     * focus and is not reachable by tabbing.
+     */
+    disabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+      observer: 'onDisabledChanged_'
     },
 
     /** Number of rows (lines) of the text area. */
@@ -45,10 +56,6 @@ Polymer({
     },
   },
 
-  hostAttributes: {
-    'aria-disabled': 'false',
-  },
-
   /**
    * 'change' event fires when <input> value changes and user presses 'Enter'.
    * This function helps propagate it to host since change events don't
@@ -60,13 +67,19 @@ Polymer({
     this.fire('change', {sourceEvent: e});
   },
 
-  // focused_ is used instead of :focus-within, so focus on elements within the
-  // suffix slot does not trigger a change in input styles.
+  /**@private */
   onInputFocusChange_: function() {
+    // focused_ is used instead of :focus-within, so focus on elements within
+    // the suffix slot does not trigger a change in input styles.
     if (this.shadowRoot.activeElement == this.$.input) {
       this.setAttribute('focused_', '');
     } else {
       this.removeAttribute('focused_');
     }
+  },
+
+  /**@private */
+  onDisabledChanged_: function() {
+    this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },
 });

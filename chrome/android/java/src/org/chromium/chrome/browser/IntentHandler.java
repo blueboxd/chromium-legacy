@@ -638,7 +638,7 @@ public class IntentHandler {
         // support async handling of voice search when native finishes initializing.
         if (results == null || results.size() == 0
                 || !BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isStartupSuccessfullyCompleted()) {
+                            .isFullBrowserStarted()) {
             return null;
         }
         String query = results.get(0);

@@ -208,7 +208,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
       UpdateAnimationSettingsCallback callback);
 
   // Updates all the overview items' mask and shadow.
-  void UpdateMaskAndShadow();
+  void UpdateRoundedCornersAndShadow();
 
   // Called when the overview mode starting animation completes.
   void OnStartingAnimationComplete(bool canceled);

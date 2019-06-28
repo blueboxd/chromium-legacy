@@ -26,6 +26,7 @@ class CONTENT_EXPORT ContentIndexContext
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
   void InitializeOnIOThread();
+  void Shutdown();
 
   ContentIndexDatabase& database();
 
@@ -35,6 +36,7 @@ class CONTENT_EXPORT ContentIndexContext
                                           BrowserThread::DeleteOnIOThread>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
+  void ShutdownOnIO();
   ~ContentIndexContext();
 
   ContentIndexDatabase content_index_database_;

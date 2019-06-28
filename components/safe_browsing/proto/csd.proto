@@ -251,9 +251,11 @@ message LoginReputationClientRequest {
     // The frame that the password reuse is detected.
     optional int32 frame_id = 2;
 
+    // TODO(crbug/914410): Remove once ReusedPasswordAccountType is implemented.
     // Whether the reused password is used for Chrome signin.
     optional bool is_chrome_signin_password = 3;
 
+    // TODO(crbug/914410): Remove once ReusedPasswordAccountType is implemented.
     // Sync account type. Only set if |is_chrome_signin_password| is true.
     enum SyncAccountType {
       // Not a sign-in user.
@@ -267,6 +269,7 @@ message LoginReputationClientRequest {
     }
     optional SyncAccountType sync_account_type = 4;
 
+    // TODO(crbug/914410): Remove once ReusedPasswordAccountType is implemented.
     // Type of password being reused.
     enum ReusedPasswordType {
       REUSED_PASSWORD_TYPE_UNKNOWN = 0;
@@ -286,6 +289,30 @@ message LoginReputationClientRequest {
     }
     optional ReusedPasswordType reused_password_type = 5
         [default = REUSED_PASSWORD_TYPE_UNKNOWN];
+
+    message ReusedPasswordAccountType {
+      // Whether the current reused password account is syncing.
+      optional bool is_account_syncing = 1;
+
+      enum AccountType {
+        UNKNOWN = 0;
+
+        // User signed in with a dasher account.
+        GSUITE = 1;
+
+        // User signed in with @gmail.com, or @googlemail.com account.
+        GMAIL = 2;
+
+        // Password used for Enterprise login on an Enterprise login page.
+        NON_GAIA_ENTERPRISE = 3;
+
+        // Password saved in Chrome's password manager.
+        SAVED_PASSWORD = 4;
+      }
+      optional AccountType account_type = 2;
+    }
+
+    optional ReusedPasswordAccountType reused_password_account_type = 6;
   }
 
   optional PasswordReuseEvent password_reuse_event = 4;

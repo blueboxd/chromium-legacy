@@ -52,7 +52,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
   // matching request.
   SignedExchangeDevToolsProxy(
       const GURL& outer_request_url,
-      const network::ResourceResponseHead& outer_response,
+      const network::ResourceResponseHead& outer_response_head,
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       bool report_raw_headers);

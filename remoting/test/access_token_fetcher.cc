@@ -39,7 +39,7 @@ AccessTokenFetcher::~AccessTokenFetcher() = default;
 
 void AccessTokenFetcher::GetAccessTokenFromAuthCode(
     const std::string& auth_code,
-    const AccessTokenCallback& callback) {
+    AccessTokenCallback callback) {
   DCHECK(!auth_code.empty());
   DCHECK(!callback.is_null());
   DCHECK(access_token_callback_.is_null());
@@ -48,7 +48,7 @@ void AccessTokenFetcher::GetAccessTokenFromAuthCode(
 
   access_token_.clear();
   refresh_token_.clear();
-  access_token_callback_ = callback;
+  access_token_callback_ = std::move(callback);
 
   // Create a new GaiaOAuthClient for each request to GAIA.
   CreateNewGaiaOAuthClientInstance();
@@ -59,7 +59,7 @@ void AccessTokenFetcher::GetAccessTokenFromAuthCode(
 
 void AccessTokenFetcher::GetAccessTokenFromRefreshToken(
     const std::string& refresh_token,
-    const AccessTokenCallback& callback) {
+    AccessTokenCallback callback) {
   DCHECK(!refresh_token.empty());
   DCHECK(!callback.is_null());
   DCHECK(access_token_callback_.is_null());
@@ -68,7 +68,7 @@ void AccessTokenFetcher::GetAccessTokenFromRefreshToken(
 
   access_token_.clear();
   refresh_token_ = refresh_token;
-  access_token_callback_ = callback;
+  access_token_callback_ = std::move(callback);
 
   // Create a new GaiaOAuthClient for each request to GAIA.
   CreateNewGaiaOAuthClientInstance();

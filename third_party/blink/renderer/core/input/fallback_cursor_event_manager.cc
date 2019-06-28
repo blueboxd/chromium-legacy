@@ -92,8 +92,26 @@ IntPoint RootFrameLocationToScrollable(const IntPoint& location_in_root_frame,
   IntPoint location_in_frame =
       view->ConvertFromRootFrame(location_in_root_frame);
 
-  if (&scrollable == view->GetScrollableArea())
+  if (&scrollable == view->GetScrollableArea()) {
+    LocalFrame& frame = view->GetFrame();
+    if (frame.IsMainFrame() && frame.GetPage()) {
+      // For the main frame, the scroller whose location we want to be relative
+      // to is the visual viewport so that the cursor works under pinch zoom
+      // scenarios.
+      VisualViewport& viewport = frame.GetPage()->GetVisualViewport();
+      IntPoint point_in_viewport =
+          viewport.RootFrameToViewport(location_in_frame);
+
+      // Scale since we're in visual viewport coordinates, and want the offset
+      // relative to the visual viewport, but all the comparisons related to
+      // scroller size are done in the root frame.
+      float scale = 1.f / viewport.Scale();
+      point_in_viewport.Scale(scale, scale);
+      return point_in_viewport;
+    }
+
     return location_in_frame;
+  }
 
   DCHECK(scrollable.IsPaintLayerScrollableArea());
 

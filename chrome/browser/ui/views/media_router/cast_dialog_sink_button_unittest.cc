@@ -30,7 +30,7 @@ TEST_F(CastDialogSinkButtonTest, SetTitleLabel) {
   UIMediaSink sink;
   sink.friendly_name = base::UTF8ToUTF16("sink name");
   CastDialogSinkButton button(nullptr, sink, 0);
-  EXPECT_EQ(sink.friendly_name, button.title()->text());
+  EXPECT_EQ(sink.friendly_name, button.title()->GetText());
 }
 
 TEST_F(CastDialogSinkButtonTest, SetStatusLabelForAvailableSink) {

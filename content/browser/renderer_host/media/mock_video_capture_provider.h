@@ -78,8 +78,8 @@ class MockLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   MOCK_METHOD2(OnUtilizationReport,
                void(int frame_feedback_id, double utilization));
 
-  void GetPhotoState(media::VideoCaptureDevice::GetPhotoStateCallback callback)
-      const override {
+  void GetPhotoState(
+      media::VideoCaptureDevice::GetPhotoStateCallback callback) override {
     DoGetPhotoState(&callback);
   }
 

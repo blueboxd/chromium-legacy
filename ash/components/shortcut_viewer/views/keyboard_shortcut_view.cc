@@ -363,8 +363,8 @@ void KeyboardShortcutView::InitViews() {
             [](const auto& lhs, const auto& rhs) {
               if (lhs->category() != rhs->category())
                 return lhs->category() < rhs->category();
-              return lhs->description_label_view()->text() <
-                     rhs->description_label_view()->text();
+              return lhs->description_label_view()->GetText() <
+                     rhs->description_label_view()->GetText();
             });
 
   // Init views of |categories_tabbed_pane_| and KeyboardShortcutItemListViews.
@@ -494,8 +494,8 @@ void KeyboardShortcutView::ShowSearchResults(
   std::vector<KeyboardShortcutItemView*> shortcut_items;
   for (const auto& item_view : shortcut_views_) {
     base::string16 description_text =
-        item_view->description_label_view()->text();
-    base::string16 shortcut_text = item_view->shortcut_label_view()->text();
+        item_view->description_label_view()->GetText();
+    base::string16 shortcut_text = item_view->shortcut_label_view()->GetText();
     size_t match_index = -1;
     size_t match_length = 0;
     // Only highlight |description_label_view_| in KeyboardShortcutItemView.

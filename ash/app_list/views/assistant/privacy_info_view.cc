@@ -164,7 +164,7 @@ void PrivacyInfoView::InitText() {
   link_style.override_color = gfx::kGoogleBlue700;
   text_view_->AddStyleRange(gfx::Range(offset, offset + link.length()),
                             link_style);
-  text_view_->set_auto_color_readability_enabled(false);
+  text_view_->SetAutoColorReadabilityEnabled(false);
   row_container_->AddChildView(text_view_);
 }
 

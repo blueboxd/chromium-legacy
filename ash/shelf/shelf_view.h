@@ -633,9 +633,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // the item can be dragged outside the app grid.
   std::unique_ptr<ash::DragImageView> drag_image_;
 
-  // The owner of a mask layer used to clip the background blur.
-  std::unique_ptr<ui::LayerOwner> drag_image_mask_;
-
   // The cursor offset to the middle of the dragged item.
   gfx::Vector2d drag_image_offset_;
 

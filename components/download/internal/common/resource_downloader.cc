@@ -94,8 +94,9 @@ ResourceDownloader::InterceptNavigationResponse(
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
-    const scoped_refptr<network::ResourceResponse>& response,
     net::CertStatus cert_status,
+    const scoped_refptr<network::ResourceResponse>& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
@@ -107,9 +108,9 @@ ResourceDownloader::InterceptNavigationResponse(
       site_url, tab_url, tab_referrer_url, true, task_runner,
       std::move(url_loader_factory_getter), url_security_policy,
       std::move(connector));
-  downloader->InterceptResponse(std::move(response), std::move(url_chain),
-                                cert_status,
-                                std::move(url_loader_client_endpoints));
+  downloader->InterceptResponse(
+      std::move(url_chain), cert_status, std::move(response_head),
+      std::move(response_body), std::move(url_loader_client_endpoints));
   return downloader;
 }
 
@@ -184,9 +185,10 @@ void ResourceDownloader::Start(
 }
 
 void ResourceDownloader::InterceptResponse(
-    const scoped_refptr<network::ResourceResponse>& response,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
+    const scoped_refptr<network::ResourceResponse>& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints) {
   // Set the URLLoader.
   url_loader_.Bind(std::move(endpoints->url_loader));
@@ -203,8 +205,12 @@ void ResourceDownloader::InterceptResponse(
       download::DownloadSource::NAVIGATION, std::move(url_chain));
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
-  response->head.cert_status = cert_status;
-  url_loader_client_->OnReceiveResponse(response->head);
+  response_head->head.cert_status = cert_status;
+  url_loader_client_->OnReceiveResponse(response_head->head);
+
+  // Available when NavigationImmediateResponse is enabled.
+  if (response_body)
+    url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 
   // Bind the new client.
   url_loader_client_binding_ =

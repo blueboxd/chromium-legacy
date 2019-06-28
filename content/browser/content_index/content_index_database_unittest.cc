@@ -162,6 +162,8 @@ class ContentIndexDatabaseTest : public ::testing::Test {
 
   ContentIndexDatabase* database() { return database_.get(); }
 
+  TestBrowserThreadBundle& thread_bundle() { return thread_bundle_; }
+
  private:
   int64_t RegisterServiceWorker() {
     GURL script_url(origin_.GetURL().spec() + "sw.js");
@@ -294,6 +296,31 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
     EXPECT_CALL(*provider(),
                 OnContentDeleted(service_worker_registration_id(), "id"));
     EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
+  }
+}
+
+TEST_F(ContentIndexDatabaseTest, ProviderInitializatied) {
+  // If nothing is registered the provider shouldn't be notified.
+  {
+    EXPECT_CALL(*provider(), OnContentAdded(_, _)).Times(0);
+    database()->InitializeProviderWithEntries();
+    thread_bundle().RunUntilIdle();
+  }
+
+  // Add two entries.
+  {
+    EXPECT_CALL(*provider(), OnContentAdded(_, _)).Times(2);
+    EXPECT_EQ(AddEntry(CreateDescription("id1")),
+              blink::mojom::ContentIndexError::NONE);
+    EXPECT_EQ(AddEntry(CreateDescription("id2")),
+              blink::mojom::ContentIndexError::NONE);
+  }
+
+  // Simulate initialization.
+  {
+    EXPECT_CALL(*provider(), OnContentAdded(_, _)).Times(2);
+    database()->InitializeProviderWithEntries();
+    thread_bundle().RunUntilIdle();
   }
 }
 

@@ -584,7 +584,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
       // <spec step="24.6.B">"module"
       //
-      // Fetch a module script graph given url, settings object, "script", and
+      // Fetch an external module script graph given url, settings object, and
       // options.</spec>
       Modulator* modulator = Modulator::From(
           ToScriptStateForMainWorld(context_document->GetFrame()));
@@ -624,7 +624,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
     // <spec step="25.2">Switch on the script's type:</spec>
     switch (GetScriptType()) {
-      // <spec step="25.2.A">"classic"</spec>
+        // <spec step="25.2.A">"classic"</spec>
       case mojom::ScriptType::kClassic: {
         // <spec step="25.2.A.1">Let script be the result of creating a classic
         // script using source text, settings object, base URL, and
@@ -651,28 +651,38 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         break;
       }
 
-      // <spec step="25.2.B">"module"</spec>
+        // <spec step="25.2.B">"module"</spec>
       case mojom::ScriptType::kModule: {
-        // <spec step="25.2.B.1">Let script be the result of creating a module
-        // script using source text, settings object, base URL, and
-        // options.</spec>
+        // <spec step="25.2.B.1">Fetch an inline module script graph, given
+        // source text, base URL, settings object, and options. When this
+        // asynchronously completes, set the script's script to the result. At
+        // that time, the script is ready.</spec>
+        //
+        // <specdef label="fetch-an-inline-module-script-graph"
+        // href="https://html.spec.whatwg.org/C/#fetch-an-inline-module-script-graph">
         const KURL& source_url = element_document.Url();
         Modulator* modulator = Modulator::From(
             ToScriptStateForMainWorld(context_document->GetFrame()));
+
+        // <spec label="fetch-an-inline-module-script-graph" step="1">Let script
+        // be the result of creating a JavaScript module script using source
+        // text, settings object, base URL, and options.</spec>
         ModuleScript* module_script = JSModuleScript::Create(
             ParkableString(element_->TextFromChildren().Impl()), nullptr,
             ScriptSourceLocationType::kInline, modulator, source_url, base_url,
             options, position);
 
-        // <spec step="25.2.B.2">If this returns null, set the script's script
-        // to null and return; the script is ready.</spec>
+        // <spec label="fetch-an-inline-module-script-graph" step="2">If script
+        // is null, asynchronously complete this algorithm with null, and abort
+        // these steps.</spec>
         if (!module_script)
           return false;
 
-        // <spec step="25.2.B.3">Fetch the descendants of and instantiate
-        // script, given settings object and the destination "script". When this
-        // asynchronously completes, set the script's script to the result. At
-        // that time, the script is ready.</spec>
+        // <spec label="fetch-an-inline-module-script-graph" step="4">Fetch the
+        // descendants of and instantiate script, given settings object, the
+        // destination "script", and visited set. When this asynchronously
+        // completes with final result, asynchronously complete this algorithm
+        // with final result.</spec>
         auto* module_tree_client =
             MakeGarbageCollected<ModulePendingScriptTreeClient>();
         modulator->FetchDescendantsForInlineScript(
@@ -889,7 +899,7 @@ void ScriptLoader::FetchModuleScriptTree(
     const ScriptFetchOptions& options) {
   // <spec step="24.6.B">"module"
   //
-  // Fetch a module script graph given url, settings object, "script", and
+  // Fetch an external module script graph given url, settings object, and
   // options.</spec>
   auto* module_tree_client =
       MakeGarbageCollected<ModulePendingScriptTreeClient>();

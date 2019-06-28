@@ -43,6 +43,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnAddPowerObserver();
   void OnWatchdogBackgrounded();
   void OnWatchdogForegrounded();
+  void RestartWatchdogTimeoutTask();
   void Arm();
   void Disarm();
   void InProgress();

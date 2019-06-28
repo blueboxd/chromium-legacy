@@ -345,8 +345,13 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Fragment activeFragment = getMainFragment();
-        if (activeFragment != null && activeFragment.onOptionsItemSelected(item)) return true;
+        Fragment mainFragment = getMainFragment();
+        if (mainFragment != null && mainFragment.onOptionsItemSelected(item)) return true;
+        android.support.v4.app.Fragment mainFragmentCompat = getMainFragmentCompat();
+        if (mainFragmentCompat != null && mainFragmentCompat.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         if (item.getItemId() == android.R.id.home) {
             finish();
             return true;

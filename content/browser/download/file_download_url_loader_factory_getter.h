@@ -20,8 +20,7 @@ class FileDownloadURLLoaderFactoryGetter
   FileDownloadURLLoaderFactoryGetter(
       const GURL& url,
       const base::FilePath& profile_path,
-      scoped_refptr<const SharedCorsOriginAccessList>
-          shared_cors_origin_access_list);
+      scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list);
 
   // download::DownloadURLLoaderFactoryGetter implementation.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
@@ -32,7 +31,7 @@ class FileDownloadURLLoaderFactoryGetter
  private:
   GURL url_;
   base::FilePath profile_path_;
-  const scoped_refptr<const SharedCorsOriginAccessList>
+  const scoped_refptr<SharedCorsOriginAccessList>
       shared_cors_origin_access_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FileDownloadURLLoaderFactoryGetter);

@@ -171,12 +171,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
     return overview_bounds_;
   }
 
-  gfx::Rect GetMaskBoundsForTesting() const;
-
  private:
   friend class OverviewSessionTest;
   class LayerCachingAndFilteringObserver;
-  class WindowMask;
   FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowWithMaskTest,
                            WindowBoundsChangeTest);
 
@@ -213,10 +210,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // the layer has not been destroyed.
   std::vector<std::unique_ptr<LayerCachingAndFilteringObserver>>
       cached_and_filtered_layer_observers_;
-
-  // A mask to be applied on |window_|. This will give |window_| rounded edges
-  // while in overview.
-  std::unique_ptr<WindowMask> mask_;
 
   // For the duration of this object |window_| and its transient childrens'
   // event targeting policy will be sent to NONE. Store the originals so we can

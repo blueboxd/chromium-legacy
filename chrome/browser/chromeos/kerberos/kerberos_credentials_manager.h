@@ -177,6 +177,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // Callback for 'KerberosFilesChanged' D-Bus signal sent by kerberosd.
   void OnKerberosFilesChanged(const std::string& principal_name);
 
+  // Callback for 'KerberosTicketExpiring' D-Bus signal sent by kerberosd.
+  void OnKerberosTicketExpiring(const std::string& principal_name);
+
   // Calls OnAccountsChanged() on all observers.
   void NotifyAccountsChanged();
 
@@ -191,6 +194,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // the active principal should ever break for whatever reason.
   void ValidateActivePrincipal(const kerberos::ListAccountsResponse& response);
 
+  // Notification shown when the Kerberos ticket is about to expire.
+  void ShowTicketExpiryNotification();
+
   // Pref change handlers.
   void UpdateEnabledFromPref();
   void UpdateRememberPasswordEnabledFromPref();
@@ -202,6 +208,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // the KerberosAccounts policy. The Kerberos daemon expands that to the login
   // password.
   void NotifyRequiresLoginPassword(bool requires_login_password);
+
+  // Called when the user clicks on the ticket expiry notification.
+  void OnTicketExpiryNotificationClick(const std::string& principal_name);
 
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;

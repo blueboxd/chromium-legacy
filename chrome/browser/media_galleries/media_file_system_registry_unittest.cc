@@ -205,7 +205,7 @@ class MockProfileSharedRenderProcessHostFactory
 
   content::RenderProcessHost* CreateRenderProcessHost(
       content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) const override;
+      content::SiteInstance* site_instance) override;
 
  private:
   class SharedMockRenderProcessHost : public content::MockRenderProcessHost {
@@ -434,7 +434,7 @@ MockProfileSharedRenderProcessHostFactory::ReleaseRPH(
 content::RenderProcessHost*
 MockProfileSharedRenderProcessHostFactory::CreateRenderProcessHost(
     content::BrowserContext* browser_context,
-    content::SiteInstance* site_instance) const {
+    content::SiteInstance* site_instance) {
   auto existing = rph_map_.find(browser_context);
   if (existing != rph_map_.end())
     return existing->second.get();

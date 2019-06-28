@@ -2173,7 +2173,9 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
 
   bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
 
-  if (!processed)
+  // The view may be destroyed by the time we get this ack, as is the case with
+  // portal activations.
+  if (!processed && GetView())
     processed = GetView()->OnUnconsumedKeyboardEventAck(event);
 
   // We only send unprocessed key event upwards if we are not hidden,

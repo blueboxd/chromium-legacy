@@ -20,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_browsertest.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
@@ -1098,8 +1099,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, NoFocusEventOnRootChange) {
   EXPECT_EQ(CHILDID_SELF, V_I4(focus.ptr()));
 }
 
+// Flaky on win crbug.com/979741
+#if defined(OS_WIN)
+#define MAYBE_FocusEventOnFocusedIframeAddedAndRemoved \
+  DISABLED_FocusEventOnFocusedIframeAddedAndRemoved
+#else
+#define MAYBE_FocusEventOnFocusedIframeAddedAndRemoved \
+  FocusEventOnFocusedIframeAddedAndRemoved
+#endif
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       FocusEventOnFocusedIframeAddedAndRemoved) {
+                       MAYBE_FocusEventOnFocusedIframeAddedAndRemoved) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <button autofocus>Outer button</button>
       )HTML");

@@ -370,6 +370,10 @@ def AddGTestOptions(parser):
       '-w', '--wait-for-java-debugger', action='store_true',
       help='Wait for java debugger to attach before running any application '
            'code. Also disables test timeouts and sets retries=0.')
+  parser.add_argument(
+      '--coverage-dir',
+      type=os.path.realpath,
+      help='Directory in which to place all generated coverage files.')
 
 
 def AddInstrumentationTestOptions(parser):

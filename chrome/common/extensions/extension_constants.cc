@@ -48,6 +48,8 @@ const char kCloudReportingExtensionId[] = "oempjldejiginopiohodkdoklcjklbaa";
 #if defined(OS_CHROMEOS)
 const char kAssessmentAssistantExtensionId[] =
     "gndmhdcefbhlchkhipcnnbkcmicncehk";
+const char kAutoclickExtensionId[] = "egfdjlfmgnehecnclamagfafdccgfndp";
+const char kAutoclickExtensionPath[] = "chromeos/autoclick";
 const char kChromeVoxExtensionPath[] = "chromeos/chromevox";
 const char kSelectToSpeakExtensionId[] = "klbcgckkldhdhonijdbnhhaiedfkllef";
 const char kSelectToSpeakExtensionPath[] = "chromeos/select_to_speak";

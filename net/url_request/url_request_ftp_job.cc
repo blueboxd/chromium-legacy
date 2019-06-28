@@ -195,9 +195,8 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
              ftp_transaction_->GetResponseInfo()->needs_auth) {
     HandleAuthNeededResponse();
   } else {
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
-
     LogFtpStartResult(FTPStartResult::kFailed);
+    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
 }
 

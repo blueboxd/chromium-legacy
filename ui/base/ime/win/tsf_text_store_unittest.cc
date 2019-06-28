@@ -2793,5 +2793,104 @@ TEST_F(TSFTextStoreTest, RegressionTest2) {
   EXPECT_EQ(S_OK, result);
 }
 
+// Due to crbug.com/978678, we should not call TextInputClient::InsertText if
+// provided text is empty.
+class RegressionTest3Callback : public TSFTextStoreTestCallback {
+ public:
+  explicit RegressionTest3Callback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {}
+
+  HRESULT LockGranted1(DWORD flags) {
+    GetTextTest(0, -1, L"", 0);
+    SetTextTest(0, 0, L"a", S_OK);
+    GetTextTest(0, -1, L"a", 1);
+    SetSelectionTest(0, 1, S_OK);
+
+    text_spans()->clear();
+    ImeTextSpan text_span;
+    text_span.start_offset = 0;
+    text_span.end_offset = 1;
+    text_span.underline_color = SK_ColorBLACK;
+    text_span.thickness = ImeTextSpan::Thickness::kThin;
+    text_span.background_color = SK_ColorTRANSPARENT;
+    text_spans()->push_back(text_span);
+    *edit_flag() = true;
+    *composition_start() = 0;
+    composition_range()->set_start(0);
+    composition_range()->set_end(1);
+    text_store_->OnKeyTraceDown(65u, 1966081u);
+    *has_composition_range() = true;
+
+    return S_OK;
+  }
+
+  void SetCompositionText1(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"a", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(1u, composition.selection.end());
+    ASSERT_EQ(1u, composition.ime_text_spans.size());
+    EXPECT_EQ(SK_ColorBLACK, composition.ime_text_spans[0].underline_color);
+    EXPECT_EQ(SK_ColorTRANSPARENT,
+              composition.ime_text_spans[0].background_color);
+    EXPECT_EQ(0u, composition.ime_text_spans[0].start_offset);
+    EXPECT_EQ(1u, composition.ime_text_spans[0].end_offset);
+    EXPECT_EQ(ImeTextSpan::Thickness::kThin,
+              composition.ime_text_spans[0].thickness);
+    SetHasCompositionText(true);
+  }
+
+  HRESULT LockGranted2(DWORD flags) {
+    GetTextTest(0, -1, L"a", 1);
+    SetTextTest(0, 1, L"", S_OK);
+    GetTextTest(0, -1, L"", 0);
+    SetSelectionTest(0, 0, S_OK);
+
+    text_spans()->clear();
+    *edit_flag() = true;
+    *composition_start() = 0;
+    composition_range()->set_start(0);
+    composition_range()->set_end(0);
+
+    *has_composition_range() = false;
+    return S_OK;
+  }
+
+  void SetCompositionText2(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(0u, composition.selection.end());
+    ASSERT_EQ(0u, composition.ime_text_spans.size());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RegressionTest3Callback);
+};
+
+TEST_F(TSFTextStoreTest, RegressionTest3) {
+  RegressionTest3Callback callback(text_store_.get());
+  EXPECT_CALL(text_input_client_, SetCompositionText(_))
+      .WillOnce(
+          Invoke(&callback, &RegressionTest3Callback::SetCompositionText1))
+      .WillOnce(
+          Invoke(&callback, &RegressionTest3Callback::SetCompositionText2));
+
+  EXPECT_CALL(text_input_client_, InsertText(_)).Times(0);
+
+  EXPECT_CALL(*sink_, OnLockGranted(_))
+      .WillOnce(Invoke(&callback, &RegressionTest3Callback::LockGranted1))
+      .WillOnce(Invoke(&callback, &RegressionTest3Callback::LockGranted2));
+
+  ON_CALL(text_input_client_, HasCompositionText())
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::HasCompositionText));
+
+  HRESULT result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+}
+
 }  // namespace
 }  // namespace ui

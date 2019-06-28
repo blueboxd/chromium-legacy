@@ -90,7 +90,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreenNoRetries(
 void FullscreenControllerInteractiveTest::ToggleBrowserFullscreen(
     bool enter_fullscreen) {
   ASSERT_EQ(browser()->window()->IsFullscreen(), !enter_fullscreen);
-  FullscreenNotificationObserver fullscreen_observer;
+  FullscreenNotificationObserver fullscreen_observer(browser());
 
   chrome::ToggleFullscreenMode(browser());
 
@@ -103,7 +103,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
     bool enter_fullscreen, bool retry_until_success) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   do {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     if (enter_fullscreen)
       browser()->EnterFullscreenModeForTab(tab, GURL(),
                                            blink::WebFullscreenOptions());
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     AddTabAtIndex(1, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_FALSE(browser()->window()->IsFullscreen());
     browser()->EnterFullscreenModeForTab(tab, GURL(),
                                          blink::WebFullscreenOptions());
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(
   }
 
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(
   {
     // Test that tab fullscreen mode doesn't make presentation mode the default
     // on Lion.
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   // Request to lock the mouse and enter fullscreen.
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_B, false, true, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   // Escape, no prompts should remain.
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     SendEscapeToFullscreenController();
     fullscreen_observer.Wait();
   }
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   // Request to lock the mouse and enter fullscreen.
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_B, false, true, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   SetPrivilegedFullscreen(true);
 
   // Request to lock the mouse and enter fullscreen.
-  FullscreenNotificationObserver fullscreen_observer;
+  FullscreenNotificationObserver fullscreen_observer(browser());
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_B, false, true, false, false,
       chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   // Request to lock the mouse and enter fullscreen.
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_B, false, true, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   // Reload. Mouse should be unlocked and fullscreen exited.
   {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     Reload();
     fullscreen_observer.Wait();
     ASSERT_FALSE(IsMouseLocked());

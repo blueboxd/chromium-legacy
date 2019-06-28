@@ -405,24 +405,25 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   return static_cast<NSUInteger>(index);
 }
 
-- (Tab*)insertTabWithURL:(const GURL&)URL
-                referrer:(const web::Referrer&)referrer
-              transition:(ui::PageTransition)transition
-                  opener:(Tab*)parentTab
-             openedByDOM:(BOOL)openedByDOM
-                 atIndex:(NSUInteger)index
-            inBackground:(BOOL)inBackground {
+- (web::WebState*)insertWebStateWithURL:(const GURL&)URL
+                               referrer:(const web::Referrer&)referrer
+                             transition:(ui::PageTransition)transition
+                                 opener:(web::WebState*)parentWebState
+                            openedByDOM:(BOOL)openedByDOM
+                                atIndex:(NSUInteger)index
+                           inBackground:(BOOL)inBackground {
   web::NavigationManager::WebLoadParams params(URL);
   params.referrer = referrer;
   params.transition_type = transition;
-  return [self insertTabWithLoadParams:params
-                                opener:parentTab
-                           openedByDOM:openedByDOM
-                               atIndex:index
-                          inBackground:inBackground];
+  return [self insertWebStateWithLoadParams:params
+                                     opener:parentWebState
+                                openedByDOM:openedByDOM
+                                    atIndex:index
+                               inBackground:inBackground];
 }
 
-- (Tab*)insertOpenByDOMTabWithOpener:(Tab*)opener {
+- (web::WebState*)insertOpenByDOMWebStateWithOpener:
+    (web::WebState*)openerWebState {
   DCHECK(_browserState);
   web::WebState::CreateParams createParams(_browserState);
   createParams.created_with_opener = YES;
@@ -432,18 +433,17 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
       WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE;
   int insertedIndex = _webStateList->InsertWebState(
       _webStateList->count(), std::move(webState), insertionFlags,
-      WebStateOpener(opener.webState));
+      WebStateOpener(openerWebState));
 
-  return LegacyTabHelper::GetTabForWebState(
-      _webStateList->GetWebStateAt(insertedIndex));
+  return _webStateList->GetWebStateAt(insertedIndex);
 }
 
-- (Tab*)insertTabWithLoadParams:
-            (const web::NavigationManager::WebLoadParams&)loadParams
-                         opener:(Tab*)parentTab
-                    openedByDOM:(BOOL)openedByDOM
-                        atIndex:(NSUInteger)index
-                   inBackground:(BOOL)inBackground {
+- (web::WebState*)insertWebStateWithLoadParams:
+                      (const web::NavigationManager::WebLoadParams&)loadParams
+                                        opener:(web::WebState*)parentWebState
+                                   openedByDOM:(BOOL)openedByDOM
+                                       atIndex:(NSUInteger)index
+                                  inBackground:(BOOL)inBackground {
   DCHECK(_browserState);
   DCHECK(index == TabModelConstants::kTabPositionAutomatically ||
          index <= self.count);
@@ -472,10 +472,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
   insertionIndex = _webStateList->InsertWebState(
       insertionIndex, std::move(webState), insertionFlags,
-      WebStateOpener(parentTab.webState));
+      WebStateOpener(parentWebState));
 
-  return LegacyTabHelper::GetTabForWebState(
-      _webStateList->GetWebStateAt(insertionIndex));
+  return _webStateList->GetWebStateAt(insertionIndex);
 }
 
 - (void)moveTab:(Tab*)tab toIndex:(NSUInteger)toIndex {

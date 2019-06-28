@@ -19,7 +19,7 @@ Bug(none) virtual/scroll_customization/fast/events/touch/ [ Skip ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 
-# Fail before CompositeAfter but pass with it.
+# Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
 crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
@@ -65,7 +65,7 @@ Bug(none) compositing/nested-multicol-mask-composited-filter-crash.html [ Crash 
 Bug(none) compositing/overflow/avoid-ancestor-clip-for-scroll-children.html [ Failure ]
 Bug(none) compositing/overflow/clip-descendents.html [ Failure ]
 Bug(none) compositing/overflow/opt-in-if-composited.html [ Failure ]
-Bug(none) compositing/overflow/overflow-scroll-background-fractional-offset.html [ Failure ]
+crbug.com/979367 compositing/overflow/overflow-scroll-background-fractional-offset.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-content-fractional-offset.html [ Failure ]
@@ -80,11 +80,7 @@ crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ F
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to.html [ Failure ]
 Bug(none) compositing/reflections/deeply-nested-reflections.html [ Failure ]
 Bug(none) compositing/reflections/nested-reflection-mask-change.html [ Failure ]
-Bug(none) compositing/rtl/rtl-absolute-overflow-scrolled.html [ Failure ]
-Bug(none) compositing/rtl/rtl-fixed-overflow-scrolled.html [ Failure ]
-Bug(none) compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ]
 Bug(none) compositing/rtl/rtl-iframe-absolute.html [ Failure ]
-Bug(none) compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ]
 Bug(none) compositing/rtl/rtl-iframe-relative.html [ Failure ]
 Bug(none) compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
 Bug(none) compositing/squashing/add-remove-squashed-layers.html [ Failure ]
@@ -114,7 +110,6 @@ Bug(none) external/wpt/portals/portals-rendering.html [ Failure ]
 Bug(none) fast/css/outline-offset-large.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-device-emulation-change.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
-Bug(none) ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
 Bug(none) images/color-profile-svg-foreign-object.html [ Failure ]
 Bug(none) fast/multicol/insane-column-count-and-padding-nested-crash.html [ Crash ]
 Bug(none) fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Failure ]
@@ -461,6 +456,8 @@ crbug.com/931491 compositing/squashing/squash-paint-invalidation-fixed-position.
 crbug.com/918155 scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
 
+crbug.com/979389 ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
+
 # Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.
 Bug(none) http/tests/devtools/layers/layer-canvas-log.js [ Crash ]
 Bug(none) http/tests/devtools/layers/layer-replay-scale.js [ Crash ]
@@ -469,8 +466,12 @@ Bug(none) http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
 Bug(none) http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
-# Other:
-crbug.com/935728 fast/frames/transparent-scrollbar.html [ Failure ]
+# Scrollbar snapping issues
+crbug.com/979380 compositing/rtl/rtl-absolute-overflow-scrolled.html [ Failure ]
+crbug.com/979380 compositing/rtl/rtl-fixed-overflow-scrolled.html [ Failure ]
+crbug.com/979380 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ]
+crbug.com/979380 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ]
+crbug.com/979380 fast/frames/transparent-scrollbar.html [ Failure ]
 
 # Wrong contentsOpaque for will-change: opacity layers
 Bug(none) compositing/will-change/composited-layers.html [ Failure ]

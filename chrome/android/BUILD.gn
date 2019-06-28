@@ -561,6 +561,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/ntp_snippets/ntp_snippets_metrics.h",
     "//chrome/browser/profiles/profile_metrics.h",
     "//chrome/browser/translate/android/translate_utils.h",
+    "//chrome/browser/ui/android/bluetooth_scanning_prompt_android.h",
     "//chrome/browser/ui/android/infobars/infobar_android.h",
   ]
 }
@@ -2443,6 +2444,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/ApplicationLifetime.java",
     "java/src/org/chromium/chrome/browser/BackgroundSyncLauncher.java",
     "java/src/org/chromium/chrome/browser/BluetoothChooserDialog.java",
+    "java/src/org/chromium/chrome/browser/BluetoothScanningPermissionDialog.java",
     "java/src/org/chromium/chrome/browser/ChromeBackupAgent.java",
     "java/src/org/chromium/chrome/browser/ChromeBackupWatcher.java",
     "java/src/org/chromium/chrome/browser/ChromeFeatureList.java",

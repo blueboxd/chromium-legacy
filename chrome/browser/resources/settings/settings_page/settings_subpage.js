@@ -38,6 +38,15 @@ Polymer({
     },
 
     /**
+     * Title (i.e., tooltip) to be displayed on the spinner. If |showSpinner| is
+     * false, this field has no effect.
+     */
+    spinnerTitle: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * Indicates which element triggers this subpage. Used by the searching
      * algorithm to show search bubbles. It is |null| for subpages that are
      * skipped during searching.

@@ -30,6 +30,7 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
     extension_misc::kPdfExtensionId,
 #if defined(OS_CHROMEOS)
     extension_misc::kAssessmentAssistantExtensionId,
+    extension_misc::kAutoclickExtensionId,
     extension_misc::kChromeVoxExtensionId,
     extension_misc::kEspeakSpeechSynthesisExtensionId,
     extension_misc::kGoogleSpeechSynthesisExtensionId,
@@ -114,6 +115,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
 bool IsComponentExtensionWhitelistedForSignInProfile(
     const std::string& extension_id) {
   const char* const kAllowed[] = {
+      extension_misc::kAutoclickExtensionId,
       extension_misc::kChromeVoxExtensionId,
       extension_misc::kEspeakSpeechSynthesisExtensionId,
       extension_misc::kGoogleSpeechSynthesisExtensionId,

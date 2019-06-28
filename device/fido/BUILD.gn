@@ -97,6 +97,7 @@ component("fido") {
     "fido_task.h",
     "fido_transport_protocol.cc",
     "fido_transport_protocol.h",
+    "fido_types.h",
     "get_assertion_request_handler.cc",
     "get_assertion_request_handler.h",
     "get_assertion_task.cc",

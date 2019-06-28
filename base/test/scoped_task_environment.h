@@ -223,8 +223,10 @@ class ScopedTaskEnvironment {
   // process. See time.h.
   const Clock* GetMockClock() const;
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.
-  // Returns the current virtual tick time (initially starting at 0).
+  // Only valid for instances with a MOCK_TIME MainThreadType. Returns the
+  // current virtual tick time (based on a realistic Now(), sampled when this
+  // ScopedTaskEnvironment was created, and manually advanced from that point
+  // on).
   base::TimeTicks NowTicks() const;
 
   // Only valid for instances with a MOCK_TIME MainThreadType. Returns the

@@ -41,7 +41,7 @@ void SharedCorsOriginAccessListImpl::SetForOrigin(
 }
 
 const network::cors::OriginAccessList&
-SharedCorsOriginAccessListImpl::GetOriginAccessList() const {
+SharedCorsOriginAccessListImpl::GetOriginAccessList() {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   else

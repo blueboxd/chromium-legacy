@@ -62,8 +62,6 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    // Advance time a little bit so TimeTicks::Now().is_null() becomes false.
-    thread_bundle_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
     scoped_feature_list_.InitAndEnableFeature(features::kNotificationTriggers);
     platform_notification_context_ =
         base::MakeRefCounted<PlatformNotificationContextImpl>(

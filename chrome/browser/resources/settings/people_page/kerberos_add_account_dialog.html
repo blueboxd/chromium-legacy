@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -29,8 +30,19 @@
         height: 48px;
       }
 
-      #desc {
+      #advancedConfigDesc,
+      #rememberPasswordContainer {
+        align-items: center;
+        display: flex;
         margin-bottom: 32px;
+      }
+
+      #advancedConfigDescLabel {
+        margin-inline-start: 1em;
+      }
+
+      #rememberPassword {
+        margin-inline-end: 1em;
       }
     </style>
 
@@ -48,15 +60,26 @@
               value="{{username_}}" invalid="[[showError_(usernameErrorText_)]]"
               error-message="[[usernameErrorText_]]">
           </cr-input>
+
           <cr-input id="password" type="password"
               label="$i18n{kerberosPassword}" value="{{password_}}"
               invalid="[[showError_(passwordErrorText_)]]"
               error-message="[[passwordErrorText_]]"
               on-input="onPasswordInput_">
           </cr-input>
-          <cr-checkbox id="rememberPassword" checked="{{rememberPassword_}}">
-            $i18n{addKerberosAccountRememberPassword}
-          </cr-checkbox>
+
+          <div id="rememberPasswordContainer">
+            <cr-checkbox id="rememberPassword" checked="{{rememberPassword_}}"
+                disabled="[[!rememberPasswordEnabled_]]">
+              $i18n{addKerberosAccountRememberPassword}
+            </cr-checkbox>
+            <template is="dom-if" if="[[!rememberPasswordEnabled_]]">
+              <cr-policy-indicator id="rememberPasswordPolicyIndicator"
+                  indicator-type="userPolicy">
+              </cr-policy-indicator>
+            </template>
+          </div>
+
           <a is="action-link" id="advancedConfigButton"
               on-click="onAdvancedConfigClick_">
             $i18n{kerberosAdvancedConfigLabel}
@@ -75,12 +98,23 @@
     </cr-dialog>
 
     <template is="dom-if" if="[[showAdvancedConfig_]]" restamp>
-      <cr-dialog id="advancedConfigDialog" on-close=onAdvancedConfigClose_>
+      <cr-dialog id="advancedConfigDialog" on-close="onAdvancedConfigClose_">
         <div slot="title">$i18n{kerberosAdvancedConfigTitle}</div>
         <div slot="body">
-          <div id="desc">$i18n{kerberosAdvancedConfigDesc}</div>
+          <div id="advancedConfigDesc">
+            <template is="dom-if" if="[[isManaged_]]">
+              <cr-policy-indicator id="advancedConfigPolicyIndicator"
+                  indicator-type="userPolicy">
+              </cr-policy-indicator>
+            </template>
+            <div id="advancedConfigDescLabel">
+              $i18n{kerberosAdvancedConfigDesc}
+            </div>
+          </div>
+
           <settings-textarea id="config" label="$i18n{kerberosConfig}"
-              value="{{editableConfig_}}" rows=12 spellcheck="false">
+              value="{{editableConfig_}}" rows=12 spellcheck="false"
+              disabled="[[isManaged_]]">
           </settings-textarea>
         </div>
         <div slot="button-container">

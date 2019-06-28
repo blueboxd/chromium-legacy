@@ -89,6 +89,10 @@
     "label": "//third_party/webrtc/test/fuzzers:agc_fuzzer",
     "type": "fuzzer",
   },
+  "android_browsertests": {
+    "label": "//chrome/test:android_browsertests",
+    "type": "windowed_test_launcher",
+  },
   "android_crazy_linker_zip_fuzzer": {
     "label": "//third_party/android_crazy_linker:android_crazy_linker_zip_fuzzer",
     "type": "fuzzer",

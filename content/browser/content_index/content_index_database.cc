@@ -69,7 +69,7 @@ blink::mojom::ContentDescriptionPtr DescriptionFromProto(
 ContentIndexDatabase::ContentIndexDatabase(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : browser_context_(browser_context),
+    : provider_(browser_context->GetContentIndexProvider()),
       service_worker_context_(std::move(service_worker_context)),
       weak_ptr_factory_(this) {}
 
@@ -110,8 +110,8 @@ void ContentIndexDatabase::DidAddEntry(
 
   std::move(callback).Run(blink::mojom::ContentIndexError::NONE);
 
-  if (auto* provider = browser_context_->GetContentIndexProvider())
-    provider->OnContentAdded(std::move(entry), weak_ptr_factory_.GetWeakPtr());
+  if (provider_)
+    provider_->OnContentAdded(std::move(entry), weak_ptr_factory_.GetWeakPtr());
 }
 
 void ContentIndexDatabase::DeleteEntry(
@@ -136,8 +136,8 @@ void ContentIndexDatabase::DidDeleteEntry(
   }
 
   std::move(callback).Run(blink::mojom::ContentIndexError::NONE);
-  if (auto* provider = browser_context_->GetContentIndexProvider())
-    provider->OnContentDeleted(service_worker_registration_id, entry_id);
+  if (provider_)
+    provider_->OnContentDeleted(service_worker_registration_id, entry_id);
 }
 
 void ContentIndexDatabase::GetDescriptions(
@@ -189,12 +189,61 @@ void ContentIndexDatabase::DidGetDescriptions(
                           std::move(descriptions));
 }
 
+void ContentIndexDatabase::InitializeProviderWithEntries() {
+  if (!provider_)
+    return;
+
+  service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
+      kEntryPrefix, base::BindOnce(&ContentIndexDatabase::DidGetAllEntries,
+                                   weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ContentIndexDatabase::DidGetAllEntries(
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
+    blink::ServiceWorkerStatusCode status) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    // TODO(crbug.com/973844): Handle or report this error.
+    return;
+  }
+
+  if (!provider_ || user_data.empty())
+    return;
+
+  std::vector<ContentIndexEntry> entries;
+  entries.reserve(user_data.size());
+
+  for (const auto& ud : user_data) {
+    proto::ContentEntry entry_proto;
+    if (!entry_proto.ParseFromString(ud.second)) {
+      // TODO(crbug.com/973844): Handle or report this error.
+      return;
+    }
+
+    int64_t service_worker_registration_id = ud.first;
+    auto description = DescriptionFromProto(entry_proto.description());
+    base::Time registration_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(entry_proto.timestamp()));
+
+    entries.emplace_back(service_worker_registration_id, std::move(description),
+                         registration_time);
+  }
+
+  for (auto& entry : entries)
+    provider_->OnContentAdded(std::move(entry), weak_ptr_factory_.GetWeakPtr());
+}
+
 void ContentIndexDatabase::GetIcon(
     int64_t service_worker_registration_id,
     const std::string& description_id,
     base::OnceCallback<void(SkBitmap)> icon_callback) {
   // TODO(crbug.com/973844): Implement this after icon is fetched & persisted.
   std::move(icon_callback).Run(SkBitmap());
+}
+
+void ContentIndexDatabase::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  provider_ = nullptr;
 }
 
 }  // namespace content

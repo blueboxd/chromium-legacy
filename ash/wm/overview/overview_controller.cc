@@ -440,10 +440,11 @@ void OverviewController::RemoveObserver(OverviewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void OverviewController::DelayedUpdateMaskAndShadow() {
+void OverviewController::DelayedUpdateRoundedCornersAndShadow() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&OverviewController::UpdateMaskAndShadow,
-                                weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&OverviewController::UpdateRoundedCornersAndShadow,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OverviewController::AddExitAnimationObserver(
@@ -605,7 +606,7 @@ bool OverviewController::ToggleOverview(
 
     overview_session_->set_is_shutting_down(true);
     // Do not show mask and show during overview shutdown.
-    overview_session_->UpdateMaskAndShadow();
+    overview_session_->UpdateRoundedCornersAndShadow();
 
     for (auto& observer : observers_)
       observer.OnOverviewModeEnding(overview_session_.get());
@@ -725,9 +726,9 @@ void OverviewController::ResetPauser() {
   occlusion_tracker_pauser_.reset();
 }
 
-void OverviewController::UpdateMaskAndShadow() {
+void OverviewController::UpdateRoundedCornersAndShadow() {
   if (overview_session_)
-    overview_session_->UpdateMaskAndShadow();
+    overview_session_->UpdateRoundedCornersAndShadow();
 }
 
 }  // namespace ash

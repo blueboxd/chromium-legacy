@@ -179,10 +179,7 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
       root_block = multi_column_flow_thread;
     for (LayoutObject* child = root_block->FirstChild(); child;
          child = child->NextSibling()) {
-      Element* child_element =
-          (child->GetNode() && child->GetNode()->IsElementNode())
-              ? ToElement(child->GetNode())
-              : nullptr;
+      auto* child_element = DynamicTo<Element>(child->GetNode());
       if (child_element && child_element->IsInTopLayer() &&
           child->StyleRef().IsStacked()) {
         pos_z_order_list_.push_back(ToLayoutBoxModelObject(child)->Layer());

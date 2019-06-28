@@ -235,14 +235,12 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_SaveAs_Cancel) {
   RunTestViaHTTP("FileChooser_SaveAsCancel");
 }
 
-#if defined(OS_WIN)
-// On Windows, tests that a file downloaded via PPAPI FileChooser API has the
-// mark-of-the-web. The PPAPI FileChooser implementation invokes QuarantineFile
-// in order to mark the file as being downloaded from the web as soon as the
-// file is created. This MotW prevents the file being opened without due
-// security warnings if the file is executable.
-//
-// TODO(crbug.com/927074): Enable this test on macOS.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// On Windows and macOS, tests that a file downloaded via PPAPI FileChooser API
+// has the mark-of-the-web. The PPAPI FileChooser implementation invokes
+// QuarantineFile in order to mark the file as being downloaded from the web as
+// soon as the file is created. This MotW prevents the file being opened without
+// due security warnings if the file is executable.
 IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Quarantine) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
@@ -262,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Quarantine) {
   ASSERT_TRUE(base::PathExists(actual_filename));
   EXPECT_TRUE(quarantine::IsFileQuarantined(actual_filename, GURL(), GURL()));
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(FULL_SAFE_BROWSING)
 // These tests only make sense when SafeBrowsing is enabled. They verify

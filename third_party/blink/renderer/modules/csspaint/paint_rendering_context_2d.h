@@ -27,7 +27,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
  public:
   PaintRenderingContext2D(const IntSize& container_size,
-                          const CanvasColorParams&,
                           const PaintRenderingContext2DSettings*,
                           float zoom);
 
@@ -92,7 +91,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   std::unique_ptr<PaintRecorder> paint_recorder_;
   sk_sp<PaintRecord> previous_frame_;
   IntSize container_size_;
-  const CanvasColorParams& color_params_;
   Member<const PaintRenderingContext2DSettings> context_settings_;
   bool did_record_draw_commands_in_paint_recorder_;
   float effective_zoom_;

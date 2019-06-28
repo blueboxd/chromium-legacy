@@ -61,7 +61,7 @@ class DarkModeBitmapImageClassifierTest : public testing::Test {
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
     DarkModeClassification result = classifier_.Classify(
         *image.get(), FloatRect(0, 0, image->width(), image->height()));
-    return result == DarkModeClassification::kApplyDarkModeFilter;
+    return result == DarkModeClassification::kApplyFilter;
   }
 
   void AssertFeaturesEqual(const Vector<float>& features,
@@ -102,7 +102,7 @@ TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
   EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/grid-large.png",
                                            &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            DarkModeClassification::kApplyDarkModeFilter);
+            DarkModeClassification::kApplyFilter);
   AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.0f});
 
   // Test Case 2:
@@ -124,7 +124,7 @@ TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/count-down-color-test.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            DarkModeClassification::kApplyDarkModeFilter);
+            DarkModeClassification::kApplyFilter);
   AssertFeaturesEqual(features, {1.0f, 0.0078125f, 0.0f, 0.0f});
 
   // Test Case 4:
@@ -135,7 +135,7 @@ TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
   EXPECT_FALSE(GetFeaturesAndClassification(
       "/images/resources/blue-wheel-srgb-color-profile.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            DarkModeClassification::kDoNotApplyDarkModeFilter);
+            DarkModeClassification::kDoNotApplyFilter);
   AssertFeaturesEqual(features, {1.0f, 0.032959f, 0.0f, 0.0f});
 
   // Test Case 5:
@@ -146,7 +146,7 @@ TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/ycbcr-444-float.jpg", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            DarkModeClassification::kApplyDarkModeFilter);
+            DarkModeClassification::kApplyFilter);
   AssertFeaturesEqual(features, {1.0f, 0.0151367f, 0.0f, 0.0f});
 }
 
@@ -158,24 +158,22 @@ TEST_F(DarkModeBitmapImageClassifierTest, Caching) {
 
   EXPECT_EQ(image->GetClassification(src_rect1),
             DarkModeClassification::kNotClassified);
-  image->AddClassification(src_rect1,
-                           DarkModeClassification::kApplyDarkModeFilter);
+  image->AddClassification(src_rect1, DarkModeClassification::kApplyFilter);
   EXPECT_EQ(image->GetClassification(src_rect1),
-            DarkModeClassification::kApplyDarkModeFilter);
+            DarkModeClassification::kApplyFilter);
 
   EXPECT_EQ(image->GetClassification(src_rect2),
             DarkModeClassification::kNotClassified);
   image->AddClassification(src_rect2,
-                           DarkModeClassification::kDoNotApplyDarkModeFilter);
+                           DarkModeClassification::kDoNotApplyFilter);
   EXPECT_EQ(image->GetClassification(src_rect2),
-            DarkModeClassification::kDoNotApplyDarkModeFilter);
+            DarkModeClassification::kDoNotApplyFilter);
 
   EXPECT_EQ(image->GetClassification(src_rect3),
             DarkModeClassification::kNotClassified);
-  image->AddClassification(src_rect3,
-                           DarkModeClassification::kApplyDarkModeFilter);
+  image->AddClassification(src_rect3, DarkModeClassification::kApplyFilter);
   EXPECT_EQ(image->GetClassification(src_rect3),
-            DarkModeClassification::kApplyDarkModeFilter);
+            DarkModeClassification::kApplyFilter);
 
   EXPECT_EQ(image->GetMapSize(), 3);
 }

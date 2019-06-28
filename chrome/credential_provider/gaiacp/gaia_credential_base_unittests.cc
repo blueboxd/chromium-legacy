@@ -825,8 +825,7 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtDotCom) {
   EXPECT_EQ(test->GetFinalEmail(), email);
 }
 
-/** Test various active directory sign in scenarios. */
-
+// Test various active directory sign in scenarios.
 class GcpGaiaCredentialBaseAdScenariosTest : public GcpGaiaCredentialBaseTest {
  protected:
   void SetUp() override;
@@ -917,7 +916,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   ASSERT_EQ(S_OK, FinishLogonProcess(
                       /*expected_success=*/false,
                       /*expected_credentials_change_fired=*/false,
-                      IDS_INTERNAL_ERROR_BASE));
+                      IDS_EMPTY_ACCESS_TOKEN_BASE));
 }
 
 // Empty AD UPN entry is returned via admin sdk.
@@ -1037,7 +1036,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   ASSERT_EQ(S_OK, FinishLogonProcess(
                       /*expected_success=*/false,
                       /*expected_credentials_change_fired=*/false,
-                      IDS_INTERNAL_ERROR_BASE));
+                      IDS_INVALID_AD_UPN_BASE));
 }
 
 // This is the success scenario where all preconditions are met in the

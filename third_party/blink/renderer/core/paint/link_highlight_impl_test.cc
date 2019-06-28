@@ -265,7 +265,7 @@ TEST_P(LinkHighlightImplTest, HighlightInvalidation) {
                               WebGestureDevice::kTouchscreen);
   touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
   GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
-  auto* touch_element = ToElement(web_view_impl->BestTapNode(targeted_event));
+  auto* touch_element = To<Element>(web_view_impl->BestTapNode(targeted_event));
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
 
   web_view_helper_.LocalMainFrame()

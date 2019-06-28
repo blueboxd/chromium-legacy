@@ -33,12 +33,15 @@ const char kWebDriverNavigationCommand[] = "url";
 const char kWebDriverTimeoutsCommand[] = "timeouts";
 const char kWebDriverWindowCommand[] = "window";
 const char kWebDriverWindowHandlesCommand[] = "handles";
+const char kWebDriverSyncScriptCommand[] = "sync";
+const char kWebDriverAsyncScriptCommand[] = "async";
 
 // WebDriver error codes.
 const char kWebDriverInvalidArgumentError[] = "invalid argument";
 const char kWebDriverInvalidSessionError[] = "invalid session id";
 const char kWebDriverSessionCreationError[] = "session not created";
 const char kWebDriverTimeoutError[] = "timeout";
+const char kWebDriverScriptTimeoutError[] = "script timeout";
 const char kWebDriverNoSuchWindowError[] = "no such window";
 const char kWebDriverUnknownCommandError[] = "unknown command";
 
@@ -56,6 +59,8 @@ const char kWebDriverNoOpenWindowMessage[] = "No currently open window";
 const char kWebDriverMissingWindowHandleMessage[] = "No handle argument";
 const char kWebDriverNoMatchingWindowMessage[] =
     "No window with the given handle";
+const char kWebDriverMissingScriptMessage[] = "No script argument";
+const char kWebDriverScriptTimeoutMessage[] = "Script execution timed out";
 
 // WebDriver request field names. These are fields that are contained within
 // the body of a POST request.
@@ -63,6 +68,7 @@ const char kWebDriverURLRequestField[] = "url";
 const char kWebDriverScriptTimeoutRequestField[] = "script";
 const char kWebDriverPageLoadTimeoutRequestField[] = "pageLoad";
 const char kWebDriverWindowHandleRequestField[] = "handle";
+const char kWebDriverScriptRequestField[] = "script";
 
 // WebDriver response field name. This is the top-level field in the JSON object
 // contained in a response.
@@ -159,6 +165,16 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
           content->FindKey(kWebDriverWindowHandleRequestField));
     }
 
+    if (command == kWebDriverSyncScriptCommand) {
+      return ExecuteScript(content->FindKey(kWebDriverScriptRequestField),
+                           /*is_async_function=*/false);
+    }
+
+    if (command == kWebDriverAsyncScriptCommand) {
+      return ExecuteScript(content->FindKey(kWebDriverScriptRequestField),
+                           /*is_async_function=*/true);
+    }
+
     return base::nullopt;
   }
 
@@ -213,6 +229,9 @@ base::Value CWTRequestHandler::InitializeSession() {
     return CreateErrorValue(kWebDriverSessionCreationError,
                             kWebDriverSessionAlreadyExistsMessage);
   }
+
+  [CWTWebDriverAppInterface enablePopups];
+
   base::Value result(base::Value::Type::DICTIONARY);
   session_id_ = base::GenerateGUID();
   result.SetStringKey(kWebDriverSessionIdValueField, session_id_);
@@ -326,4 +345,45 @@ base::Value CWTRequestHandler::CloseCurrentTab() {
   }
 
   return GetAllTabIds();
+}
+
+base::Value CWTRequestHandler::ExecuteScript(const base::Value* script,
+                                             bool is_async_function) {
+  if (!script || !script->is_string()) {
+    return CreateErrorValue(kWebDriverInvalidArgumentError,
+                            kWebDriverMissingScriptMessage);
+  }
+
+  NSString* function_to_execute;
+  if (is_async_function) {
+    // The provided |script| is a function body that already calls its last
+    // argument with the result of its computation.
+    function_to_execute =
+        [NSString stringWithFormat:@"function f(completionHandler) { %s }",
+                                   script->GetString().c_str()];
+  } else {
+    // The provided |script| directly computes a result. Convert to a function
+    // that calls a completion handler with the result of its computation.
+    NSString* input_function = [NSString
+        stringWithFormat:@"() => { %s }", script->GetString().c_str()];
+    function_to_execute =
+        [NSString stringWithFormat:@"function f(completionHandler) { "
+                                   @"  completionHandler((%@).call()); "
+                                   @"} ",
+                                   input_function];
+  }
+
+  NSString* result_as_json = [CWTWebDriverAppInterface
+      executeAsyncJavaScriptFunction:function_to_execute
+                    timeoutInSeconds:script_timeout_];
+
+  if (!result_as_json) {
+    return CreateErrorValue(kWebDriverScriptTimeoutError,
+                            kWebDriverScriptTimeoutMessage);
+  }
+
+  base::Optional<base::Value> result =
+      base::JSONReader::Read(base::SysNSStringToUTF8(result_as_json));
+  DCHECK(result);
+  return std::move(*result);
 }

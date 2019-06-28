@@ -243,11 +243,9 @@ class ScopedTaskEnvironment::MockTimeDomain
   // Protects |now_ticks_|
   mutable Lock now_ticks_lock_;
 
-  // Only ever written to from the main sequence.
-  // TODO(alexclarke): We can't override now by default with now_ticks_ starting
-  // from zero because many tests have checks that TimeTicks::Now() returns a
-  // non-zero result.
-  TimeTicks now_ticks_;
+  // Only ever written to from the main sequence. Start from real Now() instead
+  // of zero to give a more realistic view to tests.
+  TimeTicks now_ticks_{base::subtle::TimeTicksNowIgnoringOverride()};
 };
 
 ScopedTaskEnvironment::MockTimeDomain*

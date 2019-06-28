@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -90,10 +91,10 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   virtual base::Optional<SubresourceLoaderParams>
   MaybeCreateSubresourceLoaderParams();
 
-  // Returns true if the handler creates a loader for the |response| passed.
-  // |request| is the latest request whose request URL may include URL fragment.
-  // An example of where this is used is AppCache, where the handler returns
-  // fallback content for the response passed in.
+  // Returns true if the handler creates a loader for the |response_head| and
+  // |response_body| passed.  |request| is the latest request whose request URL
+  // may include URL fragment.  An example of where this is used is AppCache,
+  // where the handler returns fallback content for the response passed in.
   // The URLLoader interface pointer is returned in the |loader| parameter.
   // The interface request for the URLLoaderClient is returned in the
   // |client_request| parameter.
@@ -110,7 +111,8 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // integration. See crbug.com/894755#c1. Nullptr is not allowed.
   virtual bool MaybeCreateLoaderForResponse(
       const network::ResourceRequest& request,
-      const network::ResourceResponseHead& response,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
       ThrottlingURLLoader* url_loader,

@@ -26,7 +26,7 @@ class MockVideoCaptureDevice final
   MockVideoCaptureDevice() {}
   ~MockVideoCaptureDevice() override {}
   void GetPhotoState(
-      VideoCaptureDevice::GetPhotoStateCallback callback) const override {}
+      VideoCaptureDevice::GetPhotoStateCallback callback) override {}
   void SetPhotoOptions(
       media::mojom::PhotoSettingsPtr settings,
       VideoCaptureDevice::SetPhotoOptionsCallback callback) override {}

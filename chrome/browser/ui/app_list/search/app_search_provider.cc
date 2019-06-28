@@ -13,12 +13,14 @@
 #include <unordered_set>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/bind.h"
 #include "base/callback_list.h"
+#include "base/containers/flat_map.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
@@ -41,9 +43,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
@@ -461,12 +465,132 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataSource);
 };
 
-class ArcDataSource : public AppSearchProvider::DataSource,
+class AppIconDataSource : public AppIconLoaderDelegate {
+ public:
+  class Delegate {
+   public:
+    virtual std::unique_ptr<AppIconLoader> CreateIconLoader(
+        int icon_size,
+        AppIconLoaderDelegate* delegate) = 0;
+    virtual void IconUpdated(const std::string& app_id,
+                             const gfx::ImageSkia& image,
+                             bool for_chip) = 0;
+  };
+
+  AppIconDataSource(Delegate* delegate, bool for_chip)
+      : delegate_(delegate),
+        icon_loader_(delegate->CreateIconLoader(IconSize(for_chip), this)),
+        for_chip_(for_chip) {}
+  ~AppIconDataSource() override = default;
+
+  void MaybeFetchIcon(const std::string& app_id) {
+    auto iter = icon_map_.find(app_id);
+    if (iter != icon_map_.end()) {
+      delegate_->IconUpdated(app_id, iter->second, for_chip_);
+    } else {
+      icon_loader_->FetchImage(app_id);
+    }
+  }
+
+  void RemoveIcon(const std::string& app_id) { icon_map_.erase(app_id); }
+
+ private:
+  int IconSize(bool for_chip) const {
+    const auto& config = AppListConfig::instance();
+    return for_chip ? config.suggestion_chip_icon_dimension()
+                    : config.GetPreferredIconDimension(
+                          ash::SearchResultDisplayType::kTile);
+  }
+
+  void OnAppImageUpdated(const std::string& app_id,
+                         const gfx::ImageSkia& image) override {
+    icon_map_[app_id] = image;
+    delegate_->IconUpdated(app_id, image, for_chip_);
+  }
+
+  Delegate* delegate_;
+  std::unique_ptr<AppIconLoader> icon_loader_;
+  std::map<std::string, gfx::ImageSkia> icon_map_;
+  bool for_chip_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppIconDataSource);
+};
+
+class IconCachedDataSource : public AppSearchProvider::DataSource,
+                             public AppIconDataSource::Delegate {
+ public:
+  IconCachedDataSource(Profile* profile, AppSearchProvider* owner)
+      : AppSearchProvider::DataSource(profile, owner) {}
+  ~IconCachedDataSource() override = default;
+
+ protected:
+  void InitIconSources() {
+    icon_source_ = std::make_unique<AppIconDataSource>(this, false);
+    chip_icon_source_ = std::make_unique<AppIconDataSource>(this, true);
+  }
+
+  std::unique_ptr<AppResult> WrapResult(std::unique_ptr<AppResult> result) {
+    const std::string& app_id = result->app_id();
+    results_[app_id].push_back(result->GetWeakPtr());
+    icon_source_->MaybeFetchIcon(app_id);
+    if (result->display_type() == ash::SearchResultDisplayType::kRecommendation)
+      chip_icon_source_->MaybeFetchIcon(app_id);
+    return result;
+  }
+
+  void RemoveIcon(const std::string& app_id) {
+    icon_source_->RemoveIcon(app_id);
+    chip_icon_source_->RemoveIcon(app_id);
+  }
+
+  void RevokeInvalidated() {
+    for (auto& p : results_) {
+      for (auto iter = p.second.begin(); iter != p.second.end();) {
+        if (iter->get()) {
+          ++iter;
+        } else {
+          iter = p.second.erase(iter);
+        }
+      }
+    }
+  }
+
+ private:
+  // AppIconDataSource::Delegate:
+  void IconUpdated(const std::string& app_id,
+                   const gfx::ImageSkia& image,
+                   bool for_chip) override {
+    for (auto result : results_[app_id]) {
+      auto* ptr = result.get();
+      if (!ptr)
+        continue;
+      // There's a chance that both kRecommendation results and kTile results
+      // are in |results_| but we don't need chip icons for kTile results.
+      if (for_chip && ptr->display_type() !=
+                          ash::SearchResultDisplayType::kRecommendation) {
+        continue;
+      }
+      if (for_chip)
+        ptr->SetChipIcon(image);
+      else
+        ptr->SetIcon(image);
+    }
+  }
+
+  std::unique_ptr<AppIconDataSource> icon_source_;
+  std::unique_ptr<AppIconDataSource> chip_icon_source_;
+  base::flat_map<std::string, std::vector<base::WeakPtr<AppResult>>> results_;
+
+  DISALLOW_COPY_AND_ASSIGN(IconCachedDataSource);
+};
+
+class ArcDataSource : public IconCachedDataSource,
                       public ArcAppListPrefs::Observer {
  public:
   ArcDataSource(Profile* profile, AppSearchProvider* owner)
-      : AppSearchProvider::DataSource(profile, owner) {
+      : IconCachedDataSource(profile, owner) {
     ArcAppListPrefs::Get(profile)->AddObserver(this);
+    InitIconSources();
   }
 
   ~ArcDataSource() override {
@@ -475,6 +599,7 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
+    RevokeInvalidated();
     ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
     CHECK(arc_prefs);
 
@@ -502,8 +627,8 @@ class ArcDataSource : public AppSearchProvider::DataSource,
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
       bool is_recommended) override {
-    return std::make_unique<ArcAppResult>(profile(), app_id, list_controller,
-                                          is_recommended);
+    return WrapResult(std::make_unique<ArcAppResult>(
+        profile(), app_id, list_controller, is_recommended));
   }
 
   // ArcAppListPrefs::Observer overrides:
@@ -514,19 +639,28 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
   void OnAppStatesChanged(const std::string& app_id,
                           const ArcAppListPrefs::AppInfo& app_info) override {
+    RemoveIcon(app_id);
     owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
-  void OnAppRemoved(const std::string& id) override {
+  void OnAppRemoved(const std::string& app_id) override {
+    RemoveIcon(app_id);
     owner()->RefreshAppsAndUpdateResults();
   }
 
-  void OnAppNameUpdated(const std::string& id,
+  void OnAppNameUpdated(const std::string& app_id,
                         const std::string& name) override {
     owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
  private:
+  // AppIconDataSource::Delegate:
+  std::unique_ptr<AppIconLoader> CreateIconLoader(
+      int icon_size,
+      AppIconLoaderDelegate* delegate) override {
+    return std::make_unique<ArcAppIconLoader>(profile(), icon_size, delegate);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(ArcDataSource);
 };
 
@@ -603,13 +737,14 @@ class InternalDataSource : public AppSearchProvider::DataSource {
   DISALLOW_COPY_AND_ASSIGN(InternalDataSource);
 };
 
-class CrostiniDataSource : public AppSearchProvider::DataSource,
+class CrostiniDataSource : public IconCachedDataSource,
                            public crostini::CrostiniRegistryService::Observer {
  public:
   CrostiniDataSource(Profile* profile, AppSearchProvider* owner)
-      : AppSearchProvider::DataSource(profile, owner) {
+      : IconCachedDataSource(profile, owner) {
     crostini::CrostiniRegistryServiceFactory::GetForProfile(profile)
         ->AddObserver(this);
+    InitIconSources();
   }
 
   ~CrostiniDataSource() override {
@@ -619,6 +754,7 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
+    RevokeInvalidated();
     crostini::CrostiniRegistryService* registry_service =
         crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
     for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
@@ -653,8 +789,8 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
       bool is_recommended) override {
-    return std::make_unique<CrostiniAppResult>(profile(), app_id,
-                                               list_controller, is_recommended);
+    return WrapResult(std::make_unique<CrostiniAppResult>(
+        profile(), app_id, list_controller, is_recommended));
   }
 
   // crostini::CrostiniRegistryService::Observer overrides:
@@ -663,6 +799,10 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override {
+    for (const auto& id : updated_apps)
+      RemoveIcon(id);
+    for (const auto& id : removed_apps)
+      RemoveIcon(id);
     if (removed_apps.empty())
       owner()->RefreshAppsAndUpdateResultsDeferred();
     else
@@ -670,6 +810,14 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
   }
 
  private:
+  // AppIconDataSource::Delegate:
+  std::unique_ptr<AppIconLoader> CreateIconLoader(
+      int icon_size,
+      AppIconLoaderDelegate* delegate) override {
+    return std::make_unique<CrostiniAppIconLoader>(profile(), icon_size,
+                                                   delegate);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(CrostiniDataSource);
 };
 

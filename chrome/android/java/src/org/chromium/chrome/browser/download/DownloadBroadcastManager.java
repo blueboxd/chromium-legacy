@@ -175,7 +175,7 @@ public class DownloadBroadcastManager extends Service {
     void loadNativeAndPropagateInteraction(final Intent intent) {
         final boolean browserStarted =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted();
+                        .isFullBrowserStarted();
         final ContentId id = getContentIdFromIntent(intent);
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override

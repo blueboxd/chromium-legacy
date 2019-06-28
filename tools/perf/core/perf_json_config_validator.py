@@ -19,6 +19,7 @@ _DEFAULT_VALID_PERF_POOLS = {
 _VALID_PERF_POOLS = {
     'android-builder-perf': {'chrome.tests'},
     'android_arm64-builder-perf': {'chrome.tests'},
+    'chromeos-kevin-perf-fyi': {'luci.chrome.cros-dut'},
 }
 
 
@@ -99,6 +100,10 @@ def _ValidateBrowserType(builder_name, test_config):
       raise ValueError(
           "%s must use 'android-chromium', 'android-chrome' or 'exact' "
           "browser" % builder_name)
+  elif 'chromeos' in builder_name:
+    if browser_options.browser != 'cros-chrome':
+      raise ValueError("%s must use 'cros-chrome' browser type" %
+                       builder_name)
   elif builder_name in ('win-10-perf', 'Win 7 Nvidia GPU Perf',
                         'win-10_laptop_low_end-perf_HP-Candidate'):
     if browser_options.browser != 'release_x64':

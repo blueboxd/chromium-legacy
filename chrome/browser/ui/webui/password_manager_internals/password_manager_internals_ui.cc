@@ -7,16 +7,12 @@
 #include <algorithm>
 #include <set>
 
-#include "base/stl_util.h"
-#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -75,18 +71,6 @@ void PasswordManagerInternalsUI::DidStopLoading() {
     std::string past_logs(service->RegisterReceiver(this));
     LogSavePasswordProgress(past_logs);
   }
-
-  // Reset the first run experience for auto sign-in if the user opened
-  // chrome://password-manager-internals/?reset_fre .
-  // TODO(crbug.com/599454) This may be removed in M53, when the credential
-  // manager API has been launched to stable.
-  GURL url = web_ui()->GetWebContents()->GetVisibleURL();
-  if (url.is_valid() && url.has_query()) {
-    std::vector<std::string> query_parameters = base::SplitString(
-        url.query(), "&", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (base::Contains(query_parameters, "reset_fre"))
-      ResetAutoSignInFirstRunExperience();
-  }
 }
 
 void PasswordManagerInternalsUI::LogSavePasswordProgress(
@@ -108,18 +92,4 @@ void PasswordManagerInternalsUI::UnregisterFromLoggingServiceIfNecessary() {
           Profile::FromWebUI(web_ui()));
   if (service)
     service->UnregisterReceiver(this);
-}
-
-void PasswordManagerInternalsUI::ResetAutoSignInFirstRunExperience() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile->IsRegularProfile()) {
-    profile->GetPrefs()->SetBoolean(
-        password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
-
-    PasswordManagerInternalsService* service =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-    if (service)
-      service->ProcessLog("Reset auto sign-in first run experience: yes");
-  }
 }

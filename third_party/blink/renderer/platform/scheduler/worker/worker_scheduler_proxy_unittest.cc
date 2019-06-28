@@ -114,14 +114,11 @@ class WorkerSchedulerProxyTest : public testing::Test {
         page_scheduler_(
             std::make_unique<PageSchedulerImpl>(nullptr,
                                                 main_thread_scheduler_.get())),
-        frame_scheduler_(
-            FrameSchedulerImpl::Create(page_scheduler_.get(),
-                                       nullptr,
-                                       nullptr,
-                                       FrameScheduler::FrameType::kMainFrame)) {
-    // Null clock triggers some assertions.
-    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
-  }
+        frame_scheduler_(FrameSchedulerImpl::Create(
+            page_scheduler_.get(),
+            nullptr,
+            nullptr,
+            FrameScheduler::FrameType::kMainFrame)) {}
 
   ~WorkerSchedulerProxyTest() override {
     frame_scheduler_.reset();

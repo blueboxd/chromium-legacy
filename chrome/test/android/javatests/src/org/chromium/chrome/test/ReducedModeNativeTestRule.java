@@ -95,12 +95,12 @@ public class ReducedModeNativeTestRule implements TestRule {
 
     public void assertOnlyServiceManagerStarted() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertTrue("The native service manager has not been started.",
+            Assert.assertTrue("Native has not been started.",
                     BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isServiceManagerSuccessfullyStarted());
+                            .isNativeStarted());
             Assert.assertFalse("The full browser is started instead of ServiceManager only.",
                     BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isStartupSuccessfullyCompleted());
+                            .isFullBrowserStarted());
         });
     }
 }

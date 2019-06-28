@@ -798,6 +798,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetBackgroundFetchContext())
     GetBackgroundFetchContext()->Shutdown();
 
+  if (GetContentIndexContext())
+    GetContentIndexContext()->Shutdown();
+
   if (GetAppCacheService()) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},

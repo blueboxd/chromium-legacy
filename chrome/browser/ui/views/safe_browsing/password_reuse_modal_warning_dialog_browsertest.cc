@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -31,8 +32,7 @@ class PasswordReuseModalWarningTest : public DialogBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     dialog_ = new PasswordReuseModalWarningDialog(
-        web_contents, nullptr,
-        LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD,
+        web_contents, nullptr, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
         base::BindOnce(&PasswordReuseModalWarningTest::DialogCallback,
                        base::Unretained(this)));
     constrained_window::CreateBrowserModalDialogViews(

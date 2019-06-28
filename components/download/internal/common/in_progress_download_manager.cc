@@ -113,8 +113,9 @@ void CreateDownloadHandlerForNavigation(
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
+    scoped_refptr<network::ResourceResponse> response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
     const URLSecurityPolicy& url_security_policy,
@@ -125,7 +126,8 @@ void CreateDownloadHandlerForNavigation(
       ResourceDownloader::InterceptNavigationResponse(
           download_manager, std::move(resource_request), render_process_id,
           render_frame_id, site_url, tab_url, tab_referrer_url,
-          std::move(url_chain), std::move(response), std::move(cert_status),
+          std::move(url_chain), std::move(cert_status),
+          std::move(response_head), std::move(response_body),
           std::move(url_loader_client_endpoints),
           std::move(url_loader_factory_getter), url_security_policy,
           std::move(connector), main_task_runner)
@@ -279,21 +281,22 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
+    scoped_refptr<network::ResourceResponse> response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter) {
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&CreateDownloadHandlerForNavigation,
-                     weak_factory_.GetWeakPtr(), std::move(resource_request),
-                     render_process_id, render_frame_id, site_url, tab_url,
-                     tab_referrer_url, std::move(url_chain),
-                     std::move(response), std::move(cert_status),
-                     std::move(url_loader_client_endpoints),
-                     std::move(url_loader_factory_getter), url_security_policy_,
-                     connector_ ? connector_->Clone() : nullptr,
-                     base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(
+          &CreateDownloadHandlerForNavigation, weak_factory_.GetWeakPtr(),
+          std::move(resource_request), render_process_id, render_frame_id,
+          site_url, tab_url, tab_referrer_url, std::move(url_chain),
+          std::move(cert_status), std::move(response_head),
+          std::move(response_body), std::move(url_loader_client_endpoints),
+          std::move(url_loader_factory_getter), url_security_policy_,
+          connector_ ? connector_->Clone() : nullptr,
+          base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::Initialize(

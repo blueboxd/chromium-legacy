@@ -1671,6 +1671,8 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
     if (old_state != mojom::FrameLifecycleState::kPaused)
       DidResume();
   }
+  if (Client())
+    Client()->LifecycleStateChanged(state);
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {

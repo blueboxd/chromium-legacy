@@ -14,6 +14,7 @@
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/folder_header_view_delegate.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
@@ -199,7 +200,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   std::unique_ptr<ui::LayerOwner> background_mask_ = nullptr;
 
   // The compositor frame number when animation starts.
-  int animation_start_frame_number_ = 0;
+  base::Optional<int> animation_start_frame_number_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

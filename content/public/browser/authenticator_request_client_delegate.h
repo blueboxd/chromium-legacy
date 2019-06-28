@@ -136,7 +136,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // authenticator. May return nullopt if the authenticator is not used or not
   // available.
   virtual base::Optional<TouchIdAuthenticatorConfig>
-  GetTouchIdAuthenticatorConfig() const;
+  GetTouchIdAuthenticatorConfig();
 #endif
 
   // Saves transport type the user used during WebAuthN API so that the

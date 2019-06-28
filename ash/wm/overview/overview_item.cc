@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -140,43 +139,6 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
 }
 
 }  // namespace
-
-// The class to cache render surface to the specified window's layer.
-class OverviewItem::WindowSurfaceCacheObserver : public aura::WindowObserver {
- public:
-  explicit WindowSurfaceCacheObserver(aura::Window* window) {
-    StartObserving(window);
-  }
-
-  ~WindowSurfaceCacheObserver() override { StopObserving(); }
-
-  void StartObserving(aura::Window* window) {
-    // If we're already observing a window, stop observing it first.
-    StopObserving();
-
-    window_ = window;
-    window_->AddObserver(this);
-    window_->layer()->AddCacheRenderSurfaceRequest();
-  }
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
-    DCHECK_EQ(window_, window);
-    StopObserving();
-  }
-
- private:
-  void StopObserving() {
-    if (window_) {
-      window_->layer()->RemoveCacheRenderSurfaceRequest();
-      window_->RemoveObserver(this);
-      window_ = nullptr;
-    }
-  }
-
-  aura::Window* window_ = nullptr;
-  DISALLOW_COPY_AND_ASSIGN(WindowSurfaceCacheObserver);
-};
 
 // The close button for the overview item. It has a custom ink drop.
 class OverviewItem::OverviewCloseButton : public views::ImageButton {
@@ -318,7 +280,7 @@ void OverviewItem::SlideWindowIn() {
   FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
                                    /*slide=*/true, /*observe=*/true);
-  UpdateMaskAndShadow();
+  UpdateRoundedCornersAndShadow();
 }
 
 std::unique_ptr<ui::ScopedLayerAnimationSettings>
@@ -443,7 +405,7 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   // transform and |item_widget_|'s new bounds so set it after SetItemBounds
   // and UpdateHeaderLayout. Do not apply the shadow for drop target.
   if (new_animation_type == OVERVIEW_ANIMATION_NONE)
-    UpdateMaskAndShadow();
+    UpdateRoundedCornersAndShadow();
 
   if (cannot_snap_widget_) {
     inset_bounds.Inset(
@@ -529,11 +491,6 @@ void OverviewItem::OnMinimizedStateChanged() {
   caption_container_view_->SetShowPreview(minimized);
   if (!minimized)
     EnsureVisible();
-
-  if (window_surface_cache_observers_) {
-    window_surface_cache_observers_->StartObserving(
-        transform_window_.GetOverviewWindow());
-  }
 }
 
 void OverviewItem::UpdateCannotSnapWarningVisibility() {
@@ -583,32 +540,22 @@ void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
   // Disable mask and shadow for the dragged overview item during dragging.
   if (is_being_dragged_)
-    UpdateMaskAndShadow();
+    UpdateRoundedCornersAndShadow();
 
   caption_container_view_->SetHeaderVisibility(
       is_being_dragged_
           ? CaptionContainerView::HeaderVisibility::kInvisible
           : CaptionContainerView::HeaderVisibility::kCloseButtonInvisibleOnly);
-
-  if (!features::ShouldUseShaderRoundedCorner()) {
-    // Start caching render surface during overview window dragging.
-    window_surface_cache_observers_ =
-        std::make_unique<WindowSurfaceCacheObserver>(
-            transform_window_.GetOverviewWindow());
-  }
 }
 
 void OverviewItem::OnSelectorItemDragEnded(bool snap) {
-  // Stop caching render surface after overview window dragging.
-  window_surface_cache_observers_.reset();
-
   if (is_being_dragged_) {
     is_being_dragged_ = false;
     // Do nothing further with the dragged overview item if it is being snapped.
     if (snap)
       return;
     // Re-show mask and shadow for the dragged overview item after drag ends.
-    UpdateMaskAndShadow();
+    UpdateRoundedCornersAndShadow();
   }
 
   // Update the header.
@@ -754,7 +701,7 @@ void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
   shadow_->SetContentBounds(bounds_in_item);
 }
 
-void OverviewItem::UpdateMaskAndShadow() {
+void OverviewItem::UpdateRoundedCornersAndShadow() {
   // Do not show mask and shadow if:
   // 1) overview is shutting down or
   // 2) this overview item is in an overview grid that contains more than 10
@@ -769,8 +716,6 @@ void OverviewItem::UpdateMaskAndShadow() {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (disable_mask_ || !overview_controller ||
       !overview_controller->InOverviewSession() ||
-      (!features::ShouldUseShaderRoundedCorner() &&
-       overview_grid_->window_list().size() > 10) ||
       overview_controller->IsInStartAnimation() || is_being_dragged_ ||
       overview_grid_->IsDropTargetWindow(GetWindow()) ||
       transform_window_.GetOverviewWindow()

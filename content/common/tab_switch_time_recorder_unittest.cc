@@ -53,9 +53,6 @@ constexpr base::TimeDelta kOtherDuration =
 class TabSwitchTimeRecorderTest : public testing::Test {
  protected:
   void SetUp() override {
-    // Start with non-zero time.
-    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(123));
-
     // Expect all histograms to be empty.
     ExpectHistogramsEmptyExcept({});
   }

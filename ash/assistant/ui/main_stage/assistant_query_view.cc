@@ -77,7 +77,7 @@ void AssistantQueryView::InitLayout() {
 
   // Label.
   label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
-  label_->set_auto_color_readability_enabled(false);
+  label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
   label_->SetLineHeight(kLineHeightDip);
   AddChildView(label_);

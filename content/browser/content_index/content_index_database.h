@@ -30,6 +30,8 @@ class CONTENT_EXPORT ContentIndexDatabase
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~ContentIndexDatabase() override;
 
+  void InitializeProviderWithEntries();
+
   void AddEntry(int64_t service_worker_registration_id,
                 const url::Origin& origin,
                 blink::mojom::ContentDescriptionPtr description,
@@ -49,6 +51,9 @@ class CONTENT_EXPORT ContentIndexDatabase
                const std::string& description_id,
                base::OnceCallback<void(SkBitmap)> icon_callback) override;
 
+  // Called when the storage partition is shutting down.
+  void Shutdown();
+
  private:
   void DidAddEntry(blink::mojom::ContentIndexService::AddCallback callback,
                    ContentIndexEntry entry,
@@ -62,8 +67,11 @@ class CONTENT_EXPORT ContentIndexDatabase
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback,
       const std::vector<std::string>& data,
       blink::ServiceWorkerStatusCode status);
+  void DidGetAllEntries(
+      const std::vector<std::pair<int64_t, std::string>>& user_data,
+      blink::ServiceWorkerStatusCode status);
 
-  BrowserContext* browser_context_;
+  ContentIndexProvider* provider_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_;
 

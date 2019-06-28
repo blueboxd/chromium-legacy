@@ -17,6 +17,10 @@ DesktopFocusRules::DesktopFocusRules(aura::Window* content_window)
 DesktopFocusRules::~DesktopFocusRules() = default;
 
 bool DesktopFocusRules::CanActivateWindow(const aura::Window* window) const {
+  // The RootWindow is not activatable, only |content_window_| and children of
+  // the RootWindow are considered activatable.
+  if (window && window->IsRootWindow())
+    return false;
   if (window && IsToplevelWindow(window) &&
       content_window_->GetRootWindow()->Contains(window) &&
       wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED)) {

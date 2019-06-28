@@ -183,9 +183,6 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
     UserClassifier::RegisterProfilePrefs(utils_.pref_service()->registry());
     user_classifier_ = std::make_unique<UserClassifier>(
         utils_.pref_service(), base::DefaultClock::GetInstance());
-    // Increase initial time such that ticks are non-zero.
-    scoped_task_environment_.FastForwardBy(
-        base::TimeDelta::FromMilliseconds(1234));
     ResetFetcher();
   }
 

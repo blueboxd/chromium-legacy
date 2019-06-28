@@ -18,9 +18,8 @@ import java.lang.annotation.RetentionPolicy;
  * Exception information for a given origin.
  */
 public class ContentSettingException implements Serializable {
-    @IntDef({Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.AUTOPLAY,
-             Type.BACKGROUND_SYNC, Type.COOKIE, Type.JAVASCRIPT, Type.POPUP,
-             Type.SOUND})
+    @IntDef({Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.AUTOPLAY, Type.BACKGROUND_SYNC, Type.COOKIE,
+            Type.JAVASCRIPT, Type.POPUP, Type.SOUND, Type.BLUETOOTH_SCANNING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         // Values used to address array index - should be enumerated from 0 and can't have gaps.
@@ -34,10 +33,11 @@ public class ContentSettingException implements Serializable {
         int POPUP = 5;
         int SOUND = 6;
         int AUTOMATIC_DOWNLOADS = 7;
+        int BLUETOOTH_SCANNING = 8;
         /**
          * Number of handled exceptions used for calculating array sizes.
          */
-        int NUM_ENTRIES = 8;
+        int NUM_ENTRIES = 9;
     }
 
     private final int mContentSettingType;
@@ -94,6 +94,8 @@ public class ContentSettingException implements Serializable {
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
             case Type.BACKGROUND_SYNC:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+            case Type.BLUETOOTH_SCANNING:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING;
             case Type.COOKIE:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
             case Type.JAVASCRIPT:

@@ -211,11 +211,12 @@ void InitGoogleTestWChar(int* argc, wchar_t** argv) {
 // Called if there are no test results, populates results with UNKNOWN results.
 // If There is only one test, will try to determine status by exit_code and
 // was_timeout.
-void ProcessMissingTestResults(const std::vector<std::string>& test_names,
-                               const std::string& output,
-                               bool was_timeout,
-                               bool exit_code,
-                               std::vector<TestResult>* results) {
+std::vector<TestResult> ProcessMissingTestResults(
+    const std::vector<std::string>& test_names,
+    const std::string& output,
+    bool was_timeout,
+    bool exit_code) {
+  std::vector<TestResult> results;
   // We do not have reliable details about test results (parsing test
   // stdout is known to be unreliable).
   fprintf(stdout,
@@ -241,15 +242,16 @@ void ProcessMissingTestResults(const std::vector<std::string>& test_names,
       test_result.status = TestResult::TEST_UNKNOWN;
     }
 
-    results->push_back(test_result);
-    return;
+    results.push_back(test_result);
+    return results;
   }
   for (auto& test_name : test_names) {
     TestResult test_result;
     test_result.full_name = test_name;
     test_result.status = TestResult::TEST_SKIPPED;
-    results->push_back(test_result);
+    results.push_back(test_result);
   }
+  return results;
 }
 
 // Interprets test results and reports to the test launcher.
@@ -265,8 +267,8 @@ void ProcessTestResults(TestLauncher* test_launcher,
       ProcessGTestOutput(output_file, &test_results, &crashed);
 
   if (!have_test_results) {
-    ProcessMissingTestResults(test_names, output, was_timeout, exit_code,
-                              &test_results);
+    test_results =
+        ProcessMissingTestResults(test_names, output, was_timeout, exit_code);
     for (auto& test_result : test_results)
       test_launcher->OnTestFinished(test_result);
     return;

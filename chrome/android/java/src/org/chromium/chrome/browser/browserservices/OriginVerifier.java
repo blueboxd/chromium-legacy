@@ -251,7 +251,7 @@ public class OriginVerifier {
 
         if (mNativeOriginVerifier != 0) cleanUp();
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             // Early return for testing without native.
             return;
         }

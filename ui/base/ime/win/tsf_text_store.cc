@@ -1252,7 +1252,10 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
       text_input_client_->ExtendSelectionAndDelete(
           old_size - replace_text_range_.start(), 0);
     }
-    text_input_client_->InsertText(new_committed_string);
+    // TODO(crbug.com/978678): Unify the behavior of
+    //     |TextInputClient::InsertText(text)| for the empty text.
+    if (!new_committed_string.empty())
+      text_input_client_->InsertText(new_committed_string);
   } else {
     // Construct string to be committed.
     size_t new_committed_string_offset = old_size;
@@ -1266,7 +1269,10 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     }
     const base::string16& new_committed_string = string_buffer_document_.substr(
         new_committed_string_offset, new_committed_string_size);
-    text_input_client_->InsertText(new_committed_string);
+    // TODO(crbug.com/978678): Unify the behavior of
+    //     |TextInputClient::InsertText(text)| for the empty text.
+    if (!new_committed_string.empty())
+      text_input_client_->InsertText(new_committed_string);
     // Notify accessibility about this committed composition
     text_input_client_->SetActiveCompositionForAccessibility(
         replace_text_range_, new_committed_string,

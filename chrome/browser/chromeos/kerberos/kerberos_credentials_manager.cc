@@ -10,11 +10,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
+#include "chrome/browser/chromeos/kerberos/kerberos_ticket_expiry_notification.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "chromeos/network/onc/variable_expander.h"
@@ -23,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "dbus/message.h"
+#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/kerberos/dbus-constants.h"
 
 namespace chromeos {
@@ -138,6 +143,7 @@ class KerberosAddAccountRunner {
   void AddAccount() {
     kerberos::AddAccountRequest request;
     request.set_principal_name(normalized_principal_);
+    request.set_is_managed(is_managed_);
     KerberosClient::Get()->AddAccount(
         request, base::BindOnce(&KerberosAddAccountRunner::OnAddAccount,
                                 weak_factory_.GetWeakPtr()));
@@ -294,6 +300,12 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
   // causes the daemon to start.
   KerberosClient::Get()->ConnectToKerberosFileChangedSignal(
       base::BindRepeating(&KerberosCredentialsManager::OnKerberosFilesChanged,
+                          weak_factory_.GetWeakPtr()));
+
+  // Connect to a signal that indicates when a Kerberos ticket is about to
+  // expire.
+  KerberosClient::Get()->ConnectToKerberosTicketExpiringSignal(
+      base::BindRepeating(&KerberosCredentialsManager::OnKerberosTicketExpiring,
                           weak_factory_.GetWeakPtr()));
 
   // Listen to pref changes.
@@ -635,8 +647,22 @@ void KerberosCredentialsManager::OnGetKerberosFiles(
 void KerberosCredentialsManager::OnKerberosFilesChanged(
     const std::string& principal_name) {
   // Only listen to the active account.
+  VLOG(1) << "Got KerberosFilesChanged for " << principal_name;
   if (principal_name == GetActivePrincipalName())
     GetKerberosFiles();
+}
+
+void KerberosCredentialsManager::OnKerberosTicketExpiring(
+    const std::string& principal_name) {
+  // Only listen to the active account.
+  VLOG(1) << "Got KerberosTicketExpiring for " << principal_name;
+  if (principal_name == GetActivePrincipalName()) {
+    kerberos_ticket_expiry_notification::Show(
+        primary_profile_, GetActivePrincipalName(),
+        base::BindRepeating(
+            &KerberosCredentialsManager::OnTicketExpiryNotificationClick,
+            weak_factory_.GetWeakPtr()));
+  }
 }
 
 void KerberosCredentialsManager::NotifyAccountsChanged() {
@@ -678,20 +704,41 @@ void KerberosCredentialsManager::ValidateActivePrincipal(
 }
 
 void KerberosCredentialsManager::UpdateEnabledFromPref() {
-  const bool enabled = local_state_->GetBoolean(prefs::kKerberosEnabled);
-  if (!enabled) {
-    // Note that ClearAccounts logs an error if the operation fails.
-    VLOG(1) << "Kerberos got disabled, clearing accounts";
-    ClearAccounts(base::BindOnce([](kerberos::ErrorType) {}));
+  if (local_state_->GetBoolean(prefs::kKerberosEnabled)) {
+    // Kerberos got enabled, re-populate managed accounts.
+    UpdateAccountsFromPref();
+    return;
   }
+
+  // Note that ClearAccounts logs an error if the operation fails.
+  VLOG(1) << "Kerberos got disabled, clearing accounts";
+  ClearAccounts(base::BindOnce([](kerberos::ErrorType) {}));
 }
 
 void KerberosCredentialsManager::UpdateRememberPasswordEnabledFromPref() {
-  // TODO(https://crbug.com/952239): Implement
+  if (local_state_->GetBoolean(prefs::kKerberosRememberPasswordEnabled))
+    return;
+
+  VLOG(1) << "'Remember password' got disabled, clearing remembered passwords";
+  kerberos::ClearAccountsRequest request;
+  request.set_mode(kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS);
+  KerberosClient::Get()->ClearAccounts(
+      request,
+      base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                     weak_factory_.GetWeakPtr(), EmptyResultCallback()));
 }
 
 void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
-  // TODO(https://crbug.com/952239): Implement
+  if (local_state_->GetBoolean(prefs::kKerberosAddAccountsAllowed))
+    return;
+
+  VLOG(1) << "'Add accounts allowed' got disabled, clearing unmanaged accounts";
+  kerberos::ClearAccountsRequest request;
+  request.set_mode(kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS);
+  KerberosClient::Get()->ClearAccounts(
+      request,
+      base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                     weak_factory_.GetWeakPtr(), EmptyResultCallback()));
 }
 
 void KerberosCredentialsManager::UpdateAccountsFromPref() {
@@ -773,6 +820,17 @@ void KerberosCredentialsManager::NotifyRequiresLoginPassword(
   UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
       UserSessionManager::PasswordConsumingService::kKerberos,
       requires_login_password);
+}
+
+void KerberosCredentialsManager::OnTicketExpiryNotificationClick(
+    const std::string& principal_name) {
+  // TODO(https://crbug.com/952245): Right now, the reauth dialog is tied to the
+  // settings. Consider creating a standalone reauth dialog.
+  kerberos_ticket_expiry_notification::Close(primary_profile_);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      primary_profile_,
+      chrome::kKerberosAccountsSubPage + std::string("?kerberos_reauth=") +
+          net::EscapeQueryParamValue(principal_name, false /* use_plus */));
 }
 
 }  // namespace chromeos

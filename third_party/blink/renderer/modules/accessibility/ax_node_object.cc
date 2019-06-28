@@ -341,8 +341,10 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
     return false;
   }
 
-  Element* element = GetNode()->IsElementNode() ? ToElement(GetNode())
-                                                : GetNode()->parentElement();
+  auto* element = DynamicTo<Element>(GetNode());
+  if (!element)
+    element = GetNode()->parentElement();
+
   if (!element)
     return true;
 
@@ -844,13 +846,14 @@ static Element* SiblingWithAriaRole(String role, Node* node) {
 
   for (Node* sibling = LayoutTreeBuilderTraversal::FirstChild(*parent); sibling;
        sibling = LayoutTreeBuilderTraversal::NextSibling(*sibling)) {
-    if (!sibling->IsElementNode())
+    auto* element = DynamicTo<Element>(sibling);
+    if (!element)
       continue;
     const AtomicString& sibling_aria_role =
-        AccessibleNode::GetPropertyOrARIAAttribute(ToElement(sibling),
+        AccessibleNode::GetPropertyOrARIAAttribute(element,
                                                    AOMStringProperty::kRole);
     if (EqualIgnoringASCIICase(sibling_aria_role, role))
-      return ToElement(sibling);
+      return element;
   }
 
   return nullptr;
@@ -868,13 +871,14 @@ Element* AXNodeObject::MouseButtonListener() const {
   if (!node)
     return nullptr;
 
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     node = node->parentElement();
 
   if (!node)
     return nullptr;
 
-  for (Element* element = ToElement(node); element;
+  for (element = To<Element>(node); element;
        element = element->parentElement()) {
     if (element->HasEventListeners(event_type_names::kClick) ||
         element->HasEventListeners(event_type_names::kMousedown) ||
@@ -908,7 +912,8 @@ bool AXNodeObject::IsControl() const {
   if (!node)
     return false;
 
-  return ((node->IsElementNode() && ToElement(node)->IsFormControlElement()) ||
+  auto* element = DynamicTo<Element>(node);
+  return ((element && element->IsFormControlElement()) ||
           AXObject::IsARIAControl(AriaRoleAttribute()));
 }
 
@@ -979,9 +984,9 @@ bool AXNodeObject::IsLink() const {
 // As a workaround, we check if the element is a sectioning element with an ID,
 // or an anchor with a name.
 bool AXNodeObject::IsInPageLinkTarget() const {
-  if (!node_ || !node_->IsElementNode())
+  auto* element = DynamicTo<Element>(node_.Get());
+  if (!element)
     return false;
-  Element* element = ToElement(node_);
   // We exclude elements that are in the shadow DOM.
   if (element->ContainingShadowRoot())
     return false;
@@ -1132,7 +1137,8 @@ bool AXNodeObject::IsClickable() const {
   Node* node = GetNode();
   if (!node)
     return false;
-  if (node->IsElementNode() && ToElement(node)->IsDisabledFormControl()) {
+  auto* element = DynamicTo<Element>(node);
+  if (element && element->IsDisabledFormControl()) {
     return false;
   }
 
@@ -1216,7 +1222,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   if (GetNode() && IsHTMLSummaryElement(*GetNode())) {
     if (GetNode()->parentNode() &&
         IsHTMLDetailsElement(GetNode()->parentNode()))
-      return ToElement(GetNode()->parentNode())->hasAttribute(kOpenAttr)
+      return To<Element>(GetNode()->parentNode())->hasAttribute(kOpenAttr)
                  ? kExpandedExpanded
                  : kExpandedCollapsed;
   }
@@ -1239,16 +1245,15 @@ bool AXNodeObject::IsModal() const {
     return modal;
 
   if (GetNode() && IsHTMLDialogElement(*GetNode()))
-    return ToElement(GetNode())->IsInTopLayer();
+    return To<Element>(GetNode())->IsInTopLayer();
 
   return false;
 }
 
 bool AXNodeObject::IsRequired() const {
-  Node* n = this->GetNode();
-  if (n && (n->IsElementNode() && ToElement(n)->IsFormControlElement()) &&
-      HasAttribute(kRequiredAttr))
-    return ToHTMLFormControlElement(n)->IsRequired();
+  auto* element = DynamicTo<Element>(GetNode());
+  if (element && element->IsFormControlElement() && HasAttribute(kRequiredAttr))
+    return ToHTMLFormControlElement(element)->IsRequired();
 
   if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kRequired))
     return true;
@@ -1571,10 +1576,8 @@ String AXNodeObject::GetText() const {
     return ToTextControl(*node).value();
   }
 
-  if (!node->IsElementNode())
-    return String();
-
-  return ToElement(node)->innerText();
+  auto* element = DynamicTo<Element>(node);
+  return element ? element->innerText() : String();
 }
 
 RGBA32 AXNodeObject::ColorValue() const {
@@ -2527,8 +2530,9 @@ Element* AXNodeObject::ActionElement() const {
   if (!node)
     return nullptr;
 
-  if (node->IsElementNode() && IsClickable())
-    return ToElement(node);
+  auto* element = DynamicTo<Element>(node);
+  if (element && IsClickable())
+    return element;
 
   Element* anchor = AnchorElement();
   Element* click_element = MouseButtonListener();
@@ -2551,7 +2555,7 @@ Element* AXNodeObject::AnchorElement() const {
     if (IsHTMLAnchorElement(*node) ||
         (node->GetLayoutObject() &&
          cache.GetOrCreate(node->GetLayoutObject())->IsAnchor()))
-      return ToElement(node);
+      return To<Element>(node);
   }
 
   return nullptr;

@@ -69,14 +69,9 @@ sk_sp<PaintRecord> CSSPaintDefinition::Paint(
 
   v8::Isolate* isolate = script_state_->GetIsolate();
 
-  CanvasColorParams color_params;
-  if (!context_settings_->alpha()) {
-    color_params.SetOpacityMode(kOpaque);
-  }
-
   // Do subpixel snapping for the |container_size|.
   auto* rendering_context = MakeGarbageCollected<PaintRenderingContext2D>(
-      RoundedIntSize(container_size), color_params, context_settings_, zoom);
+      RoundedIntSize(container_size), context_settings_, zoom);
   PaintSize* paint_size = MakeGarbageCollected<PaintSize>(specified_size);
 
   CSSStyleValueVector empty_paint_arguments;

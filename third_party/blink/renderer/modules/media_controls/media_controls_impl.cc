@@ -271,8 +271,8 @@ class MediaControlsImpl::MediaElementMutationCallback
       if (record->type() != "attributes")
         continue;
 
-      const Element& element = *ToElement(record->target());
-      if (record->oldValue() == element.getAttribute(record->attributeName()))
+      const auto* element = To<Element>(record->target());
+      if (record->oldValue() == element->getAttribute(record->attributeName()))
         continue;
 
       if (record->attributeName() ==

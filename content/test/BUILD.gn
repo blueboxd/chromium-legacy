@@ -1991,6 +1991,7 @@ test("content_unittests") {
     "//content/browser/cache_storage:cache_storage_proto",
     "//content/browser/devtools:devtools_background_services_proto",
     "//content/browser/devtools:inspector_protocol_encoding_test",
+    "//content/browser/devtools:inspector_protocol_bindings_test",
     "//content/browser/dom_storage:local_storage_proto",
     "//content/browser/indexed_db/scopes:scopes_metadata_proto",
     "//content/browser/notifications:notification_proto",

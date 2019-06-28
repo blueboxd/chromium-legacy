@@ -306,7 +306,7 @@ class RightPaneView : public NonAccessibleView,
     link_style.override_color = kPublicSessionBlueColor;
     learn_more_label_->AddStyleRange(gfx::Range(offset, offset + link.length()),
                                      link_style);
-    learn_more_label_->set_auto_color_readability_enabled(false);
+    learn_more_label_->SetAutoColorReadabilityEnabled(false);
 
     labels_view_->AddChildView(learn_more_label_);
 

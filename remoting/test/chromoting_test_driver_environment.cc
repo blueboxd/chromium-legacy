@@ -209,8 +209,8 @@ bool ChromotingTestDriverEnvironment::RetrieveAccessToken(
   access_token_.clear();
 
   AccessTokenCallback access_token_callback =
-      base::Bind(&ChromotingTestDriverEnvironment::OnAccessTokenRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
+      base::BindOnce(&ChromotingTestDriverEnvironment::OnAccessTokenRetrieved,
+                     base::Unretained(this), run_loop.QuitClosure());
 
   // If a unit test has set |test_access_token_fetcher_| then we should use it
   // below.  Note that we do not want to destroy the test object at the end of
@@ -225,13 +225,13 @@ bool ChromotingTestDriverEnvironment::RetrieveAccessToken(
   if (!auth_code.empty()) {
     // If the user passed in an authcode, then use it to retrieve an
     // updated access/refresh token.
-    access_token_fetcher->GetAccessTokenFromAuthCode(auth_code,
-                                                     access_token_callback);
+    access_token_fetcher->GetAccessTokenFromAuthCode(
+        auth_code, std::move(access_token_callback));
   } else {
     DCHECK(!refresh_token_.empty());
 
-    access_token_fetcher->GetAccessTokenFromRefreshToken(refresh_token_,
-                                                         access_token_callback);
+    access_token_fetcher->GetAccessTokenFromRefreshToken(
+        refresh_token_, std::move(access_token_callback));
   }
 
   run_loop.Run();

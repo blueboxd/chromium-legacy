@@ -345,10 +345,6 @@ class OverviewSessionTest : public AshTestBase {
     return item->transform_window_;
   }
 
-  bool HasMaskForItem(OverviewItem* item) const {
-    return !!item->transform_window_.mask_;
-  }
-
   void CheckOverviewEnterExitHistogram(const char* trace,
                                        std::vector<int>&& enter_counts,
                                        std::vector<int>&& exit_counts) {
@@ -2665,29 +2661,12 @@ TEST_F(OverviewSessionTest, Backdrop) {
   ToggleOverview();
 }
 
-class OverviewSessionRoundedCornerTest
-    : public OverviewSessionTest,
-      public testing::WithParamInterface<bool> {
+class OverviewSessionRoundedCornerTest : public OverviewSessionTest {
  public:
   OverviewSessionRoundedCornerTest() = default;
   ~OverviewSessionRoundedCornerTest() override = default;
 
-  void SetUp() override {
-    OverviewSessionTest::SetUp();
-    if (UseShaderForRoundedCorner()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          ash::features::kUseShaderRoundedCorner);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          ash::features::kUseShaderRoundedCorner);
-    }
-  }
-
-  bool UseShaderForRoundedCorner() const { return GetParam(); }
-
   bool HasRoundedCorner(OverviewItem* item) {
-    if (!UseShaderForRoundedCorner())
-      return HasMaskForItem(item) || item->transform_window_.IsMinimized();
     const ui::Layer* layer = item->transform_window_.IsMinimized()
                                  ? GetPreviewView(item)->layer()
                                  : transform_window(item).window()->layer();
@@ -2695,8 +2674,6 @@ class OverviewSessionRoundedCornerTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(OverviewSessionRoundedCornerTest);
 };
 
@@ -2765,7 +2742,7 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
 
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during drags.
-TEST_P(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
+TEST_F(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2810,35 +2787,6 @@ TEST_P(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
   EXPECT_TRUE(HasRoundedCorner(item1));
   EXPECT_TRUE(HasRoundedCorner(item2));
 }
-
-TEST_P(OverviewSessionRoundedCornerTest, NoRoundedEdgeMaskFor11Windows) {
-  // This is only for old rounded corner implementation.
-  if (features::ShouldUseShaderRoundedCorner())
-    return;
-
-  std::vector<std::unique_ptr<aura::Window>> windows;
-  for (int i = 0; i < 11; i++)
-    windows.push_back(CreateTestWindow());
-  EnterTabletMode();
-  ToggleOverview();
-  base::RunLoop().RunUntilIdle();
-  for (auto& window : windows) {
-    OverviewItem* item = GetWindowItemForWindow(0, window.get());
-    EXPECT_FALSE(HasRoundedCorner(item));
-  }
-  // Remove 1 window and windows will have rounded corners.
-  windows.pop_back();
-  ASSERT_EQ(10u, windows.size());
-  for (auto& window : windows) {
-    OverviewItem* item = GetWindowItemForWindow(0, window.get());
-    EXPECT_TRUE(HasRoundedCorner(item));
-  }
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
-    OverviewSessionRoundedCornerTest,
-    testing::Bool());
 
 // Tests that the shadows in overview mode are placed correctly.
 TEST_F(OverviewSessionTest, ShadowBounds) {

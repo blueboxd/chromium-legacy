@@ -1068,14 +1068,14 @@ TEST_P(PaintPropertyTreeUpdateTest, WillTransformChangeAboveFixed) {
   EXPECT_EQ(container->FirstFragment().PaintProperties()->Transform(),
             &fixed->FirstFragment().LocalBorderBoxProperties().Transform());
 
-  ToElement(container->GetNode())
+  To<Element>(container->GetNode())
       ->setAttribute(html_names::kStyleAttr, "will-change: top");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       &GetLayoutView().FirstFragment().LocalBorderBoxProperties().Transform(),
       &fixed->FirstFragment().LocalBorderBoxProperties().Transform());
 
-  ToElement(container->GetNode())
+  To<Element>(container->GetNode())
       ->setAttribute(html_names::kStyleAttr, "will-change: transform");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(container->FirstFragment().PaintProperties()->Transform(),

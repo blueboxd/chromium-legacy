@@ -829,6 +829,14 @@ void CupsPrintersHandler::OnAddedOrEditedSpecifiedPrinter(
   }
   PRINTER_LOG(EVENT) << "Add/Update manual printer: " << result_code;
   OnAddedOrEditedPrinterCommon(printer, result_code, /*is_automatic=*/false);
+
+  if (result_code != PrinterSetupResult::kSuccess &&
+      result_code != PrinterSetupResult::kEditSuccess) {
+    RejectJavascriptCallback(base::Value(callback_id),
+                             base::Value(result_code));
+    return;
+  }
+
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(result_code));
 }
 
@@ -836,7 +844,7 @@ void CupsPrintersHandler::OnAddOrEditPrinterError(
     const std::string& callback_id,
     PrinterSetupResult result_code) {
   PRINTER_LOG(EVENT) << "Add printer error: " << result_code;
-  ResolveJavascriptCallback(base::Value(callback_id), base::Value(result_code));
+  RejectJavascriptCallback(base::Value(callback_id), base::Value(result_code));
 }
 
 void CupsPrintersHandler::HandleGetCupsPrinterManufacturers(

@@ -45,7 +45,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   bool DoesOriginMatchMask(
       int origin_type_mask,
       const url::Origin& origin,
-      storage::SpecialStoragePolicy* special_storage_policy) const override;
+      storage::SpecialStoragePolicy* special_storage_policy) override;
   void Remove(const base::Time& delete_begin,
               const base::Time& delete_end,
               int remove_mask,

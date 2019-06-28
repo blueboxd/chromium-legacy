@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
+import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.PreferenceFragment;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceScreen;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -19,24 +20,33 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
 import org.chromium.chrome.browser.preferences.MainPreferences;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
-import org.chromium.chrome.browser.preferences.PreferenceUtils;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
 
 /**
  * Autofill credit cards fragment, which allows the user to edit credit cards and control
  * payment apps.
  */
-public class AutofillPaymentMethodsFragment
-        extends PreferenceFragment implements PersonalDataManager.PersonalDataManagerObserver {
+public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
+        implements PersonalDataManager.PersonalDataManagerObserver {
     private static final String PREF_PAYMENT_APPS = "payment_apps";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.blank_preference_fragment_screen);
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.autofill_payment_methods);
+
+        PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getStyledContext());
+        // Suppresses unwanted animations while Preferences are removed from and re-added to the
+        // screen.
+        screen.setShouldUseGeneratedIds(false);
+
+        setPreferenceScreen(screen);
     }
 
     @Override
@@ -52,19 +62,17 @@ public class AutofillPaymentMethodsFragment
         getPreferenceScreen().removeAll();
         getPreferenceScreen().setOrderingAsAdded(true);
 
-        ChromeSwitchPreference autofillSwitch = new ChromeSwitchPreference(getActivity(), null);
+        ChromeSwitchPreferenceCompat autofillSwitch =
+                new ChromeSwitchPreferenceCompat(getStyledContext(), null);
         autofillSwitch.setTitle(R.string.autofill_enable_credit_cards_toggle_label);
         autofillSwitch.setSummary(
                 getActivity().getString(R.string.autofill_enable_credit_cards_toggle_sublabel));
         autofillSwitch.setChecked(PersonalDataManager.isAutofillCreditCardEnabled());
-        autofillSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                PersonalDataManager.setAutofillCreditCardEnabled((boolean) newValue);
-                return true;
-            }
+        autofillSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
+            PersonalDataManager.setAutofillCreditCardEnabled((boolean) newValue);
+            return true;
         });
-        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegateCompat() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return PersonalDataManager.isAutofillCreditCardManaged();
@@ -124,6 +132,10 @@ public class AutofillPaymentMethodsFragment
             getPreferenceScreen().addPreference(payment_apps_pref);
             refreshPaymentAppsPrefForAndroidPaymentApps(payment_apps_pref);
         }
+    }
+
+    private Context getStyledContext() {
+        return getPreferenceManager().getContext();
     }
 
     private void refreshPaymentAppsPrefForAndroidPaymentApps(Preference pref) {

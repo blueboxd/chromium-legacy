@@ -38,16 +38,8 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
       const kerberos::GetKerberosFilesResponse& response)>;
   using KerberosFilesChangedCallback =
       base::RepeatingCallback<void(const std::string& principal_name)>;
-
-  // Interface for testing. Only implemented in the fake implementation.
-  class TestInterface {
-   public:
-    // Sets whether the (fake) daemon has been started by Upstart.
-    virtual void set_started(bool started) = 0;
-
-    // Whether the (fake) daemon has been started and is in a running state.
-    virtual bool started() const = 0;
-  };
+  using KerberosTicketExpiringCallback =
+      base::RepeatingCallback<void(const std::string& principal_name)>;
 
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);
@@ -90,6 +82,9 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
 
   virtual void ConnectToKerberosFileChangedSignal(
       KerberosFilesChangedCallback callback) = 0;
+
+  virtual void ConnectToKerberosTicketExpiringSignal(
+      KerberosTicketExpiringCallback callback) = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

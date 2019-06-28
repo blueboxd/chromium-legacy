@@ -977,24 +977,18 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   }
 
  protected:
-  // Terminates the renderer to clear the in-memory cache.
-  void TerminateRenderer() {
-    RenderProcessHost* process =
-        shell()->web_contents()->GetMainFrame()->GetProcess();
-    RenderProcessHostWatcher process_watcher(
-        process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    NavigateToURL(shell(), GetWebUIURL("crash"));
-    process_watcher.Wait();
-  }
-
   bool TestResourceLoadFromDedicatedWorker(const GURL& url,
                                            const GURL& worker) {
-    TerminateRenderer();
+    // Do a cross-process navigation to clear the in-memory cache.
+    // We assume that we don't start this call from "chrome://gpu", as
+    // otherwise it won't be a cross-process navigation. We are relying
+    // on this navigation to discard the old process.
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
 
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
 
     const char kLoadWorkerScript[] = "let w = new Worker('%s');";
     std::string create_worker_script =
@@ -1010,12 +1004,21 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   // Loads 3p.com/script on page |url|, optionally from |sub_frame| if it's
   // valid and return if the script was cached or not.
   bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
-    TerminateRenderer();
+    // Do a cross-process navigation to clear the in-memory cache.
+    // We assume that we don't start this call from "chrome://gpu", as
+    // otherwise it won't be a cross-process navigation. We are relying
+    // on this navigation to discard the old process.
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
 
-    NavigateToURL(shell(), url);
+    // In the case of a redirect, the observed URL will be different from
+    // what NavigateToURL(...) expects.
+    if (base::StartsWith(url.path(), "/redirect", base::CompareCase::SENSITIVE))
+      EXPECT_FALSE(NavigateToURL(shell(), url));
+    else
+      EXPECT_TRUE(NavigateToURL(shell(), url));
 
     RenderFrameHost* host_to_load_resource =
         shell()->web_contents()->GetMainFrame();
@@ -1099,15 +1102,7 @@ class WebContentsSplitCacheBrowserTestDisabled
   base::test::ScopedFeatureList feature_list;
 };
 
-// Times out on Windows for symbol_level>0, https://crbug.com/972990
-#if defined(OS_WIN)
-#define MAYBE_SplitCache DISABLED_SplitCache
-#else
-#define MAYBE_SplitCache SplitCache
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled,
-                       MAYBE_SplitCache) {
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 

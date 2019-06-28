@@ -146,33 +146,27 @@ class CORE_EXPORT ScriptLoader final
   // https://html.spec.whatwg.org/C/#script-processing-model
   // "A script element has several associated pieces of state.":
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#already-started">
-  // ... Initially, script elements must have this flag unset ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#already-started">... Initially,
+  // script elements must have this flag unset ...</spec>
   bool already_started_ = false;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#parser-inserted">
-  // ... Initially, script elements must have this flag unset. ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">... Initially,
+  // script elements must have this flag unset. ...</spec>
   bool parser_inserted_ = false;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#non-blocking">
-  // ... Initially, script elements must have this flag set. ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#non-blocking">... Initially,
+  // script elements must have this flag set. ...</spec>
   bool non_blocking_ = true;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#ready-to-be-parser-executed">
+  // <spec href="https://html.spec.whatwg.org/C/#ready-to-be-parser-executed">
   // ... Initially, script elements must have this flag unset ...</spec>
   bool ready_to_be_parser_executed_ = false;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#concept-script-type">
-  // ... It is determined when the script is prepared, ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#concept-script-type">... It is
+  // determined when the script is prepared, ...</spec>
   mojom::ScriptType script_type_ = mojom::ScriptType::kClassic;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#concept-script-external">
+  // <spec href="https://html.spec.whatwg.org/C/#concept-script-external">
   // ... It is determined when the script is prepared, ...</spec>
   bool is_external_script_ = false;
 

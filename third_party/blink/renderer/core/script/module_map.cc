@@ -137,7 +137,7 @@ void ModuleMap::FetchSingleModuleScript(
   // <spec step="3">If moduleMap[url] exists, asynchronously complete this
   // algorithm with moduleMap[url], and abort these steps.</spec>
   //
-  // <spec step="12">Set moduleMap[url] to module script, and asynchronously
+  // <spec step="14">Set moduleMap[url] to module script, and asynchronously
   // complete this algorithm with module script.</spec>
   if (client)
     entry->AddClient(client);

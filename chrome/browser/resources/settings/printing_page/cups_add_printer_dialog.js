@@ -171,10 +171,13 @@ Polymer({
       value: false,
     },
 
-    /** @private */
-    showGeneralError_: {
-      type: Boolean,
-      value: false,
+    /**
+     * The error text to be displayed on the dialog.
+     * @private
+     */
+    errorText_: {
+      type: String,
+      value: '',
     },
   },
 
@@ -199,11 +202,21 @@ Polymer({
    * @param {!PrinterSetupResult} result
    * @private
    * */
-  onPrinterAdded_: function(result) {
+  onAddPrinterSucceeded_: function(result) {
     this.fire(
         'show-cups-printer-toast',
         {resultCode: result, printerName: this.newPrinter.printerName});
     this.$$('add-printer-dialog').close();
+  },
+
+  /**
+   * Handler for addCupsPrinter failure.
+   * @param {*} result
+   * @private
+   * */
+  onAddPrinterFailed_: function(result) {
+    this.errorText_ = settings.printing.getErrorText(
+        /** @type {PrinterSetupResult} */ (result));
   },
 
   /**
@@ -233,7 +246,9 @@ Polymer({
     if (this.newPrinter.printerPpdReferenceResolved) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .addCupsPrinter(this.newPrinter)
-          .then(this.onPrinterAdded_.bind(this));
+          .then(
+              this.onAddPrinterSucceeded_.bind(this),
+              this.onAddPrinterFailed_.bind(this));
     } else {
       this.$$('add-printer-dialog').close();
       this.fire('open-manufacturer-model-dialog');
@@ -252,7 +267,8 @@ Polymer({
       this.$.printerAddressInput.invalid = true;
       return;
     }
-    this.showGeneralError_ = true;
+    this.errorText_ = settings.printing.getErrorText(
+        /** @type {PrinterSetupResult} */ (result));
   },
 
   /** @private */
@@ -290,7 +306,7 @@ Polymer({
   /** @private */
   printerInfoChanged_: function() {
     this.$.printerAddressInput.invalid = false;
-    this.showGeneralError_ = false;
+    this.errorText_ = '';
   },
 
 });
@@ -334,6 +350,15 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * The error text to be displayed on the dialog.
+     * @private
+     */
+    errorText_: {
+      type: String,
+      value: '',
+    },
   },
 
   observers: [
@@ -357,11 +382,21 @@ Polymer({
    * @param {!PrinterSetupResult} result
    * @private
    * */
-  onPrinterAdded_: function(result) {
+  onPrinterAddedSucceeded_: function(result) {
     this.fire(
         'show-cups-printer-toast',
         {resultCode: result, printerName: this.activePrinter.printerName});
     this.close();
+  },
+
+  /**
+   * Handler for addCupsPrinter failure.
+   * @param {*} result
+   * @private
+   * */
+  onPrinterAddedFailed_: function(result) {
+    this.errorText_ = settings.printing.getErrorText(
+        /** @type {PrinterSetupResult} */ (result));
   },
 
   /**
@@ -403,6 +438,7 @@ Polymer({
    * @private
    */
   selectedModelChanged_: function() {
+    this.errorText_ = '';
     if (!this.activePrinter.ppdManufacturer || !this.activePrinter.ppdModel) {
       // Do not check for an EULA unless both |ppdManufacturer| and |ppdModel|
       // are set. Set |eulaUrl_| to be empty in this case.
@@ -478,7 +514,9 @@ Polymer({
   addPrinter_: function() {
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .addCupsPrinter(this.activePrinter)
-        .then(this.onPrinterAdded_.bind(this));
+        .then(
+            this.onPrinterAddedSucceeded_.bind(this),
+            this.onPrinterAddedFailed_.bind(this));
   },
 
   /**

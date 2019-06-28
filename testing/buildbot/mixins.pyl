@@ -273,7 +273,7 @@
       'dimensions': {
         # Defined in bot_config.py in internal infradata/config workspace
         'gpu': 'intel-hd-630-ubuntu-stable',
-        'os': 'Ubuntu',
+        'os': 'linux-intel-stable',
         'pool': 'Chrome-GPU',
       }
     }
@@ -293,7 +293,7 @@
       'dimensions': {
         # Defined in bot_config.py in internal infradata/config workspace
         'gpu': 'nvidia-quadro-p400-ubuntu-stable',
-        'os': 'Ubuntu-14.04',
+        'os': 'linux-nvidia-stable',
         'pool': 'Chrome-GPU',
       }
     }
@@ -380,7 +380,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.13.6',
+        'os': 'mac-intel-stable',
       },
     },
   },
@@ -407,7 +407,7 @@
       'dimensions': {
         'gpu': '1002:6821',
         'hidpi': '1',
-        'os': 'Mac-10.13.6',
+        'os': 'mac-amd-stable',
         'pool': 'Chrome-GPU',
       },
     },
@@ -428,7 +428,7 @@
       'dimensions': {
         'gpu': '10de:0fe9',
         'hidpi': '1',
-        'os': 'Mac-10.13.6',
+        'os': 'mac-nvidia-stable',
         'pool': 'Chrome-GPU',
       },
     },

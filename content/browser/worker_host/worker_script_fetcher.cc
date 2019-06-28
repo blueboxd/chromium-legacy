@@ -103,7 +103,13 @@ void WorkerScriptFetcher::Start(
 }
 
 void WorkerScriptFetcher::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    const network::ResourceResponseHead& response_head) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  response_head_ = response_head;
+}
+
+void WorkerScriptFetcher::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::WeakPtr<WorkerScriptLoader> script_loader =
@@ -114,9 +120,9 @@ void WorkerScriptFetcher::OnReceiveResponse(
     // loader for the response, e.g. AppCache's fallback.
     DCHECK(!response_url_loader_);
     network::mojom::URLLoaderClientRequest response_client_request;
-    if (script_loader->MaybeCreateLoaderForResponse(head, &response_url_loader_,
-                                                    &response_client_request,
-                                                    url_loader_.get())) {
+    if (script_loader->MaybeCreateLoaderForResponse(
+            response_head_, &response_body, &response_url_loader_,
+            &response_client_request, url_loader_.get())) {
       DCHECK(response_url_loader_);
       response_url_loader_binding_.Bind(std::move(response_client_request));
       subresource_loader_params_ = script_loader->TakeSubresourceLoaderParams();
@@ -130,7 +136,8 @@ void WorkerScriptFetcher::OnReceiveResponse(
       blink::mojom::WorkerMainScriptLoadParams::New();
 
   // Fill in params for loading worker's main script and subresources.
-  main_script_load_params->response_head = head;
+  main_script_load_params->response_head = std::move(response_head_);
+  main_script_load_params->response_body = std::move(response_body);
   if (url_loader_) {
     // The main script was served by a request interceptor or the default
     // network loader.
@@ -164,9 +171,9 @@ void WorkerScriptFetcher::OnReceiveResponse(
 
 void WorkerScriptFetcher::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    const network::ResourceResponseHead& response_head) {
   redirect_infos_.push_back(redirect_info);
-  redirect_response_heads_.push_back(head);
+  redirect_response_heads_.push_back(response_head);
   url_loader_->FollowRedirect({}, /* removed_headers */
                               {} /* modified_headers */);
 }
@@ -185,16 +192,9 @@ void WorkerScriptFetcher::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   NOTREACHED();
 }
 
-void WorkerScriptFetcher::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
-  // Not reached. At this point, the loader and client endpoints must have
-  // been unbound and forwarded to the renderer.
-  NOTREACHED();
-}
-
 void WorkerScriptFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  // We can reach here only when loading fails before receiving a response head.
+  // We can reach here only when loading fails before receiving a response_head.
   DCHECK_NE(net::OK, status.error_code);
   std::move(callback_).Run(nullptr /* main_script_load_params */,
                            base::nullopt /* subresource_loader_params */,

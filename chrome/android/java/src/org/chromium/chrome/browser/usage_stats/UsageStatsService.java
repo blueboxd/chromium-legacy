@@ -122,6 +122,14 @@ public class UsageStatsService {
         mOptInState = state;
         mClient.notifyOptInStateChange(mOptInState);
 
+        if (!state) {
+            getAllSuspendedWebsitesAsync().then(
+                    (suspendedSites) -> { setWebsitesSuspendedAsync(suspendedSites, false); });
+            getAllTrackedTokensAsync().then((tokens) -> {
+                for (String token : tokens) stopTrackingTokenAsync(token);
+            });
+        }
+
         @UsageStatsMetricsEvent
         int event = state ? UsageStatsMetricsEvent.OPT_IN : UsageStatsMetricsEvent.OPT_OUT;
         UsageStatsMetricsReporter.reportMetricsEvent(event);

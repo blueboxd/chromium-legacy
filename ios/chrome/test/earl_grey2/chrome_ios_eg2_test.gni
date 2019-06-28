@@ -102,6 +102,7 @@ template("chrome_ios_eg2_test_app_host") {
     bundle_deps += [
       "//ios/chrome/app/resources",
       "//ios/third_party/earl_grey2:app_framework+bundle",
+      "//ios/third_party/gtx:gtx+bundle",
       ios_application_icons_target,
     ]
 
@@ -155,7 +156,10 @@ template("chrome_ios_eg2_test") {
     }
     deps += [ "//ios/chrome/test/earl_grey:eg_test_support+eg2" ]
 
-    bundle_deps = [ "//ios/chrome/app/resources" ]
+    bundle_deps = [
+      "//ios/chrome/app/resources",
+      "//ios/third_party/gtx:gtx+bundle",
+    ]
   }
 }
 

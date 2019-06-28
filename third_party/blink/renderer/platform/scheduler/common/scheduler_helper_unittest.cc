@@ -54,8 +54,6 @@ class SchedulerHelperTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
                 QUEUED) {
-    // Null clock triggers some assertions.
-    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
     sequence_manager_ = base::sequence_manager::SequenceManagerForTest::Create(
         nullptr, task_environment_.GetMainThreadTaskRunner(),
         task_environment_.GetMockTickClock());

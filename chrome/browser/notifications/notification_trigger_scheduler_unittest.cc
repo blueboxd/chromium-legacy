@@ -19,8 +19,6 @@ using ::testing::_;
 
 namespace {
 
-constexpr base::TimeDelta kTimeAdvance = base::TimeDelta::FromMilliseconds(1);
-
 std::unique_ptr<TestingProfileManager> CreateTestingProfileManager() {
   std::unique_ptr<TestingProfileManager> profile_manager(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -44,11 +42,6 @@ class NotificationTriggerSchedulerTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME) {}
-
-  void SetUp() override {
-    // Advance time a little bit so TimeTicks::Now().is_null() becomes false.
-    thread_bundle_.FastForwardBy(kTimeAdvance);
-  }
 
   class ProfileTestData {
    public:

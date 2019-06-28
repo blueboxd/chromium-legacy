@@ -1661,6 +1661,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-sync-uss-nigori",
+    "owners": [ "mmoskvitin@google.com", "//components/sync/OWNERS" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-sync-uss-passwords",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
     "expiry_milestone": 77

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
@@ -27,6 +28,8 @@ class SimpleURLLoader;
 namespace safe_browsing {
 
 class PasswordProtectionNavigationThrottle;
+
+using password_manager::metrics_util::PasswordType;
 
 // A request for checking if an unfamiliar login form or a password reuse event
 // is safe. PasswordProtectionRequest objects are owned by
@@ -57,7 +60,8 @@ class PasswordProtectionRequest
                             const GURL& password_form_action,
                             const GURL& password_form_frame_url,
                             const std::string& username,
-                            ReusedPasswordType reused_password_type,
+                            PasswordType password_type,
+                            bool is_account_syncing,
                             const std::vector<std::string>& matching_origins,
                             LoginReputationClientRequest::TriggerType type,
                             bool password_field_exists,
@@ -93,9 +97,7 @@ class PasswordProtectionRequest
 
   const std::string username() const { return username_; }
 
-  ReusedPasswordType reused_password_type() const {
-    return reused_password_type_;
-  }
+  PasswordType password_type() const { return password_type_; }
 
   bool is_modal_warning_showing() const { return is_modal_warning_showing_; }
 
@@ -184,7 +186,10 @@ class PasswordProtectionRequest
   const std::string username_;
 
   // Type of the reused password.
-  const ReusedPasswordType reused_password_type_;
+  const PasswordType password_type_;
+
+  // Whether the user's first currently signed in to Chrome account is syncing.
+  const bool is_primary_account_syncing_;
 
   // Domains from the Password Manager that match this password.
   // Should be non-empty if |reused_password_type_| == SAVED_PASSWORD.

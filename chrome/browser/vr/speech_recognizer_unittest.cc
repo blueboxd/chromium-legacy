@@ -132,13 +132,13 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
   void StopAudioCaptureForSession(int session_id) override {}
 
   const content::SpeechRecognitionSessionConfig& GetSessionConfig(
-      int session_id) const override {
+      int session_id) override {
     DCHECK(session_id_ == session_id);
     return session_config_;
   }
 
   content::SpeechRecognitionSessionContext GetSessionContext(
-      int session_id) const override {
+      int session_id) override {
     DCHECK(session_id_ == session_id);
     return session_ctx_;
   }

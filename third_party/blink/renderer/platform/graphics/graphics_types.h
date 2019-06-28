@@ -139,10 +139,10 @@ enum MailboxSyncMode {
   kOrderingBarrier,
 };
 
-enum DarkModeClassification {
+enum class DarkModeClassification {
   kNotClassified,
-  kApplyDarkModeFilter,
-  kDoNotApplyDarkModeFilter,
+  kApplyFilter,
+  kDoNotApplyFilter,
 };
 
 // TODO(junov): crbug.com/453113 Relocate ShadowMode to

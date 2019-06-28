@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/navigation_policy.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_cache.h"
@@ -142,11 +143,17 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     response_.encoded_data_length = 0;
     if (is_navigation_request) {
       client_->OnReceiveResponse(response_);
-      // When Network Service is not enabled, we need to wait
-      // ProceedWithResponse for navigation request. See
-      // https://crbug.com/791049.
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+      // There are two situations we need to call SendResponseBody() in advance:
+      //
+      // 1. When Network Service is enabled, ProceedWithResponse() will not be
+      //    called. See https://crbug.com/791049.
+      //
+      // 2. When NavigationImmediateResponseBody is enabled, see
+      //    https://crbug.com/831155.
+      if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+          IsNavigationImmediateResponseBodyEnabled()) {
         SendResponseBody();
+      }
       return;
     }
 
@@ -235,7 +242,11 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   }
   void ProceedWithResponse() override {
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    SendResponseBody();
+
+    // If NavigationImmediateResponseBody is enabled, SendResponseBody() has
+    // already been called in the constructor.
+    if (!IsNavigationImmediateResponseBodyEnabled())
+      SendResponseBody();
   }
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override {

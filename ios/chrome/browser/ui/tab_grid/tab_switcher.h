@@ -12,7 +12,6 @@
 #include "url/gurl.h"
 
 @protocol OmniboxFocuser;
-@class Tab;
 @class TabModel;
 @protocol TabSwitcher;
 @protocol ToolbarCommands;
@@ -67,7 +66,7 @@ struct UrlLoadParams;
 //   |-tabSwitcher:shouldFinishWithActiveModel:|
 //   |-tabSwitcherDismissTransitionDidEnd:|
 // to inform the delegate when this animation begins and ends.
-- (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
+- (void)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
                         withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                                   atIndex:(NSUInteger)position;
 

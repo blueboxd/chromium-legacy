@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
@@ -84,7 +85,7 @@ bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
 
 bool PasswordProtectionService::ShouldShowModalWarning(
     LoginReputationClientRequest::TriggerType trigger_type,
-    PasswordReuseEvent::ReusedPasswordType password_type,
+    PasswordType password_type,
     LoginReputationClientResponse::VerdictType verdict_type) {
   if (trigger_type != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
       !IsSupportedPasswordTypeForModalWarning(password_type)) {
@@ -93,7 +94,7 @@ bool PasswordProtectionService::ShouldShowModalWarning(
 
   // Shows modal warning for sync password reuse only if user's currently logged
   // in.
-  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD &&
+  if (password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD &&
       GetSyncAccountType() == PasswordReuseEvent::NOT_SIGNED_IN) {
     return false;
   }
@@ -107,7 +108,7 @@ LoginReputationClientResponse::VerdictType
 PasswordProtectionService::GetCachedVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     LoginReputationClientResponse* out_response) {
   return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
 }
@@ -115,7 +116,7 @@ PasswordProtectionService::GetCachedVerdict(
 void PasswordProtectionService::CacheVerdict(
     const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     const LoginReputationClientResponse& verdict,
     const base::Time& receive_time) {}
 
@@ -125,7 +126,8 @@ void PasswordProtectionService::StartRequest(
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
     const std::string& username,
-    ReusedPasswordType reused_password_type,
+    PasswordType password_type,
+    bool is_account_syncing,
     const std::vector<std::string>& matching_domains,
     LoginReputationClientRequest::TriggerType trigger_type,
     bool password_field_exists) {
@@ -133,7 +135,7 @@ void PasswordProtectionService::StartRequest(
   scoped_refptr<PasswordProtectionRequest> request(
       new PasswordProtectionRequest(
           web_contents, main_frame_url, password_form_action,
-          password_form_frame_url, username, reused_password_type,
+          password_form_frame_url, username, password_type, is_account_syncing,
           matching_domains, trigger_type, password_field_exists, this,
           GetRequestTimeoutInMS()));
   request->Start();
@@ -144,15 +146,16 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
     const GURL& password_form_action,
-    const GURL& password_form_frame_url) {
+    const GURL& password_form_frame_url,
+    const std::string& hosted_domain) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                  main_frame_url,
-                  PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &reason)) {
+                  main_frame_url, PasswordType::PASSWORD_TYPE_UNKNOWN,
+                  hosted_domain, &reason)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url, /* username */ "",
-                 PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
+                 PasswordType::PASSWORD_TYPE_UNKNOWN, false,
                  {}, /* matching_domains: not used for this type */
                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   }
@@ -162,11 +165,13 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
     const std::string& username,
-    ReusedPasswordType reused_password_type,
+    PasswordType password_type,
+    const std::string hosted_domain,
+    bool is_account_syncing,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsSupportedPasswordTypeForPinging(reused_password_type))
+  if (!IsSupportedPasswordTypeForPinging(password_type))
     return;
 
   // Collect metrics about typical page-zoom on login pages.
@@ -178,23 +183,24 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
 
   RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                  main_frame_url, reused_password_type, &reason)) {
+                  main_frame_url, password_type, hosted_domain, &reason)) {
     StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
-                 reused_password_type, matching_domains,
+                 password_type, is_account_syncing, matching_domains,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
   } else {
     MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
   }
-  if (CanShowInterstitial(reason, reused_password_type, main_frame_url)) {
-    ShowInterstitial(web_contents, reused_password_type);
+  if (CanShowInterstitial(reason, password_type, main_frame_url)) {
+    ShowInterstitial(web_contents, password_type);
   }
 }
 
 bool PasswordProtectionService::CanSendPing(
     LoginReputationClientRequest::TriggerType trigger_type,
     const GURL& main_frame_url,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
+    std::string hosted_domain,
     RequestOutcome* reason) {
   *reason = RequestOutcome::UNKNOWN;
   bool is_pinging_enabled =
@@ -210,8 +216,9 @@ bool PasswordProtectionService::CanSendPing(
       !IsURLWhitelistedForPasswordEntry(main_frame_url, reason)) {
     return true;
   }
-  LogNoPingingReason(trigger_type, *reason, password_type,
-                     GetSyncAccountType());
+  LogNoPingingReason(trigger_type, *reason,
+                     GetPasswordProtectionReusedPasswordAccountType(
+                         password_type, hosted_domain));
   return false;
 }
 
@@ -226,15 +233,14 @@ void PasswordProtectionService::RequestFinished(
     if (outcome != RequestOutcome::RESPONSE_ALREADY_CACHED) {
       if (response) {
         CacheVerdict(request->main_frame_url(), request->trigger_type(),
-                     request->reused_password_type(), *response,
-                     base::Time::Now());
+                     request->password_type(), *response, base::Time::Now());
       }
     }
     if (ShouldShowModalWarning(request->trigger_type(),
-                               request->reused_password_type(),
+                               request->password_type(),
                                response->verdict_type())) {
       ShowModalWarning(request->web_contents(), response->verdict_token(),
-                       request->reused_password_type());
+                       request->password_type());
       request->set_is_modal_warning_showing(true);
     }
   }
@@ -248,9 +254,9 @@ void PasswordProtectionService::RequestFinished(
         response ? response->verdict_type()
                  : LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
     auto is_phishing_url = verdict == LoginReputationClientResponse::PHISHING;
-    MaybeReportPasswordReuseDetected(
-        request->web_contents(), request->username(),
-        request->reused_password_type(), is_phishing_url);
+    MaybeReportPasswordReuseDetected(request->web_contents(),
+                                     request->username(),
+                                     request->password_type(), is_phishing_url);
   }
 
   // Remove request from |pending_requests_| list. If it triggers warning, add
@@ -342,8 +348,7 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
     if (request->web_contents() == web_contents &&
         request->trigger_type() ==
             safe_browsing::LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
-        IsSupportedPasswordTypeForModalWarning(
-            request->reused_password_type())) {
+        IsSupportedPasswordTypeForModalWarning(request->password_type())) {
       return std::make_unique<PasswordProtectionNavigationThrottle>(
           navigation_handle, request, /*is_warning_showing=*/false);
     }
@@ -393,12 +398,14 @@ PasswordProtectionService::GetPasswordProtectionReusedPasswordType(
   switch (password_type) {
     case PasswordType::SAVED_PASSWORD:
       return PasswordReuseEvent::SAVED_PASSWORD;
-    case PasswordType::SYNC_PASSWORD:
+    case PasswordType::PRIMARY_ACCOUNT_PASSWORD:
       return PasswordReuseEvent::SIGN_IN_PASSWORD;
     case PasswordType::OTHER_GAIA_PASSWORD:
       return PasswordReuseEvent::OTHER_GAIA_PASSWORD;
     case PasswordType::ENTERPRISE_PASSWORD:
       return PasswordReuseEvent::ENTERPRISE_PASSWORD;
+    case PasswordType::PASSWORD_TYPE_UNKNOWN:
+      return PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN;
     case PasswordType::PASSWORD_TYPE_COUNT:
       break;
   }
@@ -406,28 +413,62 @@ PasswordProtectionService::GetPasswordProtectionReusedPasswordType(
   return PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN;
 }
 
+// static
+ReusedPasswordAccountType
+PasswordProtectionService::GetPasswordProtectionReusedPasswordAccountType(
+    password_manager::metrics_util::PasswordType password_type,
+    std::string hosted_domain) {
+  ReusedPasswordAccountType reused_password_account_type;
+  switch (password_type) {
+    case PasswordType::SAVED_PASSWORD:
+      reused_password_account_type.set_account_type(
+          ReusedPasswordAccountType::SAVED_PASSWORD);
+      return reused_password_account_type;
+    case PasswordType::ENTERPRISE_PASSWORD:
+      reused_password_account_type.set_account_type(
+          ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+      return reused_password_account_type;
+    case PasswordType::PRIMARY_ACCOUNT_PASSWORD:
+    case PasswordType::OTHER_GAIA_PASSWORD:
+      if (password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD)
+        reused_password_account_type.set_is_account_syncing(IsAccountSyncing());
+      reused_password_account_type.set_account_type(
+          hosted_domain == kNoHostedDomainFound
+              ? ReusedPasswordAccountType::GMAIL
+              : ReusedPasswordAccountType::GSUITE);
+      return reused_password_account_type;
+    case PasswordType::PASSWORD_TYPE_UNKNOWN:
+    case PasswordType::PASSWORD_TYPE_COUNT:
+      reused_password_account_type.set_account_type(
+          ReusedPasswordAccountType::UNKNOWN);
+      return reused_password_account_type;
+  }
+  NOTREACHED();
+  return reused_password_account_type;
+}
+
 bool PasswordProtectionService::IsSupportedPasswordTypeForPinging(
-    ReusedPasswordType reused_password_type) const {
-  switch (reused_password_type) {
-    case PasswordReuseEvent::SAVED_PASSWORD:
+    PasswordType password_type) const {
+  switch (password_type) {
+    case PasswordType::SAVED_PASSWORD:
       return true;
-    case PasswordReuseEvent::SIGN_IN_PASSWORD:
+    case PasswordType::PRIMARY_ACCOUNT_PASSWORD:
       return GetSyncAccountType() != PasswordReuseEvent::NOT_SIGNED_IN;
-    case PasswordReuseEvent::OTHER_GAIA_PASSWORD:
-      return false;
-    case PasswordReuseEvent::ENTERPRISE_PASSWORD:
+    case PasswordType::ENTERPRISE_PASSWORD:
       return true;
-    case PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN:
-      break;
+    case PasswordType::OTHER_GAIA_PASSWORD:
+    case PasswordType::PASSWORD_TYPE_UNKNOWN:
+    case PasswordType::PASSWORD_TYPE_COUNT:
+      return false;
   }
   NOTREACHED();
   return false;
 }
 
 bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
-    ReusedPasswordType reused_password_type) const {
-  return reused_password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
-         reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD;
+    PasswordType password_type) const {
+  return password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD ||
+         password_type == PasswordType::ENTERPRISE_PASSWORD;
 }
 
 void PasswordProtectionService::GetPhishingDetector(

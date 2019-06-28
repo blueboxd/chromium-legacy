@@ -284,7 +284,7 @@ RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
 
 base::Thread* g_in_process_thread;
 
-const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
+RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
 
 RenderProcessHost::AnalyzeHungRendererFunction g_analyze_hung_renderer =
@@ -2678,12 +2678,12 @@ void RenderProcessHostImpl::OnForegroundServiceWorkerRemoved() {
 
 // static
 void RenderProcessHostImpl::set_render_process_host_factory_for_testing(
-    const RenderProcessHostFactory* rph_factory) {
+    RenderProcessHostFactory* rph_factory) {
   g_render_process_host_factory_ = rph_factory;
 }
 
 // static
-const RenderProcessHostFactory*
+RenderProcessHostFactory*
 RenderProcessHostImpl::get_render_process_host_factory_for_testing() {
   return g_render_process_host_factory_;
 }

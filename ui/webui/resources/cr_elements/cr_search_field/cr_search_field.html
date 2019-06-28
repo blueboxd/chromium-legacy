@@ -24,52 +24,25 @@
         width: 16px;
       }
 
-      cr-input {
-        --cr-input-background-color: white;
+      #searchInput {
+        --cr-input-background-color: transparent;
         --cr-input-border-bottom: 1px solid var(--cr-secondary-text-color);
         --cr-input-border-radius: 0;
         --cr-input-error-display: none;
+        --cr-input-min-height: 24px;
         --cr-input-padding-end: 0;
         --cr-input-padding-start: 0;
         --cr-input-padding-bottom: 2px;
         --cr-input-padding-top: 2px;
         align-self: stretch;
+        color: var(--cr-primary-text-color);
         display: block;
-        vertical-align: middle;
+        font-size: 92.3076923%;  /* To 12px from 13px. */
         width: 160px;  /* Special width for search input. */
       }
 
-      /* TODO(johntlee): Figure out a way to align the input without
-       * accessing all these parts. */
-      cr-input::part(row-container),
-      cr-input::part(input-container),
-      cr-input::part(inner-input-container),
-      cr-input::part(input) {
-        height: 100%;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        cr-input {
-          /* TODO(dbeam): needing to use inherit here seems silly. In light mode,
-           * the background color is just matched (i.e. the parent's background is
-           * white, but this element also explicitly sets its background and the
-           * background of the container cr-input to white). Can we just not set
-           * these rules? */
-          --cr-input-background-color: inherit;
-        }
-      }
-
-      :host([has-search-text]) cr-input {
+      :host([has-search-text]) #searchInput {
         --cr-input-padding-end: 20px;
-      }
-
-      #searchInput {
-        font-size: 92.3076923%;  /* To 12px from 13px. */
-        min-height: 24px;
-      }
-
-      #searchInput {
-        color: var(--cr-primary-text-color);
       }
 
       #clearSearch {

@@ -90,9 +90,9 @@ static LayoutObject* ParentElementLayoutObject(
 
 static bool IsNonTextAreaFormControl(const LayoutObject* layout_object) {
   const Node* node = layout_object ? layout_object->GetNode() : nullptr;
-  if (!node || !node->IsElementNode())
+  const auto* element = DynamicTo<Element>(node);
+  if (!element)
     return false;
-  const Element* element = ToElement(node);
 
   return (element->IsFormControlElement() && !IsHTMLTextAreaElement(element));
 }
@@ -829,16 +829,15 @@ TextAutosizer::Fingerprint TextAutosizer::GetFingerprint(
 
 TextAutosizer::Fingerprint TextAutosizer::ComputeFingerprint(
     const LayoutObject* layout_object) {
-  Node* node = layout_object->GeneratingNode();
-  if (!node || !node->IsElementNode())
+  auto* element = DynamicTo<Element>(layout_object->GeneratingNode());
+  if (!element)
     return 0;
 
   FingerprintSourceData data;
   if (LayoutObject* parent = ParentElementLayoutObject(layout_object))
     data.parent_hash_ = GetFingerprint(parent);
 
-  data.qualified_name_hash_ =
-      QualifiedNameHash::GetHash(ToElement(node)->TagQName());
+  data.qualified_name_hash_ = QualifiedNameHash::GetHash(element->TagQName());
 
   if (const ComputedStyle* style = layout_object->Style()) {
     data.packed_style_properties_ = static_cast<unsigned>(style->Direction());

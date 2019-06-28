@@ -66,7 +66,8 @@ MATCHER(HasCustomPassphraseNigori, "") {
          !specifics.encryption_keybag().blob().empty() &&
          !specifics.has_keystore_decryptor_token() &&
          specifics.encrypt_everything() && specifics.keybag_is_frozen() &&
-         specifics.has_custom_passphrase_time();
+         specifics.has_custom_passphrase_time() &&
+         specifics.has_custom_passphrase_key_derivation_method();
 }
 
 MATCHER_P(CanDecryptWith, key_params, "") {
@@ -107,6 +108,10 @@ KeyParams KeystoreKeyParams(const std::string& key) {
   std::string encoded_key;
   base::Base64Encode(key, &encoded_key);
   return Pbkdf2KeyParams(std::move(encoded_key));
+}
+
+KeyParams ScryptKeyParams(const std::string& key) {
+  return {KeyDerivationParams::CreateForScrypt("some_constant_salt"), key};
 }
 
 class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
@@ -215,6 +220,18 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     }
     EXPECT_TRUE(cryptographer.GetKeys(specifics.mutable_encryption_keybag()));
 
+    specifics.set_custom_passphrase_key_derivation_method(
+        EnumKeyDerivationMethodToProto(
+            passphrase_key_params.derivation_params.method()));
+    if (passphrase_key_params.derivation_params.method() ==
+        KeyDerivationMethod::SCRYPT_8192_8_11) {
+      // Persist the salt used for key derivation in Nigori if we're using
+      // scrypt.
+      std::string encoded_salt;
+      base::Base64Encode(passphrase_key_params.derivation_params.scrypt_salt(),
+                         &encoded_salt);
+      specifics.set_custom_passphrase_key_derivation_salt(encoded_salt);
+    }
     specifics.set_custom_passphrase_time(TimeToProtoTime(base::Time::Now()));
     specifics.set_passphrase_type(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
     specifics.set_encrypt_everything(true);
@@ -229,6 +246,20 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   // Ownership transferred to |bridge_|.
   testing::NiceMock<MockNigoriLocalChangeProcessor>* processor_;
   testing::NiceMock<MockObserver> observer_;
+};
+
+class NigoriSyncBridgeImplTestWithOptionalScryptDerivation
+    : public NigoriSyncBridgeImplTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  NigoriSyncBridgeImplTestWithOptionalScryptDerivation()
+      : key_params_(GetParam() ? ScryptKeyParams("passphrase")
+                               : Pbkdf2KeyParams("passphrase")) {}
+
+  const KeyParams& GetCustomPassphraseKeyParams() const { return key_params_; }
+
+ private:
+  const KeyParams key_params_;
 };
 
 // During initialization bridge should expose encrypted types via observers
@@ -450,13 +481,14 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnUnknownPassprase) {
 // Tests decryption logic for explicit passphrase. In order to check that we're
 // able to decrypt the data encrypted with old key (i.e. keystore keys or old
 // GAIA passphrase) we add one extra key to the encryption keybag.
-TEST_F(NigoriSyncBridgeImplTest,
+TEST_P(NigoriSyncBridgeImplTestWithOptionalScryptDerivation,
        ShouldDecryptWithCustomPassphraseAndUpdateDefaultKey) {
   const KeyParams kOldKeyParams = Pbkdf2KeyParams("old_key");
-  const KeyParams kPassphraseKeyParams = Pbkdf2KeyParams("passphrase");
+  const KeyParams& passphrase_key_params = GetCustomPassphraseKeyParams();
   EntityData entity_data;
   *entity_data.specifics.mutable_nigori() =
-      BuildCustomPassphraseNigoriSpecifics(kPassphraseKeyParams, kOldKeyParams);
+      BuildCustomPassphraseNigoriSpecifics(passphrase_key_params,
+                                           kOldKeyParams);
 
   ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
 
@@ -464,7 +496,7 @@ TEST_F(NigoriSyncBridgeImplTest,
       *observer(),
       OnPassphraseRequired(
           /*reason=*/REASON_DECRYPTION,
-          /*key_derivation_params=*/KeyDerivationParams::CreateForPbkdf2(),
+          /*key_derivation_params=*/passphrase_key_params.derivation_params,
           /*pending_keys=*/
           EncryptedDataEq(entity_data.specifics.nigori().encryption_keybag())));
   ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
@@ -472,13 +504,17 @@ TEST_F(NigoriSyncBridgeImplTest,
 
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
-  bridge()->SetDecryptionPassphrase(kPassphraseKeyParams.password);
+  bridge()->SetDecryptionPassphrase(passphrase_key_params.password);
 
   const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
   EXPECT_THAT(cryptographer, CanDecryptWith(kOldKeyParams));
-  EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
-  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kPassphraseKeyParams));
+  EXPECT_THAT(cryptographer, CanDecryptWith(passphrase_key_params));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(passphrase_key_params));
 }
+
+INSTANTIATE_TEST_SUITE_P(Scrypt,
+                         NigoriSyncBridgeImplTestWithOptionalScryptDerivation,
+                         testing::Values(false, true));
 
 // Tests custom passphrase setup logic. Initially Nigori node will be
 // initialized with keystore Nigori due to sync with default Nigori. After

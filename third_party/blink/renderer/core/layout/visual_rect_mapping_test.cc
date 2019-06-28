@@ -1128,7 +1128,7 @@ TEST_P(VisualRectMappingTest, PerspectivePlusScroll) {
     </div>
   )HTML");
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
-  ToElement(container->GetNode())->scrollTo(0, 5);
+  To<Element>(container->GetNode())->scrollTo(0, 5);
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));

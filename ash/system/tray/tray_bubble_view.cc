@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <numeric>
 
-#include "ash/public/cpp/ash_features.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -17,7 +16,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_owner.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -233,12 +231,6 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   set_margins(gfx::Insets());
   SetPaintToLayer();
 
-  if (!ash::features::ShouldUseShaderRoundedCorner()) {
-    bubble_content_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(
-            SK_ColorBLACK, bubble_border_->corner_radius()));
-  }
-
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
   layout->SetDefaultFlex(1);
   layout_ = SetLayoutManager(std::move(layout));
@@ -266,14 +258,9 @@ bool TrayBubbleView::IsATrayBubbleOpen() {
 }
 
 void TrayBubbleView::InitializeAndShowBubble() {
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    int radius = bubble_border_->corner_radius();
-    layer()->parent()->SetRoundedCornerRadius({radius, radius, radius, radius});
-    layer()->parent()->SetIsFastRoundedCorner(true);
-  } else {
-    CHECK(bubble_content_mask_);
-    layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
-  }
+  int radius = bubble_border_->corner_radius();
+  layer()->parent()->SetRoundedCornerRadius({radius, radius, radius, radius});
+  layer()->parent()->SetIsFastRoundedCorner(true);
 
   GetWidget()->Show();
   UpdateBubble();
@@ -356,12 +343,6 @@ ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() {
   // This would make screen readers announce the whole of the system tray
   // which is undesirable.
   return ax::mojom::Role::kDialog;
-}
-
-void TrayBubbleView::SizeToContents() {
-  BubbleDialogDelegateView::SizeToContents();
-  if (bubble_content_mask_)
-    bubble_content_mask_->layer()->SetBounds(layer()->parent()->bounds());
 }
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,

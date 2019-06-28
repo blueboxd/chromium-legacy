@@ -587,7 +587,7 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
   // Note frame is kept alive via a reference kept in out_release_callback.
   if (!frame->PrepareTransferableResource(out_resource, out_release_callback,
                                           kUnverifiedSyncToken) ||
-      *out_resource == previous_frame_resource_) {
+      *out_resource == layer_->current_transferable_resource()) {
     // If the resource did not change, the release will be handled correctly
     // when the callback from the previous frame is dispatched. But run the
     // |out_release_callback| to release the ref acquired above.
@@ -596,7 +596,6 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
     return false;
   }
 
-  previous_frame_resource_ = *out_resource;
   return true;
 }
 

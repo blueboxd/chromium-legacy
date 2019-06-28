@@ -717,26 +717,28 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 }  // namespace
 
 WebUI::TypeID ChromeWebUIControllerFactory::GetWebUIType(
-      content::BrowserContext* browser_context, const GURL& url) const {
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   WebUIFactoryFunction function = GetWebUIFactoryFunction(NULL, profile, url);
   return function ? reinterpret_cast<WebUI::TypeID>(function) : WebUI::kNoWebUI;
 }
 
 bool ChromeWebUIControllerFactory::UseWebUIForURL(
-    content::BrowserContext* browser_context, const GURL& url) const {
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
 }
 
 bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
-    content::BrowserContext* browser_context, const GURL& url) const {
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   return UseWebUIForURL(browser_context, url);
 }
 
 std::unique_ptr<WebUIController>
-ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
-    WebUI* web_ui,
-    const GURL& url) const {
+ChromeWebUIControllerFactory::CreateWebUIControllerForURL(WebUI* web_ui,
+                                                          const GURL& url) {
   Profile* profile = Profile::FromWebUI(web_ui);
   WebUIFactoryFunction function = GetWebUIFactoryFunction(web_ui, profile, url);
   if (!function)

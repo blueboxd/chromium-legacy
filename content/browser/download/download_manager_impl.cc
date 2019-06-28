@@ -906,7 +906,8 @@ download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
 void DownloadManagerImpl::InterceptNavigation(
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response,
+    scoped_refptr<network::ResourceResponse> response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
     int frame_tree_node_id) {
@@ -928,8 +929,8 @@ void DownloadManagerImpl::InterceptNavigation(
       on_download_checks_done = base::BindOnce(
           &DownloadManagerImpl::InterceptNavigationOnChecksComplete,
           weak_factory_.GetWeakPtr(), web_contents_getter,
-          std::move(resource_request), std::move(url_chain),
-          std::move(response), cert_status,
+          std::move(resource_request), std::move(url_chain), cert_status,
+          std::move(response_head), std::move(response_body),
           std::move(url_loader_client_endpoints));
 
   delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url, method,
@@ -1282,8 +1283,9 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
+    scoped_refptr<network::ResourceResponse> response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download_allowed) {
   if (!is_download_allowed) {
@@ -1312,8 +1314,9 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       GetStoragePartition(browser_context_, render_process_id, render_frame_id);
   in_progress_manager_->InterceptDownloadFromNavigation(
       std::move(resource_request), render_process_id, render_frame_id, site_url,
-      tab_url, tab_referrer_url, std::move(url_chain), std::move(response),
-      std::move(cert_status), std::move(url_loader_client_endpoints),
+      tab_url, tab_referrer_url, std::move(url_chain), std::move(cert_status),
+      std::move(response_head), std::move(response_body),
+      std::move(url_loader_client_endpoints),
       CreateDownloadURLLoaderFactoryGetter(storage_partition, render_frame_host,
                                            false));
 }

@@ -4027,6 +4027,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(password_manager::features::kTouchToFillAndroid)},
 #endif  // defined(OS_ANDROID)
 
+    {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,
+     flag_descriptions::kEnableSyncUSSNigoriDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSNigori)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

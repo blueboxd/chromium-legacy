@@ -63,8 +63,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LocalNTPTests) {
   EXPECT_TRUE(success);
 }
 
-// This runs a bunch of pure JS-side tests for custom backgrounds, i.e. those
-// that don't require any interaction from the native side.
+// This runs a bunch of pure JS-side tests for the original custom backgrounds
+// menu (i.e. before the richer picker).
 IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomBackgroundsTests) {
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
@@ -76,7 +76,23 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomBackgroundsTests) {
   // Run the tests.
   bool success = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('customize')", &success));
+      active_tab, "!!runSimpleTests('customBackgrounds')", &success));
+  EXPECT_TRUE(success);
+}
+
+// This runs a bunch of pure JS-side tests for the richer picker.
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomizeMenuTests) {
+  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+
+  // Ensure the window is big enough the the customize button is visible.
+  browser()->window()->SetBounds(gfx::Rect(0, 0, 1000, 1000));
+
+  // Run the tests.
+  bool success = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!runSimpleTests('customizeMenu')", &success));
   EXPECT_TRUE(success);
 }
 

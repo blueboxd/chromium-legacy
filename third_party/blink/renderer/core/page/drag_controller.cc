@@ -376,7 +376,7 @@ static Element* ElementUnderMouse(Document* document_under_mouse,
   if (n && n->IsInShadowTree())
     n = n->OwnerShadowHost();
 
-  return ToElement(n);
+  return To<Element>(n);
 }
 
 bool DragController::TryDocumentDrag(DragData* drag_data,
@@ -969,9 +969,9 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
   if (state.drag_type_ == kDragSourceActionSelection) {
     data_transfer->WriteSelection(src->Selection());
   } else if (state.drag_type_ == kDragSourceActionImage) {
-    if (image_url.IsEmpty() || !node || !node->IsElementNode())
+    auto* element = DynamicTo<Element>(node);
+    if (image_url.IsEmpty() || !element)
       return false;
-    Element* element = ToElement(node);
     PrepareDataTransferForImageDrag(src, data_transfer, element, link_url,
                                     image_url,
                                     hit_test_result.AltDisplayString());
@@ -1225,9 +1225,9 @@ bool DragController::StartDrag(LocalFrame* src,
     DoSystemDrag(drag_image.get(), drag_location, drag_origin, data_transfer,
                  src, false);
   } else if (state.drag_type_ == kDragSourceActionImage) {
-    if (image_url.IsEmpty() || !node || !node->IsElementNode())
+    auto* element = DynamicTo<Element>(node);
+    if (image_url.IsEmpty() || !element)
       return false;
-    Element* element = ToElement(node);
     Image* image = GetImage(element);
     if (!image || image->IsNull() || !image->Data() || !image->Data()->size())
       return false;

@@ -116,6 +116,7 @@ bool DrmGpuPlatformSupportHost::IsConnected() {
 }
 
 void DrmGpuPlatformSupportHost::OnGpuServiceLaunched(
+    int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,

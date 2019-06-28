@@ -108,6 +108,13 @@ if (enable_resource_whitelist_generation) {
 
 grit_defines = []
 
+if (is_mac || is_win || is_linux || is_ios) {
+  grit_defines += [
+    "-D",
+    "scale_factors=2x",
+  ]
+}
+
 # Mac and iOS want Title Case strings.
 use_titlecase_in_grd_files = is_mac || is_ios
 if (use_titlecase_in_grd_files) {
@@ -137,8 +144,6 @@ if (is_chromeos) {
   grit_defines += [
     "-D",
     "chromeos",
-    "-D",
-    "scale_factors=2x",
   ]
 }
 
@@ -181,13 +186,6 @@ if (is_android) {
   grit_defines += [
     "-E",
     "ANDROID_JAVA_TAGGED_ONLY=true",
-  ]
-}
-
-if (is_mac || is_ios) {
-  grit_defines += [
-    "-D",
-    "scale_factors=2x",
   ]
 }
 

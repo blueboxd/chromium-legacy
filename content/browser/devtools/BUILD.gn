@@ -146,3 +146,16 @@ source_set("inspector_protocol_encoding_test") {
     "//third_party/inspector_protocol:encoding",
   ]
 }
+
+source_set("inspector_protocol_bindings_test") {
+  testonly = true
+  sources = [
+    "../../../third_party/inspector_protocol/bindings/bindings_test.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/inspector_protocol:bindings",
+  ]
+}

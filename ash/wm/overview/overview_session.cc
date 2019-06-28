@@ -650,10 +650,10 @@ OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
   return grid->UpdateYPositionAndOpacity(new_y, opacity, callback);
 }
 
-void OverviewSession::UpdateMaskAndShadow() {
+void OverviewSession::UpdateRoundedCornersAndShadow() {
   for (auto& grid : grid_list_)
     for (auto& window : grid->window_list())
-      window->UpdateMaskAndShadow();
+      window->UpdateRoundedCornersAndShadow();
 }
 
 void OverviewSession::OnStartingAnimationComplete(bool canceled) {
@@ -663,7 +663,7 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled) {
   if (!canceled) {
     if (overview_focus_widget_)
       overview_focus_widget_->Show();
-    Shell::Get()->overview_controller()->DelayedUpdateMaskAndShadow();
+    Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
   }
 }
 

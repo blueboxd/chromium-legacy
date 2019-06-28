@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
 namespace content {
@@ -114,7 +115,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   void ReportAnchorElementMetricsOnClick(
       blink::mojom::AnchorElementMetricsPtr metrics) override;
   void ReportAnchorElementMetricsOnLoad(
-      std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) override;
+      std::vector<blink::mojom::AnchorElementMetricsPtr> metrics,
+      const gfx::Size& viewport_size) override;
 
   // Returns true if the anchor element metric from the renderer process is
   // valid.
@@ -143,8 +145,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       const blink::mojom::AnchorElementMetrics& metrics,
       double document_engagement_score,
       double target_engagement_score,
-      int area_rank,
-      int number_of_anchors) const;
+      int area_rank) const;
+
+  // If |sum_page_scales_| is non-zero, return the page-wide score to add to
+  // all the navigation scores. Computed once per page.
+  double GetPageMetricsScore() const;
 
   // Given a vector of navigation scores sorted in descending order, decide what
   // action to take, or decide not to do anything. Example actions including
@@ -202,8 +207,16 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   int number_of_anchors_contains_image_ = 0;
   int number_of_anchors_in_iframe_ = 0;
   int number_of_anchors_url_incremented_ = 0;
+  int number_of_anchors_ = 0;
 
-  // Scaling factors used to compute navigation scores.
+  // Viewport-related metrics for anchor elements: the viewport size,
+  // the median distance down the viewport of all the links, and the
+  // total clickable space for first viewport links.
+  gfx::Size viewport_size_;
+  int median_link_location_ = 0;
+  int total_clickable_space_ = 0;
+
+  // Anchor-specific scaling factors used to compute navigation scores.
   const int ratio_area_scale_;
   const int is_in_iframe_scale_;
   const int is_same_host_scale_;
@@ -213,8 +226,23 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   const int target_engagement_score_scale_;
   const int area_rank_scale_;
 
-  // Sum of all scales. Used to normalize the final computed weight.
-  const int sum_scales_;
+  // Page-wide scaling factors used to compute navigation scores.
+  const int link_total_scale_;
+  const int iframe_link_total_scale_;
+  const int increment_link_total_scale_;
+  const int same_origin_link_total_scale_;
+  const int image_link_total_scale_;
+  const int clickable_space_scale_;
+  const int median_link_location_scale_;
+  const int viewport_height_scale_;
+  const int viewport_width_scale_;
+
+  // Sum of all scales for individual anchor metrics.
+  // Used to normalize the final computed weight.
+  const int sum_link_scales_;
+
+  // Sum of all scales for page-wide metrics.
+  const int sum_page_scales_;
 
   // True if device is a low end device.
   const bool is_low_end_device_;

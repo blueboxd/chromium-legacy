@@ -463,16 +463,10 @@ bool FragmentPaintPropertyTreeBuilder::IsAffectedByOuterViewportBoundsDelta()
       !object_.StyleRef().IsFixedToBottom() ||
       !object_.GetFrame()->IsMainFrame())
     return false;
-  // It's not affected by viewport if the container is not the LayoutView.
-  if (context_.current.transform != object_.View()
-                                        ->FirstFragment()
-                                        .PaintProperties()
-                                        ->PaintOffsetTranslation()) {
-    DCHECK_NE(object_.ContainerForFixedPosition(), object_.View());
-    return false;
-  }
-  DCHECK_EQ(object_.ContainerForFixedPosition(), object_.View());
-  return true;
+
+  // It's affected by viewport only if the container is the LayoutView.
+  DCHECK_EQ(full_context_.container_for_fixed_position, object_.Container());
+  return full_context_.container_for_fixed_position->IsLayoutView();
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
@@ -548,7 +542,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
         constraint->top_offset = layout_constraint.top_offset;
         constraint->bottom_offset = layout_constraint.bottom_offset;
         constraint->constraint_box_rect =
-            box_model.ComputeStickyConstrainingRect();
+            RoundedIntRect(box_model.ComputeStickyConstrainingRect());
         constraint->scroll_container_relative_sticky_box_rect = RoundedIntRect(
             layout_constraint.scroll_container_relative_sticky_box_rect);
         constraint

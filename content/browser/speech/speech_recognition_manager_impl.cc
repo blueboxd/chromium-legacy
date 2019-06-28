@@ -602,8 +602,8 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
                                 EVENT_RECOGNITION_ENDED));
 }
 
-SpeechRecognitionSessionContext
-SpeechRecognitionManagerImpl::GetSessionContext(int session_id) const {
+SpeechRecognitionSessionContext SpeechRecognitionManagerImpl::GetSessionContext(
+    int session_id) {
   return GetSession(session_id)->context;
 }
 
@@ -809,7 +809,7 @@ SpeechRecognitionManagerImpl::GetDelegateListener() const {
 }
 
 const SpeechRecognitionSessionConfig&
-SpeechRecognitionManagerImpl::GetSessionConfig(int session_id) const {
+SpeechRecognitionManagerImpl::GetSessionConfig(int session_id) {
   return GetSession(session_id)->config;
 }
 

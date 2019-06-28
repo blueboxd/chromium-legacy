@@ -28,7 +28,7 @@ public class Profile {
     public static Profile getLastUsedProfile() {
         // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
         }
         return (Profile) nativeGetLastUsedProfile();

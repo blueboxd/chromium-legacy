@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -286,18 +285,18 @@ void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
 
   TabModel* tab_model = browser_->GetTabModel();
 
-  Tab* adjacent_tab = nil;
+  web::WebState* adjacent_web_state = nil;
   if (params.append_to == kCurrentTab)
-    adjacent_tab = tab_model.currentTab;
+    adjacent_web_state = tab_model.webStateList->GetActiveWebState();
 
   UrlLoadParams saved_params = params;
   auto openTab = ^{
-    [tab_model
-        insertTabWithLoadParams:saved_params.web_params
-                         opener:adjacent_tab
-                    openedByDOM:NO
-                        atIndex:TabModelConstants::kTabPositionAutomatically
-                   inBackground:saved_params.in_background()];
+    [tab_model insertWebStateWithLoadParams:saved_params.web_params
+                                     opener:adjacent_web_state
+                                openedByDOM:NO
+                                    atIndex:TabModelConstants::
+                                                kTabPositionAutomatically
+                               inBackground:saved_params.in_background()];
 
     notifier_->NewTabDidLoadUrl(saved_params.web_params.url,
                                 saved_params.user_initiated);

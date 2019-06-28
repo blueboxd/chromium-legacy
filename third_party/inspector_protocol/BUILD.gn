@@ -9,6 +9,13 @@ static_library("encoding") {
   ]
 }
 
+static_library("bindings") {
+  sources = [
+    "bindings/bindings.cc",
+    "bindings/bindings.h",
+  ]
+}
+
 # encoding/encoding_test.cc:
 # There's no target for this file here, instead it is included
 # in //content/test:content_unittest

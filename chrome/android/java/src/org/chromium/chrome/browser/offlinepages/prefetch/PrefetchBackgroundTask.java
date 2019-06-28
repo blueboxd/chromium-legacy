@@ -111,8 +111,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     }
 
     private boolean isBrowserRunningInReducedMode() {
-        return getBrowserStartupController().isServiceManagerSuccessfullyStarted()
-                && !getBrowserStartupController().isStartupSuccessfullyCompleted();
+        return getBrowserStartupController().isRunningInServiceManagerMode();
     }
 
     @Override

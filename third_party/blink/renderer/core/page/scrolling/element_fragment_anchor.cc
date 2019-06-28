@@ -62,9 +62,7 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   }
 
   // Setting to null will clear the current target.
-  Element* target = anchor_node && anchor_node->IsElementNode()
-                        ? ToElement(anchor_node)
-                        : nullptr;
+  auto* target = DynamicTo<Element>(anchor_node);
   doc.SetCSSTarget(target);
 
   if (doc.IsSVGDocument()) {
@@ -115,9 +113,10 @@ bool ElementFragmentAnchor::Invoke() {
     boundary_local_frame->View()->SetSafeToPropagateScrollToParent(false);
   }
 
-  Element* element_to_scroll = anchor_node_->IsElementNode()
-                                   ? ToElement(anchor_node_)
-                                   : doc.documentElement();
+  auto* element_to_scroll = DynamicTo<Element>(anchor_node_.Get());
+  if (!element_to_scroll)
+    element_to_scroll = doc.documentElement();
+
   if (element_to_scroll) {
     ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
     options->setBlock("start");
@@ -202,8 +201,9 @@ void ElementFragmentAnchor::ApplyFocusIfNeeded() {
   // If anchorNode is not focusable or fragment scrolling is not allowed,
   // clear focus, which matches the behavior of other browsers.
   frame_->GetDocument()->UpdateStyleAndLayoutTree();
-  if (anchor_node_->IsElementNode() && ToElement(anchor_node_)->IsFocusable()) {
-    ToElement(anchor_node_)->focus();
+  auto* element = DynamicTo<Element>(anchor_node_.Get());
+  if (element && element->IsFocusable()) {
+    element->focus();
   } else {
     frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
         anchor_node_);

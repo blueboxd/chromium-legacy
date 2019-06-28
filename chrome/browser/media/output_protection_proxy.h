@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/display/output_protection_delegate.h"
+#include "ash/display/output_protection_delegate.h"
 #endif
 
 // A class to query output protection status and/or enable output protection.
@@ -52,7 +52,7 @@ class OutputProtectionProxy {
   int render_frame_id_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::OutputProtectionDelegate output_protection_delegate_;
+  ash::OutputProtectionDelegate output_protection_delegate_;
 #endif
 
   base::WeakPtrFactory<OutputProtectionProxy> weak_ptr_factory_;

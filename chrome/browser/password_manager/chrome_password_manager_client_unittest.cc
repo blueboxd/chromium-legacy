@@ -692,7 +692,7 @@ TEST_F(ChromePasswordManagerClientTest,
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
   EXPECT_CALL(*client->password_protection_service(),
-              MaybeStartPasswordFieldOnFocusRequest(_, _, _, _))
+              MaybeStartPasswordFieldOnFocusRequest(_, _, _, _, _))
       .Times(1);
   PasswordManagerClient* mojom_client = client.get();
   mojom_client->CheckSafeBrowsingReputation(GURL("http://foo.com/submit"),
@@ -707,16 +707,16 @@ TEST_F(ChromePasswordManagerClientTest,
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
 
-  EXPECT_CALL(
-      *client->password_protection_service(),
-      MaybeStartProtectedPasswordEntryRequest(_, _, "username", _, _, true))
+  EXPECT_CALL(*client->password_protection_service(),
+              MaybeStartProtectedPasswordEntryRequest(_, _, "username", _, _, _,
+                                                      _, true))
       .Times(4);
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::SAVED_PASSWORD, "username",
       std::vector<std::string>({"saved_domain.com"}), true);
   client->CheckProtectedPasswordEntry(
-      password_manager::metrics_util::PasswordType::SYNC_PASSWORD, "username",
-      std::vector<std::string>({"saved_domain.com"}), true);
+      password_manager::metrics_util::PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+      "username", std::vector<std::string>({"saved_domain.com"}), true);
   client->CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType::OTHER_GAIA_PASSWORD,
       "username", std::vector<std::string>({"saved_domain.com"}), true);

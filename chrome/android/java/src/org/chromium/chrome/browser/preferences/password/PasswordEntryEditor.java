@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
-import android.app.Fragment;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -12,6 +11,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.InputType;
 import android.text.SpannableString;

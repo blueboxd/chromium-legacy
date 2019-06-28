@@ -11,11 +11,9 @@ namespace blink {
 
 PaintRenderingContext2D::PaintRenderingContext2D(
     const IntSize& container_size,
-    const CanvasColorParams& color_params,
     const PaintRenderingContext2DSettings* context_settings,
     float zoom)
     : container_size_(container_size),
-      color_params_(color_params),
       context_settings_(context_settings),
       effective_zoom_(zoom) {
   InitializePaintRecorder();

@@ -18,8 +18,7 @@ namespace content {
 FileDownloadURLLoaderFactoryGetter::FileDownloadURLLoaderFactoryGetter(
     const GURL& url,
     const base::FilePath& profile_path,
-    scoped_refptr<const SharedCorsOriginAccessList>
-        shared_cors_origin_access_list)
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list)
     : url_(url),
       profile_path_(profile_path),
       shared_cors_origin_access_list_(

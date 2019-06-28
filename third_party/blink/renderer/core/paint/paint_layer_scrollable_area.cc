@@ -138,11 +138,9 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       horizontal_scrollbar_previously_was_overlay_(false),
       vertical_scrollbar_previously_was_overlay_(false),
       scrolling_background_display_item_client_(*this) {
-  Node* node = GetLayoutBox()->GetNode();
-  if (node && node->IsElementNode()) {
+  if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode())) {
     // We save and restore only the scrollOffset as the other scroll values are
     // recalculated.
-    Element* element = ToElement(node);
     scroll_offset_ = element->SavedLayerScrollOffset();
     if (!scroll_offset_.IsZero())
       GetScrollAnimator().SetCurrentOffset(scroll_offset_);
@@ -180,10 +178,9 @@ void PaintLayerScrollableArea::Dispose() {
     scrolling_coordinator->WillDestroyScrollableArea(this);
 
   if (!GetLayoutBox()->DocumentBeingDestroyed()) {
-    Node* node = GetLayoutBox()->GetNode();
     // FIXME: Make setSavedLayerScrollOffset take DoubleSize. crbug.com/414283.
-    if (node && node->IsElementNode())
-      ToElement(node)->SetSavedLayerScrollOffset(scroll_offset_);
+    if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode()))
+      element->SetSavedLayerScrollOffset(scroll_offset_);
   }
 
   if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
@@ -1062,8 +1059,8 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
   // Being the global root scroller will affect clipping size due to browser
   // controls behavior so we need to update compositing based on updated clip
   // geometry.
-  if (GetLayoutBox()->GetNode()->IsElementNode())
-    ToElement(GetLayoutBox()->GetNode())->SetNeedsCompositingUpdate();
+  if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode()))
+    element->SetNeedsCompositingUpdate();
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
   // On Android, where the VisualViewport supplies scrollbars, we need to
@@ -1949,7 +1946,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
     return;
 
   DCHECK(GetLayoutBox()->GetNode()->IsElementNode());
-  Element* element = ToElement(GetLayoutBox()->GetNode());
+  auto* element = To<Element>(GetLayoutBox()->GetNode());
 
   Document& document = element->GetDocument();
 
@@ -2427,7 +2424,7 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
   if (has_custom_scrollbar_style) {
     DCHECK(style_source.GetNode() && style_source.GetNode()->IsElementNode());
     scrollbar = LayoutScrollbar::CreateCustomScrollbar(
-        ScrollableArea(), orientation, ToElement(style_source.GetNode()));
+        ScrollableArea(), orientation, To<Element>(style_source.GetNode()));
   } else {
     ScrollbarControlSize scrollbar_size = kRegularScrollbar;
     if (style_source.StyleRef().HasAppearance()) {

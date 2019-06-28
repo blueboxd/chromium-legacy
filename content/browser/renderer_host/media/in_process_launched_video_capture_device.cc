@@ -51,7 +51,7 @@ InProcessLaunchedVideoCaptureDevice::~InProcessLaunchedVideoCaptureDevice() {
 }
 
 void InProcessLaunchedVideoCaptureDevice::GetPhotoState(
-    media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
+    media::VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Unretained() is safe to use here because |device| would be null if it
   // was scheduled for shutdown and destruction, and because this task is

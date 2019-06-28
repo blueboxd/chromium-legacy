@@ -128,8 +128,7 @@ class OffTheRecordProfileImpl : public Profile {
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
-  const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
-      override;
+  content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() override;
 
  private:
   void InitIoData();

@@ -26,8 +26,8 @@ class FakeLaunchedVideoCaptureDevice
       std::unique_ptr<media::VideoCaptureDevice> device)
       : device_(std::move(device)) {}
 
-  void GetPhotoState(media::VideoCaptureDevice::GetPhotoStateCallback callback)
-      const override {
+  void GetPhotoState(
+      media::VideoCaptureDevice::GetPhotoStateCallback callback) override {
     device_->GetPhotoState(std::move(callback));
   }
   void SetPhotoOptions(

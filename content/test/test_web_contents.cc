@@ -37,7 +37,7 @@ namespace content {
 
 namespace {
 
-const RenderProcessHostFactory* GetMockProcessFactory() {
+RenderProcessHostFactory* GetMockProcessFactory() {
   static base::NoDestructor<MockRenderProcessHostFactory> factory;
   return factory.get();
 }

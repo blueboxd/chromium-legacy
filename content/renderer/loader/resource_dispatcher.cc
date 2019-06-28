@@ -643,11 +643,21 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
       return;
   }
 
-  client_ptr->OnReceiveResponse(response_override->response);
+  client_ptr->OnReceiveResponse(response_override->response_head);
 
   // Abort if the request is cancelled.
   if (!GetPendingRequestInfo(request_id))
     return;
+
+  if (response_override->response_body.is_valid()) {
+    DCHECK(IsNavigationImmediateResponseBodyEnabled());
+    client_ptr->OnStartLoadingResponseBody(
+        std::move(response_override->response_body));
+
+    // Abort if the request is cancelled.
+    if (!GetPendingRequestInfo(request_id))
+      return;
+  }
 
   DCHECK(response_override->url_loader_client_endpoints);
   client_ptr->Bind(std::move(response_override->url_loader_client_endpoints));

@@ -16,9 +16,10 @@ NavigationClient::NavigationClient(RenderFrameImpl* render_frame)
 NavigationClient::~NavigationClient() {}
 
 void NavigationClient::CommitNavigation(
-    const network::ResourceResponseHead& head,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
@@ -34,7 +35,7 @@ void NavigationClient::CommitNavigation(
   // unexpectedly abort the ongoing navigation. Remove when the races are fixed.
   ResetDisconnectionHandler();
   render_frame_->CommitPerNavigationMojoInterfaceNavigation(
-      head, common_params, commit_params,
+      common_params, commit_params, response_head, std::move(response_body),
       std::move(url_loader_client_endpoints), std::move(subresource_loaders),
       std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),

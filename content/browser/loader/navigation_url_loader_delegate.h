@@ -51,8 +51,9 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   //
   // |download_policy| specifies if downloading is disallowed.
   virtual void OnResponseStarted(
-      const scoped_refptr<network::ResourceResponse>& response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      const scoped_refptr<network::ResourceResponse>& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       const GlobalRequestID& request_id,
       bool is_download,
       NavigationDownloadPolicy download_policy,

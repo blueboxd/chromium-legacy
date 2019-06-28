@@ -37,7 +37,7 @@ public class DeviceItemAdapter
      */
     private static class ViewHolder {
         private TextView mTextView;
-        private ImageView mImageView;
+        private @Nullable ImageView mImageView;
 
         public ViewHolder(View view) {
             mImageView = (ImageView) view.findViewById(R.id.icon);
@@ -61,6 +61,11 @@ public class DeviceItemAdapter
 
     private final Resources mResources;
 
+    // True when there is need to select an item; false otherwise.
+    private final boolean mItemsSelectable;
+
+    private final @LayoutRes int mRowLayoutResource;
+
     // The zero-based index of the item currently selected in the dialog,
     // or -1 (INVALID_POSITION) if nothing is selected.
     private int mSelectedItem = ListView.INVALID_POSITION;
@@ -83,13 +88,16 @@ public class DeviceItemAdapter
      * Creates a device item adapter which can show a list of items.
      *
      * @param context The context of the application.
-     * @param resource The resource identifier for the item row.
+     * @param rowLayoutResource The resource identifier for the item row.
      */
-    public DeviceItemAdapter(Context context, @LayoutRes int resource) {
-        super(context, resource);
+    public DeviceItemAdapter(
+            Context context, boolean itemsSelectable, @LayoutRes int rowLayoutResource) {
+        super(context, rowLayoutResource);
 
         mInflater = LayoutInflater.from(context);
         mResources = context.getResources();
+        mItemsSelectable = itemsSelectable;
+        mRowLayoutResource = rowLayoutResource;
     }
 
     @Override
@@ -230,6 +238,7 @@ public class DeviceItemAdapter
 
     @Override
     public boolean isEnabled(int position) {
+        if (!mItemsSelectable) return false;
         DeviceItemRow item = getItem(position);
         return !mDisabledEntries.contains(item.mKey);
     }
@@ -248,7 +257,7 @@ public class DeviceItemAdapter
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder row;
         if (convertView == null) {
-            convertView = mInflater.inflate(R.layout.item_chooser_dialog_row, parent, false);
+            convertView = mInflater.inflate(mRowLayoutResource, parent, false);
             row = new ViewHolder(convertView);
             convertView.setTag(row);
         } else {
@@ -259,24 +268,27 @@ public class DeviceItemAdapter
         row.mTextView.setEnabled(isEnabled(position));
         row.mTextView.setText(getDisplayText(position));
 
-        // If there is at least one item with an icon then we set mImageView's
-        // visibility to INVISIBLE for all items with no icons. We do this
-        // so that all items' descriptions are aligned.
-        if (!mHasIcon) {
-            row.mImageView.setVisibility(View.GONE);
-        } else {
-            DeviceItemRow item = getItem(position);
-            if (item.mIcon != null) {
-                row.mImageView.setContentDescription(item.mIconDescription);
-                row.mImageView.setImageDrawable(item.mIcon);
-                row.mImageView.setVisibility(View.VISIBLE);
+        if (row.mImageView != null) {
+            // If there is at least one item with an icon then we set mImageView's
+            // visibility to INVISIBLE for all items with no icons. We do this
+            // so that all items' descriptions are aligned.
+            if (!mHasIcon) {
+                row.mImageView.setVisibility(View.GONE);
             } else {
-                row.mImageView.setVisibility(View.INVISIBLE);
-                row.mImageView.setImageDrawable(null);
-                row.mImageView.setContentDescription(null);
+                DeviceItemRow item = getItem(position);
+                if (item.mIcon != null) {
+                    row.mImageView.setContentDescription(item.mIconDescription);
+                    row.mImageView.setImageDrawable(item.mIcon);
+                    row.mImageView.setVisibility(View.VISIBLE);
+                } else {
+                    row.mImageView.setVisibility(View.INVISIBLE);
+                    row.mImageView.setImageDrawable(null);
+                    row.mImageView.setContentDescription(null);
+                }
+                row.mImageView.setSelected(position == mSelectedItem);
             }
-            row.mImageView.setSelected(position == mSelectedItem);
         }
+
         return convertView;
     }
 
@@ -291,6 +303,7 @@ public class DeviceItemAdapter
 
     @Override
     public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+        assert mItemsSelectable;
         updateSelectedItemPosition(position);
         notifyDataSetChanged();
     }

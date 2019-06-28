@@ -83,7 +83,7 @@ class MediaControlPopupMenuElement::EventListener final
           break;
         case VKEY_RETURN:
         case VKEY_SPACE:
-          ToElement(event->target()->ToNode())->DispatchSimulatedClick(event);
+          To<Element>(event->target()->ToNode())->DispatchSimulatedClick(event);
           break;
         default:
           handled = false;
@@ -128,8 +128,8 @@ void MediaControlPopupMenuElement::OnItemSelected() {
 void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kPointermove &&
       event.target() != this) {
-    ToElement(event.target()->ToNode())->focus();
-    last_focused_element_ = ToElement(event.target()->ToNode());
+    To<Element>(event.target()->ToNode())->focus();
+    last_focused_element_ = To<Element>(event.target()->ToNode());
   } else if (event.type() == event_type_names::kFocusout) {
     GetDocument()
         .GetTaskRunner(TaskType::kMediaElementEvent)
@@ -229,7 +229,7 @@ void MediaControlPopupMenuElement::HideIfNotFocused() {
 // Focus the given item in the list if it is displayed. Returns whether it was
 // focused.
 bool MediaControlPopupMenuElement::FocusListItemIfDisplayed(Node* node) {
-  Element* element = ToElement(node);
+  auto* element = To<Element>(node);
 
   if (!element->InlineStyle() ||
       !element->InlineStyle()->HasProperty(CSSPropertyID::kDisplay)) {

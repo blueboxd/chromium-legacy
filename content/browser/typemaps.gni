@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//content/browser/webauth/authenticator.typemap" ]
+typemaps = [
+  "//content/browser/webauth/authenticator.typemap",
+  "//content/browser/webauth/virtual_authenticator.typemap",
+]

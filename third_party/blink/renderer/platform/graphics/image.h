@@ -285,7 +285,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
  private:
   virtual DarkModeClassification ClassifyImageForDarkMode(
       const FloatRect& src_rect) {
-    return DarkModeClassification::kDoNotApplyDarkModeFilter;
+    return DarkModeClassification::kDoNotApplyFilter;
   }
 
   bool image_observer_disabled_;

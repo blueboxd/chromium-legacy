@@ -17,13 +17,11 @@
 
 class AppListControllerDelegate;
 class ArcAppContextMenu;
-class ArcAppIconLoader;
 class Profile;
 
 namespace app_list {
 
-class ArcAppResult : public AppResult,
-                     public AppIconLoaderDelegate {
+class ArcAppResult : public AppResult {
  public:
   ArcAppResult(Profile* profile,
                const std::string& app_id,
@@ -39,10 +37,6 @@ class ArcAppResult : public AppResult,
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;
 
-  // AppIconLoaderDelegate overrides:
-  void OnAppImageUpdated(const std::string& app_id,
-                         const gfx::ImageSkia& image) override;
-
  private:
   // ChromeSearchResult overrides:
   AppContextMenu* GetAppContextMenu() override;
@@ -51,8 +45,6 @@ class ArcAppResult : public AppResult,
   arc::UserInteractionType GetAppLaunchInteraction();
   arc::UserInteractionType GetContextMenuAppLaunchInteraction();
 
-  std::unique_ptr<ArcAppIconLoader> icon_loader_;
-  std::unique_ptr<ArcAppIconLoader> chip_icon_loader_;
   std::unique_ptr<ArcAppContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppResult);

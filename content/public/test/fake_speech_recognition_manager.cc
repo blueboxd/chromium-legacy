@@ -125,13 +125,13 @@ void FakeSpeechRecognitionManager::AbortAllSessionsForRenderFrame(
 }
 
 const SpeechRecognitionSessionConfig&
-    FakeSpeechRecognitionManager::GetSessionConfig(int session_id) const {
+FakeSpeechRecognitionManager::GetSessionConfig(int session_id) {
   EXPECT_EQ(session_id, session_id_);
   return session_config_;
 }
 
 SpeechRecognitionSessionContext FakeSpeechRecognitionManager::GetSessionContext(
-    int session_id) const {
+    int session_id) {
   EXPECT_EQ(session_id, session_id_);
   return session_ctx_;
 }

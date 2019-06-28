@@ -361,7 +361,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -383,7 +383,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -405,7 +405,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -436,7 +436,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -465,7 +465,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -494,7 +494,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -523,7 +523,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -556,7 +556,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -592,7 +592,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -636,7 +636,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -666,7 +666,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -695,7 +695,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -724,7 +724,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -753,7 +753,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -779,7 +779,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -801,7 +801,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -823,7 +823,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -854,7 +854,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -883,7 +883,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -912,7 +912,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -941,7 +941,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -974,7 +974,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1010,7 +1010,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1054,7 +1054,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1084,7 +1084,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1113,7 +1113,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1142,7 +1142,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1172,7 +1172,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -1199,7 +1199,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -1222,7 +1222,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -1245,7 +1245,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -1277,7 +1277,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1307,7 +1307,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1337,7 +1337,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1367,7 +1367,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1401,7 +1401,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1438,7 +1438,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1483,7 +1483,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1514,7 +1514,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1544,7 +1544,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1574,7 +1574,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1602,7 +1602,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -1623,7 +1623,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -1643,7 +1643,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -1673,7 +1673,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1701,7 +1701,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1729,7 +1729,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1757,7 +1757,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1789,7 +1789,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1824,7 +1824,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1867,7 +1867,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1896,7 +1896,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1924,7 +1924,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1952,7 +1952,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false,
@@ -1979,7 +1979,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -2003,7 +2003,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -2024,7 +2024,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -2044,7 +2044,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -2074,7 +2074,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2102,7 +2102,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2130,7 +2130,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2158,7 +2158,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2190,7 +2190,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2225,7 +2225,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2268,7 +2268,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2297,7 +2297,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2325,7 +2325,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -2353,7 +2353,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false,
@@ -2381,7 +2381,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2404,7 +2404,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2426,7 +2426,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2458,7 +2458,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2488,7 +2488,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2518,7 +2518,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2548,7 +2548,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2582,7 +2582,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2619,7 +2619,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2664,7 +2664,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2695,7 +2695,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2725,7 +2725,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2755,7 +2755,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2784,7 +2784,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2810,7 +2810,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2833,7 +2833,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2855,7 +2855,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2887,7 +2887,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2917,7 +2917,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2947,7 +2947,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2977,7 +2977,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3011,7 +3011,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3048,7 +3048,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3093,7 +3093,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3124,7 +3124,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3154,7 +3154,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3184,7 +3184,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],

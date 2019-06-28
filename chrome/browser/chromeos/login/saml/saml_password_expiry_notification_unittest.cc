@@ -31,8 +31,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr base::TimeDelta kStartTime = base::TimeDelta::FromMilliseconds(1);
-
 constexpr base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kOneDay = base::TimeDelta::FromDays(1);
 constexpr base::TimeDelta kAdvanceWarningTime = base::TimeDelta::FromDays(14);
@@ -46,9 +44,6 @@ inline base::string16 utf16(const char* ascii) {
 class SamlPasswordExpiryNotificationTest : public testing::Test {
  public:
   void SetUp() override {
-    // Advance time a little bit so that Time::Now().is_null() becomes false.
-    test_environment_.FastForwardBy(kStartTime);
-
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("test");
     profile_->GetPrefs()->SetBoolean(prefs::kSamlInSessionPasswordChangeEnabled,

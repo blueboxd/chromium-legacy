@@ -30,7 +30,7 @@ TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
       "<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
-  Element& div = *ToElement(GetDocument().body()->firstChild());
+  auto& div = *To<Element>(GetDocument().body()->firstChild());
   InlineTextBox& text_inline_box =
       *ToLayoutText(div.firstChild()->GetLayoutObject())->FirstTextBox();
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
@@ -54,7 +54,7 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
   SetBodyInnerHTML(
       "<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA "
       "BBBBBBBBBB</div>");
-  Element& div = *ToElement(GetDocument().body()->firstChild());
+  auto& div = *To<Element>(GetDocument().body()->firstChild());
   auto& div_block =
       *To<LayoutBlock>(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());

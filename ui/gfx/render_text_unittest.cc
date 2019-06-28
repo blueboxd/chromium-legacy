@@ -4842,6 +4842,26 @@ TEST_F(RenderTextTest, CJKFontWithLocale) {
 }
 #endif  // defined(OS_WIN)
 
+TEST_F(RenderTextTest, ZeroWidthCharacters) {
+  static const wchar_t* kEmptyText[] = {
+      L"\u200C",  // ZERO WIDTH NON-JOINER
+      L"\u200D",  // ZERO WIDTH JOINER
+      L"\u200B",  // ZERO WIDTH SPACE
+      L"\uFEFF",  // ZERO WIDTH NO-BREAK SPACE
+  };
+
+  for (const wchar_t* text : kEmptyText) {
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(text));
+    test_api()->EnsureLayout();
+
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    EXPECT_EQ(0, run_list->width());
+    ASSERT_EQ(run_list->runs().size(), 1U);
+    EXPECT_EQ(run_list->runs()[0]->CountMissingGlyphs(), 0U);
+  }
+}
+
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
 TEST_F(RenderTextTest, TextDoesntClip) {

@@ -22,21 +22,6 @@ CrostiniAppResult::CrostiniAppResult(Profile* profile,
                                      bool is_recommendation)
     : AppResult(profile, app_id, controller, is_recommendation) {
   set_id(app_id);
-
-  icon_loader_ = std::make_unique<CrostiniAppIconLoader>(
-      profile,
-      AppListConfig::instance().GetPreferredIconDimension(display_type()),
-      this);
-  icon_loader_->FetchImage(app_id);
-
-  // Load an additional chip icon when it is a recommendation result
-  // so that it renders clearly in both a chip and a tile.
-  if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
-    chip_icon_loader_ = std::make_unique<CrostiniAppIconLoader>(
-        profile, AppListConfig::instance().suggestion_chip_icon_dimension(),
-        this);
-    chip_icon_loader_->FetchImage(app_id);
-  }
 }
 
 CrostiniAppResult::~CrostiniAppResult() = default;
@@ -59,26 +44,6 @@ void CrostiniAppResult::ExecuteLaunchCommand(int event_flags) {
 
 SearchResultType CrostiniAppResult::GetSearchResultType() const {
   return CROSTINI_APP;
-}
-
-void CrostiniAppResult::OnAppImageUpdated(const std::string& app_id,
-                                          const gfx::ImageSkia& image) {
-  const gfx::Size icon_size(
-      AppListConfig::instance().GetPreferredIconDimension(display_type()),
-      AppListConfig::instance().GetPreferredIconDimension(display_type()));
-  const gfx::Size chip_icon_size(
-      AppListConfig::instance().suggestion_chip_icon_dimension(),
-      AppListConfig::instance().suggestion_chip_icon_dimension());
-  DCHECK(icon_size != chip_icon_size);
-
-  if (image.size() == icon_size) {
-    SetIcon(image);
-  } else if (image.size() == chip_icon_size) {
-    DCHECK(display_type() == ash::SearchResultDisplayType::kRecommendation);
-    SetChipIcon(image);
-  } else {
-    NOTREACHED();
-  }
 }
 
 AppContextMenu* CrostiniAppResult::GetAppContextMenu() {

@@ -868,7 +868,7 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
   EXPECT_EQ(IntRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  ToElement(mask_rect->GetNode())->setAttribute("x", "20");
+  To<Element>(mask_rect->GetNode())->setAttribute("x", "20");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(IntRect(), mask_rect->FirstFragment().VisualRect());

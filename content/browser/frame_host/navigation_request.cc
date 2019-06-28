@@ -67,6 +67,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -1081,10 +1082,10 @@ void NavigationRequest::SetOriginPolicy(const std::string& policy) {
 
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    const scoped_refptr<network::ResourceResponse>& response) {
-  response_ = response;
-  ssl_info_ = response->head.ssl_info;
-  auth_challenge_info_ = response->head.auth_challenge_info;
+    const scoped_refptr<network::ResourceResponse>& response_head) {
+  response_head_ = response_head;
+  ssl_info_ = response_head->head.ssl_info;
+  auth_challenge_info_ = response_head->head.auth_challenge_info;
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
 
@@ -1173,7 +1174,7 @@ void NavigationRequest::OnRequestRedirected(
   commit_params_.navigation_timing.redirect_end = base::TimeTicks::Now();
   commit_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
-  commit_params_.redirect_response.push_back(response->head);
+  commit_params_.redirect_response.push_back(response_head->head);
   commit_params_.redirect_infos.push_back(redirect_info);
 
   // On redirects, the initial origin_to_commit is no longer correct, so it
@@ -1263,8 +1264,9 @@ void NavigationRequest::OnRequestRedirected(
 }
 
 void NavigationRequest::OnResponseStarted(
-    const scoped_refptr<network::ResourceResponse>& response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    const scoped_refptr<network::ResourceResponse>& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     const GlobalRequestID& request_id,
     bool is_download,
     NavigationDownloadPolicy download_policy,
@@ -1280,19 +1282,20 @@ void NavigationRequest::OnResponseStarted(
   request_id_ = request_id;
 
   DCHECK_EQ(state_, STARTED);
-  DCHECK(response);
+  DCHECK(response_head);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "OnResponseStarted");
   state_ = RESPONSE_STARTED;
-  response_ = response;
-  ssl_info_ = response->head.ssl_info;
-  auth_challenge_info_ = response->head.auth_challenge_info;
+  response_head_ = response_head;
+  response_body_ = std::move(response_body);
+  ssl_info_ = response_head->head.ssl_info;
+  auth_challenge_info_ = response_head->head.auth_challenge_info;
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =
-      !is_download && (!response->head.headers.get() ||
-                       (response->head.headers->response_code() != 204 &&
-                        response->head.headers->response_code() != 205));
+      !is_download && (!response_head->head.headers.get() ||
+                       (response_head->head.headers->response_code() != 204 &&
+                        response_head->head.headers->response_code() != 205));
 
   // Response that will not commit should be marked as aborted in the
   // NavigationHandle.
@@ -1313,7 +1316,7 @@ void NavigationRequest::OnResponseStarted(
   // worker intercepted the navigation).
   commit_params_.navigation_timing.fetch_start =
       std::max(commit_params_.navigation_timing.fetch_start,
-               response->head.service_worker_ready_time);
+               response_head->head.service_worker_ready_time);
 
   // A navigation is user activated if it contains a user gesture or the frame
   // received a gesture and the navigation is renderer initiated. If the
@@ -1385,13 +1388,13 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // This must be set before DetermineCommittedPreviews is called.
-  navigation_handle_->set_proxy_server(response->head.proxy_server);
+  navigation_handle_->set_proxy_server(response_head->head.proxy_server);
 
   // Update the previews state of the request.
   common_params_.previews_state =
       GetContentClient()->browser()->DetermineCommittedPreviews(
           common_params_.previews_state, navigation_handle_.get(),
-          response->head.headers.get());
+          response_head->head.headers.get());
 
   // Store the URLLoaderClient endpoints until checks have been processed.
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
@@ -1427,14 +1430,15 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  devtools_instrumentation::OnNavigationResponseReceived(*this, *response);
+  devtools_instrumentation::OnNavigationResponseReceived(*this, *response_head);
 
   // The response code indicates that this is an error page, but we don't
   // know how to display the content.  We follow Firefox here and show our
   // own error page instead of intercepting the request as a stream or a
   // download.
-  if (is_download && (response->head.headers.get() &&
-                      (response->head.headers->response_code() / 100 != 2))) {
+  if (is_download &&
+      (response_head->head.headers.get() &&
+       (response_head->head.headers->response_code() / 100 != 2))) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net::ERR_INVALID_RESPONSE),
         false /* skip_throttles */, base::nullopt /* error_page_content */,
@@ -1446,8 +1450,8 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // The CSP 'navigate-to' directive needs to know whether the response is a
-  // redirect or not in order to perform its checks. This is the reason
-  // why we need to check the CSP both on request and response.
+  // redirect or not in order to perform its checks. This is the reason why we
+  // need to check the CSP both on request and response.
   net::Error net_error = CheckContentSecurityPolicy(
       navigation_handle_->WasServerRedirect() /* has_followed_redirect */,
       false /* url_upgraded_after_redirect */, true /* is_response_check */);
@@ -1887,7 +1891,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     // a service worker serves the response.
     bool served_via_resource_dispatcher_host =
         !base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        !response_->head.was_fetched_via_service_worker;
+        !response_head_->head.was_fetched_via_service_worker;
 
     // If this is a download without ResourceDispatcherHost, intercept the
     // navigation response and pass it to DownloadManager, and cancel the
@@ -1909,7 +1913,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
           std::move(resource_request), navigation_handle_->GetRedirectChain(),
-          response_, std::move(url_loader_client_endpoints_),
+          response_head_, std::move(response_body_),
+          std::move(url_loader_client_endpoints_),
           ssl_info_.has_value() ? ssl_info_->cert_status : 0,
           frame_tree_node_->frame_tree_node_id());
 
@@ -2025,7 +2030,7 @@ void NavigationRequest::CommitErrorPage(
 
 void NavigationRequest::CommitNavigation() {
   UpdateCommitNavigationParamsHistory();
-  DCHECK(NeedsUrlLoader() == !!response_ ||
+  DCHECK(NeedsUrlLoader() == !!response_head_ ||
          (navigation_handle_->WasServerRedirect() &&
           common_params_.url.IsAboutBlank()));
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
@@ -2068,9 +2073,10 @@ void NavigationRequest::CommitNavigation() {
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }
   render_frame_host_->CommitNavigation(
-      this, response_.get(), std::move(url_loader_client_endpoints_),
-      common_params_, commit_params_, is_view_source_,
-      std::move(subresource_loader_params_), std::move(subresource_overrides_),
+      this, common_params_, commit_params_, response_head_.get(),
+      std::move(response_body_), std::move(url_loader_client_endpoints_),
+      is_view_source_, std::move(subresource_loader_params_),
+      std::move(subresource_overrides_),
       std::move(service_worker_provider_info), devtools_navigation_token_);
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used

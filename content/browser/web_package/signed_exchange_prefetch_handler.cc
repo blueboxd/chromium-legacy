@@ -23,7 +23,8 @@ namespace content {
 SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     const network::ResourceRequest& resource_request,
-    const network::ResourceResponseHead& response,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderPtr network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
@@ -49,16 +50,17 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     url_loader_factory = std::move(network_loader_factory);
   }
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
-      resource_request, response, std::move(client), std::move(endpoints),
+      resource_request, response_head, std::move(response_body),
+      std::move(client), std::move(endpoints),
       network::mojom::kURLLoadOptionNone,
       false /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          resource_request.url, response, frame_tree_node_id_getter,
+          resource_request.url, response_head, frame_tree_node_id_getter,
           base::nullopt /* devtools_navigation_token */,
           resource_request.report_raw_headers),
-      SignedExchangeReporter::MaybeCreate(resource_request.url,
-                                          resource_request.referrer.spec(),
-                                          response, frame_tree_node_id_getter),
+      SignedExchangeReporter::MaybeCreate(
+          resource_request.url, resource_request.referrer.spec(), response_head,
+          frame_tree_node_id_getter),
       std::move(url_loader_factory), loader_throttles_getter,
       frame_tree_node_id_getter, std::move(metric_recorder), accept_langs);
 }

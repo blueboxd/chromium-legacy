@@ -37,8 +37,7 @@ class CONTENT_EXPORT BackgroundSyncController {
   // This function allows the controller to alter the parameters used by
   // background sync. Note that disable can be overridden from false to true
   // but overrides from true to false will be ignored.
-  virtual void GetParameterOverrides(
-      BackgroundSyncParameters* parameters) const {}
+  virtual void GetParameterOverrides(BackgroundSyncParameters* parameters) {}
 
   // Notification that a service worker registration with origin |origin| just
   // registered a background sync event. Also includes information about the
@@ -68,7 +67,7 @@ class CONTENT_EXPORT BackgroundSyncController {
       int64_t min_interval,
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,
-      BackgroundSyncParameters* parameters) const = 0;
+      BackgroundSyncParameters* parameters) = 0;
 
   // Keeps the browser alive to allow a one-shot Background Sync registration
   // to finish firing one sync event.

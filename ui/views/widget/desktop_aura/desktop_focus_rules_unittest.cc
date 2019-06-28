@@ -40,4 +40,14 @@ TEST_F(DesktopFocusRulesTest, DontFocusWindowsInOtherHierarchies) {
   w2->CloseNow();
 }
 
+// Verifies root windows are not activatable.
+TEST_F(DesktopFocusRulesTest, CanActivateWindowForRootWindow) {
+  Widget* w1 = CreateTopLevelNativeWidget();
+  aura::Window* content_window = w1->GetNativeWindow();
+  aura::Window* root_window = content_window->GetRootWindow();
+  EXPECT_TRUE(wm::CanActivateWindow(content_window));
+  EXPECT_FALSE(wm::CanActivateWindow(root_window));
+  w1->CloseNow();
+}
+
 }  // namespace views

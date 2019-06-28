@@ -168,7 +168,7 @@ public class NotificationSuspender {
     private static Promise<Void> waitForChromeStartup() {
         BrowserStartupController browserStartup =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
-        if (browserStartup.isStartupSuccessfullyCompleted()) return Promise.fulfilled(null);
+        if (browserStartup.isFullBrowserStarted()) return Promise.fulfilled(null);
         Promise<Void> promise = new Promise<>();
         browserStartup.addStartupCompletedObserver(new StartupCallback() {
             @Override

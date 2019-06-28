@@ -153,7 +153,7 @@ class BrowsingDataRemover {
   virtual bool DoesOriginMatchMask(
       int origin_type_mask,
       const url::Origin& origin,
-      storage::SpecialStoragePolicy* special_storage_policy) const = 0;
+      storage::SpecialStoragePolicy* special_storage_policy) = 0;
 
   // Removes browsing data within the given |time_range|, with datatypes being
   // specified by |remove_mask| and origin types by |origin_type_mask|.

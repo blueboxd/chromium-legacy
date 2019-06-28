@@ -67,14 +67,25 @@ public interface BrowserStartupController {
     void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException;
 
     /**
-     * @return Whether the browser process completed successfully.
+     * @return Whether the browser process has been started in "Full Browser" mode successfully. See
+     *         {@link #isRunningInServiceManagerMode} for information about the other mode of native
+     *         startup.
      */
-    boolean isStartupSuccessfullyCompleted();
+    boolean isFullBrowserStarted();
 
     /**
-     * @return Whether the browser has successfully started in service manager only mode.
+     * @return Whether the browser is currently running in "service manager only" mode. "Service
+     *         Manager Only" mode is a state of native where only the minimum required
+     *         initialization is done (eg: no Profile and minimal content/ initialization).
      */
-    boolean isServiceManagerSuccessfullyStarted();
+    boolean isRunningInServiceManagerMode();
+
+    /**
+     * @return Whether native is loaded successfully and running in any mode. See {@link
+     *         #isRunningInServiceManagerMode} and {@link #isFullBrowserStarted} for more
+     * information about the two modes.
+     */
+    boolean isNativeStarted();
 
     /**
      * Add startup callback.

@@ -57,7 +57,7 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         // from native as well.
 
         assert BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()
+                        .isFullBrowserStarted()
                 || mStartsServiceManagerOnly;
         ProfileKey key = ProfileKey.getLastUsedProfileKey().getOriginalKey();
         nativeStartBackgroundTask(

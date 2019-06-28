@@ -4,9 +4,4 @@ specific_include_rules = {
     "+ash/display/display_prefs.h",
     "+ash/shell.h",
   ],
-  # mash-ok, output_protection_controller_ash is not used in mash,
-  # output_protection_controller_mus is used instead.
-  "output_protection_controller_ash\.cc": [
-    "+ash/shell.h",
-  ],
 }

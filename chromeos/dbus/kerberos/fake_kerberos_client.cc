@@ -62,32 +62,56 @@ FakeKerberosClient::~FakeKerberosClient() = default;
 
 void FakeKerberosClient::AddAccount(const kerberos::AddAccountRequest& request,
                                     AddAccountCallback callback) {
-  auto it = accounts_.find(request.principal_name());
+  auto it = std::find(accounts_.begin(), accounts_.end(),
+                      AccountData(request.principal_name()));
   if (it != accounts_.end()) {
-    it->second.is_managed |= request.is_managed();
+    it->is_managed |= request.is_managed();
     PostResponse(std::move(callback), kerberos::ERROR_DUPLICATE_PRINCIPAL_NAME);
     return;
   }
 
-  AccountData data;
+  AccountData data(request.principal_name());
   data.is_managed = request.is_managed();
-  accounts_[request.principal_name()] = data;
+  accounts_.push_back(data);
   PostResponse(std::move(callback), kerberos::ERROR_NONE);
 }
 
 void FakeKerberosClient::RemoveAccount(
     const kerberos::RemoveAccountRequest& request,
     RemoveAccountCallback callback) {
-  kerberos::ErrorType error = accounts_.erase(request.principal_name()) == 0
-                                  ? kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME
-                                  : kerberos::ERROR_NONE;
-  PostResponse(std::move(callback), error);
+  auto it = std::find(accounts_.begin(), accounts_.end(),
+                      AccountData(request.principal_name()));
+  if (it == accounts_.end()) {
+    PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
+    return;
+  }
+  accounts_.erase(it);
+  PostResponse(std::move(callback), kerberos::ERROR_NONE);
 }
 
 void FakeKerberosClient::ClearAccounts(
     const kerberos::ClearAccountsRequest& request,
     ClearAccountsCallback callback) {
-  accounts_.clear();
+  switch (request.mode()) {
+    case kerberos::CLEAR_ALL:
+      accounts_.clear();
+      break;
+
+    case kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS:
+      accounts_.erase(std::remove_if(accounts_.begin(), accounts_.end(),
+                                     [](const AccountData& account) {
+                                       return !account.is_managed;
+                                     }),
+                      accounts_.end());
+      break;
+
+    case kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS:
+      for (auto& account : accounts_) {
+        if (!account.is_managed)
+          account.password.clear();
+      }
+      break;
+  }
   PostResponse(std::move(callback), kerberos::ERROR_NONE);
 }
 
@@ -95,12 +119,9 @@ void FakeKerberosClient::ListAccounts(
     const kerberos::ListAccountsRequest& request,
     ListAccountsCallback callback) {
   kerberos::ListAccountsResponse response;
-  for (const auto& it : accounts_) {
-    const std::string& principal_name = it.first;
-    const AccountData& data = it.second;
-
+  for (const AccountData& data : accounts_) {
     kerberos::Account* account = response.add_accounts();
-    account->set_principal_name(principal_name);
+    account->set_principal_name(data.principal_name);
     account->set_krb5conf(data.krb5conf);
     account->set_tgt_validity_seconds(data.has_tgt ? kTgtValidity.InSeconds()
                                                    : 0);
@@ -108,6 +129,7 @@ void FakeKerberosClient::ListAccounts(
                                                   : 0);
     account->set_is_managed(data.is_managed);
     account->set_password_was_remembered(!data.password.empty());
+    account->set_use_login_password(data.use_login_password);
   }
   response.set_error(kerberos::ERROR_NONE);
   PostProtoResponse(std::move(callback), response);
@@ -134,6 +156,9 @@ void FakeKerberosClient::AcquireKerberosTgt(
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
     return;
   }
+
+  // Remember whether to use the login password.
+  data->use_login_password = request.use_login_password();
 
   std::string password;
   if (request.use_login_password()) {
@@ -192,12 +217,33 @@ void FakeKerberosClient::ConnectToKerberosFileChangedSignal(
   kerberos_files_changed_callback_ = callback;
 }
 
+void FakeKerberosClient::ConnectToKerberosTicketExpiringSignal(
+    KerberosTicketExpiringCallback callback) {
+  DCHECK(!kerberos_ticket_expiring_callback_);
+  kerberos_ticket_expiring_callback_ = callback;
+}
+
 FakeKerberosClient::AccountData* FakeKerberosClient::GetAccountData(
     const std::string& principal_name) {
-  auto it = accounts_.find(principal_name);
-  if (it == accounts_.end())
-    return nullptr;
-  return &it->second;
+  auto it = std::find(accounts_.begin(), accounts_.end(),
+                      AccountData(principal_name));
+  return it != accounts_.end() ? &*it : nullptr;
+}
+
+FakeKerberosClient::AccountData::AccountData(const std::string& principal_name)
+    : principal_name(principal_name) {}
+
+FakeKerberosClient::AccountData::AccountData(const AccountData& other) =
+    default;
+
+bool FakeKerberosClient::AccountData::operator==(
+    const AccountData& other) const {
+  return principal_name == other.principal_name;
+}
+
+bool FakeKerberosClient::AccountData::operator!=(
+    const AccountData& other) const {
+  return !(*this == other);
 }
 
 }  // namespace chromeos

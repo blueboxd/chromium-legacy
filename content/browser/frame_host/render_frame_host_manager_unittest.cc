@@ -147,7 +147,7 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   // WebUIFactory implementation.
   std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
       WebUI* web_ui,
-      const GURL& url) const override {
+      const GURL& url) override {
     // If WebUI creation is enabled for the test and this is a WebUI URL,
     // returns a new instance.
     if (should_create_webui_ && HasWebUIScheme(url))
@@ -156,7 +156,7 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   }
 
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                             const GURL& url) const override {
+                             const GURL& url) override {
     // If WebUI creation is enabled for the test and this is a WebUI URL,
     // returns a mock WebUI type.
     if (should_create_webui_ && HasWebUIScheme(url)) {
@@ -166,12 +166,12 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   }
 
   bool UseWebUIForURL(BrowserContext* browser_context,
-                      const GURL& url) const override {
+                      const GURL& url) override {
     return HasWebUIScheme(url);
   }
 
   bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+                              const GURL& url) override {
     return HasWebUIScheme(url);
   }
 

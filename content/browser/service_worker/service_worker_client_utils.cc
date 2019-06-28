@@ -575,6 +575,8 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
   blink::mojom::ServiceWorkerClientType client_type =
       provider_host->client_type();
   DCHECK(client_type == blink::mojom::ServiceWorkerClientType::kWindow ||
+         client_type ==
+             blink::mojom::ServiceWorkerClientType::kDedicatedWorker ||
          client_type == blink::mojom::ServiceWorkerClientType::kSharedWorker)
       << client_type;
 

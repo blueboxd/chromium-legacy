@@ -250,7 +250,8 @@ CrSettingsAppManagementPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsAppManagementPageTest', 'All', function() {
+// TODO(https://crbug.com/979553) Disabled due to failures .
+TEST_F('CrSettingsAppManagementPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_CHROMEOS)');

@@ -829,10 +829,6 @@ public class SavePasswordsPreferencesTest {
         MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.ExportedPasswordsPerUserInCSV", 123);
 
-        MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.Android.ExportPasswordsProgressBarUsage",
-                ExportFlow.PROGRESS_NOT_SHOWN);
-
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
@@ -847,7 +843,6 @@ public class SavePasswordsPreferencesTest {
 
         Assert.assertEquals(1, successDelta.getDelta());
         Assert.assertEquals(1, countDelta.getDelta());
-        Assert.assertEquals(1, progressBarDelta.getDelta());
     }
 
     /**
@@ -1080,10 +1075,6 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(matches(isDisplayed()));
 
-        MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.Android.ExportPasswordsProgressBarUsage",
-                ExportFlow.PROGRESS_HIDDEN_DELAYED);
-
         File tempFile = createFakeExportedPasswordsFile();
         // Now pretend that passwords have been serialized.
         mHandler.getExportSuccessCallback().onResult(12, tempFile.getPath());
@@ -1105,8 +1096,6 @@ public class SavePasswordsPreferencesTest {
         Intents.release();
 
         tempFile.delete();
-
-        Assert.assertEquals(1, progressBarDelta.getDelta());
     }
 
     /**
@@ -1145,10 +1134,6 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(matches(isDisplayed()));
 
-        MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.Android.ExportPasswordsProgressBarUsage",
-                ExportFlow.PROGRESS_HIDDEN_DIRECTLY);
-
         File tempFile = createFakeExportedPasswordsFile();
 
         // Now pretend that passwords have been serialized.
@@ -1167,8 +1152,6 @@ public class SavePasswordsPreferencesTest {
         Intents.release();
 
         tempFile.delete();
-
-        Assert.assertEquals(1, progressBarDelta.getDelta());
     }
 
     /**
@@ -1876,53 +1859,5 @@ public class SavePasswordsPreferencesTest {
                         -> waitForView((ViewGroup) root,
                                 allOf(withId(R.id.search_src_text), withText("Zeu"))));
         Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
-    }
-
-    /**
-     * Check that triggering searches and inspected search results are recorded in histograms.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testSearchIsRecordedInHistograms() throws Exception {
-        MetricsUtils.HistogramDelta triggered_delta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.Android.PasswordSearchTriggered", 1);
-        MetricsUtils.HistogramDelta untriggered_delta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.Android.PasswordSearchTriggered", 0);
-        MetricsUtils.HistogramDelta viewed_after_search_delta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.Android.PasswordCredentialEntry", 3);
-        setPasswordSourceWithMultipleEntries(GREEK_GODS);
-        Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
-
-        // Open the search and filter all but "Zeus".
-        Espresso.onView(withSearchMenuIdOrText()).perform(click());
-        Espresso.onView(withId(R.id.search_src_text))
-                .perform(click(), typeText("Zeu"), closeSoftKeyboard());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-
-        Instrumentation.ActivityMonitor monitor =
-                InstrumentationRegistry.getInstrumentation().addMonitor(
-                        new IntentFilter(Intent.ACTION_VIEW), null, false);
-
-        Espresso.onView(withText(ZEUS_ON_EARTH.getUserName()))
-                .check(matches(isDisplayed()))
-                .perform(click());
-        monitor.waitForActivityWithTimeout(UI_UPDATING_TIMEOUT_MS);
-        Assert.assertEquals("Monitor for has not been called", 1, monitor.getHits());
-        InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
-        Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
-                .perform(click()); // Go back to the search list.
-        Espresso.onView(isRoot()).check(
-                (root, e) -> waitForView((ViewGroup) root, withId(R.id.search_src_text)));
-
-        Assert.assertEquals(1, viewed_after_search_delta.getDelta());
-
-        preferences.finish();
-        waitToFinish(preferences, UI_UPDATING_TIMEOUT_MS);
-
-        Assert.assertEquals(0, untriggered_delta.getDelta());
-        Assert.assertEquals(1, triggered_delta.getDelta());
     }
 }

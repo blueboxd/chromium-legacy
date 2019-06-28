@@ -96,17 +96,11 @@
             "memory.top_10_mobile": {
                 "begin": 9
             },
-            "octane": {},
-            "power.typical_10_mobile": {
-                "end": 1
-            }
+            "octane": {}
         }
     },
     "10": {
         "benchmarks": {
-            "power.typical_10_mobile": {
-                "begin": 1
-            },
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {
                 "end": 17

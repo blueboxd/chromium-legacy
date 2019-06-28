@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,8 +21,6 @@ const CGFloat kHorizontalPadding = 24;
 // Padding used on the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 8;
 
-// Text color.
-const int kTextColor = kTableViewSecondaryLabelLightGrayTextColor;
 }  // namespace
 
 @implementation TableViewLinkHeaderFooterItem
@@ -66,7 +65,7 @@ const int kTextColor = kTableViewSecondaryLabelLightGrayTextColor;
     _textView.scrollEnabled = NO;
     _textView.editable = NO;
     _textView.delegate = self;
-    _textView.backgroundColor = [UIColor clearColor];
+    _textView.backgroundColor = UIColor.clearColor;
     _textView.font =
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _textView.adjustsFontForContentSizeCategory = YES;
@@ -99,7 +98,7 @@ const int kTextColor = kTableViewSecondaryLabelLightGrayTextColor;
   NSMutableAttributedString* attributedText =
       [[NSMutableAttributedString alloc] initWithString:strippedText];
   [attributedText addAttribute:NSForegroundColorAttributeName
-                         value:UIColorFromRGB(kTextColor)
+                         value:UIColor.cr_secondaryLabelColor
                          range:fullRange];
 
   [attributedText

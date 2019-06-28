@@ -41,6 +41,8 @@ std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_GL, ZERO_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, GPU},
+    {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
 };
 
 std::vector<PixelResourceTestCase> const kTestCasesNonSkia = {
@@ -446,14 +448,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
       &property_trees);
 }
 
-using LayerTreeHostLayerListPixelTestNonSkia = LayerTreeHostLayerListPixelTest;
-
-// TODO(crbug.com/948128): Enable this test for Skia.
-INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
-                         LayerTreeHostLayerListPixelTestNonSkia,
-                         CombineWithLayerMaskTypes(kTestCasesNonSkia));
-
-TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
+TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
   PropertyTrees property_trees;
   scoped_refptr<Layer> root_layer;
   InitializeForLayerListMode(&root_layer, &property_trees);
@@ -519,6 +514,11 @@ TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
   float average_error_allowed_in_bad_pixels = 100.0f;
   int large_error_allowed = 256;
   int small_error_allowed = 0;
+
+  // Skia has a larger number of pixels that are off by one.
+  if (renderer_type() == RENDERER_SKIA_GL)
+    percentage_pixels_large_error = 3.8f;
+
   pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_error, percentage_pixels_small_error,
@@ -983,13 +983,13 @@ class LayerTreeHostMaskAsBlendingPixelTest
     int large_error_allowed = 0;
     int small_error_allowed = 0;
     if (use_antialiasing_) {
-      percentage_pixels_small_error = 0.9f;
+      percentage_pixels_small_error = 2.f;
       percentage_pixels_error = 6.7f;
       average_error_allowed_in_bad_pixels = 3.5f;
       large_error_allowed = 15;
       small_error_allowed = 1;
     } else if (raster_type() != SOFTWARE) {
-      percentage_pixels_small_error = 0.9f;
+      percentage_pixels_small_error = 2.f;
       percentage_pixels_error = 6.5f;
       average_error_allowed_in_bad_pixels = 3.5f;
       large_error_allowed = 15;
@@ -1095,7 +1095,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
 MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, 0},
@@ -1103,6 +1103,9 @@ MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, kForceShaders},
     MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY},
                    kUseAntialiasing | kForceShaders},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
+                   kUseAntialiasing},
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

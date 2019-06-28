@@ -26,6 +26,29 @@ class OAuth2AccessTokenManager {
   // A set of scopes in OAuth2 authentication.
   typedef std::set<std::string> ScopeSet;
 
+  class Delegate {
+   public:
+    Delegate();
+    virtual ~Delegate();
+
+    virtual std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
+        const CoreAccountId& account_id,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+        OAuth2AccessTokenConsumer* consumer) WARN_UNUSED_RESULT = 0;
+
+    // Attempts to fix the error if possible.  Returns true if the error was
+    // fixed and false otherwise.
+    virtual bool FixRequestErrorIfPossible();
+
+    virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+        const;
+
+    virtual void OnAccessTokenInvalidated(const CoreAccountId& account_id,
+                                          const std::string& client_id,
+                                          const std::set<std::string>& scopes,
+                                          const std::string& access_token) {}
+  };
+
   // Class representing a request that fetches an OAuth2 access token.
   class Request {
    public:
@@ -128,16 +151,17 @@ class OAuth2AccessTokenManager {
   typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
       TokenCache;
 
-  // TODO(https://crbug.com/967598): Remove |token_service| parameter once
-  // OAuth2AccessTokenManager fully manages access tokens independently of
-  // OAuth2TokenService and replace |delegate| with
-  // OAuth2AccessTokenManagerDelegate.
-  explicit OAuth2AccessTokenManager(OAuth2TokenService* token_service,
-                                    OAuth2TokenServiceDelegate* delegate);
+  // TODO(https://crbug.com/967598): Remove |token_service| and
+  // |service_delegate| once OAuth2AccessTokenManager fully manages access
+  // tokens independently of OAuth2TokenService.
+  explicit OAuth2AccessTokenManager(
+      OAuth2TokenService* token_service,
+      OAuth2TokenServiceDelegate* service_delegate,
+      OAuth2AccessTokenManager::Delegate* delegate);
   virtual ~OAuth2AccessTokenManager();
 
-  OAuth2TokenServiceDelegate* GetDelegate();
-  const OAuth2TokenServiceDelegate* GetDelegate() const;
+  OAuth2AccessTokenManager::Delegate* GetDelegate();
+  const OAuth2AccessTokenManager::Delegate* GetDelegate() const;
 
   // Add or remove observers of this token manager.
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
@@ -285,9 +309,10 @@ class OAuth2AccessTokenManager {
   // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
   // fully manages access tokens independently of OAuth2TokenService.
   OAuth2TokenService* token_service_;
-  // TODO(https://crbug.com/967598): Replace it with
-  // OAuth2AccessTokenManagerDelegate.
-  OAuth2TokenServiceDelegate* delegate_;
+  // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
+  // is created without OAuth2TokenService.
+  OAuth2TokenServiceDelegate* token_service_delegate_;
+  Delegate* delegate_;
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
   std::map<RequestParameters, std::unique_ptr<Fetcher>> pending_fetchers_;

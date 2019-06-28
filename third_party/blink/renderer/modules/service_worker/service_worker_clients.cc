@@ -29,6 +29,8 @@ namespace {
 mojom::ServiceWorkerClientType GetClientType(const String& type) {
   if (type == "window")
     return mojom::ServiceWorkerClientType::kWindow;
+  if (type == "worker")
+    return mojom::ServiceWorkerClientType::kDedicatedWorker;
   if (type == "sharedworker")
     return mojom::ServiceWorkerClientType::kSharedWorker;
   if (type == "all")
@@ -54,6 +56,7 @@ void DidGetClient(ScriptPromiseResolver* resolver,
     case mojom::ServiceWorkerClientType::kWindow:
       client = ServiceWorkerWindowClient::Create(*info);
       break;
+    case mojom::ServiceWorkerClientType::kDedicatedWorker:
     case mojom::ServiceWorkerClientType::kSharedWorker:
       client = ServiceWorkerClient::Create(*info);
       break;

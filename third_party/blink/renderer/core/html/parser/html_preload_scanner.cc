@@ -338,10 +338,7 @@ class TokenPreloadScanner::StartTagScanner {
     }
     request->SetIsLazyLoadImageEnabled(is_lazy_load_image_enabled);
 
-    // The only link tags that should keep the integrity metadata are
-    // stylesheets until crbug.com/677022 is resolved.
-    if (link_is_style_sheet_ || !Match(tag_impl_, kLinkTag))
-      request->SetIntegrityMetadata(integrity_metadata_);
+    request->SetIntegrityMetadata(integrity_metadata_);
 
     if (scanner_type_ == ScannerType::kInsertion)
       request->SetFromInsertionScanner(true);

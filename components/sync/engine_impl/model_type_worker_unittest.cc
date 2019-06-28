@@ -1484,36 +1484,6 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
       /*count=*/1);
 }
 
-TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
-  sync_pb::SyncEntity entity;
-  // Production server sets the name to be "tombstone" for all tombstones.
-  entity.set_name("tombstone");
-  entity.set_id_string("SomeID");
-  entity.set_parent_id_string("ParentID");
-  entity.set_folder(false);
-  entity.mutable_unique_position()->CopyFrom(
-      UniquePosition::InitialPosition(UniquePosition::RandomSuffix())
-          .ToProto());
-  entity.set_version(1);
-  entity.set_server_defined_unique_tag("SERVER_TAG");
-  // Mark this as a tombstone.
-  entity.set_deleted(true);
-  // Add default value field for a Bookmark.
-  entity.mutable_specifics()->mutable_bookmark();
-
-  FakeEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
-
-  UpdateResponseData response_data;
-  EXPECT_EQ(ModelTypeWorker::SUCCESS,
-            ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
-
-  const EntityData& data = *response_data.entity;
-  // A tombstone should remain a tombstone after populating the response data.
-  EXPECT_TRUE(data.is_deleted());
-}
-
 TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
   InitializeCommitOnly();
   sync_pb::SyncEntity entity;

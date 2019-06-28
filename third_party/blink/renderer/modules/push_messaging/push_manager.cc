@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_bridge.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
@@ -65,6 +66,16 @@ ScriptPromise PushManager::subscribe(
       PushSubscriptionOptions::FromOptionsInit(options_init, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
+
+  if (!options->IsApplicationServerKeyVapid()) {
+    ExecutionContext::From(script_state)
+        ->AddConsoleMessage(ConsoleMessage::Create(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "The provided application server key is not a VAPID key. Only "
+            "VAPID keys will be supported in the future. For more information "
+            "check https://crbug.com/979235."));
+  }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();

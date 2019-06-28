@@ -21,6 +21,7 @@ enum CSSAtRuleID {
   kCSSAtRuleMedia,
   kCSSAtRuleNamespace,
   kCSSAtRulePage,
+  kCSSAtRuleProperty,
   kCSSAtRuleSupports,
   kCSSAtRuleViewport,
   kCSSAtRuleWebkitKeyframes,

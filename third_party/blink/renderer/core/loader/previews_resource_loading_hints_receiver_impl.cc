@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints_receiver_impl.h"
 
-#include <vector>
-
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"

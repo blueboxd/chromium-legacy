@@ -74,17 +74,17 @@ class AllContainerPromiseExecutor {
     using NonVoidResolveType = ToNonVoidT<ResolveType>;
     Resolved<std::vector<NonVoidResolveType>> result;
 
-    const std::vector<AbstractPromise::AdjacencyListNode>* prerequisite_list =
+    const std::vector<DependentList::Node>* prerequisite_list =
         promise->prerequisite_list();
     DCHECK(prerequisite_list);
     result.value.reserve(prerequisite_list->size());
 
     for (const auto& node : *prerequisite_list) {
-      DCHECK(node.prerequisite->IsResolved());
+      DCHECK(node.prerequisite()->IsResolved());
       result.value.push_back(
           ArgMoveSemanticsHelper<
               NonVoidResolveType,
-              Resolved<NonVoidResolveType>>::Get(node.prerequisite.get()));
+              Resolved<NonVoidResolveType>>::Get(node.prerequisite()));
     }
 
     promise->emplace(std::move(result));
@@ -106,10 +106,9 @@ struct AllContainerHelper<Container, Promise<ResolveType, RejectType>> {
 
   static PromiseType All(const Location& from_here, const Container& promises) {
     size_t i = 0;
-    std::vector<AbstractPromise::AdjacencyListNode> prerequisite_list(
-        promises.size());
+    std::vector<DependentList::Node> prerequisite_list(promises.size());
     for (auto& promise : promises) {
-      prerequisite_list[i++].prerequisite = promise.abstract_promise_;
+      prerequisite_list[i++].SetPrerequisite(promise.abstract_promise_.get());
     }
     return PromiseType(AbstractPromise::Create(
         nullptr, from_here,

@@ -40,6 +40,8 @@ String ServiceWorkerClient::type() const {
   switch (type_) {
     case mojom::ServiceWorkerClientType::kWindow:
       return "window";
+    case mojom::ServiceWorkerClientType::kDedicatedWorker:
+      return "worker";
     case mojom::ServiceWorkerClientType::kSharedWorker:
       return "sharedworker";
     case mojom::ServiceWorkerClientType::kAll:

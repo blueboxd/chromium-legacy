@@ -78,6 +78,30 @@ void DeviceOAuth2TokenService::set_robot_account_id_for_testing(
   GetDeviceDelegate()->set_robot_account_id_for_testing(account_id);
 }
 
+void DeviceOAuth2TokenService::SetRefreshTokenAvailableCallback(
+    RefreshTokenAvailableCallback callback) {
+  on_refresh_token_available_callback_ = std::move(callback);
+}
+
+void DeviceOAuth2TokenService::SetRefreshTokenRevokedCallback(
+    RefreshTokenRevokedCallback callback) {
+  on_refresh_token_revoked_callback_ = std::move(callback);
+}
+
+void DeviceOAuth2TokenService::OnRefreshTokenAvailable(
+    const CoreAccountId& account_id) {
+  OAuth2TokenService::OnRefreshTokenAvailable(account_id);
+  if (on_refresh_token_available_callback_)
+    on_refresh_token_available_callback_.Run(account_id);
+}
+
+void DeviceOAuth2TokenService::OnRefreshTokenRevoked(
+    const CoreAccountId& account_id) {
+  OAuth2TokenService::OnRefreshTokenRevoked(account_id);
+  if (on_refresh_token_revoked_callback_)
+    on_refresh_token_revoked_callback_.Run(account_id);
+}
+
 void DeviceOAuth2TokenService::FetchOAuth2Token(
     OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,

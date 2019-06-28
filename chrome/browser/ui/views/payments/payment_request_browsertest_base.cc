@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -96,14 +96,13 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   https_server_->ServeFilesFromSourceDirectory("components/test/data/payments");
   https_server_->StartAcceptingConnections();
 
-  Observe(GetActiveWebContents());
-
   // Starting now, PaymentRequest Mojo messages sent by the renderer will
   // create PaymentRequest objects via this test's CreatePaymentRequestForTest,
   // allowing the test to inject itself as a dialog observer.
-  payments::SetPaymentRequestFactoryForTesting(base::BindRepeating(
-      &PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
-      base::Unretained(this)));
+  Observe(GetActiveWebContents());
+  registry_.AddInterface<payments::mojom::PaymentRequest>(
+      base::Bind(&PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
+                 base::Unretained(this)));
 
   // Set a test sync service so that all types of cards work.
   GetDataManager()->SetSyncServiceForTest(&sync_service_);
@@ -113,17 +112,12 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
 }
 
 void PaymentRequestBrowserTestBase::NavigateTo(const std::string& file_path) {
-  bool result;
   if (file_path.find("data:") == 0U) {
-    result = content::NavigateToURL(GetActiveWebContents(), GURL(file_path));
+    ui_test_utils::NavigateToURL(browser(), GURL(file_path));
   } else {
-    result = content::NavigateToURL(GetActiveWebContents(),
-                                    https_server()->GetURL("a.com", file_path));
+    ui_test_utils::NavigateToURL(browser(),
+                                 https_server()->GetURL("a.com", file_path));
   }
-  // TODO(rouslan): Some tests actually expect navigation to fail. They could
-  // use a different method and then NavigateTo() could ensure navigation
-  // succeeded in the common case.
-  ignore_result(result);
 }
 
 void PaymentRequestBrowserTestBase::SetIncognito() {

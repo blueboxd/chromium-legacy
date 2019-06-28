@@ -31,6 +31,11 @@ class DeviceOAuth2TokenService
     : public OAuth2TokenService,
       public DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate {
  public:
+  typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
+      RefreshTokenAvailableCallback;
+  typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
+      RefreshTokenRevokedCallback;
+
   typedef base::Callback<void(bool)> StatusCallback;
 
   // Persist the given refresh token on the device. Overwrites any previous
@@ -49,6 +54,19 @@ class DeviceOAuth2TokenService
   // refresh token for the robot account visible via GetAccounts() and
   // RefreshTokenIsAvailable().
   void set_robot_account_id_for_testing(const CoreAccountId& account_id);
+
+  // If set, this callback will be invoked when a new refresh token is
+  // available.
+  void SetRefreshTokenAvailableCallback(RefreshTokenAvailableCallback callback);
+
+  // If set, this callback will be invoked when a refresh token is revoked.
+  void SetRefreshTokenRevokedCallback(RefreshTokenRevokedCallback callback);
+
+  // OAuth2TokenServiceObserver:
+  // NOTE: OAuth2TokenService already adds itself as an observer, so this class
+  // doesn't actually need to add/remove itself as an O2TSObserver.
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
 
  protected:
   // Implementation of OAuth2TokenService.
@@ -88,6 +106,10 @@ class DeviceOAuth2TokenService
   // Currently open requests that are waiting while loading the system salt or
   // validating the token.
   std::vector<PendingRequest*> pending_requests_;
+
+  // Callbacks to invoke, if set, for refresh token-related events.
+  RefreshTokenAvailableCallback on_refresh_token_available_callback_;
+  RefreshTokenRevokedCallback on_refresh_token_revoked_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenService);
 };

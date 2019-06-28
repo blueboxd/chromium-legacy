@@ -31,13 +31,11 @@ WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
       loader_factory_(std::move(loader_factory)) {
 #if DCHECK_IS_ON()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // In the current implementation, dedicated workers use
-  // ServiceWorkerProviderHost w/ kForSharedWorker.
-  // TODO(nhiroki): Rename it to kForWorker for both dedicated workers and
-  // shared workers, or add kForDedicatedWorker (https://crbug.com/906991).
   if (service_worker_provider_host_) {
-    DCHECK_EQ(service_worker_provider_host_->provider_type(),
-              blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
+    DCHECK(service_worker_provider_host_->provider_type() ==
+               blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker ||
+           service_worker_provider_host_->provider_type() ==
+               blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
   }
 #endif  // DCHECK_IS_ON()
 }

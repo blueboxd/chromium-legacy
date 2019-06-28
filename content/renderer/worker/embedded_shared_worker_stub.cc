@@ -20,7 +20,7 @@
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "content/renderer/worker/service_worker_network_provider_for_worker.h"
+#include "content/renderer/worker/service_worker_network_provider_for_shared_worker.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -175,7 +175,7 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
     // CreateWorkerFetchContext() and consumed during off-the-main-thread
     // shared worker script fetch.
     DCHECK(response_override_);
-    return ServiceWorkerNetworkProviderForWorker::Create(
+    return ServiceWorkerNetworkProviderForSharedWorker::Create(
         std::move(service_worker_provider_info_),
         std::move(main_script_loader_factory_), std::move(controller_info_),
         subresource_loader_factory_bundle_, IsOriginSecure(url_),
@@ -196,7 +196,7 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
   }
 #endif  // DCHECK_IS_ON()
 
-  return ServiceWorkerNetworkProviderForWorker::Create(
+  return ServiceWorkerNetworkProviderForSharedWorker::Create(
       std::move(service_worker_provider_info_),
       std::move(main_script_loader_factory_), std::move(controller_info_),
       subresource_loader_factory_bundle_, IsOriginSecure(url_),
@@ -207,7 +207,8 @@ void EmbeddedSharedWorkerStub::WaitForServiceWorkerControllerInfo(
     blink::WebServiceWorkerNetworkProvider* web_network_provider,
     base::OnceClosure callback) {
   ServiceWorkerProviderContext* context =
-      static_cast<ServiceWorkerNetworkProviderForWorker*>(web_network_provider)
+      static_cast<ServiceWorkerNetworkProviderForSharedWorker*>(
+          web_network_provider)
           ->context();
   context->PingContainerHost(std::move(callback));
 }
@@ -216,8 +217,9 @@ scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
   DCHECK(web_network_provider);
-  ServiceWorkerNetworkProviderForWorker* network_provider =
-      static_cast<ServiceWorkerNetworkProviderForWorker*>(web_network_provider);
+  auto* network_provider =
+      static_cast<ServiceWorkerNetworkProviderForSharedWorker*>(
+          web_network_provider);
 
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).

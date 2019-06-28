@@ -26,6 +26,7 @@ source_set("browser_state") {
     "//components/prefs",
     "//components/search_engines",
     "//components/signin/core/browser",
+    "//components/signin/core/browser/webdata",
     "//components/sync_preferences",
     "//components/variations/net",
     "//components/webdata_services",

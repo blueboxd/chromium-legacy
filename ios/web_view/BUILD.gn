@@ -283,6 +283,7 @@ ios_web_view_deps = [
   "//components/prefs",
   "//components/proxy_config",
   "//components/signin/core/browser",
+  "//components/signin/core/browser/webdata",
   "//components/signin/ios/browser",
   "//components/signin/ios/browser:active_state_manager",
   "//components/strings:components_strings_grit",

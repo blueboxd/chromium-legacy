@@ -22,7 +22,7 @@
 
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
-class OAuth2TokenService;
+class ProfileOAuth2TokenService;
 class SigninClient;
 
 namespace signin {
@@ -39,7 +39,7 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
  public:
   OAuthMultiloginHelper(
       SigninClient* signin_client,
-      OAuth2TokenService* token_service,
+      ProfileOAuth2TokenService* token_service,
       const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>&
           accounts,
       const std::string& external_cc_result,
@@ -72,7 +72,7 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
                    net::CanonicalCookie::CookieInclusionStatus status);
 
   SigninClient* signin_client_;
-  OAuth2TokenService* token_service_;
+  ProfileOAuth2TokenService* token_service_;
 
   int fetcher_retries_ = 0;
 

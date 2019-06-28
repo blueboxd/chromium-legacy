@@ -1243,6 +1243,12 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 639;
     case CSSPropertyID::kForcedColorAdjust:
       return 640;
+    case CSSPropertyID::kInherits:
+      return 641;
+    case CSSPropertyID::kInitialValue:
+      return 642;
+    case CSSPropertyID::kSyntax:
+      return 643;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

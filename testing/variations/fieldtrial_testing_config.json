@@ -4678,6 +4678,25 @@
             ]
         }
     ],
+    "SecurityInterstitialsDarkMode": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SecurityInterstitialsDarkMode"
+                    ]
+                }
+            ]
+        }
+    ],
     "ServiceWorkerAggressiveCodeCache": [
         {
             "platforms": [

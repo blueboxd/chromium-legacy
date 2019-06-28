@@ -12,6 +12,9 @@
 // Item for account collection view and sign-in confirmation view.
 @interface AccountControlItem : TableViewItem
 
+// If this image should be tinted to match the text color (e.g. in dark mode),
+// the provided image should have rendering mode
+// UIImageRenderingModeAlwaysTemplate.
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, copy) NSString* text;
 @property(nonatomic, copy) NSString* detailText;

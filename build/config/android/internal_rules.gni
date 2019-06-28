@@ -474,6 +474,12 @@ template("write_build_config") {
         if (_target.is_resource_ids_provider) {
           args += [ "--resource-ids-provider=$_config" ]
         }
+        if (_target.is_compressed_locales_provider) {
+          args += [ "--compressed-locales-provider=$_config" ]
+        }
+        if (_target.is_uncompressed_locales_provider) {
+          args += [ "--uncompressed-locales-provider=$_config" ]
+        }
       }
       args += [ "--static-library-dependent-configs=$_dependent_configs" ]
     }

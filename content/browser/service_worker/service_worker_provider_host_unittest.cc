@@ -262,6 +262,13 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     return !host->versions_to_update_.empty();
   }
 
+  void TestReservedClientsAreNotExposed(
+      blink::mojom::ServiceWorkerProviderType provider_type,
+      const GURL url);
+  void TestClientPhaseTransition(
+      blink::mojom::ServiceWorkerProviderType provider_type,
+      const GURL url);
+
   TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -858,19 +865,19 @@ TEST_F(ServiceWorkerProviderHostTest,
 // Test that a "reserved" (i.e., not execution ready) client is not included
 // when iterating over client provider hosts. If it were, it'd be undesirably
 // exposed via the Clients API.
-TEST_F(ServiceWorkerProviderHostTest,
-       ReservedClientsAreNotExposedToClientsAPI) {
+void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
+    blink::mojom::ServiceWorkerProviderType provider_type,
+    const GURL url) {
   {
     auto provider_info =
         blink::mojom::ServiceWorkerProviderInfoForWorker::New();
     base::WeakPtr<ServiceWorkerProviderHost> host =
-        ServiceWorkerProviderHost::PreCreateForSharedWorker(
+        ServiceWorkerProviderHost::PreCreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
-            &provider_info);
-    const GURL url("https://www.example.com/shared_worker.js");
+            provider_type, &provider_info);
     host->UpdateUrls(url, url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
-    host->CompleteSharedWorkerPreparation();
+    host->CompleteWebWorkerPreparation();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
 
@@ -892,6 +899,20 @@ TEST_F(ServiceWorkerProviderHostTest,
     run_loop.Run();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
+}
+
+TEST_F(ServiceWorkerProviderHostTest,
+       ReservedClientsAreNotExposedToClientsApiForDedicatedWorker) {
+  TestReservedClientsAreNotExposed(
+      blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
+      GURL("https://www.example.com/dedicated_worker.js"));
+}
+
+TEST_F(ServiceWorkerProviderHostTest,
+       ReservedClientsAreNotExposedToClientsApiForSharedWorker) {
+  TestReservedClientsAreNotExposed(
+      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+      GURL("https://www.example.com/shared_worker.js"));
 }
 
 // Tests the client phase transitions for a navigation.
@@ -918,22 +939,35 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
   EXPECT_TRUE(host->is_execution_ready());
 }
 
-// Tests the client phase transitions for a shared worker.
-TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForSharedWorker) {
+// Tests the client phase transitions for workers.
+void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
+    blink::mojom::ServiceWorkerProviderType provider_type,
+    const GURL url) {
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateForSharedWorker(
+      ServiceWorkerProviderHost::PreCreateForWebWorker(
           context_->AsWeakPtr(), helper_->mock_render_process_id(),
-          &provider_info);
+          provider_type, &provider_info);
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 
-  const GURL url("https://www.example.com/shared_worker.js");
   host->UpdateUrls(url, url);
-  host->CompleteSharedWorkerPreparation();
+  host->CompleteWebWorkerPreparation();
 
   EXPECT_TRUE(host->is_response_committed());
   EXPECT_TRUE(host->is_execution_ready());
+}
+
+TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForDedicatedWorker) {
+  TestClientPhaseTransition(
+      blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
+      GURL("https://www.example.com/dedicated_worker.js"));
+}
+
+TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForSharedWorker) {
+  TestClientPhaseTransition(
+      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+      GURL("https://www.example.com/shared_worker.js"));
 }
 
 // Tests that the service worker involved with a navigation (via

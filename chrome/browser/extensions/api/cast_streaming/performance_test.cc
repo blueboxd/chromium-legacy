@@ -659,7 +659,8 @@ const char CastV2PerformanceTest::kTestName[] = "CastV2Performance";
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
+// TODO(https://crbug.com/974427) Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, DISABLED_Performance) {
   net::IPEndPoint receiver_end_point = media::cast::test::GetFreeLocalPort();
   VLOG(1) << "Got local UDP port for testing: "
           << receiver_end_point.ToString();

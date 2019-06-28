@@ -30,7 +30,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_H_
 
 #include <memory>
-#include <vector>
 #include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/single_thread_task_runner.h"
@@ -136,7 +135,7 @@ class PLATFORM_EXPORT ResourceLoader final
       int64_t encoded_body_length,
       int64_t decoded_body_length,
       bool should_report_corb_blocking,
-      const std::vector<network::cors::PreflightTimingInfo>&) override;
+      const WebVector<network::cors::PreflightTimingInfo>&) override;
   void DidFail(const WebURLError&,
                int64_t encoded_data_length,
                int64_t encoded_body_length,
@@ -240,7 +239,7 @@ class PLATFORM_EXPORT ResourceLoader final
   struct DeferredFinishLoadingInfo {
     base::TimeTicks response_end;
     bool should_report_corb_blocking;
-    std::vector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
+    WebVector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;

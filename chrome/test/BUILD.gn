@@ -554,7 +554,6 @@ if (is_android) {
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/shell/android:content_shell_browsertests_java",
       "//testing/android/native_test:native_test_java",
-      "//ui/android:ui_full_java",
     ]
     java_files = [
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
@@ -2937,6 +2936,7 @@ test("unit_tests") {
     "../browser/performance_manager/performance_manager_unittest.cc",
     "../browser/performance_manager/persistence/site_data/exponential_moving_average_unittest.cc",
     "../browser/performance_manager/persistence/site_data/leveldb_site_data_store_unittest.cc",
+    "../browser/performance_manager/persistence/site_data/non_recording_site_data_cache_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_cache_factory_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_cache_impl_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_impl_unittest.cc",

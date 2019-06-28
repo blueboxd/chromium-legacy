@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -72,8 +73,7 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _textLabel.font =
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
-    _textLabel.textColor =
-        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    _textLabel.textColor = UIColor.cr_secondaryLabelColor;
 
     // Add subviews to View Hierarchy.
     [self.contentView addSubview:_textLabel];

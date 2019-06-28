@@ -18,11 +18,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -197,7 +197,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     DISALLOW_COPY_AND_ASSIGN(ExternalCcResultFetcher);
   };
 
-  GaiaCookieManagerService(OAuth2TokenService* token_service,
+  GaiaCookieManagerService(ProfileOAuth2TokenService* token_service,
                            SigninClient* signin_client);
 
   ~GaiaCookieManagerService() override;
@@ -347,7 +347,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // Start the next request, if needed.
   void HandleNextRequest();
 
-  OAuth2TokenService* token_service_;
+  ProfileOAuth2TokenService* token_service_;
   SigninClient* signin_client_;
 
   GaiaAccountsInCookieUpdatedCallback gaia_accounts_updated_in_cookie_callback_;

@@ -47,7 +47,7 @@ class PageNode : public Node {
 
   // Returns the lifecycle state of this page. This is aggregated from the
   // lifecycle state of each frame in the frame tree. See
-  // PageNodeObserver::OnLifecycleStateChanged.
+  // PageNodeObserver::OnPageLifecycleStateChanged.
   virtual LifecycleState GetLifecycleState() const = 0;
 
   // Returns the navigation ID associated with the last committed navigation
@@ -90,7 +90,7 @@ class PageNodeObserver {
   virtual void OnUkmSourceIdChanged(const PageNode* page_node) = 0;
 
   // Invoked when the |lifecycle_state| property changes.
-  virtual void OnLifecycleStateChanged(const PageNode* page_node) = 0;
+  virtual void OnPageLifecycleStateChanged(const PageNode* page_node) = 0;
 
   // Invoked when the |page_almost_idle| property changes.
   virtual void OnPageAlmostIdleChanged(const PageNode* page_node) = 0;
@@ -127,7 +127,7 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnIsVisibleChanged(const PageNode* page_node) override {}
   void OnIsLoadingChanged(const PageNode* page_node) override {}
   void OnUkmSourceIdChanged(const PageNode* page_node) override {}
-  void OnLifecycleStateChanged(const PageNode* page_node) override {}
+  void OnPageLifecycleStateChanged(const PageNode* page_node) override {}
   void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameNavigationCommitted(const PageNode* page_node) override {}
   void OnTitleUpdated(const PageNode* page_node) override {}

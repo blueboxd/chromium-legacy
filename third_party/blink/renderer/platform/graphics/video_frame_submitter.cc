@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -230,8 +228,7 @@ void VideoFrameSubmitter::OnBeginFrame(
 void VideoFrameSubmitter::ReclaimResources(
     const WTF::Vector<viz::ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  resource_provider_->ReceiveReturnsFromParent(
-      WebVector<viz::ReturnedResource>(resources).ReleaseVector());
+  resource_provider_->ReceiveReturnsFromParent(resources);
 }
 
 void VideoFrameSubmitter::DidAllocateSharedBitmap(
@@ -410,15 +407,16 @@ bool VideoFrameSubmitter::SubmitFrame(
   auto compositor_frame =
       CreateCompositorFrame(begin_frame_ack, std::move(video_frame));
 
-  std::vector<viz::ResourceId> resources;
+  WebVector<viz::ResourceId> resources;
   const auto& quad_list = compositor_frame.render_pass_list.back()->quad_list;
   if (!quad_list.empty()) {
     DCHECK_EQ(quad_list.size(), 1u);
-    resources.assign(quad_list.front()->resources.begin(),
-                     quad_list.front()->resources.end());
+    resources.Assign(quad_list.front()->resources);
   }
-  resource_provider_->PrepareSendToParent(resources,
-                                          &compositor_frame.resource_list);
+
+  WebVector<viz::TransferableResource> resource_list;
+  resource_provider_->PrepareSendToParent(resources, &resource_list);
+  compositor_frame.resource_list = resource_list.ReleaseVector();
 
   // We can pass nullptr for the HitTestData as the CompositorFram will not
   // contain any SurfaceDrawQuads.

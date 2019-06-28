@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_LEVELDB_SITE_DATA_STORE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_LEVELDB_SITE_DATA_STORE_H_
 
+#include "base/auto_reset.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -50,6 +51,10 @@ class LevelDBSiteDataStore : public SiteDataStore {
   // that the database has been fully initialized. The LevelDB implementation is
   // thread safe.
   leveldb::DB* GetDBForTesting();
+
+  // Make the new instances of this class use an in memory database rather than
+  // creating it on disk.
+  static std::unique_ptr<base::AutoReset<bool>> UseInMemoryDBForTesting();
 
   static const size_t kDbVersion;
   static const char kDbMetadataKey[];

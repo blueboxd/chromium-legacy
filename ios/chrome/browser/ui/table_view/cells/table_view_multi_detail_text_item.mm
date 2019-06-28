@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -89,20 +90,18 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
   _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
   _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   _textLabel.adjustsFontForContentSizeCategory = YES;
-  _textLabel.textColor = UIColor.blackColor;
+  _textLabel.textColor = UIColor.cr_labelColor;
 
   _leadingDetailTextLabel.numberOfLines = 0;
   _leadingDetailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
   _leadingDetailTextLabel.font =
       [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
   _leadingDetailTextLabel.adjustsFontForContentSizeCategory = YES;
-  _leadingDetailTextLabel.textColor =
-      UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  _leadingDetailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
 
   _trailingDetailTextLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  _trailingDetailTextLabel.textColor =
-      UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  _trailingDetailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
 }
 
 // Sets constraints on subviews.

@@ -90,11 +90,4 @@ blink::WebData PpapiBlinkPlatformImpl::GetDataResource(const char* name) {
   return blink::WebData();
 }
 
-int PpapiBlinkPlatformImpl::DatabaseDeleteFile(
-    const blink::WebString& vfs_file_name,
-    bool sync_dir) {
-  NOTREACHED();
-  return 0;
-}
-
 }  // namespace content

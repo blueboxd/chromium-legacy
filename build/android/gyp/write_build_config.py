@@ -942,6 +942,14 @@ def main(argv):
       '--resource-ids-provider',
       help='Path to the .build_config for the APK that this static library '
       'target uses to generate stable resource IDs.')
+  parser.add_option(
+      '--compressed-locales-provider',
+      help='Path to the .build_config that contains the compressed locales '
+      'Java list for this static library target.')
+  parser.add_option(
+      '--uncompressed-locales-provider',
+      help='Path to the .build_config that contains the uncompressed locales '
+      'Java list for this static library target.')
 
   parser.add_option('--tested-apk-config',
       help='Path to the build config of the tested apk (for an instrumentation '
@@ -1723,11 +1731,27 @@ def main(argv):
     config['assets'], config['uncompressed_assets'], locale_paks = (
         _MergeAssets(deps.All('android_assets')))
 
-    deps_info['compressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
-        config['assets'], locale_paks)
-    deps_info[
-        'uncompressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
-            config['uncompressed_assets'], locale_paks)
+    if options.compressed_locales_provider:
+      dep_config = GetDepConfig(options.compressed_locales_provider)
+      if dep_config['type'] == 'android_app_bundle':
+        dep_config = GetDepConfig(dep_config['base_module_config'])
+      deps_info['compressed_locales_java_list'] = dep_config[
+          'compressed_locales_java_list']
+    else:
+      deps_info[
+          'compressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
+              config['assets'], locale_paks)
+
+    if options.uncompressed_locales_provider:
+      dep_config = GetDepConfig(options.uncompressed_locales_provider)
+      if dep_config['type'] == 'android_app_bundle':
+        dep_config = GetDepConfig(dep_config['base_module_config'])
+      deps_info['uncompressed_locales_java_list'] = dep_config[
+          'uncompressed_locales_java_list']
+    else:
+      deps_info[
+          'uncompressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
+              config['uncompressed_assets'], locale_paks)
 
     config['extra_android_manifests'] = filter(None, (
         d.get('android_manifest') for d in all_resources_deps))

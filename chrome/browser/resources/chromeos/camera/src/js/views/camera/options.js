@@ -133,9 +133,10 @@ cca.views.camera.Options = function(
   // Remove the deprecated values.
   chrome.storage.local.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
 
-  // TODO(yuli): Replace with devicechanged event.
   this.maybeRefreshVideoDeviceIds_();
-  setInterval(() => this.maybeRefreshVideoDeviceIds_(), 1000);
+  navigator.mediaDevices.addEventListener('devicechange', () => {
+    this.maybeRefreshVideoDeviceIds_();
+  });
 };
 
 /**

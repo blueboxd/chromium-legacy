@@ -5,18 +5,25 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_FROZEN_FRAME_AGGREGATOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_FROZEN_FRAME_AGGREGATOR_H_
 
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 
-class NodeBase;
 class FrameNodeImpl;
 class PageNodeImpl;
 class ProcessNodeImpl;
 
 // The FrozenFrameAggregator is responsible for tracking frame frozen states,
-// and aggregating this property to the page and process nodes.
-class FrozenFrameAggregator : public GraphImplObserverDefaultImpl {
+// and aggregating this property to the page and process nodes. As a GraphOwned
+// object it takes care of registering itself as an observer when added to the
+// graph.
+class FrozenFrameAggregator : public FrameNode::ObserverDefaultImpl,
+                              public GraphOwnedDefaultImpl,
+                              public PageNode::ObserverDefaultImpl,
+                              public ProcessNode::ObserverDefaultImpl {
  public:
   struct Data;
 
@@ -25,16 +32,30 @@ class FrozenFrameAggregator : public GraphImplObserverDefaultImpl {
   FrozenFrameAggregator();
   ~FrozenFrameAggregator() override;
 
-  // GraphObserver implementation:
-  void OnRegistered() override;
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnNodeAdded(NodeBase* node) override;
-  void OnBeforeNodeRemoved(NodeBase* node) override;
-  void OnIsCurrentChanged(FrameNodeImpl* frame_node) override;
-  void OnLifecycleStateChanged(FrameNodeImpl* page_node) override;
+  // FrameNodeObserver implementation:
+  void OnFrameNodeAdded(const FrameNode* frame_node) override;
+  void OnBeforeFrameNodeRemoved(const FrameNode* frame_node) override;
+  void OnIsCurrentChanged(const FrameNode* frame_node) override;
+  void OnFrameLifecycleStateChanged(const FrameNode* frame_node) override;
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
+
+  // PageNodeObserver implementation:
+  void OnPageNodeAdded(const PageNode* page_node) override;
+
+  // ProcessNodeObserver implementation:
+  void OnProcessNodeAdded(const ProcessNode* process_node) override;
 
  protected:
   friend class FrozenFrameAggregatorTest;
+
+  // (Un)registers the various node observer flavors of this object with the
+  // graph. These are invoked by OnPassedIntoGraph and OnTakenFromGraph, but
+  // hoisted to their own functions for testing.
+  void RegisterObservers(Graph* graph);
+  void UnregisterObservers(Graph* graph);
 
   // Used to update counts when adding or removing a |frame_node|. A |delta| of
   // -1 indicates a removal, while +1 indicates adding.

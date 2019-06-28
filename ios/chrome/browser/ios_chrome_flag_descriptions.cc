@@ -337,6 +337,12 @@ const char kOnlyNewPasswordFormParsingName[] =
 const char kOnlyNewPasswordFormParsingDescription[] =
     "The old password form parsing is disabled";
 
+const char kOptionalArticleThumbnailName[] =
+    "Enable optional thumbnails for NTP articles";
+const char kOptionalArticleThumbnailDescription[] =
+    "Make thumbnails of NTP articles optional due to European copyright "
+    "directive(EUCD). Also change the layout of article cells";
+
 const char kPasswordGenerationName[] = "Password generation suggestion";
 const char kPasswordGenerationDescription[] =
     "Add 'Suggest Password' in suggestion list for form completion.";

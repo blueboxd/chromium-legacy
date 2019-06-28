@@ -24,9 +24,9 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -96,7 +96,7 @@ MATCHER_P(ListedAccountEquals, expected, "") {
 
 class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
-  InstrumentedGaiaCookieManagerService(OAuth2TokenService* token_service,
+  InstrumentedGaiaCookieManagerService(ProfileOAuth2TokenService* token_service,
                                        SigninClient* signin_client)
       : GaiaCookieManagerService(token_service, signin_client) {
     total++;
@@ -123,10 +123,12 @@ class GaiaCookieManagerServiceTest : public testing::Test {
         error_(GoogleServiceAuthError::SERVICE_ERROR),
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
-    signin_client_.reset(new TestSigninClient(&pref_service_));
+    signin_client_ = std::make_unique<TestSigninClient>(&pref_service_);
+    token_service_ =
+        std::make_unique<FakeProfileOAuth2TokenService>(&pref_service_);
   }
 
-  OAuth2TokenService* token_service() { return &token_service_; }
+  ProfileOAuth2TokenService* token_service() { return token_service_.get(); }
   TestSigninClient* signin_client() { return signin_client_.get(); }
 
   void SimulateUbertokenSuccess(GaiaCookieManagerService* gcms,
@@ -228,12 +230,12 @@ class GaiaCookieManagerServiceTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  FakeOAuth2TokenService token_service_;
   GoogleServiceAuthError no_error_;
   GoogleServiceAuthError error_;
   GoogleServiceAuthError canceled_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<TestSigninClient> signin_client_;
+  std::unique_ptr<FakeProfileOAuth2TokenService> token_service_;
 };
 
 }  // namespace

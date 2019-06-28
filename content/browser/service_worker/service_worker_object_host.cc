@@ -308,8 +308,9 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
                          provider_host_->AsWeakPtr()));
       return;
     }
+    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
     case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
-    // Shared workers don't yet have access to ServiceWorker objects, so they
+    // Web workers don't yet have access to ServiceWorker objects, so they
     // can't postMessage to one (https://crbug.com/371690).
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
       break;

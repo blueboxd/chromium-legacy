@@ -13,6 +13,7 @@ import "url/mojom/url.mojom";
 // and https://w3c.github.io/ServiceWorker/#dom-clientqueryoptions-type.
 enum ServiceWorkerClientType {
   kWindow,
+  kDedicatedWorker,
   kSharedWorker,
   kAll,
 };

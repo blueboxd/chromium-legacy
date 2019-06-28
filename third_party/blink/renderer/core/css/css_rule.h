@@ -42,6 +42,8 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
  public:
   ~CSSRule() override = default;
 
+  // The values must match the table in [1]. See also css_rule.idl.
+  // [1] https://wiki.csswg.org/spec/cssom-constants
   enum Type {
     kStyleRule = 1,
     kCharsetRule = 2,
@@ -55,6 +57,11 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
     kSupportsRule = 12,
     kFontFeatureValuesRule = 14,
     kViewportRule = 15,
+    // Experimental features below. Such features must be greater than 1000:
+    // the 0-1000 range is reserved by the CSS Working Group.
+    //
+    // TODO(https://crbug.com/978781): Spec a proper number.
+    kPropertyRule = 1001,
   };
 
   virtual Type type() const = 0;

@@ -17,6 +17,7 @@
 #include "content/public/browser/shared_worker_service.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
@@ -63,6 +64,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int process_id,
       int frame_id,
       blink::mojom::SharedWorkerInfoPtr info,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object,
       blink::mojom::SharedWorkerClientPtr client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       const blink::MessagePortChannel& port,
@@ -79,6 +82,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   void CreateWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object,
       blink::mojom::SharedWorkerClientPtr client,
       int process_id,
       int frame_id,

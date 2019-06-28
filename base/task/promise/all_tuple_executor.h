@@ -29,13 +29,13 @@ struct TupleConstructor<Tuple, std::index_sequence<Indices...>> {
   // Resolves |result| with a std::tuple of the promise results of the dependent
   // promises.
   static void ConstructTuple(
-      const std::vector<AbstractPromise::AdjacencyListNode>* prerequisite_list,
+      const std::vector<DependentList::Node>* prerequisite_list,
       AbstractPromise* result) {
     DCHECK_EQ(sizeof...(Indices), prerequisite_list->size());
     result->emplace(
         in_place_type_t<Resolved<Tuple>>(),
         GetResolvedValueFromPromise<std::tuple_element_t<Indices, Tuple>>(
-            (*prerequisite_list)[Indices].prerequisite.get())...);
+            (*prerequisite_list)[Indices].prerequisite())...);
   }
 };
 
@@ -69,7 +69,7 @@ class AllTuplePromiseExecutor {
       return;
     }
 
-    const std::vector<AbstractPromise::AdjacencyListNode>* prerequisite_list =
+    const std::vector<DependentList::Node>* prerequisite_list =
         promise->prerequisite_list();
     DCHECK(prerequisite_list);
     TupleConstructor<ResolveTuple>::ConstructTuple(prerequisite_list, promise);

@@ -118,6 +118,7 @@ let kRTCInboundRtpStreamStats = new RTCStats(kRTCReceivedRtpStreamStats, {
   framesDecoded: 'number',
   keyFramesDecoded: 'number',
   qpSum: 'number',
+  totalDecodeTime: 'number',
   lastPacketReceivedTimestamp: 'number',
   averageRtcpInterval: 'number',
   fecPacketsReceived: 'number',

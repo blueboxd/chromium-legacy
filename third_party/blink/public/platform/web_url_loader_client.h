@@ -39,6 +39,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -108,7 +109,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
       int64_t total_encoded_body_length,
       int64_t total_decoded_body_length,
       bool should_report_corb_blocking,
-      const std::vector<network::cors::PreflightTimingInfo>&) {}
+      const WebVector<network::cors::PreflightTimingInfo>&) {}
 
   // Called when the load completes with an error.
   // |total_encoded_data_length| may be equal to kUnknownEncodedDataLength.

@@ -207,7 +207,7 @@ class PLATFORM_EXPORT ResourceFetcher
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
                           bool should_report_corb_blocking,
-                          const std::vector<network::cors::PreflightTimingInfo>&
+                          const WebVector<network::cors::PreflightTimingInfo>&
                               cors_preflight_timing_info);
   void HandleLoaderError(Resource*,
                          const ResourceError&,

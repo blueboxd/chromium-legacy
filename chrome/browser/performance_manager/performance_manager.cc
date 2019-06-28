@@ -262,10 +262,11 @@ void PerformanceManager::OnStartImpl(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
+
   // Register new |GraphImplObserver| implementations here.
   RegisterObserver(std::make_unique<MetricsCollector>());
   RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
-  RegisterObserver(std::make_unique<FrozenFrameAggregator>());
   RegisterObserver(std::make_unique<IsolationContextMetrics>());
 
 #if defined(OS_WIN)

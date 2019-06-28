@@ -510,6 +510,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
         NOTREACHED();
         break;
       case StyleRuleBase::kPage:
+      case StyleRuleBase::kProperty:
       case StyleRuleBase::kKeyframes:
       case StyleRuleBase::kKeyframe:
       case StyleRuleBase::kSupports:

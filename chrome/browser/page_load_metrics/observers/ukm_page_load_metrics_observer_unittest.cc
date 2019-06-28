@@ -1017,8 +1017,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageSizeMetrics) {
   int64_t network_bytes = 0;
   int64_t cache_bytes = 0;
   for (const auto& request : resources) {
-    if (request->cache_type ==
-        page_load_metrics::mojom::CacheType::kNotCached) {
+    if (!request->was_fetched_via_cache) {
       network_bytes += request->delta_bytes;
     } else {
       cache_bytes += request->encoded_body_length;
@@ -1041,7 +1040,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageSizeMetrics) {
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.NetworkBytes2",
                                           bucketed_network_bytes);
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.CacheBytes2",
+    test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.CacheBytes",
                                           bucketed_cache_bytes);
   }
 }

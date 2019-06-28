@@ -288,7 +288,7 @@ void WorkerScriptLoader::CommitCompleted(
   completed_ = true;
 
   if (service_worker_provider_host_ && status.error_code == net::OK)
-    service_worker_provider_host_->CompleteSharedWorkerPreparation();
+    service_worker_provider_host_->CompleteWebWorkerPreparation();
   client_->OnComplete(status);
 
   // We're done. Ensure we no longer send messages to our client, and no longer

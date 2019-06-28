@@ -1879,6 +1879,7 @@ if (enable_java_templates) {
   # Variables:
   #   use_final_fields: True to use final fields. All other variables are
   #       ignored when this is false.
+  #   build_config: Path to build_config used for locale list
   #   enable_multidex: Value for ENABLE_MULTIDEX.
   #   min_sdk_version: Value for MIN_SDK_VERSION.
   #
@@ -1915,6 +1916,15 @@ if (enable_java_templates) {
         if (invoker.enable_multidex) {
           defines += [ "ENABLE_MULTIDEX" ]
         }
+        inputs = [
+          invoker.build_config,
+        ]
+        _rebased_build_config =
+            rebase_path(invoker.build_config, root_build_dir)
+        defines += [
+          "COMPRESSED_LOCALE_LIST=" + "@FileArg($_rebased_build_config:deps_info:compressed_locales_java_list)",
+          "UNCOMPRESSED_LOCALE_LIST=" + "@FileArg($_rebased_build_config:deps_info:uncompressed_locales_java_list)",
+        ]
         if (defined(invoker.min_sdk_version)) {
           defines += [ "_MIN_SDK_VERSION=${invoker.min_sdk_version}" ]
         }
@@ -1923,35 +1933,6 @@ if (enable_java_templates) {
             "_RESOURCES_VERSION_VARIABLE=${invoker.resources_version_variable}",
           ]
         }
-      }
-    }
-  }
-
-  # Creates LocaleConfig.java, a file containing the list of compressed and
-  # uncompressed locale .pak files in an APK.
-  #
-  # Variables:
-  #   build_config: Path to build_config used for locale lists.
-  #   java_package: Java package for the generated class.
-  template("generate_locale_config_srcjar") {
-    java_cpp_template(target_name) {
-      package_path = string_replace(invoker.java_package, ".", "/")
-      sources = [
-        "//build/android/java/templates/LocaleConfig.template",
-      ]
-      defines = [ "PACKAGE=${invoker.java_package}" ]
-      if (defined(invoker.build_config)) {
-        forward_variables_from(invoker,
-                               [
-                                 "deps",
-                                 "testonly",
-                               ])
-        _rebased_build_config =
-            rebase_path(invoker.build_config, root_build_dir)
-        defines += [
-          "COMPRESSED_LOCALE_LIST=" + "@FileArg($_rebased_build_config:deps_info:compressed_locales_java_list)",
-          "UNCOMPRESSED_LOCALE_LIST=" + "@FileArg($_rebased_build_config:deps_info:uncompressed_locales_java_list)",
-        ]
       }
     }
   }
@@ -2034,7 +2015,8 @@ if (enable_java_templates) {
   #   static_library_dependent_targets: A list of scopes describing targets that
   #     use this target as a static library. Common Java code from the targets
   #     listed in static_library_dependent_targets will be moved into this
-  #     target. Scope members are name and is_resource_ids_provider.
+  #     target. Scope members are name, is_resource_ids_provider,
+  #     is_compressed_locales_provider, is_uncompressed_locales_provider.
   #     TODO(estevenson): Add a README for static library targets and document
   #                       additions to "deps_info" in write_build_config.py.
   #   static_library_provider: Specifies a single target that this target will
@@ -2047,9 +2029,6 @@ if (enable_java_templates) {
   #     Optional, default 23.
   #   max_sdk_version: The maximum Android SDK version this target supports.
   #     Optional, default not set.
-  #   locale_config_java_packages: Optional list of java packages. If given, a
-  #     LocaleConfig.java file will be generated for each package, and will
-  #     contain the list of compressed and uncompressed locale pak files.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.final_apk_path) || defined(invoker.name))
@@ -2266,8 +2245,6 @@ if (enable_java_templates) {
     if (defined(invoker.generate_buildconfig_java)) {
       _generate_buildconfig_java = invoker.generate_buildconfig_java
     }
-
-    _generate_localeconfig_java = defined(invoker.locale_config_java_packages)
 
     # JNI generation usually goes hand-in-hand with buildconfig generation.
     _generate_final_jni = _generate_buildconfig_java
@@ -2647,6 +2624,7 @@ if (enable_java_templates) {
       generate_build_config_srcjar("${_template_name}__build_config_srcjar") {
         forward_variables_from(invoker, [ "min_sdk_version" ])
         use_final_fields = true
+        build_config = _build_config
         enable_multidex = _enable_multidex
         if (defined(invoker.product_version_resources_dep)) {
           resources_version_variable =
@@ -2657,21 +2635,6 @@ if (enable_java_templates) {
         ]
       }
       _srcjar_deps += [ ":${_template_name}__build_config_srcjar" ]
-    }
-
-    if (_generate_localeconfig_java) {
-      foreach(_package, invoker.locale_config_java_packages) {
-        _locale_target_name =
-            "${_template_name}_${_package}__locale_config_srcjar"
-        generate_locale_config_srcjar("$_locale_target_name") {
-          build_config = _build_config
-          java_package = _package
-          deps = [
-            ":$_build_config_target",
-          ]
-        }
-        _srcjar_deps += [ ":$_locale_target_name" ]
-      }
     }
 
     if (_generate_final_jni) {
@@ -3321,7 +3284,6 @@ if (enable_java_templates) {
                                "loadable_modules",
                                "manifest_package",
                                "max_sdk_version",
-                               "locale_config_java_packages",
                                "min_sdk_version",
                                "native_lib_placeholders",
                                "native_lib_version_arg",
@@ -3440,7 +3402,6 @@ if (enable_java_templates) {
                                "load_library_from_apk",
                                "manifest_package",
                                "max_sdk_version",
-                               "locale_config_java_packages",
                                "min_sdk_version",
                                "native_lib_version_arg",
                                "native_lib_version_rule",

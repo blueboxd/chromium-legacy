@@ -318,7 +318,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     std::unique_ptr<SynthesizedClip> synthesized_clip;
     bool in_use;
   };
-  std::vector<SynthesizedClipEntry> synthesized_clip_cache_;
+  Vector<SynthesizedClipEntry> synthesized_clip_cache_;
 
   Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers_;
 

@@ -15,7 +15,6 @@
     },
     "2": {
         "benchmarks": {
-            "power.typical_10_mobile": {},
             "speedometer": {},
             "speedometer2": {}
         }

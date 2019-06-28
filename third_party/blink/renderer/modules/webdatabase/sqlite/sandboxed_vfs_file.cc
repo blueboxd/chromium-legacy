@@ -16,6 +16,7 @@
 #include "sql/initialization.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sandboxed_vfs.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace blink {
@@ -219,7 +220,7 @@ int SandboxedVfsFile::Truncate(sqlite3_int64 size) {
   // TODO(pwnall): Figure out if we can allow ftruncate() in the renderer. It
   //               would be useful for low-level storage APIs, like the upcoming
   //               filesystem API.
-  if (!vfs_->GetPlatform()->DatabaseSetFileSize(file_name_, size))
+  if (!WebDatabaseHost::GetInstance().SetFileSize(file_name_, size))
     return SQLITE_IOERR_TRUNCATE;
 
   return SQLITE_OK;

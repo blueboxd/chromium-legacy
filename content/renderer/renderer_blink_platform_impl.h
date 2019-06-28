@@ -28,7 +28,6 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
-#include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/font_loader.h"  // nogncheck
@@ -55,7 +54,6 @@ namespace content {
 class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryBundle;
 class ThreadSafeSender;
-class WebDatabaseObserverImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
@@ -100,17 +98,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& cacheStorageCacheName) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
-  base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
-                              int desired_flags) override;
-  int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
-                         bool sync_dir) override;
-  int32_t DatabaseGetFileAttributes(
-      const blink::WebString& vfs_file_name) override;
-  int64_t DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
-  int64_t DatabaseGetSpaceAvailableForOrigin(
-      const blink::WebSecurityOrigin& origin) override;
-  bool DatabaseSetFileSize(const blink::WebString& vfs_file_name,
-                           int64_t size) override;
   blink::WebString DatabaseCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
   viz::FrameSinkId GenerateFrameSinkId() override;
@@ -124,7 +111,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   double AudioHardwareSampleRate() override;
   size_t AudioHardwareBufferSize() override;
   unsigned AudioHardwareOutputChannels() override;
-  blink::WebDatabaseObserver* DatabaseObserver() override;
 
   std::unique_ptr<blink::WebAudioDevice> CreateAudioDevice(
       unsigned input_channels,
@@ -209,10 +195,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Returns the previous |enable| value.
   static bool SetSandboxEnabledForTesting(bool enable);
 
-  WebDatabaseObserverImpl* web_database_observer_impl() {
-    return web_database_observer_impl_.get();
-  }
-
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
@@ -240,12 +222,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
-  // Ensure that the WebDatabaseHost has been initialized.
-  void InitializeWebDatabaseHostIfNeeded();
-
-  // Return the mojo interface for making WebDatabaseHost calls.
-  blink::mojom::WebDatabaseHost& GetWebDatabaseHost();
-
   // Return the mojo interface for making CodeCache calls.
   blink::mojom::CodeCacheHost& GetCodeCacheHost();
 
@@ -270,17 +246,12 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
-  std::unique_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
-
   // NOT OWNED
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
 
   TopLevelBlameContext top_level_blame_context_;
 
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
-
-  blink::mojom::WebDatabaseHostPtrInfo web_database_host_info_;
-  scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
 
   blink::mojom::CodeCacheHostPtrInfo code_cache_host_info_;
   scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;

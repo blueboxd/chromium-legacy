@@ -430,6 +430,11 @@
       name: "CSSVariables2",
       status: "experimental",
     },
+    // Support for @property rules.
+    {
+      name: "CSSVariables2AtProperty",
+      depends_on: ["CSSVariables2"],
+    },
     // Support for registered custom properties with <image> syntax.
     {
       name: "CSSVariables2ImageValues",

@@ -8,9 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -151,8 +152,10 @@ class MockCookieManager
                     SetCanonicalCookieCallback callback));
 };
 
-class MockTokenService : public FakeOAuth2TokenService {
+class MockTokenService : public FakeProfileOAuth2TokenService {
  public:
+  MockTokenService(PrefService* prefs) : FakeProfileOAuth2TokenService(prefs) {}
+
   MOCK_METHOD2(InvalidateTokenForMultilogin,
                void(const CoreAccountId& account_id, const std::string& token));
 };
@@ -161,7 +164,9 @@ class MockTokenService : public FakeOAuth2TokenService {
 
 class OAuthMultiloginHelperTest : public testing::Test {
  public:
-  OAuthMultiloginHelperTest() : test_signin_client_(/*prefs=*/nullptr) {
+  OAuthMultiloginHelperTest()
+      : test_signin_client_(&pref_service_),
+        mock_token_service_(&pref_service_) {
     std::unique_ptr<MockCookieManager> cookie_manager =
         std::make_unique<MockCookieManager>();
     mock_cookie_manager_ = cookie_manager.get();
@@ -217,6 +222,7 @@ class OAuthMultiloginHelperTest : public testing::Test {
   bool callback_called_ = false;
   signin::SetAccountsInCookieResult result_;
 
+  TestingPrefServiceSimple pref_service_;
   MockCookieManager* mock_cookie_manager_;  // Owned by test_signin_client_
   TestSigninClient test_signin_client_;
   MockTokenService mock_token_service_;
@@ -224,7 +230,7 @@ class OAuthMultiloginHelperTest : public testing::Test {
 
 // Everything succeeds.
 TEST_F(OAuthMultiloginHelperTest, Success) {
-  token_service()->AddAccount(kAccountId);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}});
 
@@ -253,7 +259,7 @@ TEST_F(OAuthMultiloginHelperTest, Success) {
 
 // Multiple cookies in the multilogin response.
 TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
-  token_service()->AddAccount(kAccountId);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}});
 
@@ -288,7 +294,7 @@ TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
 
 // Multiple cookies in the multilogin response.
 TEST_F(OAuthMultiloginHelperTest, SuccessWithExternalCcResult) {
-  token_service()->AddAccount(kAccountId);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelperWithExternalCcResult({{kAccountId, kGaiaId}});
 
@@ -325,7 +331,7 @@ TEST_F(OAuthMultiloginHelperTest, SuccessWithExternalCcResult) {
 
 // Failure to get the access token.
 TEST_F(OAuthMultiloginHelperTest, OneAccountAccessTokenFailure) {
-  token_service()->AddAccount(kAccountId);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}});
 
@@ -338,7 +344,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountAccessTokenFailure) {
 
 // Retry on transient errors in the multilogin call.
 TEST_F(OAuthMultiloginHelperTest, OneAccountTransientMultiloginError) {
-  token_service()->AddAccount(kAccountId);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}});
 
@@ -375,7 +381,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountTransientMultiloginError) {
 // Stop retrying after too many transient errors in the multilogin call.
 TEST_F(OAuthMultiloginHelperTest,
        OneAccountTransientMultiloginErrorMaxRetries) {
-  token_service()->AddAccount(kAccountId);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}});
 
@@ -399,7 +405,7 @@ TEST_F(OAuthMultiloginHelperTest,
 
 // Persistent error in the multilogin call.
 TEST_F(OAuthMultiloginHelperTest, OneAccountPersistentMultiloginError) {
-  token_service()->AddAccount(kAccountId);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}});
 
@@ -419,8 +425,8 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountPersistentMultiloginError) {
 
 // Retry on "invalid token" in the multilogin response.
 TEST_F(OAuthMultiloginHelperTest, InvalidTokenError) {
-  token_service()->AddAccount(kAccountId);
-  token_service()->AddAccount(kAccountId2);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
+  token_service()->UpdateCredentials(kAccountId2, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}, {kAccountId2, kGaiaId2}});
 
@@ -467,8 +473,8 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenError) {
 
 // Retry on "invalid token" in the multilogin response.
 TEST_F(OAuthMultiloginHelperTest, InvalidTokenErrorMaxRetries) {
-  token_service()->AddAccount(kAccountId);
-  token_service()->AddAccount(kAccountId2);
+  token_service()->UpdateCredentials(kAccountId, "refresh_token");
+  token_service()->UpdateCredentials(kAccountId2, "refresh_token");
   std::unique_ptr<OAuthMultiloginHelper> helper =
       CreateHelper({{kAccountId, kGaiaId}, {kAccountId2, kGaiaId2}});
 

@@ -54,8 +54,8 @@ class DarkModeBitmapImageClassifierTest : public testing::Test {
  public:
   // Loads the image from |file_name|, computes features vector into |features|,
   // and returns the classification result.
-  bool GetFeaturesAndClassification(const std::string& file_name,
-                                    std::vector<float>* features) {
+  bool GetFeaturesAndClassification(const String& file_name,
+                                    Vector<float>* features) {
     SCOPED_TRACE(file_name);
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
@@ -64,8 +64,8 @@ class DarkModeBitmapImageClassifierTest : public testing::Test {
     return result == DarkModeClassification::kApplyDarkModeFilter;
   }
 
-  void AssertFeaturesEqual(const std::vector<float>& features,
-                           const std::vector<float>& expected_features) {
+  void AssertFeaturesEqual(const Vector<float>& features,
+                           const Vector<float>& expected_features) {
     EXPECT_EQ(features.size(), expected_features.size());
     for (unsigned i = 0; i < features.size(); i++) {
       EXPECT_NEAR(features[i], expected_features[i], kEpsilon)
@@ -76,8 +76,8 @@ class DarkModeBitmapImageClassifierTest : public testing::Test {
   DarkModeBitmapImageClassifier* classifier() { return &classifier_; }
 
  protected:
-  scoped_refptr<BitmapImage> LoadImage(const std::string& file_name) {
-    String file_path = test::BlinkWebTestsDir() + file_name.c_str();
+  scoped_refptr<BitmapImage> LoadImage(const String& file_name) {
+    String file_path = test::BlinkWebTestsDir() + file_name;
     scoped_refptr<SharedBuffer> image_data = test::ReadFromFile(file_path);
     EXPECT_TRUE(image_data.get() && image_data.get()->size());
 
@@ -92,7 +92,7 @@ class DarkModeBitmapImageClassifierTest : public testing::Test {
 };
 
 TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
-  std::vector<float> features;
+  Vector<float> features;
 
   // Test Case 1:
   // Grayscale

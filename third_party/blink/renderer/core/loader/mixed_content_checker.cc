@@ -675,7 +675,7 @@ bool MixedContentChecker::ShouldAutoupgrade(HttpsState context_https_state,
     return false;
   }
 
-  std::string autoupgrade_mode = base::GetFieldTrialParamValueByFeature(
+  auto autoupgrade_mode = base::GetFieldTrialParamValueByFeature(
       blink::features::kMixedContentAutoupgrade,
       blink::features::kMixedContentAutoupgradeModeParamName);
 

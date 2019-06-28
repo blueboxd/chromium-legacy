@@ -130,6 +130,8 @@ blink_core_sources("css") {
     "css_property_id_templates.h",
     "css_property_name.cc",
     "css_property_name.h",
+    "css_property_rule.cc",
+    "css_property_rule.h",
     "css_property_source_data.cc",
     "css_property_source_data.h",
     "css_property_value.cc",

@@ -19,7 +19,6 @@ namespace media {
 using MojoMjpegDecodeAcceleratorFactoryCB = base::RepeatingCallback<void(
     chromeos_camera::mojom::MjpegDecodeAcceleratorRequest)>;
 
-class CrosImageCaptureImpl;
 class ReprocessManager;
 
 class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
@@ -69,8 +68,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
 
   std::unique_ptr<ReprocessManager> reprocess_manager_;
-
-  std::unique_ptr<CrosImageCaptureImpl> cros_image_capture_;
 
   bool initialized_;
 

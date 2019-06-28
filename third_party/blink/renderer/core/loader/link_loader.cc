@@ -133,10 +133,14 @@ LinkLoader::~LinkLoader() = default;
 void LinkLoader::NotifyFinished() {
   DCHECK(finish_observer_);
   Resource* resource = finish_observer_->GetResource();
-  if (resource->ErrorOccurred())
+  if (resource->ErrorOccurred() ||
+      (resource->IsLinkPreload() &&
+       resource->IntegrityDisposition() ==
+           ResourceIntegrityDisposition::kFailed)) {
     client_->LinkLoadingErrored();
-  else
+  } else {
     client_->LinkLoaded();
+  }
 }
 
 // https://html.spec.whatwg.org/C/#link-type-modulepreload

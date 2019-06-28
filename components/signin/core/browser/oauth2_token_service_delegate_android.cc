@@ -287,7 +287,7 @@ OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
   return std::make_unique<AndroidAccessTokenFetcher>(consumer, account_name);
 }
 
-void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
+void OAuth2TokenServiceDelegateAndroid::OnAccessTokenInvalidated(
     const CoreAccountId& account_id,
     const std::string& client_id,
     const OAuth2AccessTokenManager::ScopeSet& scopes,

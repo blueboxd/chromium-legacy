@@ -25,7 +25,6 @@ import android.view.MenuItem;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
@@ -141,23 +140,8 @@ public class SavePasswordsPreferences
         mSearchItem = menu.findItem(R.id.menu_id_search);
         mSearchItem.setVisible(true);
         mHelpItem = menu.findItem(R.id.menu_id_general_help);
-        SearchUtils.initializeSearchView(mSearchItem, mSearchQuery, getActivity(), (query) -> {
-            maybeRecordTriggeredPasswordSearch(true);
-            filterPasswords(query);
-        });
-    }
-
-    /**
-     * Record the search only, if the feature is enabled and it hasn't been recorded for this
-     * instance of the view.
-     * @param searchTriggered Whether to log a triggered search or no triggered search.
-     */
-    private void maybeRecordTriggeredPasswordSearch(boolean searchTriggered) {
-        if (!mSearchRecorded) {
-            mSearchRecorded = true;
-            RecordHistogram.recordBooleanHistogram(
-                    "PasswordManager.Android.PasswordSearchTriggered", searchTriggered);
-        }
+        SearchUtils.initializeSearchView(
+                mSearchItem, mSearchQuery, getActivity(), this::filterPasswords);
     }
 
     @Override
@@ -364,7 +348,6 @@ public class SavePasswordsPreferences
     @Override
     public void onDestroy() {
         super.onDestroy();
-        maybeRecordTriggeredPasswordSearch(false);
         PasswordManagerHandlerProvider.getInstance().removeObserver(this);
     }
 

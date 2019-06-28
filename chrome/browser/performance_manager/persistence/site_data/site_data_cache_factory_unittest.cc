@@ -41,7 +41,7 @@ class SiteDataCacheFactoryTest : public ::testing::Test {
 
 TEST_F(SiteDataCacheFactoryTest, EndToEnd) {
   SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(factory_.get(),
-                                                          &profile_);
+                                                          &profile_, nullptr);
 
   base::RunLoop run_loop;
   task_runner_->PostTask(

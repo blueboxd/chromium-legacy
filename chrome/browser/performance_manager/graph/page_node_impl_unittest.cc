@@ -409,7 +409,7 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
   MOCK_METHOD1(OnIsLoadingChanged, void(const PageNode*));
   MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
-  MOCK_METHOD1(OnLifecycleStateChanged, void(const PageNode*));
+  MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageAlmostIdleChanged, void(const PageNode*));
   MOCK_METHOD1(OnMainFrameNavigationCommitted, void(const PageNode*));
   MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
@@ -464,7 +464,7 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   page_node->SetUkmSourceId(static_cast<ukm::SourceId>(0x1234));
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
-  EXPECT_CALL(obs, OnLifecycleStateChanged(_))
+  EXPECT_CALL(obs, OnPageLifecycleStateChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
   page_node->SetLifecycleStateForTesting(PageNodeImpl::LifecycleState::kFrozen);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());

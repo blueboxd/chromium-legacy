@@ -283,6 +283,11 @@ extern const char kOmniboxUseDefaultSearchEngineFaviconDescription[];
 extern const char kOnlyNewPasswordFormParsingName[];
 extern const char kOnlyNewPasswordFormParsingDescription[];
 
+// Title and description for the flag to enable optional thumbnail for NTP
+// articles according to European copyright directive(EUCD).
+extern const char kOptionalArticleThumbnailName[];
+extern const char kOptionalArticleThumbnailDescription[];
+
 // Title and description for the flag to enable password generation.
 extern const char kPasswordGenerationName[];
 extern const char kPasswordGenerationDescription[];

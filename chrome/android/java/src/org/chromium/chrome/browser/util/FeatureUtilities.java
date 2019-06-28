@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -92,6 +93,8 @@ public class FeatureUtilities {
     private static Boolean sAllowStartingServiceManagerOnly;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
+
+    private static String sReachedCodeProfilerTrialGroup;
 
     private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
     private static final String NTP_BUTTON_VARIANT_PARAM_NAME = "variation";
@@ -192,6 +195,7 @@ public class FeatureUtilities {
         cacheImmersiveUiModeEnabled();
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
         cacheTabPersistentStoreTaskRunnerVariant();
+        cacheReachedCodeProfilerTrialGroup();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -798,6 +802,33 @@ public class FeatureUtilities {
                 ChromePreferenceManager.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.isEnabled(
                         ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT));
+    }
+
+    /**
+     * Caches the trial group of the reached code profiler feature to be using on next startup.
+     */
+    private static void cacheReachedCodeProfilerTrialGroup() {
+        // Make sure that the existing value is saved in a static variable before overwriting it.
+        if (sReachedCodeProfilerTrialGroup == null) {
+            getReachedCodeProfilerTrialGroup();
+        }
+
+        ChromePreferenceManager.getInstance().writeString(
+                ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY,
+                FieldTrialList.findFullName(ChromeFeatureList.REACHED_CODE_PROFILER));
+    }
+
+    /**
+     * @return The trial group of the reached code profiler.
+     */
+    @CalledByNative
+    public static String getReachedCodeProfilerTrialGroup() {
+        if (sReachedCodeProfilerTrialGroup == null) {
+            sReachedCodeProfilerTrialGroup = ChromePreferenceManager.getInstance().readString(
+                    ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY, "");
+        }
+
+        return sReachedCodeProfilerTrialGroup;
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/task/promise/abstract_promise.h"
+#include "base/test/do_nothing_promise.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,9 +46,9 @@ TEST(DependentList, ConstructUnresolved) {
   DependentList list(DependentList::ConstructUnresolved{});
   DependentList::Node node;
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node));
-  EXPECT_FALSE(list.IsRejected());
+  EXPECT_FALSE(list.IsRejectedForTesting());
   EXPECT_FALSE(list.IsCanceled());
-  EXPECT_FALSE(list.IsResolved());
+  EXPECT_FALSE(list.IsResolvedForTesting());
   EXPECT_FALSE(list.IsSettled());
 }
 
@@ -82,11 +83,12 @@ TEST(DependentList, ResolveAndConsumeAllDependents) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node2));
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
-  EXPECT_FALSE(list.IsResolved());
+  EXPECT_FALSE(list.IsResolvedForTesting());
   EXPECT_FALSE(list.IsSettled());
 
-  std::vector<AbstractPromise*> expected_dependants = {
-      node1.dependent.get(), node2.dependent.get(), node3.dependent.get()};
+  std::vector<AbstractPromise*> expected_dependants = {node1.dependent().get(),
+                                                       node2.dependent().get(),
+                                                       node3.dependent().get()};
 
   PushBackVisitor visitor;
   list.ResolveAndConsumeAllDependents(&visitor);
@@ -110,10 +112,11 @@ TEST(DependentList, RejectAndConsumeAllDependents) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node2));
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
-  EXPECT_FALSE(list.IsResolved());
+  EXPECT_FALSE(list.IsResolvedForTesting());
   EXPECT_FALSE(list.IsSettled());
-  std::vector<AbstractPromise*> expected_dependants = {
-      node1.dependent.get(), node2.dependent.get(), node3.dependent.get()};
+  std::vector<AbstractPromise*> expected_dependants = {node1.dependent().get(),
+                                                       node2.dependent().get(),
+                                                       node3.dependent().get()};
 
   PushBackVisitor visitor;
   list.RejectAndConsumeAllDependents(&visitor);
@@ -137,10 +140,11 @@ TEST(DependentList, CancelAndConsumeAllDependents) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node2));
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
-  EXPECT_FALSE(list.IsResolved());
+  EXPECT_FALSE(list.IsResolvedForTesting());
   EXPECT_FALSE(list.IsSettled());
-  std::vector<AbstractPromise*> expected_dependants = {
-      node1.dependent.get(), node2.dependent.get(), node3.dependent.get()};
+  std::vector<AbstractPromise*> expected_dependants = {node1.dependent().get(),
+                                                       node2.dependent().get(),
+                                                       node3.dependent().get()};
 
   PushBackVisitor visitor;
   EXPECT_TRUE(list.CancelAndConsumeAllDependents(&visitor));
@@ -179,6 +183,26 @@ TEST(DependentList, NextPowerOfTwo) {
                 "");
   static_assert(NextPowerOfTwo(std::numeric_limits<uintptr_t>::max()) == 0u,
                 "");
+}
+
+TEST(DependentListNode, Simple) {
+  DependentList::Node node;
+  EXPECT_EQ(nullptr, node.prerequisite());
+
+  scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
+  EXPECT_TRUE(p->HasOneRef());
+  node.SetPrerequisite(p.get());
+  EXPECT_EQ(p.get(), node.prerequisite());
+  EXPECT_TRUE(p->HasOneRef());
+
+  EXPECT_TRUE(p->HasOneRef());
+  node.RetainSettledPrerequisite();
+  EXPECT_EQ(p.get(), node.prerequisite());
+  EXPECT_FALSE(p->HasOneRef());
+
+  node.ClearPrerequisite();
+  EXPECT_EQ(nullptr, node.prerequisite());
+  EXPECT_TRUE(p->HasOneRef());
 }
 
 }  // namespace internal

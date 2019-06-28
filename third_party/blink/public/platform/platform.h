@@ -112,7 +112,6 @@ class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
 class WebCrypto;
-class WebDatabaseObserver;
 class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
@@ -218,40 +217,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual WebBlobRegistry* GetBlobRegistry() { return nullptr; }
 
   // Database (WebSQL) ---------------------------------------------------
-
-  // Opens a database file.
-  virtual base::File DatabaseOpenFile(const WebString& vfs_file_name,
-                                      int desired_flags) {
-    return base::File();
-  }
-
-  // Deletes a database file and returns the error code.
-  virtual int DatabaseDeleteFile(const WebString& vfs_file_name,
-                                 bool sync_dir) {
-    return 0;
-  }
-
-  // Returns the attributes of the given database file.
-  virtual int32_t DatabaseGetFileAttributes(const WebString& vfs_file_name) {
-    return 0;
-  }
-
-  // Returns the size of the given database file.
-  virtual int64_t DatabaseGetFileSize(const WebString& vfs_file_name) {
-    return 0;
-  }
-
-  // Returns the space available for the given origin.
-  virtual int64_t DatabaseGetSpaceAvailableForOrigin(
-      const WebSecurityOrigin& origin) {
-    return 0;
-  }
-
-  // Set the size of the given database file.
-  virtual bool DatabaseSetFileSize(const WebString& vfs_file_name,
-                                   int64_t size) {
-    return false;
-  }
 
   // Return a filename-friendly identifier for an origin.
   virtual WebString DatabaseCreateOriginIdentifier(
@@ -672,10 +637,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual InterfaceProvider* GetInterfaceProvider();
 
   virtual const char* GetBrowserServiceName() const { return ""; }
-
-  // WebDatabase --------------------------------------------------------
-
-  virtual WebDatabaseObserver* DatabaseObserver() { return nullptr; }
 
   // Media Capabilities --------------------------------------------------
 

@@ -208,10 +208,12 @@ void Resource::CheckResourceIntegrity() {
 
   if (SubresourceIntegrity::CheckSubresourceIntegrity(IntegrityMetadata(), data,
                                                       data_length, Url(), *this,
-                                                      integrity_report_info_))
+                                                      integrity_report_info_)) {
     integrity_disposition_ = ResourceIntegrityDisposition::kPassed;
-  else
+  } else {
     integrity_disposition_ = ResourceIntegrityDisposition::kFailed;
+  }
+
   DCHECK_NE(IntegrityDisposition(), ResourceIntegrityDisposition::kNotChecked);
 }
 

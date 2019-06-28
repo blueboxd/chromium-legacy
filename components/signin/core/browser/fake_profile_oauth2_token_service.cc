@@ -123,7 +123,11 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
 
   // Walk the requests and notify the callbacks.
   for (auto it = requests.begin(); it != requests.end(); ++it) {
-    DCHECK(it->request);
+    // Consumers can drop requests in response to callbacks on other requests
+    // (e.g., OAuthMultiloginFetcher clears all of its requests when it gets an
+    // error on any of them).
+    if (!it->request)
+      continue;
 
     bool scope_matches = all_scopes || it->scopes == scope;
     bool account_matches = account_id.empty() || account_id == it->account_id;

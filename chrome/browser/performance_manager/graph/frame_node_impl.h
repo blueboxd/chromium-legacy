@@ -195,7 +195,7 @@ class FrameNodeImpl
   ObservedProperty::NotifiesOnlyOnChanges<
       LifecycleState,
       &GraphImplObserver::OnLifecycleStateChanged,
-      &FrameNodeObserver::OnLifecycleStateChanged>
+      &FrameNodeObserver::OnFrameLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
 
   // This is a one way switch. Once marked an ad-frame, always an ad-frame.

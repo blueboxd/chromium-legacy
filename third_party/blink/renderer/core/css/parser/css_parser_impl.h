@@ -34,6 +34,7 @@ class StyleRuleKeyframes;
 class StyleRuleMedia;
 class StyleRuleNamespace;
 class StyleRulePage;
+class StyleRuleProperty;
 class StyleRuleSupports;
 class StyleRuleViewport;
 class StyleSheetContents;
@@ -174,6 +175,9 @@ class CSSParserImpl {
   StyleRulePage* ConsumePageRule(CSSParserTokenRange prelude,
                                  const RangeOffset& prelude_offset,
                                  CSSParserTokenStream& block);
+  StyleRuleProperty* ConsumePropertyRule(CSSParserTokenRange prelude,
+                                         const RangeOffset& prelude_offset,
+                                         CSSParserTokenStream& block);
 
   StyleRuleKeyframe* ConsumeKeyframeStyleRule(CSSParserTokenRange prelude,
                                               const RangeOffset& prelude_offset,

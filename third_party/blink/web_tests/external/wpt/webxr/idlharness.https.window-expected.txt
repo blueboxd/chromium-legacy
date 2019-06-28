@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 202 tests; 198 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 203 tests; 198 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -145,6 +145,7 @@ PASS XRInputSource interface: attribute targetRayMode
 PASS XRInputSource interface: attribute targetRaySpace
 PASS XRInputSource interface: attribute gripSpace
 PASS XRInputSource interface: attribute gamepad
+FAIL XRInputSource interface: attribute profiles assert_true: The prototype object must have a property "profiles" expected true got false
 PASS XRInputSourceArray interface: existence and properties of interface object
 PASS XRInputSourceArray interface object length
 PASS XRInputSourceArray interface object name

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
 #include "third_party/blink/renderer/core/css/css_namespace_rule.h"
 #include "third_party/blink/renderer/core/css/css_page_rule.h"
+#include "third_party/blink/renderer/core/css/css_property_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -65,6 +66,9 @@ void StyleRuleBase::Trace(blink::Visitor* visitor) {
       return;
     case kPage:
       To<StyleRulePage>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kProperty:
+      To<StyleRuleProperty>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFace:
       To<StyleRuleFontFace>(this)->TraceAfterDispatch(visitor);
@@ -108,6 +112,9 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
     case kPage:
       To<StyleRulePage>(this)->~StyleRulePage();
       return;
+    case kProperty:
+      To<StyleRuleProperty>(this)->~StyleRuleProperty();
+      return;
     case kFontFace:
       To<StyleRuleFontFace>(this)->~StyleRuleFontFace();
       return;
@@ -145,6 +152,8 @@ StyleRuleBase* StyleRuleBase::Copy() const {
       return To<StyleRule>(this)->Copy();
     case kPage:
       return To<StyleRulePage>(this)->Copy();
+    case kProperty:
+      return To<StyleRuleProperty>(this)->Copy();
     case kFontFace:
       return To<StyleRuleFontFace>(this)->Copy();
     case kMedia:
@@ -184,6 +193,10 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
     case kPage:
       rule = MakeGarbageCollected<CSSPageRule>(To<StyleRulePage>(self),
                                                parent_sheet);
+      break;
+    case kProperty:
+      rule = MakeGarbageCollected<CSSPropertyRule>(To<StyleRuleProperty>(self),
+                                                   parent_sheet);
       break;
     case kFontFace:
       rule = MakeGarbageCollected<CSSFontFaceRule>(To<StyleRuleFontFace>(self),
@@ -313,6 +326,27 @@ MutableCSSPropertyValueSet& StyleRulePage::MutableProperties() {
 }
 
 void StyleRulePage::TraceAfterDispatch(blink::Visitor* visitor) {
+  visitor->Trace(properties_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
+}
+
+StyleRuleProperty::StyleRuleProperty(const String& name,
+                                     CSSPropertyValueSet* properties)
+    : StyleRuleBase(kProperty), name_(name), properties_(properties) {}
+
+StyleRuleProperty::StyleRuleProperty(const StyleRuleProperty& property_rule)
+    : StyleRuleBase(property_rule),
+      properties_(property_rule.properties_->MutableCopy()) {}
+
+StyleRuleProperty::~StyleRuleProperty() = default;
+
+MutableCSSPropertyValueSet& StyleRuleProperty::MutableProperties() {
+  if (!properties_->IsMutable())
+    properties_ = properties_->MutableCopy();
+  return *To<MutableCSSPropertyValueSet>(properties_.Get());
+}
+
+void StyleRuleProperty::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(properties_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }

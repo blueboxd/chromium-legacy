@@ -295,6 +295,18 @@ Resource* PreloadHelper::PreloadIfNeeded(
     link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
                                                   params.cross_origin);
   }
+
+  const String& integrity_attr = params.integrity;
+  if (!integrity_attr.IsEmpty()) {
+    IntegrityMetadataSet metadata_set;
+    SubresourceIntegrity::ParseIntegrityAttribute(
+        integrity_attr, SubresourceIntegrityHelper::GetFeatures(&document),
+        metadata_set);
+    link_fetch_params.SetIntegrityMetadata(metadata_set);
+    link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
+        integrity_attr);
+  }
+
   link_fetch_params.SetContentSecurityPolicyNonce(params.nonce);
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {

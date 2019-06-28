@@ -31,8 +31,6 @@
 #include "base/thread_annotations.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_database_observer.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -51,6 +49,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_transaction.h"
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -737,11 +736,8 @@ void Database::IncrementalVacuumIfNeeded() {
 }
 
 void Database::ReportSqliteError(int sqlite_error_code) {
-  if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportSqliteError(
-        WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(),
-        sqlite_error_code);
-  }
+  WebDatabaseHost::GetInstance().ReportSqliteError(
+      *GetSecurityOrigin(), StringIdentifier(), sqlite_error_code);
 }
 
 void Database::LogErrorMessage(const String& message) {

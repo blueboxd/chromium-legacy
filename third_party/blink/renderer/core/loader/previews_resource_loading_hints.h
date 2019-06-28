@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PREVIEWS_RESOURCE_LOADING_HINTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PREVIEWS_RESOURCE_LOADING_HINTS_H_
 
-#include <vector>
-
 #include "base/feature_list.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -79,8 +77,7 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
 
   // |blocked_resource_load_priority_counts_| records the total number of
   // resources blocked at each ResourceLoadPriority.
-  mutable std::array<int, static_cast<int>(ResourceLoadPriority::kHighest) + 1>
-      blocked_resource_load_priority_counts_;
+  mutable Vector<int> blocked_resource_load_priority_counts_;
 };
 
 }  // namespace blink

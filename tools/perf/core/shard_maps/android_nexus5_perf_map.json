@@ -67,7 +67,6 @@
                 "begin": 11
             },
             "octane": {},
-            "power.typical_10_mobile": {},
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},
             "rendering.mobile": {

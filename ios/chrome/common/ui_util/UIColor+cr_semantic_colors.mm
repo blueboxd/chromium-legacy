@@ -65,4 +65,19 @@
                          alpha:0.6];
 }
 
+#pragma mark - Separator Colors
+
++ (UIColor*)cr_opaqueSeparatorColor {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return UIColor.opaqueSeparatorColor;
+  }
+#endif
+  // This is the value for opaqueSeparatorColor in light mode.
+  return [UIColor colorWithRed:0xC7 / (CGFloat)0xFF
+                         green:0xC7 / (CGFloat)0xFF
+                          blue:0xC7 / (CGFloat)0xFF
+                         alpha:1];
+}
+
 @end

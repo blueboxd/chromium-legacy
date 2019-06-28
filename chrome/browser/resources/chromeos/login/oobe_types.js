@@ -98,3 +98,35 @@ OobeTypes.TimezoneDsc;
  * }}
  */
 OobeTypes.OobeConfiguration;
+
+/**
+ * Specifies the type of the information that is requested by the security token
+ * PIN dialog.
+ * @enum {number}
+ */
+OobeTypes.SecurityTokenPinDialogType = {
+  PIN: 0,
+  PUK: 1,
+};
+
+/**
+ * Specifies the type of the error that is displayed in the security token PIN
+ * dialog.
+ * @enum {number}
+ */
+OobeTypes.SecurityTokenPinDialogErrorType = {
+  UNKNOWN_ERROR: 0,
+  INVALID_PIN: 1,
+  INVALID_PUK: 2,
+  MAX_ATTEMPTS_EXCEEDED: 3,
+};
+
+/**
+ * Configuration of the security token PIN dialog.
+ * @typedef {{
+ *   type: OobeTypes.SecurityTokenPinDialogType,
+ *   errorType: (OobeTypes.SecurityTokenPinDialogErrorType|undefined),
+ *   attemptsLeft: number,
+ * }}
+ */
+OobeTypes.SecurityTokenPinDialogParameters;

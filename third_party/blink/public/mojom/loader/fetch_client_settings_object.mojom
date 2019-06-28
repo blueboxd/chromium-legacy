@@ -10,8 +10,6 @@ import "services/network/public/mojom/referrer_policy.mojom";
 // This is equivalent to blink::FetchClientSettingsObject. This struct is always
 // created by the renderer process, and forwarded to the worker's renderer
 // process or used in the browser process.
-// TODO(https://crbug.com/937177): Currently, this struct is created in the
-// browser process for shared workers. Stop doing it.
 //
 // See comments on blink::FetchClientSettingsObject for details of this struct
 // and each member.

@@ -1097,15 +1097,16 @@ void ServiceWorkerContextWrapper::RemoveObserver(
 }
 
 base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerContextWrapper::PreCreateHostForSharedWorker(
+ServiceWorkerContextWrapper::PreCreateHostForWorker(
     int process_id,
+    blink::mojom::ServiceWorkerProviderType provider_type,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!context_core_)
     return nullptr;
-  return ServiceWorkerProviderHost::PreCreateForSharedWorker(
-      context_core_->AsWeakPtr(), process_id, out_provider_info);
+  return ServiceWorkerProviderHost::PreCreateForWebWorker(
+      context_core_->AsWeakPtr(), process_id, provider_type, out_provider_info);
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {

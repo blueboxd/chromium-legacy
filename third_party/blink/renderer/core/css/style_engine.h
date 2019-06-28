@@ -436,10 +436,12 @@ class CORE_EXPORT StyleEngine final
 
   void ClearFontCacheAndAddUserFonts();
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
+  void ClearPropertyRules();
 
   void AddUserFontFaceRules(const RuleSet&);
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
+  void AddPropertyRules(const RuleSet&);
 
   void UpdateColorScheme();
   bool SupportsDarkColorScheme();

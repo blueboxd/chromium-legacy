@@ -138,11 +138,11 @@ class MockVideoFrameResourceProvider
                     bool));
   MOCK_METHOD0(ReleaseFrameResources, void());
   MOCK_METHOD2(PrepareSendToParent,
-               void(const std::vector<viz::ResourceId>&,
-                    std::vector<viz::TransferableResource>*));
+               void(const WebVector<viz::ResourceId>&,
+                    WebVector<viz::TransferableResource>*));
   MOCK_METHOD1(
       ReceiveReturnsFromParent,
-      void(const std::vector<viz::ReturnedResource>& transferable_resources));
+      void(const Vector<viz::ReturnedResource>& transferable_resources));
   MOCK_METHOD0(ObtainContextProvider, void());
 
  private:

@@ -70,13 +70,13 @@ class WebRequestProxyingWebSocket
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   // mojom::WebSocketHandShakeClient methods:
-  void OnStartOpeningHandshake(
+  void OnOpeningHandshakeStarted(
       network::mojom::WebSocketHandshakeRequestPtr request) override;
-  void OnFinishOpeningHandshake(
+  void OnResponseReceived(
       network::mojom::WebSocketHandshakeResponsePtr response) override;
-  void OnAddChannelResponse(const std::string& selected_protocol,
-                            const std::string& extensions,
-                            uint64_t receive_quota_threshold) override;
+  void OnConnectionEstablished(const std::string& selected_protocol,
+                               const std::string& extensions,
+                               uint64_t receive_quota_threshold) override;
 
   // mojom::AuthenticationHandler method:
   void OnAuthRequired(const net::AuthChallengeInfo& auth_info,

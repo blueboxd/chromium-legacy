@@ -53,7 +53,6 @@
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
-#include "content/renderer/web_database_observer_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "content/renderer/worker/worker_thread_registry.h"
@@ -117,7 +116,6 @@ using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
-using blink::WebDatabaseObserver;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
@@ -214,8 +212,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   top_level_blame_context_.Initialize();
   main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
 
-  GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&web_database_host_info_));
   GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&code_cache_host_info_));
 }
@@ -454,51 +450,6 @@ WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
 
 //------------------------------------------------------------------------------
 
-base::File RendererBlinkPlatformImpl::DatabaseOpenFile(
-    const WebString& vfs_file_name,
-    int desired_flags) {
-  base::File file;
-  GetWebDatabaseHost().OpenFile(vfs_file_name.Utf16(), desired_flags, &file);
-  return file;
-}
-
-int RendererBlinkPlatformImpl::DatabaseDeleteFile(
-    const WebString& vfs_file_name,
-    bool sync_dir) {
-  int rv = SQLITE_IOERR_DELETE;
-  GetWebDatabaseHost().DeleteFile(vfs_file_name.Utf16(), sync_dir, &rv);
-  return rv;
-}
-
-int32_t RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
-    const WebString& vfs_file_name) {
-  int32_t rv = -1;
-  GetWebDatabaseHost().GetFileAttributes(vfs_file_name.Utf16(), &rv);
-  return rv;
-}
-
-int64_t RendererBlinkPlatformImpl::DatabaseGetFileSize(
-    const WebString& vfs_file_name) {
-  int64_t rv = 0LL;
-  GetWebDatabaseHost().GetFileSize(vfs_file_name.Utf16(), &rv);
-  return rv;
-}
-
-int64_t RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
-    const blink::WebSecurityOrigin& origin) {
-  int64_t rv = 0LL;
-  GetWebDatabaseHost().GetSpaceAvailable(origin, &rv);
-  return rv;
-}
-
-bool RendererBlinkPlatformImpl::DatabaseSetFileSize(
-    const WebString& vfs_file_name,
-    int64_t size) {
-  bool rv = false;
-  GetWebDatabaseHost().SetFileSize(vfs_file_name.Utf16(), size, &rv);
-  return rv;
-}
-
 WebString RendererBlinkPlatformImpl::DatabaseCreateOriginIdentifier(
     const blink::WebSecurityOrigin& origin) {
   return WebString::FromUTF8(
@@ -540,15 +491,6 @@ size_t RendererBlinkPlatformImpl::AudioHardwareBufferSize() {
 
 unsigned RendererBlinkPlatformImpl::AudioHardwareOutputChannels() {
   return GetAudioHardwareParams().channels();
-}
-
-WebDatabaseObserver* RendererBlinkPlatformImpl::DatabaseObserver() {
-  if (!web_database_observer_impl_) {
-    InitializeWebDatabaseHostIfNeeded();
-    web_database_observer_impl_ =
-        std::make_unique<WebDatabaseObserverImpl>(web_database_host_);
-  }
-  return web_database_observer_impl_.get();
 }
 
 std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
@@ -985,20 +927,6 @@ RendererBlinkPlatformImpl::GetGpuFactories() {
 }
 
 //------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
-  if (!web_database_host_) {
-    web_database_host_ = blink::mojom::ThreadSafeWebDatabaseHostPtr::Create(
-        std::move(web_database_host_info_),
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::WithBaseSyncPrimitives()}));
-  }
-}
-
-blink::mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
-  InitializeWebDatabaseHostIfNeeded();
-  return **web_database_host_;
-}
 
 blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
   if (!code_cache_host_) {

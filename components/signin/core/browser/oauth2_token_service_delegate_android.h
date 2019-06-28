@@ -84,10 +84,11 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
 
   // Overridden from OAuth2TokenServiceDelegate to intercept token fetch
   // requests and redirect them to the Account Manager.
-  void InvalidateAccessToken(const CoreAccountId& account_id,
-                             const std::string& client_id,
-                             const OAuth2AccessTokenManager::ScopeSet& scopes,
-                             const std::string& access_token) override;
+  void OnAccessTokenInvalidated(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) override;
 
   // Called to notify observers when refresh tokans have been loaded.
   void FireRefreshTokensLoaded() override;

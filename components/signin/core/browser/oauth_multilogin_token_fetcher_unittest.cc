@@ -11,8 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +32,8 @@ enum class FetchStatus { kSuccess, kFailure, kPending };
 
 class OAuthMultiloginTokenFetcherTest : public testing::Test {
  public:
-  OAuthMultiloginTokenFetcherTest() : test_signin_client_(/*prefs=*/nullptr) {}
+  OAuthMultiloginTokenFetcherTest()
+      : test_signin_client_(&pref_service_), token_service_(&pref_service_) {}
 
   ~OAuthMultiloginTokenFetcherTest() override = default;
 
@@ -79,12 +81,13 @@ class OAuthMultiloginTokenFetcherTest : public testing::Test {
   std::vector<OAuthMultiloginTokenFetcher::AccountIdTokenPair>
       account_id_token_pairs_;
 
+  TestingPrefServiceSimple pref_service_;
   TestSigninClient test_signin_client_;
-  FakeOAuth2TokenService token_service_;
+  FakeProfileOAuth2TokenService token_service_;
 };
 
 TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountSuccess) {
-  token_service_.AddAccount(kAccountId);
+  token_service_.UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
       CreateFetcher({kAccountId});
   EXPECT_EQ(FetchStatus::kPending, GetFetchStatus());
@@ -99,7 +102,7 @@ TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountSuccess) {
 }
 
 TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountPersistentError) {
-  token_service_.AddAccount(kAccountId);
+  token_service_.UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
       CreateFetcher({kAccountId});
   EXPECT_EQ(FetchStatus::kPending, GetFetchStatus());
@@ -111,7 +114,7 @@ TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountPersistentError) {
 }
 
 TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountTransientError) {
-  token_service_.AddAccount(kAccountId);
+  token_service_.UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
       CreateFetcher({kAccountId});
   // Connection failure will be retried.
@@ -131,7 +134,7 @@ TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountTransientError) {
 }
 
 TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountTransientErrorMaxRetries) {
-  token_service_.AddAccount(kAccountId);
+  token_service_.UpdateCredentials(kAccountId, "refresh_token");
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
       CreateFetcher({kAccountId});
   // Repeated connection failures.
@@ -152,9 +155,9 @@ TEST_F(OAuthMultiloginTokenFetcherTest, MultipleAccountsSuccess) {
   const CoreAccountId account_1("account_1");
   const CoreAccountId account_2("account_2");
   const CoreAccountId account_3("account_3");
-  token_service_.AddAccount(account_1);
-  token_service_.AddAccount(account_2);
-  token_service_.AddAccount(account_3);
+  token_service_.UpdateCredentials(account_1, "refresh_token");
+  token_service_.UpdateCredentials(account_2, "refresh_token");
+  token_service_.UpdateCredentials(account_3, "refresh_token");
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
       CreateFetcher({account_1, account_2, account_3});
   OAuth2AccessTokenConsumer::TokenResponse success_response;
@@ -180,9 +183,9 @@ TEST_F(OAuthMultiloginTokenFetcherTest, MultipleAccountsTransientError) {
   const CoreAccountId account_1("account_1");
   const CoreAccountId account_2("account_2");
   const CoreAccountId account_3("account_3");
-  token_service_.AddAccount(account_1);
-  token_service_.AddAccount(account_2);
-  token_service_.AddAccount(account_3);
+  token_service_.UpdateCredentials(account_1, "refresh_token");
+  token_service_.UpdateCredentials(account_2, "refresh_token");
+  token_service_.UpdateCredentials(account_3, "refresh_token");
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
       CreateFetcher({account_1, account_2, account_3});
   // Connection failures will be retried.
@@ -220,9 +223,9 @@ TEST_F(OAuthMultiloginTokenFetcherTest, MultipleAccountsPersistentError) {
   const CoreAccountId account_1("account_1");
   const CoreAccountId account_2("account_2");
   const CoreAccountId account_3("account_3");
-  token_service_.AddAccount(account_1);
-  token_service_.AddAccount(account_2);
-  token_service_.AddAccount(account_3);
+  token_service_.UpdateCredentials(account_1, "refresh_token");
+  token_service_.UpdateCredentials(account_2, "refresh_token");
+  token_service_.UpdateCredentials(account_3, "refresh_token");
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
       CreateFetcher({account_1, account_2, account_3});
   EXPECT_EQ(FetchStatus::kPending, GetFetchStatus());

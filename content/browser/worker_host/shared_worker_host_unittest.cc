@@ -87,8 +87,9 @@ class SharedWorkerHostTest : public testing::Test {
     // comment on SharedWorkerHost::Start() for details.
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
-      ServiceWorkerProviderHost::PreCreateForSharedWorker(
+      ServiceWorkerProviderHost::PreCreateForWebWorker(
           helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
+          blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
           &provider_info);
 
       main_script_load_params = blink::mojom::WorkerMainScriptLoadParams::New();
@@ -105,8 +106,9 @@ class SharedWorkerHostTest : public testing::Test {
           loader_factory_ptr.PassInterface();
     } else {
       provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
-      ServiceWorkerProviderHost::PreCreateForSharedWorker(
+      ServiceWorkerProviderHost::PreCreateForWebWorker(
           helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
+          blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
           &provider_info);
 
       mojo::MakeStrongBinding(

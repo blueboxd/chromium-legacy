@@ -43,6 +43,28 @@ MEASUREMENTS = set([
     'V8-Only:duration',
 ])
 
+# Compute averages over a fixed set of active stories. These may need to be
+# periodically updated.
+ACTIVE_STORIES = set([
+    'browse:chrome:newtab',
+    'browse:chrome:omnibox',
+    'browse:media:facebook_photos',
+    'browse:media:googleplaystore:2019',
+    'browse:media:imgur',
+    'browse:media:youtube',
+    'browse:news:cricbuzz',
+    'browse:news:toi',
+    'browse:shopping:amazon',
+    'browse:shopping:lazada',
+    'browse:social:facebook',
+    'browse:social:instagram',
+    'browse:tools:maps',
+    'load:media:facebook_photos',
+    'load:media:youtube:2018',
+    'load:news:irctc',
+    'load:news:wikipedia:2018'
+])
+
 
 def StartPinpointJobs(state, date):
   """Start new pinpoint jobs for the last commit on the given date."""
@@ -179,8 +201,9 @@ def GetRevisionResults(item):
   assert df['change'].str.contains(item['revision']).all(), (
       'Not all results match the expected git revision')
 
-  # Filter out and keep only the measurements we want.
+  # Filter out and keep only the measurements and stories that we want.
   df = df[df['name'].isin(MEASUREMENTS)]
+  df = df[df['story'].isin(ACTIVE_STORIES)]
 
   if not df.empty:
     # Aggregate over the results of individual stories.

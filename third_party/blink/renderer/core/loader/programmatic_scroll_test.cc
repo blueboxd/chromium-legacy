@@ -37,13 +37,12 @@ class ProgrammaticScrollTest : public testing::Test {
   }
 
  protected:
-  void RegisterMockedHttpURLLoad(const std::string& file_name) {
+  void RegisterMockedHttpURLLoad(const String& file_name) {
     url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
-        WebString::FromUTF8(file_name));
+        WebString(base_url_), test::CoreTestDataPath(), WebString(file_name));
   }
 
-  std::string base_url_;
+  String base_url_;
 };
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
@@ -51,7 +50,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
-      web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
+      web_view_helper.InitializeAndLoad(base_url_.Utf8() + "long_scroll.html");
   web_view->MainFrameWidget()->Resize(WebSize(1000, 1000));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
@@ -84,7 +83,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
-      web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
+      web_view_helper.InitializeAndLoad(base_url_.Utf8() + "long_scroll.html");
   web_view->MainFrameWidget()->Resize(WebSize(1000, 1000));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
@@ -114,7 +113,7 @@ TEST_F(ProgrammaticScrollTest, SaveScrollStateClearsAnchor) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
-      web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
+      web_view_helper.InitializeAndLoad(base_url_.Utf8() + "long_scroll.html");
   web_view->MainFrameWidget()->Resize(WebSize(1000, 1000));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);

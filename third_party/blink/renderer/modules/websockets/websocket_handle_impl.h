@@ -64,13 +64,13 @@ class WebSocketHandleImpl
                          const std::string& description);
 
   // network::mojom::blink::WebSocketHandshakeClient methods:
-  void OnStartOpeningHandshake(
+  void OnOpeningHandshakeStarted(
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
-  void OnFinishOpeningHandshake(
+  void OnResponseReceived(
       network::mojom::blink::WebSocketHandshakeResponsePtr) override;
-  void OnAddChannelResponse(const String& selected_protocol,
-                            const String& extensions,
-                            uint64_t receive_quota_threshold) override;
+  void OnConnectionEstablished(const String& selected_protocol,
+                               const String& extensions,
+                               uint64_t receive_quota_threshold) override;
   // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,

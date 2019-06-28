@@ -4,13 +4,16 @@
 
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
 
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
+#include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/css_unicode_range_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 
@@ -209,14 +212,53 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDeclaration(
   return ParseFontFaceDescriptor(id, range, context);
 }
 
+CSSValue* AtRuleDescriptorParser::ParseAtPropertyDescriptor(
+    AtRuleDescriptorID id,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context) {
+  CSSValue* parsed_value = nullptr;
+  switch (id) {
+    case AtRuleDescriptorID::Syntax:
+      range.ConsumeWhitespace();
+      parsed_value = css_property_parser_helpers::ConsumeString(range);
+      break;
+    case AtRuleDescriptorID::InitialValue: {
+      // Note that we must retain leading whitespace here.
+      return CSSVariableParser::ParseDeclarationValue(
+          g_null_atom, range, false /* is_animation_tainted */, context);
+    }
+    case AtRuleDescriptorID::Inherits:
+      range.ConsumeWhitespace();
+      parsed_value =
+          css_property_parser_helpers::ConsumeIdent<CSSValueID::kTrue,
+                                                    CSSValueID::kFalse>(range);
+      break;
+    default:
+      break;
+  }
+
+  if (!parsed_value || !range.AtEnd())
+    return nullptr;
+
+  return parsed_value;
+}
+
 bool AtRuleDescriptorParser::ParseAtRule(
     AtRuleDescriptorID id,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     HeapVector<CSSPropertyValue, 256>& parsed_descriptors) {
+  const CSSParserTokenRange original_range = range;
+
   // TODO(meade): Handle other descriptor types here.
   CSSValue* result =
       AtRuleDescriptorParser::ParseFontFaceDescriptor(id, range, context);
+
+  if (!result) {
+    range = original_range;
+    result =
+        AtRuleDescriptorParser::ParseAtPropertyDescriptor(id, range, context);
+  }
   if (!result)
     return false;
   // Convert to CSSPropertyID for legacy compatibility,

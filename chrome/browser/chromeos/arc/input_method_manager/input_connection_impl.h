@@ -65,8 +65,6 @@ class InputConnectionImpl : public mojom::InputConnection {
 
   mojo::Binding<mojom::InputConnection> binding_;
 
-  base::string16 composing_text_;
-
   base::OneShotTimer state_update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(InputConnectionImpl);

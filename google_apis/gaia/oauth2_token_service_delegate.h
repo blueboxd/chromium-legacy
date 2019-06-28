@@ -71,10 +71,10 @@ class OAuth2TokenServiceDelegate {
   virtual std::vector<CoreAccountId> GetAccounts() const;
   virtual void RevokeAllCredentials() {}
 
-  virtual void InvalidateAccessToken(const CoreAccountId& account_id,
-                                     const std::string& client_id,
-                                     const std::set<std::string>& scopes,
-                                     const std::string& access_token) {}
+  virtual void OnAccessTokenInvalidated(const CoreAccountId& account_id,
+                                        const std::string& client_id,
+                                        const std::set<std::string>& scopes,
+                                        const std::string& access_token) {}
 
   // If refresh token is accessible (on Desktop) sets error for it to
   // INVALID_GAIA_CREDENTIALS and notifies the observers. Otherwise

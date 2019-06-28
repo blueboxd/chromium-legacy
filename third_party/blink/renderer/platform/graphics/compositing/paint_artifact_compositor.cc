@@ -731,15 +731,16 @@ SynthesizedClip& PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
     bool needs_layer,
     CompositorElementId& mask_isolation_id,
     CompositorElementId& mask_effect_id) {
-  auto entry =
+  auto* entry =
       std::find_if(synthesized_clip_cache_.begin(),
                    synthesized_clip_cache_.end(), [&node](const auto& entry) {
                      return entry.key == &node && !entry.in_use;
                    });
   if (entry == synthesized_clip_cache_.end()) {
     auto clip = std::make_unique<SynthesizedClip>();
-    entry = synthesized_clip_cache_.insert(
-        entry, SynthesizedClipEntry{&node, std::move(clip), false});
+    synthesized_clip_cache_.push_back(
+        SynthesizedClipEntry{&node, std::move(clip), false});
+    entry = synthesized_clip_cache_.end() - 1;
   }
 
   entry->in_use = true;
@@ -988,11 +989,12 @@ void PaintArtifactCompositor::Update(
   content_layer_clients_.swap(new_content_layer_clients);
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
 
-  synthesized_clip_cache_.erase(
-      std::remove_if(synthesized_clip_cache_.begin(),
-                     synthesized_clip_cache_.end(),
-                     [](const auto& entry) { return !entry.in_use; }),
-      synthesized_clip_cache_.end());
+  auto pos = std::remove_if(synthesized_clip_cache_.begin(),
+                            synthesized_clip_cache_.end(),
+                            [](const auto& entry) { return !entry.in_use; }) -
+             synthesized_clip_cache_.begin();
+  synthesized_clip_cache_.EraseAt(pos, synthesized_clip_cache_.size() - pos);
+
   if (extra_data_for_testing_enabled_) {
     for (const auto& entry : synthesized_clip_cache_) {
       extra_data_for_testing_->synthesized_clip_layers.push_back(

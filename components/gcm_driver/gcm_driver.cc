@@ -335,8 +335,9 @@ void GCMDriver::SendWebPushMessage(const std::string& app_id,
                                    crypto::ECPrivateKey* vapid_key,
                                    WebPushMessage message,
                                    SendWebPushMessageCallback callback) {
+  std::string payload_copy = message.payload;
   encryption_provider_.EncryptMessage(
-      app_id, authorized_entity, p256dh, auth_secret, message.payload,
+      app_id, authorized_entity, p256dh, auth_secret, payload_copy,
       base::BindOnce(&GCMDriver::OnMessageEncrypted,
                      weak_ptr_factory_.GetWeakPtr(), fcm_token, vapid_key,
                      std::move(message), std::move(callback)));

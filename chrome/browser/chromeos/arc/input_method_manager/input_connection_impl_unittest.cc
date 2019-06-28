@@ -104,6 +104,43 @@ class TestIMEInputContextHandler : public ui::MockIMEInputContextHandler {
   DISALLOW_COPY_AND_ASSIGN(TestIMEInputContextHandler);
 };
 
+class MockTextInputClient : public ui::DummyTextInputClient {
+ public:
+  void SetText(const std::string& text) { text_ = text; }
+
+  void SetCursorPos(int pos) { cursor_pos_ = pos; }
+
+  void SetCompositionRange(const gfx::Range& range) {
+    composition_range_ = range;
+  }
+
+  bool GetTextRange(gfx::Range* range) const override {
+    *range = gfx::Range(0, base::ASCIIToUTF16(text_).length());
+    return true;
+  }
+
+  bool GetTextFromRange(const gfx::Range& range,
+                        base::string16* text) const override {
+    *text = base::ASCIIToUTF16(text_.substr(range.start(), range.end()));
+    return true;
+  }
+
+  bool GetEditableSelectionRange(gfx::Range* range) const override {
+    *range = gfx::Range(cursor_pos_, cursor_pos_);
+    return true;
+  }
+
+  bool GetCompositionTextRange(gfx::Range* range) const override {
+    *range = composition_range_;
+    return true;
+  }
+
+ private:
+  std::string text_;
+  int cursor_pos_ = 0;
+  gfx::Range composition_range_ = gfx::Range(0, 0);
+};
+
 class InputConnectionImplTest : public testing::Test {
  public:
   InputConnectionImplTest() = default;
@@ -118,7 +155,7 @@ class InputConnectionImplTest : public testing::Test {
 
   TestIMEInputContextHandler* context_handler() { return &context_handler_; }
 
-  ui::DummyTextInputClient* client() { return &text_input_client_; }
+  MockTextInputClient* client() { return &text_input_client_; }
 
   ui::IMEEngineHandlerInterface::InputContext context() {
     return ui::IMEEngineHandlerInterface::InputContext{
@@ -160,7 +197,7 @@ class InputConnectionImplTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<TestInputMethodManagerBridge> bridge_;
   std::unique_ptr<chromeos::InputMethodEngine> engine_;
-  ui::DummyTextInputClient text_input_client_;
+  MockTextInputClient text_input_client_;
   ui::MockInputMethod input_method_{nullptr};
   TestIMEInputContextHandler context_handler_{&input_method_};
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
@@ -218,10 +255,16 @@ TEST_F(InputConnectionImplTest, FinishComposingText) {
   context_handler()->Reset();
   connection->SetComposingText(base::ASCIIToUTF16("composing"), 0,
                                base::nullopt);
+  client()->SetText("composing");
+  client()->SetCompositionRange(gfx::Range(0, 9));
   EXPECT_EQ(0, context_handler()->commit_text_call_count());
   connection->FinishComposingText();
   EXPECT_EQ(1, context_handler()->commit_text_call_count());
   EXPECT_EQ("composing", context_handler()->last_commit_text());
+
+  client()->SetCompositionRange(gfx::Range(0, 0));
+  connection->FinishComposingText();
+  EXPECT_EQ(1, context_handler()->commit_text_call_count());
 
   engine()->FocusOut();
 }

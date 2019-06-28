@@ -26,11 +26,6 @@
 
 namespace chromeos {
 
-const char CryptohomeKeyDelegateServiceProvider::kServiceName[] =
-    "org.chromium.CryptohomeKeyDelegate";
-const char CryptohomeKeyDelegateServiceProvider::kServicePath[] =
-    "/org/chromium/CryptohomeKeyDelegate";
-
 namespace {
 
 // Converts the cryptohome challenge algorithm enum into the TLS 1.3

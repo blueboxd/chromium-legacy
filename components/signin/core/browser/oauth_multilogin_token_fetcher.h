@@ -20,7 +20,7 @@
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 
 class SigninClient;
-class OAuth2TokenService;
+class ProfileOAuth2TokenService;
 
 namespace signin {
 
@@ -42,7 +42,7 @@ class OAuthMultiloginTokenFetcher : public OAuth2AccessTokenManager::Consumer {
       base::OnceCallback<void(const GoogleServiceAuthError&)>;
 
   OAuthMultiloginTokenFetcher(SigninClient* signin_client,
-                              OAuth2TokenService* token_service,
+                              ProfileOAuth2TokenService* token_service,
                               const std::vector<CoreAccountId>& account_ids,
                               SuccessCallback success_callback,
                               FailureCallback failure_callback);
@@ -63,7 +63,7 @@ class OAuthMultiloginTokenFetcher : public OAuth2AccessTokenManager::Consumer {
   void EraseRequest(const OAuth2AccessTokenManager::Request* request);
 
   SigninClient* signin_client_;
-  OAuth2TokenService* token_service_;
+  ProfileOAuth2TokenService* token_service_;
   const std::vector<CoreAccountId> account_ids_;
 
   SuccessCallback success_callback_;

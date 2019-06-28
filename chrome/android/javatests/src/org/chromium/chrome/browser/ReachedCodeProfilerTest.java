@@ -33,6 +33,8 @@ public final class ReachedCodeProfilerTest {
     // Shared preferences key for the reached code profiler.
     private static final String REACHED_CODE_PROFILER_ENABLED_KEY = "reached_code_profiler_enabled";
 
+    private static final String FAKE_GROUP_NAME = "FakeGroup";
+
     /**
      * Tests that passing a command line switch enables the reached code profiler no matter what.
      */
@@ -88,6 +90,21 @@ public final class ReachedCodeProfilerTest {
         Assert.assertFalse(getReachedCodeProfilerSharedPreference());
         // Disabling takes effect only on the second startup.
         assertReachedCodeProfilerIsEnabled();
+    }
+
+    /**
+     * Tests that the reached code profiler field trial group is saved in shared preferences for
+     * being used on the next startup.
+     */
+    @Test
+    @SmallTest
+    @CommandLineFlags.
+    Add("force-fieldtrials=" + ChromeFeatureList.REACHED_CODE_PROFILER + "/" + FAKE_GROUP_NAME)
+    public void testSharedPreferenceTrialGroupIsCached() throws Exception {
+        mActivityTestRule.startMainActivityFromLauncher();
+        Assert.assertEquals(FAKE_GROUP_NAME,
+                ChromePreferenceManager.getInstance().readString(
+                        ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY, null));
     }
 
     /**

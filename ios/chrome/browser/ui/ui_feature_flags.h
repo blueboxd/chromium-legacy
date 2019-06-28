@@ -43,4 +43,7 @@ extern const base::Feature kOmniboxUseDefaultSearchEngineFavicon;
 // Feature flag for the language settings page.
 extern const base::Feature kLanguageSettings;
 
+// Feature flag for the optional article thumbnail.
+extern const base::Feature kOptionalArticleThumbnail;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

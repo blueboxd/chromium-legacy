@@ -218,15 +218,19 @@ ServiceWorkerProviderHost::PreCreateForController(
 
 // static
 base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerProviderHost::PreCreateForSharedWorker(
+ServiceWorkerProviderHost::PreCreateForWebWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int process_id,
+    blink::mojom::ServiceWorkerProviderType provider_type,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
+  using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
+  DCHECK(provider_type == ServiceWorkerProviderType::kForDedicatedWorker ||
+         provider_type == ServiceWorkerProviderType::kForSharedWorker);
   blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
   (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
-      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-      true /* is_parent_frame_secure */, FrameTreeNode::kFrameTreeNodeInvalidId,
+      provider_type, true /* is_parent_frame_secure */,
+      FrameTreeNode::kFrameTreeNodeInvalidId,
       mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
       std::move(client_ptr_info), context));
   host->SetRenderProcessId(process_id);
@@ -500,6 +504,7 @@ bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
   switch (type_) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
+    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
     case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
       return true;
     case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
@@ -516,6 +521,8 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
   switch (type_) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
       return blink::mojom::ServiceWorkerClientType::kWindow;
+    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
+      return blink::mojom::ServiceWorkerClientType::kDedicatedWorker;
     case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
       return blink::mojom::ServiceWorkerClientType::kSharedWorker;
     case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
@@ -733,9 +740,10 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
       std::move(interface_provider_request)));
 }
 
-void ServiceWorkerProviderHost::CompleteSharedWorkerPreparation() {
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-            provider_type());
+void ServiceWorkerProviderHost::CompleteWebWorkerPreparation() {
+  using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
+  DCHECK(provider_type() == ServiceWorkerProviderType::kForDedicatedWorker ||
+         provider_type() == ServiceWorkerProviderType::kForSharedWorker);
   TransitionToClientPhase(ClientPhase::kResponseCommitted);
   SetExecutionReady();
 }
@@ -865,11 +873,12 @@ bool ServiceWorkerProviderHost::IsControllerDecided() const {
       // response. The controller will be sent on navigation commit. See
       // CommitNavigation in frame.mojom.
       return false;
+    case blink::mojom::ServiceWorkerClientType::kDedicatedWorker:
     case blink::mojom::ServiceWorkerClientType::kSharedWorker:
       // NetworkService (PlzWorker):
       if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
         // When PlzWorker is enabled, the controller will be sent when the
-        // response is committed to the renderer at SharedWorkerHost::Start().
+        // response is committed to the renderer.
         return false;
       }
       return true;

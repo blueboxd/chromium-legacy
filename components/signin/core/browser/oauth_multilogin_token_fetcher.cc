@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 
 namespace {
 
@@ -28,7 +28,7 @@ namespace signin {
 
 OAuthMultiloginTokenFetcher::OAuthMultiloginTokenFetcher(
     SigninClient* signin_client,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     const std::vector<CoreAccountId>& account_ids,
     SuccessCallback success_callback,
     FailureCallback failure_callback)

@@ -368,7 +368,8 @@ void InteractiveDetector::OnInvalidatingInputEvent(
 }
 
 void InteractiveDetector::OnPageHiddenChanged(bool is_hidden) {
-  visibility_change_events_.push_back({clock_->NowTicks(), is_hidden});
+  visibility_change_events_.push_back(
+      VisibilityChangeEvent{clock_->NowTicks(), is_hidden});
 }
 
 void InteractiveDetector::TimeToInteractiveTimerFired(TimerBase*) {
@@ -402,13 +403,13 @@ void InteractiveDetector::AddCurrentlyActiveQuietIntervals(
 }
 
 void InteractiveDetector::RemoveCurrentlyActiveQuietIntervals() {
-  if (!network_quiet_windows_.empty() &&
+  if (!network_quiet_windows_.IsEmpty() &&
       network_quiet_windows_.back().Low() ==
           active_network_quiet_window_start_) {
     network_quiet_windows_.pop_back();
   }
 
-  if (!main_thread_quiet_windows_.empty() &&
+  if (!main_thread_quiet_windows_.IsEmpty() &&
       main_thread_quiet_windows_.back().Low() ==
           active_main_thread_quiet_window_start_) {
     main_thread_quiet_windows_.pop_back();
@@ -418,9 +419,9 @@ void InteractiveDetector::RemoveCurrentlyActiveQuietIntervals() {
 base::TimeTicks InteractiveDetector::FindInteractiveCandidate(
     base::TimeTicks lower_bound) {
   // Main thread iterator.
-  auto it_mt = main_thread_quiet_windows_.begin();
+  auto* it_mt = main_thread_quiet_windows_.begin();
   // Network iterator.
-  auto it_net = network_quiet_windows_.begin();
+  auto* it_net = network_quiet_windows_.begin();
 
   while (it_mt < main_thread_quiet_windows_.end() &&
          it_net < network_quiet_windows_.end()) {

@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -95,7 +96,7 @@ constexpr float kRotationNinetyCW = (90 / 180.0) * M_PI;
     _subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-    _subtitleLabel.textColor = [UIColor lightGrayColor];
+    _subtitleLabel.textColor = UIColor.cr_secondaryLabelColor;
     [_subtitleLabel
         setContentCompressionResistancePriority:UILayoutPriorityRequired
                                         forAxis:UILayoutConstraintAxisVertical];
@@ -252,7 +253,7 @@ constexpr float kRotationNinetyCW = (90 / 180.0) * M_PI;
   if (!_cellDefaultBackgroundColor) {
     _cellDefaultBackgroundColor = self.contentView.backgroundColor
                                       ? self.contentView.backgroundColor
-                                      : [UIColor clearColor];
+                                      : UIColor.clearColor;
   }
   return _cellDefaultBackgroundColor;
 }

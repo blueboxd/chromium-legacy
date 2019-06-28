@@ -64,7 +64,8 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
   if (!frame)
     return nullptr;
 
-  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  WebVector<FrameMetadata> frames;
+  frames.emplace_back(FrameMetadata());
   sk_sp<DecodingImageGenerator> generator = DecodingImageGenerator::Create(
       std::move(frame), info, std::move(segment_reader), std::move(frames),
       PaintImage::GetNextContentId(), true /* all_data_received */,
@@ -80,7 +81,7 @@ sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
     scoped_refptr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
     scoped_refptr<SegmentReader> data,
-    std::vector<FrameMetadata> frames,
+    WebVector<FrameMetadata> frames,
     PaintImage::ContentId content_id,
     bool all_data_received,
     bool is_eligible_for_accelerated_decoding,
@@ -95,12 +96,12 @@ DecodingImageGenerator::DecodingImageGenerator(
     scoped_refptr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
     scoped_refptr<SegmentReader> data,
-    std::vector<FrameMetadata> frames,
+    WebVector<FrameMetadata> frames,
     PaintImage::ContentId complete_frame_content_id,
     bool all_data_received,
     bool is_eligible_for_accelerated_decoding,
     bool can_yuv_decode)
-    : PaintImageGenerator(info, std::move(frames)),
+    : PaintImageGenerator(info, frames.ReleaseVector()),
       frame_generator_(std::move(frame_generator)),
       data_(std::move(data)),
       all_data_received_(all_data_received),

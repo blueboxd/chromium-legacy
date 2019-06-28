@@ -56,12 +56,25 @@ class OAuth2AccessTokenManager;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-class OAuth2TokenService : public OAuth2TokenServiceObserver {
+class OAuth2TokenService : public OAuth2TokenServiceObserver,
+                           public OAuth2AccessTokenManager::Delegate {
  public:
-
   explicit OAuth2TokenService(
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
   ~OAuth2TokenService() override;
+
+  // Overridden from OAuth2AccessTokenManager::Delegate.
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
+      const CoreAccountId& account_id,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      OAuth2AccessTokenConsumer* consumer) override;
+  bool FixRequestErrorIfPossible() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
+  void OnAccessTokenInvalidated(const CoreAccountId& account_id,
+                                const std::string& client_id,
+                                const std::set<std::string>& scopes,
+                                const std::string& access_token) override;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);

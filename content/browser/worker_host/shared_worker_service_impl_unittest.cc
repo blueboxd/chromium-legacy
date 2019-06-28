@@ -57,7 +57,9 @@ void ConnectToSharedWorker(blink::mojom::SharedWorkerConnectorPtr connector,
   blink::mojom::SharedWorkerClientPtr client_proxy;
   client->Bind(mojo::MakeRequest(&client_proxy));
 
-  connector->Connect(std::move(info), std::move(client_proxy),
+  connector->Connect(std::move(info),
+                     blink::mojom::FetchClientSettingsObject::New(),
+                     std::move(client_proxy),
                      blink::mojom::SharedWorkerCreationContextType::kSecure,
                      std::move(message_pipe.handle1), nullptr);
 }

@@ -113,6 +113,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     int process_id,
     int frame_id,
     blink::mojom::SharedWorkerInfoPtr info,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
     blink::mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     const blink::MessagePortChannel& message_port,
@@ -167,8 +169,10 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     DestroyHost(host);
   }
 
-  CreateWorker(std::move(instance), std::move(client), process_id, frame_id,
-               message_port, std::move(blob_url_loader_factory));
+  CreateWorker(std::move(instance),
+               std::move(outside_fetch_client_settings_object),
+               std::move(client), process_id, frame_id, message_port,
+               std::move(blob_url_loader_factory));
 }
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
@@ -182,6 +186,8 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
 
 void SharedWorkerServiceImpl::CreateWorker(
     std::unique_ptr<SharedWorkerInstance> instance,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
     blink::mojom::SharedWorkerClientPtr client,
     int process_id,
     int frame_id,
@@ -217,14 +223,6 @@ void SharedWorkerServiceImpl::CreateWorker(
   // TODO(crbug.com/824646, crbug.com/907749): The document should provide the
   // credentials mode specified by WorkerOptions for module script.
   const auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
-
-  // This is a dummy fetch client settings object for top-level shared worker
-  // script fetch.
-  // TODO(crbug.com/937177): The document should pass a proper fetch client
-  // settings object.
-  blink::mojom::FetchClientSettingsObjectPtr
-      outside_fetch_client_settings_object =
-          blink::mojom::FetchClientSettingsObject::New();
 
   WorkerScriptFetchInitiator::Start(
       process_id, weak_host->instance()->url(),

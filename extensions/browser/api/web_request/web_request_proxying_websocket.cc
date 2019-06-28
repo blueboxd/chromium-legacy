@@ -157,13 +157,13 @@ void WebRequestProxyingWebSocket::StartClosingHandshake(
   proxied_socket_->StartClosingHandshake(code, reason);
 }
 
-void WebRequestProxyingWebSocket::OnStartOpeningHandshake(
+void WebRequestProxyingWebSocket::OnOpeningHandshakeStarted(
     network::mojom::WebSocketHandshakeRequestPtr request) {
   DCHECK(forwarding_handshake_client_);
-  forwarding_handshake_client_->OnStartOpeningHandshake(std::move(request));
+  forwarding_handshake_client_->OnOpeningHandshakeStarted(std::move(request));
 }
 
-void WebRequestProxyingWebSocket::OnFinishOpeningHandshake(
+void WebRequestProxyingWebSocket::OnResponseReceived(
     network::mojom::WebSocketHandshakeResponsePtr response) {
   DCHECK(forwarding_handshake_client_);
 
@@ -181,11 +181,11 @@ void WebRequestProxyingWebSocket::OnFinishOpeningHandshake(
 
   response_.remote_endpoint = response->remote_endpoint;
 
-  // TODO(yhirano): OnFinishOpeningHandshake is called with the original
+  // TODO(yhirano): OnResponseReceived is called with the original
   // response headers. That means if OnHeadersReceived modified them the
   // renderer won't see that modification. This is the opposite of http(s)
   // requests.
-  forwarding_handshake_client_->OnFinishOpeningHandshake(std::move(response));
+  forwarding_handshake_client_->OnResponseReceived(std::move(response));
 
   if (!binding_as_header_client_ || response_.headers) {
     ContinueToHeadersReceived();
@@ -215,7 +215,7 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
   OnHeadersReceivedComplete(net::OK);
 }
 
-void WebRequestProxyingWebSocket::OnAddChannelResponse(
+void WebRequestProxyingWebSocket::OnConnectionEstablished(
     const std::string& selected_protocol,
     const std::string& extensions,
     uint64_t receive_quota_threshold) {
@@ -225,7 +225,7 @@ void WebRequestProxyingWebSocket::OnAddChannelResponse(
   ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
       browser_context_, info_map_, &info_.value(), net::ERR_WS_UPGRADE);
 
-  forwarding_handshake_client_->OnAddChannelResponse(
+  forwarding_handshake_client_->OnConnectionEstablished(
       selected_protocol, extensions, receive_quota_threshold);
 }
 

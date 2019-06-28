@@ -17,6 +17,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_channel_status_request.h"
@@ -41,12 +42,6 @@ namespace {
 const char kTestChannelStatusRequestURL[] = "http://channel.status.request.com";
 const char kTestAppID1[] = "TestApp1";
 
-// P-256 point in uncompressed X9.62 format. Used for Diffie-Hellman.
-const char kP256dh[] =
-    "BIYKm1hwEtmAUNfeX3V4cs089gVo0ng+"
-    "UdRgpTFnnv7lojCKRwXgHQZKvjO34fSb7HxQlSRoldcE2iBG2aO468U=";
-// A base64 encoded authentication secret of 128 bits.
-const char kAuthSecret[] = "JX7sXZrnCvwEkepEzP8eAQ==";
 // PKCS #8 encoded P-256 private key.
 const char kPrivateKey[] =
     "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgS8wRbDOWz0lKExvIVQiRKtPAP8"
@@ -78,9 +73,14 @@ class GCMDriverBaseTest : public testing::Test {
   bool send_web_push_message_result() const {
     return send_web_push_message_result_;
   }
+  const std::string& send_web_push_message_payload() const {
+    return send_web_push_message_payload_;
+  }
   const std::string& p256dh() const { return p256dh_; }
   const std::string& auth_secret() const { return auth_secret_; }
   network::TestURLLoaderFactory& loader() { return test_url_loader_factory_; }
+  GCMDecryptionResult decryption_result() { return decryption_result_; }
+  const IncomingMessage& decrypted_message() { return decrypted_message_; }
 
   void PumpIOLoop();
 
@@ -93,10 +93,15 @@ class GCMDriverBaseTest : public testing::Test {
                           WaitToFinish wait_to_finish);
   void GetEncryptionInfo(const std::string& app_id,
                          WaitToFinish wait_to_finish);
+  void DecryptMessage(const std::string& app_id,
+                      IncomingMessage message,
+                      WaitToFinish wait_to_finish);
 
   void SendWebPushMessageCompleted(const std::string& message_id, bool result);
   void GetEncryptionInfoCompleted(const std::string& p256dh,
                                   const std::string& auth_secret);
+  void DecryptMessageCompleted(GCMDecryptionResult result,
+                               const IncomingMessage& message);
   void UnregisterCompleted(GCMClient::Result result);
 
  private:
@@ -113,8 +118,12 @@ class GCMDriverBaseTest : public testing::Test {
 
   std::string send_web_push_message_id_;
   bool send_web_push_message_result_;
+  std::string send_web_push_message_payload_;
   std::string p256dh_;
   std::string auth_secret_;
+
+  GCMDecryptionResult decryption_result_ = GCMDecryptionResult::UNENCRYPTED;
+  IncomingMessage decrypted_message_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriverBaseTest);
 };
@@ -177,10 +186,6 @@ void GCMDriverBaseTest::SendWebPushMessage(
     WebPushMessage message,
     base::Optional<net::HttpStatusCode> completion_status,
     WaitToFinish wait_to_finish) {
-  std::string p256dh, auth_secret;
-  ASSERT_TRUE(base::Base64Decode(kP256dh, &p256dh));
-  ASSERT_TRUE(base::Base64Decode(kAuthSecret, &auth_secret));
-
   std::string private_key_info;
   ASSERT_TRUE(base::Base64Decode(kPrivateKey, &private_key_info));
   std::unique_ptr<crypto::ECPrivateKey> private_key =
@@ -191,15 +196,23 @@ void GCMDriverBaseTest::SendWebPushMessage(
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
   driver_->SendWebPushMessage(
-      app_id, /* authorized_entity= */ "", p256dh, auth_secret, kFCMToken,
+      app_id, /* authorized_entity= */ "", p256dh(), auth_secret(), kFCMToken,
       private_key.get(), std::move(message),
       base::BindOnce(&GCMDriverBaseTest::SendWebPushMessageCompleted,
                      base::Unretained(this)));
 
   if (completion_status) {
     ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
+    network::TestURLLoaderFactory::PendingRequest* pendingRequest =
+        loader().GetPendingRequest(0);
+    const std::vector<network::DataElement>* body_elements =
+        pendingRequest->request.request_body->elements();
+    ASSERT_EQ(1UL, body_elements->size());
+    const network::DataElement& body = body_elements->back();
+    send_web_push_message_payload_ = std::string(body.bytes(), body.length());
+
     test_url_loader_factory_.SimulateResponseForPendingRequest(
-        test_url_loader_factory_.GetPendingRequest(0)->request.url,
+        pendingRequest->request.url,
         network::URLLoaderCompletionStatus(net::OK),
         network::CreateResourceResponseHead(*completion_status), "");
   }
@@ -215,6 +228,21 @@ void GCMDriverBaseTest::GetEncryptionInfo(const std::string& app_id,
   driver_->GetEncryptionInfo(
       app_id, base::Bind(&GCMDriverBaseTest::GetEncryptionInfoCompleted,
                          base::Unretained(this)));
+  if (wait_to_finish == WAIT)
+    run_loop.Run();
+}
+
+void GCMDriverBaseTest::DecryptMessage(const std::string& app_id,
+                                       IncomingMessage message,
+                                       WaitToFinish wait_to_finish) {
+  base::RunLoop run_loop;
+  async_operation_completed_callback_ = run_loop.QuitClosure();
+  driver()->GetEncryptionProviderInternal()->DecryptMessage(
+      app_id, message,
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&GCMDriverBaseTest::DecryptMessageCompleted,
+                         base::Unretained(this))));
+
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -237,6 +265,15 @@ void GCMDriverBaseTest::GetEncryptionInfoCompleted(
     async_operation_completed_callback_.Run();
 }
 
+void GCMDriverBaseTest::DecryptMessageCompleted(
+    GCMDecryptionResult result,
+    const IncomingMessage& message) {
+  decryption_result_ = result;
+  decrypted_message_ = message;
+  if (!async_operation_completed_callback_.is_null())
+    async_operation_completed_callback_.Run();
+}
+
 TEST_F(GCMDriverBaseTest, SendWebPushMessage) {
   GetEncryptionInfo(kTestAppID1, GCMDriverBaseTest::WAIT);
 
@@ -250,6 +287,16 @@ TEST_F(GCMDriverBaseTest, SendWebPushMessage) {
 
   EXPECT_EQ("message_id", send_web_push_message_id());
   EXPECT_TRUE(send_web_push_message_result());
+
+  IncomingMessage incoming_message;
+  incoming_message.data["content-encoding"] = "aes128gcm";
+  incoming_message.raw_data = send_web_push_message_payload();
+
+  DecryptMessage(kTestAppID1, std::move(incoming_message),
+                 GCMDriverBaseTest::WAIT);
+
+  EXPECT_EQ(GCMDecryptionResult::DECRYPTED_DRAFT_08, decryption_result());
+  EXPECT_EQ("payload", decrypted_message().raw_data);
 }
 
 TEST_F(GCMDriverBaseTest, SendWebPushMessageEncryptionError) {

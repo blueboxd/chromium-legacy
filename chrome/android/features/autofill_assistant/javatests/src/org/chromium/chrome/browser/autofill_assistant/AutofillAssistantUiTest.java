@@ -4,6 +4,13 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
@@ -272,5 +279,40 @@ public class AutofillAssistantUiTest {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { chipsViewContainer.getChildAt(1).performClick(); });
         inOrder.verify(mRunnableMock).run();
+    }
+
+    @Test
+    @MediumTest
+    public void testTooltipBubble() throws Exception {
+        InOrder inOrder = inOrder(mRunnableMock);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+        BottomSheetController bottomSheetController =
+                ThreadUtils.runOnUiThreadBlocking(this::initializeBottomSheet);
+        AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> new AssistantCoordinator(getActivity(), bottomSheetController,
+                                /* overlayCoordinator= */ null));
+
+        // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
+        ViewGroup bottomSheetContent =
+                bottomSheetController.getBottomSheet().findViewById(R.id.autofill_assistant);
+        Assert.assertNotNull(bottomSheetContent);
+
+        // Disable bottom sheet content animations. This is a workaround for http://crbug/943483.
+        TestThreadUtils.runOnUiThreadBlocking(() -> bottomSheetContent.setLayoutTransition(null));
+
+        // Show and check the bubble message.
+        String testBubbleMessage = "Bubble message.";
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> assistantCoordinator.getModel().getHeaderModel().set(
+                                AssistantHeaderModel.BUBBLE_MESSAGE, testBubbleMessage));
+
+        // Bubbles are opened as popups and espresso needs to be instructed to not match views in
+        // the main window's root.
+        onView(withText(testBubbleMessage))
+                .inRoot(withDecorView(not(getActivity().getWindow().getDecorView())))
+                .check(matches(isDisplayed()));
     }
 }

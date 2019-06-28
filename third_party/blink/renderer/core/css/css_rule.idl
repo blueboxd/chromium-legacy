@@ -53,4 +53,8 @@
     // CSS Device Adaptation
     // https://drafts.csswg.org/css-device-adapt/#css-rule-interface
     [RuntimeEnabled=CSSViewport] const unsigned short VIEWPORT_RULE = 15;
+
+    // CSS Properties and Values Level 1
+    // TODO(https://crbug.com/978781): Spec a proper number.
+    [RuntimeEnabled=CSSVariables2AtProperty] const unsigned short PROPERTY_RULE = 1001;
 };

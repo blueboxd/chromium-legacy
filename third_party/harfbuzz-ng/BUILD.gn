@@ -73,6 +73,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-algs.hh",
       "src/src/hb-array.hh",
       "src/src/hb-atomic.hh",
+      "src/src/hb-bimap.hh",
       "src/src/hb-blob.cc",
       "src/src/hb-blob.hh",
       "src/src/hb-buffer-deserialize-json.hh",
@@ -111,6 +112,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-color-cbdt-table.hh",
       "src/src/hb-ot-color-colr-table.hh",
       "src/src/hb-ot-color-cpal-table.hh",
+      "src/src/hb-ot-face-table-list.hh",
       "src/src/hb-ot-face.cc",
       "src/src/hb-ot-face.hh",
       "src/src/hb-ot-font.cc",
@@ -213,6 +215,7 @@ if (use_system_harfbuzz) {
 
     defines = [
       "HAVE_OT",
+      "HAVE_FREETYPE",
       "HAVE_ICU",
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
@@ -223,6 +226,9 @@ if (use_system_harfbuzz) {
       # SkPDF needs subsetting but does not require subsetting of layout or CFF tables.
       "HB_NO_SUBSET_LAYOUT",
       "HB_NO_SUBSET_CFF",
+
+      # Fallback shaper not required, we only use the HarfBuzz internal OT shaper.
+      "HB_NO_FALLBACK_SHAPE",
 
       # Tells HarfBuzz to use ICU instead of the own mini UCDN implementation
       # that is part of HarfBuzz.

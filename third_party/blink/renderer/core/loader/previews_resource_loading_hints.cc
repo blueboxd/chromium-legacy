@@ -50,7 +50,8 @@ PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
 
   subresource_patterns_to_block_usage_.Fill(
       false, subresource_patterns_to_block.size());
-  blocked_resource_load_priority_counts_.fill(0);
+  blocked_resource_load_priority_counts_.Fill(
+      0, static_cast<int>(ResourceLoadPriority::kHighest) + 1);
 
   // Populate which specific resource types are eligible for blocking.
   // Certain resource types are blocked by default since their blocking

@@ -7,6 +7,7 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -38,7 +39,7 @@ TEST_F(AccountControlItemTest, ConfigureCellDefault) {
   EXPECT_FALSE(accountCell.textLabel.text);
   EXPECT_FALSE(accountCell.detailTextLabel.text);
   EXPECT_EQ(UITableViewCellAccessoryNone, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor),
+  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor,
               accountCell.detailTextLabel.textColor);
 
   [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
@@ -46,7 +47,7 @@ TEST_F(AccountControlItemTest, ConfigureCellDefault) {
   EXPECT_NSEQ(mainText, accountCell.textLabel.text);
   EXPECT_NSEQ(detailText, accountCell.detailTextLabel.text);
   EXPECT_EQ(UITableViewCellAccessoryNone, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor),
+  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor,
               accountCell.detailTextLabel.textColor);
 }
 
@@ -73,7 +74,7 @@ TEST_F(AccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
   EXPECT_FALSE(accountCell.textLabel.text);
   EXPECT_FALSE(accountCell.detailTextLabel.text);
   EXPECT_EQ(UITableViewCellAccessoryNone, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor),
+  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor,
               accountCell.detailTextLabel.textColor);
 
   [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];

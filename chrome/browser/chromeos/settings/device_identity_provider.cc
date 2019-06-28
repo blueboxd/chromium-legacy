@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 
 namespace chromeos {
@@ -88,14 +89,22 @@ DeviceIdentityProvider::DeviceIdentityProvider(
     chromeos::DeviceOAuth2TokenService* token_service)
     : token_service_(token_service) {
   // TODO(blundell): Can |token_service_| ever actually be non-null?
-  if (token_service_)
-    token_service_->AddObserver(this);
+  if (token_service_) {
+    token_service->SetRefreshTokenAvailableCallback(
+        base::BindRepeating(&DeviceIdentityProvider::OnRefreshTokenAvailable,
+                            base::Unretained(this)));
+    token_service->SetRefreshTokenRevokedCallback(
+        base::BindRepeating(&DeviceIdentityProvider::OnRefreshTokenRevoked,
+                            base::Unretained(this)));
+  }
 }
 
 DeviceIdentityProvider::~DeviceIdentityProvider() {
   // TODO(blundell): Can |token_service_| ever actually be non-null?
-  if (token_service_)
-    token_service_->RemoveObserver(this);
+  if (token_service_) {
+    token_service_->SetRefreshTokenAvailableCallback(base::NullCallback());
+    token_service_->SetRefreshTokenRevokedCallback(base::NullCallback());
+  }
 }
 
 CoreAccountId DeviceIdentityProvider::GetActiveAccountId() {

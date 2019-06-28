@@ -100,7 +100,6 @@ AtRuleDescriptorID CSSPropertyIDAsAtRuleDescriptor(CSSPropertyID id) {
     return AtRuleDescriptorID::{{descriptor.name.to_upper_camel_case()}};
 {% endfor %}
   default:
-    NOTREACHED();
     return AtRuleDescriptorID::Invalid;
   }
 }

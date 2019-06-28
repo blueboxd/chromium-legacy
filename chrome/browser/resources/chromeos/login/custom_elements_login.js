@@ -40,3 +40,4 @@
 // <include src="multidevice_setup_first_run.js">
 // <include src="enrollment_license_card.js">
 // <include src="enterprise_enrollment.js">
+// <include src="security_token_pin.js">

@@ -84,7 +84,7 @@ TEST_F(TableViewURLItemTest, ConfigureCellWithStyler) {
   ASSERT_TRUE([cell isMemberOfClass:[TableViewURLCell class]]);
 
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
-  UIColor* testColor = [UIColor redColor];
+  UIColor* testColor = UIColor.redColor;
   styler.tableViewBackgroundColor = testColor;
   [item configureCell:cell withStyler:styler];
   EXPECT_NSEQ(testColor, cell.faviconContainerView.backgroundColor);

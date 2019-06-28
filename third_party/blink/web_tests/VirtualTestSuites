@@ -1121,5 +1121,15 @@
     "prefix": "force-defer-script",
     "base": "defer-script",
     "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
+  },
+  {
+    "prefix": "at-property",
+    "base": "fast/css/css-properties-values-api",
+    "args": ["--enable-blink-features=CSSVariables2AtProperty"]
+  },
+  {
+    "prefix": "at-property",
+    "base": "external/wpt/css/css-properties-values-api",
+    "args": ["--enable-blink-features=CSSVariables2AtProperty"]
   }
 ]

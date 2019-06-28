@@ -15,26 +15,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// TODO(crbug.com/968302): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_ThenRejectWithTuple DISABLED_ThenRejectWithTuple
-#define MAYBE_TargetTaskRunnerClearsTasks DISABLED_TargetTaskRunnerClearsTasks
-#define MAYBE_MoveOnlyTypeMultipleThensNotAllowed \
-  DISABLED_MoveOnlyTypeMultipleThensNotAllowed
-#define MAYBE_MoveOnlyTypeMultipleCatchesNotAllowed \
-  DISABLED_MoveOnlyTypeMultipleCatchesNotAllowed
-#else
-#define MAYBE_ThenRejectWithTuple ThenRejectWithTuple
-#define MAYBE_TargetTaskRunnerClearsTasks TargetTaskRunnerClearsTasks
-#define MAYBE_MoveOnlyTypeMultipleThensNotAllowed \
-  MoveOnlyTypeMultipleThensNotAllowed
-#define MAYBE_MoveOnlyTypeMultipleCatchesNotAllowed \
-  MoveOnlyTypeMultipleCatchesNotAllowed
-#endif
 
 using testing::ElementsAre;
 
@@ -93,7 +77,7 @@ class PromiseTest : public testing::Test {
   test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST(PromiseMemoryLeakTest, MAYBE_TargetTaskRunnerClearsTasks) {
+TEST(PromiseMemoryLeakTest, TargetTaskRunnerClearsTasks) {
   scoped_refptr<TestMockTimeTaskRunner> post_runner =
       MakeRefCounted<TestMockTimeTaskRunner>();
   scoped_refptr<TestMockTimeTaskRunner> reply_runner =
@@ -277,7 +261,7 @@ TEST_F(PromiseTest, CreateResolvedThen) {
   run_loop.Run();
 }
 
-TEST_F(PromiseTest, MAYBE_ThenRejectWithTuple) {
+TEST_F(PromiseTest, ThenRejectWithTuple) {
   ManualPromiseResolver<void> p(FROM_HERE);
   p.Resolve();
 
@@ -1048,6 +1032,95 @@ TEST_F(PromiseTest, CurriedIntPromise) {
   run_loop.Run();
 }
 
+TEST_F(PromiseTest, CurriedIntPromiseChain) {
+  Promise<int> p = Promise<int>::CreateResolved(FROM_HERE, 1000);
+
+  ManualPromiseResolver<int> promise_resolver_1(FROM_HERE);
+  ManualPromiseResolver<int> promise_resolver_2(FROM_HERE);
+  promise_resolver_2.Resolve(promise_resolver_1.promise());
+  promise_resolver_1.Resolve(123);
+
+  RunLoop run_loop;
+  p.ThenHere(FROM_HERE, BindLambdaForTesting([&](int result) {
+               EXPECT_EQ(1000, result);
+               return promise_resolver_2.promise();
+             }))
+      .ThenHere(FROM_HERE, BindLambdaForTesting([&](int result) {
+                  EXPECT_EQ(123, result);
+                  run_loop.Quit();
+                }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, CurriedIntPromiseChain2) {
+  Promise<int> p1 = Promise<int>::CreateResolved(FROM_HERE, 1000);
+  Promise<int> p2 = Promise<int>::CreateResolved(FROM_HERE, 789);
+  Promise<int> then2;
+
+  {
+    Promise<int> then1 =
+        Promise<int>::CreateResolved(FROM_HERE, 789)
+            .ThenHere(FROM_HERE, BindLambdaForTesting([&]() { return p2; }));
+    then2 = Promise<int>::CreateResolved(FROM_HERE, 789)
+                .ThenHere(
+                    FROM_HERE,
+                    BindOnce([&](Promise<int> then1) { return then1; }, then1));
+  }
+
+  RunLoop run_loop;
+  p1.ThenHere(FROM_HERE, BindLambdaForTesting([&](int result) {
+                EXPECT_EQ(1000, result);
+                return then2;
+              }))
+      .ThenHere(FROM_HERE, BindLambdaForTesting([&](int result) {
+                  EXPECT_EQ(789, result);
+                  run_loop.Quit();
+                }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, CurriedIntPromiseChainThenAddedAfterInitialResolve) {
+  ManualPromiseResolver<int> promise_resolver_1(FROM_HERE);
+  ManualPromiseResolver<int> promise_resolver_2(FROM_HERE);
+  ManualPromiseResolver<int> promise_resolver_3(FROM_HERE);
+  promise_resolver_2.Resolve(promise_resolver_1.promise());
+  promise_resolver_3.Resolve(promise_resolver_2.promise());
+
+  RunLoop run_loop;
+  promise_resolver_3.promise().ThenHere(FROM_HERE,
+                                        BindLambdaForTesting([&](int result) {
+                                          EXPECT_EQ(123, result);
+                                          run_loop.Quit();
+                                        }));
+
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      BindLambdaForTesting([&]() { promise_resolver_1.Resolve(123); }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, CurriedVoidPromiseModified) {
+  for (size_t i = 0; i < 1000; ++i) {
+    Promise<void> p = Promise<void>::CreateResolved(FROM_HERE);
+    std::unique_ptr<ManualPromiseResolver<int>> promise_resolver =
+        std::make_unique<ManualPromiseResolver<int>>(FROM_HERE);
+    RunLoop run_loop;
+    p.ThenHere(FROM_HERE, BindOnce([](Promise<int> promise) { return promise; },
+                                   promise_resolver->promise()))
+        .ThenHere(FROM_HERE, base::BindOnce([](int v) { EXPECT_EQ(v, 42); }))
+        .ThenHere(FROM_HERE, run_loop.QuitClosure());
+    base::PostTaskWithTraits(FROM_HERE, {}, base::BindLambdaForTesting([&]() {
+                               promise_resolver->Resolve(42);
+                               promise_resolver.reset();
+                             }));
+    run_loop.Run();
+    scoped_task_environment_.RunUntilIdle();
+  }
+}
+
 TEST_F(PromiseTest, PromiseResultReturningAPromise) {
   Promise<int> p = Promise<int>::CreateResolved(FROM_HERE, 1000);
   ManualPromiseResolver<int> promise_resolver(FROM_HERE);
@@ -1476,7 +1549,7 @@ TEST_F(PromiseTest, CatchNotRequired) {
   run_loop.Run();
 }
 
-TEST_F(PromiseTest, MAYBE_MoveOnlyTypeMultipleThensNotAllowed) {
+TEST_F(PromiseTest, MoveOnlyTypeMultipleThensNotAllowed) {
 #if DCHECK_IS_ON()
   Promise<std::unique_ptr<int>> p =
       Promise<std::unique_ptr<int>>::CreateResolved(FROM_HERE,
@@ -1492,7 +1565,7 @@ TEST_F(PromiseTest, MAYBE_MoveOnlyTypeMultipleThensNotAllowed) {
 #endif
 }
 
-TEST_F(PromiseTest, MAYBE_MoveOnlyTypeMultipleCatchesNotAllowed) {
+TEST_F(PromiseTest, MoveOnlyTypeMultipleCatchesNotAllowed) {
 #if DCHECK_IS_ON()
   auto p = Promise<void, std::unique_ptr<int>>::CreateRejected(
       FROM_HERE, std::make_unique<int>(123));

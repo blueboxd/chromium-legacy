@@ -240,13 +240,18 @@ Element* SpatialNavigationController::GetInterestedElement() const {
   return document->ActiveElement();
 }
 
-void SpatialNavigationController::DidDetachFrameView() {
+void SpatialNavigationController::DidDetachFrameView(
+    const LocalFrameView& view) {
   // If the interested element's view was lost (frame detached, navigated,
   // etc.) then reset navigation.
   if (interest_element_ && !interest_element_->GetDocument().View())
     interest_element_ = nullptr;
-  // TODO(crbug.com/956209): should be checked via an integration test.
-  ResetMojoBindings();
+
+  // TODO(bokan): This still needs a test. crbug.com/976892.
+  if (view.GetFrame().IsMainFrame()) {
+    // TODO(crbug.com/956209): should be checked via an integration test.
+    ResetMojoBindings();
+  }
 }
 
 void SpatialNavigationController::Trace(blink::Visitor* visitor) {

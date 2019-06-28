@@ -140,13 +140,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
           out_provider_info);
 
-  // Used for starting a shared worker. Returns a provider host for the shared
-  // worker and fills |out_provider_info| with info to send to the renderer to
-  // connect to the host. The host stays alive as long as this info stays alive
-  // (namely, as long as |out_provider_info->host_ptr_info| stays alive).
-  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForSharedWorker(
+  // Used for starting a web worker (dedicated worker or shared worker). Returns
+  // a provider host for the worker and fills |out_provider_info| with info to
+  // send to the renderer to connect to the host. The host stays alive as long
+  // as this info stays alive (namely, as long as
+  // |out_provider_info->host_ptr_info| stays alive).
+  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
+      blink::mojom::ServiceWorkerProviderType provider_type,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
 
   ~ServiceWorkerProviderHost() override;
@@ -352,10 +354,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request);
 
-  // Called when the shared worker main script resource has finished loading.
+  // Called when the web worker main script resource has finished loading.
   // After this is called, is_response_committed() and is_execution_ready()
   // return true.
-  void CompleteSharedWorkerPreparation();
+  void CompleteWebWorkerPreparation();
 
   // For service worker clients. The host keeps track of all the prospective
   // longest-matching registrations, in order to resolve .ready or respond to

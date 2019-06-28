@@ -656,38 +656,6 @@ bool BlinkPlatformImpl::IsURLSupportedForAppCache(const blink::WebURL& url) {
   return IsSchemeSupportedForAppCache(url);
 }
 
-base::File BlinkPlatformImpl::DatabaseOpenFile(
-    const blink::WebString& vfs_file_name,
-    int desired_flags) {
-  return base::File();
-}
-
-int BlinkPlatformImpl::DatabaseDeleteFile(const blink::WebString& vfs_file_name,
-                                          bool sync_dir) {
-  return -1;
-}
-
-int32_t BlinkPlatformImpl::DatabaseGetFileAttributes(
-    const blink::WebString& vfs_file_name) {
-  return 0;
-}
-
-int64_t BlinkPlatformImpl::DatabaseGetFileSize(
-    const blink::WebString& vfs_file_name) {
-  return 0;
-}
-
-int64_t BlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
-    const blink::WebSecurityOrigin& origin) {
-  return 0;
-}
-
-bool BlinkPlatformImpl::DatabaseSetFileSize(
-    const blink::WebString& vfs_file_name,
-    int64_t size) {
-  return false;
-}
-
 size_t BlinkPlatformImpl::MaxDecodedImageBytes() {
   const int kMB = 1024 * 1024;
   const int kMaxNumberOfBytesPerPixel = 4;

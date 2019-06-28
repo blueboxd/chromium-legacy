@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "url/gurl.h"
@@ -115,7 +116,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewTextItem alloc] initWithType:ItemTypeText];
   textItem.text = @"Simple Text Cell";
   textItem.textAlignment = NSTextAlignmentCenter;
-  textItem.textColor = [UIColor blackColor];
+  textItem.textColor = UIColor.cr_labelColor;
   [model addItem:textItem toSectionWithIdentifier:SectionIdentifierText];
 
   textItem = [[TableViewTextItem alloc] initWithType:ItemTypeText];
@@ -348,7 +349,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   imageDetailTextItem.text = @"This is an error description about sync";
   imageDetailTextItem.detailText =
       @"This is more detail about the sync error description";
-  imageDetailTextItem.image = [ChromeIcon infoIcon];
+  imageDetailTextItem.image = [[ChromeIcon infoIcon]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [model addItem:imageDetailTextItem
       toSectionWithIdentifier:SectionIdentifierSettings];
 
@@ -423,7 +425,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   AccountControlItem* accountControlItemWithExtraLongText =
       [[AccountControlItem alloc] initWithType:ItemTypeAccount];
-  accountControlItemWithExtraLongText.image = [ChromeIcon infoIcon];
+  accountControlItemWithExtraLongText.image = [[ChromeIcon infoIcon]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   accountControlItemWithExtraLongText.text =
       @"Account Control Settings - long title";
   accountControlItemWithExtraLongText.detailText =

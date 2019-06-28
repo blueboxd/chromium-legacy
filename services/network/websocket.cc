@@ -161,8 +161,8 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       receive_quota_threshold = net::WebSocketChannel::kReceiveQuotaThreshold;
   }
   DVLOG(3) << "receive_quota_threshold is " << receive_quota_threshold;
-  impl_->handshake_client_->OnAddChannelResponse(selected_protocol, extensions,
-                                                 receive_quota_threshold);
+  impl_->handshake_client_->OnConnectionEstablished(
+      selected_protocol, extensions, receive_quota_threshold);
 }
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(
@@ -251,7 +251,8 @@ void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
   headers_text.append("\r\n");
   request_to_pass->headers_text = std::move(headers_text);
 
-  impl_->handshake_client_->OnStartOpeningHandshake(std::move(request_to_pass));
+  impl_->handshake_client_->OnOpeningHandshakeStarted(
+      std::move(request_to_pass));
 }
 
 void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
@@ -285,8 +286,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   headers_text.append("\r\n");
   response_to_pass->headers_text = headers_text;
 
-  impl_->handshake_client_->OnFinishOpeningHandshake(
-      std::move(response_to_pass));
+  impl_->handshake_client_->OnResponseReceived(std::move(response_to_pass));
 }
 
 void WebSocket::WebSocketEventHandler::OnSSLCertificateError(

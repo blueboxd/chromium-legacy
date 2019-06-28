@@ -24,6 +24,9 @@
 @property(class, nonatomic, readonly) UIColor* cr_labelColor;
 @property(class, nonatomic, readonly) UIColor* cr_secondaryLabelColor;
 
+// Separator Colors
+@property(class, nonatomic, readonly) UIColor* cr_opaqueSeparatorColor;
+
 @end
 
 #endif  // IOS_CHROME_COMMON_UI_UTIL_UICOLOR_CR_SEMANTIC_COLORS_H_

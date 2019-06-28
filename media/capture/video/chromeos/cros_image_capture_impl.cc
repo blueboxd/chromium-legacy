@@ -18,11 +18,6 @@ CrosImageCaptureImpl::CrosImageCaptureImpl(ReprocessManager* reprocess_manager)
 
 CrosImageCaptureImpl::~CrosImageCaptureImpl() = default;
 
-void CrosImageCaptureImpl::BindRequest(
-    cros::mojom::CrosImageCaptureRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 void CrosImageCaptureImpl::GetCameraInfo(const std::string& device_id,
                                          GetCameraInfoCallback callback) {
   reprocess_manager_->GetCameraInfo(

@@ -386,6 +386,12 @@ public class ChromePreferenceManager {
             "network_service_warm_up_enabled";
 
     /**
+     * Contains a trial group that was used to determine whether the reached code profiler should be
+     * enabled.
+     */
+    public static final String REACHED_CODE_PROFILER_GROUP_KEY = "reached_code_profiler_group";
+
+    /**
      * Key to cache whether immersive ui mode is enabled.
      */
     public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";

@@ -51,7 +51,7 @@ namespace signin {
 
 OAuthMultiloginHelper::OAuthMultiloginHelper(
     SigninClient* signin_client,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>& accounts,
     const std::string& external_cc_result,
     base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback)

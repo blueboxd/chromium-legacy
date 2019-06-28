@@ -544,8 +544,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
     StringBuilder result;
     result.Append(ua.brand.data());
-    const std::string& version =
-        use_full_ua ? ua.full_version : ua.major_version;
+    const auto& version = use_full_ua ? ua.full_version : ua.major_version;
     if (!version.empty()) {
       result.Append(' ');
       result.Append(version.data());

@@ -250,6 +250,9 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   const HeapVector<Member<StyleRuleKeyframes>>& KeyframesRules() const {
     return keyframes_rules_;
   }
+  const HeapVector<Member<StyleRuleProperty>>& PropertyRules() const {
+    return property_rules_;
+  }
   const HeapVector<MinimalRuleData>& DeepCombinatorOrShadowPseudoRules() const {
     return deep_combinator_or_shadow_pseudo_rules_;
   }
@@ -301,6 +304,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   void AddFontFaceRule(StyleRuleFontFace*);
   void AddFontFeatureValuesRule(StyleRuleFontFeatureValues*);
   void AddKeyframesRule(StyleRuleKeyframes*);
+  void AddPropertyRule(StyleRuleProperty*);
 
   void AddChildRules(const HeapVector<Member<StyleRuleBase>>&,
                      const MediaQueryEvaluator& medium,
@@ -344,6 +348,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   HeapVector<Member<StyleRuleFontFace>> font_face_rules_;
   HeapVector<Member<StyleRuleFontFeatureValues>> font_feature_values_rules_;
   HeapVector<Member<StyleRuleKeyframes>> keyframes_rules_;
+  HeapVector<Member<StyleRuleProperty>> property_rules_;
   HeapVector<MinimalRuleData> deep_combinator_or_shadow_pseudo_rules_;
   HeapVector<MinimalRuleData> content_pseudo_element_rules_;
   HeapVector<MinimalRuleData> slotted_pseudo_element_rules_;

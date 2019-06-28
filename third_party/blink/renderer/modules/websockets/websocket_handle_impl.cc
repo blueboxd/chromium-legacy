@@ -152,25 +152,25 @@ void WebSocketHandleImpl::OnFailChannel(const String& message) {
   // |this| can be deleted here.
 }
 
-void WebSocketHandleImpl::OnStartOpeningHandshake(
+void WebSocketHandleImpl::OnOpeningHandshakeStarted(
     network::mojom::blink::WebSocketHandshakeRequestPtr request) {
-  NETWORK_DVLOG(1) << this << " OnStartOpeningHandshake("
+  NETWORK_DVLOG(1) << this << " OnOpeningHandshakeStarted("
                    << request->url.GetString() << ")";
   channel_->DidStartOpeningHandshake(this, std::move(request));
 }
 
-void WebSocketHandleImpl::OnFinishOpeningHandshake(
+void WebSocketHandleImpl::OnResponseReceived(
     network::mojom::blink::WebSocketHandshakeResponsePtr response) {
-  NETWORK_DVLOG(1) << this << " OnFinishOpeningHandshake("
+  NETWORK_DVLOG(1) << this << " OnResponseReceived("
                    << response->url.GetString() << ")";
   channel_->DidFinishOpeningHandshake(this, std::move(response));
 }
 
-void WebSocketHandleImpl::OnAddChannelResponse(
+void WebSocketHandleImpl::OnConnectionEstablished(
     const String& protocol,
     const String& extensions,
     uint64_t receive_quota_threshold) {
-  NETWORK_DVLOG(1) << this << " OnAddChannelResponse(" << protocol << ", "
+  NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
                    << extensions << ", " << receive_quota_threshold << ")";
 
   if (!channel_)

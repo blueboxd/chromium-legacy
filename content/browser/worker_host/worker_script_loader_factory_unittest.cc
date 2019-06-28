@@ -55,8 +55,9 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     service_worker_provider_info_ =
         blink::mojom::ServiceWorkerProviderInfoForWorker::New();
     service_worker_provider_host_ =
-        ServiceWorkerProviderHost::PreCreateForSharedWorker(
+        ServiceWorkerProviderHost::PreCreateForWebWorker(
             helper_->context()->AsWeakPtr(), kProcessId,
+            blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
             &service_worker_provider_info_);
   }
 

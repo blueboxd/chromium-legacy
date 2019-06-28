@@ -1406,7 +1406,7 @@ void DrawingBuffer::FlipVertically(uint8_t* framebuffer,
       use_half_float_storage_) {
     row_bytes *= 2;
   }
-  std::vector<uint8_t> scanline(row_bytes);
+  Vector<uint8_t> scanline(row_bytes);
   unsigned count = height / 2;
   for (unsigned i = 0; i < count; i++) {
     uint8_t* row_a = framebuffer + i * row_bytes;

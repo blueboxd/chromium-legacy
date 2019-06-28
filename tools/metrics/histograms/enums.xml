@@ -23786,6 +23786,7 @@ Called by update_net_error_codes.py.-->
   <int value="2937" label="PeriodicBackgroundSyncGetTags"/>
   <int value="2938" label="PeriodicBackgroundSyncUnregister"/>
   <int value="2939" label="CreateObjectURLMediaSourceFromWorker"/>
+  <int value="2940" label="CSSAtRuleProperty"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -45242,6 +45243,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PasswordManagerAndroidExportPasswordsProgressBarUsage">
+  <obsolete>
+    No longer recorded as of June 2019.
+  </obsolete>
   <int value="0" label="Not hidden because not shown"/>
   <int value="1" label="Hidden directly"/>
   <int value="2" label="Hidden with a delay"/>

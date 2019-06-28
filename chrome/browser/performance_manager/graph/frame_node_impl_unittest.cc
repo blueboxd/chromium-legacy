@@ -125,7 +125,7 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnBeforeFrameNodeRemoved, void(const FrameNode*));
   MOCK_METHOD1(OnIsCurrentChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNetworkAlmostIdleChanged, void(const FrameNode*));
-  MOCK_METHOD1(OnLifecycleStateChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnFrameLifecycleStateChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
   MOCK_METHOD1(OnURLChanged, void(const FrameNode*));
 
@@ -177,9 +177,9 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
   frame_node->SetNetworkAlmostIdle();
   EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
 
-  // Invoke "SetLifecycleState" and expect an "OnLifecycleStateChanged"
+  // Invoke "SetLifecycleState" and expect an "OnFrameLifecycleStateChanged"
   // callback.
-  EXPECT_CALL(obs, OnLifecycleStateChanged(_))
+  EXPECT_CALL(obs, OnFrameLifecycleStateChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
   frame_node->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);

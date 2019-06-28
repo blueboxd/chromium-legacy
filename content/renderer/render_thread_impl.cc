@@ -102,7 +102,6 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
-#include "content/renderer/web_database_observer_impl.h"
 #include "content/renderer/worker/embedded_shared_worker_stub.h"
 #include "content/renderer/worker/shared_worker_factory_impl.h"
 #include "content/renderer/worker/worker_thread_registry.h"

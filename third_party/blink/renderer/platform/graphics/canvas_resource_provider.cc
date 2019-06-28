@@ -736,82 +736,79 @@ enum class CanvasResourceType {
   kSharedImage,
 };
 
-const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
+const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
     CanvasResourceProvider::ResourceUsage usage) {
-  static const std::vector<CanvasResourceType> kSoftwareFallbackList({
+  static const Vector<CanvasResourceType> kSoftwareFallbackList({
       CanvasResourceType::kBitmap,
   });
 
-  static const std::vector<CanvasResourceType> kAcceleratedFallbackList({
+  static const Vector<CanvasResourceType> kAcceleratedFallbackList({
       CanvasResourceType::kSharedImage,
       CanvasResourceType::kTexture,
       // Fallback to software
       CanvasResourceType::kBitmap,
   });
 
-  static const std::vector<CanvasResourceType> kSoftwareCompositedFallbackList({
+  static const Vector<CanvasResourceType> kSoftwareCompositedFallbackList({
       CanvasResourceType::kBitmapGpuMemoryBuffer,
       CanvasResourceType::kSharedBitmap,
       // Fallback to no direct compositing support
       CanvasResourceType::kBitmap,
   });
 
-  static const std::vector<CanvasResourceType>
-      kAcceleratedCompositedFallbackList({
-          CanvasResourceType::kSharedImage,
-          CanvasResourceType::kTextureGpuMemoryBuffer,
-          CanvasResourceType::kTexture,
-          // Fallback to software composited
-          // (|kSoftwareCompositedFallbackList|).
-          CanvasResourceType::kBitmapGpuMemoryBuffer,
-          CanvasResourceType::kSharedBitmap,
-          // Fallback to no direct compositing support
-          CanvasResourceType::kBitmap,
-      });
+  static const Vector<CanvasResourceType> kAcceleratedCompositedFallbackList({
+      CanvasResourceType::kSharedImage,
+      CanvasResourceType::kTextureGpuMemoryBuffer,
+      CanvasResourceType::kTexture,
+      // Fallback to software composited
+      // (|kSoftwareCompositedFallbackList|).
+      CanvasResourceType::kBitmapGpuMemoryBuffer,
+      CanvasResourceType::kSharedBitmap,
+      // Fallback to no direct compositing support
+      CanvasResourceType::kBitmap,
+  });
   DCHECK(std::equal(kAcceleratedCompositedFallbackList.begin() + 3,
                     kAcceleratedCompositedFallbackList.end(),
                     kSoftwareCompositedFallbackList.begin(),
                     kSoftwareCompositedFallbackList.end()));
 
-  static const std::vector<CanvasResourceType> kAcceleratedDirect2DFallbackList(
-      {
-          // TODO(khushalsagar): This is used for low-latency canvas. We'll need
-          // support for single buffering to use shared images here.
-          CanvasResourceType::kDirect2DGpuMemoryBuffer,
-          // The rest is equal to |kAcceleratedCompositedFallbackList|.
-          CanvasResourceType::kSharedImage,
-          CanvasResourceType::kTextureGpuMemoryBuffer,
-          CanvasResourceType::kTexture,
-          // Fallback to software composited
-          CanvasResourceType::kBitmapGpuMemoryBuffer,
-          CanvasResourceType::kSharedBitmap,
-          // Fallback to no direct compositing support
-          CanvasResourceType::kBitmap,
-      });
+  static const Vector<CanvasResourceType> kAcceleratedDirect2DFallbackList({
+      // TODO(khushalsagar): This is used for low-latency canvas. We'll need
+      // support for single buffering to use shared images here.
+      CanvasResourceType::kDirect2DGpuMemoryBuffer,
+      // The rest is equal to |kAcceleratedCompositedFallbackList|.
+      CanvasResourceType::kSharedImage,
+      CanvasResourceType::kTextureGpuMemoryBuffer,
+      CanvasResourceType::kTexture,
+      // Fallback to software composited
+      CanvasResourceType::kBitmapGpuMemoryBuffer,
+      CanvasResourceType::kSharedBitmap,
+      // Fallback to no direct compositing support
+      CanvasResourceType::kBitmap,
+  });
   DCHECK(std::equal(kAcceleratedDirect2DFallbackList.begin() + 1,
                     kAcceleratedDirect2DFallbackList.end(),
                     kAcceleratedCompositedFallbackList.begin(),
                     kAcceleratedCompositedFallbackList.end()));
 
-  static const std::vector<CanvasResourceType> kAcceleratedDirect3DFallbackList(
-      {
-          // This is used with single-buffered WebGL where the resource comes
-          // from an external source. The external site should take care of
-          // using SharedImages since the resource will be used by the display
-          // compositor.
-          CanvasResourceType::kDirect3DSwapChain,
-          CanvasResourceType::kDirect3DGpuMemoryBuffer,
-          CanvasResourceType::kDirect2DGpuMemoryBuffer,
-          // The rest is equal to |kAcceleratedCompositedFallbackList|.
-          CanvasResourceType::kSharedImage,
-          CanvasResourceType::kTextureGpuMemoryBuffer,
-          CanvasResourceType::kTexture,
-          // Fallback to software composited
-          CanvasResourceType::kBitmapGpuMemoryBuffer,
-          CanvasResourceType::kSharedBitmap,
-          // Fallback to no direct compositing support
-          CanvasResourceType::kBitmap,
-      });
+  static const Vector<CanvasResourceType> kAcceleratedDirect3DFallbackList({
+      // This is used with single-buffered WebGL where the resource comes
+      // from an external source. The external site should take care of
+      // using SharedImages since the resource will be used by the display
+      // compositor.
+      CanvasResourceType::kDirect3DSwapChain,
+      CanvasResourceType::kDirect3DGpuMemoryBuffer,
+      CanvasResourceType::kDirect2DGpuMemoryBuffer,
+      // The rest is equal to |kAcceleratedCompositedFallbackList|.
+      CanvasResourceType::kSharedImage,
+      CanvasResourceType::kTextureGpuMemoryBuffer,
+      CanvasResourceType::kTexture,
+      // Fallback to software composited
+      CanvasResourceType::kBitmapGpuMemoryBuffer,
+      CanvasResourceType::kSharedBitmap,
+      // Fallback to no direct compositing support
+      CanvasResourceType::kBitmap,
+  });
   DCHECK(std::equal(kAcceleratedDirect3DFallbackList.begin() + 2,
                     kAcceleratedDirect3DFallbackList.end(),
                     kAcceleratedDirect2DFallbackList.begin(),
@@ -845,7 +842,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
   std::unique_ptr<CanvasResourceProvider> provider;
-  const std::vector<CanvasResourceType>& fallback_list =
+  const Vector<CanvasResourceType>& fallback_list =
       GetResourceTypeFallbackList(usage);
 
   const bool is_gpu_memory_buffer_image_allowed =
@@ -1021,7 +1018,7 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
 
   bool is_hardware_decode_cache_;
   bool cleanup_task_pending_ = false;
-  std::vector<ScopedResult> locked_images_;
+  Vector<ScopedResult> locked_images_;
   cc::PlaybackImageProvider playback_image_provider_n32_;
   base::Optional<cc::PlaybackImageProvider> playback_image_provider_f16_;
 

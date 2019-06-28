@@ -27,11 +27,6 @@ namespace chromeos {
 class CryptohomeKeyDelegateServiceProvider final
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  // Name of the provided D-Bus service.
-  static const char kServiceName[];
-  // Path of the provided D-Bus service.
-  static const char kServicePath[];
-
   CryptohomeKeyDelegateServiceProvider();
   ~CryptohomeKeyDelegateServiceProvider() override;
 

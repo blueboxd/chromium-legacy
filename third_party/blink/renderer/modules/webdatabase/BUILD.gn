@@ -71,6 +71,8 @@ blink_modules_sources("webdatabase") {
     "sqlite/sqlite_transaction.cc",
     "sqlite/sqlite_transaction.h",
     "storage_log.h",
+    "web_database_host.cc",
+    "web_database_host.h",
     "web_database_impl.cc",
     "web_database_impl.h",
   ]

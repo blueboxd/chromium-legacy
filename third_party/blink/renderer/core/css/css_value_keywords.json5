@@ -1181,6 +1181,10 @@
     // pan-down
     // none
 
+    // @property
+    "true",
+    "false",
+
     // (prefers-*:) media features
     "no-preference",
 

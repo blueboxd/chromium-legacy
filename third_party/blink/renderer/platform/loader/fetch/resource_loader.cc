@@ -504,7 +504,7 @@ void ResourceLoader::DidFinishLoadingBody() {
   const ResourceResponse& response = resource_->GetResponse();
   if (deferred_finish_loading_info_) {
     // Create a copy to pass a reference.
-    const std::vector<network::cors::PreflightTimingInfo>
+    const WebVector<network::cors::PreflightTimingInfo>
         cors_preflight_timing_info =
             deferred_finish_loading_info_->cors_preflight_timing_info;
     DidFinishLoading(deferred_finish_loading_info_->response_end,
@@ -1111,10 +1111,9 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
                           TRACE_ID_LOCAL(resource_->InspectorId())),
       "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
-  fetcher_->HandleLoaderFinish(
-      resource_.Get(), base::TimeTicks(),
-      ResourceFetcher::kDidFinishFirstPartInMultipart, 0, false,
-      std::vector<network::cors::PreflightTimingInfo>());
+  fetcher_->HandleLoaderFinish(resource_.Get(), base::TimeTicks(),
+                               ResourceFetcher::kDidFinishFirstPartInMultipart,
+                               0, false, {});
 }
 
 void ResourceLoader::DidFinishLoading(
@@ -1123,7 +1122,7 @@ void ResourceLoader::DidFinishLoading(
     int64_t encoded_body_length,
     int64_t decoded_body_length,
     bool should_report_corb_blocking,
-    const std::vector<network::cors::PreflightTimingInfo>&
+    const WebVector<network::cors::PreflightTimingInfo>&
         cors_preflight_timing_info) {
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
@@ -1291,8 +1290,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     FinishedCreatingBlob(blob);
   }
   DidFinishLoading(CurrentTimeTicks(), encoded_data_length, encoded_body_length,
-                   decoded_body_length, false,
-                   std::vector<network::cors::PreflightTimingInfo>());
+                   decoded_body_length, false, {});
 }
 
 void ResourceLoader::RequestAsynchronously(const ResourceRequest& request) {

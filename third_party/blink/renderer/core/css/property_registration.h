@@ -19,12 +19,17 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class PropertyDescriptor;
+class StyleRuleProperty;
 
 using CSSInterpolationTypes = Vector<std::unique_ptr<CSSInterpolationType>>;
 
 class CORE_EXPORT PropertyRegistration
     : public GarbageCollectedFinalized<PropertyRegistration> {
  public:
+  static PropertyRegistration* MaybeCreate(Document&,
+                                           const AtomicString& name,
+                                           StyleRuleProperty&);
+
   static void registerProperty(ExecutionContext*,
                                const PropertyDescriptor*,
                                ExceptionState&);

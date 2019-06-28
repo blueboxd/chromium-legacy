@@ -221,7 +221,7 @@ PrefetchedSignedExchangeManager::CreatePrefetchedSignedExchangeURLLoader(
 }
 
 void PrefetchedSignedExchangeManager::TriggerLoad() {
-  std::vector<WebNavigationParams::PrefetchedSignedExchange*>
+  Vector<WebNavigationParams::PrefetchedSignedExchange*>
       maching_prefetched_exchanges;
   for (auto loader : loaders_) {
     if (!loader) {

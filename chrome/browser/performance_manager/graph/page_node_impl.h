@@ -252,7 +252,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   ObservedProperty::NotifiesOnlyOnChanges<
       LifecycleState,
       &GraphImplObserver::OnLifecycleStateChanged,
-      &PageNodeObserver::OnLifecycleStateChanged>
+      &PageNodeObserver::OnPageLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
 
   // Storage for PageAlmostIdle user data.

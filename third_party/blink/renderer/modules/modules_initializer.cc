@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_impl.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/modules/xr/navigator_xr.h"
@@ -120,6 +121,7 @@ void ModulesInitializer::Initialize() {
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);
   CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
+  WebDatabaseHost::GetInstance().Init();
 
   CoreInitializer::Initialize();
 

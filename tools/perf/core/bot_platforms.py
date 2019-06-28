@@ -113,7 +113,6 @@ _ANDROID_GO_BENCHMARK_NAMES = frozenset([
     'memory.top_10_mobile',
     'system_health.memory_mobile',
     'system_health.common_mobile',
-    'power.typical_10_mobile',
     'startup.mobile',
     'system_health.webview_startup',
     'v8.browsing_mobile',

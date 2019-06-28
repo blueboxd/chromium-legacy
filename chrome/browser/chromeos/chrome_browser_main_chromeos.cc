@@ -138,6 +138,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -357,8 +358,8 @@ class DBusServices {
             std::make_unique<DriveFileStreamServiceProvider>()));
 
     cryptohome_key_delegate_service_ = CrosDBusService::Create(
-        system_bus, CryptohomeKeyDelegateServiceProvider::kServiceName,
-        dbus::ObjectPath(CryptohomeKeyDelegateServiceProvider::kServicePath),
+        system_bus, cryptohome::kCryptohomeKeyDelegateServiceName,
+        dbus::ObjectPath(cryptohome::kCryptohomeKeyDelegateServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<CryptohomeKeyDelegateServiceProvider>()));
 

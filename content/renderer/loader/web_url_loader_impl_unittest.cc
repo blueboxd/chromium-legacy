@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -235,7 +236,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       int64_t totalEncodedBodyLength,
       int64_t totalDecodedBodyLength,
       bool should_report_corb_blocking,
-      const std::vector<network::cors::PreflightTimingInfo>&) override {
+      const blink::WebVector<network::cors::PreflightTimingInfo>&) override {
     EXPECT_TRUE(loader_);
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);

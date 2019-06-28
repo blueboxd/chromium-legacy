@@ -123,13 +123,13 @@ class ImageTrackingDecodeCache : public cc::StubDecodeCache {
     num_locked_images_--;
   }
 
-  const std::vector<cc::DrawImage>& decoded_images() const {
+  const Vector<cc::DrawImage>& decoded_images() const {
     return decoded_images_;
   }
   int num_locked_images() const { return num_locked_images_; }
 
  private:
-  std::vector<cc::DrawImage> decoded_images_;
+  Vector<cc::DrawImage> decoded_images_;
   int num_locked_images_ = 0;
   bool budget_exceeded_ = false;
   bool disallow_cache_use_ = false;
@@ -1236,7 +1236,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
   gfx::ColorSpace expected_color_space = gfx::ColorSpace::CreateSRGB();
-  std::vector<cc::DrawImage> images = {
+  Vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
                     SkMatrix::I(), 0u, expected_color_space),
@@ -1259,7 +1259,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
-  std::vector<cc::DrawImage> images = {
+  Vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
                     SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
@@ -1285,7 +1285,7 @@ TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
                  color_params);
   bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
 
-  std::vector<cc::DrawImage> images = {
+  Vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
                     SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
@@ -1342,7 +1342,7 @@ TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
   bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
 
   PaintFlags flags;
-  std::vector<cc::DrawImage> images = {
+  Vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
                     SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),

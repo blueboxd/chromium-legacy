@@ -250,10 +250,13 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
 
     // It is possible to get back a script resource with integrity metadata
     // for a request with an empty integrity attribute. In that case, the
-    // integrity check should be skipped, so this check ensures that the
-    // integrity attribute isn't empty in addition to checking if the
-    // resource has empty integrity metadata.
-    if (!element->IntegrityAttributeValue().IsEmpty()) {
+    // integrity check should be skipped, as the integrity may not have been
+    // "meant" for this specific request. If the resource is being served from
+    // the preload cache however, we know any associated integrity metadata and
+    // checks were destined for this request, so we cannot skip the integrity
+    // check.
+    if (!element->IntegrityAttributeValue().IsEmpty() ||
+        GetResource()->IsLinkPreload()) {
       integrity_failure_ = GetResource()->IntegrityDisposition() !=
                            ResourceIntegrityDisposition::kPassed;
     }

@@ -5,6 +5,9 @@
 #include "third_party/blink/renderer/core/css/property_registration.h"
 
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
@@ -18,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 
@@ -88,6 +92,75 @@ static bool ComputationallyIndependent(const CSSValue& value) {
   // TODO(timloh): Images values can also contain lengths.
 
   return true;
+}
+
+static base::Optional<CSSSyntaxDescriptor> ConvertSyntax(
+    const CSSValue& value) {
+  return CSSSyntaxStringParser(To<CSSStringValue>(value).Value()).Parse();
+}
+
+static bool ConvertInherts(const CSSValue& value) {
+  CSSValueID inherits_id = To<CSSIdentifierValue>(value).GetValueID();
+  DCHECK(inherits_id == CSSValueID::kTrue || inherits_id == CSSValueID::kFalse);
+  return inherits_id == CSSValueID::kTrue;
+}
+
+static scoped_refptr<CSSVariableData> ConvertInitialVariableData(
+    const CSSValue* value) {
+  if (!value)
+    return nullptr;
+  return To<CSSCustomPropertyDeclaration>(*value).Value();
+}
+
+PropertyRegistration* PropertyRegistration::MaybeCreate(
+    Document& document,
+    const AtomicString& name,
+    StyleRuleProperty& rule) {
+  const auto& properties = rule.Properties();
+
+  // syntax
+  const CSSValue* syntax_value =
+      properties.GetPropertyCSSValue(CSSPropertyID::kSyntax);
+  if (!syntax_value)
+    return nullptr;
+  base::Optional<CSSSyntaxDescriptor> syntax = ConvertSyntax(*syntax_value);
+  if (!syntax)
+    return nullptr;
+
+  // inherits
+  const CSSValue* inherits_value =
+      properties.GetPropertyCSSValue(CSSPropertyID::kInherits);
+  if (!inherits_value)
+    return nullptr;
+  bool inherits = ConvertInherts(*inherits_value);
+
+  // initial-value (optional)
+  const CSSValue* initial_value =
+      properties.GetPropertyCSSValue(CSSPropertyID::kInitialValue);
+  scoped_refptr<CSSVariableData> initial_variable_data =
+      ConvertInitialVariableData(initial_value);
+
+  // Parse initial value, if we have it.
+  const CSSValue* initial = nullptr;
+  if (initial_variable_data) {
+    const CSSParserContext* parser_context =
+        document.ElementSheet().Contents()->ParserContext();
+    const bool is_animation_tainted = false;
+    initial = syntax->Parse(initial_variable_data->TokenRange(), parser_context,
+                            is_animation_tainted);
+    if (!initial)
+      return nullptr;
+    if (!ComputationallyIndependent(*initial))
+      return nullptr;
+    initial = &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
+        document, *initial);
+    initial_variable_data =
+        StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+            *initial, is_animation_tainted);
+  }
+
+  return MakeGarbageCollected<PropertyRegistration>(
+      name, *syntax, inherits, initial, initial_variable_data);
 }
 
 void PropertyRegistration::registerProperty(

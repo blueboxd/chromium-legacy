@@ -8,10 +8,10 @@
   <link rel="stylesheet" href="screen_gaia_signin.css">
 
   <template>
-
     <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
         has-buttons no-header no-footer-padding no-buttons-padding
-        hidden="[[!isSigninFrameDialogVisible_(screenMode_)]]">
+        hidden="[[!isSigninFrameDialogVisible_(screenMode_,
+                                               pinDialogParameters_)]]">
       <div slot="footer" class="flex layout vertical">
         <div id="signin-frame-container"
             class$="[[getSigninFrameContainerClass_(isLoadingUiShown_)]]">
@@ -31,17 +31,23 @@
       </div>
     </oobe-dialog>
     <offline-gaia id="offline-gaia" class="gaia-dialog"
-        hidden="[[!isOfflineGaiaVisible_(screenMode_, isLoadingUiShown_)]]">
+        hidden="[[!isOfflineGaiaVisible_(screenMode_, isLoadingUiShown_,
+                                         pinDialogParameters_)]]">
     </offline-gaia>
     <offline-ad-login id="offline-ad-auth" class="gaia-dialog"
-        hidden="[[!isOfflineAdAuthVisible_(screenMode_, isLoadingUiShown_)]]"
+        hidden="[[!isOfflineAdAuthVisible_(screenMode_, isLoadingUiShown_,
+                                           pinDialogParameters_)]]"
         i18n-values="ad-welcome-message:loginWelcomeMessage">
     </offline-ad-login>
+    <security-token-pin id="pinDialog" parameters="[[pinDialogParameters_]]"
+        hidden="[[!isPinDialogVisible_(pinDialogParameters_)]]"
+        on-cancel="onPinDialogCanceled_" on-completed="onPinDialogCompleted_">
+    </security-token-pin>
     <div id="gaia-step-contents" class="step-contents">
       <div id="gaia-signin-form-container">
         <saml-interstitial id="saml-interstitial" class="fit gaia-dialog"
-            hidden="[[!isSamlInterstitialVisible_(screenMode_,
-                                                  isLoadingUiShown_)]]">
+            hidden="[[!isSamlInterstitialVisible_(
+                screenMode_, isLoadingUiShown_, pinDialogParameters_)]]">
         </saml-interstitial>
       </div>
     </div>

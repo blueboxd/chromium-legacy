@@ -22,6 +22,37 @@ cca.mojo = cca.mojo || {};
 cca.mojo.PhotoCapabilities;
 
 /**
+ * The mojo interface of CrOS Image Capture API. It provides a singleton
+ * instance.
+ */
+cca.mojo.MojoInterface = function() {
+  /**
+   * @type {cca.mojo.MojoInterface} The singleton instance of this object.
+   */
+  cca.mojo.MojoInterface.instance_ = this;
+
+  /**
+   * @type {cros.mojom.CrosImageCaptureProxy} A interface proxy that used to
+   *     construct the mojo interface.
+   */
+  this.proxy = cros.mojom.CrosImageCapture.getProxy();
+
+  // End of properties, seal the object.
+  Object.seal(this);
+};
+
+/**
+ * Gets the mojo interface proxy which could be used to communicate with Chrome.
+ * @return {cros.mojom.CrosImageCaptureProxy} The mojo interface proxy.
+ */
+cca.mojo.MojoInterface.getProxy = function() {
+  if (!cca.mojo.MojoInterface.instance_) {
+    new cca.mojo.MojoInterface();
+  }
+  return cca.mojo.MojoInterface.instance_.proxy;
+};
+
+/**
  * Creates the wrapper of JS image-capture and Mojo image-capture.
  * @param {MediaStreamTrack} videoTrack A video track whose still images will be
  *     taken.
@@ -38,12 +69,6 @@ cca.mojo.ImageCapture = function(videoTrack) {
    * @private
    */
   this.capture_ = new ImageCapture(videoTrack);
-
-  /**
-   * @type {cros.mojom.CrosImageCaptureProxy}
-   * @private
-   */
-  this.mojoCapture_ = cros.mojom.CrosImageCapture.getProxy();
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -129,7 +154,7 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = function() {
   return Promise
       .all([
         this.capture_.getPhotoCapabilities(),
-        this.mojoCapture_.getCameraInfo(this.deviceId_),
+        cca.mojo.MojoInterface.getProxy().getCameraInfo(this.deviceId_),
       ])
       .then(([capabilities, {cameraInfo}]) => {
         const staticMetadata = cameraInfo.staticCameraCharacteristics;
@@ -157,7 +182,8 @@ cca.mojo.ImageCapture.prototype.takePhoto = function(
   const takes = [];
   if (photoEffects) {
     photoEffects.forEach((effect) => {
-      takes.push((this.mojoCapture_.setReprocessOption(this.deviceId_, effect))
+      takes.push((cca.mojo.MojoInterface.getProxy().setReprocessOption(
+                      this.deviceId_, effect))
                      .then(({status, blob}) => {
                        if (status != 0) {
                          throw new Error('Mojo image capture error: ' + status);
@@ -188,35 +214,36 @@ cca.mojo.getPhotoResolutions = function(deviceId) {
   const typeIndex = 3;
   const numElementPerEntry = 4;
 
-  const mojoCapture = cros.mojom.CrosImageCapture.getProxy();
-  return mojoCapture.getCameraInfo(deviceId).then(({cameraInfo}) => {
-    const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const streamConfigs = cca.mojo.getMetadataData_(
-        staticMetadata,
-        cros.mojom.CameraMetadataTag
-            .ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS);
-    // The data of |streamConfigs| looks like:
-    // streamConfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, TYPE_1,
-    //                 FORMAT_2, WIDTH_2, HEIGHT_2, TYPE_2, ...]
-    if (streamConfigs.length % numElementPerEntry != 0) {
-      throw new Error('Unexpected length of stream configurations');
-    }
-
-    let supportedResolutions = [];
-    for (let configIdx = 0, configBase = 0; configBase < streamConfigs.length;
-         configIdx++, configBase = configIdx * numElementPerEntry) {
-      const format = streamConfigs[configBase + formatIndex];
-      if (format === formatBlob) {
-        const type = streamConfigs[configBase + typeIndex];
-        if (type === typeOutputStream) {
-          const width = streamConfigs[configBase + widthIndex];
-          const height = streamConfigs[configBase + heightIndex];
-          supportedResolutions.push([width, height]);
+  return cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId).then(
+      ({cameraInfo}) => {
+        const staticMetadata = cameraInfo.staticCameraCharacteristics;
+        const streamConfigs = cca.mojo.getMetadataData_(
+            staticMetadata,
+            cros.mojom.CameraMetadataTag
+                .ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS);
+        // The data of |streamConfigs| looks like:
+        // streamConfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, TYPE_1,
+        //                 FORMAT_2, WIDTH_2, HEIGHT_2, TYPE_2, ...]
+        if (streamConfigs.length % numElementPerEntry != 0) {
+          throw new Error('Unexpected length of stream configurations');
         }
-      }
-    }
-    return supportedResolutions;
-  });
+
+        let supportedResolutions = [];
+        for (let configIdx = 0, configBase = 0;
+             configBase < streamConfigs.length;
+             configIdx++, configBase = configIdx * numElementPerEntry) {
+          const format = streamConfigs[configBase + formatIndex];
+          if (format === formatBlob) {
+            const type = streamConfigs[configBase + typeIndex];
+            if (type === typeOutputStream) {
+              const width = streamConfigs[configBase + widthIndex];
+              const height = streamConfigs[configBase + heightIndex];
+              supportedResolutions.push([width, height]);
+            }
+          }
+        }
+        return supportedResolutions;
+      });
 };
 
 /**
@@ -236,36 +263,37 @@ cca.mojo.getVideoConfigs = function(deviceId) {
   const durationIndex = 3;
   const numElementPerEntry = 4;
 
-  var mojoCapture = cros.mojom.CrosImageCapture.getProxy();
-  return mojoCapture.getCameraInfo(deviceId).then(({cameraInfo}) => {
-    const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const minFrameDurationConfigs = cca.mojo.getMetadataData_(
-        staticMetadata,
-        cros.mojom.CameraMetadataTag
-            .ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS);
-    // The data of |minFrameDurationConfigs| looks like:
-    // minFrameDurationCOnfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, DURATION_1,
-    //                           FORMAT_2, WIDTH_2, HEIGHT_2, DURATION_2, ...]
-    if (minFrameDurationConfigs.length % numElementPerEntry != 0) {
-      throw new Error('Unexpected length of frame durations configs');
-    }
+  return cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId).then(
+      ({cameraInfo}) => {
+        const staticMetadata = cameraInfo.staticCameraCharacteristics;
+        const minFrameDurationConfigs = cca.mojo.getMetadataData_(
+            staticMetadata,
+            cros.mojom.CameraMetadataTag
+                .ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS);
+        // The data of |minFrameDurationConfigs| looks like:
+        // minFrameDurationCOnfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, DURATION_1,
+        //                           FORMAT_2, WIDTH_2, HEIGHT_2, DURATION_2,
+        //                           ...]
+        if (minFrameDurationConfigs.length % numElementPerEntry != 0) {
+          throw new Error('Unexpected length of frame durations configs');
+        }
 
-    let supportedConfigs = [];
-    for (let configIdx = 0, configBase = 0;
-         configBase < minFrameDurationConfigs.length;
-         configIdx++, configBase = configIdx * numElementPerEntry) {
-      const format = minFrameDurationConfigs[configBase + formatIndex];
-      if (format === formatYuv) {
-        const width = minFrameDurationConfigs[configBase + widthIndex];
-        const height = minFrameDurationConfigs[configBase + heightIndex];
-        const fps = Math.round(
-            oneSecondInNs /
-            minFrameDurationConfigs[configBase + durationIndex]);
-        supportedConfigs.push([width, height, fps]);
-      }
-    }
-    return supportedConfigs;
-  });
+        let supportedConfigs = [];
+        for (let configIdx = 0, configBase = 0;
+             configBase < minFrameDurationConfigs.length;
+             configIdx++, configBase = configIdx * numElementPerEntry) {
+          const format = minFrameDurationConfigs[configBase + formatIndex];
+          if (format === formatYuv) {
+            const width = minFrameDurationConfigs[configBase + widthIndex];
+            const height = minFrameDurationConfigs[configBase + heightIndex];
+            const fps = Math.round(
+                oneSecondInNs /
+                minFrameDurationConfigs[configBase + durationIndex]);
+            supportedConfigs.push([width, height, fps]);
+          }
+        }
+        return supportedConfigs;
+      });
 };
 
 /**
@@ -275,8 +303,8 @@ cca.mojo.getVideoConfigs = function(deviceId) {
  * @return {Promise<cros.mojom.CameraFacing>} Promise of device facing.
  */
 cca.mojo.getCameraFacing = function(deviceId) {
-  var mojoCapture = cros.mojom.CrosImageCapture.getProxy();
-  return mojoCapture.getCameraInfo(deviceId).then(({cameraInfo}) => {
-    return cameraInfo.facing;
-  });
+  return cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId).then(
+      ({cameraInfo}) => {
+        return cameraInfo.facing;
+      });
 };

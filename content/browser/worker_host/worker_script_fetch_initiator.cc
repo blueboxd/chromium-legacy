@@ -318,11 +318,27 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(resource_context);
 
+  auto resource_type =
+      static_cast<ResourceType>(resource_request->resource_type);
+  auto provider_type = blink::mojom::ServiceWorkerProviderType::kUnknown;
+  switch (resource_type) {
+    case ResourceType::kWorker:
+      provider_type =
+          blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker;
+      break;
+    case ResourceType::kSharedWorker:
+      provider_type = blink::mojom::ServiceWorkerProviderType::kForSharedWorker;
+      break;
+    default:
+      NOTREACHED() << resource_request->resource_type;
+      break;
+  }
+
   // Set up for service worker.
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
-      service_worker_context->PreCreateHostForSharedWorker(process_id,
-                                                           &provider_info);
+      service_worker_context->PreCreateHostForWorker(process_id, provider_type,
+                                                     &provider_info);
 
   // Create the URL loader factory for WorkerScriptLoaderFactory to use to load
   // the main script.

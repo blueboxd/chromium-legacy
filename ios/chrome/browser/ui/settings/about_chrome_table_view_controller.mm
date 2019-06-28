@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -74,7 +75,7 @@ const CGFloat kDefaultHeight = 70;
   self.tableView.estimatedRowHeight = kDefaultHeight;
   self.tableView.sectionFooterHeight = UITableViewAutomaticDimension;
   self.tableView.estimatedSectionFooterHeight = kDefaultHeight;
-  self.styler.cellTitleColor = [UIColor blackColor];
+  self.styler.cellTitleColor = UIColor.cr_labelColor;
 }
 
 #pragma mark - SettingsRootTableViewController

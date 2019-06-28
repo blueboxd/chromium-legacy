@@ -63,6 +63,8 @@ Polymer({
     'monitorOfflineIdle',
     'showWhitelistCheckFailedError',
     'invalidateAd',
+    'showPinDialog',
+    'closePinDialog',
   ],
 
   properties: {
@@ -101,6 +103,17 @@ Polymer({
     isSaml_: {
       type: Boolean,
       value: false,
+    },
+
+    /**
+     * Contains the security token PIN dialog parameters object when the dialog
+     * is shown. Is null when no PIN dialog is shown.
+     * @type {OobeTypes.SecurityTokenPinDialogParameter}
+     * @private
+     */
+    pinDialogParameters_: {
+      type: Object,
+      value: null,
     },
   },
 
@@ -197,6 +210,14 @@ Polymer({
    * @type {!cr.login.Authenticator|undefined}
    */
   authenticator_: undefined,
+
+  /**
+   * Whether the result was reported to the handler for the most recent PIN
+   * dialog.
+   * @type {boolean}
+   * @private
+   */
+  pinDialogResultReported_: false,
 
   /** @override */
   ready: function() {
@@ -404,13 +425,14 @@ Polymer({
   /**
    * Whether the signin-frame-dialog element should be visible.
    * @param {number} screenMode
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isSigninFrameDialogVisible_: function(screenMode) {
+  isSigninFrameDialogVisible_: function(screenMode, pinDialogParameters) {
     // See the comment in getSigninFrameContainerClass_() for the explanation on
     // why our element shouldn't be hidden during loading.
-    return screenMode == ScreenMode.DEFAULT;
+    return screenMode == ScreenMode.DEFAULT && pinDialogParameters === null;
   },
 
   /**
@@ -431,33 +453,52 @@ Polymer({
    * Whether the offline-gaia element should be visible.
    * @param {number} screenMode
    * @param {boolean} isLoadingUiShown
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isOfflineGaiaVisible_: function(screenMode, isLoadingUiShown) {
-    return screenMode == ScreenMode.OFFLINE && !isLoadingUiShown;
+  isOfflineGaiaVisible_: function(
+      screenMode, isLoadingUiShown, pinDialogParameters) {
+    return screenMode == ScreenMode.OFFLINE && !isLoadingUiShown &&
+        pinDialogParameters === null;
   },
 
   /**
    * Whether the saml-interstitial element should be visible.
    * @param {number} screenMode
    * @param {boolean} isLoadingUiShown
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isSamlInterstitialVisible_: function(screenMode, isLoadingUiShown) {
-    return screenMode == ScreenMode.SAML_INTERSTITIAL && !isLoadingUiShown;
+  isSamlInterstitialVisible_: function(
+      screenMode, isLoadingUiShown, pinDialogParameters) {
+    return screenMode == ScreenMode.SAML_INTERSTITIAL && !isLoadingUiShown &&
+        pinDialogParameters === null;
   },
 
   /**
    * Whether the offline-ad-auth element should be visible.
    * @param {number} screenMode
    * @param {boolean} isLoadingUiShown
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isOfflineAdAuthVisible_: function(screenMode, isLoadingUiShown) {
-    return screenMode == ScreenMode.AD_AUTH && !isLoadingUiShown;
+  isOfflineAdAuthVisible_: function(
+      screenMode, isLoadingUiShown, pinDialogParameters) {
+    return screenMode == ScreenMode.AD_AUTH && !isLoadingUiShown &&
+        pinDialogParameters === null;
+  },
+
+  /**
+   * Whether the pinDialog element should be visible.
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
+   * @return {boolean}
+   * @private
+   */
+  isPinDialogVisible_: function(pinDialogParameters) {
+    return pinDialogParameters !== null;
   },
 
   /**
@@ -694,6 +735,9 @@ Polymer({
     // Reset SAML
     this.isSaml_ = false;
     this.samlPasswordConfirmAttempt_ = 0;
+
+    // Reset the PIN dialog, in case it's shown.
+    this.closePinDialog();
 
     this.updateSigninFrameContainers_();
 
@@ -1280,6 +1324,52 @@ Polymer({
     adAuthUI.errorState = errorState;
     this.authCompleted_ = false;
     this.isLoadingUiShown_ = false;
+  },
+
+  /**
+   * Shows the PIN dialog according to the given parameters.
+   *
+   * In case the dialog is already shown, updates it according to the new
+   * parameters.
+   * @param {!OobeTypes.SecurityTokenPinDialogParameters} parameters
+   */
+  showPinDialog: function(parameters) {
+    assert(parameters);
+
+    // If currently shown, reset and send the cancellation result if not yet.
+    this.closePinDialog();
+    this.$.pinDialog.reset();
+
+    this.pinDialogParameters_ = parameters;
+    this.pinDialogResultReported_ = false;
+  },
+
+  /**
+   * Closes the PIN dialog (that was previously opened using showPinDialog()).
+   */
+  closePinDialog: function() {
+    if (this.pinDialogParameters_ && !this.pinDialogResultReported_) {
+      this.pinDialogResultReported_ = true;
+      // TODO(crbug.com/964069): Send the "canceled" result to the C++ side.
+    }
+    this.pinDialogParameters_ = null;
+  },
+
+  /**
+   * Invoked when the user cancels the PIN dialog.
+   * @param {!CustomEvent} e
+   */
+  onPinDialogCanceled_: function(e) {
+    this.closePinDialog();
+  },
+
+  /**
+   * Invoked when the PIN dialog is completed.
+   * @param {!CustomEvent<string>} e Event with the entered PIN as the payload.
+   */
+  onPinDialogCompleted_: function(e) {
+    this.pinDialogResultReported_ = true;
+    // TODO(crbug.com/964069): Send the PIN to the C++ side.
   },
 
 });

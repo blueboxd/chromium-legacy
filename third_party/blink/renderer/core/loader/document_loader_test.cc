@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 
-#include <queue>
-#include <string>
 #include <utility>
 #include "base/auto_reset.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +18,7 @@
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 
@@ -102,9 +101,9 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
       params->response.SetMimeType("application/pdf");
       params->response.SetHttpStatusCode(200);
 
-      std::string data("<html><body>foo</body></html>");
-      for (size_t i = 0; i < data.size(); i++)
-        data_.push(data[i]);
+      String data("<html><body>foo</body></html>");
+      for (wtf_size_t i = 0; i < data.length(); i++)
+        data_.push_back(data[i]);
 
       auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
       body_loader_ = body_loader.get();
@@ -122,8 +121,8 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
       }
 
       // Serve the remaining bytes to complete the load.
-      EXPECT_FALSE(data_.empty());
-      while (!data_.empty())
+      EXPECT_FALSE(data_.IsEmpty());
+      while (!data_.IsEmpty())
         DispatchOneByte();
 
       body_loader_->Finish();
@@ -147,15 +146,14 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     }
 
     void DispatchOneByte() {
-      char c = data_.front();
-      data_.pop();
+      char c = data_.TakeFirst();
       body_loader_->Write(&c, 1);
     }
 
     bool ServedReentrantly() const { return served_reentrantly_; }
 
    private:
-    std::queue<char> data_;
+    Deque<char> data_;
     bool dispatching_did_receive_data_ = false;
     bool served_reentrantly_ = false;
     StaticDataNavigationBodyLoader* body_loader_ = nullptr;

@@ -35,8 +35,6 @@ class CrosImageCaptureImpl : public cros::mojom::CrosImageCapture {
 
   ReprocessManager* reprocess_manager_;  // weak
 
-  mojo::BindingSet<cros::mojom::CrosImageCapture> bindings_;
-
   DISALLOW_COPY_AND_ASSIGN(CrosImageCaptureImpl);
 };
 

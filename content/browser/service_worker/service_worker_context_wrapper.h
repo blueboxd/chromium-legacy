@@ -295,16 +295,18 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   bool is_incognito() const { return is_incognito_; }
 
-  // Used for starting a shared worker. Returns a provider host for the shared
-  // worker and fills |out_provider_info| with info to send to the renderer to
-  // connect to the host. The host stays alive as long as this info stays alive
-  // (namely, as long as |out_provider_info->host_ptr_info| stays alive).
+  // Used for starting a web worker (dedicated worker or shared worker). Returns
+  // a provider host for the worker and fills |out_provider_info| with info to
+  // send to the renderer to connect to the host. The host stays alive as long
+  // as this info stays alive (namely, as long as
+  // |out_provider_info->host_ptr_info| stays alive).
   //
   // Returns null if context() is null.
   //
   // Must be called on the IO thread.
-  base::WeakPtr<ServiceWorkerProviderHost> PreCreateHostForSharedWorker(
+  base::WeakPtr<ServiceWorkerProviderHost> PreCreateHostForWorker(
       int process_id,
+      blink::mojom::ServiceWorkerProviderType provider_type,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
 
  private:

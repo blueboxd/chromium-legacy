@@ -3656,8 +3656,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (CGFloat)overscrollActionsControllerHeaderInset:
     (OverscrollActionsController*)controller {
+  // The current WebState can be nil if the Browser's WebStateList is empty
+  // (e.g. after closing the last tab, etc).
+  web::WebState* currentWebState = self.currentWebState;
+  if (!currentWebState)
+    return 0.0;
+
   OverscrollActionsTabHelper* activeTabHelper =
-      OverscrollActionsTabHelper::FromWebState(self.currentWebState);
+      OverscrollActionsTabHelper::FromWebState(currentWebState);
   if (controller == activeTabHelper->GetOverscrollActionsController()) {
     if (!base::ios::IsRunningOnIOS12OrLater() &&
         self.currentWebState->GetContentsMimeType() == "application/pdf") {

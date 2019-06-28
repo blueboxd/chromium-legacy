@@ -20,8 +20,10 @@
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
+#include "chromeos/login/auth/challenge_response/key_label_utils.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/login_event_recorder.h"
 #include "chromeos/login/auth/user_context.h"
@@ -227,31 +229,50 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   // that returns directly would not generate 2 OnLoginSucces() calls.
   attempt->UsernameHashRequested();
 
+  cryptohome::KeyDefinition key_definition;
+  cryptohome::AuthorizationRequest auth;
+  cryptohome::Key* auth_key = auth.mutable_key();
+
+  if (!attempt->user_context.GetChallengeResponseKeys().empty()) {
+    // For the challenge-response key, no secret is passed, only public-key
+    // information. The authorization request consists of the same key as the
+    // persisted key, plus the additional KeyDelegate information that allows
+    // cryptohomed to call back to Chrome to perform challenges.
+    key_definition = cryptohome::KeyDefinition::CreateForChallengeResponse(
+        attempt->user_context.GetChallengeResponseKeys(),
+        GenerateChallengeResponseKeyLabel(
+            attempt->user_context.GetChallengeResponseKeys()),
+        cryptohome::PRIV_DEFAULT);
+    cryptohome::KeyDefinitionToKey(key_definition, auth_key);
+    auth.mutable_key_delegate()->set_dbus_service_name(
+        cryptohome::kCryptohomeKeyDelegateServiceName);
+    auth.mutable_key_delegate()->set_dbus_object_path(
+        cryptohome::kCryptohomeKeyDelegateServicePath);
+  } else {
+    key_definition = cryptohome::KeyDefinition::CreateForPassword(
+        key->GetSecret(), kCryptohomeGAIAKeyLabel, cryptohome::PRIV_DEFAULT);
+    // Don't set the authorization's key label, implicitly setting it to an
+    // empty string, which is a wildcard allowing any key to match. This is
+    // necessary because cryptohomes created by Chrome OS M38 and older will
+    // have a legacy key with no label while those created by Chrome OS M39 and
+    // newer will have a key with the label kCryptohomeGAIAKeyLabel.
+    //
+    // This logic does not apply to PIN and weak keys in general, as those do
+    // not authenticate against a wildcard label.
+    if (attempt->user_context.IsUsingPin())
+      auth_key->mutable_data()->set_label(key->GetLabel());
+    auth_key->set_secret(key->GetSecret());
+  }
+
   cryptohome::MountRequest mount;
   if (ephemeral)
     mount.set_require_ephemeral(true);
   if (create_if_nonexistent) {
-    cryptohome::KeyDefinitionToKey(
-        cryptohome::KeyDefinition::CreateForPassword(key->GetSecret(),
-                                                     kCryptohomeGAIAKeyLabel,
-                                                     cryptohome::PRIV_DEFAULT),
-        mount.mutable_create()->add_keys());
+    cryptohome::KeyDefinitionToKey(key_definition,
+                                   mount.mutable_create()->add_keys());
   }
   if (attempt->user_context.IsForcingDircrypto())
     mount.set_force_dircrypto_if_available(true);
-  cryptohome::AuthorizationRequest auth;
-  cryptohome::Key* auth_key = auth.mutable_key();
-  // Don't set the authorization's key label, implicitly setting it to an
-  // empty string, which is a wildcard allowing any key to match. This is
-  // necessary because cryptohomes created by Chrome OS M38 and older will have
-  // a legacy key with no label while those created by Chrome OS M39 and newer
-  // will have a key with the label kCryptohomeGAIAKeyLabel.
-  //
-  // This logic does not apply to PIN and weak keys in general, as those do not
-  // authenticate against a wildcard label.
-  if (attempt->user_context.IsUsingPin())
-    auth_key->mutable_data()->set_label(key->GetLabel());
-  auth_key->set_secret(key->GetSecret());
   CryptohomeClient::Get()->MountEx(
       cryptohome::CreateAccountIdentifierFromAccountId(
           attempt->user_context.GetAccountId()),

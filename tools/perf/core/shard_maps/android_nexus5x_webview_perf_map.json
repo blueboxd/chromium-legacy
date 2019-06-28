@@ -58,8 +58,7 @@
             "memory.top_10_mobile": {
                 "begin": 3
             },
-            "octane": {},
-            "power.typical_10_mobile": {}
+            "octane": {}
         }
     },
     "5": {

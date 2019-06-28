@@ -47,6 +47,7 @@ class CORE_EXPORT StyleRuleBase
     kMedia,
     kFontFace,
     kPage,
+    kProperty,
     kKeyframes,
     kKeyframe,
     kNamespace,
@@ -64,6 +65,7 @@ class CORE_EXPORT StyleRuleBase
   bool IsNamespaceRule() const { return GetType() == kNamespace; }
   bool IsMediaRule() const { return GetType() == kMedia; }
   bool IsPageRule() const { return GetType() == kPage; }
+  bool IsPropertyRule() const { return GetType() == kProperty; }
   bool IsStyleRule() const { return GetType() == kStyle; }
   bool IsSupportsRule() const { return GetType() == kSupports; }
   bool IsViewportRule() const { return GetType() == kViewport; }
@@ -190,6 +192,32 @@ class StyleRulePage : public StyleRuleBase {
  private:
   Member<CSSPropertyValueSet> properties_;  // Cannot be null.
   CSSSelectorList selector_list_;
+};
+
+class StyleRuleProperty : public StyleRuleBase {
+ public:
+  static StyleRuleProperty* Create(const String& name,
+                                   CSSPropertyValueSet* properties) {
+    return MakeGarbageCollected<StyleRuleProperty>(name, properties);
+  }
+
+  StyleRuleProperty(const String& name, CSSPropertyValueSet*);
+  StyleRuleProperty(const StyleRuleProperty&);
+  ~StyleRuleProperty();
+
+  const CSSPropertyValueSet& Properties() const { return *properties_; }
+  MutableCSSPropertyValueSet& MutableProperties();
+  const String& GetName() const { return name_; }
+
+  StyleRuleProperty* Copy() const {
+    return MakeGarbageCollected<StyleRuleProperty>(*this);
+  }
+
+  void TraceAfterDispatch(blink::Visitor*);
+
+ private:
+  String name_;
+  Member<CSSPropertyValueSet> properties_;
 };
 
 class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
@@ -337,6 +365,13 @@ struct DowncastTraits<StyleRuleFontFace> {
 template <>
 struct DowncastTraits<StyleRulePage> {
   static bool AllowFrom(const StyleRuleBase& rule) { return rule.IsPageRule(); }
+};
+
+template <>
+struct DowncastTraits<StyleRuleProperty> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsPropertyRule();
+  }
 };
 
 template <>

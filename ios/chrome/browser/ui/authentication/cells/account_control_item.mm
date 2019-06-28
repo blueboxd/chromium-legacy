@@ -6,6 +6,7 @@
 
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,15 +29,15 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.imageView.image = self.image;
+  cell.imageView.tintColor = UIColor.cr_labelColor;
 
   cell.textLabel.text = self.text;
-  cell.textLabel.textColor = UIColor.blackColor;
+  cell.textLabel.textColor = UIColor.cr_labelColor;
 
   cell.detailTextLabel.text = self.detailText;
-  cell.detailTextLabel.textColor =
-      self.shouldDisplayError
-          ? UIColor.redColor
-          : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  cell.detailTextLabel.textColor = self.shouldDisplayError
+                                       ? UIColor.redColor
+                                       : UIColor.cr_secondaryLabelColor;
 }
 
 #pragma mark - Helper methods
@@ -167,8 +168,7 @@
   self.imageView.image = nil;
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
-  self.detailTextLabel.textColor =
-      UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  self.detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
 }
 
 #pragma mark - NSObject(Accessibility)

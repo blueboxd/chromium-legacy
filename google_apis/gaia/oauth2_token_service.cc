@@ -19,6 +19,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -28,8 +29,9 @@ OAuth2TokenService::OAuth2TokenService(
     : delegate_(std::move(delegate)), all_credentials_loaded_(false) {
   DCHECK(delegate_);
   AddObserver(this);
-  token_manager_ =
-      std::make_unique<OAuth2AccessTokenManager>(this, delegate_.get());
+  token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
+      this /* OAuth2TokenService* */, delegate_.get(),
+      this /* OAuth2AccessTokenManager::Delegate* */);
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
@@ -57,6 +59,33 @@ OAuth2TokenService::GetAccessTokenDiagnosticsObservers() {
 
 int OAuth2TokenService::GetTokenCacheCount() {
   return token_manager_->token_cache().size();
+}
+
+std::unique_ptr<OAuth2AccessTokenFetcher>
+OAuth2TokenService::CreateAccessTokenFetcher(
+    const CoreAccountId& account_id,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    OAuth2AccessTokenConsumer* consumer) {
+  return delegate_->CreateAccessTokenFetcher(account_id, url_loader_factory,
+                                             consumer);
+}
+
+bool OAuth2TokenService::FixRequestErrorIfPossible() {
+  return delegate_->FixRequestErrorIfPossible();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+OAuth2TokenService::GetURLLoaderFactory() const {
+  return delegate_->GetURLLoaderFactory();
+}
+
+void OAuth2TokenService::OnAccessTokenInvalidated(
+    const CoreAccountId& account_id,
+    const std::string& client_id,
+    const std::set<std::string>& scopes,
+    const std::string& access_token) {
+  delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
+                                      access_token);
 }
 
 void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {

@@ -388,7 +388,8 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(
   // TODO(meade): This function should eventually take an AtRuleDescriptorID.
   const AtRuleDescriptorID id =
       CSSPropertyIDAsAtRuleDescriptor(resolved_property);
-  DCHECK_NE(id, AtRuleDescriptorID::Invalid);
+  if (id == AtRuleDescriptorID::Invalid)
+    return false;
   CSSValue* parsed_value =
       AtRuleDescriptorParser::ParseFontFaceDescriptor(id, range_, *context_);
   if (!parsed_value)

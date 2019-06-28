@@ -6,6 +6,7 @@
 
 #include "chrome/android/chrome_jni_headers/FeatureUtilities_jni.h"
 
+#include "base/android/jni_string.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
@@ -13,7 +14,9 @@
 #include "content/public/common/network_service_util.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
+using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 bool custom_tab_visible = false;
@@ -40,6 +43,13 @@ bool IsDownloadAutoResumptionEnabledInNative() {
 bool IsNoTouchModeEnabled() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_FeatureUtilities_isNoTouchModeEnabled(env);
+}
+
+std::string GetReachedCodeProfilerTrialGroup() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> group =
+      Java_FeatureUtilities_getReachedCodeProfilerTrialGroup(env);
+  return ConvertJavaStringToUTF8(env, group);
 }
 
 } // namespace android

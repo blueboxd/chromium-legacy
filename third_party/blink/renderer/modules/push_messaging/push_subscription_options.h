@@ -44,6 +44,9 @@ class PushSubscriptionOptions final : public ScriptWrappable {
     return application_server_key_;
   }
 
+  // Whether the application server key follows the VAPID protocol.
+  bool IsApplicationServerKeyVapid() const;
+
   void Trace(blink::Visitor* visitor) override;
 
  private:

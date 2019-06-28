@@ -16,6 +16,7 @@
 #include "sql/initialization.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sandboxed_vfs_file.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -189,7 +190,8 @@ int SandboxedVfs::Open(const char* full_path,
   //               is asynchronous, so we could open all the needed files (DB,
   //               journal, etc.) asynchronously, and store them in a hash table
   //               that would be used here.
-  base::File file = platform_->DatabaseOpenFile(file_name, requested_flags);
+  base::File file =
+      WebDatabaseHost::GetInstance().OpenFile(file_name, requested_flags);
 
   if (!file.IsValid()) {
     // TODO(pwnall): Figure out if we can remove the fallback to read-only.
@@ -214,14 +216,15 @@ int SandboxedVfs::Open(const char* full_path,
 
 int SandboxedVfs::Delete(const char* full_path, int sync_dir) {
   DCHECK(full_path);
-  return platform_->DatabaseDeleteFile(StringFromFullPath(full_path), sync_dir);
+  return WebDatabaseHost::GetInstance().DeleteFile(
+      StringFromFullPath(full_path), sync_dir);
 }
 
 int SandboxedVfs::Access(const char* full_path, int flags, int* result) {
   DCHECK(full_path);
   DCHECK(result);
-  int32_t attributes =
-      platform_->DatabaseGetFileAttributes(StringFromFullPath(full_path));
+  int32_t attributes = WebDatabaseHost::GetInstance().GetFileAttributes(
+      StringFromFullPath(full_path));
 
   // TODO(pwnall): Make the mojo interface portable across OSes, instead of
   //               messing around with OS-dependent constants here.

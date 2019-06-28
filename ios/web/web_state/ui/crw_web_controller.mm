@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #import "base/ios/block_types.h"
+#include "base/ios/ios_util.h"
 #include "base/json/string_escape.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -2159,7 +2160,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   // Is it ok that newURL can be restore session URL?
   if (!IsRestoreSessionUrl(_documentURL) && !IsRestoreSessionUrl(newURL)) {
-    DCHECK_EQ(_documentURL.host(), newURL.host());
+    bool ignore_host_change =
+        // On iOS13 document.write() can change URL origin for about:blank page.
+        (_documentURL.IsAboutBlank() && base::ios::IsRunningOnIOS13OrLater());
+    if (!ignore_host_change) {
+      DCHECK_EQ(_documentURL.host(), newURL.host());
+    }
   }
   DCHECK(_documentURL != newURL);
 

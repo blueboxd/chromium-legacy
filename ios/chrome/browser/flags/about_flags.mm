@@ -584,6 +584,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-new-tab-button", flag_descriptions::kToolbarNewTabButtonName,
      flag_descriptions::kToolbarNewTabButtonDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kToolbarNewTabButton)},
+    {"optional-article-thumbnail",
+     flag_descriptions::kOptionalArticleThumbnailName,
+     flag_descriptions::kOptionalArticleThumbnailDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kOptionalArticleThumbnail)},
 };
 
 // Add all switches from experimental flags to |command_line|.

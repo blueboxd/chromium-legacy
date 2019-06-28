@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/pod_interval.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 class TickClock;
@@ -153,8 +154,8 @@ class CORE_EXPORT InteractiveDetector
   };
 
   // Stores sufficiently long quiet windows on main thread and network.
-  std::vector<WTF::PODInterval<base::TimeTicks>> main_thread_quiet_windows_;
-  std::vector<WTF::PODInterval<base::TimeTicks>> network_quiet_windows_;
+  Vector<WTF::PODInterval<base::TimeTicks>> main_thread_quiet_windows_;
+  Vector<WTF::PODInterval<base::TimeTicks>> network_quiet_windows_;
 
   // Start times of currently active main thread and network quiet windows.
   // Null base::TimeTicks values indicate main thread or network is not quiet at
@@ -185,7 +186,7 @@ class CORE_EXPORT InteractiveDetector
   void CheckTimeToInteractiveReached();
   void OnTimeToInteractiveDetected();
 
-  std::vector<VisibilityChangeEvent> visibility_change_events_;
+  Vector<VisibilityChangeEvent> visibility_change_events_;
   bool initially_hidden_;
   // Returns true if page was ever backgrounded in the range
   // [event_time, CurrentTimeTicks()].

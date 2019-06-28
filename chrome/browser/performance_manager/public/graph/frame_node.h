@@ -95,7 +95,8 @@ class FrameNode : public Node {
   // that makes sense.
   virtual const base::flat_set<const FrameNode*> GetChildFrameNodes() const = 0;
 
-  // Returns the current lifecycle state of this frame.
+  // Returns the current lifecycle state of this frame. See
+  // FrameNodeObserver::OnFrameLifecycleStateChanged.
   virtual LifecycleState GetLifecycleState() const = 0;
 
   // Returns true if this frame had a non-empty before-unload handler at the
@@ -152,7 +153,7 @@ class FrameNodeObserver {
   virtual void OnNetworkAlmostIdleChanged(const FrameNode* frame_node) = 0;
 
   // Invoked when the |lifecycle_state| property changes.
-  virtual void OnLifecycleStateChanged(const FrameNode* frame_node) = 0;
+  virtual void OnFrameLifecycleStateChanged(const FrameNode* frame_node) = 0;
 
   // Invoked when the |url| property changes.
   virtual void OnURLChanged(const FrameNode* frame_node) = 0;
@@ -180,7 +181,7 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnBeforeFrameNodeRemoved(const FrameNode* frame_node) override {}
   void OnIsCurrentChanged(const FrameNode* frame_node) override {}
   void OnNetworkAlmostIdleChanged(const FrameNode* frame_node) override {}
-  void OnLifecycleStateChanged(const FrameNode* frame_node) override {}
+  void OnFrameLifecycleStateChanged(const FrameNode* frame_node) override {}
   void OnURLChanged(const FrameNode* frame_node) override {}
   void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) override {}

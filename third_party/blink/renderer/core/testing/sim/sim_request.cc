@@ -98,10 +98,9 @@ void SimRequestBase::Finish() {
       navigation_body_loader_->Finish();
     } else {
       // TODO(esprehn): Is claiming a request time of 0 okay for tests?
-      client_->DidFinishLoading(
-          base::TimeTicks(), total_encoded_data_length_,
-          total_encoded_data_length_, total_encoded_data_length_, false,
-          std::vector<network::cors::PreflightTimingInfo>());
+      client_->DidFinishLoading(base::TimeTicks(), total_encoded_data_length_,
+                                total_encoded_data_length_,
+                                total_encoded_data_length_, false, {});
     }
   }
   Reset();

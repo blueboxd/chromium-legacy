@@ -18,18 +18,11 @@
         "benchmarks": {
             "memory.top_10_mobile": {
                 "begin": 14
-            },
-            "power.typical_10_mobile": {
-                "end": 1
             }
         }
     },
     "3": {
-        "benchmarks": {
-            "power.typical_10_mobile": {
-                "begin": 1
-            }
-        }
+        "benchmarks": {}
     },
     "4": {
         "benchmarks": {

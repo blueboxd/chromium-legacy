@@ -546,6 +546,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
       return ConsumeKeyframesRule(false, prelude, prelude_offset, stream);
     case kCSSAtRulePage:
       return ConsumePageRule(prelude, prelude_offset, stream);
+    case kCSSAtRuleProperty:
+      return ConsumePropertyRule(prelude, prelude_offset, stream);
     default:
       return nullptr;  // Parse error, unrecognised at-rule with block
   }
@@ -863,6 +865,30 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(const CSSParserTokenRange prelude,
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
+StyleRuleProperty* CSSParserImpl::ConsumePropertyRule(
+    CSSParserTokenRange prelude,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  if (!RuntimeEnabledFeatures::CSSVariables2AtPropertyEnabled())
+    return nullptr;
+
+  const CSSParserToken& name_token = prelude.ConsumeIncludingWhitespace();
+  if (!prelude.AtEnd())
+    return nullptr;
+  if (!CSSVariableParser::IsValidVariableName(name_token))
+    return nullptr;
+  String name = name_token.Value().ToString();
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kProperty, prelude_offset.start);
+    observer_->EndRuleHeader(prelude_offset.end);
+  }
+
+  ConsumeDeclarationList(block, StyleRule::kProperty);
+  return StyleRuleProperty::Create(
+      name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+}
+
 StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
     const CSSParserTokenRange prelude,
     const RangeOffset& prelude_offset,
@@ -1019,7 +1045,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
 
   CSSPropertyID unresolved_property = CSSPropertyID::kInvalid;
   AtRuleDescriptorID atrule_id = AtRuleDescriptorID::Invalid;
-  if (rule_type == StyleRule::kFontFace) {
+  if (rule_type == StyleRule::kFontFace || rule_type == StyleRule::kProperty) {
     if (important)  // Invalid
       return;
     atrule_id = lhs.ParseAsAtRuleDescriptorID();

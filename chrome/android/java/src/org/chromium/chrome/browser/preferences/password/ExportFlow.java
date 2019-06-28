@@ -158,12 +158,7 @@ public class ExportFlow {
 
     // Takes care of displaying and hiding the progress bar for exporting, while avoiding
     // flickering.
-    private final DialogManager mProgressBarManager =
-            new DialogManager((@DialogManager.HideActions int action) -> {
-                RecordHistogram.recordEnumeratedHistogram(
-                        "PasswordManager.Android.ExportPasswordsProgressBarUsage",
-                        actionToHistogramValue(action), PROGRESS_COUNT);
-            });
+    private final DialogManager mProgressBarManager = new DialogManager(null);
 
     /**
      * If an error dialog should be shown, this contains the arguments for it, such as the error

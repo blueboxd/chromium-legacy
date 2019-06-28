@@ -47,6 +47,7 @@
 
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
+  _imageView.tintColor = UIColor.cr_labelColor;
   [contentView addSubview:_imageView];
 
   _textLabel = [[UILabel alloc] init];

@@ -434,7 +434,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 }
 
 GaiaCookieManagerService::GaiaCookieManagerService(
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     SigninClient* signin_client)
     : token_service_(token_service),
       signin_client_(signin_client),

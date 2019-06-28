@@ -1460,7 +1460,7 @@ void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
   if (!origin_policy)
     return;
 
-  for (const std::string& policy : origin_policy->GetFeaturePolicies()) {
+  for (const auto& policy : origin_policy->GetFeaturePolicies()) {
     if (!feature_policy.IsEmpty()) {
       feature_policy.Append(',');
     }

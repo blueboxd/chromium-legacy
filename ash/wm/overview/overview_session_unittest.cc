@@ -2244,10 +2244,8 @@ TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
   std::unique_ptr<aura::Window> window6(CreateTestWindow(bounds));
   std::unique_ptr<aura::Window> window7(CreateTestWindow(bounds));
   std::unique_ptr<aura::Window> window8(CreateTestWindow(bounds));
-  window3->SetProperty(aura::client::kZOrderingKey,
-                       ui::ZOrderLevel::kFloatingWindow);
-  window5->SetProperty(aura::client::kZOrderingKey,
-                       ui::ZOrderLevel::kFloatingWindow);
+  window3->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window5->SetProperty(aura::client::kAlwaysOnTopKey, true);
 
   // Control z order and MRU order.
   ::wm::ActivateWindow(window8.get());

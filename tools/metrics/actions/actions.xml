@@ -538,6 +538,54 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Desks_ActivateLeft">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    User activates the virtual desk positioned to the left of the currently
+    active one by pressing a keyboard shortcut.
+  </description>
+</action>
+
+<action name="Accel_Desks_ActivateRight">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    User activates the virtual desk positioned to the right of the currently
+    active one by pressing a keyboard shortcut.
+  </description>
+</action>
+
+<action name="Accel_Desks_MoveWindowLeft">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    User moves the currently active window (or the currently selected item in
+    overview mode) to an existing virtual desk to the left of the currently
+    active one by pressing a keyboard shortcut.
+  </description>
+</action>
+
+<action name="Accel_Desks_MoveWindowRight">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    User moves the currently active window (or the currently selected item in
+    overview mode) to an existing virtual desk to the right of the currently
+    active one by pressing a keyboard shortcut.
+  </description>
+</action>
+
+<action name="Accel_Desks_NewDesk">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    User creates a new virtual desk by pressing a keyboard shortcut.
+  </description>
+</action>
+
+<action name="Accel_Desks_RemoveDesk">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    User removes an existing virtual desk by pressing a keyboard shortcut.
+  </description>
+</action>
+
 <action name="Accel_Disable_Caps_Lock">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -21680,6 +21728,11 @@ should be able to be added at any place in this file.
   <description>
     User launched voice interaction session through Assistant key.
   </description>
+</action>
+
+<action name="VoiceInteraction.Started.HomeButtonLongPress">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
 </action>
 
 <action name="VoiceInteraction.Started.Search_A">

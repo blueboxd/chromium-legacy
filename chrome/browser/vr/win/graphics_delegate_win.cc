@@ -221,8 +221,7 @@ CameraModel CameraModelViewProjFromVREyeParameters(
   // calculate the transform from head space to eye space.  For example,
   // (0, 0, 0) in head space is (-offset.x, -offset.y, -offset.z) in eye space,
   // and (offset.x, offset.y, offset.z) in head space is (0, 0, 0) in eye space.
-  eye_from_head.Translate3d(-eye_params->offset[0], -eye_params->offset[1],
-                            -eye_params->offset[2]);
+  eye_from_head.Translate3d(-eye_params->offset);
   model.view_matrix = eye_from_head * head_from_world;
 
   float up_tan =

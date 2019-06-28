@@ -130,6 +130,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
       std::unique_ptr<NotificationParams> notification_params) override {
     context_->notification_manager()->ScheduleNotification(
         std::move(notification_params));
+    ScheduleBackgroundTask();
   }
 
   void DeleteAllNotifications(SchedulerClientType type) override {

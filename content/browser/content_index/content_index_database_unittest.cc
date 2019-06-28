@@ -13,7 +13,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -114,7 +113,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
   blink::mojom::ContentDescriptionPtr CreateDescription(const std::string& id) {
     return blink::mojom::ContentDescription::New(
         id, "title", "description", blink::mojom::ContentCategory::HOME_PAGE,
-        GURL("https://example.com"), GURL("https://example.com"));
+        "https://example.com", "https://example.com");
   }
 
   blink::mojom::ContentIndexError AddEntry(

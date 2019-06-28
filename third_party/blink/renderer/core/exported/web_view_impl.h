@@ -691,10 +691,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   FloatSize elastic_overscroll_;
 
-  // When overriding the default page scale constraints, store the original so
-  // we can revert to them when the override is removed.
-  base::Optional<PageScaleConstraints> pre_override_default_constraints_;
-
   Persistent<EventListener> popup_mouse_wheel_event_listener_;
 
   // The local root whose document has |popup_mouse_wheel_event_listener_|

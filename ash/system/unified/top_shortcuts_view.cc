@@ -247,4 +247,8 @@ void TopShortcutsView::OnAccessibilityStatusChanged() {
       !Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
 }
 
+const char* TopShortcutsView::GetClassName() const {
+  return "TopShortcutsView";
+}
+
 }  // namespace ash

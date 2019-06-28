@@ -257,6 +257,8 @@ const char kIsInKioskAutoPrintMode[] = "isInKioskAutoPrintMode";
 // Dictionary field to indicate whether Chrome is running in forced app (app
 // kiosk) mode. It's not the same as desktop Chrome kiosk (the one above).
 const char kIsInAppKioskMode[] = "isInAppKioskMode";
+// Name of a dictionary field holding the UI locale.
+const char kUiLocale[] = "uiLocale";
 // Name of a dictionary field holding the thousands delimeter according to the
 // locale.
 const char kThousandsDelimeter[] = "thousandsDelimeter";
@@ -940,11 +942,11 @@ void PrintPreviewHandler::HandleOpenPrinterSettings(
 }
 #endif
 
-void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
-    base::Value* settings) {
+void PrintPreviewHandler::GetLocaleInformation(base::Value* settings) {
   // Getting the measurement system based on the locale.
   UErrorCode errorCode = U_ZERO_ERROR;
   const char* locale = g_browser_process->GetApplicationLocale().c_str();
+  settings->SetStringKey(kUiLocale, std::string(locale));
   UMeasurementSystem system = ulocdata_getMeasurementSystem(locale, &errorCode);
   // On error, assume the units are SI.
   // Since the only measurement units print preview's WebUI cares about are
@@ -1040,7 +1042,7 @@ void PrintPreviewHandler::SendInitialSettings(
     initial_settings.SetStringKey(kDefaultDestinationSelectionRules, rules_str);
   }
 
-  GetNumberFormatAndMeasurementSystem(&initial_settings);
+  GetLocaleInformation(&initial_settings);
   if (IsCloudPrintEnabled()) {
     GetUserAccountList(&initial_settings);
   }

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip_animator.h"
 
+#include <utility>
+
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/tabs/tab_animation.h"
@@ -37,25 +40,32 @@ class TabStripAnimatorTest : public testing::Test {
   float PinnednessOf(TabAnimationState state) { return state.pinnedness_; }
   float ActivenessOf(TabAnimationState state) { return state.activeness_; }
 
+  void AddTab(int index,
+              TabAnimationState::TabActiveness activeness,
+              TabAnimationState::TabPinnedness pinnedness =
+                  TabAnimationState::TabPinnedness::kUnpinned,
+              base::OnceClosure tab_removed_callback = base::BindOnce([]() {
+              })) {
+    animator_.InsertTabAtNoAnimation(TabAnimation::ViewType::kTab, index,
+                                     std::move(tab_removed_callback),
+                                     activeness, pinnedness);
+  }
+
   base::test::ScopedTaskEnvironment env_;
   TabStripAnimator animator_;
   bool has_animated_;
 };
 
 TEST_F(TabStripAnimatorTest, StaticStripIsNotAnimating) {
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kInactive,
-                                   TabAnimationState::TabPinnedness::kPinned);
+  AddTab(0, TabAnimationState::TabActiveness::kInactive);
   EXPECT_FALSE(animator_.IsAnimating());
-  EXPECT_EQ(2u, animator_.GetCurrentTabStates().size());
+  EXPECT_EQ(1u, animator_.GetCurrentTabStates().size());
   EXPECT_FALSE(has_animated_);
 }
 
 TEST_F(TabStripAnimatorTest, InsertTabAnimation) {
-  animator_.InsertTabAt(0, base::BindOnce([]() {}),
+  animator_.InsertTabAt(TabAnimation::ViewType::kTab, 0,
+                        base::BindOnce([]() {}),
                         TabAnimationState::TabActiveness::kActive,
                         TabAnimationState::TabPinnedness::kUnpinned);
   EXPECT_TRUE(animator_.IsAnimating());
@@ -71,12 +81,8 @@ TEST_F(TabStripAnimatorTest, InsertTabAnimation) {
 }
 
 TEST_F(TabStripAnimatorTest, ChangeActiveTab) {
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(1, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kInactive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
+  AddTab(0, TabAnimationState::TabActiveness::kActive);
+  AddTab(1, TabAnimationState::TabActiveness::kInactive);
   EXPECT_EQ(1.0f, ActivenessOf(animator_.GetCurrentTabStates()[0]));
   EXPECT_EQ(0.0f, ActivenessOf(animator_.GetCurrentTabStates()[1]));
 
@@ -88,9 +94,7 @@ TEST_F(TabStripAnimatorTest, ChangeActiveTab) {
 }
 
 TEST_F(TabStripAnimatorTest, PinAndUnpinTab) {
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
+  AddTab(0, TabAnimationState::TabActiveness::kActive);
   EXPECT_EQ(0.0f, PinnednessOf(animator_.GetCurrentTabStates()[0]));
 
   animator_.SetPinnednessNoAnimation(0,
@@ -106,12 +110,8 @@ TEST_F(TabStripAnimatorTest, PinAndUnpinTab) {
 }
 
 TEST_F(TabStripAnimatorTest, RemoveTabNoAnimation) {
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(1, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kInactive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
+  AddTab(0, TabAnimationState::TabActiveness::kActive);
+  AddTab(1, TabAnimationState::TabActiveness::kInactive);
 
   animator_.RemoveTabNoAnimation(1);
 
@@ -121,16 +121,12 @@ TEST_F(TabStripAnimatorTest, RemoveTabNoAnimation) {
 }
 
 TEST_F(TabStripAnimatorTest, RemoveTabAnimation) {
+  AddTab(0, TabAnimationState::TabActiveness::kActive);
   TabClosedDetector second_tab;
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(
-      1,
-      base::BindOnce(&TabClosedDetector::NotifyTabClosed,
-                     base::Unretained(&second_tab)),
-      TabAnimationState::TabActiveness::kInactive,
-      TabAnimationState::TabPinnedness::kUnpinned);
+  AddTab(1, TabAnimationState::TabActiveness::kInactive,
+         TabAnimationState::TabPinnedness::kUnpinned,
+         base::BindOnce(&TabClosedDetector::NotifyTabClosed,
+                        base::Unretained(&second_tab)));
 
   animator_.RemoveTab(1);
 
@@ -147,7 +143,8 @@ TEST_F(TabStripAnimatorTest, RemoveTabAnimation) {
 }
 
 TEST_F(TabStripAnimatorTest, CompleteAnimations) {
-  animator_.InsertTabAt(0, base::BindOnce([]() {}),
+  animator_.InsertTabAt(TabAnimation::ViewType::kTab, 0,
+                        base::BindOnce([]() {}),
                         TabAnimationState::TabActiveness::kActive,
                         TabAnimationState::TabPinnedness::kUnpinned);
   EXPECT_TRUE(animator_.IsAnimating());
@@ -161,16 +158,12 @@ TEST_F(TabStripAnimatorTest, CompleteAnimations) {
 }
 
 TEST_F(TabStripAnimatorTest, CompleteAnimationsRemovesClosedTabs) {
+  AddTab(0, TabAnimationState::TabActiveness::kActive);
   TabClosedDetector second_tab;
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(
-      1,
-      base::BindOnce(&TabClosedDetector::NotifyTabClosed,
-                     base::Unretained(&second_tab)),
-      TabAnimationState::TabActiveness::kInactive,
-      TabAnimationState::TabPinnedness::kUnpinned);
+  AddTab(1, TabAnimationState::TabActiveness::kInactive,
+         TabAnimationState::TabPinnedness::kUnpinned,
+         base::BindOnce(&TabClosedDetector::NotifyTabClosed,
+                        base::Unretained(&second_tab)));
 
   animator_.RemoveTab(1);
 
@@ -188,16 +181,12 @@ TEST_F(TabStripAnimatorTest, CompleteAnimationsRemovesClosedTabs) {
 
 TEST_F(TabStripAnimatorTest,
        CompleteAnimationsWithoutDestroyingTabsDoesNotRemoveClosedTabs) {
+  AddTab(0, TabAnimationState::TabActiveness::kActive);
   TabClosedDetector second_tab;
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(
-      1,
-      base::BindOnce(&TabClosedDetector::NotifyTabClosed,
-                     base::Unretained(&second_tab)),
-      TabAnimationState::TabActiveness::kInactive,
-      TabAnimationState::TabPinnedness::kUnpinned);
+  AddTab(1, TabAnimationState::TabActiveness::kInactive,
+         TabAnimationState::TabPinnedness::kUnpinned,
+         base::BindOnce(&TabClosedDetector::NotifyTabClosed,
+                        base::Unretained(&second_tab)));
 
   animator_.RemoveTab(1);
 
@@ -213,53 +202,61 @@ TEST_F(TabStripAnimatorTest,
   EXPECT_FALSE(second_tab.was_closed_);
 }
 
-TEST_F(TabStripAnimatorTest, MoveTabRight) {
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(1, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kInactive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  EXPECT_EQ(1.0f, ActivenessOf(animator_.GetCurrentTabStates()[0]));
-  EXPECT_EQ(0.0f, ActivenessOf(animator_.GetCurrentTabStates()[1]));
+TEST_F(TabStripAnimatorTest, MoveTabsRight) {
+  std::vector<int> tabs_closed;
+  for (int i = 0; i < 5; i++) {
+    AddTab(i, TabAnimationState::TabActiveness::kInactive,
+           TabAnimationState::TabPinnedness::kPinned,
+           base::BindLambdaForTesting(
+               [&tabs_closed, i]() { tabs_closed.push_back(i); }));
+  }
 
-  animator_.MoveTabNoAnimation(0, 1);
+  animator_.MoveTabsNoAnimation({0, 1}, 2);
 
-  EXPECT_FALSE(animator_.IsAnimating());
-  EXPECT_EQ(2u, animator_.GetCurrentTabStates().size());
-  EXPECT_EQ(0.0f, ActivenessOf(animator_.GetCurrentTabStates()[0]));
-  EXPECT_EQ(1.0f, ActivenessOf(animator_.GetCurrentTabStates()[1]));
+  // Close tabs to run their callbacks.
+  while (animator_.animation_count() > 0) {
+    animator_.RemoveTab(0);
+    animator_.CompleteAnimations();
+  }
+
+  std::vector<int> expected_tabs_closed = {2, 3, 0, 1, 4};
+  EXPECT_EQ(expected_tabs_closed.size(), tabs_closed.size());
+  for (size_t i = 0; i < tabs_closed.size(); ++i) {
+    SCOPED_TRACE(i);
+    EXPECT_EQ(expected_tabs_closed[i], tabs_closed[i]);
+  }
 }
 
-TEST_F(TabStripAnimatorTest, MoveTabLeft) {
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(1, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kInactive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  EXPECT_EQ(1.0f, ActivenessOf(animator_.GetCurrentTabStates()[0]));
-  EXPECT_EQ(0.0f, ActivenessOf(animator_.GetCurrentTabStates()[1]));
+TEST_F(TabStripAnimatorTest, MoveTabsLeft) {
+  std::vector<int> tabs_closed;
+  for (int i = 0; i < 5; i++) {
+    AddTab(i, TabAnimationState::TabActiveness::kInactive,
+           TabAnimationState::TabPinnedness::kPinned,
+           base::BindLambdaForTesting(
+               [&tabs_closed, i]() { tabs_closed.push_back(i); }));
+  }
 
-  animator_.MoveTabNoAnimation(1, 0);
+  animator_.MoveTabsNoAnimation({3, 4}, 1);
 
-  EXPECT_FALSE(animator_.IsAnimating());
-  EXPECT_EQ(2u, animator_.GetCurrentTabStates().size());
-  EXPECT_EQ(0.0f, ActivenessOf(animator_.GetCurrentTabStates()[0]));
-  EXPECT_EQ(1.0f, ActivenessOf(animator_.GetCurrentTabStates()[1]));
+  // Close tabs to run their callbacks.
+  while (animator_.animation_count() > 0) {
+    animator_.RemoveTab(0);
+    animator_.CompleteAnimations();
+  }
+
+  std::vector<int> expected_tabs_closed = {0, 3, 4, 1, 2};
+  EXPECT_EQ(expected_tabs_closed.size(), tabs_closed.size());
+  for (size_t i = 0; i < tabs_closed.size(); ++i) {
+    SCOPED_TRACE(i);
+    EXPECT_EQ(expected_tabs_closed[i], tabs_closed[i]);
+  }
 }
 
-TEST_F(TabStripAnimatorTest, MoveTabSamePosition) {
-  animator_.InsertTabAtNoAnimation(0, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kActive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  animator_.InsertTabAtNoAnimation(1, base::BindOnce([]() {}),
-                                   TabAnimationState::TabActiveness::kInactive,
-                                   TabAnimationState::TabPinnedness::kUnpinned);
-  EXPECT_EQ(1.0f, ActivenessOf(animator_.GetCurrentTabStates()[0]));
-  EXPECT_EQ(0.0f, ActivenessOf(animator_.GetCurrentTabStates()[1]));
+TEST_F(TabStripAnimatorTest, MoveTabsSamePosition) {
+  AddTab(0, TabAnimationState::TabActiveness::kActive);
+  AddTab(1, TabAnimationState::TabActiveness::kInactive);
 
-  animator_.MoveTabNoAnimation(0, 0);
+  animator_.MoveTabsNoAnimation({0}, 0);
 
   EXPECT_FALSE(animator_.IsAnimating());
   EXPECT_EQ(2u, animator_.GetCurrentTabStates().size());

@@ -41,7 +41,7 @@ class OutputProtectionDelegate : public aura::WindowObserver,
     DISALLOW_COPY_AND_ASSIGN(Controller);
   };
 
-  OutputProtectionDelegate(int render_process_id, int render_frame_id);
+  explicit OutputProtectionDelegate(aura::Window* window);
   ~OutputProtectionDelegate() override;
 
   // display::DisplayObserver:
@@ -62,15 +62,11 @@ class OutputProtectionDelegate : public aura::WindowObserver,
 
   bool InitializeControllerIfNecessary();
 
-  // Used to lookup the WebContents associated with the render frame.
-  const int render_process_id_;
-  const int render_frame_id_;
-
   // Native window being observed.
   aura::Window* window_ = nullptr;
 
   // Display ID of the observed window.
-  int64_t display_id_ = display::kInvalidDisplayId;
+  int64_t display_id_;
 
   // Last requested ContentProtectionMethod bitmask, applied when the observed
   // window moves to another display.

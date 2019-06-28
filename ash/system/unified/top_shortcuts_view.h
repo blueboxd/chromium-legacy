@@ -59,6 +59,9 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
+  // views::View
+  const char* GetClassName() const override;
+
  private:
   friend class TopShortcutsViewTest;
 

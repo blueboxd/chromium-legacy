@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/tab_animation.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/numerics/ranges.h"
 #include "ui/gfx/animation/tween.h"
@@ -17,11 +18,13 @@ constexpr base::TimeDelta kZeroDuration = base::TimeDelta::FromMilliseconds(0);
 
 constexpr base::TimeDelta TabAnimation::kAnimationDuration;
 
-TabAnimation::TabAnimation(TabAnimationState initial_state,
+TabAnimation::TabAnimation(ViewType view_type,
+                           TabAnimationState initial_state,
                            TabAnimationState target_state,
                            base::TimeDelta duration,
                            base::OnceClosure tab_removed_callback)
-    : initial_state_(initial_state),
+    : view_type_(view_type),
+      initial_state_(initial_state),
       target_state_(target_state),
       start_time_(base::TimeTicks::Now()),
       duration_(duration),
@@ -34,9 +37,10 @@ TabAnimation& TabAnimation::operator=(TabAnimation&&) noexcept = default;
 
 // static
 TabAnimation TabAnimation::ForStaticState(
+    ViewType view_type,
     TabAnimationState static_state,
     base::OnceClosure tab_removed_callback) {
-  return TabAnimation(static_state, static_state, kZeroDuration,
+  return TabAnimation(view_type, static_state, static_state, kZeroDuration,
                       std::move(tab_removed_callback));
 }
 

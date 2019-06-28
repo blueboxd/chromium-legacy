@@ -1,4 +1,3 @@
-region
-++document
-++++group
-++++++button Name='Button'
+document
+++group
+++++button Name='Button'

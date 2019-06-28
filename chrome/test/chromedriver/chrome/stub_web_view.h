@@ -88,6 +88,8 @@ class StubWebView : public WebView {
   Status OverrideGeolocation(const Geoposition& geoposition) override;
   Status OverrideNetworkConditions(
       const NetworkConditions& network_conditions) override;
+  Status OverrideDownloadDirectoryIfNeeded(
+      const std::string& download_directory) override;
   Status CaptureScreenshot(
       std::string* screenshot,
       const base::DictionaryValue& params) override;

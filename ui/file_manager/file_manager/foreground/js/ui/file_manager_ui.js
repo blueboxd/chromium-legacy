@@ -411,19 +411,21 @@ class FileManagerUI {
    *
    * @param {!FileTable} table
    * @param {!FileGrid} grid
-   * @param {!LocationLine} locationLine
+   * @param {!VolumeManager} volumeManager
    */
-  initAdditionalUI(table, grid, locationLine) {
+  initAdditionalUI(table, grid, volumeManager) {
     // List container.
     this.listContainer = new ListContainer(
         queryRequiredElement('#list-container', this.element), table, grid);
 
+    // Location line.
+    this.locationLine = new LocationLine(
+        queryRequiredElement('#location-breadcrumbs', this.element),
+        volumeManager, this.listContainer);
+
     // Splitter.
     this.decorateSplitter_(
         queryRequiredElement('#navigation-list-splitter', this.element));
-
-    // Location line.
-    this.locationLine = locationLine;
 
     // Init context menus.
     cr.ui.contextMenuHandler.setContextMenu(grid, this.fileContextMenu);

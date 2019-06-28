@@ -89,7 +89,7 @@ def generate_sharding_map(
       candidate_story, candidate_story_duration = story_timing_list[-1]
       new_diff = abs(total_time_scheduled + candidate_story_duration -
                      expected_total_time)
-      if new_diff < last_diff or i == final_shard_index:
+      if new_diff <= last_diff or i == final_shard_index:
         story_timing_list.pop()
         total_time_scheduled += candidate_story_duration
         time_per_shard += candidate_story_duration

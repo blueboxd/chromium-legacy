@@ -34,8 +34,8 @@ struct SharedPathInfo {
   std::set<std::string> vm_names;
 };
 
-// Handles sharing and unsharing paths from the Chrome OS host to the crostini
-// VM via seneschal.
+// Handles sharing and unsharing paths from the Chrome OS host to guest VMs via
+// seneschal.
 class GuestOsSharePath : public KeyedService,
                          public file_manager::VolumeManagerObserver,
                          public drivefs::DriveFsHostObserver {

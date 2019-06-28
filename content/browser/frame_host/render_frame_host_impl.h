@@ -45,7 +45,6 @@
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,6 +77,7 @@
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
+#include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
@@ -726,7 +726,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ClearAllWebUI();
 
   // Returns the Mojo ImageDownloader service.
-  const content::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
+  const blink::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
 
   // Returns pointer to renderer side FindInPage associated with this frame.
   const blink::mojom::FindInPageAssociatedPtr& GetFindInPage();
@@ -1866,7 +1866,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
 
   // Holder of Mojo connection with ImageDownloader service in RenderFrame.
-  content::mojom::ImageDownloaderPtr mojo_image_downloader_;
+  blink::mojom::ImageDownloaderPtr mojo_image_downloader_;
 
   // Holder of Mojo connection with FindInPage service in Blink.
   blink::mojom::FindInPageAssociatedPtr find_in_page_;

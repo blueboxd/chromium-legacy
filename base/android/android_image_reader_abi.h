@@ -92,6 +92,11 @@ using pAImageReader_acquireLatestImageAsync =
                        AImage** image,
                        int* acquireFenceFd);
 
+using pAImageReader_acquireNextImageAsync =
+    media_status_t (*)(AImageReader* reader,
+                       AImage** image,
+                       int* acquireFenceFd);
+
 // For ANativeWindow
 using pANativeWindow_toSurface = jobject (*)(JNIEnv* env,
                                              ANativeWindow* window);

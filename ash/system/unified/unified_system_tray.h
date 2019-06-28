@@ -105,6 +105,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  const char* GetClassName() const override;
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
 

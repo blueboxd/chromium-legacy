@@ -29,6 +29,3 @@ per-file render_widget*=jonross@chromium.org
 per-file child_frame_compositor*=jonross@chromium.org
 per-file child_frame_compositing_helper*=jonross@chromium.org
 per-file render_frame_metadata*=jonross@chromium.org
-
-# For AppCache.
-per-file renderer_webapplicationcachehost_impl*=pwnall@chromium.org

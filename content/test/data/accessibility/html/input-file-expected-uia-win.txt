@@ -1,4 +1,3 @@
-region
-++document
-++++group
-++++++button Name='Choose File'
+document
+++group
+++++button Name='Choose File'

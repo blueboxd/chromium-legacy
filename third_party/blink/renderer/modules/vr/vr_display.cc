@@ -57,8 +57,8 @@ constexpr base::TimeDelta kNonImmersivePoseAgeThreshold =
 device::mojom::blink::XRFrameDataPtr CreateIdentityFrameData() {
   auto data = device::mojom::blink::XRFrameData::New();
   data->pose = device::mojom::blink::VRPose::New();
-  data->pose->orientation.emplace({0.0f, 0.0f, 0.0f, 1.0f});
-  data->pose->position.emplace({0.0f, 0.0f, 0.0f});
+  data->pose->orientation = gfx::Quaternion();
+  data->pose->position = WebFloatPoint3D();
 
   return data;
 }

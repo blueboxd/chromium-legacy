@@ -1,4 +1,3 @@
-region
-++document
-++++group
-++++++description Name='This is a section element.'
+document
+++group
+++++description Name='This is a section element.'

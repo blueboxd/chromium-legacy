@@ -547,6 +547,15 @@ void SpatialNavigationController::FocusedNodeChanged(Document* document) {
   }
 }
 
+void SpatialNavigationController::FullscreenStateChanged(Element* element) {
+  if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
+    return;
+  if (IsHTMLMediaElement(element)) {
+    element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                               kWebFocusTypeSpatialNavigation, nullptr));
+  }
+}
+
 void SpatialNavigationController::UpdateSpatialNavigationState(
     Element* element) {
   bool change = false;

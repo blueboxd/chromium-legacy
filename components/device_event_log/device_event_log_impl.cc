@@ -404,6 +404,10 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
   return result;
 }
 
+void DeviceEventLogImpl::ClearAll() {
+  entries_.clear();
+}
+
 void DeviceEventLogImpl::Clear(const base::Time& begin, const base::Time& end) {
   auto begin_it = std::find_if(
       entries_.begin(), entries_.end(),

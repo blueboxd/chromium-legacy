@@ -401,10 +401,8 @@ void ClientControlledShellSurface::SetAlwaysOnTop(bool always_on_top) {
   if (!widget_)
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
 
-  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                          always_on_top
-                                              ? ui::ZOrderLevel::kFloatingWindow
-                                              : ui::ZOrderLevel::kNormal);
+  widget_->GetNativeWindow()->SetProperty(aura::client::kAlwaysOnTopKey,
+                                          always_on_top);
 }
 
 void ClientControlledShellSurface::SetImeBlocked(bool ime_blocked) {

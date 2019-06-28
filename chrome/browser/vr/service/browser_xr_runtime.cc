@@ -17,14 +17,7 @@
 
 namespace vr {
 
-bool IsValidStandingTransform(std::vector<float> standingTransform) {
-  gfx::Transform transform = gfx::Transform(
-      standingTransform[0], standingTransform[1], standingTransform[2],
-      standingTransform[3], standingTransform[4], standingTransform[5],
-      standingTransform[6], standingTransform[7], standingTransform[8],
-      standingTransform[9], standingTransform[10], standingTransform[11],
-      standingTransform[12], standingTransform[13], standingTransform[14],
-      standingTransform[15]);
+bool IsValidStandingTransform(const gfx::Transform& transform) {
   if (!transform.IsInvertible() || transform.HasPerspective())
     return false;
 
@@ -88,11 +81,11 @@ device::mojom::VREyeParametersPtr ValidateEyeParameters(
 
   // Offset
   float kMaxOffset = 10;
-  if (eye->offset.size() == 3 && abs(eye->offset[0]) < kMaxOffset &&
-      abs(eye->offset[1]) < kMaxOffset && abs(eye->offset[2]) < kMaxOffset) {
+  if (abs(eye->offset.x()) < kMaxOffset && abs(eye->offset.y()) < kMaxOffset &&
+      abs(eye->offset.z()) < kMaxOffset) {
     ret->offset = eye->offset;
   } else {
-    ret->offset = std::vector<float>({0, 0, 0});
+    ret->offset = gfx::Vector3dF(0, 0, 0);
   }
 
   // Renderwidth/height

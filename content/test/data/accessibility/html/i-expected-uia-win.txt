@@ -1,6 +1,5 @@
-region
-++document
-++++group
-++++++description Name='This is to check '
-++++++description Name='italic property'
-++++++description Name=' using i tag.'
+document
+++group
+++++description Name='This is to check '
+++++description Name='italic property'
+++++description Name=' using i tag.'

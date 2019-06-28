@@ -551,9 +551,9 @@ void XR::OnRequestSessionReturned(
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
 
-  XRSession* session = CreateSession(query->mode(), blend_mode,
-                                     std::move(session_ptr->client_request),
-                                     std::move(session_ptr->display_info));
+  XRSession* session = CreateSession(
+      query->mode(), blend_mode, std::move(session_ptr->client_request),
+      std::move(session_ptr->display_info), session_ptr->uses_input_eventing);
 
   if (query->mode() == XRSession::kModeImmersiveVR ||
       query->mode() == XRSession::kModeImmersiveAR) {
@@ -567,6 +567,12 @@ void XR::OnRequestSessionReturned(
                                 TaskType::kMiscPlatformAPI)));
       environment_provider_.set_connection_error_handler(WTF::Bind(
           &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
+    }
+
+    if (query->mode() == XRSession::kModeImmersiveVR &&
+        session->UsesInputEventing()) {
+      frameProvider()->GetDataProvider()->SetInputSourceButtonListener(
+          session->GetInputClickListener());
     }
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
@@ -625,10 +631,11 @@ XRSession* XR::CreateSession(
     XRSession::EnvironmentBlendMode blend_mode,
     device::mojom::blink::XRSessionClientRequest client_request,
     device::mojom::blink::VRDisplayInfoPtr display_info,
+    bool uses_input_eventing,
     bool sensorless_session) {
   XRSession* session = MakeGarbageCollected<XRSession>(
       this, client_request ? std::move(client_request) : nullptr, mode,
-      blend_mode, sensorless_session);
+      blend_mode, uses_input_eventing, sensorless_session);
   if (display_info)
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);
@@ -640,6 +647,7 @@ XRSession* XR::CreateSensorlessInlineSession() {
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
   return CreateSession(XRSession::kModeInline, blend_mode,
                        nullptr /* client request */, nullptr /* display_info */,
+                       false /* uses_input_eventing */,
                        true /* sensorless_session */);
 }
 

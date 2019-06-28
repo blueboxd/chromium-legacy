@@ -1,4 +1,3 @@
-region
-++document
-++++group
-++++++link Name='normal link'
+document
+++group
+++++link Name='normal link'

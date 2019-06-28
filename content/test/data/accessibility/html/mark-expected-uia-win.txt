@@ -1,7 +1,6 @@
-region
-++document
-++++group
-++++++description Name='This test is to check '
-++++++description
-++++++++description Name='mark tag'
-++++++description Name='.'
+document
+++group
+++++description Name='This test is to check '
+++++description
+++++++description Name='mark tag'
+++++description Name='.'

@@ -2501,16 +2501,9 @@ void WebViewImpl::SetMaximumLegibleScale(float maximum_legible_scale) {
 }
 
 void WebViewImpl::SetIgnoreViewportTagScaleLimits(bool ignore) {
-  // This method should be idempotent.
-  if (ignore == pre_override_default_constraints_.has_value())
-    return;
-
   PageScaleConstraints constraints =
       GetPageScaleConstraintsSet().UserAgentConstraints();
   if (ignore) {
-    DCHECK(!pre_override_default_constraints_);
-    pre_override_default_constraints_.emplace(constraints);
-
     constraints.minimum_scale =
         GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
     constraints.maximum_scale =
@@ -2518,9 +2511,9 @@ void WebViewImpl::SetIgnoreViewportTagScaleLimits(bool ignore) {
     constraints.initial_scale =
         GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
   } else {
-    DCHECK(pre_override_default_constraints_);
-    constraints = pre_override_default_constraints_.value();
-    pre_override_default_constraints_.reset();
+    constraints.minimum_scale = -1;
+    constraints.maximum_scale = -1;
+    constraints.initial_scale = -1;
   }
   GetPage()->SetUserAgentPageScaleConstraints(constraints);
 }

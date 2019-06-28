@@ -1,8 +1,7 @@
-region
+document
 ++document
 ++++document
-++++++document
-++++++++img
+++++++img
+++document
 ++++document
-++++++document
-++++++++img
+++++++img

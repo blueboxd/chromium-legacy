@@ -206,7 +206,7 @@ ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
 ANDROID_PIXEL2_PERF_FYI = PerfPlatform(
     'android-pixel2-perf-fyi', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_FYI_BENCHMARK_NAMES,
-    num_shards=7, platform_os='android', is_fyi=True)
+    num_shards=4, platform_os='android', is_fyi=True)
 
 # TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use
 # the sharding map.

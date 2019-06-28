@@ -59,6 +59,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
   void MaybeCreateLoader(const network::ResourceRequest& tentative_request,
+                         BrowserContext* browser_context,
                          ResourceContext* resource_context,
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override;

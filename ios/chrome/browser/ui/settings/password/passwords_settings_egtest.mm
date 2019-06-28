@@ -1538,7 +1538,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
     // Tap on the "Cancel" or "X" button accompanying the activity view to
     // dismiss it.
     NSString* dismissLabel =
-        base::ios::IsRunningOnIOS13OrLater() ? @"xmark" : @"Cancel";
+        base::ios::IsRunningOnIOS13OrLater() ? @"Close" : @"Cancel";
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(
                                      ButtonWithAccessibilityLabel(dismissLabel),

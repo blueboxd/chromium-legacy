@@ -74,7 +74,6 @@ mojom::VREyeParametersPtr CreateEyeParamater(
     const gfx::Size& maximum_size) {
   mojom::VREyeParametersPtr eye_params = mojom::VREyeParameters::New();
   eye_params->fieldOfView = mojom::VRFieldOfView::New();
-  eye_params->offset.resize(3);
   eye_params->renderWidth = maximum_size.width() / 2;
   eye_params->renderHeight = maximum_size.height();
 
@@ -87,9 +86,8 @@ mojom::VREyeParametersPtr CreateEyeParamater(
   eye_params->fieldOfView->rightDegrees = eye_fov.right;
 
   gvr::Mat4f eye_mat = gvr_api->GetEyeFromHeadMatrix(eye);
-  eye_params->offset[0] = -eye_mat.m[0][3];
-  eye_params->offset[1] = -eye_mat.m[1][3];
-  eye_params->offset[2] = -eye_mat.m[2][3];
+  eye_params->offset =
+      gfx::Vector3dF(-eye_mat.m[0][3], -eye_mat.m[1][3], -eye_mat.m[2][3]);
   return eye_params;
 }
 

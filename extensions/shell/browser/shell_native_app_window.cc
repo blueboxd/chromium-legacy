@@ -72,11 +72,11 @@ void ShellNativeAppWindow::FlashFrame(bool flash) {
   NOTIMPLEMENTED();
 }
 
-ui::ZOrderLevel ShellNativeAppWindow::GetZOrderLevel() const {
-  return ui::ZOrderLevel::kNormal;
+bool ShellNativeAppWindow::IsAlwaysOnTop() const {
+  return false;
 }
 
-void ShellNativeAppWindow::SetZOrderLevel(ui::ZOrderLevel level) {
+void ShellNativeAppWindow::SetAlwaysOnTop(bool always_on_top) {
   NOTIMPLEMENTED();
 }
 

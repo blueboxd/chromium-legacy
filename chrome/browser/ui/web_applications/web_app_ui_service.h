@@ -21,6 +21,8 @@ class Browser;
 
 namespace web_app {
 
+class WebAppProvider;
+
 // This KeyedService is a UI counterpart for WebAppProvider.
 class WebAppUiService : public KeyedService,
                         public BrowserListObserver,
@@ -47,6 +49,7 @@ class WebAppUiService : public KeyedService,
  private:
   base::Optional<AppId> GetAppIdForBrowser(Browser* browser);
 
+  WebAppProvider* provider_;
   Profile* profile_;
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;

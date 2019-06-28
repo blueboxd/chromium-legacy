@@ -63,11 +63,14 @@ class DataReductionProxyRequestOptions {
   // main frame requests.
   void AddRequestHeader(net::HttpRequestHeaders* request_headers,
                         base::Optional<uint64_t> page_id);
+  static void AddRequestHeader(net::HttpRequestHeaders* request_headers,
+                               base::Optional<uint64_t> page_id,
+                               const std::string& session_header_value);
 
   // Adds |page_id| to the 'Chrome-Proxy' header, merging with existing value if
   // it exists.
-  void AddPageIDRequestHeader(net::HttpRequestHeaders* request_headers,
-                              uint64_t page_id) const;
+  static void AddPageIDRequestHeader(net::HttpRequestHeaders* request_headers,
+                                     uint64_t page_id);
 
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.

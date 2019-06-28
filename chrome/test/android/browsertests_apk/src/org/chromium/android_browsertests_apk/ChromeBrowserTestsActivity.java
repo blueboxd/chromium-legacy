@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
 import org.chromium.native_test.NativeTest;
+import org.chromium.ui.base.ResourceBundle;
 
 import java.io.File;
 
@@ -25,6 +26,10 @@ public class ChromeBrowserTestsActivity extends ChromeTabbedActivity {
 
     @Override
     public void performPreInflationStartup() {
+        // ResourceBundle asserts that locale paks have been given to it. In test targets there is
+        // no list of paks generated and we tell it so.
+        ResourceBundle.setNoAvailableLocalePaks();
+
         // These steps for NativeTest are usually performed in onCreate, but we can not
         // override onCreate in this class since a super class marks it as final. The
         // performPreInflationStartup() steps is another early step in initialization of the

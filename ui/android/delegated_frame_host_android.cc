@@ -121,14 +121,6 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
   }
   content_layer_->SetContentsOpaque(!has_transparent_background_);
 
-  compositor_attach_until_frame_lock_.reset();
-
-  // If surface synchronization is disabled, SubmitCompositorFrame immediately
-  // activates the CompositorFrame and issues OnFirstSurfaceActivation if the
-  // |local_surface_id| has changed since the last submission.
-  if (content_layer_->bounds() == expected_pixel_size_)
-    compositor_pending_resize_lock_.reset();
-
   if (id_changed)
     frame_evictor_->OnNewSurfaceEmbedded();
 }
@@ -242,20 +234,6 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
     WindowAndroidCompositor* compositor) {
   if (registered_parent_compositor_)
     DetachFromCompositor();
-  // If this is the first frame after the compositor became visible, we want to
-  // take the compositor lock, preventing compositor frames from being produced
-  // until all delegated frames are ready. This improves the resume transition,
-  // preventing flashes. Set a 5 second timeout to prevent locking up the
-  // browser in cases where the renderer hangs or another factor prevents a
-  // frame from being produced. If we already have delegated content, no need
-  // to take the lock.
-  // If surface synchronization is enabled, then it will block browser UI until
-  // a renderer frame is available instead.
-  if (!enable_surface_synchronization_ &&
-      compositor->IsDrawingFirstVisibleFrame() && !HasDelegatedContent()) {
-    compositor_attach_until_frame_lock_ =
-        compositor->GetCompositorLock(this, FirstFrameTimeout());
-  }
   compositor->AddChildFrameSink(frame_sink_id_);
   if (!enable_viz_)
     client_->SetBeginFrameSource(&begin_frame_source_);
@@ -265,8 +243,6 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
 void DelegatedFrameHostAndroid::DetachFromCompositor() {
   if (!registered_parent_compositor_)
     return;
-  compositor_attach_until_frame_lock_.reset();
-  compositor_pending_resize_lock_.reset();
   if (!enable_viz_) {
     client_->SetBeginFrameSource(nullptr);
     support_->SetNeedsBeginFrame(false);
@@ -357,29 +333,6 @@ void DelegatedFrameHostAndroid::EmbedSurface(
   }
 }
 
-void DelegatedFrameHostAndroid::PixelSizeWillChange(
-    const gfx::Size& pixel_size) {
-  if (enable_surface_synchronization_)
-    return;
-
-  // We never take the resize lock unless we're on O+, as previous versions of
-  // Android won't wait for us to produce the correct sized frame and will end
-  // up looking worse.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_OREO) {
-    return;
-  }
-
-  expected_pixel_size_ = pixel_size;
-  if (content_layer_ && registered_parent_compositor_) {
-    if (content_layer_->bounds() != expected_pixel_size_) {
-      compositor_pending_resize_lock_ =
-          registered_parent_compositor_->GetCompositorLock(this,
-                                                           ResizeTimeout());
-    }
-  }
-}
-
 void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   client_->DidReceiveCompositorFrameAck(resources);
@@ -418,8 +371,6 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
 void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {
   client_->OnFrameTokenChanged(frame_token);
 }
-
-void DelegatedFrameHostAndroid::CompositorLockTimedOut() {}
 
 void DelegatedFrameHostAndroid::CreateCompositorFrameSinkSupport() {
   if (enable_viz_)

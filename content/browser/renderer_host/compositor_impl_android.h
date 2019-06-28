@@ -85,7 +85,6 @@ class CONTENT_EXPORT CompositorImpl
   bool SupportsETC1NonPowerOfTwo() const override;
 
   // Test functions:
-  bool IsLockedForTesting() const { return lock_manager_.IsLocked(); }
   void SetVisibleForTesting(bool visible) { SetVisible(visible); }
   void SetSwapCompletedWithSizeCallbackForTesting(
       base::RepeatingCallback<void(const gfx::Size&)> cb) {
@@ -153,9 +152,6 @@ class CONTENT_EXPORT CompositorImpl
   viz::FrameSinkId GetFrameSinkId() override;
   void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;
   void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;
-  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
-      ui::CompositorLockClient* client,
-      base::TimeDelta timeout) override;
   bool IsDrawingFirstVisibleFrame() const override;
   void SetVSyncPaused(bool paused) override;
   void OnUpdateRefreshRate(float refresh_rate) override;
@@ -256,7 +252,6 @@ class CONTENT_EXPORT CompositorImpl
   bool has_layer_tree_frame_sink_ = false;
   std::unordered_set<viz::FrameSinkId, viz::FrameSinkIdHash>
       pending_child_frame_sink_ids_;
-  ui::CompositorLockManager lock_manager_;
   bool has_submitted_frame_since_became_visible_ = false;
 
   // If true, we are using surface synchronization.

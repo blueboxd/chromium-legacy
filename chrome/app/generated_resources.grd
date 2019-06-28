@@ -9024,6 +9024,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_DEVICE_LOG_REFRESH" desc="Button to refresh device log">
         Refresh
       </message>
+      <message name="IDS_DEVICE_LOG_CLEAR" desc="Button to clear device log">
+        Clear
+      </message>
+      <message name="IDS_DEVICE_LOG_NO_ENTRIES" desc="Text shown when device log is empty">
+        No log entries
+      </message>
       <message name="IDS_DEVICE_LOG_LEVEL_SHOW" desc="'Show' label before logging level checkboxes">
         Show:
       </message>

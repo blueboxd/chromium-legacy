@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 1.0 Elements -->
+  <structure name="IDR_CR_ELEMENTS_ACTION_LINK_CSS_HTML"
+             file="cr_elements/action_link_css.html"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_ACTION_MENU_HTML"
              file="cr_elements/cr_action_menu/cr_action_menu.html"
              type="chrome_html"

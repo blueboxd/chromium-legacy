@@ -10,9 +10,9 @@ VREyeParameters::VREyeParameters(
     const device::mojom::blink::VREyeParametersPtr& eye_parameters,
     double render_scale) {
   offset_ = DOMFloat32Array::Create(3);
-  offset_->Data()[0] = eye_parameters->offset[0];
-  offset_->Data()[1] = eye_parameters->offset[1];
-  offset_->Data()[2] = eye_parameters->offset[2];
+  offset_->Data()[0] = eye_parameters->offset.x();
+  offset_->Data()[1] = eye_parameters->offset.y();
+  offset_->Data()[2] = eye_parameters->offset.z();
 
   field_of_view_ = MakeGarbageCollected<VRFieldOfView>();
   field_of_view_->SetUpDegrees(eye_parameters->fieldOfView->upDegrees);

@@ -907,17 +907,13 @@ bool DesktopWindowTreeHostX11::HasCapture() const {
   return g_current_capture == this;
 }
 
-void DesktopWindowTreeHostX11::SetZOrderLevel(ui::ZOrderLevel order) {
-  z_order_ = order;
-  // Emulate the multiple window levels provided by other platforms by
-  // collapsing the z-order enum into kNormal = normal, everything else = always
-  // on top.
-  SetWMSpecState(order != ui::ZOrderLevel::kNormal,
-                 gfx::GetAtom("_NET_WM_STATE_ABOVE"), x11::None);
+void DesktopWindowTreeHostX11::SetAlwaysOnTop(bool always_on_top) {
+  is_always_on_top_ = always_on_top;
+  SetWMSpecState(always_on_top, gfx::GetAtom("_NET_WM_STATE_ABOVE"), x11::None);
 }
 
-ui::ZOrderLevel DesktopWindowTreeHostX11::GetZOrderLevel() const {
-  return z_order_;
+bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
+  return is_always_on_top_;
 }
 
 void DesktopWindowTreeHostX11::SetVisible(bool visible) {
@@ -1602,8 +1598,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
 
   // If the window should stay on top of other windows, add the
   // _NET_WM_STATE_ABOVE property.
-  z_order_ = params.EffectiveZOrderLevel();
-  if (z_order_ != ui::ZOrderLevel::kNormal)
+  is_always_on_top_ = params.keep_on_top;
+  if (is_always_on_top_)
     window_properties_.insert(gfx::GetAtom("_NET_WM_STATE_ABOVE"));
 
   workspace_ = base::nullopt;
@@ -1813,12 +1809,8 @@ void DesktopWindowTreeHostX11::UpdateWindowProperties(
   // handle window manager initiated fullscreen. In particular, Chrome needs to
   // do preprocessing before the x window's fullscreen state is toggled.
 
-  // Which z-level is the map of the "always on top" bit? This choice is a bit
-  // arbitrary.
-  z_order_ = ui::HasWMSpecProperty(window_properties_,
-                                   gfx::GetAtom("_NET_WM_STATE_ABOVE"))
-                 ? ui::ZOrderLevel::kFloatingWindow
-                 : ui::ZOrderLevel::kNormal;
+  is_always_on_top_ = ui::HasWMSpecProperty(
+      window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
 
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is

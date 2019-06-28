@@ -212,8 +212,8 @@ ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
   return GetRestorableState(restore_state);
 }
 
-ui::ZOrderLevel ChromeNativeAppWindowViewsAuraAsh::GetZOrderLevel() const {
-  return widget()->GetZOrderLevel();
+bool ChromeNativeAppWindowViewsAuraAsh::IsAlwaysOnTop() const {
+  return widget()->IsAlwaysOnTop();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

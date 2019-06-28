@@ -44,7 +44,6 @@ class Tab;
 class TabGroupHeader;
 class TabGroupId;
 class TabHoverCardBubbleView;
-class TabStripAnimator;
 class TabStripController;
 class TabStripObserver;
 class TabStripLayoutHelper;
@@ -336,6 +335,10 @@ class TabStrip : public views::AccessiblePaneView,
 
   void Init();
 
+  views::ViewModelT<Tab>* tabs_view_model() { return &tabs_; }
+
+  std::map<TabGroupId, TabGroupHeader*> GetGroupHeaders();
+
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
   void StartInsertTabAnimation(int model_index,
                                TabAnimationState::TabActiveness activeness,
@@ -404,6 +407,10 @@ class TabStrip : public views::AccessiblePaneView,
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
   // code and is not a general-purpose method.
   void OnTabCloseAnimationCompleted(Tab* tab);
+
+  // Cleans up the TabGroupHeader for |group| from the TabStrip. This is called
+  // from the tab animation code and is not a general-purpose method.
+  void OnGroupCloseAnimationCompleted(TabGroupId group);
 
   // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
   // >= |index| to have a new index of |index + delta|.
@@ -576,9 +583,8 @@ class TabStrip : public views::AccessiblePaneView,
   std::unique_ptr<TabStripLayoutHelper> layout_helper_;
 
   // Responsible for animating tabs in response to model changes.
-  // https://crbug.com/958173 tracks migrating animations from
-  // |bounds_animator_| to |animator_|.
-  std::unique_ptr<TabStripAnimator> animator_;
+  // Deprecated; https://crbug.com/958173 tracks migrating animations from
+  // |bounds_animator_| to |TabStripLayoutHelper::animator_|.
   views::BoundsAnimator bounds_animator_{this};
 
   // The "New Tab" button.

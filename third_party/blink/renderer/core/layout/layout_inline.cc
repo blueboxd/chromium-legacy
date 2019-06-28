@@ -327,7 +327,7 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
     } else {
       // When position was not static, containingBlockForAbsolutePosition
       // for our children is our existing containingBlock.
-      abs_containing_block = ContainingBlock();
+      abs_containing_block = FindNonAnonymousContainingBlock(this);
     }
     if (abs_containing_block)
       abs_containing_block->RemovePositionedObjects(this, kNewContainingBlock);

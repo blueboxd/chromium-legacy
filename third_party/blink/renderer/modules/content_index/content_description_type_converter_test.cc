@@ -32,11 +32,6 @@ bool operator==(const ContentDescription& cd1, const ContentDescription& cd2) {
          cd1.launchUrl() == cd2.launchUrl();
 }
 
-TEST(ContentDescriptionConversionTest, InvalidUrlsFailConversion) {
-  auto* description = CreateDescription("homepage", "INVALID_URL");
-  EXPECT_FALSE(mojom::blink::ContentDescription::From(description));
-}
-
 TEST(ContentDescriptionConversionTest, RoundTrip) {
   auto* description = CreateDescription("homepage", "https://example.com/");
   auto mojo_description = mojom::blink::ContentDescription::From(description);

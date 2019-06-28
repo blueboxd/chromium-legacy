@@ -45,11 +45,15 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
           on_display_info_changed);
   ~MixedRealityRenderLoop() override;
 
+  const WMRCoordinateSystem* GetOrigin();
+  void OnInputSourceEvent(mojom::XRInputSourceStatePtr input_state);
+
  private:
   // XRCompositorCommon:
   bool StartRuntime() override;
   void StopRuntime() override;
   void OnSessionStart() override;
+  bool UsesInputEventing() override;
 
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;

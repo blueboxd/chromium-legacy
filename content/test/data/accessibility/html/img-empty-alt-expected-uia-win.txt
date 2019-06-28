@@ -1,7 +1,6 @@
-region
-++document
-++++group
-++++++img
-++++++img
-++++++img
-++++++img Name='full'
+document
+++group
+++++img
+++++img
+++++img
+++++img Name='full'

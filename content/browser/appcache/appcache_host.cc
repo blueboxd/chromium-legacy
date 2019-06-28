@@ -184,7 +184,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   // after cache or group loading is complete.
   // Note: Foreign entries are detected on the client side and
   // MarkAsForeignEntry is called in that case, so that detection
-  // step is skipped here. See WebApplicationCacheHostImpl.cc
+  // step is skipped here.
 
   if (cache_document_was_loaded_from != blink::mojom::kAppCacheNoCacheId) {
     LoadSelectedCache(cache_document_was_loaded_from);
@@ -217,7 +217,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     }
     // Note: The client detects if the document was not loaded using HTTP GET
     // and invokes SelectCache without a manifest url, so that detection step
-    // is also skipped here. See WebApplicationCacheHostImpl.cc
+    // is also skipped here.
     set_preferred_manifest_url(manifest_url);
     new_master_entry_url_ = document_url;
     LoadOrCreateGroup(manifest_url);

@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/chrome/debugger_tracker.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
+#include "chrome/test/chromedriver/chrome/download_directory_override_manager.h"
 #include "chrome/test/chromedriver/chrome/frame_tracker.h"
 #include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
@@ -167,6 +168,13 @@ WebViewImpl::WebViewImpl(const std::string& id,
           new NetworkConditionsOverrideManager(client_.get())),
       heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())),
       debugger_(new DebuggerTracker(client_.get())) {
+  // Downloading in headless mode requires the setting of
+  // Page.setDownloadBehavior. This is handled by the
+  // DownloadDirectoryOverrideManager, which is only instantiated
+  // in headless chrome.
+  if (browser_info->browser_name == "headless chrome")
+    download_directory_override_manager_ =
+        std::make_unique<DownloadDirectoryOverrideManager>(client_.get());
   client_->SetOwner(this);
 }
 
@@ -712,6 +720,14 @@ Status WebViewImpl::OverrideNetworkConditions(
     const NetworkConditions& network_conditions) {
   return network_conditions_override_manager_->OverrideNetworkConditions(
       network_conditions);
+}
+
+Status WebViewImpl::OverrideDownloadDirectoryIfNeeded(
+    const std::string& download_directory) {
+  if (download_directory_override_manager_)
+    return download_directory_override_manager_
+        ->OverrideDownloadDirectoryWhenConnected(download_directory);
+  return Status(kOk);
 }
 
 Status WebViewImpl::CaptureScreenshot(

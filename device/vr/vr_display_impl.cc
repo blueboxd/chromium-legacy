@@ -46,6 +46,13 @@ void VRDisplayImpl::GetEnvironmentIntegrationProvider(
   mojo::ReportBadMessage("Environment integration is not supported.");
 }
 
+void VRDisplayImpl::SetInputSourceButtonListener(
+    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) {
+  // Input eventing is not supported. This call should not
+  // be made on this device.
+  mojo::ReportBadMessage("Input eventing is not supported.");
+}
+
 // XRSessionController
 void VRDisplayImpl::SetFrameDataRestricted(bool frame_data_restricted) {
   restrict_frame_data_ = frame_data_restricted;

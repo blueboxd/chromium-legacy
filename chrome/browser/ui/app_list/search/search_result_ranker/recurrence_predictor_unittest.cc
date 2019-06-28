@@ -370,4 +370,79 @@ TEST_F(HourBinPredictorTest, ToProto) {
   EXPECT_TRUE(EquivToProtoLite(proto.hour_bin_predictor(),
                                target_proto.hour_bin_predictor()));
 }
+
+class MarkovPredictorTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    predictor_ = std::make_unique<MarkovPredictor>(config_);
+  }
+
+  MarkovPredictorConfig config_;
+  std::unique_ptr<MarkovPredictor> predictor_;
+};
+
+TEST_F(MarkovPredictorTest, RankWithNoTargets) {
+  // This should ignore the condition.
+  EXPECT_TRUE(predictor_->Rank(0u).empty());
+  EXPECT_TRUE(predictor_->Rank(1u).empty());
+}
+
+TEST_F(MarkovPredictorTest, RecordAndRank) {
+  // Transitions 1 -> 2 -> 3. Condition should be ignored.
+  predictor_->Train(1u, 0u);
+  predictor_->Train(2u, 2u);
+  predictor_->Train(3u, 4u);
+  predictor_->Train(1u, 6u);
+
+  // Last target is 1, we've only seen 1 -> 2.
+  EXPECT_THAT(predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(2u, FloatEq(1.0f))));
+
+  predictor_->Train(3u, 8u);
+  predictor_->Train(1u, 6u);
+  predictor_->Train(1u, 4u);
+  predictor_->Train(1u, 2u);
+
+  // Last target is 1, now we've seen 1 -> {1, 2, 3}.
+  EXPECT_THAT(
+      predictor_->Rank(0u),
+      UnorderedElementsAre(Pair(1u, FloatEq(0.5f)), Pair(2u, FloatEq(0.25f)),
+                           Pair(3u, FloatEq(0.25f))));
+
+  predictor_->Train(3u, 8u);
+  predictor_->Train(3u, 8u);
+
+  // Last target is 3, we have 3 -> {1, 3}.
+  EXPECT_THAT(predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(1u, FloatEq(2.0f / 3.0f)),
+                                   Pair(3u, FloatEq(1.0f / 3.0f))));
+}
+
+TEST_F(MarkovPredictorTest, ToAndFromProto) {
+  // Some complicated transitions.
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 10; j < 10 + i; ++j) {
+      for (int trains = 0; trains < j; ++trains) {
+        predictor_->Train(i, 0u);
+        predictor_->Train(j, 0u);
+      }
+    }
+  }
+
+  RecurrencePredictorProto proto;
+  predictor_->ToProto(&proto);
+
+  MarkovPredictor new_predictor(config_);
+  new_predictor.FromProto(proto);
+
+  EXPECT_TRUE(proto.has_markov_predictor());
+  for (int i = 0; i < 10; ++i) {
+    // Set the last target without modifying the transition frequencies.
+    predictor_->previous_target_ = i;
+    new_predictor.previous_target_ = i;
+
+    EXPECT_EQ(predictor_->Rank(5u), new_predictor.Rank(5u));
+  }
+}
+
 }  // namespace app_list

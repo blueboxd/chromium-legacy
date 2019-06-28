@@ -118,6 +118,7 @@ class Tab : public gfx::AnimationDelegate,
   bool detached() const { return detached_; }
 
   void SetGroup(base::Optional<TabGroupId> group);
+  base::Optional<TabGroupId> group() { return group_; }
 
   // Returns the color for the tab's group, if any.
   base::Optional<SkColor> GetGroupColor() const;

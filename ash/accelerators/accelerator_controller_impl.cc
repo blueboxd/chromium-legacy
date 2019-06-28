@@ -61,6 +61,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -121,6 +122,8 @@ using message_center::SystemNotificationWarningLevel;
 constexpr char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
 const char kFeatureDisabledByPolicyToastId[] = "disabled_by_policy_error";
 constexpr int kToastDurationMs = 2500;
+
+constexpr char kVirtualDesksToastId[] = "virtual_desks_toast";
 
 // Path of the json file that contains side volume button location info.
 constexpr char kSideVolumeButtonLocationFilePath[] =
@@ -245,6 +248,125 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
 
   Shell::Get()->window_cycle_controller()->HandleCycleWindow(
       WindowCycleController::FORWARD);
+}
+
+void HandleActivateDesk(const ui::Accelerator& accelerator) {
+  DCHECK(features::IsVirtualDesksEnabled());
+  auto* desks_controller = DesksController::Get();
+
+  // An on-going desk switch animation might be in progress. For now skip this
+  // accelerator. Later we might want to consider queueing these animations, or
+  // cancelling the on-going ones and start over.
+  // TODO(afakhry): Discuss with UX.
+  if (desks_controller->AreDesksBeingModified())
+    return;
+
+  const Desk* desk_to_activate = nullptr;
+  switch (accelerator.key_code()) {
+    case ui::VKEY_OEM_4:
+      desk_to_activate = desks_controller->GetPreviousDesk();
+      base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateLeft"));
+      break;
+    case ui::VKEY_OEM_6:
+      desk_to_activate = desks_controller->GetNextDesk();
+      base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateRight"));
+      break;
+
+    default:
+      NOTREACHED();
+  }
+
+  // TODO(afakhry): Finalize the hit-the-wall animation with UX.
+  // https://crbug.com/977434.
+  if (desk_to_activate)
+    desks_controller->ActivateDesk(desk_to_activate);
+}
+
+void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
+  DCHECK(features::IsVirtualDesksEnabled());
+  auto* desks_controller = DesksController::Get();
+  if (desks_controller->AreDesksBeingModified())
+    return;
+
+  aura::Window* window_to_move = nullptr;
+  auto* overview_controller = Shell::Get()->overview_controller();
+  const bool in_overview = overview_controller->InOverviewSession();
+  if (in_overview) {
+    window_to_move =
+        overview_controller->overview_session()->GetHighlightedWindow();
+  } else {
+    window_to_move = wm::GetActiveWindow();
+  }
+
+  if (!window_to_move)
+    return;
+
+  Desk* target_desk = nullptr;
+  switch (accelerator.key_code()) {
+    case ui::VKEY_OEM_4:
+      target_desk = desks_controller->GetPreviousDesk();
+      base::RecordAction(base::UserMetricsAction("Accel_Desks_MoveWindowLeft"));
+      break;
+    case ui::VKEY_OEM_6:
+      target_desk = desks_controller->GetNextDesk();
+      base::RecordAction(
+          base::UserMetricsAction("Accel_Desks_MoveWindowRight"));
+      break;
+
+    default:
+      NOTREACHED();
+  }
+
+  if (!target_desk)
+    return;
+
+  // TODO(afakhry): Finalize window movement animation to another desk outside
+  // of overview with UX. https://crbug.com/977434.
+  desks_controller->MoveWindowFromActiveDeskTo(window_to_move, target_desk);
+  if (in_overview) {
+    // We should not exit overview as a result of this shortcut.
+    DCHECK(overview_controller->InOverviewSession());
+    overview_controller->overview_session()->PositionWindows(/*animate=*/true);
+  }
+}
+
+void HandleNewDesk() {
+  DCHECK(features::IsVirtualDesksEnabled());
+  auto* desks_controller = DesksController::Get();
+  if (!desks_controller->CanCreateDesks()) {
+    ShowToast(kVirtualDesksToastId,
+              l10n_util::GetStringUTF16(IDS_ASH_DESKS_MAX_NUM_REACHED));
+    return;
+  }
+
+  if (desks_controller->AreDesksBeingModified())
+    return;
+
+  // Add a new desk and switch to it.
+  const size_t new_desk_index = desks_controller->desks().size();
+  desks_controller->NewDesk();
+  const Desk* desk = desks_controller->desks()[new_desk_index].get();
+  desks_controller->ActivateDesk(desk);
+  base::RecordAction(base::UserMetricsAction("Accel_Desks_NewDesk"));
+}
+
+void HandleRemoveCurrentDesk() {
+  DCHECK(features::IsVirtualDesksEnabled());
+
+  auto* desks_controller = DesksController::Get();
+  if (!desks_controller->CanRemoveDesks()) {
+    ShowToast(kVirtualDesksToastId,
+              l10n_util::GetStringUTF16(IDS_ASH_DESKS_MIN_NUM_REACHED));
+    return;
+  }
+
+  if (desks_controller->AreDesksBeingModified())
+    return;
+
+  // TODO(afakhry): Finalize the desk removal animation outside of overview with
+  // UX. https://crbug.com/977434.
+  desks_controller->RemoveDesk(desks_controller->active_desk());
+  base::RecordAction(base::UserMetricsAction("Accel_Desks_RemoveDesk"));
 }
 
 void HandleRotatePaneFocus(FocusCycler::Direction direction) {
@@ -1406,6 +1528,11 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case CYCLE_BACKWARD_MRU:
     case CYCLE_FORWARD_MRU:
       return CanHandleCycleMru(accelerator);
+    case DESKS_ACTIVATE_DESK:
+    case DESKS_MOVE_ACTIVE_ITEM:
+    case DESKS_NEW_DESK:
+    case DESKS_REMOVE_CURRENT_DESK:
+      return features::IsVirtualDesksEnabled();
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
@@ -1580,6 +1707,18 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case CYCLE_FORWARD_MRU:
       HandleCycleForwardMRU(accelerator);
+      break;
+    case DESKS_ACTIVATE_DESK:
+      HandleActivateDesk(accelerator);
+      break;
+    case DESKS_MOVE_ACTIVE_ITEM:
+      HandleMoveActiveItem(accelerator);
+      break;
+    case DESKS_NEW_DESK:
+      HandleNewDesk();
+      break;
+    case DESKS_REMOVE_CURRENT_DESK:
+      HandleRemoveCurrentDesk();
       break;
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:

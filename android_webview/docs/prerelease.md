@@ -32,6 +32,11 @@ has four release channels:
   - Includes the latest code changes from the previous day
   - Has not been tested or used
 
+If you're looking for a specific of version of chromium, the latest versions
+released to each channel can be found on [Chromium
+Dash](https://chromiumdash.appspot.com/releases?platform=Android). WebView and
+Chrome for Android always release together on all OS levels.
+
 On Android 7 (Nougat) and later, you can install multiple channels at the same
 time. This allows you to play with our latest code, while still keeping a tested
 version of WebView around.
@@ -119,4 +124,4 @@ Package names are as follows:
 - [WebView channels in detail](/android_webview/docs/channels.md)
 - [Chrome Release
   Channels](https://www.chromium.org/getting-involved/dev-channel)
-
+- [WebView Release History](https://chromiumdash.appspot.com/releases?platform=Android)

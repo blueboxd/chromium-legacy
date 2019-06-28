@@ -30,8 +30,9 @@ device::mojom::VRPosePtr GetMojomPoseFromArPose(
 
   device::mojom::VRPosePtr result = device::mojom::VRPose::New();
 
-  result->orientation.emplace(pose_raw, pose_raw + 4);
-  result->position.emplace(pose_raw + 4, pose_raw + 7);
+  result->orientation =
+      gfx::Quaternion(pose_raw[0], pose_raw[1], pose_raw[2], pose_raw[3]);
+  result->position = gfx::Point3F(pose_raw[4], pose_raw[5], pose_raw[6]);
 
   return result;
 }
@@ -498,10 +499,21 @@ bool ArCoreImpl::RequestHitTest(
       }
     }
 
+    std::array<float, 16> matrix;
+    ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(), matrix.data());
+
     mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
-    mojo_hit.get()->hit_matrix.resize(16);
-    ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(),
-                     mojo_hit.get()->hit_matrix.data());
+
+    // ArPose_getMatrix returns the matrix in WebGL style column-major order
+    // and gfx::Transform expects row major order.
+    // clang-format off
+    mojo_hit->hit_matrix = gfx::Transform(
+      matrix[0], matrix[4], matrix[8],  matrix[12],
+      matrix[1], matrix[5], matrix[9],  matrix[13],
+      matrix[2], matrix[6], matrix[10], matrix[14],
+      matrix[3], matrix[7], matrix[11], matrix[15]
+    );
+    // clang-format on
 
     // Insert new results at head to preserver order from ArCore
     hit_results->insert(hit_results->begin(), std::move(mojo_hit));

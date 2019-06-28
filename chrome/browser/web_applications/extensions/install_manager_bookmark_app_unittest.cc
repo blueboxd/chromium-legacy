@@ -384,7 +384,7 @@ class InstallManagerBookmarkAppInstallableSiteTest
 };
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
-       DISABLED_CreateBookmarkAppWithManifest) {
+       CreateBookmarkAppWithManifest) {
   const GURL app_url(kAppUrl);
 
   auto manifest = std::make_unique<blink::Manifest>();
@@ -417,7 +417,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
 }
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
-       DISABLED_CreateBookmarkAppWithManifestIcons) {
+       CreateBookmarkAppWithManifestIcons) {
   const GURL app_url(kAppUrl);
 
   auto manifest = std::make_unique<blink::Manifest>();
@@ -474,7 +474,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
 }
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
-       DISABLED_CreateBookmarkAppWithManifestNoScope) {
+       CreateBookmarkAppWithManifestNoScope) {
   const GURL app_url(kAppUrl);
 
   auto manifest = std::make_unique<blink::Manifest>();
@@ -500,7 +500,7 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                                            web_app::ForInstallableSite::kYes));
 
 TEST_F(InstallManagerBookmarkAppTest,
-       DISABLED_CreateBookmarkAppDefaultLauncherContainers) {
+       CreateBookmarkAppDefaultLauncherContainers) {
   {
     CreateDataRetrieverWithLaunchContainer(
         GURL(kAppUrl), /*open_as_window=*/true, /*is_installable=*/true);
@@ -535,7 +535,7 @@ TEST_F(InstallManagerBookmarkAppTest,
 }
 
 TEST_F(InstallManagerBookmarkAppTest,
-       DISABLED_CreateBookmarkAppForcedLauncherContainers) {
+       CreateBookmarkAppForcedLauncherContainers) {
   {
     CreateDataRetrieverWithLaunchContainer(GURL("https://www.example.org/"),
                                            /*open_as_window=*/true,
@@ -565,8 +565,7 @@ TEST_F(InstallManagerBookmarkAppTest,
   }
 }
 
-TEST_F(InstallManagerBookmarkAppTest,
-       DISABLED_CreateBookmarkAppWithoutManifest) {
+TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppWithoutManifest) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   const GURL app_url(kAppUrl);
   web_app_info->app_url = app_url;
@@ -588,7 +587,7 @@ TEST_F(InstallManagerBookmarkAppTest,
   EXPECT_FALSE(AppThemeColorInfo::GetThemeColor(extension));
 }
 
-TEST_F(InstallManagerBookmarkAppTest, DISABLED_CreateWebAppFromInfo) {
+TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   CreateEmptyDataRetriever();
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -642,7 +641,7 @@ TEST_F(InstallManagerBookmarkAppTest, DISABLED_CreateWebAppFromInfo) {
                    .empty());
 }
 
-TEST_F(InstallManagerBookmarkAppTest, DISABLED_InstallOrUpdateWebAppFromSync) {
+TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   CreateEmptyDataRetriever();
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());

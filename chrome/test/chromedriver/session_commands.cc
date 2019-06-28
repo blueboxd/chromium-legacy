@@ -313,6 +313,21 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->capabilities =
       CreateCapabilities(session, capabilities, *desired_caps);
 
+  std::string download_directory;
+  if (capabilities.prefs &&
+      capabilities.prefs->GetString("download.default_directory",
+                                    &download_directory))
+    session->headless_download_directory =
+        std::make_unique<std::string>(download_directory);
+  else
+    session->headless_download_directory = std::make_unique<std::string>(".");
+  WebView* first_view;
+  session->chrome->GetWebViewById(session->window, &first_view);
+  status = first_view->OverrideDownloadDirectoryIfNeeded(
+      *session->headless_download_directory);
+  if (status.IsError())
+    return status;
+
   if (session->w3c_compliant) {
     std::unique_ptr<base::DictionaryValue> capabilities =
         std::unique_ptr<base::DictionaryValue>(
@@ -696,6 +711,19 @@ Status ExecuteSwitchToWindow(Session* session,
       return status;
     status = web_view->OverrideNetworkConditions(
         *session->overridden_network_conditions);
+    if (status.IsError())
+      return status;
+  }
+  if (session->headless_download_directory) {
+    WebView* web_view;
+    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    if (status.IsError())
+      return status;
+    status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+    status = web_view->OverrideDownloadDirectoryIfNeeded(
+        *session->headless_download_directory);
     if (status.IsError())
       return status;
   }

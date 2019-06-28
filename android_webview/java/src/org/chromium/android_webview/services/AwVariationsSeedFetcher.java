@@ -64,7 +64,7 @@ public class AwVariationsSeedFetcher extends JobService {
             case Channel.BETA:   return "beta";
             case Channel.DEV:    return "dev";
             case Channel.CANARY: return "canary";
-            default: return null; // This is the case for stand-alone WebView.
+            default: return null;
         }
     }
 

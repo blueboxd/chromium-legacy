@@ -1,7 +1,6 @@
-region
-++document
-++++group
-++++++img
-++++++++description Name='Static fallback'
-++++++img
-++++++++link Name='Interactive fallback'
+document
+++group
+++++img
+++++++description Name='Static fallback'
+++++img
+++++++link Name='Interactive fallback'

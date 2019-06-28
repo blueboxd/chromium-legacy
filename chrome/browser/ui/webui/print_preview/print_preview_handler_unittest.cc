@@ -340,6 +340,10 @@ class PrintPreviewHandlerTest : public testing::Test {
     ASSERT_TRUE(settings->FindKeyOfType("isInAppKioskMode",
                                         base::Value::Type::BOOLEAN));
 
+    const base::Value* locale =
+        settings->FindKeyOfType("uiLocale", base::Value::Type::STRING);
+    ASSERT_TRUE(locale);
+    EXPECT_EQ("en", locale->GetString());
     const base::Value* thousands_delimeter = settings->FindKeyOfType(
         "thousandsDelimeter", base::Value::Type::STRING);
     ASSERT_TRUE(thousands_delimeter);

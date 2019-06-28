@@ -329,7 +329,7 @@ class QuicStreamFactory::CertVerifierJob {
 class QuicStreamFactory::Job {
  public:
   Job(QuicStreamFactory* factory,
-      const quic::QuicTransportVersion& quic_version,
+      quic::ParsedQuicVersion quic_version,
       HostResolver* host_resolver,
       const QuicSessionAliasKey& key,
       bool was_alternative_service_recently_broken,
@@ -475,7 +475,7 @@ class QuicStreamFactory::Job {
 
   IoState io_state_;
   QuicStreamFactory* factory_;
-  quic::QuicTransportVersion quic_version_;
+  quic::ParsedQuicVersion quic_version_;
   HostResolver* host_resolver_;
   const QuicSessionAliasKey key_;
   RequestPriority priority_;
@@ -505,7 +505,7 @@ class QuicStreamFactory::Job {
 };
 
 QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
-                            const quic::QuicTransportVersion& quic_version,
+                            quic::ParsedQuicVersion quic_version,
                             HostResolver* host_resolver,
                             const QuicSessionAliasKey& key,
                             bool was_alternative_service_recently_broken,
@@ -768,7 +768,7 @@ int QuicStreamFactory::Job::DoConnect() {
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT,
       NetLog::BoolCallback("require_confirmation", require_confirmation));
 
-  DCHECK_NE(quic_version_, quic::QUIC_VERSION_UNSUPPORTED);
+  DCHECK_NE(quic_version_.transport_version, quic::QUIC_VERSION_UNSUPPORTED);
   int rv = factory_->CreateSession(
       key_, quic_version_, cert_verify_flags_, require_confirmation,
       resolve_host_request_->GetAddressResults().value(),
@@ -937,7 +937,7 @@ QuicStreamRequest::~QuicStreamRequest() {
 
 int QuicStreamRequest::Request(
     const HostPortPair& destination,
-    quic::QuicTransportVersion quic_version,
+    quic::ParsedQuicVersion quic_version,
     PrivacyMode privacy_mode,
     RequestPriority priority,
     const SocketTag& socket_tag,
@@ -948,7 +948,7 @@ int QuicStreamRequest::Request(
     NetErrorDetails* net_error_details,
     CompletionOnceCallback failed_on_default_network_callback,
     CompletionOnceCallback callback) {
-  DCHECK_NE(quic_version, quic::QUIC_VERSION_UNSUPPORTED);
+  DCHECK_NE(quic_version.transport_version, quic::QUIC_VERSION_UNSUPPORTED);
   DCHECK(net_error_details);
   DCHECK(callback_.is_null());
   DCHECK(host_resolution_callback_.is_null());
@@ -1289,7 +1289,7 @@ void QuicStreamFactory::MarkAllActiveSessionsGoingAway() {
 
 int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                               const HostPortPair& destination,
-                              quic::QuicTransportVersion quic_version,
+                              quic::ParsedQuicVersion quic_version,
                               RequestPriority priority,
                               int cert_verify_flags,
                               const GURL& url,
@@ -1786,7 +1786,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
 
 int QuicStreamFactory::CreateSession(
     const QuicSessionAliasKey& key,
-    const quic::QuicTransportVersion& quic_version,
+    quic::ParsedQuicVersion quic_version,
     int cert_verify_flags,
     bool require_confirmation,
     const AddressList& address_list,
@@ -1844,9 +1844,7 @@ int QuicStreamFactory::CreateSession(
   quic::QuicConnection* connection = new quic::QuicConnection(
       connection_id, ToQuicSocketAddress(addr), helper_.get(),
       alarm_factory_.get(), writer, true /* owns_writer */,
-      quic::Perspective::IS_CLIENT,
-      quic::ParsedQuicVersionVector{
-          quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, quic_version)});
+      quic::Perspective::IS_CLIENT, {quic_version});
   connection->set_ping_timeout(ping_timeout_);
   connection->SetMaxPacketLength(max_packet_length_);
 
@@ -1857,7 +1855,7 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
   config.SetBytesForConnectionIdToSend(0);
   ConfigureInitialRttEstimate(server_id, &config);
-  if (quic_version <= quic::QUIC_VERSION_43 &&
+  if (quic_version.transport_version <= quic::QUIC_VERSION_43 &&
       !config.HasClientSentConnectionOption(quic::kNSTP,
                                             quic::Perspective::IS_CLIENT)) {
     // Enable the no stop waiting frames connection option by default.

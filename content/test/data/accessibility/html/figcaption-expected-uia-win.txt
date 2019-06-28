@@ -1,6 +1,5 @@
-region
-++document
-++++group Name='Fig.1 - A green Box'
-++++++img Name='This is a green box.'
-++++++group
-++++++++description Name='Fig.1 - A green Box'
+document
+++group Name='Fig.1 - A green Box'
+++++img Name='This is a green box.'
+++++group
+++++++description Name='Fig.1 - A green Box'

@@ -74,10 +74,11 @@ void WorkerScriptLoader::Start() {
     return;
   }
 
+  // TODO(http://crbug.com/824840): Support interceptors on the UI thread.
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
     interceptor->MaybeCreateLoader(
-        resource_request_, resource_context,
+        resource_request_, nullptr, resource_context,
         base::BindOnce(&WorkerScriptLoader::MaybeStartLoader,
                        weak_factory_.GetWeakPtr(), interceptor),
         base::BindOnce(&WorkerScriptLoader::LoadFromNetwork,

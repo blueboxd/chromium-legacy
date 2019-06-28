@@ -222,16 +222,19 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   void Format(const std::string& device_path,
               const std::string& filesystem,
+              const std::string& label,
               VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kFormat);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(device_path);
     writer.AppendString(filesystem);
-    // No format option is currently specified, but we can later use this
-    // argument to specify options for the format operation.
+
     std::vector<std::string> format_options;
+    format_options.push_back(cros_disks::kFormatLabelOption);
+    format_options.push_back(label);
     writer.AppendArrayOfStrings(format_options);
+
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrosDisksClientImpl::OnVoidMethod,

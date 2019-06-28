@@ -174,6 +174,11 @@ Status StubWebView::OverrideNetworkConditions(
   return Status(kOk);
 }
 
+Status StubWebView::OverrideDownloadDirectoryIfNeeded(
+    const std::string& download_directory) {
+  return Status(kOk);
+}
+
 Status StubWebView::CaptureScreenshot(
     std::string* screenshot,
     const base::DictionaryValue& params) {

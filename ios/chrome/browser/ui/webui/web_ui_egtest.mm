@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import <EarlGrey/EarlGrey.h>
-#import <EarlGrey/GREYKeyboard.h>
 #import <XCTest/XCTest.h>
 
 #include "base/mac/foundation_util.h"
@@ -141,13 +140,6 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
   // Navigate to the second URL chrome://flags.
   LoadWebUIUrl(kChromeUIFlagsHost);
-
-  // Navigating to chrome://flags should trigger the keyboard, but pre-iOS13
-  // this is broken.
-  if (@available(iOS 13.0, *)) {
-    GREYAssertTrue([GREYKeyboard isKeyboardShown], @"Keyboard should be Shown");
-    [EarlGrey dismissKeyboardWithError:nil];
-  }
 
   // Tap the back button in the toolbar and verify that the resulting page's URL
   // corresponds to the first URL chrome://version that was loaded.

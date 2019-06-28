@@ -1,7 +1,6 @@
-region
-++document
-++++form
-++++++group Name='Browser Engines:'
-++++++++description
-++++++++textbox
-++++++++textbox
+document
+++form
+++++group Name='Browser Engines:'
+++++++description
+++++++textbox
+++++++textbox

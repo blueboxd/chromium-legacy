@@ -5,7 +5,6 @@
 module blink.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
-import "url/mojom/url.mojom";
 
 // As per https://github.com/rknoll/content-index.
 
@@ -35,8 +34,10 @@ struct ContentDescription {
   string title;
   string description;
   ContentCategory category;
-  url.mojom.Url icon_url;
-  url.mojom.Url launch_url;
+
+  // Passed as a string so the same description can be returned when queried.
+  string icon_url;
+  string launch_url;
 };
 
 // The |service_worker_registration_id| comes from an untrusted renderer but

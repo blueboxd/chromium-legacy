@@ -62,6 +62,12 @@ namespace wayland_fuzzer {
         {% endif %}
         harness->add_{{event.constructed}}(new_object);
       {% endif %}
+      {% for arg in event.args if arg.type == 'fd' %}
+        FILE* _f = fdopen({{arg.name}}, "w");
+	CHECK(_f);
+	fwrite(".", 1, 1, _f);
+        fclose(_f);
+      {% endfor %}
     }
   {% endfor %}
   {% for request in interface.requests %}

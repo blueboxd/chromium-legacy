@@ -37,13 +37,11 @@ uint32_t ToWinAuthenticatorAttachment(
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<WEBAUTHN_CREDENTIAL> ToWinCredentialVector(
-    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
-        credentials);
+    const std::vector<PublicKeyCredentialDescriptor>* credentials);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
-    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
-        credentials);
+    const std::vector<PublicKeyCredentialDescriptor>* credentials);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(

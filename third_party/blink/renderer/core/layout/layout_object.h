@@ -222,6 +222,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  public DisplayItemClient {
   friend class LayoutObjectChildList;
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, MutableForPaintingClearPaintFlags);
+  FRIEND_TEST_ALL_PREFIXES(
+      LayoutObjectTest,
+      ContainingBlockAbsoluteLayoutObjectShouldBeNonStaticallyPositionedBlockAncestor);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockFixedLayoutObjectInTransformedDiv);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockFixedLayoutObjectInTransformedDiv);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockFixedLayoutObjectInBody);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockAbsoluteLayoutObjectInBody);
+  FRIEND_TEST_ALL_PREFIXES(
+      LayoutObjectTest,
+      ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticallyPositionedInlineAncestor);
+
   friend class VisualRectMappingTest;
 
  public:
@@ -1253,15 +1268,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutObject* ContainerForAbsolutePosition(AncestorSkipInfo* = nullptr) const;
   // Finds the container as if this object is absolute-position.
   LayoutObject* ContainerForFixedPosition(AncestorSkipInfo* = nullptr) const;
-
-  // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
-  // containing LayoutBlock of it.
-  LayoutBlock* ContainingBlockForAbsolutePosition(
-      AncestorSkipInfo* = nullptr) const;
-  // Returns ContainerForFixedPosition() if it's a LayoutBlock, or the
-  // containing LayoutBlock of it.
-  LayoutBlock* ContainingBlockForFixedPosition(
-      AncestorSkipInfo* = nullptr) const;
 
   bool CanContainOutOfFlowPositionedElement(EPosition position) const {
     DCHECK(position == EPosition::kAbsolute || position == EPosition::kFixed);
@@ -2616,6 +2622,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
               DocumentLifecycle::kInPrePaint);
     bitfields_.SetBackgroundIsKnownToBeObscured(b);
   }
+
+  // Returns |container|'s containing block.
+  LayoutBlock* FindNonAnonymousContainingBlock(
+      LayoutObject* container,
+      LayoutObject::AncestorSkipInfo* = nullptr) const;
+  // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
+  // containing LayoutBlock of it.
+  LayoutBlock* ContainingBlockForAbsolutePosition(
+      AncestorSkipInfo* = nullptr) const;
+  // Returns ContainerForFixedPosition() if it's a LayoutBlock, or the
+  // containing LayoutBlock of it.
+  LayoutBlock* ContainingBlockForFixedPosition(
+      AncestorSkipInfo* = nullptr) const;
 
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a

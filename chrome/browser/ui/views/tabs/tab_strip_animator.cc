@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip_animator.h"
 
+#include <utility>
+
 #include "base/time/time.h"
 
 // TODO(965227): align animation ticks to compositor events.
@@ -28,7 +30,13 @@ bool TabStripAnimator::IsAnimating() const {
   return timer_.IsRunning();
 }
 
+TabAnimation::ViewType TabStripAnimator::GetAnimationViewTypeAt(
+    int index) const {
+  return animations_.at(index).view_type();
+}
+
 void TabStripAnimator::InsertTabAtNoAnimation(
+    TabAnimation::ViewType view_type,
     int index,
     base::OnceClosure tab_removed_callback,
     TabAnimationState::TabActiveness active,
@@ -36,16 +44,10 @@ void TabStripAnimator::InsertTabAtNoAnimation(
   animations_.insert(
       animations_.begin() + index,
       TabAnimation::ForStaticState(
+          view_type,
           TabAnimationState::ForIdealTabState(
               TabAnimationState::TabOpenness::kOpen, pinned, active, 0),
           std::move(tab_removed_callback)));
-}
-
-void TabStripAnimator::MoveTabNoAnimation(int prev_index, int new_index) {
-  TabAnimation moved_animation = std::move(animations_[prev_index]);
-  animations_.erase(animations_.begin() + prev_index);
-  animations_.insert(animations_.begin() + new_index,
-                     std::move(moved_animation));
 }
 
 void TabStripAnimator::RemoveTabNoAnimation(int index) {
@@ -60,13 +62,34 @@ void TabStripAnimator::SetPinnednessNoAnimation(
   animations_[index].CompleteAnimation();
 }
 
-void TabStripAnimator::InsertTabAt(int index,
+void TabStripAnimator::MoveTabsNoAnimation(std::vector<int> moving_tabs,
+                                           int new_index) {
+  DCHECK_GT(moving_tabs.size(), 0u);
+  std::vector<TabAnimation> moved_animations;
+  // Remove the rightmost tab first to avoid perturbing the indices of the other
+  // tabs in the list.
+  std::reverse(std::begin(moving_tabs), std::end(moving_tabs));
+  for (int tab : moving_tabs) {
+    moved_animations.push_back(std::move(animations_[tab]));
+    animations_.erase(animations_.begin() + tab);
+  }
+  // Insert the leftmost tab first, for the same reason.
+  std::reverse(std::begin(moved_animations), std::end(moved_animations));
+  for (size_t i = 0; i < moved_animations.size(); i++) {
+    animations_.insert(animations_.begin() + new_index + i,
+                       std::move(moved_animations[i]));
+  }
+}
+
+void TabStripAnimator::InsertTabAt(TabAnimation::ViewType view_type,
+                                   int index,
                                    base::OnceClosure tab_removed_callback,
                                    TabAnimationState::TabActiveness active,
                                    TabAnimationState::TabPinnedness pinned) {
   animations_.insert(
       animations_.begin() + index,
       TabAnimation::ForStaticState(
+          view_type,
           TabAnimationState::ForIdealTabState(
               TabAnimationState::TabOpenness::kClosed, pinned, active, 0),
           std::move(tab_removed_callback)));

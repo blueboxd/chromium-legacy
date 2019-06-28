@@ -58,6 +58,12 @@ message ConditionalFrequencyPredictorProto {
   repeated Event events = 1;
 }
 
+// First-order markov chain predictor
+message MarkovPredictorProto {
+  // Stores a conditional frequency predictor.
+  required RecurrencePredictorProto frequencies = 1;
+}
+
 // Represents the serialisation of one particular predictor.
 message RecurrencePredictorProto {
   oneof predictor {
@@ -65,5 +71,6 @@ message RecurrencePredictorProto {
     FrecencyPredictorProto frecency_predictor = 2;
     HourBinPredictorProto hour_bin_predictor = 3;
     ConditionalFrequencyPredictorProto conditional_frequency_predictor = 4;
+    MarkovPredictorProto markov_predictor = 5;
   }
 }

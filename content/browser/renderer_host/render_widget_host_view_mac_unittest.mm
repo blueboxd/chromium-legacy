@@ -2289,21 +2289,4 @@ TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
   EXPECT_NSEQ([view accessibilityParent], parent_view);
 }
 
-// Tests that when entering mouse lock, the cursor will lock to window center.
-TEST_F(RenderWidgetHostViewMacTest, PointerLockCenterPosition) {
-  NSView* view = rwhv_mac_->GetInProcessNSView();
-
-  NSRect bound = NSMakeRect(123, 234, 456, 678);
-  [view setFrame:bound];
-
-  EXPECT_EQ(gfx::Rect([view bounds]), gfx::Rect(0, 0, 456, 678));
-
-  rwhv_mac_->LockMouse();
-  EXPECT_TRUE(rwhv_mac_->IsMouseLocked());
-
-  gfx::Point mouse_pos =
-      gfx::Point([window_ mouseLocationOutsideOfEventStream]);
-  EXPECT_EQ(mouse_pos, gfx::Point(228, 339));
-}
-
 }  // namespace content

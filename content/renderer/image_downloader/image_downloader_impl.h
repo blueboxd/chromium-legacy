@@ -5,23 +5,23 @@
 #ifndef CONTENT_RENDERER_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 #define CONTENT_RENDERER_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 
-#include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/renderer/image_downloader/image_downloader_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 
 namespace content {
 
-class ImageDownloaderImpl : public mojom::ImageDownloader,
+class ImageDownloaderImpl : public blink::mojom::ImageDownloader,
                             public ImageDownloaderBase {
  public:
   ~ImageDownloaderImpl() override;
 
   static void CreateMojoService(RenderFrame* render_frame,
-                                mojom::ImageDownloaderRequest request);
+                                blink::mojom::ImageDownloaderRequest request);
 
  private:
   ImageDownloaderImpl(RenderFrame* render_frame,
-                      mojom::ImageDownloaderRequest request);
+                      blink::mojom::ImageDownloaderRequest request);
 
   // Override ImageDownloaderBase::OnDestruct().
   void OnDestruct() override;
@@ -43,7 +43,7 @@ class ImageDownloaderImpl : public mojom::ImageDownloader,
                         int32_t http_status_code,
                         const std::vector<SkBitmap>& images);
 
-  mojo::Binding<mojom::ImageDownloader> binding_;
+  mojo::Binding<blink::mojom::ImageDownloader> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDownloaderImpl);
 };

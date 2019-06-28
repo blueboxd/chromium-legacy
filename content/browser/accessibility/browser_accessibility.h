@@ -485,6 +485,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> GetSetSize() const override;
 
  protected:
+  // The UIA tree formatter needs access to GetUniqueId() to identify the
+  // starting point for tree dumps.
+  friend class AccessibilityTreeFormatterUia;
+
   using BrowserAccessibilityPositionInstance =
       BrowserAccessibilityPosition::AXPositionInstance;
   using AXPlatformRange =

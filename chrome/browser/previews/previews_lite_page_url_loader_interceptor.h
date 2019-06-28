@@ -36,6 +36,7 @@ class PreviewsLitePageURLLoaderInterceptor
   // content::URLLaoderRequestInterceptor:
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
+      content::BrowserContext* browser_context,
       content::ResourceContext* resource_context,
       content::URLLoaderRequestInterceptor::LoaderCallback callback) override;
 
@@ -43,6 +44,7 @@ class PreviewsLitePageURLLoaderInterceptor
   // Begins an attempt at fetching the lite page version of the URL.
   void CreateRedirectLoader(
       const network::ResourceRequest& tentative_resource_request,
+      content::BrowserContext* browser_context,
       content::ResourceContext* resource_context,
       content::URLLoaderRequestInterceptor::LoaderCallback callback);
 

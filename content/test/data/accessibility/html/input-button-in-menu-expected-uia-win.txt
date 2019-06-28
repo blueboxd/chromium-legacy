@@ -1,6 +1,5 @@
-region
-++document
-++++group
-++++++menuitem Name='Button in menu element'
-++++menu Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
-++++++menuitem Name='Button in element with menu role'
+document
+++group
+++++menuitem Name='Button in menu element'
+++menu Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
+++++menuitem Name='Button in element with menu role'

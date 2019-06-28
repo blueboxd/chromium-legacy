@@ -104,14 +104,14 @@
     },
     {
       "id": 12,
-      "description": "Drivers older than 2009-01 on Windows are possibly unreliable",
-      "cr_bugs": [72979, 89802, 315205],
+      "description": "Drivers older than 2010 on Windows are possibly unreliable",
+	"cr_bugs": [72979, 89802, 315205, 977432],
       "os": {
         "type": "win"
       },
       "driver_date": {
         "op": "<",
-        "value": "2009.1"
+        "value": "2010"
       },
       "exceptions": [
         {

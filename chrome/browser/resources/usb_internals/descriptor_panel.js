@@ -24,7 +24,7 @@ cr.define('descriptor_panel', function() {
   const ENDPOINT_DESCRIPTOR_TYPE = 0x05;
   const BOS_DESCRIPTOR_TYPE = 0x0F;
 
-  const DEVICE_CAPABILITY_DESCRIPTOR_TYPE_PLATFORM = 0x05;
+  const DEVICE_CAPABILITY_DESCRIPTOR_TYPE_PLATFORM_TYPE = 0x05;
 
   const DEVICE_DESCRIPTOR_LENGTH = 18;
   const CONFIGURATION_DESCRIPTOR_LENGTH = 9;
@@ -114,10 +114,10 @@ cr.define('descriptor_panel', function() {
      * @param {!HTMLElement} rootElement
      */
     constructor(usbDeviceProxy, rootElement) {
-      /** @private {!device.mojom.UsbDeviceInterface} */
+      /** @type {!device.mojom.UsbDeviceInterface} */
       this.usbDeviceProxy_ = usbDeviceProxy;
 
-      /** @private {!HTMLElement} */
+      /** @type {!HTMLElement} */
       this.rootElement_ = rootElement;
     }
 
@@ -127,7 +127,7 @@ cr.define('descriptor_panel', function() {
      * @param {!DescriptorPanel} stringDescriptorPanel
      */
     setStringDescriptorPanel(stringDescriptorPanel) {
-      /** @private {!DescriptorPanel} */
+      /** @type {!DescriptorPanel} */
       this.stringDescriptorPanel_ = stringDescriptorPanel;
     }
 
@@ -138,7 +138,6 @@ cr.define('descriptor_panel', function() {
       this.rootElement_.querySelectorAll('descriptorpanel')
           .forEach(el => el.remove());
       this.rootElement_.querySelectorAll('error').forEach(el => el.remove());
-      this.rootElement_.querySelectorAll('warn').forEach(el => el.remove());
       this.rootElement_.querySelectorAll('descriptorpaneltitle')
           .forEach(el => el.remove());
     }
@@ -175,7 +174,7 @@ cr.define('descriptor_panel', function() {
           // Clear the previous string descriptors.
           item.querySelector('.tree-children').textContent = '';
           this.stringDescriptorPanel_.clearView();
-          this.stringDescriptorPanel_.renderStringDescriptorForAllLanguages(
+          this.stringDescriptorPanel_.getStringDescriptorForAllLanguages_(
               index, item);
         });
       } else if (index < 0) {
@@ -189,28 +188,29 @@ cr.define('descriptor_panel', function() {
     }
 
     /**
-     * Renders a URL descriptor item for the URL Descriptor Index and
-     * adds it to the URL descriptor index item.
+     * Adds a button for getting URL descriptor.
      * @param {!Uint8Array} rawData
-     * @param {number} offset The offset of the URL descriptor index field.
+     * @param {number} offset The offset of the URL descriptor index.
      * @param {!cr.ui.TreeItem} item
      * @param {string} fieldLabel Not used in this function, but used to match
      *     other extraTreeItemFormatter.
      * @private
      */
-    async renderLandingPageItem_(rawData, offset, item, fieldLabel) {
-      // The second to last byte is the vendor code used to query URL
-      // descriptor. Last byte is index of url descriptor. These are defined by
-      // the WebUSB specification: http://wicg.github.io/webusb/
-      const vendorCode = rawData[offset + WEB_USB_VENDOR_CODE_OFFSET];
-      const urlIndex = rawData[offset + WEB_USB_URL_DESCRIPTOR_INDEX_OFFSET];
-      const url = await this.getUrlDescriptor_(vendorCode, urlIndex);
-
-      const landingPageItem = customTreeItem(url);
-      item.add(landingPageItem);
-
-      landingPageItem.querySelector('.tree-label')
-          .addEventListener('click', () => window.open(url, '_blank'));
+    renderUrlDescriptorIndexItem_(rawData, offset, item, fieldLabel) {
+      const index = rawData[offset];
+      if (index > 0) {
+        const buttonTemplate = document.querySelector('#raw-data-tree-button');
+        const button = document.importNode(buttonTemplate.content, true)
+                           .querySelector('button');
+        item.labelElement.appendChild(button);
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          // Clear the previous URL descriptors.
+          item.querySelector('.tree-children').textContent = '';
+          this.getUrlDescriptor_(
+              rawData, offset - WEB_USB_URL_DESCRIPTOR_INDEX_OFFSET, item);
+        });
+      }
     }
 
     /**
@@ -331,11 +331,9 @@ cr.define('descriptor_panel', function() {
     }
 
     /**
-     * Gets device descriptor of current device.
-     * @return {!Uint8Array}
-     * @private
+     * Gets device descriptor of current device, and display it.
      */
-    async getDeviceDescriptor_() {
+    async getDeviceDescriptor() {
       /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
@@ -346,37 +344,32 @@ cr.define('descriptor_panel', function() {
       usbControlTransferParams.value = (DEVICE_DESCRIPTOR_TYPE << 8);
       usbControlTransferParams.index = 0;
 
-      const response = await this.usbDeviceProxy_.controlTransferIn(
-          usbControlTransferParams, DEVICE_DESCRIPTOR_LENGTH,
-          CONTROL_TRANSFER_TIMEOUT_MS);
-
-      checkTransferSuccess(
-          response.status, 'Failed to read the device descriptor.',
-          this.rootElement_);
-
-      return new Uint8Array(response.data);
+      try {
+        await this.usbDeviceProxy_.open();
+        const response = await this.usbDeviceProxy_.controlTransferIn(
+            usbControlTransferParams, DEVICE_DESCRIPTOR_LENGTH,
+            CONTROL_TRANSFER_TIMEOUT_MS);
+        checkTransferSuccess(
+            response.status, 'Failed to read the device descriptor.',
+            this.rootElement_);
+        this.renderDeviceDescriptor_(new Uint8Array(response.data));
+      } catch (e) {
+        showError(e.message, this.rootElement_);
+      } finally {
+        await this.usbDeviceProxy_.close();
+      }
     }
 
     /**
      * Renders a view to display device descriptor hex data in both tree view
      * and raw form.
+     * @param {!Uint8Array} rawData
+     * @private
      */
-    async renderDeviceDescriptor() {
-      let rawData;
-      try {
-        await this.usbDeviceProxy_.open();
-        rawData = await this.getDeviceDescriptor_();
-      } catch (e) {
-        showError(e.message, this.rootElement_);
-        // Stop rendering if failed to read the device descriptor.
-        return;
-      } finally {
-        await this.usbDeviceProxy_.close();
-      }
-
+    async renderDeviceDescriptor_(rawData) {
       const fields = [
         {
-          label: 'Length (should be 18): ',
+          label: `Length (should be ${DEVICE_DESCRIPTOR_LENGTH}): `,
           size: 1,
           formatter: formatByte,
         },
@@ -470,11 +463,9 @@ cr.define('descriptor_panel', function() {
     }
 
     /**
-     * Gets configuration descriptor of current device.
-     * @return {!Uint8Array}
-     * @private
+     * Gets configuration descriptor of current device, and display it.
      */
-    async getConfigurationDescriptor_() {
+    async getConfigurationDescriptor() {
       /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
@@ -485,51 +476,44 @@ cr.define('descriptor_panel', function() {
       usbControlTransferParams.value = (CONFIGURATION_DESCRIPTOR_TYPE << 8);
       usbControlTransferParams.index = 0;
 
-      let response = await this.usbDeviceProxy_.controlTransferIn(
-          usbControlTransferParams, CONFIGURATION_DESCRIPTOR_LENGTH,
-          CONTROL_TRANSFER_TIMEOUT_MS);
-
-      checkTransferSuccess(
-          response.status,
-          'Failed to read the device configuration descriptor to determine ' +
-              'the total descriptor length.',
-          this.rootElement_);
-
-      const data = new DataView(new Uint8Array(response.data).buffer);
-      const length =
-          data.getUint16(CONFIGURATION_DESCRIPTOR_TOTAL_LENGTH_OFFSET, true);
-      // Re-gets the data use the full length.
-      response = await this.usbDeviceProxy_.controlTransferIn(
-          usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
-
-      checkTransferSuccess(
-          response.status,
-          'Failed to read the complete configuration descriptor.',
-          this.rootElement_);
-
-      return new Uint8Array(response.data);
+      try {
+        await this.usbDeviceProxy_.open();
+        let response = await this.usbDeviceProxy_.controlTransferIn(
+            usbControlTransferParams, CONFIGURATION_DESCRIPTOR_LENGTH,
+            CONTROL_TRANSFER_TIMEOUT_MS);
+        checkTransferSuccess(
+            response.status,
+            'Failed to read the device configuration descriptor to determine ' +
+                'the total descriptor length.',
+            this.rootElement_);
+        const dataView = new DataView(new Uint8Array(response.data).buffer);
+        const length = dataView.getUint16(
+            CONFIGURATION_DESCRIPTOR_TOTAL_LENGTH_OFFSET, true);
+        // Re-gets the data using the full length.
+        response = await this.usbDeviceProxy_.controlTransferIn(
+            usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
+        checkTransferSuccess(
+            response.status,
+            'Failed to read the complete configuration descriptor.',
+            this.rootElement_);
+        this.renderConfigurationDescriptor_(new Uint8Array(response.data));
+      } catch (e) {
+        showError(e.message, this.rootElement_);
+      } finally {
+        await this.usbDeviceProxy_.close();
+      }
     }
 
     /**
      * Renders a view to display configuration descriptor hex data in both tree
      * view and raw form.
+     * @param {!Uint8Array} rawData
+     * @private
      */
-    async renderConfigurationDescriptor() {
-      let rawData;
-      try {
-        await this.usbDeviceProxy_.open();
-        rawData = await this.getConfigurationDescriptor_();
-      } catch (e) {
-        showError(e.message, this.rootElement_);
-        // Stop rendering if failed to read the configuration descriptor.
-        return;
-      } finally {
-        await this.usbDeviceProxy_.close();
-      }
-
+    async renderConfigurationDescriptor_(rawData) {
       const fields = [
         {
-          label: 'Length (should be 9): ',
+          label: `Length (should be ${CONFIGURATION_DESCRIPTOR_LENGTH}): `,
           size: 1,
           formatter: formatByte,
         },
@@ -580,7 +564,7 @@ cr.define('descriptor_panel', function() {
       renderRawDataBytes(rawDataByteElement, rawData);
 
       const expectNumInterfaces =
-          rawData[CONFIGURATION_DESCRIPTOR_NUM_INTERFACES_OFFSET];
+          rawData[CONFIGURATION_DESCRIPTOR_NUM_INTERFACES_OFFSET] || 0;
 
       let offset = renderRawDataTree(
           rawDataTreeRoot, rawDataByteElement, fields, rawData, 0,
@@ -656,13 +640,6 @@ cr.define('descriptor_panel', function() {
     renderInterfaceDescriptor_(
         rawDataTreeRoot, rawDataByteElement, rawData, originalOffset,
         indexInterface, expectNumEndpoints) {
-      if (originalOffset + INTERFACE_DESCRIPTOR_LENGTH > rawData.length) {
-        showError(
-            `Failed to read the interface descriptor at index ${
-                indexInterface}.`,
-            this.rootElement_);
-      }
-
       const parentClassName = `descriptor-interface-${indexInterface}`;
       const interfaceItem =
           customTreeItem(`Interface ${indexInterface}`, parentClassName);
@@ -670,7 +647,7 @@ cr.define('descriptor_panel', function() {
 
       const fields = [
         {
-          label: 'Length (should be 7): ',
+          label: `Length (should be ${INTERFACE_DESCRIPTOR_LENGTH}): `,
           size: 1,
           formatter: formatByte,
         },
@@ -717,19 +694,14 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      expectNumEndpoints +=
-          rawData[originalOffset + INTERFACE_DESCRIPTOR_NUM_ENDPOINTS_OFFSET];
-
+      const numEndpointsOffset =
+          originalOffset + INTERFACE_DESCRIPTOR_NUM_ENDPOINTS_OFFSET;
+      if (numEndpointsOffset < rawData.length) {
+        expectNumEndpoints += rawData[numEndpointsOffset];
+      }
       const offset = renderRawDataTree(
           interfaceItem, rawDataByteElement, fields, rawData, originalOffset,
           this.rootElement_, parentClassName);
-
-      if (offset !== originalOffset + INTERFACE_DESCRIPTOR_LENGTH) {
-        showError(
-            `An error occurred while rendering interface descriptor at index ${
-                indexInterface}.`,
-            this.rootElement_);
-      }
 
       return [offset, expectNumEndpoints];
     }
@@ -749,12 +721,6 @@ cr.define('descriptor_panel', function() {
     renderEndpointDescriptor_(
         rawDataTreeRoot, rawDataByteElement, rawData, originalOffset,
         indexEndpoint) {
-      if (originalOffset + ENDPOINT_DESCRIPTOR_LENGTH > rawData.length) {
-        showError(
-            `Failed to read the endpoint descriptor at index ${indexEndpoint}.`,
-            this.rootElement_);
-      }
-
       const parentClassName = `descriptor-endpoint-${indexEndpoint}`;
       const endpointItem =
           customTreeItem(`Endpoint ${indexEndpoint}`, parentClassName);
@@ -762,7 +728,7 @@ cr.define('descriptor_panel', function() {
 
       const fields = [
         {
-          label: 'Length (should be 7): ',
+          label: `Length (should be ${ENDPOINT_DESCRIPTOR_LENGTH}): `,
           size: 1,
           formatter: formatByte,
         },
@@ -797,13 +763,6 @@ cr.define('descriptor_panel', function() {
           endpointItem, rawDataByteElement, fields, rawData, originalOffset,
           this.rootElement_, parentClassName);
 
-      if (offset !== originalOffset + ENDPOINT_DESCRIPTOR_LENGTH) {
-        showError(
-            `An error occurred while rendering endpoint descriptor at index ${
-                indexEndpoint}.`,
-            this.rootElement_);
-      }
-
       return offset;
     }
 
@@ -823,14 +782,6 @@ cr.define('descriptor_panel', function() {
         indexUnknown) {
       const length =
           rawData[originalOffset + STANDARD_DESCRIPTOR_LENGTH_OFFSET];
-
-      if (originalOffset + length > rawData.length) {
-        showError(
-            `Failed to read the unknown descriptor at index ${indexUnknown}.`,
-            this.rootElement_);
-        return;
-      }
-
       const parentClassName = `descriptor-unknown-${indexUnknown}`;
       const unknownItem =
           customTreeItem(`Unknown Descriptor ${indexUnknown}`, parentClassName);
@@ -851,7 +802,7 @@ cr.define('descriptor_panel', function() {
 
       let offset = renderRawDataTree(
           unknownItem, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       const rawDataByteElements = rawDataByteElement.querySelectorAll('span');
 
@@ -928,13 +879,15 @@ cr.define('descriptor_panel', function() {
 
     /**
      * Gets the string descriptor for the current device with the given index
-     * and language code.
+     * and language code, and display it.
      * @param {number} index
      * @param {number} languageCode
+     * @param {!cr.ui.TreeItem=} treeItem
      * @return {{languageCode:string,rawData:!Uint8Array}}
      * @private
      */
-    async getStringDescriptorForLanguageCode_(index, languageCode) {
+    async getStringDescriptorForLanguageCode_(
+        index, languageCode, treeItem = undefined) {
       /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
@@ -942,24 +895,28 @@ cr.define('descriptor_panel', function() {
       usbControlTransferParams.recipient =
           device.mojom.UsbControlTransferRecipient.DEVICE;
       usbControlTransferParams.request = GET_DESCRIPTOR_REQUEST;
-
       usbControlTransferParams.index = languageCode;
-
       usbControlTransferParams.value = (STRING_DESCRIPTOR_TYPE << 8) | index;
 
-      const response = await this.usbDeviceProxy_.controlTransferIn(
-          usbControlTransferParams, MAX_STRING_DESCRIPTOR_LENGTH,
-          CONTROL_TRANSFER_TIMEOUT_MS);
+      try {
+        await this.usbDeviceProxy_.open();
+        const response = await this.usbDeviceProxy_.controlTransferIn(
+            usbControlTransferParams, MAX_STRING_DESCRIPTOR_LENGTH,
+            CONTROL_TRANSFER_TIMEOUT_MS);
+        checkTransferSuccess(
+            response.status,
+            `Failed to read the device string descriptor of index: ${
+                index}, language: ${parseLanguageCode(languageCode)}.`,
+            this.rootElement_);
 
-      const languageCodeStr = parseLanguageCode(languageCode);
-      checkTransferSuccess(
-          response.status,
-          `Failed to read the device string descriptor of index: ${
-              index}, language: ${languageCodeStr}.`,
-          this.rootElement_);
-
-      const rawData = new Uint8Array(response.data);
-      return {languageCodeStr, rawData};
+        this.indexInput_.value = index;
+        this.renderStringDescriptorForLanguageCode_(
+            new Uint8Array(response.data), languageCode, treeItem);
+      } catch (e) {
+        showError(e.message, this.rootElement_);
+      } finally {
+        await this.usbDeviceProxy_.close();
+      }
     }
 
     /**
@@ -968,37 +925,13 @@ cr.define('descriptor_panel', function() {
      * @param {number} index
      * @param {number} languageCode
      * @param {cr.ui.TreeItem=} treeItem
+     * @private
      */
-    async renderStringDescriptorForLanguageCode(
-        index, languageCode, treeItem = undefined) {
+    renderStringDescriptorForLanguageCode_(
+        rawData, languageCode, treeItem = undefined) {
       this.rootElement_.hidden = false;
 
-      this.indexInput_.value = index;
-
-      let rawDataMap;
-      try {
-        await this.usbDeviceProxy_.open();
-        rawDataMap =
-            await this.getStringDescriptorForLanguageCode_(index, languageCode);
-      } catch (e) {
-        showError(e.message, this.rootElement_);
-        // Stop rendering if failed to read the string descriptor.
-        return;
-      } finally {
-        await this.usbDeviceProxy_.close();
-      }
-
-      const languageStr = rawDataMap.languageCodeStr;
-      const rawData = rawDataMap.rawData;
-
-      const length = rawData[STANDARD_DESCRIPTOR_LENGTH_OFFSET];
-      if (length > rawData.length) {
-        showError(
-            `Failed to read the string descriptor at index ${index} in ${
-                languageStr}.`,
-            this.rootElement_);
-        return;
-      }
+      const languageStr = parseLanguageCode(languageCode);
 
       const fields = [
         {
@@ -1031,8 +964,7 @@ cr.define('descriptor_panel', function() {
 
       // The first two elements of rawData are length and descriptor type.
       const stringDescriptor = decodeUtf16Array(rawData.slice(2), true);
-      const parentClassName =
-          `descriptor-string-${index}-language-code-${languageStr}`;
+      const parentClassName = `descriptor-string-language-code-${languageStr}`;
       const stringDescriptorItem = customTreeItem(
           `${languageStr}: ${stringDescriptor}`, parentClassName);
       rawDataTreeRoot.add(stringDescriptorItem);
@@ -1055,8 +987,9 @@ cr.define('descriptor_panel', function() {
      * given index.
      * @param {number} index
      * @param {cr.ui.TreeItem=} treeItem
+     * @private
      */
-    async renderStringDescriptorForAllLanguages(index, treeItem = undefined) {
+    async getStringDescriptorForAllLanguages_(index, treeItem = undefined) {
       this.rootElement_.hidden = false;
 
       this.indexInput_.value = index;
@@ -1065,7 +998,7 @@ cr.define('descriptor_panel', function() {
       const languageCodesList = await this.getAllLanguageCodes();
 
       for (const languageCode of languageCodesList) {
-        await this.renderStringDescriptorForLanguageCode(
+        await this.getStringDescriptorForLanguageCode_(
             index, languageCode, treeItem);
       }
     }
@@ -1089,17 +1022,18 @@ cr.define('descriptor_panel', function() {
       const languageCodeInput =
           this.rootElement_.querySelector('#language-code-input');
 
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         this.clearView();
         const index = Number.parseInt(this.indexInput_.value);
         if (this.checkParamValid_(index, 'Index', 1, 255)) {
           if (languageCodeInput.value === 'All') {
-            this.renderStringDescriptorForAllLanguages(index);
+            await this.getStringDescriptorForAllLanguages_(index);
           } else {
             const languageCode = Number.parseInt(languageCodeInput.value);
             if (this.checkParamValid_(
                     languageCode, 'Language Code', 0, 65535)) {
-              this.renderStringDescriptorForLanguageCode(index, languageCode);
+              await this.getStringDescriptorForLanguageCode_(
+                  index, languageCode);
             }
           }
         }
@@ -1118,11 +1052,9 @@ cr.define('descriptor_panel', function() {
     /**
      * Gets the Binary device Object Store (BOS) descriptor of the current
      * device, which contains the WebUSB descriptor and Microsoft OS 2.0
-     * descriptor.
-     * @return {!Uint8Array}
-     * @private
+     * descriptor, and display it.
      */
-    async getBosDescriptor_() {
+    async getBosDescriptor() {
       /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
@@ -1133,47 +1065,40 @@ cr.define('descriptor_panel', function() {
       usbControlTransferParams.value = (BOS_DESCRIPTOR_TYPE << 8);
       usbControlTransferParams.index = 0;
 
-      let response = await this.usbDeviceProxy_.controlTransferIn(
-          usbControlTransferParams, BOS_DESCRIPTOR_HEADER_LENGTH,
-          CONTROL_TRANSFER_TIMEOUT_MS);
-
-      checkTransferSuccess(
-          response.status,
-          'Failed to read the device BOS descriptor to determine ' +
-              'the total descriptor length.',
-          this.rootElement_);
-
-      const data = new DataView(new Uint8Array(response.data).buffer);
-      const length = data.getUint16(BOS_DESCRIPTOR_TOTAL_LENGTH_OFFSET, true);
-
-      // Re-gets the data use the full length.
-      response = await this.usbDeviceProxy_.controlTransferIn(
-          usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
-
-      checkTransferSuccess(
-          response.status, 'Failed to read the complete BOS descriptor.',
-          this.rootElement_);
-
-      return new Uint8Array(response.data);
+      try {
+        await this.usbDeviceProxy_.open();
+        let response = await this.usbDeviceProxy_.controlTransferIn(
+            usbControlTransferParams, BOS_DESCRIPTOR_HEADER_LENGTH,
+            CONTROL_TRANSFER_TIMEOUT_MS);
+        checkTransferSuccess(
+            response.status,
+            'Failed to read the device BOS descriptor to determine ' +
+                'the total descriptor length.',
+            this.rootElement_);
+        const dataView = new DataView(new Uint8Array(response.data).buffer);
+        const length =
+            dataView.getUint16(BOS_DESCRIPTOR_TOTAL_LENGTH_OFFSET, true);
+        // Re-gets the data using the full length.
+        response = await this.usbDeviceProxy_.controlTransferIn(
+            usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
+        checkTransferSuccess(
+            response.status, 'Failed to read the complete BOS descriptor.',
+            this.rootElement_);
+        await this.renderBosDescriptor_(new Uint8Array(response.data));
+      } catch (e) {
+        showError(e.message, this.rootElement_);
+      } finally {
+        await this.usbDeviceProxy_.close();
+      }
     }
 
     /**
      * Renders a view to display BOS descriptor hex data in both tree view
      * and raw form.
+     * @param {!Uint8Array} rawData
+     * @private
      */
-    async renderBosDescriptor() {
-      let rawData;
-      try {
-        await this.usbDeviceProxy_.open();
-        rawData = await this.getBosDescriptor_();
-      } catch (e) {
-        showError(e.message, this.rootElement_);
-        // Stop rendering if failed to read the BOS descriptor.
-        return;
-      } finally {
-        await this.usbDeviceProxy_.close();
-      }
-
+    async renderBosDescriptor_(rawData) {
       const fields = [
         {
           'label': 'Length (should be 5): ',
@@ -1206,7 +1131,8 @@ cr.define('descriptor_panel', function() {
       renderRawDataBytes(rawDataByteElement, rawData);
 
       let offset = renderRawDataTree(
-          rawDataTreeRoot, rawDataByteElement, fields, rawData, 0);
+          rawDataTreeRoot, rawDataByteElement, fields, rawData, 0,
+          this.rootElement_);
 
       if (offset !== BOS_DESCRIPTOR_HEADER_LENGTH) {
         showError(
@@ -1224,32 +1150,35 @@ cr.define('descriptor_panel', function() {
              rawData.length) {
         switch (
             rawData[offset + BOS_DESCRIPTOR_DEVICE_CAPABILITY_TYPE_OFFSET]) {
-          case DEVICE_CAPABILITY_DESCRIPTOR_TYPE_PLATFORM:
+          case DEVICE_CAPABILITY_DESCRIPTOR_TYPE_PLATFORM_TYPE:
             if (isSameUuid(rawData, offset, WEB_USB_CAPABILITY_UUID)) {
-              offset = this.renderWebUsbPlatformDescriptor_(
+              this.renderWebUsbPlatformDescriptor_(
                   rawDataTreeRoot, rawDataByteElement, rawData, offset,
                   indexWebUsb);
               indexWebUsb++;
+              offset += rawData[offset + STANDARD_DESCRIPTOR_LENGTH_OFFSET];
               break;
             } else if (isSameUuid(
                            rawData, offset,
                            MS_OS_20_PLATFORM_CAPABILITY_UUID)) {
-              offset = this.renderMsOs20PlatformDescriptor_(
+              this.renderMsOs20PlatformDescriptor_(
                   rawDataTreeRoot, rawDataByteElement, rawData, offset,
                   indexMsOs20);
               indexMsOs20++;
+              offset += rawData[offset + STANDARD_DESCRIPTOR_LENGTH_OFFSET];
               break;
             }
           default:
-            offset = this.renderUnknownBosDescriptor_(
+            this.renderUnknownBosDescriptor_(
                 rawDataTreeRoot, rawDataByteElement, rawData, offset,
                 indexUnknownDevCapability);
             indexUnknownDevCapability++;
+            offset += rawData[offset + STANDARD_DESCRIPTOR_LENGTH_OFFSET];
         }
       }
 
       const expectNumDevCapabilityDescriptors =
-          rawData[BOS_DESCRIPTOR_NUM_DEVICE_CAPABILITIES_OFFSET];
+          rawData[BOS_DESCRIPTOR_NUM_DEVICE_CAPABILITIES_OFFSET] || 0;
       const encounteredNumBosDescriptors =
           indexWebUsb + indexMsOs20 + indexUnknownDevCapability;
       if (encounteredNumBosDescriptors !== expectNumDevCapabilityDescriptors) {
@@ -1272,7 +1201,6 @@ cr.define('descriptor_panel', function() {
      * @param {number} originalOffset The start offset of the WebUSB platform
      *     capability descriptor.
      * @param {number} indexWebUsb
-     * @return {number}
      * @private
      */
     renderWebUsbPlatformDescriptor_(
@@ -1328,10 +1256,7 @@ cr.define('descriptor_panel', function() {
           label: 'Landing Page: ',
           size: 1,
           formatter: formatByte,
-          extraTreeItemFormatter: (rawData, offset, item, fieldLabel) =>
-              this.renderLandingPageItem_(
-                  rawData, offset - WEB_USB_URL_DESCRIPTOR_INDEX_OFFSET, item,
-                  fieldLabel)
+          extraTreeItemFormatter: this.renderUrlDescriptorIndexItem_.bind(this),
         },
       ];
 
@@ -1345,8 +1270,6 @@ cr.define('descriptor_panel', function() {
                 indexWebUsb}.`,
             this.rootElement_);
       }
-
-      return offset;
     }
 
     /**
@@ -1358,7 +1281,6 @@ cr.define('descriptor_panel', function() {
      * @param {number} originalOffset The start offset of the Microsoft OS 2.0
      *     platform capability descriptor.
      * @param {number} indexMsOs20
-     * @return {number}
      * @private
      */
     renderMsOs20PlatformDescriptor_(
@@ -1422,8 +1344,7 @@ cr.define('descriptor_panel', function() {
       // descriptor set information structures. Stop if accessing the descriptor
       // set information structure would cause us to read past the end of the
       // buffer.
-      while ((offset + MS_OS_20_DESCRIPTOR_SET_INFORMATION_LENGTH) <=
-             rawData.length) {
+      while (offset < rawData.length) {
         offset = this.renderMsOs20DescriptorSetInfo_(
             msOs20Item, rawDataByteElement, rawData, offset,
             indexMsOs20DescriptorSetInfo, indexMsOs20);
@@ -1436,8 +1357,6 @@ cr.define('descriptor_panel', function() {
                 ` index ${indexMsOs20}.`,
             this.rootElement_);
       }
-
-      return offset;
     }
 
     /**
@@ -1526,7 +1445,6 @@ cr.define('descriptor_panel', function() {
      * @param {number} originalOffset The start offset of the unknown BOS
      *     descriptor.
      * @param {number} indexUnknownDevCapability
-     * @return {number}
      * @private
      */
     renderUnknownBosDescriptor_(
@@ -1569,18 +1487,23 @@ cr.define('descriptor_panel', function() {
         rawDataByteElements[offset].classList.add(`field-offset-${offset}`);
         rawDataByteElements[offset].classList.add(parentClassName);
       }
-
-      return offset;
     }
 
     /**
-     * Gets the URL Descriptor, and returns the parsed URL.
-     * @param {number} vendorCode
-     * @param {number} urlIndex
-     * @return {string}
+     * Gets the URL Descriptor, renders a URL descriptor item and adds it to
+     * the URL descriptor index item.
+     * @param {!Uint8Array} rawData
+     * @param {number} offset The offset of the WebUSB descriptor.
+     * @param {!cr.ui.TreeItem} item The URL descriptor index item.
      * @private
      */
-    async getUrlDescriptor_(vendorCode, urlIndex) {
+    async getUrlDescriptor_(rawData, offset, item) {
+      // The second to last byte is the vendor code used to query URL
+      // descriptor. Last byte is index of url descriptor. These are defined by
+      // the WebUSB specification: http://wicg.github.io/webusb/
+      const vendorCode = rawData[offset + WEB_USB_VENDOR_CODE_OFFSET];
+      const urlIndex = rawData[offset + WEB_USB_URL_DESCRIPTOR_INDEX_OFFSET];
+
       /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.recipient =
@@ -1593,17 +1516,40 @@ cr.define('descriptor_panel', function() {
       usbControlTransferParams.value = urlIndex;
       usbControlTransferParams.index = GET_URL_REQUEST;
 
-      let urlResponse;
       try {
         await this.usbDeviceProxy_.open();
         // Gets the URL descriptor.
-        urlResponse = await this.usbDeviceProxy_.controlTransferIn(
+        const urlResponse = await this.usbDeviceProxy_.controlTransferIn(
             usbControlTransferParams, MAX_URL_DESCRIPTOR_LENGTH,
             CONTROL_TRANSFER_TIMEOUT_MS);
 
         checkTransferSuccess(
             urlResponse.status, 'Failed to read the device URL descriptor.',
             this.rootElement_);
+
+        let url;
+        // URL Prefixes are defined by Chapter 4.3.1 of the WebUSB
+        // specification: http://wicg.github.io/webusb/
+        switch (urlResponse.data[2]) {
+          case 0:
+            url = 'http://';
+            break;
+          case 1:
+            url = 'https://';
+            break;
+          case 255:
+          default:
+            url = '';
+        }
+        // The first three elements of urlResponse.data are length, descriptor
+        // type and URL scheme prefix.
+        url += decodeUtf8Array(new Uint8Array(urlResponse.data.slice(3)));
+
+        const landingPageItem = customTreeItem(url, 'descriptor-url');
+        landingPageItem.labelElement.addEventListener(
+            'click', () => window.open(url, '_blank'));
+        item.add(landingPageItem);
+        item.expanded = true;
       } catch (e) {
         showError(e.message, this.rootElement_);
         // Stops parsing to string format URL if failed to read the URL
@@ -1612,26 +1558,6 @@ cr.define('descriptor_panel', function() {
       } finally {
         await this.usbDeviceProxy_.close();
       }
-
-      let urlDescriptor;
-      // URL Prefixes are defined by Chapter 4.3.1 of the WebUSB specification:
-      // http://wicg.github.io/webusb/
-      switch (urlResponse.data[2]) {
-        case 0:
-          urlDescriptor = 'http://';
-          break;
-        case 1:
-          urlDescriptor = 'https://';
-          break;
-        case 255:
-        default:
-          urlDescriptor = '';
-      }
-      // The first three elements of urlResponse.data are length, descriptor
-      // type and URL scheme prefix.
-      urlDescriptor +=
-          decodeUtf8Array(new Uint8Array(urlResponse.data.slice(3)));
-      return urlDescriptor;
     }
 
     /**
@@ -1915,7 +1841,7 @@ cr.define('descriptor_panel', function() {
 
       const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + length) {
         showError(
@@ -1980,7 +1906,7 @@ cr.define('descriptor_panel', function() {
 
       const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + length) {
         showError(
@@ -2040,7 +1966,7 @@ cr.define('descriptor_panel', function() {
 
       const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + length) {
         showError(
@@ -2202,7 +2128,7 @@ cr.define('descriptor_panel', function() {
 
       const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + length) {
         showError(
@@ -2257,7 +2183,7 @@ cr.define('descriptor_panel', function() {
 
       const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + length) {
         showError(
@@ -2310,7 +2236,7 @@ cr.define('descriptor_panel', function() {
 
       const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + length) {
         showError(
@@ -2366,7 +2292,7 @@ cr.define('descriptor_panel', function() {
 
       const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + length) {
         showError(
@@ -2416,7 +2342,7 @@ cr.define('descriptor_panel', function() {
 
       let offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       const rawDataByteElements = rawDataByteElement.querySelectorAll('span');
 
@@ -2467,7 +2393,7 @@ cr.define('descriptor_panel', function() {
               response.status, 'Failed to send request.', this.rootElement_);
         }
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         return;
       } finally {
         await this.usbDeviceProxy_.close();

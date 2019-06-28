@@ -142,7 +142,6 @@ void VROrientationDevice::RequestSession(
 void VROrientationDevice::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   mojom::VRPosePtr pose = mojom::VRPose::New();
-  pose->orientation.emplace(4);
 
   SensorReading latest_reading;
   // If the reading fails just return the last pose that we got.
@@ -156,10 +155,7 @@ void VROrientationDevice::OnGetInlineFrameData(
         WorldSpaceToUserOrientedSpace(SensorSpaceToWorldSpace(latest_pose_));
   }
 
-  pose->orientation.value()[0] = latest_pose_.x();
-  pose->orientation.value()[1] = latest_pose_.y();
-  pose->orientation.value()[2] = latest_pose_.z();
-  pose->orientation.value()[3] = latest_pose_.w();
+  pose->orientation = latest_pose_;
 
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
   frame_data->pose = std::move(pose);

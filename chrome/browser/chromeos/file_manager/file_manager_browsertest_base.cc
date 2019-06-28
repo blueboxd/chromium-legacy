@@ -168,7 +168,10 @@ struct AddEntriesMessage {
     CROSTINI_VOLUME,
     USB_VOLUME,
     ANDROID_FILES_VOLUME,
-    DOCUMENTS_PROVIDER_VOLUME
+    DOCUMENTS_PROVIDER_VOLUME,
+    MEDIA_VIEW_AUDIO,
+    MEDIA_VIEW_IMAGES,
+    MEDIA_VIEW_VIDEOS
   };
 
   // Represents the different types of entries (e.g. file, folder).
@@ -216,6 +219,12 @@ struct AddEntriesMessage {
       *volume = ANDROID_FILES_VOLUME;
     else if (value == "documents_provider")
       *volume = DOCUMENTS_PROVIDER_VOLUME;
+    else if (value == "media_view_audio")
+      *volume = MEDIA_VIEW_AUDIO;
+    else if (value == "media_view_images")
+      *volume = MEDIA_VIEW_IMAGES;
+    else if (value == "media_view_videos")
+      *volume = MEDIA_VIEW_VIDEOS;
     else
       return false;
     return true;
@@ -1958,6 +1967,27 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             documents_provider_volume_->CreateEntry(*message.entries[i]);
           } else {
             LOG(FATAL) << "Add entry: but no DocumentsProvider volume.";
+          }
+          break;
+        case AddEntriesMessage::MEDIA_VIEW_AUDIO:
+          if (media_view_audio_) {
+            media_view_audio_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no MediaView Audio volume.";
+          }
+          break;
+        case AddEntriesMessage::MEDIA_VIEW_IMAGES:
+          if (media_view_images_) {
+            media_view_images_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no MediaView Images volume.";
+          }
+          break;
+        case AddEntriesMessage::MEDIA_VIEW_VIDEOS:
+          if (media_view_videos_) {
+            media_view_videos_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no MediaView Videos volume.";
           }
           break;
       }

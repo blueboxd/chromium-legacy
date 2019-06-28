@@ -280,8 +280,10 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
         ToWinAuthenticatorAttachment(request.authenticator_attachment);
   }
 
+  // Note that entries in |exclude_list_credentials| hold pointers
+  // into request.exclude_list.
   std::vector<WEBAUTHN_CREDENTIAL_EX> exclude_list_credentials =
-      ToWinCredentialExVector(request.exclude_list);
+      ToWinCredentialExVector(&request.exclude_list.value());
   std::vector<WEBAUTHN_CREDENTIAL_EX*> exclude_list_ptrs;
   std::transform(
       exclude_list_credentials.begin(), exclude_list_credentials.end(),
@@ -348,8 +350,10 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
                           request.app_id->size()));
   }
 
+  // Note that entries in |allow_list_credentials| hold pointers into
+  // request.allow_list.
   std::vector<WEBAUTHN_CREDENTIAL_EX> allow_list_credentials =
-      ToWinCredentialExVector(request.allow_list);
+      ToWinCredentialExVector(&request.allow_list);
   std::vector<WEBAUTHN_CREDENTIAL_EX*> allow_list_ptrs;
   std::transform(allow_list_credentials.begin(), allow_list_credentials.end(),
                  std::back_inserter(allow_list_ptrs),
@@ -357,7 +361,9 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
   WEBAUTHN_CREDENTIAL_LIST allow_credential_list{allow_list_ptrs.size(),
                                                  allow_list_ptrs.data()};
 
-  auto legacy_credentials = ToWinCredentialVector(request.allow_list);
+  // Note that entries in |legacy_credentials| hold pointers into
+  // request.allow_list.
+  auto legacy_credentials = ToWinCredentialVector(&request.allow_list);
 
   uint32_t authenticator_attachment;
   if (request.is_u2f_only) {

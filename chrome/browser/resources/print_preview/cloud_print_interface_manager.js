@@ -15,15 +15,17 @@ cr.define('cloudprint', function() {
    * @param {!print_preview.NativeLayer} nativeLayer Native layer instance.
    * @param {boolean} isInAppKioskMode Whether the print preview is in App
    *     Kiosk mode.
+   * @param {string} uiLocale The UI locale, for example "en-US" or "fr".
    * @return {!cloudprint.CloudPrintInterface}
    */
-  function getCloudPrintInterface(baseUrl, nativeLayer, isInAppKioskMode) {
+  function getCloudPrintInterface(
+      baseUrl, nativeLayer, isInAppKioskMode, uiLocale) {
     if (instance === null) {
       if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled')) {
         instance = new cloudprint.CloudPrintInterfaceNative();
       } else {
         instance = new cloudprint.CloudPrintInterfaceJS(
-            baseUrl, nativeLayer, isInAppKioskMode);
+            baseUrl, nativeLayer, isInAppKioskMode, uiLocale);
       }
     }
     return instance;

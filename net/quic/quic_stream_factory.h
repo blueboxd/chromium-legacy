@@ -125,7 +125,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // quic::QuicConnection.  This can be different than
   // HostPortPair::FromURL(url).
   int Request(const HostPortPair& destination,
-              quic::QuicTransportVersion quic_version,
+              quic::ParsedQuicVersion quic_version,
               PrivacyMode privacy_mode,
               RequestPriority priority,
               const SocketTag& socket_tag,
@@ -294,7 +294,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // OnRequestComplete asynchronously.
   int Create(const QuicSessionKey& session_key,
              const HostPortPair& destination,
-             quic::QuicTransportVersion quic_version,
+             quic::ParsedQuicVersion quic_version,
              RequestPriority priority,
              int cert_verify_flags,
              const GURL& url,
@@ -426,7 +426,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool HasActiveJob(const QuicSessionKey& session_key) const;
   bool HasActiveCertVerifierJob(const quic::QuicServerId& server_id) const;
   int CreateSession(const QuicSessionAliasKey& key,
-                    const quic::QuicTransportVersion& quic_version,
+                    quic::ParsedQuicVersion quic_version,
                     int cert_verify_flags,
                     bool require_confirmation,
                     const AddressList& address_list,

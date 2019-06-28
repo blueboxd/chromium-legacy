@@ -262,7 +262,8 @@ Polymer({
       // sidebar, so that cloud printers can be selected automatically.
       if (settings.cloudPrintURL) {
         this.initializeCloudPrint_(
-            settings.cloudPrintURL, settings.isInAppKioskMode);
+            settings.cloudPrintURL, settings.isInAppKioskMode,
+            settings.uiLocale);
       }
       this.$.documentInfo.init(
           settings.previewModifiable, settings.documentTitle,
@@ -294,12 +295,13 @@ Polymer({
    * Called when Google Cloud Print integration is enabled.
    * @param {string} cloudPrintUrl The URL to use for cloud print servers.
    * @param {boolean} appKioskMode Whether the browser is in app kiosk mode.
+   * @param {string} uiLocale The UI locale.
    * @private
    */
-  initializeCloudPrint_: function(cloudPrintUrl, appKioskMode) {
+  initializeCloudPrint_: function(cloudPrintUrl, appKioskMode, uiLocale) {
     assert(!this.cloudPrintInterface_);
     this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
-        cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
+        cloudPrintUrl, assert(this.nativeLayer_), appKioskMode, uiLocale);
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,

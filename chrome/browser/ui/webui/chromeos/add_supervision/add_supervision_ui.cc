@@ -148,7 +148,16 @@ void AddSupervisionUI::SetupResources() {
   source->AddResourcePath("add_supervision_api_server.js",
                           IDR_ADD_SUPERVISION_API_SERVER_JS);
   source->AddResourcePath("add_supervision.js", IDR_ADD_SUPERVISION_JS);
+  source->AddResourcePath("images/network_unavailable.svg",
+                          IDR_ADD_SUPERVISION_NETWORK_UNAVAILABLE_SVG);
+
   source->AddLocalizedString("pageTitle", IDS_ADD_SUPERVISION_PAGE_TITLE);
+  source->AddLocalizedString("networkDownHeading",
+                             IDS_ADD_SUPERVISION_NETWORK_DOWN_HEADING);
+  source->AddLocalizedString("networkDownDescription",
+                             IDS_ADD_SUPERVISION_NETWORK_DOWN_DESCRIPTION);
+  source->AddLocalizedString("networkDownButtonLabel",
+                             IDS_ADD_SUPERVISION_NETWORK_DOWN_BUTTON_LABEL);
 
   // Full paths (relative to src) are important for Mojom generated files.
   source->AddResourcePath(

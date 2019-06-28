@@ -154,78 +154,6 @@ class ContextLostRunLoop : public viz::ContextLostObserver {
   DISALLOW_COPY_AND_ASSIGN(ContextLostRunLoop);
 };
 
-// RunLoop implementation that runs until it observes a compositor frame.
-class CompositorFrameRunLoop : public ui::WindowAndroidObserver {
- public:
-  CompositorFrameRunLoop(ui::WindowAndroid* window) : window_(window) {
-    window_->AddObserver(this);
-  }
-  ~CompositorFrameRunLoop() override { window_->RemoveObserver(this); }
-
-  void RunUntilFrame() { run_loop_.Run(); }
-
- private:
-  // ui::WindowAndroidObserver:
-  void OnCompositingDidCommit() override { run_loop_.Quit(); }
-  void OnRootWindowVisibilityChanged(bool visible) override {}
-  void OnAttachCompositor() override {}
-  void OnDetachCompositor() override {}
-  void OnActivityStopped() override {}
-  void OnActivityStarted() override {}
-
-  ui::WindowAndroid* const window_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorFrameRunLoop);
-};
-
-IN_PROC_BROWSER_TEST_P(CompositorImplLowEndBrowserTest,
-                       CompositorImplDropsResourcesOnBackground) {
-  // This test makes invalid assumptions when surface synchronization is
-  // enabled. The compositor lock is obsolete, and inspecting frames
-  // from the CompositorImpl does not guarantee renderer CompositorFrames
-  // are ready.
-  if (features::IsSurfaceSynchronizationEnabled())
-    return;
-
-  auto* rwhva = render_widget_host_view_android();
-  auto* compositor = compositor_impl();
-  auto context = GpuBrowsertestCreateContext(
-      GpuBrowsertestEstablishGpuChannelSyncRunLoop());
-  context->BindToCurrentThread();
-
-  CompositorFrameRunLoop(window()).RunUntilFrame();
-  EXPECT_TRUE(rwhva->HasValidFrame());
-
-  ContextLostRunLoop run_loop(context.get());
-  compositor->SetVisibleForTesting(false);
-  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
-      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
-  rwhva->OnRootWindowVisibilityChanged(false);
-  rwhva->Hide();
-
-  // Ensure that context is eventually dropped and at that point we do not have
-  // a valid frame.
-  run_loop.RunUntilContextLost();
-  EXPECT_FALSE(rwhva->HasValidFrame());
-
-  // Become visible again:
-  compositor->SetVisibleForTesting(true);
-  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
-      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
-  rwhva->Show();
-  rwhva->OnRootWindowVisibilityChanged(true);
-
-  // We should have taken the compositor lock on resume.
-  EXPECT_TRUE(compositor->IsLockedForTesting());
-  EXPECT_FALSE(rwhva->HasValidFrame());
-
-  // The compositor should eventually be unlocked and produce a frame.
-  CompositorFrameRunLoop(window()).RunUntilFrame();
-  EXPECT_FALSE(compositor->IsLockedForTesting());
-  EXPECT_TRUE(rwhva->HasValidFrame());
-}
-
 // RunLoop implementation that runs until it observes a swap with size.
 class CompositorSwapRunLoop {
  public:
@@ -250,6 +178,42 @@ class CompositorSwapRunLoop {
 
   DISALLOW_COPY_AND_ASSIGN(CompositorSwapRunLoop);
 };
+
+IN_PROC_BROWSER_TEST_P(CompositorImplLowEndBrowserTest,
+                       CompositorImplDropsResourcesOnBackground) {
+  auto* rwhva = render_widget_host_view_android();
+  auto* compositor = compositor_impl();
+  auto context = GpuBrowsertestCreateContext(
+      GpuBrowsertestEstablishGpuChannelSyncRunLoop());
+  context->BindToCurrentThread();
+
+  // Run until we've swapped once. At this point we should have a valid frame.
+  CompositorSwapRunLoop(compositor_impl()).RunUntilSwap();
+  EXPECT_TRUE(rwhva->HasValidFrame());
+
+  ContextLostRunLoop run_loop(context.get());
+  compositor->SetVisibleForTesting(false);
+  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  rwhva->OnRootWindowVisibilityChanged(false);
+  rwhva->Hide();
+
+  // Ensure that context is eventually dropped and at that point we do not have
+  // a valid frame.
+  run_loop.RunUntilContextLost();
+  EXPECT_FALSE(rwhva->HasValidFrame());
+
+  // Become visible again:
+  compositor->SetVisibleForTesting(true);
+  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+  rwhva->Show();
+  rwhva->OnRootWindowVisibilityChanged(true);
+
+  // Wait for a swap after becoming visible.
+  CompositorSwapRunLoop(compositor_impl()).RunUntilSwap();
+  EXPECT_TRUE(rwhva->HasValidFrame());
+}
 
 IN_PROC_BROWSER_TEST_P(CompositorImplBrowserTest,
                        CompositorImplReceivesSwapCallbacks) {

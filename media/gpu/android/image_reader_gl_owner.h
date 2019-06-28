@@ -46,6 +46,7 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   GetAHardwareBuffer() override;
 
   const AImageReader* image_reader_for_testing() const { return image_reader_; }
+  int32_t max_images_for_testing() const { return max_images_; }
 
  protected:
   void OnTextureDestroyed(gpu::gles2::AbstractTexture*) override;
@@ -125,6 +126,7 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   // IgnorePendingRelease() or WaitForFrameAvailable() have been called since.
   base::TimeTicks release_time_;
   scoped_refptr<FrameAvailableEvent_ImageReader> frame_available_event_;
+  int32_t max_images_ = 0;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(ImageReaderGLOwner);

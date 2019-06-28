@@ -4,8 +4,13 @@
  * for interal tests. The main mocked objects are found in
  * ../external/wpt/resources/chromium/webxr-test.js. */
 
+let default_standing = new gfx.mojom.Transform();
+default_standing.matrix = [1, 0, 0, 0,
+                           0, 1, 0, 0,
+                           0, 0, 1, 0,
+                           0, 1.65, 0, 1];
 const default_stage_parameters = {
-  standingTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1.65, 0, 1],
+  standingTransform: default_standing,
   sizeX: 1.5,
   sizeZ: 1.5,
   bounds: null
@@ -59,7 +64,9 @@ MockRuntime.prototype.requestHitTest = function(ray) {
   var hit_results = this.hittest_results_;
   if (!hit_results) {
     var hit = new device.mojom.XRHitResult();
-    hit.hitMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+    // No change to the underlying matrix/leaving it null results in identity.
+    hit.hitMatrix = new gfx.mojom.Transform();
     hit_results = {results: [hit]};
   }
   return Promise.resolve(hit_results);
@@ -77,7 +84,8 @@ MockRuntime.prototype.setStageTransform = function(value) {
       this.displayInfo_.stageParameters = default_stage_parameters;
     }
 
-    this.displayInfo_.stageParameters.standingTransform = value;
+    this.displayInfo_.stageParameters.standingTransform = new gfx.mojom.Transform();
+    this.displayInfo_.stageParameters.standingTransform.matrix = value;
   } else if (this.displayInfo_.stageParameters) {
     this.displayInfo_.stageParameters = null;
   }

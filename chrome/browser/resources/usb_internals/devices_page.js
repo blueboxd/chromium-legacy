@@ -374,7 +374,7 @@ cr.define('devices_page', function() {
         break;
     }
 
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       displayElement.hidden = !displayElement.hidden;
       // Clear the panel before rendering new data.
       descriptorPanel.clearView();
@@ -382,16 +382,16 @@ cr.define('devices_page', function() {
       if (!displayElement.hidden) {
         switch (panelType) {
           case 'device-descriptor':
-            descriptorPanel.renderDeviceDescriptor();
+            await descriptorPanel.getDeviceDescriptor();
             break;
           case 'configuration-descriptor':
-            descriptorPanel.renderConfigurationDescriptor();
+            await descriptorPanel.getConfigurationDescriptor();
             break;
           case 'string-descriptor':
-            descriptorPanel.getAllLanguageCodes();
+            await descriptorPanel.getAllLanguageCodes();
             break;
           case 'bos-descriptor':
-            descriptorPanel.renderBosDescriptor();
+            await descriptorPanel.getBosDescriptor();
             break;
         }
       }
@@ -431,7 +431,6 @@ cr.define('devices_page', function() {
   }
 
   return {
-    DevicePage,
     DevicesPage,
   };
 });

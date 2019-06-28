@@ -51,9 +51,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
  protected:
   GpuWatchdogThread();
 
-  // Do not change this name. This is used for [GPU HANG] carsh reports.
-  virtual void DeliberatelyTerminateToRecoverFromHang() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThread);
 };
@@ -136,7 +133,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnAcknowledge();
   void OnCheck(bool after_suspend);
   void OnCheckTimeout();
-  void DeliberatelyTerminateToRecoverFromHang() override;
+  // Do not change the function name. It is used for [GPU HANG] carsh reports.
+  void DeliberatelyTerminateToRecoverFromHang();
 #if defined(USE_X11)
   void SetupXServer();
   void SetupXChangeProp();

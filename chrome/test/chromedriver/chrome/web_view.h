@@ -193,6 +193,10 @@ class WebView {
   virtual Status OverrideNetworkConditions(
       const NetworkConditions& network_conditions) = 0;
 
+  // Overrides normal download directory with given path.
+  virtual Status OverrideDownloadDirectoryIfNeeded(
+      const std::string& download_directory) = 0;
+
   // Captures the visible portions of the web view as a base64-encoded PNG.
   virtual Status CaptureScreenshot(
       std::string* screenshot,

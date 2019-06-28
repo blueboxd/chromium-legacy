@@ -35,40 +35,67 @@ function isAllowedRequest(requestDetails) {
 let server = null;
 const proxy = addSupervision.mojom.AddSupervisionHandler.getProxy();
 
-document.addEventListener('DOMContentLoaded', () => {
-  proxy.getOAuthToken().then((result) => {
-    const webviewUrl = loadTimeData.getString('webviewUrl');
-    if (!webviewUrl.startsWith('https://families.google.com')) {
-      console.error('webviewUrl is not from https://families.google.com');
-      return;
-    }
-    const eventOriginFilter = loadTimeData.getString('eventOriginFilter');
-    const webview =
-        /** @type {!WebView} */ (document.querySelector('#webview'));
+Polymer({
+  is: 'add-supervision-ui',
 
-    const accessToken = result.oauthToken;
-    const flowType = loadTimeData.getString('flowType');
-    const platformVersion = loadTimeData.getString('platformVersion');
+  /** Attempts to close the dialog */
+  closeDialog_: function() {
+    server.requestClose();
+  },
 
-    const url = new URL(webviewUrl);
-    url.searchParams.set('flowType', flowType);
-    url.searchParams.set('platformVersion', platformVersion);
-    url.searchParams.set('accessToken', accessToken);
+  /** @override */
+  ready: function() {
+    // Initialize and listen for online/offline state.
+    this.webviewDiv = this.$.webviewDiv;
+    this.webviewDiv.hidden = !navigator.onLine;
 
-    // Allow guest webview content to open links in new windows.
-    webview.addEventListener('newwindow', function(e) {
-      window.open(e.targetUrl);
+    this.offlineContentDiv = this.$.offlineContentDiv;
+    this.offlineContentDiv.hidden = navigator.onLine;
+
+    window.addEventListener('online', () => {
+      this.webviewDiv.style.hidden = false;
+      this.offlineContentDiv.hidden = true;
     });
 
-    // Block any requests to URLs other than one specified
-    // by eventOriginFilter.
-    webview.request.onBeforeRequest.addListener(function(details) {
-      return {cancel: !isAllowedRequest(details)};
-    }, {urls: ['<all_urls>']}, ['blocking']);
+    window.addEventListener('offline', () => {
+      this.webviewDiv.hidden = true;
+      this.offlineContentDiv.hidden = false;
+    });
 
-    webview.src = url.toString();
+    proxy.getOAuthToken().then((result) => {
+      const webviewUrl = loadTimeData.getString('webviewUrl');
+      if (!webviewUrl.startsWith('https://families.google.com')) {
+        console.error('webviewUrl is not from https://families.google.com');
+        return;
+      }
+      const eventOriginFilter = loadTimeData.getString('eventOriginFilter');
+      const webview =
+          /** @type {!WebView} */ (this.$.webview);
 
-    // Set up the server.
-    server = new AddSupervisionAPIServer(webview, url, eventOriginFilter);
-  });
+      const accessToken = result.oauthToken;
+      const flowType = loadTimeData.getString('flowType');
+      const platformVersion = loadTimeData.getString('platformVersion');
+
+      const url = new URL(webviewUrl);
+      url.searchParams.set('flowType', flowType);
+      url.searchParams.set('platformVersion', platformVersion);
+      url.searchParams.set('accessToken', accessToken);
+
+      // Allow guest webview content to open links in new windows.
+      webview.addEventListener('newwindow', function(e) {
+        window.open(e.targetUrl);
+      });
+
+      // Block any requests to URLs other than one specified
+      // by eventOriginFilter.
+      webview.request.onBeforeRequest.addListener(function(details) {
+        return {cancel: !isAllowedRequest(details)};
+      }, {urls: ['<all_urls>']}, ['blocking']);
+
+      webview.src = url.toString();
+
+      // Set up the server.
+      server = new AddSupervisionAPIServer(webview, url, eventOriginFilter);
+    });
+  },
 });

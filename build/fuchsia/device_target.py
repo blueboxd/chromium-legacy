@@ -153,7 +153,7 @@ class DeviceTarget(target.Target):
                             stdout=subprocess.PIPE,
                             stderr=open(os.devnull, 'w'))
 
-    output = proc.communicate()[0].strip().split('\n')
+    output = set(proc.communicate()[0].strip().split('\n'))
 
     if proc.returncode != 0:
       return False

@@ -79,19 +79,19 @@ BOOL MixedRealityWindow::ProcessWindowMessage(HWND window,
 }
 
 namespace {
-std::vector<float> ConvertToStandingTransform(const Matrix4x4& transform) {
-  return {transform.M11, transform.M12, transform.M13, transform.M14,
-          transform.M21, transform.M22, transform.M23, transform.M24,
-          transform.M31, transform.M32, transform.M33, transform.M34,
-          transform.M41, transform.M42, transform.M43, transform.M44};
+gfx::Transform ConvertToGfxTransform(const Matrix4x4& matrix) {
+  // clang-format off
+  return gfx::Transform(
+      matrix.M11, matrix.M21, matrix.M31, matrix.M41,
+      matrix.M12, matrix.M22, matrix.M32, matrix.M42,
+      matrix.M13, matrix.M23, matrix.M33, matrix.M43,
+      matrix.M14, matrix.M24, matrix.M34, matrix.M44
+    );
+  // clang-format on
 }
 
 mojom::VRFieldOfViewPtr ParseProjection(const Matrix4x4& projection) {
-  gfx::Transform proj(
-      projection.M11, projection.M21, projection.M31, projection.M41,
-      projection.M12, projection.M22, projection.M32, projection.M42,
-      projection.M13, projection.M23, projection.M33, projection.M43,
-      projection.M14, projection.M24, projection.M34, projection.M44);
+  gfx::Transform proj = ConvertToGfxTransform(projection);
 
   gfx::Transform projInv;
   bool invertable = proj.GetInverse(&projInv);
@@ -142,6 +142,16 @@ MixedRealityRenderLoop::MixedRealityRenderLoop(
 
 MixedRealityRenderLoop::~MixedRealityRenderLoop() {
   Stop();
+}
+
+const WMRCoordinateSystem* MixedRealityRenderLoop::GetOrigin() {
+  return anchor_origin_.get();
+}
+
+void MixedRealityRenderLoop::OnInputSourceEvent(
+    mojom::XRInputSourceStatePtr input_state) {
+  if (input_event_listener_)
+    input_event_listener_->OnButtonEvent(std::move(input_state));
 }
 
 bool MixedRealityRenderLoop::PreComposite() {
@@ -212,7 +222,8 @@ bool MixedRealityRenderLoop::StartRuntime() {
   if (!holographic_space_)
     return false;
 
-  input_helper_ = std::make_unique<MixedRealityInputHelper>(window_->hwnd());
+  input_helper_ = std::make_unique<MixedRealityInputHelper>(
+      window_->hwnd(), weak_ptr_factory_.GetWeakPtr());
 
   ABI::Windows::Graphics::Holographic::HolographicAdapterId id =
       holographic_space_->PrimaryAdapterId();
@@ -279,6 +290,10 @@ void MixedRealityRenderLoop::StopRuntime() {
       hook.GetHook()->DetachCurrentThread();
     }
   }
+}
+
+bool MixedRealityRenderLoop::UsesInputEventing() {
+  return true;
 }
 
 void MixedRealityRenderLoop::InitializeOrigin() {
@@ -449,10 +464,7 @@ struct EyeToWorldDecomposed {
 
 EyeToWorldDecomposed DecomposeViewMatrix(
     const ABI::Windows::Foundation::Numerics::Matrix4x4& view) {
-  gfx::Transform world_to_view(view.M11, view.M21, view.M31, view.M41, view.M12,
-                               view.M22, view.M32, view.M42, view.M13, view.M23,
-                               view.M33, view.M43, view.M14, view.M24, view.M34,
-                               view.M44);
+  gfx::Transform world_to_view = ConvertToGfxTransform(view);
 
   gfx::Transform view_to_world;
   bool invertable = world_to_view.GetInverse(&view_to_world);
@@ -477,24 +489,20 @@ mojom::VRPosePtr GetMonoViewData(const HolographicStereoTransform& view) {
   auto pose = mojom::VRPose::New();
 
   // World to device orientation.
-  pose->orientation =
-      std::vector<float>{static_cast<float>(eye.world_to_eye_rotation.x()),
-                         static_cast<float>(eye.world_to_eye_rotation.y()),
-                         static_cast<float>(eye.world_to_eye_rotation.z()),
-                         static_cast<float>(eye.world_to_eye_rotation.w())};
+  pose->orientation = eye.world_to_eye_rotation;
 
   // Position in world space.
   pose->position =
-      std::vector<float>{eye.eye_in_world_space.x(), eye.eye_in_world_space.y(),
-                         eye.eye_in_world_space.z()};
+      gfx::Point3F(eye.eye_in_world_space.x(), eye.eye_in_world_space.y(),
+                   eye.eye_in_world_space.z());
 
   return pose;
 }
 
 struct PoseAndEyeTransform {
   mojom::VRPosePtr pose;
-  std::vector<float> left_offset;
-  std::vector<float> right_offset;
+  gfx::Vector3dF left_offset;
+  gfx::Vector3dF right_offset;
 };
 
 PoseAndEyeTransform GetStereoViewData(const HolographicStereoTransform& view) {
@@ -513,20 +521,15 @@ PoseAndEyeTransform GetStereoViewData(const HolographicStereoTransform& view) {
   world_to_view_rotation.Slerp(right_eye.world_to_eye_rotation, 0.5f);
 
   // Calculate new eye offsets.
-  gfx::Vector3dF left_offset = left_eye.eye_in_world_space - center;
-  gfx::Vector3dF right_offset = right_eye.eye_in_world_space - center;
+  PoseAndEyeTransform ret;
+  ret.left_offset = left_eye.eye_in_world_space - center;
+  ret.right_offset = right_eye.eye_in_world_space - center;
 
   gfx::Transform transform(world_to_view_rotation);  // World to view.
   transform.Transpose();                             // Now it is view to world.
 
-  transform.TransformVector(&left_offset);  // Offset is now in view space
-  transform.TransformVector(&right_offset);
-
-  PoseAndEyeTransform ret;
-  ret.right_offset =
-      std::vector<float>{right_offset.x(), right_offset.y(), right_offset.z()};
-  ret.left_offset =
-      std::vector<float>{left_offset.x(), left_offset.y(), left_offset.z()};
+  transform.TransformVector(&(ret.left_offset));  // Offset is now in view space
+  transform.TransformVector(&(ret.right_offset));
 
   // TODO(https://crbug.com/928433): We don't currently support per-eye rotation
   // in the mojo interface, but we should.
@@ -534,14 +537,10 @@ PoseAndEyeTransform GetStereoViewData(const HolographicStereoTransform& view) {
   ret.pose = mojom::VRPose::New();
 
   // World to device orientation.
-  ret.pose->orientation =
-      std::vector<float>{static_cast<float>(world_to_view_rotation.x()),
-                         static_cast<float>(world_to_view_rotation.y()),
-                         static_cast<float>(world_to_view_rotation.z()),
-                         static_cast<float>(world_to_view_rotation.w())};
+  ret.pose->orientation = world_to_view_rotation;
 
   // Position in world space.
-  ret.pose->position = std::vector<float>{center.x(), center.y(), center.z()};
+  ret.pose->position = gfx::Point3F(center.x(), center.y(), center.z());
 
   return ret;
 }
@@ -709,7 +708,7 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
       }
 
       stage_parameters->standingTransform =
-          ConvertToStandingTransform(origin_to_stage);
+          ConvertToGfxTransform(origin_to_stage);
 
       current_display_info_->stageParameters = std::move(stage_parameters);
     }
@@ -758,14 +757,10 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     // TODO(http://crbug.com/931393): Send down emulated_position_, and report
     // reset events when this changes.
     emulated_position_ = false;
-    ABI::Windows::Foundation::Numerics::Matrix4x4 transform;
+    ABI::Windows::Foundation::Numerics::Matrix4x4 origin_from_attached;
     if (attached_coordinates->TryGetTransformTo(anchor_origin_.get(),
-                                                &transform)) {
-      last_origin_from_attached_ = gfx::Transform(
-          transform.M11, transform.M21, transform.M31, transform.M41,
-          transform.M12, transform.M22, transform.M32, transform.M42,
-          transform.M13, transform.M23, transform.M33, transform.M43,
-          transform.M14, transform.M24, transform.M34, transform.M44);
+                                                &origin_from_attached)) {
+      last_origin_from_attached_ = ConvertToGfxTransform(origin_from_attached);
     }
   } else {
     emulated_position_ = true;
@@ -806,7 +801,7 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     }
   } else {
     ret->pose = GetMonoViewData(view);
-    std::vector<float> offset = {0, 0, 0};
+    gfx::Vector3dF offset;
     if (current_display_info_->leftEye->offset != offset) {
       current_display_info_->leftEye->offset = offset;
       send_new_display_info = true;
@@ -838,12 +833,12 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
 
   if (emulated_position_ && last_origin_from_attached_) {
     gfx::DecomposedTransform attached_from_view_decomp;
-    attached_from_view_decomp.quaternion = gfx::Quaternion(
-        (*ret->pose->orientation)[0], (*ret->pose->orientation)[1],
-        (*ret->pose->orientation)[2], (*ret->pose->orientation)[3]);
-    for (int i = 0; i < 3; ++i) {
-      attached_from_view_decomp.translate[i] = (*ret->pose->position)[i];
-    }
+    attached_from_view_decomp.quaternion = (*ret->pose->orientation);
+
+    attached_from_view_decomp.translate[0] = ret->pose->position->x();
+    attached_from_view_decomp.translate[1] = ret->pose->position->y();
+    attached_from_view_decomp.translate[2] = ret->pose->position->z();
+
     gfx::Transform attached_from_view =
         gfx::ComposeTransform(attached_from_view_decomp);
     gfx::Transform origin_from_view =
@@ -852,15 +847,11 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     bool success =
         gfx::DecomposeTransform(&origin_from_view_decomposed, origin_from_view);
     DCHECK(success);
-    ret->pose->orientation = std::vector<float>{
-        static_cast<float>(origin_from_view_decomposed.quaternion.x()),
-        static_cast<float>(origin_from_view_decomposed.quaternion.y()),
-        static_cast<float>(origin_from_view_decomposed.quaternion.z()),
-        static_cast<float>(origin_from_view_decomposed.quaternion.w())};
-    ret->pose->position = std::vector<float>{
+    ret->pose->orientation = origin_from_view_decomposed.quaternion;
+    ret->pose->position = gfx::Point3F(
         static_cast<float>(origin_from_view_decomposed.translate[0]),
         static_cast<float>(origin_from_view_decomposed.translate[1]),
-        static_cast<float>(origin_from_view_decomposed.translate[2])};
+        static_cast<float>(origin_from_view_decomposed.translate[2]));
   }
 
   return ret;

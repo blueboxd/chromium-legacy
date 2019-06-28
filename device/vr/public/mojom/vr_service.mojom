@@ -73,6 +73,10 @@ struct XRSession {
   // info to more sensible places so that this doesn't need to be sent here.
   VRDisplayInfo display_info;
   XRPresentationConnection? submit_frame_sink;
+
+  // Indicates whether the device backing this session sends input events solely
+  // via eventing (as opposed to polling).
+  bool uses_input_eventing;
 };
 
 // This structure contains the infomation and interfaces needed to create a two
@@ -137,12 +141,14 @@ struct VRFieldOfView {
 // A display's position, orientation, velocity, and acceleration state at the
 // given timestamp.
 struct VRPose {
-  array<float, 4>? orientation;
-  array<float, 3>? position;
-  array<float, 3>? angularVelocity;
-  array<float, 3>? linearVelocity;
-  array<float, 3>? angularAcceleration;
-  array<float, 3>? linearAcceleration;
+  gfx.mojom.Quaternion? orientation;
+  gfx.mojom.Point3F? position;
+
+  // Velocity/Acceleration is in global coordinates, as rad/s.
+  gfx.mojom.Vector3dF? angularVelocity;
+  gfx.mojom.Vector3dF? linearVelocity;
+  gfx.mojom.Vector3dF? angularAcceleration;
+  gfx.mojom.Vector3dF? linearAcceleration;
 
   // For WebXR sessions only, reports the state of all active input devices
   // synced with the head pose.
@@ -160,10 +166,7 @@ struct XRRay {
 };
 
 struct XRHitResult {
-  // A 4x4 transformation matrix representing the position of the object hit
-  // and the orientation of the normal of the object at the hit location.
-  // TODO(https://crbug.com/845293): use gfx.mojom.Transform.
-  array<float, 16> hit_matrix;
+  gfx.mojom.Transform hit_matrix;
 };
 
 struct VRDisplayCapabilities {
@@ -183,13 +186,13 @@ struct VRDisplayCapabilities {
 // Information about the optical properties for an eye in a VRDisplay.
 struct VREyeParameters {
   VRFieldOfView fieldOfView;
-  array<float, 3> offset;
+  gfx.mojom.Vector3dF offset;
   uint32 renderWidth;
   uint32 renderHeight;
 };
 
 struct VRStageParameters {
-  array<float, 16> standingTransform;
+  gfx.mojom.Transform standingTransform;
   float sizeX;
   float sizeZ;
 
@@ -386,6 +389,13 @@ interface XREnvironmentIntegrationProvider {
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
 };
 
+// Provides a mechanism for a channel to plumb up any button click events
+// separately from polling, to provide better latency/position tracking for
+// those events.
+interface XRInputSourceButtonListener {
+  OnButtonEvent(XRInputSourceState input_source);
+};
+
 struct XRFrameDataRequestOptions {
   // Controls whether XRFrameData.detected_planes should be populated by the
   // request to XRFrameDataProvider.GetFrameData().
@@ -403,6 +413,8 @@ interface XRFrameDataProvider {
   GetFrameData(XRFrameDataRequestOptions? options) => (XRFrameData? frame_data);
   GetEnvironmentIntegrationProvider(
       associated XREnvironmentIntegrationProvider& environment_provider);
+  SetInputSourceButtonListener(
+      associated XRInputSourceButtonListener? event_listener);
 };
 
 // Provides the necessary functionality for sending frames to a headset.

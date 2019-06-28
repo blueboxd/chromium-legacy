@@ -16,6 +16,7 @@ struct ResourceRequest;
 
 namespace content {
 
+class BrowserContext;
 class ResourceContext;
 
 // URLLoaderRequestInterceptor is given a chance to create a URLLoader and
@@ -43,8 +44,16 @@ class URLLoaderRequestInterceptor {
   // request later passed to the RequestHandler given to |callback| may not be
   // exactly the same. See documentation for
   // NavigationLoaderInterceptor::MaybeCreateLoader.
+  //
+  // |browser_context| will only be non-null when this interceptor is running on
+  // the UI thread, and |resource_context| will only be non-null when running on
+  // the IO thread.
+  //
+  // TODO(http://crbug.com/824840): Once all interceptors support
+  // running on UI, remove |resource_context|.
   virtual void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       LoaderCallback callback) = 0;
 };

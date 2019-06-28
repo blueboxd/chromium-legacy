@@ -151,6 +151,35 @@ def GetManualSequences(dep_graph):
     A list of SequenceBuilder objects, each one containing a manually-created
     sequence.
   """
+  c = SequenceBuilder('copy_paste', dep_graph)
+  c_device = c.BuildInterface('wl_data_device')
+  c_source = c.BuildInterface('wl_data_source')
+  # TODO(crbug/979456): make a fuzz-dictionary with all the mime-types.
+  c.AppendCall('wl_data_source', 'offer', [('receiver', c_source),
+                                           ('mime_type', '"text/plain"')])
+  c.AppendCall('wl_data_device', 'set_selection', [('receiver', c_device),
+                                                   ('source', c_source)])
+  c.AppendRoundTrip()
+  c_surface = c.BuildInterface('wl_shell_surface')
+  c.AppendCall('wl_shell_surface', 'set_toplevel', [('receiver', c_surface)])
+  c_shm = c.BuildInterface('wl_shm')
+  c.AppendRoundTrip()  # Round trip so server can send us formats.
+  c.AppendCall('wl_shm', 'create_pool', [('receiver', c_shm), ('size', '64')])
+  c.RecordInterfaceCreated('wl_shm_pool')
+  c_shm_pool = c.GetLastInterfaceCreated('wl_shm_pool')
+  c.AppendCall('wl_shm_pool', 'create_buffer', [('receiver', c_shm_pool),
+                                                ('width', 1), ('stride', 4),
+                                                ('height', 1)])
+  c.RecordInterfaceCreated('wl_buffer')
+  c_buffer = c.GetLastInterfaceCreated('wl_buffer')
+  c.AppendCall('wl_surface', 'attach', [('receiver', c_surface),
+                                        ('buffer', c_buffer)])
+  c.AppendCall('wl_surface', 'damage', [('receiver', c_surface), ('width', 1),
+                                        ('height', 1)])
+  c.AppendCall('wl_surface', 'commit', [('receiver', c_surface)])
+  c.AppendRoundTrip()  # Round trip so server can make the data_offer.
+  c.RecordInterfaceCreated('wl_data_offer')
+
   e = SequenceBuilder('empty', dep_graph)
 
   p = SequenceBuilder('popup_configuration', dep_graph)
@@ -170,7 +199,7 @@ def GetManualSequences(dep_graph):
                                                 ('positioner', p_positioner)])
   p.AppendRoundTrip()
 
-  return [p, e]
+  return [c, e, p]
 
 
 def SequenceToTemplate(parsed_arguments, builder):

@@ -1,6 +1,5 @@
-region
-++document
-++++group
-++++++description
-++++++++description Name='Choose a pokemon '
-++++++++combobox Name='Choose a pokemon' ExpandCollapse.ExpandCollapseState='LeafNode'
+document
+++group
+++++description
+++++++description Name='Choose a pokemon '
+++++++combobox Name='Choose a pokemon' ExpandCollapse.ExpandCollapseState='LeafNode'

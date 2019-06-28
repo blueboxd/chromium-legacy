@@ -73,6 +73,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
   }
 
   void MaybeCreateLoader(const network::ResourceRequest& resource_request,
+                         BrowserContext* browser_context,
                          ResourceContext* resource_context,
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override {

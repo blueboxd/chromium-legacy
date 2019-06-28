@@ -373,6 +373,7 @@ class PrefetchedNavigationLoaderInterceptor
 
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       LoaderCallback callback,
       FallbackCallback fallback_callback) override {

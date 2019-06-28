@@ -27795,6 +27795,11 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Clicked, intent failed"/>
 </enum>
 
+<enum name="GoogleUpdateNotificationLaunchEvent">
+  <int value="0" label="Start"/>
+  <int value="1" label="Start activity failed"/>
+</enum>
+
 <enum name="GoogleUpdateUpgradeStatus">
   <int value="0" label="UPGRADE_STARTED"/>
   <int value="1" label="UPGRADE_CHECK_STARTED"/>

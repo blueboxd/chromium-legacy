@@ -3,9 +3,6 @@
      Polymer or are Polymer related. -->
 <grit-part>
   <!-- HTML resources -->
-  <structure name="IDR_WEBUI_HTML_ACTION_LINK_CSS"
-             file="html/action_link_css.html" type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_ROW_BEHAVIOR"
              file="html/cr/ui/focus_row_behavior.html" type="chrome_html"
              compress="gzip" />

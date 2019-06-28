@@ -529,7 +529,7 @@ class DiskMountManagerImpl : public DiskMountManager,
                                             kDefaultFormattedDeviceName};
 
     cros_disks_client_->Format(
-        device_path, kDefaultFormatVFAT,
+        device_path, kDefaultFormatVFAT, kDefaultFormattedDeviceName,
         base::BindOnce(&DiskMountManagerImpl::OnFormatStarted,
                        weak_ptr_factory_.GetWeakPtr(), device_path));
   }

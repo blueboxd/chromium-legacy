@@ -63,6 +63,13 @@ export class StdToastElement extends HTMLElement {
     }
   }
 
+  connectedCallback() {
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'status');
+    }
+    // TODO(jacksteinberg): use https://github.com/whatwg/html/pull/4658 when implemented
+  }
+
   show({duration = DEFAULT_DURATION} = {}) {
     this.setAttribute('open', '');
     clearTimeout(this.#timeoutID);

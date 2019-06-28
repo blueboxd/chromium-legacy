@@ -18,8 +18,9 @@ cr.define('cloudprint', function() {
      *     Auth2 tokens.
      * @param {boolean} isInAppKioskMode Whether the print preview is in App
      *     Kiosk mode.
+     * @param {string} uiLocale The UI locale.
      */
-    constructor(baseUrl, nativeLayer, isInAppKioskMode) {
+    constructor(baseUrl, nativeLayer, isInAppKioskMode, uiLocale) {
       /**
        * The base URL of the Google Cloud Print API.
        * @private {string}
@@ -38,6 +39,13 @@ cr.define('cloudprint', function() {
        * @private {boolean}
        */
       this.isInAppKioskMode_ = isInAppKioskMode;
+
+      /**
+       * The UI locale, used to get printer information in the correct locale
+       * from Google Cloud Print.
+       * @private {string}
+       */
+      this.uiLocale_ = uiLocale;
 
       /**
        * Currently logged in users (identified by email) mapped to the Google
@@ -220,7 +228,7 @@ cr.define('cloudprint', function() {
       }
 
       // Add locale
-      searchParams.append('hl', window.navigator.language);
+      searchParams.append('hl', this.uiLocale_);
       let body = null;
       if (params) {
         if (method == 'GET') {

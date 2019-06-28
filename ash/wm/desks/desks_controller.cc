@@ -13,6 +13,7 @@
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -97,6 +98,20 @@ bool DesksController::AreDesksBeingModified() const {
 bool DesksController::CanCreateDesks() const {
   // TODO(afakhry): Disable creating new desks in tablet mode.
   return desks_.size() < desks_util::kMaxNumberOfDesks;
+}
+
+Desk* DesksController::GetNextDesk() const {
+  int next_index = GetDeskIndex(active_desk_);
+  if (++next_index >= static_cast<int>(desks_.size()))
+    return nullptr;
+  return desks_[next_index].get();
+}
+
+Desk* DesksController::GetPreviousDesk() const {
+  int previous_index = GetDeskIndex(active_desk_);
+  if (--previous_index < 0)
+    return nullptr;
+  return desks_[previous_index].get();
 }
 
 bool DesksController::CanRemoveDesks() const {
@@ -254,7 +269,26 @@ void DesksController::MoveWindowFromActiveDeskTo(aura::Window* window,
   DCHECK_NE(active_desk_, target_desk);
 
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  const bool in_overview = overview_controller->InOverviewSession();
+
   active_desk_->MoveWindowToDesk(window, target_desk);
+
+  if (in_overview) {
+    DCHECK(overview_controller->InOverviewSession());
+    auto* overview_session = overview_controller->overview_session();
+    auto* item = overview_session->GetOverviewItemForWindow(window);
+    DCHECK(item);
+    // Restore the dragged item window, so that its transform is reset to
+    // identity.
+    item->RestoreWindow(/*reset_transform=*/true);
+    // The item no longer needs to be in the overview grid.
+    overview_session->RemoveItem(item);
+  }
+
+  // A window moving out of the active desk cannot be active.
+  wm::DeactivateWindow(window);
 }
 
 void DesksController::OnRootWindowAdded(aura::Window* root_window) {
@@ -387,7 +421,7 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
 
   // Mark the new desk as active first, so that deactivating windows on the
   // `old_active` desk do not activate other windows on the same desk. See
-  // `ash::IsWindowConsideredVisibleForActivation()`.
+  // `ash::AshFocusRules::GetNextActivatableWindow()`.
   Desk* old_active = active_desk_;
   active_desk_ = const_cast<Desk*>(desk);
 

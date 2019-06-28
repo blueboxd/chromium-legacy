@@ -62,10 +62,10 @@ TextureOwner::Mode GetTextureOwnerMode(
                  : TextureOwner::Mode::kSurfaceTextureInsecure;
     case VideoFrameFactory::OverlayMode::kSurfaceControlSecure:
       DCHECK(a_image_reader_supported);
-      return TextureOwner::Mode::kAImageReaderSecure;
+      return TextureOwner::Mode::kAImageReaderSecureSurfaceControl;
     case VideoFrameFactory::OverlayMode::kSurfaceControlInsecure:
       DCHECK(a_image_reader_supported);
-      return TextureOwner::Mode::kAImageReaderInsecure;
+      return TextureOwner::Mode::kAImageReaderInsecureSurfaceControl;
   }
 
   NOTREACHED();

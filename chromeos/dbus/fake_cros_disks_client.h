@@ -54,6 +54,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
                              base::OnceClosure error_callback) override;
   void Format(const std::string& device_path,
               const std::string& filesystem,
+              const std::string& label,
               VoidDBusMethodCallback callback) override;
   void Rename(const std::string& device_path,
               const std::string& volume_name,
@@ -118,6 +119,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
     return last_format_filesystem_;
   }
 
+  // Returns the |label| parameter from the last invocation of Format().
+  const std::string& last_format_label() const { return last_format_label_; }
+
   // Makes the subsequent Format() calls fail. Format() succeeds by default.
   void MakeFormatFail() {
     format_success_ = false;
@@ -156,6 +160,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
   int format_call_count_;
   std::string last_format_device_path_;
   std::string last_format_filesystem_;
+  std::string last_format_label_;
   bool format_success_;
   int rename_call_count_;
   std::string last_rename_device_path_;

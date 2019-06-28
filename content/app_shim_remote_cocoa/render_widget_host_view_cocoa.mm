@@ -818,17 +818,10 @@ void ExtractUnderlines(NSAttributedString* string,
   mouse_locked_ = locked;
   if (mouse_locked_) {
     CGAssociateMouseAndMouseCursorPosition(NO);
-    NSRect bound = [[self window] convertRectToScreen:[self bounds]];
-    gfx::Point screen_center = gfx::ScreenRectFromNSRect(bound).CenterPoint();
-    mouse_locked_screen_position_ = last_mouse_screen_position_;
-    CGDisplayMoveCursorToPoint(CGMainDisplayID(), screen_center.ToCGPoint());
     [NSCursor hide];
   } else {
     // Unlock position of mouse cursor and unhide it.
     CGAssociateMouseAndMouseCursorPosition(YES);
-    CGDisplayMoveCursorToPoint(CGMainDisplayID(),
-                               NSMakePoint(mouse_locked_screen_position_.x(),
-                                           mouse_locked_screen_position_.y()));
     [NSCursor unhide];
   }
 }

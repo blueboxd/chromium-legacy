@@ -23,31 +23,33 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnForegrounded() override;
   void OnInitComplete() override;
 
-  // Implements gl::ProgressReporter.
-  void ReportProgress() override;
-
- protected:
   // Implements base::Thread.
   void Init() override;
   void CleanUp() override;
 
- private:
-  GpuWatchdogThreadImplV2();
-  void Arm();
-  void Disarm();
-  void InProgress();
-  void OnWatchdogTimeout();
-
-  // Implements base::PowerObserver.
-  void OnSuspend() override;
-  void OnResume() override;
+  // Implements gl::ProgressReporter.
+  void ReportProgress() override;
 
   // Implements MessageLoopCurrent::TaskObserver.
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
-  // Implements GpuWatchdogThread.
-  void DeliberatelyTerminateToRecoverFromHang() override;
+  // Implements base::PowerObserver.
+  void OnSuspend() override;
+  void OnResume() override;
+
+ private:
+  GpuWatchdogThreadImplV2();
+  void OnAddPowerObserver();
+  void OnWatchdogBackgrounded();
+  void OnWatchdogForegrounded();
+  void Arm();
+  void Disarm();
+  void InProgress();
+  void OnWatchdogTimeout();
+
+  // Do not change the function name. It is used for [GPU HANG] carsh reports.
+  void DeliberatelyTerminateToRecoverFromHang();
 
   // This counter is only written on the gpu thread, and read on the watchdog
   // thread.
@@ -59,8 +61,27 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Timeout on the watchdog thread to check if gpu hangs
   base::TimeDelta watchdog_timeout_;
 
+  // The time the gpu watchdog was created
+  base::TimeTicks watchdog_start_time_;
+
+  // The time the last OnSuspend and OnResume was called.
+  base::TimeTicks suspend_time_;
+  base::TimeTicks resume_time_;
+
+  // The time the last OnBackgrounded and OnForegrounded was called.
+  base::TimeTicks backgrounded_time_;
+  base::TimeTicks foregrounded_time_;
+
+  // The system has entered the power suspension mode.
+  bool in_power_suspension_ = false;
+
+  // Chrome is running on the background on Android. Gpu is probably very slow
+  // or stalled.
+  bool is_backgrounded_ = false;
+
   scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
 
+  base::WeakPtr<GpuWatchdogThreadImplV2> weak_ptr_;
   base::WeakPtrFactory<GpuWatchdogThreadImplV2> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThreadImplV2);

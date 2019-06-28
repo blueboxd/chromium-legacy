@@ -63,8 +63,7 @@ void NativeAppWindowViews::InitializeWindow(
   // Stub implementation. See also ChromeNativeAppWindowViews.
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
-  if (create_params.always_on_top)
-    init_params.z_order = ui::ZOrderLevel::kFloatingWindow;
+  init_params.keep_on_top = create_params.always_on_top;
   widget_->Init(init_params);
   widget_->CenterWindow(
       create_params.GetInitialWindowBounds(gfx::Insets()).size());
@@ -164,13 +163,13 @@ void NativeAppWindowViews::FlashFrame(bool flash) {
   widget_->FlashFrame(flash);
 }
 
-ui::ZOrderLevel NativeAppWindowViews::GetZOrderLevel() const {
+bool NativeAppWindowViews::IsAlwaysOnTop() const {
   // Stub implementation. See also ChromeNativeAppWindowViews.
-  return widget_->GetZOrderLevel();
+  return widget_->IsAlwaysOnTop();
 }
 
-void NativeAppWindowViews::SetZOrderLevel(ui::ZOrderLevel order) {
-  widget_->SetZOrderLevel(order);
+void NativeAppWindowViews::SetAlwaysOnTop(bool always_on_top) {
+  widget_->SetAlwaysOnTop(always_on_top);
 }
 
 gfx::NativeView NativeAppWindowViews::GetHostView() const {

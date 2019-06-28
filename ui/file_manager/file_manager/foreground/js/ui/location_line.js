@@ -9,12 +9,15 @@ class LocationLine extends cr.EventTarget {
   /**
    * @param {!Element} breadcrumbs Container element for breadcrumbs.
    * @param {!VolumeManager} volumeManager Volume manager.
+   * @param {!ListContainer} listContainer List Container.
    */
-  constructor(breadcrumbs, volumeManager) {
+  constructor(breadcrumbs, volumeManager, listContainer) {
     super();
 
     this.breadcrumbs_ = breadcrumbs;
     this.volumeManager_ = volumeManager;
+    /** @private {!ListContainer} */
+    this.listContainer_ = listContainer;
     this.entry_ = null;
     this.components_ = [];
   }
@@ -360,17 +363,21 @@ class LocationLine extends cr.EventTarget {
    * @private
    */
   onClick_(index, event) {
-    if (index >= this.components_.length - 1) {
-      return;
-    }
+    let button = event.target;
 
     // Remove 'focused' state from the clicked button.
-    let button = event.target;
     while (button && !button.classList.contains('breadcrumb-path')) {
       button = button.parentElement;
     }
     if (button) {
       button.blur();
+    }
+
+    // Last breadcrumb component is the currently selected folder, skip
+    // navigation and just move the focus to file list.
+    if (index >= this.components_.length - 1) {
+      this.listContainer_.focus();
+      return;
     }
 
     const pathComponent = this.components_[index];

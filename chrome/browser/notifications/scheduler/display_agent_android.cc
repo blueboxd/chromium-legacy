@@ -12,7 +12,6 @@
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "ui/gfx/android/java_bitmap.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
@@ -65,16 +64,15 @@ void DisplayAgentAndroid::ShowNotification(
   // TODO(xingliu): Refactor and hook to NotificationDisplayService.
   DCHECK(notification_data);
   JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(!notification_data->icon.empty());
-  DCHECK(!notification_data->id.empty());
   DCHECK(!notification_data->title.empty());
   DCHECK(!notification_data->message.empty());
 
+  // TODO(xingliu): Populate the icon to Java.
   auto java_notification_data = Java_DisplayAgent_Constructor(
       env, ConvertUTF8ToJavaString(env, notification_data->id),
       ConvertUTF16ToJavaString(env, notification_data->title),
       ConvertUTF16ToJavaString(env, notification_data->message),
-      gfx::ConvertToJavaBitmap(&notification_data->icon));
+      nullptr /*icon*/);
 
   Java_DisplayAgent_showNotification(env, java_notification_data);
 }

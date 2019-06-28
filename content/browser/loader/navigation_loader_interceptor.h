@@ -18,6 +18,7 @@
 
 namespace content {
 
+class BrowserContext;
 class ResourceContext;
 struct ResourceRequest;
 struct SubresourceLoaderParams;
@@ -63,8 +64,16 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // |reset_subresource_loader_params| parameter to |fallback_callback|
   // indicates whether to discard the subresource loader params previously
   // returned by MaybeCreateSubresourceLoaderParams().
+  //
+  // |browser_context| will only be non-null when this interceptor is running on
+  // the UI thread, and |resource_context| will only be non-null when running on
+  // the IO thread.
+  //
+  // TODO(http://crbug.com/824840): Once all interceptors support
+  // running on UI, remove |resource_context|.
   virtual void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       LoaderCallback callback,
       FallbackCallback fallback_callback) = 0;

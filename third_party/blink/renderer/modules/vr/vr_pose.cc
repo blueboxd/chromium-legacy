@@ -8,12 +8,47 @@ namespace blink {
 
 namespace {
 
-DOMFloat32Array* MojoArrayToFloat32Array(
-    const base::Optional<WTF::Vector<float>>& vec) {
+DOMFloat32Array* QuaternionToFloat32Array(
+    const base::Optional<gfx::Quaternion>& quat) {
+  if (!quat)
+    return nullptr;
+
+  auto* dom_array = DOMFloat32Array::Create(4);
+  float* data = dom_array->Data();
+  data[0] = quat->x();
+  data[1] = quat->y();
+  data[2] = quat->z();
+  data[3] = quat->w();
+
+  return dom_array;
+}
+
+DOMFloat32Array* Vector3dFToFloat32Array(
+    const base::Optional<gfx::Vector3dF>& vec) {
   if (!vec)
     return nullptr;
 
-  return DOMFloat32Array::Create(&(vec.value().front()), vec.value().size());
+  auto* dom_array = DOMFloat32Array::Create(3);
+  float* data = dom_array->Data();
+  data[0] = vec->x();
+  data[1] = vec->y();
+  data[2] = vec->z();
+
+  return dom_array;
+}
+
+DOMFloat32Array* WebPoint3DToFloat32Array(
+    const base::Optional<WebFloatPoint3D>& p) {
+  if (!p)
+    return nullptr;
+
+  auto* dom_array = DOMFloat32Array::Create(3);
+  float* data = dom_array->Data();
+  data[0] = p->x;
+  data[1] = p->y;
+  data[2] = p->z;
+
+  return dom_array;
 }
 
 }  // namespace
@@ -24,12 +59,12 @@ void VRPose::SetPose(const device::mojom::blink::VRPosePtr& state) {
   if (state.is_null())
     return;
 
-  orientation_ = MojoArrayToFloat32Array(state->orientation);
-  position_ = MojoArrayToFloat32Array(state->position);
-  angular_velocity_ = MojoArrayToFloat32Array(state->angularVelocity);
-  linear_velocity_ = MojoArrayToFloat32Array(state->linearVelocity);
-  angular_acceleration_ = MojoArrayToFloat32Array(state->angularAcceleration);
-  linear_acceleration_ = MojoArrayToFloat32Array(state->linearAcceleration);
+  orientation_ = QuaternionToFloat32Array(state->orientation);
+  position_ = WebPoint3DToFloat32Array(state->position);
+  angular_velocity_ = Vector3dFToFloat32Array(state->angularVelocity);
+  linear_velocity_ = Vector3dFToFloat32Array(state->linearVelocity);
+  angular_acceleration_ = Vector3dFToFloat32Array(state->angularAcceleration);
+  linear_acceleration_ = Vector3dFToFloat32Array(state->linearAcceleration);
 }
 
 void VRPose::Trace(blink::Visitor* visitor) {

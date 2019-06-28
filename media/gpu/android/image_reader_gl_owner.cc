@@ -27,6 +27,23 @@
 
 namespace media {
 
+namespace {
+bool IsSurfaceControl(TextureOwner::Mode mode) {
+  switch (mode) {
+    case TextureOwner::Mode::kAImageReaderInsecureSurfaceControl:
+    case TextureOwner::Mode::kAImageReaderSecureSurfaceControl:
+      return true;
+    case TextureOwner::Mode::kAImageReaderInsecure:
+      return false;
+    case TextureOwner::Mode::kSurfaceTextureInsecure:
+      NOTREACHED();
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+}  // namespace
+
 // FrameAvailableEvent_ImageReader is a RefCounted wrapper for a WaitableEvent
 // (it's not possible to put one in RefCountedData). This lets us safely signal
 // an event on any thread.
@@ -96,21 +113,31 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   // Set the width, height and format to some default value. This parameters
   // are/maybe overriden by the producer sending buffers to this imageReader's
   // Surface.
-  int32_t width = 1, height = 1, max_images = 4;
-  AIMAGE_FORMATS format = mode == Mode::kAImageReaderSecure
+  int32_t width = 1, height = 1;
+
+  // This should be as small as possible to limit the memory usage.
+  // ImageReader needs 2 images to mimic the behavior of SurfaceTexture. For
+  // SurfaceControl we need 3 images instead of 2 since 1 frame(and hence image
+  // associated with it) will be with system compositor and 2 frames will be in
+  // flight. Also note that we always acquire an image before deleting the
+  // previous acquired image. This causes 2 acquired images to be in flight at
+  // the image acquisition point until the previous image is deleted.
+  max_images_ = IsSurfaceControl(mode) ? 3 : 2;
+  AIMAGE_FORMATS format = mode == Mode::kAImageReaderSecureSurfaceControl
                               ? AIMAGE_FORMAT_PRIVATE
                               : AIMAGE_FORMAT_YUV_420_888;
   AImageReader* reader = nullptr;
+
   // The usage flag below should be used when the buffer will be read from by
   // the GPU as a texture.
-  uint64_t usage = mode == Mode::kAImageReaderSecure
+  uint64_t usage = mode == Mode::kAImageReaderSecureSurfaceControl
                        ? AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT
                        : AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
   usage |= gl::SurfaceControl::RequiredUsage();
 
   // Create a new reader for images of the desired size and format.
   media_status_t return_code = loader_.AImageReader_newWithUsage(
-      width, height, format, usage, max_images, &reader);
+      width, height, format, usage, max_images_, &reader);
   if (return_code != AMEDIA_OK) {
     LOG(ERROR) << " Image reader creation failed.";
     if (return_code == AMEDIA_ERROR_INVALID_PARAMETER)
@@ -212,8 +239,19 @@ void ImageReaderGLOwner::UpdateTexImage() {
   AImage* image = nullptr;
   int acquire_fence_fd = -1;
   media_status_t return_code = AMEDIA_OK;
-  return_code = loader_.AImageReader_acquireLatestImageAsync(
-      image_reader_, &image, &acquire_fence_fd);
+  DCHECK_GT(max_images_, static_cast<int32_t>(image_refs_.size()));
+  if (max_images_ - image_refs_.size() < 2) {
+    // acquireNextImageAsync is required here since as per the spec calling
+    // AImageReader_acquireLatestImage with less than two images of margin, that
+    // is (maxImages - currentAcquiredImages < 2) will not discard as expected.
+    // We always have currentAcquiredImages as 1 since we delete a previous
+    // image only after acquiring a new image.
+    return_code = loader_.AImageReader_acquireNextImageAsync(
+        image_reader_, &image, &acquire_fence_fd);
+  } else {
+    return_code = loader_.AImageReader_acquireLatestImageAsync(
+        image_reader_, &image, &acquire_fence_fd);
+  }
 
   // TODO(http://crbug.com/846050).
   // Need to add some better error handling if below error occurs. Currently we

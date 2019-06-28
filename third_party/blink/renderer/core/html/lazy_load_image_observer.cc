@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -55,6 +56,24 @@ Document* GetRootDocumentOrNull(Element* element) {
   if (LocalFrame* frame = element->GetDocument().GetFrame())
     return frame->LocalFrameRoot().GetDocument();
   return nullptr;
+}
+
+// Returns if the element or its ancestors are invisible, due to their style or
+// attribute or due to themselves not connected to the main document tree.
+bool IsElementInInvisibleSubTree(const Element& element) {
+  if (!element.isConnected())
+    return true;
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(element)) {
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
+      continue;
+    const ComputedStyle* style = ancestor_element->EnsureComputedStyle();
+    if (style && (style->Visibility() != EVisibility::kVisible ||
+                  style->Display() == EDisplay::kNone)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -139,10 +158,26 @@ void LazyLoadImageObserver::LoadIfNearViewport(
   DCHECK(!entries.IsEmpty());
 
   for (auto entry : entries) {
+    Element* element = entry->target();
+    HTMLImageElement* image_element = ToHTMLImageElementOrNull(element);
+    if (!entry->isIntersecting() && image_element) {
+      // Fully load the invisible image elements. The elements can be invisible
+      // by style such as display:none, visibility: hidden, or hidden via
+      // attribute, etc. Style might also not be calculated if the ancestors
+      // were invisible.
+      const ComputedStyle* style = entry->target()->GetComputedStyle();
+      if (!style || style->Visibility() != EVisibility::kVisible ||
+          style->Display() == EDisplay::kNone) {
+        // Check that style was null because it was not computed since the
+        // element was in an invisible subtree.
+        DCHECK(style || IsElementInInvisibleSubTree(*element));
+        image_element->LoadDeferredImage();
+        lazy_load_intersection_observer_->unobserve(element);
+      }
+    }
     if (!entry->isIntersecting())
       continue;
-    Element* element = entry->target();
-    if (auto* image_element = ToHTMLImageElementOrNull(element))
+    if (image_element)
       image_element->LoadDeferredImage();
 
     // Load the background image if the element has one deferred.

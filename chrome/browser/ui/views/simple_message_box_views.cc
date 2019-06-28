@@ -162,7 +162,7 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
   // attach to, move the dialog's widget on top so other windows do not obscure
   // it.
   if (!parent)
-    widget->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
+    widget->SetAlwaysOnTop(true);
 #endif
 
   widget->Show();

@@ -443,9 +443,7 @@ ExtensionTabUtil::CreateWindowValueForExtension(
   result->SetBoolean(tabs_constants::kFocusedKey, window->IsActive());
   const Profile* profile = browser.profile();
   result->SetBoolean(tabs_constants::kIncognitoKey, profile->IsOffTheRecord());
-  result->SetBoolean(
-      tabs_constants::kAlwaysOnTopKey,
-      window->GetZOrderLevel() == ui::ZOrderLevel::kFloatingWindow);
+  result->SetBoolean(tabs_constants::kAlwaysOnTopKey, window->IsAlwaysOnTop());
 
   std::string window_state;
   if (window->IsMinimized()) {

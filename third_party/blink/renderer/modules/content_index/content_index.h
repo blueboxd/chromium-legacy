@@ -18,6 +18,7 @@ class ContentDescription;
 class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
+class ThreadedIconLoader;
 
 class ContentIndex final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -39,6 +40,11 @@ class ContentIndex final : public ScriptWrappable {
   mojom::blink::ContentIndexService* GetService();
 
   // Callbacks.
+  void DidGetIcon(ScriptPromiseResolver* resolver,
+                  ThreadedIconLoader* loader,
+                  mojom::blink::ContentDescriptionPtr description,
+                  SkBitmap icon,
+                  double resize_scale);
   void DidAdd(ScriptPromiseResolver* resolver,
               mojom::blink::ContentIndexError error);
   void DidDeleteDescription(ScriptPromiseResolver* resolver,

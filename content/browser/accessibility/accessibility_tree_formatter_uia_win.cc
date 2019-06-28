@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "base/win/com_init_util.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
@@ -334,10 +335,66 @@ void AccessibilityTreeFormatterUia::SetUpCommandLineForTestPass(
 std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterUia::BuildAccessibilityTree(
     BrowserAccessibility* start) {
-  // Find the root IUIAutomationElement for the content window.
+  // We use the UI Automation client API to produce the tree dump, but
+  // BrowserAccessibility has a pointer to a provider API implementation, and
+  // we can't directly relate the two -- the OS manages the relationship.
+  // To locate the client element we want, we'll construct a RuntimeId
+  // corresponding to our provider element, then search for that.
+
+  // Start by getting the root element for the HWND hosting the web content.
   HWND hwnd =
       start->manager()->GetRoot()->GetTargetForNativeAccessibilityEvent();
-  return BuildAccessibilityTreeForWindow(hwnd);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> root;
+  uia_->ElementFromHandle(hwnd, &root);
+  CHECK(root.Get());
+
+  // The root element is provided by AXFragmentRootWin, whose RuntimeId is not
+  // in the same form as elements provided by BrowserAccessibility.
+  // Find the root element's first child, which should be provided by
+  // BrowserAccessibility. We'll use that element's RuntimeId as a template for
+  // the RuntimeId of the element we're looking for.
+  Microsoft::WRL::ComPtr<IUIAutomationCondition> true_condition;
+  uia_->CreateTrueCondition(&true_condition);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> first_child;
+  root->FindFirst(TreeScope_Children, true_condition.Get(), &first_child);
+  CHECK(first_child.Get());
+
+  // Get first_child's RuntimeId and swap out the last element in its SAFEARRAY
+  // for the UniqueId of the element we want to start from.
+  base::win::ScopedSafearray runtime_id;
+  first_child->GetRuntimeId(runtime_id.Receive());
+  CHECK(runtime_id.Get());
+  LONG lower_bound = 0;
+  HRESULT hr = ::SafeArrayGetLBound(runtime_id.Get(), 1, &lower_bound);
+  CHECK(SUCCEEDED(hr));
+  LONG upper_bound = 0;
+  hr = ::SafeArrayGetUBound(runtime_id.Get(), 1, &upper_bound);
+  CHECK(SUCCEEDED(hr));
+  {
+    int32_t* runtime_id_array = nullptr;
+    ::SafeArrayAccessData(runtime_id.Get(),
+                          reinterpret_cast<void**>(&runtime_id_array));
+    CHECK(runtime_id_array);
+    CHECK((upper_bound - lower_bound) >= 0);
+    runtime_id_array[upper_bound - lower_bound] = start->GetUniqueId().Get();
+    ::SafeArrayUnaccessData(runtime_id.Get());
+  }
+
+  // Find the element with the desired RuntimeId.
+  base::win::ScopedVariant runtime_id_variant(runtime_id.Release());
+  Microsoft::WRL::ComPtr<IUIAutomationCondition> condition;
+  uia_->CreatePropertyCondition(UIA_RuntimeIdPropertyId, runtime_id_variant,
+                                &condition);
+  CHECK(condition);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> start_element;
+  root->FindFirst(TreeScope_Subtree, condition.Get(), &start_element);
+  CHECK(start_element.Get());
+
+  // Build an accessibility tree starting from that element.
+  std::unique_ptr<base::DictionaryValue> tree =
+      std::make_unique<base::DictionaryValue>();
+  RecursiveBuildAccessibilityTree(start_element.Get(), tree.get());
+  return tree;
 }
 
 std::unique_ptr<base::DictionaryValue>

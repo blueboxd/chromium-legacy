@@ -103,11 +103,11 @@ void AppWindowBase::FlashFrame(bool flash) {
   NOTREACHED();
 }
 
-ui::ZOrderLevel AppWindowBase::GetZOrderLevel() const {
+bool AppWindowBase::IsAlwaysOnTop() const {
   NOTREACHED();
-  return ui::ZOrderLevel::kNormal;
+  return false;
 }
 
-void AppWindowBase::SetZOrderLevel(ui::ZOrderLevel level) {
+void AppWindowBase::SetAlwaysOnTop(bool always_on_top) {
   NOTREACHED();
 }

@@ -4587,19 +4587,13 @@ crbug.com/910709 navigator_language/worker_navigator_language.html [ Timeout ]
 # This fails because running a worker on an opaque origin is blocked.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.html [ Timeout ]
 # Needs investigation. These are timing out.
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Skip ]
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-worker.https.html [ Skip ]
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Skip ]
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Skip ]
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-interception.https.html [ Skip ]
 # This is crashing because of DCHECK.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/dedicated-worker-service-worker-interception.https.html [ Skip ]
 # These are timing out.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Skip ]
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Skip ]
-
-# PlzDedicatedWorker
-crbug.com/971581 virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-no-load-event.https.html [ Timeout ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.
@@ -6211,7 +6205,6 @@ crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-mark
 # Sheriff 2019-06-27
 crbug.com/979193 [ Mac ] paint/invalidation/svg/relative-sized-use-on-symbol.xhtml [ Pass Failure ]
 crbug.com/979193 [ Mac ] paint/invalidation/svg/remove-background-property-on-root.html [ Pass Failure ]
-crbug.com/979193 [ Mac ] external/wpt/inert/inert-retargeting-iframe.tentative.html [ Pass Failure ]
 crbug.com/979243 [ Mac ] editing/selection/inline-closest-leaf-child.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979323 [ Mac ] media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]

@@ -960,10 +960,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     return OK;
   }
 
-  if (IsCachingEnabled()) {
-    ssl_client_session_cache_->ResetLookupCount(GetSessionCacheKey());
-  }
-
   const uint8_t* alpn_proto = nullptr;
   unsigned alpn_len = 0;
   SSL_get0_alpn_selected(ssl_.get(), &alpn_proto, &alpn_len);

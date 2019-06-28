@@ -25,6 +25,8 @@ using FrecencyPredictorConfig =
     RecurrencePredictorConfigProto::FrecencyPredictorConfig;
 using HourBinPredictorConfig =
     RecurrencePredictorConfigProto::HourBinPredictorConfig;
+using MarkovPredictorConfig =
+    RecurrencePredictorConfigProto::MarkovPredictorConfig;
 
 // |RecurrencePredictor| is the interface for all predictors used by
 // |RecurrenceRanker| to drive rankings. If a predictor has some form of
@@ -237,6 +239,34 @@ class HourBinPredictor : public RecurrencePredictor {
   float weekly_decay_coeff_;
 
   DISALLOW_COPY_AND_ASSIGN(HourBinPredictor);
+};
+
+// A first-order Markov chain that predicts the next target from the previous.
+// It does not use the condition.
+class MarkovPredictor : public RecurrencePredictor {
+ public:
+  explicit MarkovPredictor(const MarkovPredictorConfig& config);
+  ~MarkovPredictor() override;
+
+  // RecurrencePredictor:
+  void Train(unsigned int target, unsigned int condition) override;
+  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  void ToProto(RecurrencePredictorProto* proto) const override;
+  void FromProto(const RecurrencePredictorProto& proto) override;
+  const char* GetPredictorName() const override;
+
+  static const char kPredictorName[];
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(MarkovPredictorTest, ToAndFromProto);
+
+  // Stores transition probabilities: P(target | previous_target).
+  ConditionalFrequencyPredictor frequencies_;
+
+  // The most recently observed target.
+  base::Optional<unsigned int> previous_target_;
+
+  DISALLOW_COPY_AND_ASSIGN(MarkovPredictor);
 };
 
 }  // namespace app_list

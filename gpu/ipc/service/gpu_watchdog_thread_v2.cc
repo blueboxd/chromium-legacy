@@ -7,6 +7,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/alias.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -30,6 +31,8 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2()
       watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
+  weak_ptr_ = weak_factory_.GetWeakPtr();
+  watchdog_start_time_ = base::TimeTicks::Now();
   Arm();
 }
 
@@ -56,28 +59,45 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
 // Do not add power observer during watchdog init, PowerMonitor might not be up
 // running yet.
 void GpuWatchdogThreadImplV2::AddPowerObserver() {
-  DCHECK(base::PowerMonitor::IsInitialized());
-  base::PowerMonitor::AddObserver(this);
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&GpuWatchdogThreadImplV2::OnAddPowerObserver,
+                                base::Unretained(this)));
 }
 
-void GpuWatchdogThreadImplV2::OnBackgrounded() {}
+// Called from the gpu thread.
+void GpuWatchdogThreadImplV2::OnBackgrounded() {
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogBackgrounded,
+                     base::Unretained(this)));
+}
 
-void GpuWatchdogThreadImplV2::OnForegrounded() {}
+// Called from the gpu thread.
+void GpuWatchdogThreadImplV2::OnForegrounded() {
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogForegrounded,
+                     base::Unretained(this)));
+}
 
-void GpuWatchdogThreadImplV2::ReportProgress() {
-  InProgress();
+// Called from the gpu thread when gpu init has completed
+void GpuWatchdogThreadImplV2::OnInitComplete() {
+  Disarm();
 }
 
 void GpuWatchdogThreadImplV2::Init() {
   task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout,
-                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
       watchdog_timeout_);
 }
 
 void GpuWatchdogThreadImplV2::CleanUp() {
   weak_factory_.InvalidateWeakPtrs();
+}
+
+void GpuWatchdogThreadImplV2::ReportProgress() {
+  InProgress();
 }
 
 void GpuWatchdogThreadImplV2::WillProcessTask(
@@ -90,9 +110,32 @@ void GpuWatchdogThreadImplV2::DidProcessTask(
   Disarm();
 }
 
-// Called from the gpu thread when gpu init has completed
-void GpuWatchdogThreadImplV2::OnInitComplete() {
-  Disarm();
+void GpuWatchdogThreadImplV2::OnSuspend() {
+  in_power_suspension_ = true;
+  suspend_time_ = base::TimeTicks::Now();
+}
+
+void GpuWatchdogThreadImplV2::OnResume() {
+  in_power_suspension_ = false;
+  resume_time_ = base::TimeTicks::Now();
+}
+
+// Running on the watchdog thread.
+void GpuWatchdogThreadImplV2::OnAddPowerObserver() {
+  DCHECK(base::PowerMonitor::IsInitialized());
+  base::PowerMonitor::AddObserver(this);
+}
+
+// Running on the watchdog thread.
+void GpuWatchdogThreadImplV2::OnWatchdogBackgrounded() {
+  is_backgrounded_ = true;
+  backgrounded_time_ = base::TimeTicks::Now();
+}
+
+// Running on the watchdog thread.
+void GpuWatchdogThreadImplV2::OnWatchdogForegrounded() {
+  is_backgrounded_ = false;
+  foregrounded_time_ = base::TimeTicks::Now();
 }
 
 void GpuWatchdogThreadImplV2::Arm() {
@@ -110,7 +153,7 @@ void GpuWatchdogThreadImplV2::Disarm() {
 }
 
 void GpuWatchdogThreadImplV2::InProgress() {
-  // This is equivalent to Disarm() + Arm()
+  // This is equivalent to Disarm() + Arm().
   base::subtle::NoBarrier_AtomicIncrement(&arm_disarm_counter_, 2);
 
   // Now it's an odd number.
@@ -121,16 +164,16 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   base::subtle::Atomic32 arm_disarm_counter =
       base::subtle::NoBarrier_Load(&arm_disarm_counter_);
 
-  // disarmed is true if it's an even number
+  // disarmed is true if it's an even number.
   bool disarmed = arm_disarm_counter % 2 == 0;
   bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
   last_arm_disarm_counter_ = arm_disarm_counter;
 
+  // No gpu hang is detected. Continue with another OnWatchdogTimeout
   if (disarmed || gpu_makes_progress) {
     task_runner()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout,
-                       weak_factory_.GetWeakPtr()),
+        base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
         watchdog_timeout_);
     return;
   }
@@ -139,18 +182,21 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   DeliberatelyTerminateToRecoverFromHang();
 }
 
-void GpuWatchdogThreadImplV2::OnSuspend() {}
-
-void GpuWatchdogThreadImplV2::OnResume() {}
-
 void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
-  // Store variables so they're available in crash dumps to help determine the
-  // cause of any hang.
-
 #if defined(OS_WIN)
   if (IsDebuggerPresent())
     return;
 #endif
+
+  // Store variables so they're available in crash dumps to help determine the
+  // cause of any hang.
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::debug::Alias(&current_time);
+  base::debug::Alias(&watchdog_start_time_);
+  base::debug::Alias(&suspend_time_);
+  base::debug::Alias(&resume_time_);
+  base::debug::Alias(&backgrounded_time_);
+  base::debug::Alias(&foregrounded_time_);
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0xdeadface;

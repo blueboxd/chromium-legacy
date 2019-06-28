@@ -60,6 +60,9 @@ class XRCompositorCommon : public base::Thread,
 
   void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
                     XRFrameDataProvider::GetFrameDataCallback callback) final;
+  void SetInputSourceButtonListener(
+      mojom::XRInputSourceButtonListenerAssociatedPtrInfo input_listener_info)
+      override;
   void GetControllerDataAndSendFrameData(
       XRFrameDataProvider::GetFrameDataCallback callback,
       mojom::XRFrameDataPtr frame_data);
@@ -68,6 +71,7 @@ class XRCompositorCommon : public base::Thread,
   void RequestOverlay(mojom::ImmersiveOverlayRequest request);
 
  protected:
+  virtual bool UsesInputEventing();
 #if defined(OS_WIN)
   D3D11TextureHelper texture_helper_;
 #endif
@@ -75,6 +79,7 @@ class XRCompositorCommon : public base::Thread,
 
   // Allow derived classes to call methods on the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  mojom::XRInputSourceButtonListenerAssociatedPtr input_event_listener_;
 
  private:
   // base::Thread overrides:

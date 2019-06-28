@@ -107,11 +107,10 @@ std::string DataReductionProxyRequestOptions::GetHeaderValueForTesting() const {
   return header_value_;
 }
 
-
+// static
 void DataReductionProxyRequestOptions::AddPageIDRequestHeader(
     net::HttpRequestHeaders* request_headers,
-    uint64_t page_id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    uint64_t page_id) {
   std::string header_value;
   if (request_headers->HasHeader(chrome_proxy_header())) {
     request_headers->GetHeader(chrome_proxy_header(), &header_value);
@@ -135,6 +134,14 @@ void DataReductionProxyRequestOptions::AddRequestHeader(
     net::HttpRequestHeaders* request_headers,
     base::Optional<uint64_t> page_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  AddRequestHeader(request_headers, page_id, header_value_);
+}
+
+// static
+void DataReductionProxyRequestOptions::AddRequestHeader(
+    net::HttpRequestHeaders* request_headers,
+    base::Optional<uint64_t> page_id,
+    const std::string& session_header_value) {
   DCHECK(!page_id || page_id.value() > 0u);
   std::string header_value;
   if (request_headers->HasHeader(chrome_proxy_header())) {
@@ -143,7 +150,7 @@ void DataReductionProxyRequestOptions::AddRequestHeader(
     header_value += ", ";
   }
   request_headers->SetHeader(chrome_proxy_header(),
-                             header_value + header_value_);
+                             header_value + session_header_value);
   if (page_id)
     AddPageIDRequestHeader(request_headers, page_id.value());
 }

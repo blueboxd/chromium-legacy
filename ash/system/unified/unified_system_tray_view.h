@@ -124,6 +124,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  const char* GetClassName() const override;
   views::FocusTraversable* GetFocusTraversable() override;
 
   // views::FocusTraversable:

@@ -66,6 +66,7 @@ const service_manager::Manifest& GetContentRendererManifest() {
               std::set<const char*>{
                   "blink.mojom.AppBannerController",
                   "blink.mojom.EngagementClient",
+                  "blink.mojom.ImageDownloader",
                   "blink.mojom.InstallationService",
                   "blink.mojom.ManifestManager",
                   "blink.mojom.MediaDevicesListener",

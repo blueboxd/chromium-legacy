@@ -27,6 +27,8 @@ WebAppUiService* WebAppUiService::Get(Profile* profile) {
 }
 
 WebAppUiService::WebAppUiService(Profile* profile) : profile_(profile) {
+  provider_ = WebAppProvider::Get(profile_);
+
   for (Browser* browser : *BrowserList::GetInstance()) {
     base::Optional<AppId> app_id = GetAppIdForBrowser(browser);
     if (!app_id.has_value())
@@ -36,14 +38,14 @@ WebAppUiService::WebAppUiService(Profile* profile) : profile_(profile) {
   }
 
   BrowserList::AddObserver(this);
-  auto* provider = WebAppProvider::Get(profile_);
-  provider->set_ui_delegate(this);
+  provider_->set_ui_delegate(this);
 }
 
-WebAppUiService::~WebAppUiService() = default;
+WebAppUiService::~WebAppUiService() {
+  provider_->set_ui_delegate(nullptr);
+}
 
 void WebAppUiService::Shutdown() {
-  WebAppProvider::Get(profile_)->set_ui_delegate(nullptr);
   BrowserList::RemoveObserver(this);
 }
 

@@ -31,6 +31,7 @@ print_preview.LocalDestinationInfo;
  * @typedef {{
  *   isInKioskAutoPrintMode: boolean,
  *   isInAppKioskMode: boolean,
+ *   uiLocale: string,
  *   thousandsDelimeter: string,
  *   decimalDelimeter: string,
  *   unitType: !print_preview.MeasurementSystemUnitType,

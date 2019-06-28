@@ -44,6 +44,7 @@ class CORE_EXPORT SpatialNavigationController
 
   void OnSpatialNavigationSettingChanged();
   void FocusedNodeChanged(Document*);
+  void FullscreenStateChanged(Element* element);
 
   void Trace(blink::Visitor*);
 

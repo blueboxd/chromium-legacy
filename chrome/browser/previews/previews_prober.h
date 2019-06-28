@@ -10,14 +10,17 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 namespace network {
+class NetworkConnectionTracker;
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -25,7 +28,10 @@ class SharedURLLoaderFactory;
 // This class is a utility to probe a given URL with a given set of behaviors.
 // This can be used for determining whether a specific network resource is
 // available or accessible by Chrome.
-class PreviewsProber {
+// This class may live on either UI or IO thread but should remain on the thread
+// that it was created on.
+class PreviewsProber
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // This enum describes the different algorithms that can be used to calculate
   // a time delta between probe events like retries or timeout ttl.
@@ -89,7 +95,7 @@ class PreviewsProber {
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy);
-  ~PreviewsProber();
+  ~PreviewsProber() override;
 
   // Sends a probe now if the prober is currently inactive. If the probe is
   // active (i.e.: there are probes in flight), this is a no-op.
@@ -100,6 +106,9 @@ class PreviewsProber {
 
   // True if probes are being attempted, including retries.
   bool is_active() const { return is_active_; }
+
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  protected:
   // Exposes |tick_clock| for testing.
@@ -114,11 +123,14 @@ class PreviewsProber {
       const base::TickClock* tick_clock);
 
  private:
+  void ResetState();
   void CreateAndStartURLLoader();
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
   void ProcessProbeTimeout();
   void ProcessProbeFailure();
   void ProcessProbeSuccess();
+  void AddSelfAsNetworkConnectionObserver(
+      network::NetworkConnectionTracker* network_connection_tracker);
 
   // The name given to this prober instance, used in metrics, prefs, and traffic
   // annotations.
@@ -162,6 +174,10 @@ class PreviewsProber {
   // The status of the last completed probe, if any.
   base::Optional<bool> last_probe_status_;
 
+  // This reference is kept around for unregistering |this| as an observer on
+  // any thread.
+  network::NetworkConnectionTracker* network_connection_tracker_;
+
   // Used for setting up the |url_loader_|.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -169,6 +185,8 @@ class PreviewsProber {
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PreviewsProber> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsProber);
 };

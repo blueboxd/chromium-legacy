@@ -22,11 +22,9 @@ vr_test( (t) => {
     t.step( () => {
       assert_true(display.capabilities.hasExternalDisplay);
       assert_true(display.capabilities.hasPosition);
-      assert_equals(expectedParams.standingTransform.length,
-          actualParams.sittingToStandingTransform.length);
-      assert_equals(expectedParams.standingTransform.length, 16);
-      for (let i = 0; i < expectedParams.standingTransform.length; i++) {
-        assert_approx_equals(expectedParams.standingTransform[i],
+      assert_equals(actualParams.sittingToStandingTransform.length, 16);
+      for (let i = 0; i < actualParams.sittingToStandingTransform.length; i++) {
+        assert_approx_equals(expectedParams.standingTransform.matrix[i],
             actualParams.sittingToStandingTransform[i], FLOAT_EPSILON);
       }
 

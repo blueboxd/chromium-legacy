@@ -1,5 +1,4 @@
-region
-++document
-++++group
-++++++textbox
-++++++button Name='Reset'
+document
+++group
+++++textbox
+++++button Name='Reset'

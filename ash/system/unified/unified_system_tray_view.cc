@@ -451,6 +451,10 @@ void UnifiedSystemTrayView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+const char* UnifiedSystemTrayView::GetClassName() const {
+  return "UnifiedSystemTrayView";
+}
+
 views::FocusTraversable* UnifiedSystemTrayView::GetFocusTraversable() {
   return this;
 }

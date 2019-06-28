@@ -4,13 +4,14 @@
 
 #include "chrome/browser/previews/previews_prober.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +45,7 @@ class TestPreviewsProber : public PreviewsProber {
 class PreviewsProberTest : public testing::Test {
  public:
   PreviewsProberTest()
-      : scoped_task_environment_(
+      : thread_bundle_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -68,13 +69,13 @@ class PreviewsProberTest : public testing::Test {
     return std::make_unique<TestPreviewsProber>(
         test_shared_loader_factory_, kName, kTestUrl,
         PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
-        scoped_task_environment_.GetMockTickClock());
+        thread_bundle_.GetMockTickClock());
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
 
   void FastForward(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    thread_bundle_.FastForwardBy(delta);
   }
 
   void MakeResponseAndWait(net::HttpStatusCode http_status,
@@ -128,7 +129,7 @@ class PreviewsProberTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
@@ -155,6 +156,18 @@ TEST_F(PreviewsProberTest, MultipleStart) {
   prober->SendNowIfInactive();
   prober->SendNowIfInactive();
   VerifyRequest();
+}
+
+TEST_F(PreviewsProberTest, NetworkChangeStartsProber) {
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_4G);
+  RunUntilIdle();
+
+  EXPECT_TRUE(prober->is_active());
 }
 
 TEST_F(PreviewsProberTest, NetError) {

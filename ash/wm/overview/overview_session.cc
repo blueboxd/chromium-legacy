@@ -735,6 +735,15 @@ aura::Window* OverviewSession::GetOverviewFocusWindow() {
   return nullptr;
 }
 
+aura::Window* OverviewSession::GetHighlightedWindow() {
+  DCHECK_LT(selected_grid_index_, grid_list_.size());
+  auto* grid = grid_list_[selected_grid_index_].get();
+  if (!grid->is_selecting())
+    return nullptr;
+
+  return grid->SelectedWindow()->GetWindow();
+}
+
 void OverviewSession::SuspendReposition() {
   for (auto& grid : grid_list_)
     grid->set_suspend_reposition(true);

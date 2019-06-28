@@ -44,6 +44,8 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
 namespace blink {
 
@@ -219,8 +221,14 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
 
   // Tell the browser the fullscreen state has changed.
   if (Element* owner = new_element ? new_element : old_element) {
-    if (LocalFrame* frame = owner->GetDocument().GetFrame())
+    Document& doc = owner->GetDocument();
+    if (LocalFrame* frame = doc.GetFrame()) {
       GetWebFrameClient(*frame).FullscreenStateChanged(!!new_element);
+      if (IsSpatialNavigationEnabled(frame)) {
+        doc.GetPage()->GetSpatialNavigationController().FullscreenStateChanged(
+            new_element);
+      }
+    }
   }
 }
 

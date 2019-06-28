@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
 
+#include "base/containers/span.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -42,9 +44,11 @@ class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
-class XRSession final : public EventTargetWithInlineData,
-                        public device::mojom::blink::XRSessionClient,
-                        public ActiveScriptWrappable<XRSession> {
+class XRSession final
+    : public EventTargetWithInlineData,
+      public device::mojom::blink::XRSessionClient,
+      public device::mojom::blink::XRInputSourceButtonListener,
+      public ActiveScriptWrappable<XRSession> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
@@ -61,6 +65,7 @@ class XRSession final : public EventTargetWithInlineData,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
+            bool uses_input_eventing,
             bool sensorless_session);
   ~XRSession() override = default;
 
@@ -132,7 +137,11 @@ class XRSession final : public EventTargetWithInlineData,
 
   void OnInputStateChange(
       int16_t frame_id,
-      const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>);
+
+  // XRInputSourceButtonListener
+  void OnButtonEvent(
+      device::mojom::blink::XRInputSourceStatePtr input_source) override;
 
   WTF::Vector<XRViewData>& views();
 
@@ -148,6 +157,9 @@ class XRSession final : public EventTargetWithInlineData,
   const device::mojom::blink::VRDisplayInfoPtr& GetVRDisplayInfo() const {
     return display_info_;
   }
+
+  device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+  GetInputClickListener();
 
   // TODO(crbug.com/969131): Update the mojom to deliver this per-frame.
   bool EmulatedPosition() const {
@@ -178,6 +190,8 @@ class XRSession final : public EventTargetWithInlineData,
 
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
 
+  bool UsesInputEventing() { return uses_input_eventing_; }
+
   void Trace(blink::Visitor*) override;
 
   // ScriptWrappable
@@ -195,6 +209,11 @@ class XRSession final : public EventTargetWithInlineData,
   void UpdateSelectStateOnRemoval(XRInputSource*);
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
                                              XRInputSource*);
+
+  void OnInputStateChangeInternal(
+      int16_t frame_id,
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>,
+      bool from_eventing);
 
   // XRSessionClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
@@ -237,6 +256,8 @@ class XRSession final : public EventTargetWithInlineData,
   device::mojom::blink::VRDisplayInfoPtr display_info_;
 
   mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
+  mojo::AssociatedBinding<device::mojom::blink::XRInputSourceButtonListener>
+      input_binding_;
 
   Member<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
@@ -257,9 +278,13 @@ class XRSession final : public EventTargetWithInlineData,
   int output_width_ = 1;
   int output_height_ = 1;
 
+  bool uses_input_eventing_ = false;
+
   // Indicates that this is a sensorless session which should only support the
   // identity reference space.
   bool sensorless_session_ = false;
+
+  int16_t last_frame_id_ = -1;
 };
 
 }  // namespace blink

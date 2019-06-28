@@ -922,9 +922,7 @@ class FileManager extends cr.EventTarget {
 
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable), assertInstanceof(grid, FileGrid),
-        new LocationLine(
-            queryRequiredElement('#location-breadcrumbs', dom),
-            this.volumeManager_));
+        this.volumeManager_);
 
     // Handle UI events.
     this.fileBrowserBackground_.progressCenter.addPanel(

@@ -86,7 +86,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
                                           const gfx::Rect& bounds,
                                           bool full_screen,
                                           bool is_menu,
-                                          ui::ZOrderLevel root_z_order) {
+                                          bool root_is_always_on_top) {
     // This instance will get deleted when the widget is destroyed.
     DesktopNativeWidgetTopLevelHandler* top_level_handler =
         new DesktopNativeWidgetTopLevelHandler;
@@ -103,7 +103,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.activatable = full_screen ?
         Widget::InitParams::ACTIVATABLE_YES :
         Widget::InitParams::ACTIVATABLE_NO;
-    init_params.z_order = root_z_order;
+    init_params.keep_on_top = root_is_always_on_top;
 
     // This widget instance will get deleted when the window is
     // destroyed.
@@ -193,14 +193,14 @@ class DesktopNativeWidgetAuraWindowParentingClient
     bool is_menu = window->type() == aura::client::WINDOW_TYPE_MENU;
 
     if (is_fullscreen || is_menu) {
-      ui::ZOrderLevel root_z_order = ui::ZOrderLevel::kNormal;
+      bool root_is_always_on_top = false;
       internal::NativeWidgetPrivate* native_widget =
           DesktopNativeWidgetAura::ForWindow(root_window_);
       if (native_widget)
-        root_z_order = native_widget->GetZOrderLevel();
+        root_is_always_on_top = native_widget->IsAlwaysOnTop();
 
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
-          window, bounds, is_fullscreen, is_menu, root_z_order);
+          window, bounds, is_fullscreen, is_menu, root_is_always_on_top);
     }
     return root_window_;
   }
@@ -814,15 +814,13 @@ bool DesktopNativeWidgetAura::IsActive() const {
   return content_window_ && desktop_window_tree_host_->IsActive();
 }
 
-void DesktopNativeWidgetAura::SetZOrderLevel(ui::ZOrderLevel order) {
+void DesktopNativeWidgetAura::SetAlwaysOnTop(bool always_on_top) {
   if (content_window_)
-    desktop_window_tree_host_->SetZOrderLevel(order);
+    desktop_window_tree_host_->SetAlwaysOnTop(always_on_top);
 }
 
-ui::ZOrderLevel DesktopNativeWidgetAura::GetZOrderLevel() const {
-  if (content_window_)
-    return desktop_window_tree_host_->GetZOrderLevel();
-  return ui::ZOrderLevel::kNormal;
+bool DesktopNativeWidgetAura::IsAlwaysOnTop() const {
+  return content_window_ && desktop_window_tree_host_->IsAlwaysOnTop();
 }
 
 void DesktopNativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {

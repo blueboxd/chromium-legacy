@@ -21,7 +21,6 @@ class WindowEventTarget;
 namespace content {
 
 class DirectManipulationHelper;
-class DirectManipulationBrowserTest;
 class DirectManipulationUnitTest;
 
 // DirectManipulationEventHandler receives status update and gesture events from
@@ -34,8 +33,7 @@ class DirectManipulationEventHandler
               Microsoft::WRL::RuntimeClassFlags<
                   Microsoft::WRL::RuntimeClassType::ClassicCom>,
               Microsoft::WRL::FtmBase,
-              IDirectManipulationViewportEventHandler,
-              IDirectManipulationInteractionEventHandler>> {
+              IDirectManipulationViewportEventHandler>> {
  public:
   explicit DirectManipulationEventHandler(DirectManipulationHelper* helper);
 
@@ -46,7 +44,6 @@ class DirectManipulationEventHandler
   void SetDeviceScaleFactor(float device_scale_factor);
 
  private:
-  friend class DirectManipulationBrowserTest;
   friend DirectManipulationUnitTest;
 
   // DirectManipulationEventHandler();
@@ -68,16 +65,13 @@ class DirectManipulationEventHandler
   OnContentUpdated(_In_ IDirectManipulationViewport* viewport,
                    _In_ IDirectManipulationContent* content) override;
 
-  HRESULT STDMETHODCALLTYPE
-  OnInteraction(_In_ IDirectManipulationViewport2* viewport,
-                _In_ DIRECTMANIPULATION_INTERACTION_TYPE interaction) override;
-
   DirectManipulationHelper* helper_ = nullptr;
   ui::WindowEventTarget* event_target_ = nullptr;
   float device_scale_factor_ = 1.0f;
   float last_scale_ = 1.0f;
   int last_x_offset_ = 0;
   int last_y_offset_ = 0;
+  bool first_ready_ = false;
   bool should_send_scroll_begin_ = false;
 
   // Current recognized gesture from Direct Manipulation.

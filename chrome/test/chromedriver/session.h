@@ -101,6 +101,9 @@ struct Session {
   // first frame element in the root document. If target frame is window.top,
   // this list will be empty.
   std::list<FrameInfo> frames;
+  // Download directory that the user specifies. Used only in headless mode.
+  // Defaults to current directory in headless mode if no directory specified
+  std::unique_ptr<std::string> headless_download_directory;
   WebPoint mouse_position;
   MouseButton pressed_mouse_button;
   base::TimeDelta implicit_wait;

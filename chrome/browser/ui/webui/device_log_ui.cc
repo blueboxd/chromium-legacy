@@ -36,6 +36,10 @@ class DeviceLogMessageHandler : public content::WebUIMessageHandler {
         "DeviceLog.getLog",
         base::BindRepeating(&DeviceLogMessageHandler::GetLog,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "DeviceLog.clearLog",
+        base::BindRepeating(&DeviceLogMessageHandler::ClearLog,
+                            base::Unretained(this)));
   }
 
  private:
@@ -44,6 +48,10 @@ class DeviceLogMessageHandler : public content::WebUIMessageHandler {
         device_event_log::NEWEST_FIRST, "json", "",
         device_event_log::LOG_LEVEL_DEBUG, 0));
     web_ui()->CallJavascriptFunctionUnsafe("DeviceLogUI.getLogCallback", data);
+  }
+
+  void ClearLog(const base::ListValue* value) const {
+    device_event_log::ClearAll();
   }
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLogMessageHandler);
@@ -62,6 +70,8 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
       {"titleText", IDS_DEVICE_LOG_TITLE},
       {"autoRefreshText", IDS_DEVICE_AUTO_REFRESH},
       {"logRefreshText", IDS_DEVICE_LOG_REFRESH},
+      {"logClearText", IDS_DEVICE_LOG_CLEAR},
+      {"logNoEntriesText", IDS_DEVICE_LOG_NO_ENTRIES},
       {"logLevelShowText", IDS_DEVICE_LOG_LEVEL_SHOW},
       {"logLevelErrorText", IDS_DEVICE_LOG_LEVEL_ERROR},
       {"logLevelUserText", IDS_DEVICE_LOG_LEVEL_USER},

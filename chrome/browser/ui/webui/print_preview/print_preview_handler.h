@@ -279,7 +279,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void ClearInitiatorDetails();
 
   // Populates |settings| according to the current locale.
-  void GetNumberFormatAndMeasurementSystem(base::Value* settings);
+  void GetLocaleInformation(base::Value* settings);
 
   // Populates |settings| with the list of logged in accounts.
   void GetUserAccountList(base::Value* settings);

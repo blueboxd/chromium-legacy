@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -24,6 +23,7 @@ class FakeBaseTabStripController : public TabStripController {
 
   void AddTab(int index, bool is_active);
   void AddPinnedTab(int index, bool is_active);
+  void MoveTab(int from_index, int to_index);
   void RemoveTab(int index);
 
   void MoveTabIntoGroup(int index, base::Optional<TabGroupId> new_group);
@@ -82,7 +82,7 @@ class FakeBaseTabStripController : public TabStripController {
   int active_index_ = -1;
 
   TabGroupData fake_group_data_;
-  std::map<int, base::Optional<TabGroupId>> tab_to_group_;
+  std::vector<base::Optional<TabGroupId>> tab_groups_;
 
   ui::ListSelectionModel selection_model_;
 

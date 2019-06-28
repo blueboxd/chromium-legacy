@@ -46,6 +46,9 @@ message RecurrencePredictorConfigProto {
     repeated BinWeight bin_weights = 2;
   }
 
+  // A first-order Markov chain predictor.
+  message MarkovPredictorConfig {}
+
   // The choice of which kind of predictor to use, and its configuration.
   oneof predictor {
     FakePredictorConfig fake_predictor = 1;
@@ -53,6 +56,7 @@ message RecurrencePredictorConfigProto {
     DefaultPredictorConfig default_predictor = 3;
     HourBinPredictorConfig hour_bin_predictor = 4;
     ConditionalFrequencyPredictorConfig conditional_frequency_predictor = 5;
+    MarkovPredictorConfig markov_predictor = 6;
   }
 }
 

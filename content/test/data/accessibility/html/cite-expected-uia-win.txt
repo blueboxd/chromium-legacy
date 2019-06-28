@@ -1,6 +1,5 @@
-region
-++document
-++++img Name='Pipe'
-++++group
-++++++description Name='The pipe'
-++++++description Name=' clicked by SomeOne.'
+document
+++img Name='Pipe'
+++group
+++++description Name='The pipe'
+++++description Name=' clicked by SomeOne.'

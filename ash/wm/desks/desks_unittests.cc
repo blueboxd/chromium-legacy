@@ -6,9 +6,11 @@
 
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/shell.h"
+#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
 #include "ash/wm/desks/close_desk_button.h"
@@ -35,6 +37,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
@@ -1615,6 +1618,223 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   EXPECT_TRUE(win1->IsVisible());
   EXPECT_FALSE(win2->IsVisible());
   EXPECT_FALSE(win3->IsVisible());
+}
+
+// Simulates the same behavior of event rewriting that key presses go through.
+class DesksAcceleratorsTest : public DesksTest,
+                              public ui::EventRewriterChromeOS::Delegate {
+ public:
+  DesksAcceleratorsTest() = default;
+  ~DesksAcceleratorsTest() override = default;
+
+  // DesksTest:
+  void SetUp() override {
+    DesksTest::SetUp();
+
+    auto* event_rewriter_controller = EventRewriterController::Get();
+    event_rewriter_controller->AddEventRewriter(
+        std::make_unique<ui::EventRewriterChromeOS>(
+            this, Shell::Get()->sticky_keys_controller()));
+  }
+
+  // ui::EventRewriterChromeOS::Delegate:
+  bool RewriteModifierKeys() override { return true; }
+  bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
+                                    int* result) const override {
+    return false;
+  }
+  bool TopRowKeysAreFunctionKeys() const override { return false; }
+  bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
+                                    int flags) const override {
+    return false;
+  }
+  bool IsSearchKeyAcceleratorReserved() const override { return true; }
+
+  void SendAccelerator(ui::KeyboardCode key_code, int flags) {
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->PressKey(key_code, flags);
+    generator->ReleaseKey(key_code, flags);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesksAcceleratorsTest);
+};
+
+TEST_F(DesksAcceleratorsTest, NewDesk) {
+  auto* controller = DesksController::Get();
+  // It's possible to add up to `kMaxNumberOfDesks` desks using the shortcut.
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  for (size_t num_desks = 1; num_desks < desks_util::kMaxNumberOfDesks;
+       ++num_desks) {
+    DeskSwitchAnimationWaiter waiter;
+    SendAccelerator(ui::VKEY_OEM_PLUS, flags);
+    waiter.Wait();
+    // The newly created desk should be activated.
+    ASSERT_EQ(num_desks + 1, controller->desks().size());
+    EXPECT_TRUE(controller->desks().back()->is_active());
+  }
+
+  // When we reach the limit, the shortcut does nothing.
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks, controller->desks().size());
+  SendAccelerator(ui::VKEY_OEM_PLUS, flags);
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks, controller->desks().size());
+}
+
+TEST_F(DesksAcceleratorsTest, CannotRemoveLastDesk) {
+  auto* controller = DesksController::Get();
+  // Removing the last desk is not possible.
+  ASSERT_EQ(1u, controller->desks().size());
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  SendAccelerator(ui::VKEY_OEM_MINUS, flags);
+  ASSERT_EQ(1u, controller->desks().size());
+}
+
+TEST_F(DesksAcceleratorsTest, RemoveDesk) {
+  auto* controller = DesksController::Get();
+  // Create a few desks and remove them outside and inside overview using the
+  // shortcut.
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(3u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  Desk* desk_3 = controller->desks()[2].get();
+  EXPECT_TRUE(desk_1->is_active());
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  SendAccelerator(ui::VKEY_OEM_MINUS, flags);
+  ASSERT_EQ(2u, controller->desks().size());
+  EXPECT_TRUE(desk_2->is_active());
+
+  // Using the accelerator doesn't result in exiting overview.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  SendAccelerator(ui::VKEY_OEM_MINUS, flags);
+  ASSERT_EQ(1u, controller->desks().size());
+  EXPECT_TRUE(desk_3->is_active());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+}
+
+TEST_F(DesksAcceleratorsTest, LeftRightDeskActivation) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  EXPECT_TRUE(desk_1->is_active());
+  // No desk on left, nothing should happen.
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN;
+  SendAccelerator(ui::VKEY_OEM_4, flags);
+  EXPECT_TRUE(desk_1->is_active());
+
+  // Go right until there're no more desks on the right.
+  {
+    DeskSwitchAnimationWaiter waiter;
+    SendAccelerator(ui::VKEY_OEM_6, flags);
+    waiter.Wait();
+    EXPECT_TRUE(desk_2->is_active());
+  }
+
+  // Nothing happens.
+  SendAccelerator(ui::VKEY_OEM_6, flags);
+  EXPECT_TRUE(desk_2->is_active());
+
+  // Go back left.
+  {
+    DeskSwitchAnimationWaiter waiter;
+    SendAccelerator(ui::VKEY_OEM_4, flags);
+    waiter.Wait();
+    EXPECT_TRUE(desk_1->is_active());
+  }
+}
+
+TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDesk) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  EXPECT_TRUE(desk_1->is_active());
+
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Moving window left when this is the left-most desk. Nothing happens.
+  const int flags =
+      ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
+  SendAccelerator(ui::VKEY_OEM_4, flags);
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
+
+  // Move window right, it should be deactivated.
+  SendAccelerator(ui::VKEY_OEM_6, flags);
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_TRUE(desk_1->windows().empty());
+  EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
+
+  // No more active windows on this desk, nothing happens.
+  SendAccelerator(ui::VKEY_OEM_6, flags);
+  EXPECT_TRUE(desk_1->windows().empty());
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+
+  // Activate desk 2, and do the same set of tests.
+  ActivateDesk(desk_2);
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Move right does nothing.
+  SendAccelerator(ui::VKEY_OEM_6, flags);
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  SendAccelerator(ui::VKEY_OEM_4, flags);
+  EXPECT_TRUE(desk_2->windows().empty());
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_TRUE(base::Contains(desk_1->windows(), window.get()));
+}
+
+TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDeskOverview) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  EXPECT_TRUE(desk_1->is_active());
+
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(win0.get());
+  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const int flags =
+      ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
+  // In overview, while no window is highlighted, nothing should happen.
+  const size_t num_windows_before = desk_1->windows().size();
+  EXPECT_TRUE(desk_2->windows().empty());
+  SendAccelerator(ui::VKEY_OEM_6, flags);
+  ASSERT_EQ(num_windows_before, desk_1->windows().size());
+  EXPECT_TRUE(desk_2->windows().empty());
+
+  // It's possible to move the highlighted window.
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  overview_grid->Move(/*reverse=*/false, /*animate=*/false);
+  EXPECT_EQ(win0.get(), overview_grid->SelectedWindow()->GetWindow());
+  SendAccelerator(ui::VKEY_OEM_6, flags);
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win0.get()));
+  EXPECT_TRUE(base::Contains(desk_2->windows(), win0.get()));
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // The highlight widget should move to the next window.
+  EXPECT_EQ(win1.get(), overview_grid->SelectedWindow()->GetWindow());
+  SendAccelerator(ui::VKEY_OEM_6, flags);
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win1.get()));
+  EXPECT_TRUE(base::Contains(desk_2->windows(), win1.get()));
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // No more highlighted windows.
+  EXPECT_FALSE(overview_grid->SelectedWindow());
 }
 
 // TODO(afakhry): Add more tests:

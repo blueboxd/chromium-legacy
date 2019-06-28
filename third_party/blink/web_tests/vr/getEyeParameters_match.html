@@ -20,12 +20,13 @@ vr_test( (t) => {
 
     function compareEyes(actual, expected) {
       t.step( () => {
-        assert_equals(actual.offset.length, expected.offset.length);
-        for (let i = 0; i < expected.offset.length; i++) {
-          assert_approx_equals(actual.offset[i], expected.offset[i],
-              FLOAT_EPSILON);
-        }
-
+        assert_equals(actual.offset.length, 3);
+        assert_approx_equals(actual.offset[0], expected.offset.x,
+            FLOAT_EPSILON);
+        assert_approx_equals(actual.offset[1], expected.offset.y,
+            FLOAT_EPSILON);
+        assert_approx_equals(actual.offset[2], expected.offset.z,
+            FLOAT_EPSILON);
         assert_equals(actual.renderWidth, expected.renderWidth * scale);
         assert_equals(actual.renderHeight, expected.renderHeight * scale);
       }, "Returned eye parameters match provided parameters");

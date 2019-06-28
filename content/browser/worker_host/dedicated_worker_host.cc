@@ -77,9 +77,13 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
 
+    DCHECK(!client_);
+    DCHECK(client);
+    client_ = std::move(client);
+
     auto* render_process_host = RenderProcessHost::FromID(process_id_);
     if (!render_process_host) {
-      client->OnScriptLoadStartFailed();
+      client_->OnScriptLoadStartFailed();
       return;
     }
     auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
@@ -110,7 +114,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         appcache_handle_->core(), std::move(blob_url_loader_factory), nullptr,
         storage_partition_impl,
         base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
-                       weak_factory_.GetWeakPtr(), std::move(client)));
+                       weak_factory_.GetWeakPtr()));
   }
 
  private:
@@ -148,7 +152,6 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|.
   void DidStartScriptLoad(
-      blink::mojom::DedicatedWorkerHostFactoryClientPtr client,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
@@ -165,13 +168,13 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK(!main_script_loader_factory);
 
     if (!success) {
-      client->OnScriptLoadStartFailed();
+      client_->OnScriptLoadStartFailed();
       return;
     }
 
     auto* render_process_host = RenderProcessHost::FromID(process_id_);
     if (!render_process_host) {
-      client->OnScriptLoadStartFailed();
+      client_->OnScriptLoadStartFailed();
       return;
     }
 
@@ -194,10 +197,10 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       service_worker_state = controller->object_info->state;
     }
 
-    client->OnScriptLoadStarted(std::move(service_worker_provider_info),
-                                std::move(main_script_load_params),
-                                std::move(subresource_loader_factories),
-                                std::move(controller));
+    client_->OnScriptLoadStarted(std::move(service_worker_provider_info),
+                                 std::move(main_script_load_params),
+                                 std::move(subresource_loader_factories),
+                                 std::move(controller));
 
     // |service_worker_remote_object| is an associated interface ptr, so calls
     // can't be made on it until its request endpoint is sent. Now that the
@@ -284,6 +287,12 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   // of dedicated workers.
   const int ancestor_render_frame_id_;
   const url::Origin origin_;
+
+  // This is kept alive during the lifetime of the dedicated worker, since it's
+  // associated with Mojo interfaces (ServiceWorkerContainer and
+  // URLLoaderFactory) that are needed to stay alive while the worker is
+  // starting or running.
+  blink::mojom::DedicatedWorkerHostFactoryClientPtr client_;
 
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 

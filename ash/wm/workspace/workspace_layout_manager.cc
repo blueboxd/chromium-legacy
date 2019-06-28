@@ -158,7 +158,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   backdrop_controller_->OnWindowAddedToLayout();
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
   if (Shell::Get()->screen_pinning_controller()->IsPinned())
-    wm::GetWindowState(child)->DisableZOrdering(nullptr);
+    wm::GetWindowState(child)->DisableAlwaysOnTop(nullptr);
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
@@ -308,9 +308,8 @@ void WorkspaceLayoutManager::OnWindowAdded(aura::Window* window) {
 void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {
-  if (key == aura::client::kZOrderingKey) {
-    if (window->GetProperty(aura::client::kZOrderingKey) !=
-        ui::ZOrderLevel::kNormal) {
+  if (key == aura::client::kAlwaysOnTopKey) {
+    if (window->GetProperty(aura::client::kAlwaysOnTopKey)) {
       aura::Window* container =
           root_window_controller_->always_on_top_controller()->GetContainer(
               window);
@@ -526,9 +525,9 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(
   for (aura::Window* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (active_desk_fullscreen_window)
-      window_state->DisableZOrdering(active_desk_fullscreen_window);
+      window_state->DisableAlwaysOnTop(active_desk_fullscreen_window);
     else
-      window_state->RestoreZOrdering();
+      window_state->RestoreAlwaysOnTop();
   }
 }
 

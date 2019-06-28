@@ -156,15 +156,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           env->connection_options, env->client_connection_options,
           enable_socket_recv_optimization, 0);
 
+  SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;
   NetErrorDetails net_error_details;
+  quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
+  quic::ParsedQuicVersion version =
+      versions[data_provider.ConsumeIntegralInRange<size_t>(
+          0, versions.size() - 1)];
   request.Request(
-      env->host_port_pair,
-      data_provider.PickValueInArray(quic::kSupportedTransportVersions),
-      PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY, SocketTag(),
-      NetworkIsolationKey(), kCertVerifyFlags, GURL(kUrl), env->net_log,
-      &net_error_details,
+      env->host_port_pair, version, PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY,
+      SocketTag(), NetworkIsolationKey(), kCertVerifyFlags, GURL(kUrl),
+      env->net_log, &net_error_details,
       /*failed_on_default_network_callback=*/CompletionOnceCallback(),
       callback.callback());
 

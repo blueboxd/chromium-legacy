@@ -73,6 +73,7 @@ class NavigationUrlTracker final : public NavigationLoaderInterceptor {
 
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
+      BrowserContext*,
       ResourceContext*,
       LoaderCallback callback,
       FallbackCallback) override {

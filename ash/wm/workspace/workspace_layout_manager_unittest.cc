@@ -810,37 +810,34 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
       CreateTestWindowInShellWithBounds(bounds));
   std::unique_ptr<aura::Window> always_on_top_window2(
       CreateTestWindowInShellWithBounds(bounds));
-  always_on_top_window1->SetProperty(aura::client::kZOrderingKey,
-                                     ui::ZOrderLevel::kFloatingWindow);
-  always_on_top_window2->SetProperty(aura::client::kZOrderingKey,
-                                     ui::ZOrderLevel::kFloatingWindow);
+  always_on_top_window1->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
   // Making a window fullscreen temporarily suspends always on top state.
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            always_on_top_window1->GetProperty(aura::client::kZOrderingKey));
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            always_on_top_window2->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_FALSE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_FALSE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_NE(nullptr,
             wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 
   // Adding a new always-on-top window is not affected by fullscreen.
   std::unique_ptr<aura::Window> always_on_top_window3(
       CreateTestWindowInShellWithBounds(bounds));
-  always_on_top_window3->SetProperty(aura::client::kZOrderingKey,
-                                     ui::ZOrderLevel::kFloatingWindow);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window3->GetProperty(aura::client::kZOrderingKey));
+  always_on_top_window3->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  EXPECT_TRUE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
 
   // Making fullscreen window normal restores always on top windows.
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window1->GetProperty(aura::client::kZOrderingKey));
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window2->GetProperty(aura::client::kZOrderingKey));
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window3->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_EQ(nullptr,
             wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 }
@@ -856,26 +853,22 @@ TEST_F(WorkspaceLayoutManagerSoloTest,
   wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
   const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
-  pip_window->SetProperty(aura::client::kZOrderingKey,
-                          ui::ZOrderLevel::kFloatingWindow);
+  pip_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   EXPECT_TRUE(window_state->IsPip());
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            pip_window->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
 
   // Making a window fullscreen temporarily suspends always on top state, but
   // should not do so for PIP.
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            pip_window->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_NE(nullptr,
             wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 
   // Making fullscreen window normal does not affect PIP.
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            pip_window->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_EQ(nullptr,
             wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 }
@@ -889,35 +882,32 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
       CreateTestWindowInShellWithBounds(bounds));
   std::unique_ptr<aura::Window> always_on_top_window2(
       CreateTestWindowInShellWithBounds(bounds));
-  always_on_top_window1->SetProperty(aura::client::kZOrderingKey,
-                                     ui::ZOrderLevel::kFloatingWindow);
-  always_on_top_window2->SetProperty(aura::client::kZOrderingKey,
-                                     ui::ZOrderLevel::kFloatingWindow);
+  always_on_top_window1->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
 
   // Making a window pinned temporarily suspends always on top state.
   const bool trusted = false;
   wm::PinWindow(pinned_window.get(), trusted);
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            always_on_top_window1->GetProperty(aura::client::kZOrderingKey));
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            always_on_top_window2->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_FALSE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_FALSE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
 
   // Adding a new always-on-top window also is affected by pinned mode.
   std::unique_ptr<aura::Window> always_on_top_window3(
       CreateTestWindowInShellWithBounds(bounds));
-  always_on_top_window3->SetProperty(aura::client::kZOrderingKey,
-                                     ui::ZOrderLevel::kFloatingWindow);
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            always_on_top_window3->GetProperty(aura::client::kZOrderingKey));
+  always_on_top_window3->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  EXPECT_FALSE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
 
   // Making pinned window normal restores always on top windows.
   wm::GetWindowState(pinned_window.get())->Restore();
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window1->GetProperty(aura::client::kZOrderingKey));
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window2->GetProperty(aura::client::kZOrderingKey));
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window3->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
 TEST_F(WorkspaceLayoutManagerSoloTest, PinnedDoesNotSuspendAlwaysOnTopForPip) {
@@ -930,19 +920,16 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedDoesNotSuspendAlwaysOnTopForPip) {
     wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
     const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
     window_state->OnWMEvent(&enter_pip);
-    pip_window->SetProperty(aura::client::kZOrderingKey,
-                            ui::ZOrderLevel::kFloatingWindow);
+    pip_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
     EXPECT_TRUE(window_state->IsPip());
-    EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-              pip_window->GetProperty(aura::client::kZOrderingKey));
+    EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
   }
 
   // Making a window pinned temporarily suspends always on top state, except
   // for PIP.
   const bool trusted = false;
   wm::PinWindow(pinned_window.get(), trusted);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            pip_window->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
 
   // Adding a new PIP window should still end up always on top.
   std::unique_ptr<aura::Window> pip_window2(
@@ -951,19 +938,15 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedDoesNotSuspendAlwaysOnTopForPip) {
     wm::WindowState* window_state = wm::GetWindowState(pip_window2.get());
     const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
     window_state->OnWMEvent(&enter_pip);
-    pip_window2->SetProperty(aura::client::kZOrderingKey,
-                             ui::ZOrderLevel::kFloatingWindow);
+    pip_window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
     EXPECT_TRUE(window_state->IsPip());
-    EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-              pip_window2->GetProperty(aura::client::kZOrderingKey));
+    EXPECT_TRUE(pip_window2->GetProperty(aura::client::kAlwaysOnTopKey));
   }
 
   // Making pinned window normal should not affect existing PIP windows.
   wm::GetWindowState(pinned_window.get())->Restore();
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            pip_window->GetProperty(aura::client::kZOrderingKey));
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            pip_window2->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(pip_window2->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
 // Tests fullscreen window size during root window resize.
@@ -1077,8 +1060,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   // window with AlwaysOnTop will be managed by BaseLayoutManager.
-  window->SetProperty(aura::client::kZOrderingKey,
-                      ui::ZOrderLevel::kFloatingWindow);
+  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   window->Show();
 
   Shelf* shelf = GetPrimaryShelf();
@@ -2037,8 +2019,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   std::unique_ptr<aura::Window> always_on_top_window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   always_on_top_window->Show();
-  always_on_top_window->SetProperty(aura::client::kZOrderingKey,
-                                    ui::ZOrderLevel::kFloatingWindow);
+  always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
 
   aura::Window* always_on_top_container =
   always_on_top_controller->GetContainer(always_on_top_window.get());
@@ -2047,8 +2028,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   // at this moment.
   ASSERT_EQ(always_on_top_container->children().size(), 2U);
 
-  always_on_top_window->SetProperty(aura::client::kZOrderingKey,
-                                    ui::ZOrderLevel::kNormal);
+  always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, false);
   // The backdrop window will be destroyed immediately after
   // |always_on_top_window| moves to the default container.
   EXPECT_TRUE(always_on_top_container->children().empty());

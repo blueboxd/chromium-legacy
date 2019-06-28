@@ -49,13 +49,13 @@ void ProjectionFromFieldOfView(blink::DOMFloat32Array* out_array,
 // Create a matrix from a rotation and translation.
 void MatrixfromRotationTranslation(
     blink::DOMFloat32Array* out_array,
-    const base::Optional<WTF::Vector<float>>& rotation,
-    const base::Optional<WTF::Vector<float>>& translation) {
+    const base::Optional<gfx::Quaternion>& rotation,
+    const base::Optional<blink::WebFloatPoint3D>& translation) {
   // Quaternion math
-  float x = !rotation ? 0.0f : rotation.value()[0];
-  float y = !rotation ? 0.0f : rotation.value()[1];
-  float z = !rotation ? 0.0f : rotation.value()[2];
-  float w = !rotation ? 1.0f : rotation.value()[3];
+  float x = rotation ? rotation->x() : 0.0f;
+  float y = rotation ? rotation->y() : 0.0f;
+  float z = rotation ? rotation->z() : 0.0f;
+  float w = rotation ? rotation->w() : 1.0f;
   float x2 = x + x;
   float y2 = y + y;
   float z2 = z + z;
@@ -83,9 +83,9 @@ void MatrixfromRotationTranslation(
   out[9] = yz - wx;
   out[10] = 1 - (xx + yy);
   out[11] = 0;
-  out[12] = !translation ? 0.0f : translation.value()[0];
-  out[13] = !translation ? 0.0f : translation.value()[1];
-  out[14] = !translation ? 0.0f : translation.value()[2];
+  out[12] = translation ? translation->x : 0.0f;
+  out[13] = translation ? translation->y : 0.0f;
+  out[14] = translation ? translation->z : 0.0f;
   out[15] = 1;
 }
 

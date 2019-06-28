@@ -55,6 +55,7 @@
     </style>
     <style name="TextButton.Inverse" tools:ignore="UnusedResources">
         <item name="android:textAppearance">@style/TextAppearance.ButtonText.Inverse</item>
+        <item name="rippleColor">@color/filled_button_ripple_color</item>
     </style>
 
     <!-- Chips -->

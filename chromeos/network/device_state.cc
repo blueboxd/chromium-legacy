@@ -17,14 +17,7 @@
 namespace chromeos {
 
 DeviceState::DeviceState(const std::string& path)
-    : ManagedState(MANAGED_TYPE_DEVICE, path),
-      allow_roaming_(false),
-      provider_requires_roaming_(false),
-      support_network_scan_(false),
-      scanning_(false),
-      sim_retries_left_(0),
-      sim_present_(true),
-      eap_authentication_completed_(false) {}
+    : ManagedState(MANAGED_TYPE_DEVICE, path) {}
 
 DeviceState::~DeviceState() = default;
 

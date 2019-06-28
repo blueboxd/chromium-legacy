@@ -53,10 +53,6 @@ class NET_EXPORT SSLClientSessionCache : public CertDatabase::Observer {
   // of the MRU list. Returns nullptr if there is none.
   bssl::UniquePtr<SSL_SESSION> Lookup(const std::string& cache_key);
 
-  // Resets the count returned by Lookup to 0 for the session associated with
-  // |cache_key|.
-  void ResetLookupCount(const std::string& cache_key);
-
   // Inserts |session| into the cache at |cache_key|. If there is an existing
   // one, it is released. Every |expiration_check_count| calls, the cache is
   // checked for stale entries.

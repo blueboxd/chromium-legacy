@@ -481,7 +481,7 @@
       'WebKit Linux ASAN': 'asan_lsan_release_bot',
       'WebKit Linux Leak': 'release_bot',
       'WebKit Linux MSAN': 'msan_release_bot',
-      'android-asan': 'android_clang_asan_debug_bot',
+      'android-asan': 'android_clang_asan_release_bot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
     },
 
@@ -677,6 +677,13 @@
       'mac-angle-rel': 'gpu_fyi_tests_release_trybot',
       'win-angle-rel': 'gpu_fyi_tests_release_trybot_x86',
       'win_angle_deqp_rel_ng': 'deqp_release_trybot_x86',
+    },
+
+    'tryserver.chrome': {
+      'chromeos-betty-chrome': 'official_cros_chrome_sdk_headless_ozone',
+      'linux-chrome': 'official_goma',
+      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',
+      'win_chrome_official': 'official_goma_x86',
     },
 
     'tryserver.chromium.chrome': {
@@ -908,6 +915,10 @@
 
     'android_clang_asan_debug_trybot_compile_only': [
       'android', 'clang', 'asan', 'debug_trybot', 'compile_only',
+    ],
+
+    'android_clang_asan_release_bot': [
+      'android', 'clang', 'asan', 'release_bot', 'strip_debug_info', 'minimal_symbols',
     ],
 
     'android_clang_tot_asan': [

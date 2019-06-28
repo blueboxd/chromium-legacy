@@ -205,8 +205,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
             ->set_parent_controls_visibility(true);
       }
     }
-    // SetZOrderLevel before SetParent so that always-on-top container is used.
-    SetZOrderLevel(params.EffectiveZOrderLevel());
+    // SetAlwaysOnTop before SetParent so that always-on-top container is used.
+    SetAlwaysOnTop(params.keep_on_top);
 
     // Make sure we have a real |window_bounds|.
     aura::Window* parent_or_context = parent ? parent : context;
@@ -611,16 +611,13 @@ bool NativeWidgetAura::IsActive() const {
   return window_ && wm::IsActiveWindow(window_);
 }
 
-void NativeWidgetAura::SetZOrderLevel(ui::ZOrderLevel order) {
+void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
   if (window_)
-    window_->SetProperty(aura::client::kZOrderingKey, order);
+    window_->SetProperty(aura::client::kAlwaysOnTopKey, on_top);
 }
 
-ui::ZOrderLevel NativeWidgetAura::GetZOrderLevel() const {
-  if (window_)
-    return window_->GetProperty(aura::client::kZOrderingKey);
-
-  return ui::ZOrderLevel::kNormal;
+bool NativeWidgetAura::IsAlwaysOnTop() const {
+  return window_ && window_->GetProperty(aura::client::kAlwaysOnTopKey);
 }
 
 void NativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {

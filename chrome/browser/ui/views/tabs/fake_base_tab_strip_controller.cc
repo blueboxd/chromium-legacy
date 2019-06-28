@@ -19,11 +19,11 @@ FakeBaseTabStripController::~FakeBaseTabStripController() {
 void FakeBaseTabStripController::AddTab(int index, bool is_active) {
   num_tabs_++;
   tab_strip_->AddTabAt(index, TabRendererData(), is_active);
-  ui::MouseEvent fake_event =
-      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
-                     base::TimeTicks::Now(), 0, 0);
-  if (is_active)
-    SelectTab(index, fake_event);
+  if (is_active) {
+    SelectTab(index,
+              ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                             base::TimeTicks::Now(), 0, 0));
+  }
 }
 
 void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
@@ -33,6 +33,18 @@ void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
   tab_strip_->AddTabAt(index, std::move(data), is_active);
   if (is_active)
     active_index_ = index;
+}
+
+void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
+  base::Optional<TabGroupId> prev_group;
+  if (from_index < int{tab_groups_.size()}) {
+    prev_group = tab_groups_[from_index];
+    tab_groups_.erase(tab_groups_.begin() + from_index);
+  }
+  if (to_index >= int{tab_groups_.size()})
+    tab_groups_.resize(to_index + 1);
+  tab_groups_.insert(tab_groups_.begin() + to_index, prev_group);
+  tab_strip_->MoveTab(from_index, to_index, TabRendererData());
 }
 
 void FakeBaseTabStripController::RemoveTab(int index) {
@@ -50,8 +62,12 @@ void FakeBaseTabStripController::RemoveTab(int index) {
 void FakeBaseTabStripController::MoveTabIntoGroup(
     int index,
     base::Optional<TabGroupId> new_group) {
-  const base::Optional<TabGroupId> old_group = tab_to_group_[index];
-  tab_to_group_[index] = new_group;
+  base::Optional<TabGroupId> old_group;
+  if (index >= int{tab_groups_.size()})
+    tab_groups_.resize(index + 1);
+  else
+    old_group = tab_groups_[index];
+  tab_groups_[index] = new_group;
   tab_strip_->ChangeTabGroup(index, old_group, new_group);
 }
 
@@ -63,9 +79,9 @@ const TabGroupData* FakeBaseTabStripController::GetDataForGroup(
 std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
     TabGroupId group) const {
   std::vector<int> result;
-  for (auto const& tab_group_pair : tab_to_group_) {
-    if (tab_group_pair.second == group)
-      result.push_back(tab_group_pair.first);
+  for (size_t i = 0; i < tab_groups_.size(); i++) {
+    if (tab_groups_[i] == group)
+      result.push_back(i);
   }
   return result;
 }

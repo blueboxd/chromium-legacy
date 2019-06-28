@@ -35,15 +35,16 @@ uint8_t GenerateModifierValueForRulebased(bool shift, bool altgr, bool caps) {
   return modifiers;
 }
 
-mojom::KeypressResponsePtr GenerateKeypressResponseForRulebased(
+mojom::KeypressResponseForRulebasedPtr GenerateKeypressResponseForRulebased(
     rulebased::ProcessKeyResult& process_key_result) {
-  mojom::KeypressResponsePtr keypress_response = mojom::KeypressResponse::New();
+  mojom::KeypressResponseForRulebasedPtr keypress_response =
+      mojom::KeypressResponseForRulebased::New();
   keypress_response->result = process_key_result.key_handled;
   if (!process_key_result.commit_text.empty()) {
     std::string commit_text;
     base::EscapeJSONString(process_key_result.commit_text, false, &commit_text);
-    keypress_response->operations.push_back(mojom::Operation::New(
-        mojom::OperationMethod::COMMIT_TEXT, commit_text));
+    keypress_response->operations.push_back(mojom::OperationForRulebased::New(
+        mojom::OperationMethodForRulebased::COMMIT_TEXT, commit_text));
   }
   // Need to add the setComposition operation to the result when the key is
   // handled and commit_text and composition_text are both empty.
@@ -55,8 +56,8 @@ mojom::KeypressResponsePtr GenerateKeypressResponseForRulebased(
     std::string composition_text;
     base::EscapeJSONString(process_key_result.composition_text, false,
                            &composition_text);
-    keypress_response->operations.push_back(mojom::Operation::New(
-        mojom::OperationMethod::SET_COMPOSITION, composition_text));
+    keypress_response->operations.push_back(mojom::OperationForRulebased::New(
+        mojom::OperationMethodForRulebased::SET_COMPOSITION, composition_text));
   }
   return keypress_response;
 }
@@ -83,7 +84,7 @@ bool InputEngine::BindRequest(
     mojo::PendingReceiver<mojom::InputChannel> receiver,
     mojo::PendingRemote<mojom::InputChannel> remote,
     const std::vector<uint8_t>& extra) {
-  if (!IsImeSupported(ime_spec))
+  if (!IsImeSupportedByRulebased(ime_spec))
     return false;
 
   channel_receivers_.Add(this, std::move(receiver),
@@ -93,7 +94,7 @@ bool InputEngine::BindRequest(
   // TODO(https://crbug.com/837156): Registry connection error handler.
 }
 
-bool InputEngine::IsImeSupported(const std::string& ime_spec) {
+bool InputEngine::IsImeSupportedByRulebased(const std::string& ime_spec) {
   return rulebased::Engine::IsImeSupported(GetIdFromImeSpec(ime_spec));
 }
 
@@ -222,15 +223,15 @@ std::string InputEngine::Process(const std::string& message,
 }
 
 void InputEngine::ProcessKeypressForRulebased(
-    mojom::KeypressInfoPtr keypress_info,
+    mojom::KeypressInfoForRulebasedPtr keypress_info,
     ProcessKeypressForRulebasedCallback callback) {
   auto& context = channel_receivers_.current_context();
   auto& engine = context.get()->engine;
 
   if (!engine || keypress_info->type.empty() ||
       keypress_info->type != "keydown") {
-    std::move(callback).Run(mojom::KeypressResponse::New(
-        false, std::vector<mojom::OperationPtr>(0)));
+    std::move(callback).Run(mojom::KeypressResponseForRulebased::New(
+        false, std::vector<mojom::OperationForRulebasedPtr>(0)));
     return;
   }
 
@@ -238,7 +239,7 @@ void InputEngine::ProcessKeypressForRulebased(
       keypress_info->code,
       GenerateModifierValueForRulebased(
           keypress_info->shift, keypress_info->altgr, keypress_info->caps));
-  mojom::KeypressResponsePtr keypress_response =
+  mojom::KeypressResponseForRulebasedPtr keypress_response =
       GenerateKeypressResponseForRulebased(process_key_result);
 
   std::move(callback).Run(std::move(keypress_response));

@@ -15,43 +15,43 @@ import "url/mojom/url.mojom";
 //   between the IME extension and the IME service. It also provides additional
 //   functionality to the IME service (for downloading IME data as needed).
 
-// Method of an operation to apply to a text field
-enum OperationMethod {
+// Method of an operation to apply to a text field.
+enum OperationMethodForRulebased {
   COMMIT_TEXT = 0,
   SET_COMPOSITION = 1,
 };
 
-// Operation to apply to a text field, in response to a Keypress
-struct Operation {
-  // The operation we wish to apply to the text field
-  OperationMethod method;
+// Operation to apply to a text field, in response to a Keypress.
+struct OperationForRulebased {
+  // The operation we wish to apply to the text field.
+  OperationMethodForRulebased method;
 
-  // Additional arguments of the method to apply to the text field
+  // Additional arguments of the method to apply to the text field.
   string arguments;
 };
 
-// KeypressResponse represents the Rulebased engine response to a keypress
-struct KeypressResponse {
+// KeypressResponse represents the Rulebased engine response to a keypress.
+struct KeypressResponseForRulebased {
   // result indicates if the function call was successful
   // There must be a valid engine and the keypress must be valid for
-  // this to be the case
+  // this to be the case.
   bool result;
 
   // An array of operations to apply to the text field in respoonse to
-  // the Keypress
-  array<Operation> operations;
+  // the Keypress.
+  array<OperationForRulebased> operations;
 };
 
-// Information about a specific keypress
-struct KeypressInfo {
+// Information about a specific keypress.
+struct KeypressInfoForRulebased {
 
-  // Keypress Type (Eg; "keydown", "keyup", etc)
+  // Keypress Type (Eg; "keydown", "keyup", etc).
   string type;
 
-  // Keypress key code (eg; "KeyA", "KeyB", "Enter", etc )
+  // Keypress key code (eg; "KeyA", "KeyB", "Enter", etc ).
   string code;
 
-  // Booleans to indicate if an option key is active / pressed down
+  // Booleans to indicate if an option key is active / pressed down.
   bool shift;
   bool altgr;
   bool caps;
@@ -92,16 +92,16 @@ interface InputChannel {
   // protobuf message.
   ProcessMessage(array<uint8> message) => (array<uint8> result);
 
-  // Process a KeypressInfo mojo object and return a KeypressResponse object
-  // with a list of operations to be handled by the caller's callback
-  // (for rulebased logic)
-  ProcessKeypressForRulebased(KeypressInfo message)
-                              => (KeypressResponse result);
+  // Process a KeypressInfoForRulebased mojo object and return a
+  // KeypressResponseForRulebased object with a list of operations to be
+  // handled by the caller's callback (for rulebased logic).
+  ProcessKeypressForRulebased(KeypressInfoForRulebased message)
+                              => (KeypressResponseForRulebased result);
 
-  // Resets the engine for rulebased logic
+  // Resets the engine for rulebased logic.
   ResetForRulebased();
 
-  // Gets the keypress count for rulebased logic
+  // Gets the keypress count for rulebased logic.
   GetRulebasedKeypressCountForTesting() => (int32 count);
 };
 

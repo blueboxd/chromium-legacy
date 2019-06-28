@@ -5370,7 +5370,7 @@ void RenderFrameHostImpl::ClearAllWebUI() {
   web_ui_.reset();
 }
 
-const content::mojom::ImageDownloaderPtr&
+const blink::mojom::ImageDownloaderPtr&
 RenderFrameHostImpl::GetMojoImageDownloader() {
   if (!mojo_image_downloader_.get() && GetRemoteInterfaces())
     GetRemoteInterfaces()->GetInterface(&mojo_image_downloader_);

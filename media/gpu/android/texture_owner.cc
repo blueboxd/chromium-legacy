@@ -43,9 +43,9 @@ scoped_refptr<TextureOwner> TextureOwner::Create(
     std::unique_ptr<gpu::gles2::AbstractTexture> texture,
     Mode mode) {
   switch (mode) {
-    case Mode::kAImageReaderSecure:
-      return new ImageReaderGLOwner(std::move(texture), mode);
     case Mode::kAImageReaderInsecure:
+    case Mode::kAImageReaderInsecureSurfaceControl:
+    case Mode::kAImageReaderSecureSurfaceControl:
       return new ImageReaderGLOwner(std::move(texture), mode);
     case Mode::kSurfaceTextureInsecure:
       return new SurfaceTextureGLOwner(std::move(texture));

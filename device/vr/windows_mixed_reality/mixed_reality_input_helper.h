@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback_list.h"
-#include "base/synchronization/lock.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -44,9 +43,14 @@ class WMRInputManager;
 class WMRInputSourceState;
 class WMRInputSourceEventArgs;
 class WMRTimestamp;
+class MixedRealityRenderLoop;
 class MixedRealityInputHelper {
  public:
-  MixedRealityInputHelper(HWND hwnd);
+  // Note that the WeakPtr should be resolvable on the thread this is created
+  // on, (which should be the render loop thread).
+  MixedRealityInputHelper(
+      HWND hwnd,
+      const base::WeakPtr<MixedRealityRenderLoop>& weak_render_loop);
   virtual ~MixedRealityInputHelper();
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
       const WMRCoordinateSystem* origin,
@@ -60,13 +64,18 @@ class MixedRealityInputHelper {
  private:
   bool EnsureSpatialInteractionManager();
 
-  ParsedInputState LockedParseWindowsSourceState(
-      const WMRInputSourceState* state,
-      const WMRCoordinateSystem* origin);
+  ParsedInputState ParseWindowsSourceState(const WMRInputSourceState* state,
+                                           const WMRCoordinateSystem* origin);
 
+  // These event subscriptions can come back on a different thread, while
+  // everything else is expected to come back on the same thread.
   void OnSourcePressed(const WMRInputSourceEventArgs& args);
   void OnSourceReleased(const WMRInputSourceEventArgs& args);
-  void ProcessSourceEvent(const WMRInputSourceEventArgs& args, bool is_pressed);
+
+  void ProcessSourceEvent(
+      ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind press_kind,
+      std::unique_ptr<WMRInputSourceState> state,
+      bool is_pressed);
 
   void SubscribeEvents();
   void UnsubscribeEvents();
@@ -89,9 +98,13 @@ class MixedRealityInputHelper {
   std::unordered_map<uint32_t, ControllerState> controller_states_;
   HWND hwnd_;
 
-  std::vector<std::unique_ptr<WMRInputSourceState>> pending_voice_states_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::Lock lock_;
+  // Must be resolved on the task_runner_ thread, which is the thread we were
+  // created on (and should correspond to the render loop thread)
+  base::WeakPtr<MixedRealityRenderLoop> weak_render_loop_;
+
+  base::WeakPtrFactory<MixedRealityInputHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityInputHelper);
 };

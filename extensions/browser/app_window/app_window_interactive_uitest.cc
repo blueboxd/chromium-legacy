@@ -13,35 +13,29 @@ namespace {
 class AppWindowTest : public PlatformAppBrowserTest {
  protected:
   void CheckAlwaysOnTopToFullscreen(AppWindow* window) {
-    ASSERT_EQ(ui::ZOrderLevel::kFloatingWindow,
-              window->GetBaseWindow()->GetZOrderLevel());
+    ASSERT_TRUE(window->GetBaseWindow()->IsAlwaysOnTop());
 
     // The always-on-top property should be temporarily disabled when the window
     // enters fullscreen.
     window->Fullscreen();
-    EXPECT_EQ(ui::ZOrderLevel::kNormal,
-              window->GetBaseWindow()->GetZOrderLevel());
+    EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
 
     // From the API's point of view, the always-on-top property is enabled.
     EXPECT_TRUE(window->IsAlwaysOnTop());
 
     // The always-on-top property is restored when the window exits fullscreen.
     window->Restore();
-    EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-              window->GetBaseWindow()->GetZOrderLevel());
+    EXPECT_TRUE(window->GetBaseWindow()->IsAlwaysOnTop());
   }
 
   void CheckNormalToFullscreen(AppWindow* window) {
     // If the always-on-top property is false, it should remain this way when
     // entering and exiting fullscreen mode.
-    ASSERT_EQ(ui::ZOrderLevel::kNormal,
-              window->GetBaseWindow()->GetZOrderLevel());
+    ASSERT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
     window->Fullscreen();
-    EXPECT_EQ(ui::ZOrderLevel::kNormal,
-              window->GetBaseWindow()->GetZOrderLevel());
+    EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
     window->Restore();
-    EXPECT_EQ(ui::ZOrderLevel::kNormal,
-              window->GetBaseWindow()->GetZOrderLevel());
+    EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
   }
 
   void CheckFullscreenToAlwaysOnTop(AppWindow* window) {
@@ -50,16 +44,14 @@ class AppWindowTest : public PlatformAppBrowserTest {
     // Now enable always-on-top at runtime and ensure the property does not get
     // applied immediately because the window is in fullscreen mode.
     window->SetAlwaysOnTop(true);
-    EXPECT_EQ(ui::ZOrderLevel::kNormal,
-              window->GetBaseWindow()->GetZOrderLevel());
+    EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
 
     // From the API's point of view, the always-on-top property is enabled.
     EXPECT_TRUE(window->IsAlwaysOnTop());
 
     // Ensure the always-on-top property is applied when exiting fullscreen.
     window->Restore();
-    EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-              window->GetBaseWindow()->GetZOrderLevel());
+    EXPECT_TRUE(window->GetBaseWindow()->IsAlwaysOnTop());
   }
 };
 
@@ -155,15 +147,13 @@ IN_PROC_BROWSER_TEST_F(AppWindowTest, MAYBE_InitFullscreenAndAlwaysOnTop) {
   ASSERT_TRUE(window);
 
   EXPECT_TRUE(window->GetBaseWindow()->IsFullscreenOrPending());
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            window->GetBaseWindow()->GetZOrderLevel());
+  EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
 
   // From the API's point of view, the always-on-top property is enabled.
   EXPECT_TRUE(window->IsAlwaysOnTop());
 
   window->Restore();
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            window->GetBaseWindow()->GetZOrderLevel());
+  EXPECT_TRUE(window->GetBaseWindow()->IsAlwaysOnTop());
 
   CloseAppWindow(window);
 }
@@ -184,16 +174,13 @@ IN_PROC_BROWSER_TEST_F(AppWindowTest, MAYBE_DisableAlwaysOnTopInFullscreen) {
 
   // Disable always-on-top while in fullscreen mode.
   window->Fullscreen();
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            window->GetBaseWindow()->GetZOrderLevel());
+  EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
   window->SetAlwaysOnTop(false);
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            window->GetBaseWindow()->GetZOrderLevel());
+  EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
 
   // Ensure that always-on-top remains disabled.
   window->Restore();
-  EXPECT_EQ(ui::ZOrderLevel::kNormal,
-            window->GetBaseWindow()->GetZOrderLevel());
+  EXPECT_FALSE(window->GetBaseWindow()->IsAlwaysOnTop());
 
   CloseAppWindow(window);
 }

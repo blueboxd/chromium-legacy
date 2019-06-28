@@ -17,7 +17,6 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/android/ui_android_export.h"
-#include "ui/compositor/compositor_lock.h"
 
 namespace cc {
 class SurfaceLayer;
@@ -37,7 +36,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     : public viz::mojom::CompositorFrameSinkClient,
       public viz::ExternalBeginFrameSourceClient,
       public viz::HostFrameSinkClient,
-      public ui::CompositorLockClient,
       public viz::FrameEvictorClient {
  public:
   class Client {
@@ -128,10 +126,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
                     const gfx::Size& new_size_in_pixels,
                     cc::DeadlinePolicy deadline_policy);
 
-  // Called when we begin a resize operation. Takes the compositor lock until we
-  // receive a frame of the expected size.
-  void PixelSizeWillChange(const gfx::Size& pixel_size);
-
   // Returns the ID for the current Surface. Returns an invalid ID if no
   // surface exists (!HasDelegatedContent()).
   viz::SurfaceId SurfaceId() const;
@@ -160,9 +154,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
-  // ui::CompositorLockClient implementation.
-  void CompositorLockTimedOut() override;
-
   void CreateCompositorFrameSinkSupport();
 
   void ProcessCopyOutputRequest(
@@ -185,19 +176,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   const bool enable_surface_synchronization_;
   const bool enable_viz_;
-
-  // The size we are resizing to. Once we receive a frame of this size we can
-  // release any resize compositor lock.
-  gfx::Size expected_pixel_size_;
-
-  // A lock that is held from the point at which we attach to the compositor to
-  // the point at which we submit our first frame to the compositor. This
-  // ensures that the compositor doesn't swap without a frame available.
-  std::unique_ptr<ui::CompositorLock> compositor_attach_until_frame_lock_;
-
-  // A lock that is held from the point we begin resizing this frame to the
-  // point at which we receive a frame of the correct size.
-  std::unique_ptr<ui::CompositorLock> compositor_pending_resize_lock_;
 
   // Whether we've received a frame from the renderer since navigating.
   // Only used when surface synchronization is on.

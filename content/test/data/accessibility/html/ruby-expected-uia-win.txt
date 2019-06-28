@@ -1,7 +1,6 @@
-region
-++document
-++++group
-++++++region
-++++++++description
-++++++++++description Name='ruby text'
-++++++++description Name='ruby base'
+document
+++group
+++++region
+++++++description
+++++++++description Name='ruby text'
+++++++description Name='ruby base'

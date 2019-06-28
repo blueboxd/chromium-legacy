@@ -29,7 +29,15 @@ constexpr base::TimeDelta kWebVrInitialFrameTimeout =
 constexpr base::TimeDelta kWebVrSpinnerTimeout =
     base::TimeDelta::FromSeconds(2);
 
+constexpr float kEpsilon = 0.1f;
+constexpr float kMaxPosition = 1000000;
+constexpr float kMinPosition = -kMaxPosition;
 bool g_frame_timeout_ui_disabled_for_testing_ = false;
+
+bool InRange(float val, float min = kMinPosition, float max = kMaxPosition) {
+  return val > min && val < max;
+}
+
 }  // namespace
 
 namespace vr {
@@ -339,46 +347,34 @@ device::mojom::XRFrameDataPtr ValidateFrameData(
   ret->pose = device::mojom::VRPose::New();
 
   if (data->pose) {
-    if (data->pose->orientation && data->pose->orientation->size() == 4) {
-      float length = 0;
-      for (int i = 0; i < 4; ++i) {
-        length += (*data->pose->orientation)[i] * (*data->pose->orientation)[i];
-      }
-
-      float kEpsilson = 0.1f;
-      if (abs(length - 1) < kEpsilson) {
-        ret->pose->orientation = std::vector<float>{0, 0, 0, 1};
-        for (int i = 0; i < 4; ++i) {
-          (*ret->pose->orientation)[i] = (*data->pose->orientation)[i] / length;
-        }
+    if (data->pose->orientation) {
+      if (abs(data->pose->orientation->Length() - 1) < kEpsilon) {
+        ret->pose->orientation = data->pose->orientation->Normalized();
       }
     }
 
-    if (data->pose->position && data->pose->position->size() == 3) {
+    if (data->pose->position) {
       ret->pose->position = data->pose->position;
-      // We'll never give position values outside this range.
-      float kMaxPosition = 1000000;
-      float kMinPosition = -kMaxPosition;
-      for (int i = 0; i < 3; ++i) {
-        if (!((*ret->pose->position)[i] < kMaxPosition) ||
-            !((*ret->pose->position)[i] > kMinPosition)) {
-          ret->pose->position = base::nullopt;
-          // If testing with unexpectedly high values, catch on debug builds
-          // rather than silently change data.  On release builds its better to
-          // be safe and validate.
-          DCHECK(false);
-          break;
-        }
+
+      bool any_out_of_range = !(InRange(ret->pose->position->x()) &&
+                                InRange(ret->pose->position->y()) &&
+                                InRange(ret->pose->position->z()));
+      if (any_out_of_range) {
+        ret->pose->position = base::nullopt;
+        // If testing with unexpectedly high values, catch on debug builds
+        // rather than silently change data.  On release builds its better to
+        // be safe and validate.
+        DCHECK(false);
       }
     }
   }  // if (data->pose)
 
   if (!ret->pose->orientation) {
-    ret->pose->orientation = std::vector<float>{0, 0, 0, 1};
+    ret->pose->orientation = gfx::Quaternion();
   }
 
   if (!ret->pose->position) {
-    ret->pose->position = std::vector<float>{0, 0, 0};
+    ret->pose->position = gfx::Point3F();
   }
 
   ret->frame_id = data->frame_id;
@@ -411,19 +407,15 @@ void VRBrowserRendererThreadWin::OnPose(int request_id,
   DCHECK(data->pose);
   DCHECK(data->pose->orientation);
   DCHECK(data->pose->position);
-  const std::vector<float>& quat = *data->pose->orientation;
-  const std::vector<float>& pos = *data->pose->position;
+  const gfx::Point3F& pos = *data->pose->position;
 
   // The incoming pose represents where the headset is in "world space".  So
   // we'll need to invert to get the view transform.
-
-  // Negating the w component will invert the rotation.
-  gfx::Transform head_from_unoriented_head(
-      gfx::Quaternion(quat[0], quat[1], quat[2], -quat[3]));
+  gfx::Transform head_from_unoriented_head(data->pose->orientation->inverse());
 
   // Negating all components will invert the translation.
   gfx::Transform unoriented_head_from_world;
-  unoriented_head_from_world.Translate3d(-pos[0], -pos[1], -pos[2]);
+  unoriented_head_from_world.Translate3d(-pos.x(), -pos.y(), -pos.z());
 
   // Compose these to get the base "view" matrix (before accounting for per-eye
   // transforms).

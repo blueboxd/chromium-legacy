@@ -4,16 +4,50 @@
 
 #include "third_party/blink/renderer/modules/content_index/content_index.h"
 
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/loader/threaded_icon_loader.h"
 #include "third_party/blink/renderer/modules/content_index/content_description_type_converter.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
 namespace blink {
+
+namespace {
+
+constexpr base::TimeDelta kIconFetchTimeout = base::TimeDelta::FromSeconds(30);
+
+// Validates |description|. If there is an error, an error message to be passed
+// to a TypeError is passed. Otherwise a null string is returned.
+WTF::String ValidateDescription(const ContentDescription& description,
+                                ExecutionContext* execution_context) {
+  if (description.id().IsEmpty())
+    return "ID cannot be empty";
+
+  if (description.title().IsEmpty())
+    return "Title cannot be empty";
+
+  if (description.description().IsEmpty())
+    return "Description cannot be empty";
+
+  if (description.iconUrl().IsEmpty())
+    return "Invalid icon URL provided";
+
+  if (description.launchUrl().IsEmpty())
+    return "Invalid launch URL provided";
+
+  // TODO(crbug.com/973844): Add origin checks.
+
+  return WTF::String();
+}
+
+}  // namespace
 
 ContentIndex::ContentIndex(ServiceWorkerRegistration* registration,
                            scoped_refptr<base::SequencedTaskRunner> task_runner)
@@ -33,24 +67,54 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
                                           "the ServiceWorkerRegistration."));
   }
 
-  auto mojo_description = mojom::blink::ContentDescription::From(description);
-  if (!mojo_description) {
+  WTF::String description_error =
+      ValidateDescription(*description, registration_->GetExecutionContext());
+  if (!description_error.IsNull()) {
     return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "Invalid URLs provided."));
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), description_error));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // TODO(crbug.com/973844): Fetch the icon.
-  GetService()->Add(registration_->RegistrationId(),
-                    std::move(mojo_description), SkBitmap(),
-                    WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
-                              WrapPersistent(resolver)));
+  KURL icon_url =
+      registration_->GetExecutionContext()->CompleteURL(description->iconUrl());
+  ResourceRequest resource_request(icon_url);
+  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
+  resource_request.SetPriority(ResourceLoadPriority::kMedium);
+  resource_request.SetTimeoutInterval(kIconFetchTimeout);
+
+  auto* threaded_icon_loader = MakeGarbageCollected<ThreadedIconLoader>();
+  // TODO(crbug.com/973844): Find the ideal icon dimensions.
+  threaded_icon_loader->Start(
+      registration_->GetExecutionContext(), resource_request,
+      /* resize_dimensions= */ base::nullopt,
+      WTF::Bind(&ContentIndex::DidGetIcon, WrapPersistent(this),
+                WrapPersistent(resolver), WrapPersistent(threaded_icon_loader),
+                mojom::blink::ContentDescription::From(description)));
 
   return promise;
+}
+
+void ContentIndex::DidGetIcon(ScriptPromiseResolver* resolver,
+                              ThreadedIconLoader* loader,
+                              mojom::blink::ContentDescriptionPtr description,
+                              SkBitmap icon,
+                              double resize_scale) {
+  ScriptState* script_state = resolver->GetScriptState();
+  ScriptState::Scope scope(script_state);
+
+  if (icon.isNull()) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "Icon could not be loaded"));
+    return;
+  }
+
+  GetService()->Add(registration_->RegistrationId(), std::move(description),
+                    icon,
+                    WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
+                              WrapPersistent(resolver)));
 }
 
 void ContentIndex::DidAdd(ScriptPromiseResolver* resolver,
@@ -58,9 +122,19 @@ void ContentIndex::DidAdd(ScriptPromiseResolver* resolver,
   ScriptState* script_state = resolver->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  resolver->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kNotSupportedError,
-      "ContentIndex::add is not yet implemented"));
+  switch (error) {
+    case mojom::blink::ContentIndexError::NONE:
+      resolver->Resolve();
+      return;
+    case mojom::blink::ContentIndexError::STORAGE_ERROR:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Failed to add description due to I/O error."));
+      return;
+    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+      NOTREACHED();
+      return;
+  }
 }
 
 ScriptPromise ContentIndex::deleteDescription(ScriptState* script_state,
@@ -89,9 +163,19 @@ void ContentIndex::DidDeleteDescription(ScriptPromiseResolver* resolver,
   ScriptState* script_state = resolver->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  resolver->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kNotSupportedError,
-      "ContentIndex::delete is not yet implemented"));
+  switch (error) {
+    case mojom::blink::ContentIndexError::NONE:
+      resolver->Resolve();
+      return;
+    case mojom::blink::ContentIndexError::STORAGE_ERROR:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Failed to delete description due to I/O error."));
+      return;
+    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+      NOTREACHED();
+      return;
+  }
 }
 
 ScriptPromise ContentIndex::getDescriptions(ScriptState* script_state) {
@@ -126,9 +210,19 @@ void ContentIndex::DidGetDescriptions(
   for (const auto& description : descriptions)
     blink_descriptions.push_back(description.To<blink::ContentDescription*>());
 
-  resolver->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kNotSupportedError,
-      "ContentIndex::getDescriptions is not yet implemented"));
+  switch (error) {
+    case mojom::blink::ContentIndexError::NONE:
+      resolver->Resolve(std::move(blink_descriptions));
+      return;
+    case mojom::blink::ContentIndexError::STORAGE_ERROR:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Failed to get descriptions due to I/O error."));
+      return;
+    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+      NOTREACHED();
+      return;
+  }
 }
 
 void ContentIndex::Trace(blink::Visitor* visitor) {

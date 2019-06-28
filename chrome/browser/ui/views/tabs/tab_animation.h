@@ -16,14 +16,23 @@ class TabAnimation {
   static constexpr base::TimeDelta kAnimationDuration =
       base::TimeDelta::FromMilliseconds(200);
 
+  // The types of Views that can be represented by TabAnimation.
+  enum class ViewType {
+    kTab,
+    kGroupHeader,
+  };
+
   ~TabAnimation();
 
   TabAnimation(TabAnimation&&) noexcept;
   TabAnimation& operator=(TabAnimation&&) noexcept;
 
   // Creates a TabAnimation for a tab with no active animations.
-  static TabAnimation ForStaticState(TabAnimationState static_state,
+  static TabAnimation ForStaticState(ViewType view_type,
+                                     TabAnimationState static_state,
                                      base::OnceClosure tab_removed_callback);
+
+  ViewType view_type() const { return view_type_; }
 
   // Animates this tab from its current state to |target_state|.
   // If an animation is already running, the duration is reset.
@@ -44,10 +53,15 @@ class TabAnimation {
   base::TimeDelta GetTimeRemaining() const;
 
  private:
-  TabAnimation(TabAnimationState initial_state,
+  TabAnimation(ViewType view_type,
+               TabAnimationState initial_state,
                TabAnimationState target_state,
                base::TimeDelta duration,
                base::OnceClosure tab_removed_callback);
+
+  // The type of View that this TabAnimation represents. Used for debug
+  // information only.
+  ViewType view_type_;
 
   TabAnimationState initial_state_;
   TabAnimationState target_state_;

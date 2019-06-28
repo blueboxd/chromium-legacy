@@ -1,2 +1,1 @@
-region
-++document Name='Title of the document'
+document Name='Title of the document'

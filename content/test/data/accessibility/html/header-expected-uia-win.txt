@@ -1,4 +1,3 @@
-region
-++document
-++++banner
-++++++description Name='Chromium Browser'
+document
+++banner
+++++description Name='Chromium Browser'

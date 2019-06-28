@@ -1,4 +1,3 @@
-region
-++document
-++++group
-++++++button Name='Submit'
+document
+++group
+++++button Name='Submit'

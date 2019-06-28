@@ -16,6 +16,7 @@
 namespace blink {
 
 class LayoutObject;
+class LayoutText;
 
 // This is the helper class for constructing the DOM-to-TextContent offset
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
@@ -105,6 +106,11 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   // Composite the offset mapping held by another builder to this builder.
   // TODO(xiaochengh): Implement when adding support for 'text-transform'
   // void Composite(const NGOffsetMappingBuilder&);
+
+  // Restore a trailing collapsible space at |offset| of text content. The space
+  // is associated with |layout_text|.
+  void RestoreTrailingCollapsibleSpace(const LayoutText& layout_text,
+                                       unsigned offset);
 
   // Set the destination string of the offset mapping.
   void SetDestinationString(String);

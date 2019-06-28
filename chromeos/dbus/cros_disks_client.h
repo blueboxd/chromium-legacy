@@ -358,6 +358,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDisksClient : public DBusClient {
   // success, or with |false| otherwise.
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
+                      const std::string& label,
                       VoidDBusMethodCallback callback) = 0;
 
   // Calls Rename method. On completion, |callback| is called, with |true| on

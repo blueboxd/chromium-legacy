@@ -154,16 +154,21 @@ class ToolbarController {
    * @private
    */
   updateCurrentDirectoryButtons_() {
-    const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
-    this.refreshCommand_.disabled = !!volumeInfo && volumeInfo.watchable;
-    this.refreshCommand_.setHidden(
-        volumeInfo && volumeInfo.watchable ||
-        this.directoryModel_.getFileListSelection().getCheckSelectMode());
+    this.updateRefreshCommand_();
 
     const currentDirectory = this.directoryModel_.getCurrentDirEntry();
     const locationInfo = currentDirectory &&
         this.volumeManager_.getLocationInfo(currentDirectory);
     this.readOnlyIndicator_.hidden = !(locationInfo && locationInfo.isReadOnly);
+  }
+
+  /** @private */
+  updateRefreshCommand_() {
+    const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+    this.refreshCommand_.disabled = !!volumeInfo && volumeInfo.watchable;
+    this.refreshCommand_.setHidden(
+        volumeInfo && volumeInfo.watchable ||
+        this.directoryModel_.getFileListSelection().getCheckSelectMode());
   }
 
   /**
@@ -172,6 +177,7 @@ class ToolbarController {
    */
   onSelectionChanged_() {
     const selection = this.selectionHandler_.selection;
+    this.updateRefreshCommand_();
 
     // Update the label "x files selected." on the header.
     let text;

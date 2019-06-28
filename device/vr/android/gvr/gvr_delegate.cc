@@ -88,7 +88,7 @@ mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(
     const gfx::Transform& head_mat) {
   mojom::VRPosePtr pose = mojom::VRPose::New();
 
-  pose->orientation.emplace(4);
+  pose->orientation = gfx::Quaternion();
 
   gfx::Transform inv_transform(head_mat);
 
@@ -97,15 +97,11 @@ mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(
     gfx::DecomposedTransform decomposed_transform;
     gfx::DecomposeTransform(&decomposed_transform, transform);
 
-    pose->orientation.value()[0] = decomposed_transform.quaternion.x();
-    pose->orientation.value()[1] = decomposed_transform.quaternion.y();
-    pose->orientation.value()[2] = decomposed_transform.quaternion.z();
-    pose->orientation.value()[3] = decomposed_transform.quaternion.w();
+    pose->orientation = decomposed_transform.quaternion;
 
-    pose->position.emplace(3);
-    pose->position.value()[0] = decomposed_transform.translate[0];
-    pose->position.value()[1] = decomposed_transform.translate[1];
-    pose->position.value()[2] = decomposed_transform.translate[2];
+    pose->position = gfx::Point3F(decomposed_transform.translate[0],
+                                  decomposed_transform.translate[1],
+                                  decomposed_transform.translate[2]);
   }
 
   return pose;
@@ -157,13 +153,9 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   GvrMatToTransform(gvr_head_mat_2, &head_mat_2);
 
   // Add headset angular velocity to the pose.
-  pose->angularVelocity.emplace(3);
   double epsilon_seconds = kAngularVelocityEpsilonNanos * 1e-9;
-  gfx::Vector3dF angular_velocity =
+  pose->angularVelocity =
       GetAngularVelocityFromPoses(*head_mat_ptr, head_mat_2, epsilon_seconds);
-  pose->angularVelocity.value()[0] = angular_velocity.x();
-  pose->angularVelocity.value()[1] = angular_velocity.y();
-  pose->angularVelocity.value()[2] = angular_velocity.z();
 
   return pose;
 }

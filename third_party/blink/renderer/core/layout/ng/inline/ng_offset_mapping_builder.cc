@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 
 #include <utility>
+#include "base/containers/adapters.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
@@ -172,6 +173,42 @@ void NGOffsetMappingBuilder::CollapseTrailingSpace(unsigned space_offset) {
          mapping_units_[position - 1].Concatenate(mapping_units_[position])) {
     mapping_units_.EraseAt(position);
   }
+}
+
+void NGOffsetMappingBuilder::RestoreTrailingCollapsibleSpace(
+    const LayoutText& layout_text,
+    unsigned offset) {
+  ++destination_length_;
+  for (auto& unit : base::Reversed(mapping_units_)) {
+    if (unit.text_content_end_ < offset) {
+      // There are no collapsed unit.
+      NOTREACHED();
+      return;
+    }
+    if (unit.text_content_start_ != offset ||
+        unit.text_content_end_ != offset ||
+        unit.layout_object_ != layout_text) {
+      ++unit.text_content_start_;
+      ++unit.text_content_end_;
+      continue;
+    }
+    DCHECK_EQ(unit.type_, NGOffsetMappingUnitType::kCollapsed);
+    const unsigned original_dom_end = unit.dom_end_;
+    unit.type_ = NGOffsetMappingUnitType::kIdentity;
+    unit.dom_end_ = unit.dom_start_ + 1;
+    unit.text_content_end_ = unit.text_content_start_ + 1;
+    if (original_dom_end - unit.dom_start_ == 1)
+      return;
+    // When we collapsed multiple spaces, e.g. <b>   </b>.
+    mapping_units_.insert(
+        std::distance(mapping_units_.begin(), &unit) + 1,
+        NGOffsetMappingUnit(NGOffsetMappingUnitType::kCollapsed, layout_text,
+                            unit.dom_end_, original_dom_end,
+                            unit.text_content_end_, unit.text_content_end_));
+    return;
+  }
+  NOTREACHED();
+  return;
 }
 
 void NGOffsetMappingBuilder::SetDestinationString(String string) {

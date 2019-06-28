@@ -632,6 +632,10 @@ testcase.checkContextMenuFocus = async () => {
   // Wait for the context menu to appear.
   await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
 
+  // Wait for the menu item to get focus.
+  await remoteCall.waitForElement(
+      appId, '#file-context-menu cr-menu-item:focus');
+
   // Check currently focused element.
   const focusedElement =
       await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);

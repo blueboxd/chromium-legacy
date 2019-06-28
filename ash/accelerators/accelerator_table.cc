@@ -327,6 +327,8 @@ const size_t kActionsAllowedInPinnedModeLength =
     base::size(kActionsAllowedInPinnedMode);
 
 const AcceleratorAction kActionsNeedingWindow[] = {
+    // clang-format off
+    DESKS_MOVE_ACTIVE_ITEM,
     MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS,
     ROTATE_WINDOW,
     TOGGLE_FULLSCREEN,
@@ -334,6 +336,7 @@ const AcceleratorAction kActionsNeedingWindow[] = {
     WINDOW_CYCLE_SNAP_LEFT,
     WINDOW_CYCLE_SNAP_RIGHT,
     WINDOW_MINIMIZE,
+    // clang-format on
 };
 
 const size_t kActionsNeedingWindowLength = base::size(kActionsNeedingWindow);

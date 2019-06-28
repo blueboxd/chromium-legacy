@@ -6,49 +6,31 @@
 
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 
-namespace {
-
-bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(rfh);
-  DCHECK(display_id);
-
-  display::Screen* screen = display::Screen::GetScreen();
-  if (!screen)
-    return false;
-  display::Display display =
-      screen->GetDisplayNearestView(rfh->GetNativeView());
-  *display_id = display.id();
-  DCHECK_NE(*display_id, display::kInvalidDisplayId);
-
-  return true;
-}
-
-}  // namespace
-
 OutputProtectionDelegate::Controller::Controller() = default;
 OutputProtectionDelegate::Controller::~Controller() = default;
 
-OutputProtectionDelegate::OutputProtectionDelegate(int render_process_id,
-                                                   int render_frame_id)
-    : render_process_id_(render_process_id), render_frame_id_(render_frame_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+OutputProtectionDelegate::OutputProtectionDelegate(aura::Window* window)
+    : window_(window),
+      display_id_(
+          display::Screen::GetScreen()->GetDisplayNearestWindow(window).id()) {
+  DCHECK(window_);
+
+  window_->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
 OutputProtectionDelegate::~OutputProtectionDelegate() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!window_)
+    return;
+
   display::Screen::GetScreen()->RemoveObserver(this);
-  if (window_)
-    window_->RemoveObserver(this);
+  window_->RemoveObserver(this);
 }
 
 void OutputProtectionDelegate::OnDisplayMetricsChanged(
@@ -75,14 +57,13 @@ void OutputProtectionDelegate::OnWindowHierarchyChanged(
 
 void OutputProtectionDelegate::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window, window_);
+  display::Screen::GetScreen()->RemoveObserver(this);
   window_->RemoveObserver(this);
   window_ = nullptr;
 }
 
 void OutputProtectionDelegate::QueryStatus(
     Controller::QueryStatusCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   if (!InitializeControllerIfNecessary()) {
     std::move(callback).Run(/*success=*/false,
                             display::DISPLAY_CONNECTION_TYPE_NONE,
@@ -96,8 +77,6 @@ void OutputProtectionDelegate::QueryStatus(
 void OutputProtectionDelegate::SetProtection(
     uint32_t protection_mask,
     Controller::SetProtectionCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   if (!InitializeControllerIfNecessary()) {
     std::move(callback).Run(/*success=*/false);
     return;
@@ -108,16 +87,9 @@ void OutputProtectionDelegate::SetProtection(
 }
 
 void OutputProtectionDelegate::OnWindowMayHaveMovedToAnotherDisplay() {
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  if (!rfh) {
-    DLOG(WARNING) << "RenderFrameHost is not alive.";
-    return;
-  }
-
-  int64_t new_display_id = display::kInvalidDisplayId;
-  if (!GetCurrentDisplayId(rfh, &new_display_id))
-    return;
+  DCHECK(window_);
+  int64_t new_display_id =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window_).id();
 
   if (display_id_ == new_display_id)
     return;
@@ -134,31 +106,12 @@ void OutputProtectionDelegate::OnWindowMayHaveMovedToAnotherDisplay() {
 }
 
 bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (controller_)
-    return true;
-
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  if (!rfh) {
-    DLOG(WARNING) << "RenderFrameHost is not alive.";
-    return false;
-  }
-
-  int64_t display_id = display::kInvalidDisplayId;
-  if (!GetCurrentDisplayId(rfh, &display_id))
+  if (!window_)
     return false;
 
-  aura::Window* window = rfh->GetNativeView();
-  if (!window)
-    return false;
+  if (!controller_)
+    controller_ = std::make_unique<OutputProtectionControllerAsh>();
 
-  controller_ = std::make_unique<OutputProtectionControllerAsh>();
-
-  display_id_ = display_id;
-  window_ = window;
-  window_->AddObserver(this);
   return true;
 }
 

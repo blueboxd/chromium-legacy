@@ -249,20 +249,20 @@ TEST_F(VROrientationDeviceTest, OrientationDefaultForwardTest) {
   // Set forward to 0 degrees
   DeviceReadPose(gfx::Quaternion(0, 0, 0, 1),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), -0.707, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.707, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), -0.707, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.707, 0.001);
                  }));
 
   // Now a 90 degree rotation around x in device space should be default pose in
   // vr space.
   DeviceReadPose(gfx::Quaternion(0.707, 0, 0, 0.707),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 }
 
@@ -274,19 +274,19 @@ TEST_F(VROrientationDeviceTest, OrientationSetForwardTest) {
   // to be the default pose.
   DeviceReadPose(gfx::Quaternion(0.653, 0.271, 0.271, 0.653),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 
   // Now hold upright and straigt produces a 45 degree rotation to the right
   DeviceReadPose(gfx::Quaternion(0.707, 0, 0, 0.707),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), -0.383, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.924, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), -0.383, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
 }
 
@@ -299,20 +299,20 @@ TEST_F(VROrientationDeviceTest, OrientationLandscape90Test) {
   // landscape mode.
   DeviceReadPose(gfx::Quaternion(0.5, -0.5, 0.5, 0.5),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 
   // Rotating the device 45 left from base pose should cause 45 degree left
   // rotation around y in VR space.
   DeviceReadPose(gfx::Quaternion(0.653, -0.271, 0.653, 0.271),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0.382, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.924, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0.382, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
 }
 
@@ -325,20 +325,20 @@ TEST_F(VROrientationDeviceTest, OrientationLandscape270Test) {
   // landscape mode (twist the other way from what we'd need for ROTATE_90).
   DeviceReadPose(gfx::Quaternion(0.5, 0.5, -0.5, 0.5),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 
   // Rotating the device 45 left from base pose should cause 45 degree left
   // rotation around y in VR space
   DeviceReadPose(gfx::Quaternion(0.271, 0.653, -0.271, 0.653),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0.382, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.924, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0.382, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
 }
 

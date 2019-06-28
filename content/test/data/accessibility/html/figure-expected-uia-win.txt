@@ -1,4 +1,3 @@
-region
-++document
-++++group
-++++++img Name='Sunspots'
+document
+++group
+++++img Name='Sunspots'

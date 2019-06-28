@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/time/default_tick_clock.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -89,9 +91,42 @@ PreviewsProber::PreviewsProber(
       tick_clock_(tick_clock),
       is_active_(false),
       last_probe_status_(base::nullopt),
-      url_loader_factory_(url_loader_factory) {}
+      network_connection_tracker_(nullptr),
+      url_loader_factory_(url_loader_factory),
+      weak_factory_(this) {
+  // The NetworkConnectionTracker can only be used directly on the UI thread.
+  // Otherwise we use the cross-thread call.
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) &&
+      content::GetNetworkConnectionTracker()) {
+    AddSelfAsNetworkConnectionObserver(content::GetNetworkConnectionTracker());
+  } else {
+    content::GetNetworkConnectionTrackerFromUIThread(
+        base::BindOnce(&PreviewsProber::AddSelfAsNetworkConnectionObserver,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
 
-PreviewsProber::~PreviewsProber() = default;
+PreviewsProber::~PreviewsProber() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (network_connection_tracker_)
+    network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+}
+
+void PreviewsProber::AddSelfAsNetworkConnectionObserver(
+    network::NetworkConnectionTracker* network_connection_tracker) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  network_connection_tracker_ = network_connection_tracker;
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
+}
+
+void PreviewsProber::ResetState() {
+  is_active_ = false;
+  successive_retry_count_ = 0;
+  successive_timeout_count_ = 0;
+  retry_timer_.reset();
+  timeout_timer_.reset();
+  url_loader_.reset();
+}
 
 void PreviewsProber::SendNowIfInactive() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -99,8 +134,15 @@ void PreviewsProber::SendNowIfInactive() {
   if (is_active_)
     return;
 
-  successive_retry_count_ = 0;
-  successive_timeout_count_ = 0;
+  CreateAndStartURLLoader();
+}
+
+void PreviewsProber::OnConnectionChanged(network::mojom::ConnectionType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // If a probe is already in flight we don't want to continue to use it since
+  // the network has just changed. Reset all state and start again.
+  ResetState();
   CreateAndStartURLLoader();
 }
 
@@ -228,7 +270,7 @@ void PreviewsProber::ProcessProbeFailure() {
     return;
   }
 
-  is_active_ = false;
+  ResetState();
 }
 
 void PreviewsProber::ProcessProbeSuccess() {
@@ -238,10 +280,8 @@ void PreviewsProber::ProcessProbeSuccess() {
   DCHECK(!url_loader_);
   DCHECK(is_active_);
 
-  is_active_ = false;
   last_probe_status_ = true;
-  successive_retry_count_ = 0;
-  successive_timeout_count_ = 0;
+  ResetState();
 }
 
 base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() const {

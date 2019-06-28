@@ -41,8 +41,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
   if (display_info && display_info->stageParameters) {
     // Use the transform given by xrDisplayInfo's stageParameters if available.
     floor_level_transform_ = std::make_unique<TransformationMatrix>(
-        WTFFloatVectorToTransformationMatrix(
-            display_info->stageParameters->standingTransform));
+        display_info->stageParameters->standingTransform.matrix());
 
     // In order to ensure that the bounds continue to line up with the user's
     // physical environment we need to transform by the inverse of the

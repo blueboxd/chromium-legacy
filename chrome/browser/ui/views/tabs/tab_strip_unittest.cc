@@ -1013,6 +1013,7 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
 
   base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
+  CompleteAnimationAndLayout();
 
   std::vector<TabGroupHeader*> headers = ListGroupHeaders();
   EXPECT_EQ(1u, headers.size());
@@ -1036,6 +1037,69 @@ TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
 
   TabGroupHeader* header = ListGroupHeaders()[0];
   EXPECT_EQ(header->x(), second_slot_x);
+}
+
+TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 4; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(1, group);
+  CompleteAnimationAndLayout();
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  const int initial_header_x = header->x();
+  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
+
+  controller_->MoveTab(1, 2);
+  CompleteAnimationAndLayout();
+
+  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
+  EXPECT_EQ(initial_tab_1_x, header->x());
+}
+
+TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 4; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(2, group);
+  CompleteAnimationAndLayout();
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  const int initial_header_x = header->x();
+  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
+
+  controller_->MoveTab(2, 1);
+  CompleteAnimationAndLayout();
+
+  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
+  EXPECT_EQ(initial_tab_1_x, header->x());
+}
+
+TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 4; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(1, group);
+  controller_->MoveTabIntoGroup(2, group);
+  CompleteAnimationAndLayout();
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  const int initial_header_x = header->x();
+  Tab* tab1 = tab_strip_->tab_at(1);
+  const int initial_tab_1_x = tab1->x();
+  Tab* tab2 = tab_strip_->tab_at(2);
+  const int initial_tab_2_x = tab2->x();
+
+  controller_->MoveTab(1, 2);
+  CompleteAnimationAndLayout();
+
+  // Header has not moved.
+  EXPECT_EQ(initial_header_x, header->x());
+  EXPECT_EQ(initial_tab_1_x, tab2->x());
+  EXPECT_EQ(initial_tab_2_x, tab1->x());
 }
 
 // This can happen when a tab in the middle of a group starts to close.

@@ -1,4 +1,3 @@
-region
-++document
-++++group
-++++++button Name='Click me!'
+document
+++group
+++++button Name='Click me!'

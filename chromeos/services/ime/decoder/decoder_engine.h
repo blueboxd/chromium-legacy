@@ -33,12 +33,13 @@ class DecoderEngine : public InputEngine {
                    mojo::PendingRemote<mojom::InputChannel> remote,
                    const std::vector<uint8_t>& extra) override;
 
-  // Returns whether the loaded shared library supports this ime_spec.
-  bool IsImeSupported(const std::string& ime_spec) override;
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
 
  private:
+  // Returns whether the decoder supports this ime_spec.
+  bool IsImeSupportedByDecoder(const std::string& ime_spec);
+
   // Shared library handle of the implementation for input logic with decoders.
   base::ScopedNativeLibrary library_;
 
@@ -46,7 +47,7 @@ class DecoderEngine : public InputEngine {
 
   ImeCrosPlatform* platform_ = nullptr;
 
-  mojo::ReceiverSet<mojom::InputChannel> channel_receivers_;
+  mojo::ReceiverSet<mojom::InputChannel> decoder_channel_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderEngine);
 };

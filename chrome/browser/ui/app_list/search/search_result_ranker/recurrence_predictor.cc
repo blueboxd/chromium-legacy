@@ -333,4 +333,40 @@ void HourBinPredictor::DecayAll() {
   }
 }
 
+MarkovPredictor::MarkovPredictor(const MarkovPredictorConfig& config) {}
+MarkovPredictor::~MarkovPredictor() = default;
+
+const char MarkovPredictor::kPredictorName[] = "MarkovPredictor";
+const char* MarkovPredictor::GetPredictorName() const {
+  return kPredictorName;
+}
+
+void MarkovPredictor::Train(unsigned int target, unsigned int condition) {
+  if (previous_target_)
+    frequencies_.Train(target, previous_target_.value());
+  previous_target_ = target;
+}
+
+base::flat_map<unsigned int, float> MarkovPredictor::Rank(
+    unsigned int condition) {
+  if (previous_target_)
+    return frequencies_.Rank(previous_target_.value());
+  return base::flat_map<unsigned int, float>();
+}
+
+void MarkovPredictor::ToProto(RecurrencePredictorProto* proto) const {
+  auto* predictor = proto->mutable_markov_predictor();
+  frequencies_.ToProto(predictor->mutable_frequencies());
+}
+
+void MarkovPredictor::FromProto(const RecurrencePredictorProto& proto) {
+  if (!proto.has_markov_predictor()) {
+    // TODO(921444): Update error metrics for new predictors and add reporting
+    // here.
+    return;
+  }
+
+  frequencies_.FromProto(proto.markov_predictor().frequencies());
+}
+
 }  // namespace app_list

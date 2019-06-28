@@ -21,6 +21,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/notifications/scheduler/display_agent_android.h"
+#include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
 #endif
 
 namespace {
@@ -29,7 +30,6 @@ RegisterClients() {
   auto client_registrar =
       std::make_unique<notifications::NotificationSchedulerClientRegistrar>();
   // TODO(xingliu): Register clients here.
-
   return client_registrar;
 }
 
@@ -66,12 +66,14 @@ KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
   base::FilePath storage_dir =
       profile->GetPath().Append(chrome::kNotificationSchedulerStorageDirname);
   auto client_registrar = RegisterClients();
-  auto background_task_scheduler =
-      std::make_unique<NotificationBackgroundTaskSchedulerImpl>();
 #if defined(OS_ANDROID)
   auto display_agent = std::make_unique<DisplayAgentAndroid>();
+  auto background_task_scheduler =
+      std::make_unique<NotificationBackgroundTaskSchedulerAndroid>();
 #else
   auto display_agent = notifications::DisplayAgent::Create();
+  auto background_task_scheduler =
+      std::make_unique<NotificationBackgroundTaskSchedulerImpl>();
 #endif
   auto* db_provider = leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
       profile->GetProfileKey());

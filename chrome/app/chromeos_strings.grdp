@@ -3320,29 +3320,6 @@
     Please wait...
   </message>
 
-  <!-- Supervision Onboarding OOBE screen. -->
-  <message name="IDS_SUPERVISION_ONBOARDING_NEXT_BUTTON" desc="Label for button that shows the next page in the Supervision Onboarding flow.">
-    Next
-  </message>
-  <message name="IDS_SUPERVISION_ONBOARDING_SKIP_BUTTON" desc="Label for button that skips the whole Supervision Onboarding flow.">
-    Skip
-  </message>
-  <message name="IDS_SUPERVISION_ONBOARDING_BACK_BUTTON" desc="Label for button that shows the previous page in the Supervision Onboarding flow.">
-    Back
-  </message>
-  <message name="IDS_SUPERVISION_ONBOARDING_RETRY_BUTTON" desc="Label for button that tries to load again a page in the Supervision Onboarding flow.">
-    Try again
-  </message>
-  <message name="IDS_SUPERVISION_ONBOARDING_RETRY_DIALOG_TITLE" desc="Label for title of a dialog shown when there's an error loading a Supervision Onboarding page.">
-    Something went wrong
-  </message>
-  <message name="IDS_SUPERVISION_ONBOARDING_RETRY_DIALOG_MESSAGE" desc="Message for a dialog shown when there's an error loading a Supervision Onboarding page.">
-    Try again later
-  </message>
-  <message name="IDS_SUPERVISION_ONBOARDING_WAIT_MESSAGE" desc="Message shown while we load the Supervision Onboarding flow.">
-    Please wait...
-  </message>
-
   <!-- Supervision transition OOBE screen. -->
   <message name="IDS_REMOVING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when stopping supervision.">
     Stopping supervision...
@@ -4111,6 +4088,15 @@
   <!-- Strings for Add Supervision screen -->
   <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
     Add Supervision
+  </message>
+  <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_HEADING" desc="Heading string shown in the Add Supervision page when the network is not available.">
+    Network not available
+  </message>
+  <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_DESCRIPTION" desc="Description shown in the Add Supervision page when the network is not available.">
+    Please check your network connection and retry.
+  </message>
+  <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_BUTTON_LABEL" desc="Label of the button shown on the Add Supervision page when the network is not available.">
+    Close
   </message>
   <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_TITLE" desc="Title for the dialog shown when attempting to exit the Add Supervision screen.">
     Are you sure you want to exit?

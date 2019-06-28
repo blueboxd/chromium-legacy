@@ -160,7 +160,7 @@ void SystemWebDialogDelegate::ShowSystemDialogForBrowserContext(
   views::Widget::InitParams extra_params;
   // If unparented and not modal, keep it on top (see header comment).
   if (!parent && GetDialogModalType() == ui::MODAL_TYPE_NONE)
-    extra_params.z_order = ui::ZOrderLevel::kFloatingWindow;
+    extra_params.keep_on_top = true;
   AdjustWidgetInitParams(&extra_params);
   dialog_window_ = chrome::ShowWebDialogWithParams(parent, browser_context,
                                                    this, &extra_params);

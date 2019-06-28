@@ -386,13 +386,8 @@ void NativeWidgetNSWindowBridge::SetParent(uint64_t new_parent_id) {
 
   // If |window_| was already visible then add it as a child window immediately.
   // As in OnVisibilityChanged, do not set a parent for sheets.
-  if (window_visible_ && ![window_ isSheet]) {
-    // Attaching a window to be a child window resets the window level, so
-    // restore the window level afterwards.
-    NSInteger window_level = [window_ level];
+  if (window_visible_ && ![window_ isSheet])
     [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
-    [window_ setLevel:window_level];
-  }
 }
 
 void NativeWidgetNSWindowBridge::CreateSelectFileDialog(
@@ -964,13 +959,8 @@ void NativeWidgetNSWindowBridge::OnVisibilityChanged() {
 
     // Sheets don't need a parentWindow set, and setting one causes graphical
     // glitches (http://crbug.com/605098).
-    if (parent_ && ![window_ isSheet]) {
-      // Attaching a window to be a child window resets the window level, so
-      // restore the window level afterwards.
-      NSInteger window_level = [window_ level];
+    if (parent_ && ![window_ isSheet])
       [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
-      [window_ setLevel:window_level];
-    }
   } else {
     ReleaseCapture();  // Capture on hidden windows is not permitted.
 

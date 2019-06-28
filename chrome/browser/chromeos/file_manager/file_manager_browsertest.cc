@@ -513,11 +513,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkContextMenuFocus").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    Delete, /* delete.js */
+    Toolbar, /* toolbar.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("deleteMenuItemNoEntrySelected"),
-                      TestCase("deleteEntryWithToolbar").InGuestMode(),
-                      TestCase("deleteEntryWithToolbar")));
+    ::testing::Values(
+        TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
+        TestCase("toolbarDeleteEntry").InGuestMode(),
+        TestCase("toolbarDeleteEntry"),
+        TestCase("toolbarRefreshButtonWithSelection").EnableArc()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     QuickView, /* quick_view.js */
@@ -1062,7 +1064,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Breadcrumbs, /* breadcrumbs.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("breadcrumbsNavigate")));
+    ::testing::Values(TestCase("breadcrumbsNavigate"),
+                      TestCase("breadcrumbsLeafNoFocus")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FormatDialog, /* format_dialog.js */

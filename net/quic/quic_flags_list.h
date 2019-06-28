@@ -263,7 +263,7 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_allocated_connection_ids, true)
 // empty or too large headers with FIN.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_avoid_empty_frame_after_empty_headers,
-          false)
+          true)
 
 // If true, disable QUIC version 44.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, true)

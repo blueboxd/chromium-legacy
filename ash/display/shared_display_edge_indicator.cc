@@ -51,7 +51,7 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
   params.context = Shell::GetRootWindowControllerWithDisplayId(display.id())
                        ->GetRootWindow();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
+  params.keep_on_top = true;
   widget->set_focus_on_creation(false);
   widget->Init(params);
   widget->SetVisibilityChangedAnimationsEnabled(false);

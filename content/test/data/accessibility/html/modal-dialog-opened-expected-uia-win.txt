@@ -1,6 +1,5 @@
-region
-++document
-++++group
-++++dialog Window.IsModal=true
-++++++description Name='The dialog subtree should be the only text content in the accessibility tree. '
-++++++link Name='Link inside the dialog.'
+document
+++group
+++dialog Window.IsModal=true
+++++description Name='The dialog subtree should be the only text content in the accessibility tree. '
+++++link Name='Link inside the dialog.'

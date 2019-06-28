@@ -1,5 +1,4 @@
-region
-++document
-++++group
-++++++description
-++++++++description Name='Label'
+document
+++group
+++++description
+++++++description Name='Label'

@@ -79,14 +79,6 @@ bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Lookup(
   return session;
 }
 
-void SSLClientSessionCache::ResetLookupCount(const std::string& cache_key) {
-  // It's possible that the cached session for this key was deleted after the
-  // Lookup. If that's the case, don't do anything.
-  auto iter = cache_.Get(cache_key);
-  if (iter == cache_.end())
-    return;
-}
-
 void SSLClientSessionCache::Insert(const std::string& cache_key,
                                    bssl::UniquePtr<SSL_SESSION> session) {
   if (IsTLS13(session.get())) {

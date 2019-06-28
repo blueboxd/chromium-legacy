@@ -28,7 +28,17 @@ MockRuntime.prototype.setPose = function(pose) {
     };
     for (var field in pose) {
       if (this.pose_.hasOwnProperty(field)) {
-        this.pose_[field] = pose[field];
+        let val = pose[field];
+        if (field === "position") {
+          this.pose_[field] = new gfx.mojom.Point3F(val[0], val[1], val[2]);
+        } else if (field === "orientation") {
+          this.pose_[field] = new gfx.mojom.Quaternion(val[0], val[1], val[2], val[3]);
+        }else if (field === "angularVelocity" || field === "linearVelocity" ||
+                   field === "angularAcceleration" || field === "lienarAcceleration") {
+          this.pose_[field] = new gfx.mojom.Vector3dF(val[0], val[1], val[2]);
+        } else {
+          this.pose_[field] = pose[field];
+        }
       }
     }
   }
@@ -76,17 +86,23 @@ function fakeVRDisplays(){
 
   let generic_left_eye = {
     fieldOfView : generic_left_fov,
-    offset : [-0.03, 0, 0],
+    offset : new gfx.mojom.Vector3dF(-0.03, 0, 0),
     renderWidth : 1024,
     renderHeight : 1024
   };
 
   let generic_right_eye = {
     fieldOfView :generic_right_fov,
-    offset : [0.03, 0, 0],
+    offset : new gfx.mojom.Vector3dF(0.03, 0, 0),
     renderWidth : 1024,
     renderHeight : 1024
   };
+
+  let genericStanding = new gfx.mojom.Transform();
+  genericStanding.matrix =  [0.0, 0.1, 0.2, 0.3,
+                             0.4, 0.5, 0.6, 0.7,
+                             0.8, 0.9, 1.0, 0.1,
+                             0.2, 0.3, 0.4, 0.5];
 
   return {
     FakeMagicWindowOnly: {
@@ -111,10 +127,7 @@ function fakeVRDisplays(){
         maxLayers : 1
       },
       stageParameters : {
-        standingTransform : [0.0, 0.1, 0.2, 0.3,
-                             0.4, 0.5, 0.6, 0.7,
-                             0.8, 0.9, 1.0, 0.1,
-                             0.2, 0.3, 0.4, 0.5],
+        standingTransform : genericStanding,
         sizeX : 5.0,
         sizeZ : 3.0,
       },
@@ -139,7 +152,7 @@ function fakeVRDisplays(){
           leftDegrees : 35.197,
           rightDegrees : 50.899,
         },
-        offset : [-0.032, 0, 0],
+        offset : new gfx.mojom.Vector3dF(-0.032, 0, 0),
         renderWidth : 1920,
         renderHeight : 2160
       },
@@ -150,7 +163,7 @@ function fakeVRDisplays(){
           leftDegrees: 50.899,
           rightDegrees: 35.197
         },
-        offset : [0.032, 0, 0],
+        offset : new gfx.mojom.Vector3dF(0.032, 0, 0),
         renderWidth : 1920,
         renderHeight : 2160
       },

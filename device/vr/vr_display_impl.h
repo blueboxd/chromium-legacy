@@ -36,6 +36,9 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
   void GetEnvironmentIntegrationProvider(
       mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) override;
+  void SetInputSourceButtonListener(
+      mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
+
   gfx::Size sessionFrameSize() { return session_frame_size_; }
   display::Display::Rotation sessionRotation() { return session_rotation_; }
 

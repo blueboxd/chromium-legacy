@@ -45,18 +45,13 @@ blink::mojom::blink::ContentDescriptionPtr TypeConverter<
     blink::mojom::blink::ContentDescriptionPtr,
     const blink::ContentDescription*>::Convert(const blink::ContentDescription*
                                                    description) {
-  blink::KURL icon_url(description->iconUrl());
-  blink::KURL launch_url(description->launchUrl());
-  if (!icon_url.IsValid() || !launch_url.IsValid())
-    return nullptr;
-
   auto result = blink::mojom::blink::ContentDescription::New();
   result->id = description->id();
   result->title = description->title();
   result->description = description->description();
   result->category = GetContentCategory(description->category());
-  result->icon_url = std::move(icon_url);
-  result->launch_url = std::move(launch_url);
+  result->icon_url = description->iconUrl();
+  result->launch_url = description->launchUrl();
 
   return result;
 }
@@ -70,8 +65,8 @@ TypeConverter<blink::ContentDescription*,
   result->setTitle(description->title);
   result->setDescription(description->description);
   result->setCategory(GetContentCategory(description->category));
-  result->setIconUrl(description->icon_url.GetString());
-  result->setLaunchUrl(description->launch_url.GetString());
+  result->setIconUrl(description->icon_url);
+  result->setLaunchUrl(description->launch_url);
   return result;
 }
 

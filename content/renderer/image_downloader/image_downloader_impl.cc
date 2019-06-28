@@ -85,8 +85,9 @@ void FilterAndResizeImagesForMaximalSize(
 
 namespace content {
 
-ImageDownloaderImpl::ImageDownloaderImpl(RenderFrame* render_frame,
-                                         mojom::ImageDownloaderRequest request)
+ImageDownloaderImpl::ImageDownloaderImpl(
+    RenderFrame* render_frame,
+    blink::mojom::ImageDownloaderRequest request)
     : ImageDownloaderBase(render_frame), binding_(this, std::move(request)) {
   DCHECK(render_frame);
   binding_.set_connection_error_handler(
@@ -98,7 +99,7 @@ ImageDownloaderImpl::~ImageDownloaderImpl() {}
 // static
 void ImageDownloaderImpl::CreateMojoService(
     RenderFrame* render_frame,
-    mojom::ImageDownloaderRequest request) {
+    blink::mojom::ImageDownloaderRequest request) {
   DVLOG(1) << "ImageDownloaderImpl::CreateMojoService";
   DCHECK(render_frame);
 

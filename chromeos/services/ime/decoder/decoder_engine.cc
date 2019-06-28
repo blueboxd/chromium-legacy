@@ -91,14 +91,14 @@ bool DecoderEngine::BindRequest(
     mojo::PendingRemote<mojom::InputChannel> remote,
     const std::vector<uint8_t>& extra) {
   // If the shared library supports this ime_spec.
-  if (IsImeSupported(ime_spec)) {
+  if (IsImeSupportedByDecoder(ime_spec)) {
     // Activates an IME engine via the shared library. Passing a
     // |ClientDelegate| for engine instance created by the shared library to
     // make safe calls on the client.
     if (engine_main_entry_->ActivateIme(
             ime_spec.c_str(),
             new ClientDelegate(ime_spec, std::move(remote)))) {
-      channel_receivers_.Add(this, std::move(receiver));
+      decoder_channel_receivers_.Add(this, std::move(receiver));
       // TODO(https://crbug.com/837156): Registry connection error handler.
       return true;
     }
@@ -110,7 +110,7 @@ bool DecoderEngine::BindRequest(
                                   std::move(remote), extra);
 }
 
-bool DecoderEngine::IsImeSupported(const std::string& ime_spec) {
+bool DecoderEngine::IsImeSupportedByDecoder(const std::string& ime_spec) {
   return engine_main_entry_ &&
          engine_main_entry_->IsImeSupported(ime_spec.c_str());
 }

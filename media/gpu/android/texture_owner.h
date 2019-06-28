@@ -47,10 +47,12 @@ class MEDIA_GPU_EXPORT TextureOwner
   // |texture| should be either from CreateAbstractTexture() or a mock.  The
   // corresponding GL context must be current.
   // Mode indicates which framework API to use and whether the video textures
-  // created using this owner should be hardware protected.
+  // created using this owner should be hardware protected. It also indicates
+  // whether SurfaceControl is being used or not.
   enum class Mode {
-    kAImageReaderSecure,
     kAImageReaderInsecure,
+    kAImageReaderInsecureSurfaceControl,
+    kAImageReaderSecureSurfaceControl,
     kSurfaceTextureInsecure
   };
   static scoped_refptr<TextureOwner> Create(

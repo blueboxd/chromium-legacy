@@ -37,10 +37,10 @@ void TestProcessTextCallback(std::string* res_out,
 }
 
 void TestProcessKeypressForRulebasedCallback(
-    mojom::KeypressResponse* res_out,
-    mojom::KeypressResponsePtr response) {
+    mojom::KeypressResponseForRulebased* res_out,
+    mojom::KeypressResponseForRulebasedPtr response) {
   res_out->result = response->result;
-  res_out->operations = std::vector<mojom::OperationPtr>(0);
+  res_out->operations = std::vector<mojom::OperationForRulebasedPtr>(0);
   for (int i = 0; i < (int)response->operations.size(); i++) {
     res_out->operations.push_back(std::move(response->operations[i]));
   }
@@ -64,7 +64,7 @@ class TestClientChannel : mojom::InputChannel {
                void(const std::vector<uint8_t>& message,
                     ProcessMessageCallback));
   MOCK_METHOD2(ProcessKeypressForRulebased,
-               void(const mojom::KeypressInfoPtr message,
+               void(const mojom::KeypressInfoForRulebasedPtr message,
                     ProcessKeypressForRulebasedCallback));
   MOCK_METHOD0(ResetForRulebased, void());
   MOCK_METHOD1(GetRulebasedKeypressCountForTesting,
@@ -314,18 +314,19 @@ TEST_F(ImeServiceTest, MultipleClientsRulebased) {
       base::BindOnce(&ConnectCallback, &success));
   remote_manager_.FlushForTesting();
 
-  mojom::KeypressResponse response;
-  mojom::KeypressInfoPtr keypress_info = mojom::KeypressInfo::New(
-      "keydown", "KeyA", true, false, false, false, false);
+  mojom::KeypressResponseForRulebased response;
+  mojom::KeypressInfoForRulebasedPtr keypress_info =
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyA", true, false,
+                                           false, false, false);
   remote_engine_1->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "KeyA", true, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyA", true, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   remote_engine_1.FlushForTesting();
 
   remote_engine_2->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "KeyA", true, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyA", true, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   remote_engine_2.FlushForTesting();
 
@@ -355,45 +356,45 @@ TEST_F(ImeServiceTest, RuleBasedArabicKeypress) {
   EXPECT_TRUE(success);
 
   // Test Shift+KeyA.
-  mojom::KeypressResponse response;
+  mojom::KeypressResponseForRulebased response;
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "KeyA", true, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyA", true, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
 
   EXPECT_EQ(response.result, true);
-  std::vector<mojom::OperationPtr> expected_operations;
-  expected_operations.push_back(
-      {mojom::Operation::New(mojom::OperationMethod::COMMIT_TEXT, "\u0650")});
+  std::vector<mojom::OperationForRulebasedPtr> expected_operations;
+  expected_operations.push_back({mojom::OperationForRulebased::New(
+      mojom::OperationMethodForRulebased::COMMIT_TEXT, "\u0650")});
   EXPECT_EQ(response.operations.size(), expected_operations.size());
   EXPECT_EQ(response.operations, expected_operations);
 
   // Test KeyB
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "KeyB", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyB", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
   EXPECT_EQ(response.result, true);
-  expected_operations = std::vector<mojom::OperationPtr>(0);
-  expected_operations.push_back({mojom::Operation::New(
-      mojom::OperationMethod::COMMIT_TEXT, "\u0644\u0627")});
+  expected_operations = std::vector<mojom::OperationForRulebasedPtr>(0);
+  expected_operations.push_back({mojom::OperationForRulebased::New(
+      mojom::OperationMethodForRulebased::COMMIT_TEXT, "\u0644\u0627")});
   EXPECT_EQ(response.operations.size(), expected_operations.size());
   EXPECT_EQ(response.operations, expected_operations);
 
   // Test unhandled key.
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "Enter", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "Enter", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
   EXPECT_EQ(response.result, false);
 
   // Test keyup.
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keyup", "Enter", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keyup", "Enter", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
   EXPECT_EQ(response.result, false);
@@ -403,8 +404,8 @@ TEST_F(ImeServiceTest, RuleBasedArabicKeypress) {
 
   // Test invalid request.
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "", false, false, false,
+                                           false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
   EXPECT_EQ(response.result, false);
@@ -423,66 +424,67 @@ TEST_F(ImeServiceTest, RuleBasedDevaPhoneKeypress) {
   remote_manager_.FlushForTesting();
   EXPECT_TRUE(success);
 
-  mojom::KeypressResponse response;
-  std::vector<mojom::OperationPtr> expected_operations;
+  mojom::KeypressResponseForRulebased response;
+  std::vector<mojom::OperationForRulebasedPtr> expected_operations;
 
   // Test KeyN.
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "KeyN", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyN", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
 
   EXPECT_EQ(response.result, true);
-  expected_operations = std::vector<mojom::OperationPtr>(0);
-  expected_operations.push_back({mojom::Operation::New(
-      mojom::OperationMethod::SET_COMPOSITION, "\u0928")});
+  expected_operations = std::vector<mojom::OperationForRulebasedPtr>(0);
+  expected_operations.push_back({mojom::OperationForRulebased::New(
+      mojom::OperationMethodForRulebased::SET_COMPOSITION, "\u0928")});
   EXPECT_EQ(response.operations.size(), expected_operations.size());
   EXPECT_EQ(response.operations, expected_operations);
 
   // Backspace.
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "Backspace", false, false, false,
-                               false, false),
+      mojom::KeypressInfoForRulebased::New("keydown", "Backspace", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
 
   EXPECT_EQ(response.result, true);
-  expected_operations = std::vector<mojom::OperationPtr>(0);
-  expected_operations.push_back(
-      {mojom::Operation::New(mojom::OperationMethod::SET_COMPOSITION, "")});
+  expected_operations = std::vector<mojom::OperationForRulebasedPtr>(0);
+  expected_operations.push_back({mojom::OperationForRulebased::New(
+      mojom::OperationMethodForRulebased::SET_COMPOSITION, "")});
   EXPECT_EQ(response.operations.size(), expected_operations.size());
   EXPECT_EQ(response.operations, expected_operations);
 
   // KeyN + KeyC.
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "KeyN", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyN", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "KeyC", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "KeyC", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
 
   EXPECT_EQ(response.result, true);
-  expected_operations = std::vector<mojom::OperationPtr>(0);
-  expected_operations.push_back({mojom::Operation::New(
-      mojom::OperationMethod::SET_COMPOSITION, "\u091e\u094d\u091a")});
+  expected_operations = std::vector<mojom::OperationForRulebasedPtr>(0);
+  expected_operations.push_back({mojom::OperationForRulebased::New(
+      mojom::OperationMethodForRulebased::SET_COMPOSITION,
+      "\u091e\u094d\u091a")});
   EXPECT_EQ(response.operations.size(), expected_operations.size());
   EXPECT_EQ(response.operations, expected_operations);
 
   // Space.
   to_engine_ptr->ProcessKeypressForRulebased(
-      mojom::KeypressInfo::New("keydown", "Space", false, false, false, false,
-                               false),
+      mojom::KeypressInfoForRulebased::New("keydown", "Space", false, false,
+                                           false, false, false),
       base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
   to_engine_ptr.FlushForTesting();
 
   EXPECT_EQ(response.result, true);
-  expected_operations = std::vector<mojom::OperationPtr>(0);
-  expected_operations.push_back({mojom::Operation::New(
-      mojom::OperationMethod::COMMIT_TEXT, "\u091e\u094d\u091a ")});
+  expected_operations = std::vector<mojom::OperationForRulebasedPtr>(0);
+  expected_operations.push_back({mojom::OperationForRulebased::New(
+      mojom::OperationMethodForRulebased::COMMIT_TEXT, "\u091e\u094d\u091a ")});
   EXPECT_EQ(response.operations.size(), expected_operations.size());
   EXPECT_EQ(response.operations, expected_operations);
 }

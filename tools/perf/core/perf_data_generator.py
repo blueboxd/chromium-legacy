@@ -118,7 +118,7 @@ FYI_BUILDERS = {
           #'--run-ref-build',
           '--test-shard-map-filename=android-pixel2-perf-fyi_map.json',
         ],
-        'num_shards': 7
+        'num_shards': 4
       }
     ],
     'platform': 'android-chrome',

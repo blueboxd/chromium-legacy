@@ -173,6 +173,7 @@ class XR final : public EventTargetWithInlineData,
       XRSession::EnvironmentBlendMode blend_mode,
       device::mojom::blink::XRSessionClientRequest client_request,
       device::mojom::blink::VRDisplayInfoPtr display_info,
+      bool uses_input_eventing,
       bool sensorless_session = false);
   XRSession* CreateSensorlessInlineSession();
 

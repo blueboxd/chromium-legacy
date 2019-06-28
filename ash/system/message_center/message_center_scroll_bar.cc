@@ -55,6 +55,10 @@ bool MessageCenterScrollBar::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return result;
 }
 
+const char* MessageCenterScrollBar::GetClassName() const {
+  return "MessageCenterScrollBar";
+}
+
 void MessageCenterScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   if (!stats_recorded_ && (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)) {
     CollectScrollActionReason(ScrollActionReason::kByTouch);

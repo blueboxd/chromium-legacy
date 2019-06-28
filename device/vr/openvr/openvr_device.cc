@@ -40,27 +40,16 @@ mojom::VRFieldOfViewPtr OpenVRFovToWebVRFov(vr::IVRSystem* vr_system,
   return out;
 }
 
-std::vector<float> HmdMatrix34ToWebVRTransformMatrix(
-    const vr::HmdMatrix34_t& mat) {
-  std::vector<float> transform;
-  transform.resize(16);
-  transform[0] = mat.m[0][0];
-  transform[1] = mat.m[1][0];
-  transform[2] = mat.m[2][0];
-  transform[3] = 0.0f;
-  transform[4] = mat.m[0][1];
-  transform[5] = mat.m[1][1];
-  transform[6] = mat.m[2][1];
-  transform[7] = 0.0f;
-  transform[8] = mat.m[0][2];
-  transform[9] = mat.m[1][2];
-  transform[10] = mat.m[2][2];
-  transform[11] = 0.0f;
-  transform[12] = mat.m[0][3];
-  transform[13] = mat.m[1][3];
-  transform[14] = mat.m[2][3];
-  transform[15] = 1.0f;
-  return transform;
+gfx::Transform HmdMatrix34ToTransform(const vr::HmdMatrix34_t& mat) {
+  // Disable formatting so that the 4x4 matrix is more readable
+  // clang-format off
+  return gfx::Transform(
+     mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3],
+     mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
+     mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
+     0.0f,        0.0f,        0.0f,        1.0f
+  );
+  // clang-format on
 }
 
 mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
@@ -92,14 +81,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
   if (error != vr::TrackedProp_Success)
     ipd = kDefaultIPD;
 
-  left_eye->offset.resize(3);
-  left_eye->offset[0] = -ipd * 0.5;
-  left_eye->offset[1] = 0.0f;
-  left_eye->offset[2] = 0.0f;
-  right_eye->offset.resize(3);
-  right_eye->offset[0] = ipd * 0.5;
-  right_eye->offset[1] = 0.0;
-  right_eye->offset[2] = 0.0;
+  left_eye->offset = gfx::Vector3dF(-ipd * 0.5, 0.0, 0.0);
+  right_eye->offset = gfx::Vector3dF(ipd * 0.5, 0.0, 0.0);
 
   uint32_t width, height;
   vr_system->GetRecommendedRenderTargetSize(&width, &height);
@@ -112,7 +95,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
   vr::HmdMatrix34_t mat =
       vr_system->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
   display_info->stageParameters->standingTransform =
-      HmdMatrix34ToWebVRTransformMatrix(mat);
+      HmdMatrix34ToTransform(mat);
 
   vr::IVRChaperone* chaperone = vr::VRChaperone();
   if (chaperone) {

@@ -10,7 +10,6 @@
 #include "content/browser/content_index/content_index.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -28,12 +27,12 @@ std::string CreateSerializedContentEntry(
     base::Time entry_time) {
   // Convert description.
   proto::ContentDescription description_proto;
-  description_proto.set_id(std::move(description.id));
-  description_proto.set_title(std::move(description.title));
-  description_proto.set_description(std::move(description.description));
+  description_proto.set_id(description.id);
+  description_proto.set_title(description.title);
+  description_proto.set_description(description.description);
   description_proto.set_category(static_cast<int>(description.category));
-  description_proto.set_icon_url(description.icon_url.spec());
-  description_proto.set_launch_url(description.launch_url.spec());
+  description_proto.set_icon_url(description.icon_url);
+  description_proto.set_launch_url(description.launch_url);
 
   // Create entry.
   proto::ContentEntry entry;
@@ -60,8 +59,8 @@ blink::mojom::ContentDescriptionPtr DescriptionFromProto(
   result->description = description.description();
   result->category =
       static_cast<blink::mojom::ContentCategory>(description.category());
-  result->icon_url = GURL(description.icon_url());
-  result->launch_url = GURL(description.launch_url());
+  result->icon_url = description.icon_url();
+  result->launch_url = description.launch_url();
   return result;
 }
 

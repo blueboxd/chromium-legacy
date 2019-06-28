@@ -1,14 +1,13 @@
-region
-++document
-++++article
-++++++group
-++++++++group
-++++++++++description Name='Header inside article.'
+document
+++article
 ++++group
 ++++++group
-++++++++group
-++++++++++description Name='Header inside section.'
-++++main
+++++++++description Name='Header inside article.'
+++group
+++++group
 ++++++group
-++++++++group
-++++++++++description Name='Header inside main.'
+++++++++description Name='Header inside section.'
+++main
+++++group
+++++++group
+++++++++description Name='Header inside main.'

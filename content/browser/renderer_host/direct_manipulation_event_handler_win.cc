@@ -175,23 +175,19 @@ HRESULT DirectManipulationEventHandler::OnViewportStatusChanged(
   if (current != DIRECTMANIPULATION_READY)
     return S_OK;
 
-  // Normally gesture sequence will receive 2 READY message, the first one is
-  // gesture end, the second one is from viewport reset. We don't have content
-  // transform in the second RUNNING -> READY. We should not reset on an empty
-  // RUNNING -> READY sequence.
-  if (last_scale_ != 1.0f || last_x_offset_ != 0 || last_y_offset_ != 0) {
-    HRESULT hr = helper_->Reset();
-    if (!SUCCEEDED(hr))
-      return hr;
-  }
-
+  // Reset the viewport when we're idle, so the content transforms always start
+  // at identity.
+  // Every animation will receive 2 ready message, we should stop request
+  // compositor animation at the second ready.
+  first_ready_ = !first_ready_;
+  HRESULT hr = helper_->Reset(first_ready_);
   last_scale_ = 1.0f;
   last_x_offset_ = 0.0f;
   last_y_offset_ = 0.0f;
 
   TransitionToState(GestureState::kNone);
 
-  return S_OK;
+  return hr;
 }
 
 HRESULT DirectManipulationEventHandler::OnViewportUpdated(
@@ -296,20 +292,6 @@ HRESULT DirectManipulationEventHandler::OnContentUpdated(
   last_y_offset_ = y_offset;
 
   return hr;
-}
-
-HRESULT DirectManipulationEventHandler::OnInteraction(
-    IDirectManipulationViewport2* viewport,
-    DIRECTMANIPULATION_INTERACTION_TYPE interaction) {
-  if (interaction == DIRECTMANIPULATION_INTERACTION_BEGIN) {
-    DebugLogging("OnInteraction BEGIN.", S_OK);
-    helper_->AddAnimationObserver();
-  } else if (interaction == DIRECTMANIPULATION_INTERACTION_END) {
-    DebugLogging("OnInteraction END.", S_OK);
-    helper_->RemoveAnimationObserver();
-  }
-
-  return S_OK;
 }
 
 }  // namespace content

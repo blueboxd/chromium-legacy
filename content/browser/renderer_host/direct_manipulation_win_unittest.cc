@@ -31,12 +31,6 @@ class MockDirectManipulationViewport
 
   ~MockDirectManipulationViewport() override {}
 
-  bool WasZoomToRectCalled() {
-    bool called = zoom_to_rect_called_;
-    zoom_to_rect_called_ = false;
-    return called;
-  }
-
   HRESULT STDMETHODCALLTYPE Enable() override { return S_OK; }
 
   HRESULT STDMETHODCALLTYPE Disable() override { return S_OK; }
@@ -81,7 +75,6 @@ class MockDirectManipulationViewport
                                        _In_ const float right,
                                        _In_ const float bottom,
                                        _In_ BOOL animate) override {
-    zoom_to_rect_called_ = true;
     return S_OK;
   }
 
@@ -168,8 +161,6 @@ class MockDirectManipulationViewport
   HRESULT STDMETHODCALLTYPE Abandon() override { return S_OK; }
 
  private:
-  bool zoom_to_rect_called_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(MockDirectManipulationViewport);
 };
 
@@ -406,7 +397,13 @@ class DirectManipulationUnitTest : public testing::Test {
         viewport_.Get(), content_.Get());
   }
 
-  bool WasZoomToRectCalled() { return viewport_->WasZoomToRectCalled(); }
+  void SetNeedAnimation(bool need_poll_events) {
+    direct_manipulation_helper_->need_poll_events_ = need_poll_events;
+  }
+
+  bool NeedAnimation() {
+    return direct_manipulation_helper_->need_poll_events_;
+  }
 
   void SetDeviceScaleFactor(float factor) {
     direct_manipulation_helper_->SetDeviceScaleFactorForTesting(factor);
@@ -724,19 +721,21 @@ TEST_F(DirectManipulationUnitTest,
 }
 
 TEST_F(DirectManipulationUnitTest,
-       ZoomToRectShouldNotBeCalledInEmptyRunningReadySequence) {
+       NeedAnimtationShouldBeFalseAfterSecondReset) {
   if (!GetDirectManipulationHelper())
     return;
 
-  ContentUpdated(1.0f, 5, 0);
+  // Direct Manipulation will set need_poll_events_ true when DM_POINTERTEST
+  // from touchpad.
+  SetNeedAnimation(true);
 
   // Receive first ready when gesture end.
   ViewportStatusChanged(DIRECTMANIPULATION_READY, DIRECTMANIPULATION_RUNNING);
-  EXPECT_TRUE(WasZoomToRectCalled());
+  EXPECT_TRUE(NeedAnimation());
 
   // Receive second ready from ZoomToRect.
   ViewportStatusChanged(DIRECTMANIPULATION_READY, DIRECTMANIPULATION_RUNNING);
-  EXPECT_FALSE(WasZoomToRectCalled());
+  EXPECT_FALSE(NeedAnimation());
 }
 
 TEST_F(DirectManipulationUnitTest, HiDPIScroll) {

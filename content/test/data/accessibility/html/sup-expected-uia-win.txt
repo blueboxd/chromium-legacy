@@ -1,6 +1,5 @@
-region
-++document
-++++group
-++++++description Name='This text contains'
-++++++description Name='superscript'
-++++++description Name='text.'
+document
+++group
+++++description Name='This text contains'
+++++description Name='superscript'
+++++description Name='text.'

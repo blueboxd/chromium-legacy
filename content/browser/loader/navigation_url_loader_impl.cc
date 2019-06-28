@@ -118,11 +118,13 @@ class NavigationLoaderInterceptorBrowserContainer
 
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       LoaderCallback callback,
       FallbackCallback fallback_callback) override {
-    browser_interceptor_->MaybeCreateLoader(
-        tentative_resource_request, resource_context, std::move(callback));
+    browser_interceptor_->MaybeCreateLoader(tentative_resource_request,
+                                            browser_context, resource_context,
+                                            std::move(callback));
   }
 
  private:
@@ -643,8 +645,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       return;
     }
 
-    if (!IsNavigationLoaderOnUIEnabled()) {
-      // TODO(http://crbug.com/824840): Support interceptors on UI thread.
+    if (IsNavigationLoaderOnUIEnabled()) {
+      CreateInterceptorsForUI(request_info);
+    } else {
       CreateInterceptorsForIO(
           request_info, service_worker_navigation_handle_core,
           appcache_handle_core, prefetched_signed_exchange_cache,
@@ -670,6 +673,24 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     Restart();
+  }
+
+  void CreateInterceptorsForUI(NavigationRequestInfo* request_info) {
+    // See if embedders want to add interceptors.
+    std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
+        browser_interceptors =
+            GetContentClient()
+                ->browser()
+                ->WillCreateURLLoaderRequestInterceptors(
+                    navigation_ui_data_.get(), request_info->frame_tree_node_id,
+                    network_loader_factory_);
+    if (!browser_interceptors.empty()) {
+      for (auto& browser_interceptor : browser_interceptors) {
+        interceptors_.push_back(
+            std::make_unique<NavigationLoaderInterceptorBrowserContainer>(
+                std::move(browser_interceptor)));
+      }
+    }
   }
 
   void CreateInterceptorsForIO(
@@ -839,8 +860,16 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // See if the next interceptor wants to handle the request.
     if (interceptor_index_ < interceptors_.size()) {
       auto* next_interceptor = interceptors_[interceptor_index_++].get();
+      // Set either BrowserContext or ResourceContext depending on what thread
+      // the interceptors are running on.
+      BrowserContext* browser_context_to_use = nullptr;
+      ResourceContext* resource_context_to_use = nullptr;
+      if (IsNavigationLoaderOnUIEnabled())
+        browser_context_to_use = browser_context_;
+      else
+        resource_context_to_use = resource_context_;
       next_interceptor->MaybeCreateLoader(
-          *resource_request_, resource_context_,
+          *resource_request_, browser_context_to_use, resource_context_to_use,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
                          base::Unretained(this), next_interceptor),
           base::BindOnce(

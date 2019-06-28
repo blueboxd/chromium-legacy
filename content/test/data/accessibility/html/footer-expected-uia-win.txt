@@ -1,4 +1,3 @@
-region
-++document
-++++contentinfo
-++++++description Name='Footer element'
+document
+++contentinfo
+++++description Name='Footer element'

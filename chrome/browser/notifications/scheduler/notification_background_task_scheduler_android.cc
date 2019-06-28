@@ -60,3 +60,8 @@ void NotificationBackgroundTaskSchedulerAndroid::Schedule(
       base::saturated_cast<jlong>(window_start.InMilliseconds()),
       base::saturated_cast<jlong>(window_end.InMilliseconds()));
 }
+
+void NotificationBackgroundTaskSchedulerAndroid::Cancel() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_NotificationSchedulerTask_cancel(env);
+}

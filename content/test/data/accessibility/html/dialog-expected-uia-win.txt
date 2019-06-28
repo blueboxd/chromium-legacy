@@ -1,4 +1,3 @@
-region
-++document
-++++dialog Window.IsModal=false
-++++++description Name='Text in dialog'
+document
+++dialog Window.IsModal=false
+++++description Name='Text in dialog'

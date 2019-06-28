@@ -235,6 +235,10 @@ void UnifiedSystemTray::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   }
 }
 
+const char* UnifiedSystemTray::GetClassName() const {
+  return "UnifiedSystemTray";
+}
+
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
   // We should close bubble at this point. If it remains opened and interactive,
   // it can be dangerous (http://crbug.com/497080).

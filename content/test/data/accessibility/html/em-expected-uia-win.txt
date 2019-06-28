@@ -1,6 +1,5 @@
-region
-++document
-++++group
-++++++description Name='One word is '
-++++++description Name='emphasized'
-++++++description Name='.'
+document
+++group
+++++description Name='One word is '
+++++description Name='emphasized'
+++++description Name='.'

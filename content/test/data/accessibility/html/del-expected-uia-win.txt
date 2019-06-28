@@ -1,6 +1,5 @@
-region
-++document
+document
+++group
+++++description Name='I am '
 ++++group
-++++++description Name='I am '
-++++++group
-++++++++description Name='vegetarian'
+++++++description Name='vegetarian'

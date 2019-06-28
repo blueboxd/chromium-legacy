@@ -143,12 +143,8 @@ cr-button:focus:not(:active) {
 }
 
 #metadata-button {
-  --files-toggle-ripple: {
-    background-color: white;
-  };
-  --files-toggle-ripple-activated: {
-    opacity: 0.3;
-  };
+  --files-toggle-ripple-bg-color: white;
+  --files-toggle-ripple-activated-opacity: 0.3;
 }
 
 cr-button,

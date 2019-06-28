@@ -72,7 +72,7 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
      */
     @MainThread
     @CalledByNative
-    public static void schedule(
+    private static void schedule(
             int /*@SchedulerTaskTime*/ schedulerTaskTime, long windowStartMs, long windowEndMs) {
         BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
         Bundle bundle = new Bundle();
@@ -85,6 +85,16 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
                         .setExtras(bundle)
                         .build();
         scheduler.schedule(ContextUtils.getApplicationContext(), taskInfo);
+    }
+
+    /**
+     * Cancels the background task for notification scheduler.
+     */
+    @MainThread
+    @CalledByNative
+    private static void cancel() {
+        BackgroundTaskSchedulerFactory.getScheduler().cancel(
+                ContextUtils.getApplicationContext(), TaskIds.NOTIFICATION_SCHEDULER_JOB_ID);
     }
 
     private native void nativeOnStartTask(Profile profile, Callback<Boolean> callback);

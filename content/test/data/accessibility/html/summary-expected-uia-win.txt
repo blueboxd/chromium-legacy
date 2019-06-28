@@ -1,5 +1,4 @@
-region
-++document
-++++group
-++++++button Name='details tag' ExpandCollapse.ExpandCollapseState='Collapsed'
-++++++++description Name='details tag'
+document
+++group
+++++button Name='details tag' ExpandCollapse.ExpandCollapseState='Collapsed'
+++++++description Name='details tag'

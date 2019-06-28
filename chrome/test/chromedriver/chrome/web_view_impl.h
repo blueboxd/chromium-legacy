@@ -24,6 +24,7 @@ class DebuggerTracker;
 struct DeviceMetrics;
 class DevToolsClient;
 class DomTracker;
+class DownloadDirectoryOverrideManager;
 class FrameTracker;
 class GeolocationOverrideManager;
 class MobileEmulationOverrideManager;
@@ -127,6 +128,8 @@ class WebViewImpl : public WebView {
   Status OverrideGeolocation(const Geoposition& geoposition) override;
   Status OverrideNetworkConditions(
       const NetworkConditions& network_conditions) override;
+  Status OverrideDownloadDirectoryIfNeeded(
+      const std::string& download_directory) override;
   Status CaptureScreenshot(
       std::string* screenshot,
       const base::DictionaryValue& params) override;
@@ -197,6 +200,8 @@ class WebViewImpl : public WebView {
   std::unique_ptr<GeolocationOverrideManager> geolocation_override_manager_;
   std::unique_ptr<NetworkConditionsOverrideManager>
       network_conditions_override_manager_;
+  std::unique_ptr<DownloadDirectoryOverrideManager>
+      download_directory_override_manager_;
   std::unique_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   std::unique_ptr<DebuggerTracker> debugger_;
   std::unique_ptr<CastTracker> cast_tracker_;

@@ -39,7 +39,7 @@ mojom::VREyeParametersPtr GetEyeDetails(ovrSession session,
       gfx::RadToDeg(atanf(render_desc.Fov.RightTan));
 
   auto offset = render_desc.HmdToEyeOffset;
-  eye_parameters->offset = std::vector<float>({offset.x, offset.y, offset.z});
+  eye_parameters->offset = gfx::Vector3dF(offset.x, offset.y, offset.z);
 
   auto texture_size =
       ovr_GetFovTextureSize(session, eye, render_desc.Fov, 1.0f);
@@ -71,8 +71,9 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
   float floor_height = ovr_state.HeadPose.ThePose.Position.y;
   ovr_SetTrackingOriginType(session, ovrTrackingOrigin_EyeLevel);
 
-  display_info->stageParameters->standingTransform = {
-      1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, floor_height, 0, 1};
+  gfx::Transform standing_transform;
+  standing_transform.Translate3d(0, floor_height, 0);
+  display_info->stageParameters->standingTransform = standing_transform;
 
   ovrVector3f boundary_size;
   ovr_GetBoundaryDimensions(session, ovrBoundary_PlayArea, &boundary_size);

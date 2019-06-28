@@ -1,6 +1,5 @@
-region
-++document
-++++group
-++++++img Name='svg' HelpText='SVG Title Tag'
-++++++++group
-++++++++++description Name='Test'
+document
+++group
+++++img Name='svg' HelpText='SVG Title Tag'
+++++++group
+++++++++description Name='Test'

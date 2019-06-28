@@ -139,6 +139,7 @@ void XRCompositorCommon::CleanUp() {
   frame_data_binding_.Close();
   gamepad_provider_.Close();
   overlay_binding_.Close();
+  input_event_listener_ = nullptr;
   StopRuntime();
 }
 
@@ -156,6 +157,12 @@ void XRCompositorCommon::RequestOverlay(
   // WebXR is visible and overlay hidden by default until the overlay overrides
   // this.
   SetOverlayAndWebXRVisibility(false, true);
+}
+
+bool XRCompositorCommon::UsesInputEventing() {
+  // By default we don't use input eventing.  Any subclass that does will need
+  // to override this.
+  return false;
 }
 
 void XRCompositorCommon::UpdateLayerBounds(int16_t frame_id,
@@ -226,6 +233,7 @@ void XRCompositorCommon::RequestSession(
   auto session = device::mojom::XRSession::New();
   session->data_provider = frame_data_provider.PassInterface();
   session->submit_frame_sink = std::move(submit_frame_sink);
+  session->uses_input_eventing = UsesInputEventing();
 
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true, std::move(session)));
@@ -343,6 +351,12 @@ void XRCompositorCommon::GetFrameData(
   if (next_frame_id_ < 0) {
     next_frame_id_ = 0;
   }
+}
+
+void XRCompositorCommon::SetInputSourceButtonListener(
+    mojom::XRInputSourceButtonListenerAssociatedPtrInfo input_listener_info) {
+  DCHECK(UsesInputEventing());
+  input_event_listener_.Bind(std::move(input_listener_info));
 }
 
 void XRCompositorCommon::GetControllerDataAndSendFrameData(

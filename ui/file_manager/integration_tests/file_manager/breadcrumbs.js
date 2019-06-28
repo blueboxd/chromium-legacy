@@ -27,4 +27,31 @@
     chrome.test.assertEq(
         1, await getUserActionCount('FileBrowser.ClickBreadcrumbs'));
   };
+
+  /**
+   * Test that clicking on the current directory in the Breadcrumbs doesn't
+   * leave the focus in the breadcrumbs. crbug.com/944022
+   */
+  testcase.breadcrumbsLeafNoFocus = async () => {
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+    // Navigate to Downloads/photos.
+    await remoteCall.navigateWithDirectoryTree(
+        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+
+    // Focus and click on "photos" in the breadcrumbs.
+    const leafBreadCrumb =
+        '#location-breadcrumbs .breadcrumb-path.breadcrumb-last';
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('focus', appId, [leafBreadCrumb]),
+        'focus failed: ' + leafBreadCrumb);
+    await remoteCall.waitAndClickElement(appId, leafBreadCrumb);
+
+    // Wait focus to not be on breadcrumb clicked.
+    await remoteCall.waitForElementLost(appId, leafBreadCrumb + ':focus');
+
+    // Focus should be on file list.
+    await remoteCall.waitForElement(appId, '#file-list:focus');
+  };
 })();

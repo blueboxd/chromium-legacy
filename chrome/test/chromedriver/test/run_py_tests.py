@@ -105,6 +105,9 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeDriverTest.testGetWindowHandles',
     'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
     'ChromeDriverTest.testSwitchToWindow',
+    'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
+    'ChromeDownloadDirTest.testFileDownloadWithClickHeadless',
+    'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
 ]
@@ -116,6 +119,9 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testTakeElementScreenshotInIframe',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
     'ChromeDriverTest.testWindowFullScreen',
+    'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
+    'ChromeDownloadDirTest.testFileDownloadWithClickHeadless',
+    'ChromeDownloadDirTest.testFileDownloadWithGetHeadless'
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -2641,11 +2647,52 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
         ChromeDriverTest.GetHttpUrlForFile('/chromedriver/download.html'),
         driver.GetCurrentUrl())
 
+  def testFileDownloadWithClickHeadless(self):
+      download_dir = self.CreateTempDir()
+      download_name = os.path.join(download_dir, 'a_red_dot.png')
+      driver = self.CreateDriver(download_dir=download_dir,
+                                 chrome_switches=['--headless'])
+      driver.Load(ChromeDriverTest.GetHttpUrlForFile(
+          '/chromedriver/download.html'))
+      driver.FindElement('css selector', '#red-dot').Click()
+      self.WaitForFileToDownload(download_name)
+      self.assertEqual(
+          ChromeDriverTest.GetHttpUrlForFile('/chromedriver/download.html'),
+          driver.GetCurrentUrl())
+
+  def testFileDownloadAfterTabHeadless(self):
+      download_dir = self.CreateTempDir()
+      download_name = os.path.join(download_dir, 'a_red_dot.png')
+      driver = self.CreateDriver(download_dir=download_dir,
+                                 chrome_switches=['--headless'])
+      driver.Load(ChromeDriverTest.GetHttpUrlForFile(
+          '/chromedriver/empty.html'))
+      new_window = driver.NewWindow(window_type='tab')
+      driver.SwitchToWindow(new_window['handle'])
+      driver.Load(ChromeDriverTest.GetHttpUrlForFile(
+          '/chromedriver/download.html'))
+      driver.FindElement('css selector', '#red-dot').Click()
+      self.WaitForFileToDownload(download_name)
+      self.assertEqual(
+          ChromeDriverTest.GetHttpUrlForFile('/chromedriver/download.html'),
+          driver.GetCurrentUrl())
+
   def testFileDownloadWithGet(self):
     ChromeDriverTest._http_server.SetCallbackForPath(
         '/abc.csv', self.RespondWithCsvFile)
     download_dir = self.CreateTempDir()
     driver = self.CreateDriver(download_dir=download_dir)
+    original_url = driver.GetCurrentUrl()
+    driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
+    self.WaitForFileToDownload(os.path.join(download_dir, 'abc.csv'))
+    self.assertEqual(original_url, driver.GetCurrentUrl())
+
+  def testFileDownloadWithGetHeadless(self):
+    ChromeDriverTest._http_server.SetCallbackForPath(
+        '/abc.csv', self.RespondWithCsvFile)
+    download_dir = self.CreateTempDir()
+    driver = self.CreateDriver(download_dir=download_dir,
+                               chrome_switches=['--headless'])
     original_url = driver.GetCurrentUrl()
     driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
     self.WaitForFileToDownload(os.path.join(download_dir, 'abc.csv'))

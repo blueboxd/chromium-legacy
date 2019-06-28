@@ -35,18 +35,19 @@ TypeConverter<blink::TransformationMatrix, device::mojom::blink::VRPosePtr>::
 
   if (pose->orientation) {
     // TODO(https://crbug.com/929841): Remove negation once the bug is fixed.
-    decomp.quaternion_x = -pose->orientation.value()[0];
-    decomp.quaternion_y = -pose->orientation.value()[1];
-    decomp.quaternion_z = -pose->orientation.value()[2];
-    decomp.quaternion_w = pose->orientation.value()[3];
+    gfx::Quaternion quat = pose->orientation->inverse();
+    decomp.quaternion_x = quat.x();
+    decomp.quaternion_y = quat.y();
+    decomp.quaternion_z = quat.z();
+    decomp.quaternion_w = quat.w();
   } else {
     decomp.quaternion_w = 1.0;
   }
 
   if (pose->position) {
-    decomp.translate_x = pose->position.value()[0];
-    decomp.translate_y = pose->position.value()[1];
-    decomp.translate_z = pose->position.value()[2];
+    decomp.translate_x = pose->position->x;
+    decomp.translate_y = pose->position->y;
+    decomp.translate_z = pose->position->z;
   }
 
   result.Recompose(decomp);

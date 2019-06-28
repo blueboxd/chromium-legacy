@@ -105,12 +105,12 @@ void AppBaseWindow::FlashFrame(bool flash) {
   GetBaseWindow()->FlashFrame(flash);
 }
 
-ui::ZOrderLevel AppBaseWindow::GetZOrderLevel() const {
-  return GetBaseWindow()->GetZOrderLevel();
+bool AppBaseWindow::IsAlwaysOnTop() const {
+  return GetBaseWindow()->IsAlwaysOnTop();
 }
 
-void AppBaseWindow::SetZOrderLevel(ui::ZOrderLevel level) {
-  GetBaseWindow()->SetZOrderLevel(level);
+void AppBaseWindow::SetAlwaysOnTop(bool always_on_top) {
+  GetBaseWindow()->SetAlwaysOnTop(always_on_top);
 }
 
 NativeAppWindow* AppBaseWindow::GetBaseWindow() const {

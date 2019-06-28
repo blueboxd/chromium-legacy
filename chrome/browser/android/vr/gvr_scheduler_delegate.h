@@ -140,6 +140,8 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   void GetEnvironmentIntegrationProvider(
       device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) override;
+  void SetInputSourceButtonListener(
+      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
 
   // XRPresentationProvider
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;

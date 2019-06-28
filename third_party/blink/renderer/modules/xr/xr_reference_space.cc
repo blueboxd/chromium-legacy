@@ -69,8 +69,7 @@ void XRReferenceSpace::UpdateFloorLevelTransform() {
   if (display_info && display_info->stageParameters) {
     // Use the transform given by xrDisplayInfo's stageParameters if available.
     floor_level_transform_ = std::make_unique<TransformationMatrix>(
-        WTFFloatVectorToTransformationMatrix(
-            display_info->stageParameters->standingTransform));
+        display_info->stageParameters->standingTransform.matrix());
   } else {
     // Otherwise, create a transform based on the default emulated height.
     floor_level_transform_ = std::make_unique<TransformationMatrix>();

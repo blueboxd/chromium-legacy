@@ -140,29 +140,29 @@ void AddTouchData(mojom::XRGamepadDataPtr& data,
   auto dst_pose = mojom::VRPose::New();
   const ovrPoseStatef& src_pose = tracking.HandPoses[hand];
 
-  dst_pose->orientation = std::vector<float>(
-      {src_pose.ThePose.Orientation.x, src_pose.ThePose.Orientation.y,
-       src_pose.ThePose.Orientation.z, src_pose.ThePose.Orientation.w});
+  dst_pose->orientation = gfx::Quaternion(
+      src_pose.ThePose.Orientation.x, src_pose.ThePose.Orientation.y,
+      src_pose.ThePose.Orientation.z, src_pose.ThePose.Orientation.w);
 
-  dst_pose->position = std::vector<float>({src_pose.ThePose.Position.x,
-                                           src_pose.ThePose.Position.y,
-                                           src_pose.ThePose.Position.z});
+  dst_pose->position =
+      gfx::Point3F(src_pose.ThePose.Position.x, src_pose.ThePose.Position.y,
+                   src_pose.ThePose.Position.z);
 
-  dst_pose->angularVelocity = std::vector<float>({src_pose.AngularVelocity.x,
-                                                  src_pose.AngularVelocity.y,
-                                                  src_pose.AngularVelocity.z});
+  dst_pose->angularVelocity =
+      gfx::Vector3dF(src_pose.AngularVelocity.x, src_pose.AngularVelocity.y,
+                     src_pose.AngularVelocity.z);
 
   dst_pose->linearVelocity =
-      std::vector<float>({src_pose.LinearVelocity.x, src_pose.LinearVelocity.y,
-                          src_pose.LinearVelocity.z});
+      gfx::Vector3dF(src_pose.LinearVelocity.x, src_pose.LinearVelocity.y,
+                     src_pose.LinearVelocity.z);
 
-  dst_pose->angularAcceleration = std::vector<float>(
-      {src_pose.AngularAcceleration.x, src_pose.AngularAcceleration.y,
-       src_pose.AngularAcceleration.z});
+  dst_pose->angularAcceleration = gfx::Vector3dF(
+      src_pose.AngularAcceleration.x, src_pose.AngularAcceleration.y,
+      src_pose.AngularAcceleration.z);
 
-  dst_pose->linearAcceleration = std::vector<float>(
-      {src_pose.LinearAcceleration.x, src_pose.LinearAcceleration.y,
-       src_pose.LinearAcceleration.z});
+  dst_pose->linearAcceleration = gfx::Vector3dF(src_pose.LinearAcceleration.x,
+                                                src_pose.LinearAcceleration.y,
+                                                src_pose.LinearAcceleration.z);
 
   gamepad->pose = std::move(dst_pose);
   gamepad->can_provide_position = true;

@@ -174,6 +174,9 @@ std::string DEVICE_EVENT_LOG_EXPORT GetAsString(StringOrder order,
                                                 LogLevel max_level,
                                                 size_t max_events);
 
+// Clear all entries from the device event log.
+void DEVICE_EVENT_LOG_EXPORT ClearAll();
+
 // Clear entries from the device event log between the given times.
 void DEVICE_EVENT_LOG_EXPORT Clear(const base::Time& begin,
                                    const base::Time& end);

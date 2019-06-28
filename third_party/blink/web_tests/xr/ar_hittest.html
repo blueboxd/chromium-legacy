@@ -30,7 +30,8 @@ let testFunction = function(session, t, fakeDeviceController) {
     let ray = new XRRay({x : 0.0, y : 0.0, z : 0.0}, {x : 1.0, y : 0.0, z: 0.0});
 
     let hit = new device.mojom.XRHitResult();
-    hit.hitMatrix = expectedHitMatrix;
+    hit.hitMatrix = new gfx.mojom.Transform();
+    hit.hitMatrix.matrix = expectedHitMatrix;
 
     fakeDeviceController.setHitTestResults({ results: [hit] });
 

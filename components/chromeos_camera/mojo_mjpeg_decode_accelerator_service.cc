@@ -125,6 +125,13 @@ void MojoMjpegDecodeAcceleratorService::Decode(
   TRACE_EVENT0("jpeg", "MojoMjpegDecodeAcceleratorService::Decode");
 
   DCHECK_EQ(decode_cb_map_.count(input_buffer.id()), 0u);
+  if (decode_cb_map_.count(input_buffer.id()) != 0) {
+    NotifyDecodeStatus(
+        input_buffer.id(),
+        ::chromeos_camera::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT);
+    return;
+  }
+
   decode_cb_map_[input_buffer.id()] = std::move(callback);
 
   if (!VerifyDecodeParams(coded_size, &output_handle, output_buffer_size)) {
@@ -245,6 +252,11 @@ void MojoMjpegDecodeAcceleratorService::NotifyDecodeStatus(
 
   auto iter = decode_cb_map_.find(bitstream_buffer_id);
   DCHECK(iter != decode_cb_map_.end());
+  if (iter == decode_cb_map_.end()) {
+    // Silently ignoring abnormal case.
+    return;
+  }
+
   DecodeCallback decode_cb = std::move(iter->second);
   decode_cb_map_.erase(iter);
   std::move(decode_cb).Run(bitstream_buffer_id, error);

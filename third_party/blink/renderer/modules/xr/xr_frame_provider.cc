@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/modules/xr/type_converters.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -53,35 +54,9 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
   if (!pose)
     return nullptr;
 
-  std::unique_ptr<TransformationMatrix> pose_matrix =
-      std::make_unique<TransformationMatrix>();
-
-  TransformationMatrix::DecomposedType decomp;
-
-  memset(&decomp, 0, sizeof(decomp));
-  decomp.perspective_w = 1;
-  decomp.scale_x = 1;
-  decomp.scale_y = 1;
-  decomp.scale_z = 1;
-
-  if (pose->orientation) {
-    decomp.quaternion_x = -pose->orientation.value()[0];
-    decomp.quaternion_y = -pose->orientation.value()[1];
-    decomp.quaternion_z = -pose->orientation.value()[2];
-    decomp.quaternion_w = pose->orientation.value()[3];
-  } else {
-    decomp.quaternion_w = 1.0;
-  }
-
-  if (pose->position) {
-    decomp.translate_x = pose->position.value()[0];
-    decomp.translate_y = pose->position.value()[1];
-    decomp.translate_z = pose->position.value()[2];
-  }
-
-  pose_matrix->Recompose(decomp);
-
-  return pose_matrix;
+  return std::make_unique<TransformationMatrix>(
+      mojo::TypeConverter<TransformationMatrix,
+                          device::mojom::blink::VRPosePtr>::Convert(pose));
 }
 
 }  // namespace

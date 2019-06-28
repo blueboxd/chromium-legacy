@@ -19,13 +19,20 @@ class TabStripAnimator {
   explicit TabStripAnimator(base::RepeatingClosure on_animation_progressed);
   ~TabStripAnimator();
 
+  size_t animation_count() const { return animations_.size(); }
+
   std::vector<TabAnimationState> GetCurrentTabStates() const;
+
+  // Returns whether any animations in progress.
   bool IsAnimating() const;
+
+  TabAnimation::ViewType GetAnimationViewTypeAt(int index) const;
 
   // Inserts, without animation, a new tab at |index|.
   // |tab_removed_callback| will be invoked if the tab is removed
   // at the end of a remove animation.
-  void InsertTabAtNoAnimation(int index,
+  void InsertTabAtNoAnimation(TabAnimation::ViewType view_type,
+                              int index,
                               base::OnceClosure tab_removed_callback,
                               TabAnimationState::TabActiveness active,
                               TabAnimationState::TabPinnedness pinned);
@@ -34,16 +41,20 @@ class TabStripAnimator {
   // Does not invoke the associated |tab_removed_callback|.
   void RemoveTabNoAnimation(int index);
 
-  // TODO(958173): Temporary methods to keep the animator's state in sync with
-  // changes it is not responsible for animating.
-  void MoveTabNoAnimation(int prev_index, int new_index);
+  // Sets the tab at |index|'s pinnedness to |pinnedness|. TODO(958173): Should
+  // be animated.
   void SetPinnednessNoAnimation(int index,
                                 TabAnimationState::TabPinnedness pinnedness);
+
+  // Moves the tabs in |moving_tabs| to |new_index|. The vector of tabs should
+  // be sorted by increasing index. TODO(958173): Should be animated.
+  void MoveTabsNoAnimation(std::vector<int> moving_tabs, int new_index);
 
   // Animates the insertion of a new tab at |index|.
   // |tab_removed_callback| will be invoked if the tab is removed
   // at the end of a remove animation.
-  void InsertTabAt(int index,
+  void InsertTabAt(TabAnimation::ViewType view_type,
+                   int index,
                    base::OnceClosure tab_removed_callback,
                    TabAnimationState::TabActiveness active,
                    TabAnimationState::TabPinnedness pinned);
@@ -52,10 +63,10 @@ class TabStripAnimator {
   // invoke the associated |tab_removed_callback| when complete.
   void RemoveTab(int index);
 
+  // Changes the active tab from |prev_active_index| to |new_active_index|.
   void SetActiveTab(int prev_active_index, int new_active_index);
 
-  // TODO(958173): Implement move and pin animations.
-
+  // Finishes all in-progress animations.
   void CompleteAnimations();
 
   // TODO(958173): Temporary method that completes running animations,

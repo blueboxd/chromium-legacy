@@ -11,6 +11,7 @@
 -Http/MediaTest.VideoBearMp4/0
 -Http/MediaTest.VideoBearSilentMp4/0
 -Http/MediaTest.VideoTulipWebm/0
+-MediaCanPlayTypeTest.CodecSupportTest_NewVp9Variants
 -MediaColorTest.Yuv420pTheora
 -MediaColorTest.Yuv420pVp8
 -MediaSessionImplBrowserTest.MetadataWhenFileUrlScheme
@@ -32,10 +33,15 @@
 -NavigationControllerBrowserTest.ReloadWithUrlAnchorAndScroll
 -OOPBrowserTest.Basic
 -P/CompositorImplBrowserTestRefreshRate.VideoPreference/0
+-SitePerProcessBrowserTest.ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFrames
+-SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
+-SitePerProcessBrowserTest.PageScaleFactorPropagatesToOOPIFs
+-SitePerProcessBrowserTest.ReloadHiddenTabWithCrashedSubframe
 -SitePerProcessBrowserTest.ScaledIframeRasterSize
 -SitePerProcessBrowserTest.ScrollOopifInPinchZoomedPage
 -SitePerProcessBrowserTest.SubframeVisibleAfterRenderViewBecomesSwappedOut
+-SitePerProcessBrowserTest.UnloadNestedPendingDeletion
 -SitePerProcessEmulatedTouchBrowserTest.EmulatedGestureScrollBubbles/0
 -SitePerProcessEmulatedTouchBrowserTest.EmulatedTouchScrollBubbles/0
 -SitePerProcessEmulatedTouchBrowserTest.EmulatedTouchShowPressHasTouchID/0
@@ -57,6 +63,7 @@
 -SitePerProcessHitTestBrowserTest.TouchpadPinchWhenMissingHitTestDataDoesNotCrash/1
 -SnapshotBrowserTest.SyncMultiWindowTest
 -SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+-SRC_ExternalClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 -TouchActionBrowserTest.DefaultAuto/1
 -TouchActionBrowserTest.PanXMainThreadJanky/1
 -TouchActionBrowserTest.PanXYMainThreadJanky/1

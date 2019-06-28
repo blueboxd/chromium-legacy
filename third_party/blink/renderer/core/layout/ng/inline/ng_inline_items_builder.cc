@@ -975,6 +975,9 @@ void NGInlineItemsBuilderTemplate<
   DCHECK(item);
   DCHECK(item->EndCollapseType() == NGInlineItem::kCollapsed);
 
+  mapping_builder_.RestoreTrailingCollapsibleSpace(
+      ToLayoutText(*item->GetLayoutObject()), item->EndOffset());
+
   // TODO(kojii): Implement StringBuilder::insert().
   if (text_.length() == item->EndOffset()) {
     text_.Append(' ');

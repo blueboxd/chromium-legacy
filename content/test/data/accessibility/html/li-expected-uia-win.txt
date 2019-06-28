@@ -1,9 +1,8 @@
-region
-++document
-++++list
-++++++listitem
-++++++++description Name='• '
-++++++listitem
-++++++++description Name='• '
-++++++listitem
-++++++++description Name='• '
+document
+++list
+++++listitem
+++++++description Name='• '
+++++listitem
+++++++description Name='• '
+++++listitem
+++++++description Name='• '

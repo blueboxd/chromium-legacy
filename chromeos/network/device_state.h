@@ -92,15 +92,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   // Cellular specific properties
   std::string operator_name_;
   std::string country_code_;
-  bool allow_roaming_;
-  bool provider_requires_roaming_;
-  bool support_network_scan_;
-  bool scanning_;
+  bool allow_roaming_ = false;
+  bool provider_requires_roaming_ = false;
+  bool support_network_scan_ = false;
+  bool scanning_ = false;
   std::string technology_family_;
   std::string sim_lock_type_;
-  int sim_retries_left_;
-  bool sim_lock_enabled_;
-  bool sim_present_;
+  int sim_retries_left_ = 0;
+  bool sim_lock_enabled_ = false;
+  bool sim_present_ = true;
   std::string meid_;
   std::string imei_;
   std::string iccid_;
@@ -108,7 +108,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   CellularScanResults scan_results_;
 
   // Ethernet specific properties
-  bool eap_authentication_completed_;
+  bool eap_authentication_completed_ = false;
 
   // WiFi specific properties
   std::string available_managed_network_path_;

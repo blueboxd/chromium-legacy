@@ -205,6 +205,7 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
@@ -4785,6 +4786,32 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
   ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<ChromeNavigationUIData*>(navigation_ui_data);
+
+  auto* drp_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context);
+  if (chrome_navigation_ui_data && !profile->IsIncognitoProfile() &&
+      data_reduction_proxy::params::IsEnabledWithNetworkService() &&
+      drp_settings) {
+    if (!data_reduction_proxy_throttle_manager_) {
+      data_reduction_proxy_throttle_manager_ = std::unique_ptr<
+          data_reduction_proxy::DataReductionProxyThrottleManager,
+          base::OnTaskRunnerDeleter>(
+          new data_reduction_proxy::DataReductionProxyThrottleManager(
+              drp_settings->data_reduction_proxy_service(),
+              data_reduction_proxy::DataReductionProxyThrottleManager::
+                  CreateConfig(drp_settings->proxies_for_http())),
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
+    }
+    net::HttpRequestHeaders headers;
+    data_reduction_proxy::DataReductionProxyRequestOptions::
+        AddPageIDRequestHeader(
+            &headers,
+            chrome_navigation_ui_data->data_reduction_proxy_page_id());
+    result.push_back(std::make_unique<
+                     data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
+        headers, data_reduction_proxy_throttle_manager_.get()));
+  }
 
   if (chrome_navigation_ui_data &&
       chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {

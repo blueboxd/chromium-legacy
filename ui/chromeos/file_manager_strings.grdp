@@ -815,8 +815,17 @@
   <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
     Cancel
   </message>
+  <message name="IDS_FILE_BROWSER_CLOSE_LABEL" desc="Close label.">
+    Close
+  </message>
+  <message name="IDS_FILE_BROWSER_EXPAND_LABEL" desc="Expand label.">
+    Expand
+  </message>
   <message name="IDS_FILE_BROWSER_OPEN_LABEL" desc="Open label.">
     Open
+  </message>
+  <message name="IDS_FILE_BROWSER_PAUSE_LABEL" desc="Pause label.">
+    Pause
   </message>
   <message name="IDS_FILE_BROWSER_SAVE_LABEL" desc="Save label.">
     Save

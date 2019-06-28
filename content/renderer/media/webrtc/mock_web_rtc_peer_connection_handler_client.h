@@ -50,7 +50,7 @@ class MockWebRTCPeerConnectionHandlerClient
   MOCK_METHOD1(DidModifySctpTransport,
                void(blink::WebRTCSctpTransportSnapshot snapshot));
   void DidModifyTransceivers(
-      std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+      blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
           web_transceivers,
       bool is_remote_description) override {
     DidModifyTransceiversForMock(&web_transceivers, is_remote_description);
@@ -66,9 +66,10 @@ class MockWebRTCPeerConnectionHandlerClient
                void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
   MOCK_METHOD1(DidRemoveReceiverPlanBForMock,
                void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
-  MOCK_METHOD2(DidModifyTransceiversForMock,
-               void(std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>*,
-                    bool));
+  MOCK_METHOD2(
+      DidModifyTransceiversForMock,
+      void(blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>*,
+           bool));
 
   void didGenerateICECandidateWorker(
       scoped_refptr<blink::WebRTCICECandidate> candidate);

@@ -39,9 +39,7 @@ namespace blink {
 
 namespace {
 
-void RunEntriesCallback(
-    V8PersistentCallbackInterface<V8EntriesCallback>* callback,
-    EntryHeapVector* entries) {
+void RunEntriesCallback(V8EntriesCallback* callback, EntryHeapVector* entries) {
   callback->InvokeAndReportException(nullptr, *entries);
 }
 
@@ -87,15 +85,13 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
         MakeGarbageCollected<EntryHeapVector>(std::move(entries_));
     DOMFileSystem::ScheduleCallback(
         Filesystem()->GetExecutionContext(),
-        WTF::Bind(
-            &RunEntriesCallback,
-            WrapPersistent(ToV8PersistentCallbackInterface(entries_callback)),
-            WrapPersistent(entries)));
+        WTF::Bind(&RunEntriesCallback, WrapPersistent(entries_callback),
+                  WrapPersistent(entries)));
     return;
   }
 
-  entries_callback_ = ToV8PersistentCallbackInterface(entries_callback);
-  error_callback_ = ToV8PersistentCallbackInterface(error_callback);
+  entries_callback_ = entries_callback;
+  error_callback_ = error_callback;
 }
 
 void DirectoryReader::AddEntries(const EntryHeapVector& entries_to_add) {

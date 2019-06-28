@@ -2508,12 +2508,9 @@ void WebViewImpl::SetIgnoreViewportTagScaleLimits(bool ignore) {
         GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
     constraints.maximum_scale =
         GetPageScaleConstraintsSet().DefaultConstraints().maximum_scale;
-    constraints.initial_scale =
-        GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
   } else {
     constraints.minimum_scale = -1;
     constraints.maximum_scale = -1;
-    constraints.initial_scale = -1;
   }
   GetPage()->SetUserAgentPageScaleConstraints(constraints);
 }

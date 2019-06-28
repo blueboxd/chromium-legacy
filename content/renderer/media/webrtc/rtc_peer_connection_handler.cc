@@ -506,7 +506,7 @@ void GetRTCStatsOnSignalingThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
 
   native_peer_connection->GetStats(RTCStatsCollectorCallbackImpl::Create(
@@ -1067,7 +1067,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   return true;
 }
 
-std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::CreateOffer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebMediaConstraints& options) {
@@ -1082,7 +1082,7 @@ RTCPeerConnectionHandler::CreateOffer(
   return CreateOfferInternal(request, std::move(webrtc_options));
 }
 
-std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::CreateOffer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebRTCOfferOptions& options) {
@@ -1559,7 +1559,7 @@ void RTCPeerConnectionHandler::GetStats(
 
 void RTCPeerConnectionHandler::GetStats(
     blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   signaling_thread()->PostTask(
       FROM_HERE, base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,

@@ -8,7 +8,6 @@
 #include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
@@ -240,12 +239,11 @@ double PriorityToDouble(const WTF::String& priority) {
   return result;
 }
 
-std::tuple<std::vector<webrtc::RtpEncodingParameters>,
-           webrtc::DegradationPreference>
+std::tuple<Vector<webrtc::RtpEncodingParameters>, webrtc::DegradationPreference>
 ToRtpParameters(const RTCRtpSendParameters* parameters) {
-  std::vector<webrtc::RtpEncodingParameters> encodings;
+  Vector<webrtc::RtpEncodingParameters> encodings;
   if (parameters->hasEncodings()) {
-    encodings.reserve(parameters->encodings().size());
+    encodings.ReserveCapacity(parameters->encodings().size());
 
     for (const auto& encoding : parameters->encodings()) {
       encodings.push_back(ToRtpEncodingParameters(encoding));
@@ -448,7 +446,7 @@ ScriptPromise RTCRtpSender::setParameters(
   // field and the degradationPreference field. We just forward those to the
   // native layer without having to transform all the other read-only
   // parameters.
-  std::vector<webrtc::RtpEncodingParameters> encodings;
+  Vector<webrtc::RtpEncodingParameters> encodings;
   webrtc::DegradationPreference degradation_preference;
   std::tie(encodings, degradation_preference) = ToRtpParameters(parameters);
 

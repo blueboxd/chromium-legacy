@@ -169,6 +169,7 @@ class FragmentPaintPropertyTreeBuilder {
  private:
   ALWAYS_INLINE void UpdatePaintOffset();
   ALWAYS_INLINE void UpdateForPaintOffsetTranslation(base::Optional<IntPoint>&);
+  ALWAYS_INLINE bool IsAffectedByOuterViewportBoundsDelta() const;
   ALWAYS_INLINE void UpdatePaintOffsetTranslation(
       const base::Optional<IntPoint>&);
   ALWAYS_INLINE void SetNeedsPaintPropertyUpdateIfNeeded();
@@ -456,6 +457,24 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
   context_.current.paint_offset = subpixel_accumulation;
 }
 
+bool FragmentPaintPropertyTreeBuilder::IsAffectedByOuterViewportBoundsDelta()
+    const {
+  if (object_.StyleRef().GetPosition() != EPosition::kFixed ||
+      !object_.StyleRef().IsFixedToBottom() ||
+      !object_.GetFrame()->IsMainFrame())
+    return false;
+  // It's not affected by viewport if the container is not the LayoutView.
+  if (context_.current.transform != object_.View()
+                                        ->FirstFragment()
+                                        .PaintProperties()
+                                        ->PaintOffsetTranslation()) {
+    DCHECK_NE(object_.ContainerForFixedPosition(), object_.View());
+    return false;
+  }
+  DCHECK_EQ(object_.ContainerForFixedPosition(), object_.View());
+  return true;
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     const base::Optional<IntPoint>& paint_offset_translation) {
   DCHECK(properties_);
@@ -465,11 +484,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         FloatSize(ToIntSize(*paint_offset_translation))};
     state.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
-
     state.affected_by_outer_viewport_bounds_delta =
-        object_.StyleRef().GetPosition() == EPosition::kFixed &&
-        object_.StyleRef().IsFixedToBottom();
-
+        IsAffectedByOuterViewportBoundsDelta();
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
       state.rendering_context_id = context_.current.rendering_context_id;

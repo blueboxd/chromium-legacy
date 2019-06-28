@@ -290,7 +290,8 @@ void DataReductionProxyIOData::OnProxyConfigUpdated() {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&DataReductionProxyService::SetConfiguredProxiesOnUI,
-                     service_, config_->GetAllConfiguredProxies()));
+                     service_, config_->GetAllConfiguredProxies(),
+                     config_->GetProxiesForHttp()));
   UpdateCustomProxyConfig();
   UpdateThrottleConfig();
 }
@@ -424,6 +425,12 @@ void DataReductionProxyIOData::AddThrottleConfigObserver(
     mojom::DataReductionProxyThrottleConfigObserverPtr observer) {
   observer->OnThrottleConfigChanged(CreateThrottleConfig());
   drp_throttle_config_observers_.AddPtr(std::move(observer));
+}
+
+void DataReductionProxyIOData::AddThrottleConfigObserverInfo(
+    mojom::DataReductionProxyThrottleConfigObserverPtrInfo observer) {
+  AddThrottleConfigObserver(
+      mojom::DataReductionProxyThrottleConfigObserverPtr(std::move(observer)));
 }
 
 void DataReductionProxyIOData::Clone(mojom::DataReductionProxyRequest request) {

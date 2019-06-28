@@ -141,7 +141,7 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
                      webrtc::DegradationPreference,
                      blink::WebRTCVoidRequest) override;
   void GetStats(blink::WebRTCStatsReportCallback,
-                const std::vector<webrtc::NonStandardGroupId>&) override;
+                const blink::WebVector<webrtc::NonStandardGroupId>&) override;
   void SetStreams(
       const blink::WebVector<blink::WebString>& stream_ids) override;
 

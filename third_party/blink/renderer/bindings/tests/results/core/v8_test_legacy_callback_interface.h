@@ -51,27 +51,6 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
   v8::Maybe<uint16_t> acceptNode(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, Node* node) WARN_UNUSED_RESULT;
 };
 
-template <>
-class V8PersistentCallbackInterface<V8TestLegacyCallbackInterface> final : public V8PersistentCallbackInterfaceBase {
-  using V8CallbackInterface = V8TestLegacyCallbackInterface;
-
- public:
-  explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)
-      : V8PersistentCallbackInterfaceBase(callback_interface) {}
-  ~V8PersistentCallbackInterface() override = default;
-
-  CORE_EXPORT v8::Maybe<uint16_t> acceptNode(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, Node* node) WARN_UNUSED_RESULT;
-
- private:
-  V8CallbackInterface* Proxy() {
-    return As<V8CallbackInterface>();
-  }
-
-  template <typename V8CallbackInterface>
-  friend V8PersistentCallbackInterface<V8CallbackInterface>*
-  ToV8PersistentCallbackInterface(V8CallbackInterface*);
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_LEGACY_CALLBACK_INTERFACE_H_

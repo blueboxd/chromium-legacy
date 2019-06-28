@@ -83,13 +83,16 @@ static uint32_t GetCandidateFilterForPolicy(IceTransportPolicy policy) {
 void IceTransportAdapterImpl::StartGathering(
     const cricket::IceParameters& local_parameters,
     const cricket::ServerAddresses& stun_servers,
-    const std::vector<cricket::RelayServerConfig>& turn_servers,
+    const WebVector<cricket::RelayServerConfig>& turn_servers,
     IceTransportPolicy policy) {
   if (port_allocator_) {
     port_allocator_->set_candidate_filter(GetCandidateFilterForPolicy(policy));
-    port_allocator_->SetConfiguration(stun_servers, turn_servers,
-                                      port_allocator_->candidate_pool_size(),
-                                      port_allocator_->prune_turn_ports());
+    port_allocator_->SetConfiguration(
+        stun_servers,
+        const_cast<WebVector<cricket::RelayServerConfig>&>(turn_servers)
+            .ReleaseVector(),
+        port_allocator_->candidate_pool_size(),
+        port_allocator_->prune_turn_ports());
   }
   if (!ice_transport_channel()) {
     LOG(ERROR) << "StartGathering called, but ICE transport released";
@@ -104,7 +107,7 @@ void IceTransportAdapterImpl::StartGathering(
 void IceTransportAdapterImpl::Start(
     const cricket::IceParameters& remote_parameters,
     cricket::IceRole role,
-    const std::vector<cricket::Candidate>& initial_remote_candidates) {
+    const Vector<cricket::Candidate>& initial_remote_candidates) {
   if (!ice_transport_channel()) {
     LOG(ERROR) << "Start called, but ICE transport released";
     return;

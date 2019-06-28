@@ -75,6 +75,13 @@ chrome.fileManagerPrivate.MountCompletedStatus = {
 };
 
 /** @enum {string} */
+chrome.fileManagerPrivate.FormatFileSystemType = {
+  VFAT: 'vfat',
+  EXFAT: 'exfat',
+  NTFS: 'ntfs',
+};
+
+/** @enum {string} */
 chrome.fileManagerPrivate.TransferState = {
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
@@ -738,8 +745,11 @@ chrome.fileManagerPrivate.getSizeStats = function(volumeId, callback) {};
 /**
  * Formats a mounted volume. |volumeId| ID of the volume to be formatted.
  * @param {string} volumeId
+ * @param {chrome.fileManagerPrivate.FormatFileSystemType} filesystem
+ * @param {string} volumeLabel
  */
-chrome.fileManagerPrivate.formatVolume = function(volumeId) {};
+chrome.fileManagerPrivate.formatVolume = function(volumeId, filesystem,
+    volumeLabel) {};
 
 /**
  * Renames a mounted volume. |volumeId| ID of the volume to be renamed to

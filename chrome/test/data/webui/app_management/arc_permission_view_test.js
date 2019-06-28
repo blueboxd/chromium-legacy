@@ -38,6 +38,8 @@ suite('<app-management-arc-permission-view>', () => {
         ArcPermissionType.CAMERA,
         ArcPermissionType.LOCATION,
         ArcPermissionType.NOTIFICATIONS,
+        ArcPermissionType.CONTACTS,
+        ArcPermissionType.STORAGE,
       ])
     };
 
@@ -115,5 +117,7 @@ suite('<app-management-arc-permission-view>', () => {
     await checkPermissionItemOnClick('LOCATION');
     await checkPermissionItemOnClick('CAMERA');
     await checkPermissionItemOnClick('NOTIFICATIONS');
+    await checkPermissionItemOnClick('CONTACTS');
+    await checkPermissionItemOnClick('STORAGE');
   });
 });

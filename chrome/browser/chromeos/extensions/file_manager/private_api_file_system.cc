@@ -705,7 +705,9 @@ FileManagerPrivateFormatVolumeFunction::Run() {
     return RespondNow(Error("Volume not found"));
 
   DiskMountManager::GetInstance()->FormatMountedDevice(
-      volume->mount_path().AsUTF8Unsafe());
+      volume->mount_path().AsUTF8Unsafe(),
+      api::file_manager_private::ToString(params->filesystem),
+      params->volume_label);
   return RespondNow(NoArguments());
 }
 

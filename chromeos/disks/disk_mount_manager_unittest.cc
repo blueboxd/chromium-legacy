@@ -37,6 +37,10 @@ const char kReadOnlyDeviceMountPath[] = "/device/read_only_mount_path";
 const char kReadOnlyDeviceSourcePath[] = "/device/read_only_source_path";
 const char kFileSystemType1[] = "ntfs";
 const char kFileSystemType2[] = "exfat";
+const char kFormatFileSystemType1[] = "vfat";
+const char kFormatFileSystemType2[] = "exfat";
+const char kFormatLabel1[] = "UNTITLED";
+const char kFormatLabel2[] = "TESTUSB";
 
 // Holds information needed to create a Disk instance.
 struct TestDiskInfo {
@@ -587,7 +591,8 @@ class DiskMountManagerTest : public testing::Test {
 // Tests that the observer gets notified on attempt to format non existent mount
 // point.
 TEST_F(DiskMountManagerTest, Format_NotMounted) {
-  DiskMountManager::GetInstance()->FormatMountedDevice("/mount/non_existent");
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      "/mount/non_existent", kFormatFileSystemType1, kFormatLabel1);
   ASSERT_EQ(1U, observer_->GetEventCount());
   EXPECT_EQ(FormatEvent(DiskMountManager::FORMAT_COMPLETED,
                         chromeos::FORMAT_ERROR_UNKNOWN, "/mount/non_existent"),
@@ -598,7 +603,7 @@ TEST_F(DiskMountManagerTest, Format_NotMounted) {
 // point.
 TEST_F(DiskMountManagerTest, Format_ReadOnly) {
   DiskMountManager::GetInstance()->FormatMountedDevice(
-      kReadOnlyDeviceMountPath);
+      kReadOnlyDeviceMountPath, kFormatFileSystemType1, kFormatLabel1);
   ASSERT_EQ(1U, observer_->GetEventCount());
   EXPECT_EQ(FormatEvent(DiskMountManager::FORMAT_COMPLETED,
                         chromeos::FORMAT_ERROR_DEVICE_NOT_ALLOWED,
@@ -608,7 +613,8 @@ TEST_F(DiskMountManagerTest, Format_ReadOnly) {
 
 // Tests that it is not possible to format archive mount point.
 TEST_F(DiskMountManagerTest, Format_Archive) {
-  DiskMountManager::GetInstance()->FormatMountedDevice("/archive/mount_path");
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      "/archive/mount_path", kFormatFileSystemType1, kFormatLabel1);
   ASSERT_EQ(1U, observer_->GetEventCount());
   EXPECT_EQ(FormatEvent(DiskMountManager::FORMAT_COMPLETED,
                         chromeos::FORMAT_ERROR_UNKNOWN, "/archive/source_path"),
@@ -624,7 +630,8 @@ TEST_F(DiskMountManagerTest, Format_FailToUnmount) {
   fake_cros_disks_client_->MakeUnmountFail(
       chromeos::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS);
   // Start test.
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType1, kFormatLabel1);
 
   // Cros disks will respond asynchronoulsy, so let's drain the message loop.
   base::RunLoop().RunUntilIdle();
@@ -661,7 +668,8 @@ TEST_F(DiskMountManagerTest, Format_FormatFailsToStart) {
 
   fake_cros_disks_client_->MakeFormatFail();
   // Start the test.
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType1, kFormatLabel1);
 
   // Cros disks will respond asynchronoulsy, so let's drain the message loop.
   base::RunLoop().RunUntilIdle();
@@ -686,7 +694,9 @@ TEST_F(DiskMountManagerTest, Format_FormatFailsToStart) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ("vfat", fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatFileSystemType1,
+            fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
   // The device mount should be gone.
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
@@ -704,8 +714,10 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
                           base::Unretained(fake_cros_disks_client_),
                           chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS));
   // Start the test.
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType1, kFormatLabel1);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType2, kFormatLabel2);
 
   // Cros disks will respond asynchronoulsy, so let's drain the message loop.
   base::RunLoop().RunUntilIdle();
@@ -740,8 +752,9 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ("vfat",
+  EXPECT_EQ(kFormatFileSystemType1,
             fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
   // The device mount should be gone.
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
@@ -764,7 +777,8 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   // Both unmount and format device cals are successful in this test.
 
   // Start the test.
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType1, kFormatLabel1);
 
   // Wait for Unmount and Format calls to end.
   base::RunLoop().RunUntilIdle();
@@ -777,7 +791,9 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ("vfat", fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatFileSystemType1,
+            fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
   // The device should be unmounted by now.
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
@@ -813,7 +829,8 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   // Both unmount and format device cals are successful in this test.
 
   // Start the test.
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType1, kFormatLabel1);
 
   // Wait for Unmount and Format calls to end.
   base::RunLoop().RunUntilIdle();
@@ -826,7 +843,9 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ("vfat", fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatFileSystemType1,
+            fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
   // The device should be unmounted by now.
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
@@ -848,8 +867,10 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
             observer_->GetFormatEvent(2));
 
   // Disk should have new values for file system type and device label name
-  EXPECT_EQ("vfat", disks.find(kDevice1SourcePath)->second->file_system_type());
-  EXPECT_EQ("UNTITLED", disks.find(kDevice1SourcePath)->second->device_label());
+  EXPECT_EQ(kFormatFileSystemType1,
+            disks.find(kDevice1SourcePath)->second->file_system_type());
+  EXPECT_EQ(kFormatLabel1,
+            disks.find(kDevice1SourcePath)->second->device_label());
 }
 
 // Tests that it's possible to format the device twice in a row (this may not be
@@ -859,7 +880,8 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   // Each of the should be made twice (once for each formatting task).
 
   // Start the test.
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType1, kFormatLabel1);
 
   // Wait for Unmount and Format calls to end.
   base::RunLoop().RunUntilIdle();
@@ -872,7 +894,9 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ("vfat", fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatFileSystemType1,
+            fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
   // The device should be unmounted by now.
   EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
@@ -889,7 +913,8 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_TRUE(HasMountPoint(kDevice1MountPath));
 
   // Try formatting again.
-  DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
+  DiskMountManager::GetInstance()->FormatMountedDevice(
+      kDevice1MountPath, kFormatFileSystemType2, kFormatLabel2);
 
   // Wait for Unmount and Format calls to end.
   base::RunLoop().RunUntilIdle();
@@ -902,7 +927,9 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_EQ(2, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ("vfat", fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatFileSystemType2,
+            fake_cros_disks_client_->last_format_filesystem());
+  EXPECT_EQ(kFormatLabel2, fake_cros_disks_client_->last_format_label());
 
   // Simulate cros_disks reporting success.
   fake_cros_disks_client_->NotifyFormatCompleted(chromeos::FORMAT_ERROR_NONE,

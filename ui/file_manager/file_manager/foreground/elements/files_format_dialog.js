@@ -13,9 +13,10 @@ Polymer({
       value: '',
     },
 
+    /** @type {chrome.fileManagerPrivate.FormatFileSystemType} */
     formatType_: {
       type: String,
-      value: 'vfat',
+      value: chrome.fileManagerPrivate.FormatFileSystemType.VFAT,
     },
 
     space_used_: {
@@ -31,7 +32,8 @@ Polymer({
 
   /** @private */
   format_: function() {
-    // TODO(austinct): add file manager private call
+    chrome.fileManagerPrivate.formatVolume(
+        this.volumeInfo_.volumeId, this.formatType_, this.label_);
     this.$.dialog.close();
   },
 
@@ -41,7 +43,7 @@ Polymer({
    */
   showModal: function(volumeInfo) {
     this.label_ = '';
-    this.formatType_ = 'vfat';
+    this.formatType_ = chrome.fileManagerPrivate.FormatFileSystemType.VFAT;
     this.space_used_ = '';
 
     this.volumeInfo_ = volumeInfo;

@@ -100,7 +100,8 @@ TEST(RTCStatsTest, IncludeAllMembers) {
 
   // Include both standard and non-standard member.
   RTCStatsReport report(webrtc_report.get(),
-                        {webrtc::NonStandardGroupId::kGroupIdForTesting});
+                        std::vector<webrtc::NonStandardGroupId>{
+                            webrtc::NonStandardGroupId::kGroupIdForTesting});
   std::unique_ptr<blink::WebRTCStats> stats = report.GetStats("id");
   ASSERT_NE(nullptr, stats);
   ASSERT_EQ(2u, stats->MembersCount());
@@ -123,7 +124,8 @@ TEST(RTCStatsTest, CopyHandle) {
   ASSERT_EQ(1u, standard_members_copy->GetStats("id")->MembersCount());
 
   RTCStatsReport all_members_report(
-      webrtc_report.get(), {webrtc::NonStandardGroupId::kGroupIdForTesting});
+      webrtc_report.get(), std::vector<webrtc::NonStandardGroupId>{
+                               webrtc::NonStandardGroupId::kGroupIdForTesting});
   std::unique_ptr<blink::WebRTCStatsReport> all_members_copy =
       all_members_report.CopyHandle();
   ASSERT_EQ(2u, all_members_report.GetStats("id")->MembersCount());

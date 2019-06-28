@@ -647,7 +647,9 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
         fileManager.ui.confirmDialog.show(
             loadTimeData.getString('FORMATTING_WARNING'),
             chrome.fileManagerPrivate.formatVolume.bind(
-                null, volumeInfo.volumeId),
+                null, volumeInfo.volumeId,
+                chrome.fileManagerPrivate.FormatFileSystemType.VFAT,
+                'UNTITLED'),
             null, null);
       }
     }

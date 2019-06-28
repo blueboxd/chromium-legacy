@@ -208,9 +208,4 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(bindings::V8ValueO
   }
 }
 
-v8::Maybe<uint16_t> V8PersistentCallbackInterface<V8TestLegacyCallbackInterface>::acceptNode(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, Node* node) {
-  return Proxy()->acceptNode(
-      callback_this_value, node);
-}
-
 }  // namespace blink

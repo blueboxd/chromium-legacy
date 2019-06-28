@@ -51,7 +51,7 @@ class DataReductionProxyChromeSettingsTest
     net::ProxyList proxies;
     proxies.SetFromPacString(kProxyPac);
     test_context_->data_reduction_proxy_service()->SetConfiguredProxiesOnUI(
-        proxies);
+        proxies, {});
     test_context_->test_network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_4G);

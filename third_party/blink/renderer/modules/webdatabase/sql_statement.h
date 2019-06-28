@@ -63,13 +63,13 @@ class SQLStatement final : public GarbageCollected<SQLStatement> {
     }
 
     explicit OnSuccessV8Impl(V8SQLStatementCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+        : callback_(callback) {}
 
     void Trace(blink::Visitor*) override;
     bool OnSuccess(SQLTransaction*, SQLResultSet*) override;
 
    private:
-    Member<V8PersistentCallbackInterface<V8SQLStatementCallback>> callback_;
+    Member<V8SQLStatementCallback> callback_;
   };
 
   class OnErrorCallback : public GarbageCollectedFinalized<OnErrorCallback> {
@@ -89,14 +89,13 @@ class SQLStatement final : public GarbageCollected<SQLStatement> {
     }
 
     explicit OnErrorV8Impl(V8SQLStatementErrorCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+        : callback_(callback) {}
 
     void Trace(blink::Visitor*) override;
     bool OnError(SQLTransaction*, SQLError*) override;
 
    private:
-    Member<V8PersistentCallbackInterface<V8SQLStatementErrorCallback>>
-        callback_;
+    Member<V8SQLStatementErrorCallback> callback_;
   };
 
   static SQLStatement* Create(Database*, OnSuccessCallback*, OnErrorCallback*);

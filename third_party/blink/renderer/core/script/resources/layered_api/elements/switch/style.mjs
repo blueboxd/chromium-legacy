@@ -87,6 +87,30 @@ export function styleSheetFactory() {
 :host([on]) #track {
   border: ${TRACK_BORDER_WIDTH} solid ${COLOR_ON};
 }
+
+:host(:focus) {
+  outline-offset: 4px;
+}
+
+:host(:focus) #track {
+  box-shadow: 0 0 0 2px #f8f8f8;
+}
+
+:host([on]:focus) #track {
+  box-shadow: 0 0 0 2px #dddddd;
+}
+
+:host(:focus) #thumb {
+  border: 2px solid black;
+}
+
+:host([on]:focus) #thumb {
+  border: 2px solid ${COLOR_ON};
+}
+
+:host(:not(:focus-visible):focus) {
+  outline: none;
+}
 `);
     }
     return styleSheet;

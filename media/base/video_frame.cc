@@ -971,6 +971,12 @@ const std::vector<base::ScopedFD>& VideoFrame::DmabufFds() const {
 bool VideoFrame::HasDmaBufs() const {
   return dmabuf_fds_->size() > 0;
 }
+
+bool VideoFrame::IsSameDmaBufsAs(const VideoFrame& frame) const {
+  return storage_type_ == STORAGE_DMABUFS &&
+         frame.storage_type_ == STORAGE_DMABUFS &&
+         &DmabufFds() == &frame.DmabufFds();
+}
 #endif
 
 void VideoFrame::AddReadOnlySharedMemoryRegion(

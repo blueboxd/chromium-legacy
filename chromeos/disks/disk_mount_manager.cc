@@ -32,8 +32,6 @@ namespace disks {
 
 namespace {
 
-constexpr char kDefaultFormattedDeviceName[] = "UNTITLED";
-constexpr char kDefaultFormatVFAT[] = "vfat";
 constexpr char kDeviceNotFound[] = "Device could not be found";
 DiskMountManager* g_disk_mount_manager = NULL;
 
@@ -136,7 +134,9 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   // DiskMountManager override.
-  void FormatMountedDevice(const std::string& mount_path) override {
+  void FormatMountedDevice(const std::string& mount_path,
+                           const std::string& filesystem,
+                           const std::string& label) override {
     MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
     if (mount_point == mount_points_.end()) {
       LOG(ERROR) << "Mount point with path \"" << mount_path << "\" not found.";
@@ -160,7 +160,8 @@ class DiskMountManagerImpl : public DiskMountManager,
 
     UnmountPath(disk->second->mount_path(), UNMOUNT_OPTIONS_NONE,
                 base::BindOnce(&DiskMountManagerImpl::OnUnmountPathForFormat,
-                               weak_ptr_factory_.GetWeakPtr(), device_path));
+                               weak_ptr_factory_.GetWeakPtr(), device_path,
+                               filesystem, label));
   }
 
   void RenameMountedDevice(const std::string& mount_path,
@@ -511,25 +512,28 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   void OnUnmountPathForFormat(const std::string& device_path,
+                              const std::string& filesystem,
+                              const std::string& label,
                               MountError error_code) {
     if (error_code == MOUNT_ERROR_NONE &&
         disks_.find(device_path) != disks_.end()) {
-      FormatUnmountedDevice(device_path);
+      FormatUnmountedDevice(device_path, filesystem, label);
     } else {
       OnFormatCompleted(FORMAT_ERROR_UNKNOWN, device_path);
     }
   }
 
   // Starts device formatting.
-  void FormatUnmountedDevice(const std::string& device_path) {
+  void FormatUnmountedDevice(const std::string& device_path,
+                             const std::string& filesystem,
+                             const std::string& label) {
     DiskMap::const_iterator disk = disks_.find(device_path);
     DCHECK(disk != disks_.end() && disk->second->mount_path().empty());
 
-    pending_format_changes_[device_path] = {kDefaultFormatVFAT,
-                                            kDefaultFormattedDeviceName};
+    pending_format_changes_[device_path] = {filesystem, label};
 
     cros_disks_client_->Format(
-        device_path, kDefaultFormatVFAT, kDefaultFormattedDeviceName,
+        device_path, filesystem, label,
         base::BindOnce(&DiskMountManagerImpl::OnFormatStarted,
                        weak_ptr_factory_.GetWeakPtr(), device_path));
   }

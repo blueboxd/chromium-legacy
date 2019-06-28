@@ -113,10 +113,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                       server_configuration,
                   const blink::WebMediaConstraints& options) override;
 
-  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebMediaConstraints& options) override;
-  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebRTCOfferOptions& options) override;
 
@@ -154,7 +154,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(blink::WebRTCStatsReportCallback callback,
-                const std::vector<webrtc::NonStandardGroupId>&
+                const blink::WebVector<webrtc::NonStandardGroupId>&
                     exposed_group_ids) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,

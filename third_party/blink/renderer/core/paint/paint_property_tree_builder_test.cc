@@ -6795,4 +6795,45 @@ TEST_P(PaintPropertyTreeBuilderTest, SetViewportScrollingBits) {
   }
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, IsAffectedByOuterViewportBoundsDelta) {
+  SetBodyInnerHTML(R"HTML(
+    <style>div { will-change: transform; position: fixed; }</style>
+    <div id="fixed1"></div>
+    <div id="fixed2" style="right: 0"></div>
+    <div id="fixed3" style="bottom: 0"></div>
+    <div id="fixed4" style="bottom: 20px"></div>
+    <div style="transform: translateX(100px)">
+      <div id="fixed5" style="bottom: 0"></div>
+    </div>
+    <iframe></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+     <div id="fixed"
+          style="will-change: transform; position: fixed; bottom: 0"></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto check_result = [&](const ObjectPaintProperties* properties,
+                          bool expected) {
+    ASSERT_TRUE(properties);
+    ASSERT_TRUE(properties->PaintOffsetTranslation());
+    EXPECT_EQ(expected, properties->PaintOffsetTranslation()
+                            ->IsAffectedByOuterViewportBoundsDelta());
+  };
+
+  check_result(PaintPropertiesForElement("fixed1"), false);
+  check_result(PaintPropertiesForElement("fixed2"), false);
+  check_result(PaintPropertiesForElement("fixed3"), true);
+  check_result(PaintPropertiesForElement("fixed4"), true);
+  check_result(PaintPropertiesForElement("fixed5"), false);
+
+  // Fixed elements in subframes are not affected by viewport.
+  check_result(ChildDocument()
+                   .getElementById("fixed")
+                   ->GetLayoutObject()
+                   ->FirstFragment()
+                   .PaintProperties(),
+               false);
+}
+
 }  // namespace blink

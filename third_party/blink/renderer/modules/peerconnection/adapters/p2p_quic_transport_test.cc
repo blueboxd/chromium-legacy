@@ -18,6 +18,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_config_factory_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_stream_factory_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_packet_transport.h"
@@ -402,10 +403,10 @@ class ProofSourceStub : public quic::ProofSource {
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
       const std::string& hostname) override {
-    std::vector<std::string> certs;
-    certs.push_back("Test cert");
+    WebVector<std::string> certs;
+    certs.emplace_back("Test cert");
     return quic::QuicReferenceCountedPointer<Chain>(
-        new ProofSource::Chain(certs));
+        new ProofSource::Chain(certs.ReleaseVector()));
   }
   void ComputeTlsSignature(
       const quic::QuicSocketAddress& server_address,
@@ -802,13 +803,13 @@ TEST_F(P2PQuicTransportTest, HandshakeConnectsPeersWithRemoteCertificates) {
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
   // Start the handshake with the remote fingerprints.
-  std::vector<std::unique_ptr<rtc::SSLFingerprint>> server_fingerprints;
+  Vector<std::unique_ptr<rtc::SSLFingerprint>> server_fingerprints;
   server_fingerprints.push_back(rtc::SSLFingerprint::CreateUnique(
       "sha-256", *server_peer()->certificate()->identity()));
   server_peer()->quic_transport()->Start(
       P2PQuicTransport::StartConfig(std::move(server_fingerprints)));
 
-  std::vector<std::unique_ptr<rtc::SSLFingerprint>> client_fingerprints;
+  Vector<std::unique_ptr<rtc::SSLFingerprint>> client_fingerprints;
   client_fingerprints.push_back(rtc::SSLFingerprint::CreateUnique(
       "sha-256", *client_peer()->certificate()->identity()));
   client_peer()->quic_transport()->Start(

@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_ICE_TRANSPORT_ADAPTER_IMPL_H_
 
 #include <memory>
-#include <vector>
 
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
 #include "third_party/webrtc/api/ice_transport_interface.h"
 
@@ -39,15 +39,14 @@ class IceTransportAdapterImpl final : public IceTransportAdapter,
   ~IceTransportAdapterImpl() override;
 
   // IceTransportAdapter overrides.
-  void StartGathering(
-      const cricket::IceParameters& local_parameters,
-      const cricket::ServerAddresses& stun_servers,
-      const std::vector<cricket::RelayServerConfig>& turn_servers,
-      IceTransportPolicy policy) override;
-  void Start(const cricket::IceParameters& remote_parameters,
-             cricket::IceRole role,
-             const std::vector<cricket::Candidate>& initial_remote_candidates)
-      override;
+  void StartGathering(const cricket::IceParameters& local_parameters,
+                      const cricket::ServerAddresses& stun_servers,
+                      const WebVector<cricket::RelayServerConfig>& turn_servers,
+                      IceTransportPolicy policy) override;
+  void Start(
+      const cricket::IceParameters& remote_parameters,
+      cricket::IceRole role,
+      const Vector<cricket::Candidate>& initial_remote_candidates) override;
   void HandleRemoteRestart(
       const cricket::IceParameters& new_remote_parameters) override;
   void AddRemoteCandidate(const cricket::Candidate& candidate) override;

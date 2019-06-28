@@ -425,6 +425,19 @@ TEST(VideoFrame, WrapExternalDmabufs) {
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);
   EXPECT_EQ(frame->timestamp(), timestamp);
+
+  // Wrapped DMABUF frames must share the same memory as their wrappee.
+  auto wrapped_frame = VideoFrame::WrapVideoFrame(
+      *frame, frame->format(), visible_rect, visible_rect.size());
+  ASSERT_NE(wrapped_frame, nullptr);
+  ASSERT_EQ(wrapped_frame->IsSameDmaBufsAs(*frame), true);
+
+  // Multi-level wrapping should share same memory as well.
+  auto wrapped_frame2 = VideoFrame::WrapVideoFrame(
+      *wrapped_frame, frame->format(), visible_rect, visible_rect.size());
+  ASSERT_NE(wrapped_frame2, nullptr);
+  ASSERT_EQ(wrapped_frame2->IsSameDmaBufsAs(*wrapped_frame), true);
+  ASSERT_EQ(wrapped_frame2->IsSameDmaBufsAs(*frame), true);
 }
 #endif
 

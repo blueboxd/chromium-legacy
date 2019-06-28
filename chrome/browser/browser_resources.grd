@@ -216,11 +216,12 @@
         <include name="IDR_APP_MANAGEMENT_CHROME_APP_PERMISSION_VIEW_JS" file="resources\app_management\chrome_app_permission_view.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_CONSTANTS_HTML" file="resources\app_management\constants.html" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_CONSTANTS_JS" file="resources\app_management\constants.js" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_HTML" file="resources\app_management\expandable_app_list.html" type="BINDATA"/>
-        <include name="IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_JS" file="resources\app_management\expandable_app_list.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_DOM_SWITCH_HTML" file="resources\app_management\dom_switch.html" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_DOM_SWITCH_JS" file="resources\app_management\dom_switch.js" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_HTML" file="resources\app_management\expandable_app_list.html" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_EXPANDABLE_APP_LIST_JS" file="resources\app_management\expandable_app_list.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS" file="resources\app_management\fake_page_handler.js" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_ICONS_HTML" file="resources\app_management\icons.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_INDEX_HTML" file="resources\app_management\index.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_HTML" file="resources\app_management\main_view.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_JS" file="resources\app_management\main_view.js" type="BINDATA" />

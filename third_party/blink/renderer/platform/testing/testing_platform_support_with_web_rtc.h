@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
@@ -28,10 +27,10 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&,
                   const WebMediaConstraints&) override;
 
-  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest&,
       const WebMediaConstraints&) override;
-  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest&,
       const WebRTCOfferOptions&) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,
@@ -54,7 +53,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       const webrtc::PeerConnectionInterface::RTCConfiguration&) override;
   void GetStats(const WebRTCStatsRequest&) override;
   void GetStats(WebRTCStatsReportCallback,
-                const std::vector<webrtc::NonStandardGroupId>&) override;
+                const WebVector<webrtc::NonStandardGroupId>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) override;

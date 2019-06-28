@@ -195,7 +195,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Crypto certificate information. Note that currently the handshake is
   // insecure and these are not used...
   rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
-  std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints_;
+  Vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints_;
 
   bool pre_shared_key_set_ = false;
 

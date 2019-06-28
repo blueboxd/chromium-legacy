@@ -689,7 +689,7 @@ void PostToCompleteRequest(AsyncOperationAction action,
 
 class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
  public:
-  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest& request,
       const WebMediaConstraints&) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
@@ -697,7 +697,7 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
     return {};
   }
 
-  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest& request,
       const WebRTCOfferOptions&) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(

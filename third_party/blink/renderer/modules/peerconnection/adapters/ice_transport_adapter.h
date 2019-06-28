@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_ICE_TRANSPORT_ADAPTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_ICE_TRANSPORT_ADAPTER_H_
 
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/p2p/base/p2p_transport_channel.h"
 
 namespace blink {
@@ -64,14 +66,14 @@ class IceTransportAdapter {
   virtual void StartGathering(
       const cricket::IceParameters& local_parameters,
       const cricket::ServerAddresses& stun_servers,
-      const std::vector<cricket::RelayServerConfig>& turn_servers,
+      const WebVector<cricket::RelayServerConfig>& turn_servers,
       IceTransportPolicy policy) = 0;
 
   // Start ICE connectivity checks with the given initial remote candidates.
   virtual void Start(
       const cricket::IceParameters& remote_parameters,
       cricket::IceRole role,
-      const std::vector<cricket::Candidate>& initial_remote_candidates) = 0;
+      const Vector<cricket::Candidate>& initial_remote_candidates) = 0;
 
   // Handle a remote ICE restart. This changes the remote parameters and clears
   // all remote candidates.

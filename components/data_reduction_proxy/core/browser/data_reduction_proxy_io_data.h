@@ -164,6 +164,8 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   void AddThrottleConfigObserver(
       mojom::DataReductionProxyThrottleConfigObserverPtr observer) override;
   void Clone(mojom::DataReductionProxyRequest request) override;
+  void AddThrottleConfigObserverInfo(
+      mojom::DataReductionProxyThrottleConfigObserverPtrInfo observer);
 
  private:
   friend class TestDataReductionProxyIOData;

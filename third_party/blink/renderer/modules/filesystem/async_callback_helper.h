@@ -29,12 +29,10 @@ class AsyncCallbackHelper {
       return base::OnceCallback<void(CallbackParam*)>();
 
     auto success_callback_wrapper = WTF::Bind(
-        [](V8PersistentCallbackInterface<V8Callback>* persistent_callback,
-           CallbackParam* param) {
+        [](V8Callback* persistent_callback, CallbackParam* param) {
           persistent_callback->InvokeAndReportException(nullptr, param);
         },
-        WrapPersistentIfNeeded(
-            ToV8PersistentCallbackInterface(success_callback)));
+        WrapPersistent(success_callback));
     return success_callback_wrapper;
   }
 
@@ -44,13 +42,11 @@ class AsyncCallbackHelper {
       return base::OnceCallback<void(base::File::Error)>();
 
     return WTF::Bind(
-        [](V8PersistentCallbackInterface<V8ErrorCallback>* persistent_callback,
-           base::File::Error error) {
+        [](V8ErrorCallback* persistent_callback, base::File::Error error) {
           persistent_callback->InvokeAndReportException(
               nullptr, file_error::CreateDOMException(error));
         },
-        WrapPersistentIfNeeded(
-            ToV8PersistentCallbackInterface(error_callback)));
+        WrapPersistent(error_callback));
   }
 
   // The method below is not templatized, to be used exclusively for
@@ -61,11 +57,10 @@ class AsyncCallbackHelper {
       return VoidCallbacks::SuccessCallback();
 
     auto success_callback_wrapper = WTF::Bind(
-        [](V8PersistentCallbackInterface<V8VoidCallback>* persistent_callback) {
+        [](V8VoidCallback* persistent_callback) {
           persistent_callback->InvokeAndReportException(nullptr);
         },
-        WrapPersistentIfNeeded(
-            ToV8PersistentCallbackInterface(success_callback)));
+        WrapPersistent(success_callback));
     return success_callback_wrapper;
   }
 };

@@ -284,7 +284,7 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
   DCHECK(packet_transport_);
   DCHECK_GT(stream_delegate_read_buffer_size_, 0u);
   DCHECK_GT(stream_write_buffer_size_, 0u);
-  if (!p2p_transport_config.certificates.empty()) {
+  if (!p2p_transport_config.certificates.IsEmpty()) {
     // TODO(https://crbug.com/874296): The web API accepts multiple
     // certificates, and we might want to pass these down to let QUIC decide on
     // what to use.
@@ -331,7 +331,7 @@ void P2PQuicTransportImpl::Start(StartConfig config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Either the remote fingerprints are being verified or a pre shared key is
   // set.
-  DCHECK((certificate_ && !config.remote_fingerprints.empty()) ||
+  DCHECK((certificate_ && !config.remote_fingerprints.IsEmpty()) ||
          !config.pre_shared_key.empty());
   DCHECK(!crypto_stream_);
 

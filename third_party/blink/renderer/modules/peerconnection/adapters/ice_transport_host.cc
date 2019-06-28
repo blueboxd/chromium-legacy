@@ -52,7 +52,7 @@ scoped_refptr<base::SingleThreadTaskRunner> IceTransportHost::host_thread()
 void IceTransportHost::StartGathering(
     const cricket::IceParameters& local_parameters,
     const cricket::ServerAddresses& stun_servers,
-    const std::vector<cricket::RelayServerConfig>& turn_servers,
+    const WebVector<cricket::RelayServerConfig>& turn_servers,
     IceTransportPolicy policy) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   transport_->StartGathering(local_parameters, stun_servers, turn_servers,
@@ -62,7 +62,7 @@ void IceTransportHost::StartGathering(
 void IceTransportHost::Start(
     const cricket::IceParameters& remote_parameters,
     cricket::IceRole role,
-    const std::vector<cricket::Candidate>& initial_remote_candidates) {
+    const Vector<cricket::Candidate>& initial_remote_candidates) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   transport_->Start(remote_parameters, role, initial_remote_candidates);
 }

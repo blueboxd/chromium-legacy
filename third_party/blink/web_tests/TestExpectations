@@ -6079,6 +6079,7 @@ crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.http
 
 # Allow failure until its appearance gets stable.
 crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
+crbug.com/972476 std-switch/switch-appearance-on-focus.html [ Failure ]
 
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]

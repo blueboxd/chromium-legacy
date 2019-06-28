@@ -72,8 +72,4 @@ ScriptState* CallbackInterfaceBase::CallbackRelevantScriptStateOrThrowException(
   return nullptr;
 }
 
-void V8PersistentCallbackInterfaceBase::Trace(blink::Visitor* visitor) {
-  visitor->Trace(callback_interface_);
-}
-
 }  // namespace blink

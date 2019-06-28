@@ -75,14 +75,13 @@ class IceTransportProxy final {
   scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
   // These methods are proxied to an IceTransportAdapter instance.
-  void StartGathering(
-      const cricket::IceParameters& local_parameters,
-      const cricket::ServerAddresses& stun_servers,
-      const std::vector<cricket::RelayServerConfig>& turn_servers,
-      IceTransportPolicy policy);
+  void StartGathering(const cricket::IceParameters& local_parameters,
+                      const cricket::ServerAddresses& stun_servers,
+                      const WebVector<cricket::RelayServerConfig>& turn_servers,
+                      IceTransportPolicy policy);
   void Start(const cricket::IceParameters& remote_parameters,
              cricket::IceRole role,
-             const std::vector<cricket::Candidate>& initial_remote_candidates);
+             const Vector<cricket::Candidate>& initial_remote_candidates);
   void HandleRemoteRestart(const cricket::IceParameters& new_remote_parameters);
   void AddRemoteCandidate(const cricket::Candidate& candidate);
 

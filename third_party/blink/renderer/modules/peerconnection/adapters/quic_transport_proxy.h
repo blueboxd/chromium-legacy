@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_QUIC_TRANSPORT_PROXY_H_
 
 #include <unordered_map>
-#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace blink {

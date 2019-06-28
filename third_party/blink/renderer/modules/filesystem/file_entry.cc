@@ -46,15 +46,13 @@ void FileEntry::createWriter(V8FileWriterCallback* success_callback,
   auto success_callback_wrapper =
       success_callback
           ? WTF::Bind(
-                [](V8PersistentCallbackInterface<V8FileWriterCallback>*
-                       persistent_callback,
+                [](V8FileWriterCallback* persistent_callback,
                    FileWriterBase* file_writer) {
                   // The call sites must pass a FileWriter in |file_writer|.
                   persistent_callback->InvokeAndReportException(
                       nullptr, static_cast<FileWriter*>(file_writer));
                 },
-                WrapPersistentIfNeeded(
-                    ToV8PersistentCallbackInterface(success_callback)))
+                WrapPersistent(success_callback))
           : FileWriterCallbacks::SuccessCallback();
   auto error_callback_wrapper =
       AsyncCallbackHelper::ErrorCallback(error_callback);

@@ -8,12 +8,12 @@
 // This file defines specializations for the CrossThreadCopier that allow WebRTC
 // types to be passed across threads using their copy constructors.
 
-#include <memory>
 #include <set>
-#include <vector>
 
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace cricket {
@@ -23,7 +23,6 @@ struct RelayServerConfig;
 }  // namespace cricket
 
 namespace rtc {
-class RTCCertificate;
 class SocketAddress;
 }
 
@@ -46,13 +45,6 @@ struct CrossThreadCopier<std::string>
   STATIC_ONLY(CrossThreadCopier);
 };
 
-template <typename T, typename Allocator>
-struct CrossThreadCopier<std::vector<std::unique_ptr<T>, Allocator>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = std::vector<std::unique_ptr<T>, Allocator>;
-  static Type Copy(Type vector) { return std::move(vector); }
-};
-
 template <>
 struct CrossThreadCopier<cricket::IceParameters>
     : public CrossThreadCopierPassThrough<cricket::IceParameters> {
@@ -66,28 +58,21 @@ struct CrossThreadCopier<std::set<rtc::SocketAddress>>
 };
 
 template <>
-struct CrossThreadCopier<std::vector<cricket::RelayServerConfig>>
+struct CrossThreadCopier<blink::WebVector<cricket::RelayServerConfig>>
     : public CrossThreadCopierPassThrough<
-          std::vector<cricket::RelayServerConfig>> {
+          blink::WebVector<cricket::RelayServerConfig>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
 template <>
-struct CrossThreadCopier<std::vector<cricket::Candidate>>
-    : public CrossThreadCopierPassThrough<std::vector<cricket::Candidate>> {
+struct CrossThreadCopier<Vector<cricket::Candidate>>
+    : public CrossThreadCopierPassThrough<Vector<cricket::Candidate>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
 template <>
 struct CrossThreadCopier<cricket::Candidate>
     : public CrossThreadCopierPassThrough<cricket::Candidate> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-template <>
-struct CrossThreadCopier<std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>>
-    : public CrossThreadCopierPassThrough<
-          std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

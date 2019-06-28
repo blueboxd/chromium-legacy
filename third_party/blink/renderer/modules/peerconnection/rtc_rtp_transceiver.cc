@@ -195,8 +195,8 @@ bool RTCRtpTransceiver::FiredDirectionHasRecv() const {
 void RTCRtpTransceiver::setCodecPreferences(
     const HeapVector<Member<RTCRtpCodecCapability>>& codecs,
     ExceptionState& exception_state) {
-  std::vector<webrtc::RtpCodecCapability> codec_preferences;
-  codec_preferences.reserve(codecs.size());
+  Vector<webrtc::RtpCodecCapability> codec_preferences;
+  codec_preferences.ReserveCapacity(codecs.size());
   for (const auto& codec : codecs) {
     codec_preferences.emplace_back();
     auto& webrtc_codec = codec_preferences.back();

@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="browser_proxy.html">
+<link rel="import" href="icons.html">
 <link rel="import" href="metadata_view.html">
 <link rel="import" href="permission_item.html">
 <link rel="import" href="permission_view_header.html">
@@ -39,6 +40,14 @@
           <app-management-permission-item class="subpermission-row"
             icon="cr:mic" permission-label="$i18n{microphone}"
             permission-type="MICROPHONE">
+          </app-management-permission-item>
+          <app-management-permission-item class="subpermission-row"
+            icon="app-management:contacts"
+            permission-label="$i18n{contacts}" permission-type="CONTACTS">
+          </app-management-permission-item>
+          <app-management-permission-item class="subpermission-row"
+            icon="app-management:storage"
+            permission-label="$i18n{storage}" permission-type="STORAGE">
           </app-management-permission-item>
           <div class="subpermission-row separated-row clickable"
             on-click="onClickNativeSettingsButton_">

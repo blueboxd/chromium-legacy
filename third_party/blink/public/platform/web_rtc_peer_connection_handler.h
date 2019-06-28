@@ -87,10 +87,10 @@ class WebRTCPeerConnectionHandler {
   // create new transceivers or update the direction of existing transceivers.
   // https://w3c.github.io/webrtc-pc/#legacy-configuration-extensions
   // Plan B: Returns an empty list.
-  virtual std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  virtual WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest&,
       const WebMediaConstraints&) = 0;
-  virtual std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  virtual WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest&,
       const WebRTCOfferOptions&) = 0;
   virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,
@@ -126,7 +126,7 @@ class WebRTCPeerConnectionHandler {
   // third_party/webrtc/api/stats/.  These will replace the old stats collection
   // API when the new API has matured enough.
   virtual void GetStats(WebRTCStatsReportCallback,
-                        const std::vector<webrtc::NonStandardGroupId>&) = 0;
+                        const WebVector<webrtc::NonStandardGroupId>&) = 0;
   virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;

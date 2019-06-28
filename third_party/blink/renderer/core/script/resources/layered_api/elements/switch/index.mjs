@@ -45,6 +45,14 @@ export class StdSwitchElement extends HTMLElement {
     }
   }
 
+  connectedCallback() {
+    // TODO(tkent): We should not add tabindex attribute.
+    // https://github.com/w3c/webcomponents/issues/762
+    if (!this.hasAttribute('tabindex')) {
+      this.setAttribute('tabindex', '0');
+    }
+  }
+
   // TODO(tkent): Make this private.
   _initializeDOM() {
     let factory = this.ownerDocument;
@@ -95,3 +103,4 @@ customElements.define('std-switch', StdSwitchElement);
 delete StdSwitchElement.formAssociated;
 delete StdSwitchElement.observedAttributes;
 delete StdSwitchElement.prototype.attributeChangedCallback;
+delete StdSwitchElement.prototype.connectedCallback;

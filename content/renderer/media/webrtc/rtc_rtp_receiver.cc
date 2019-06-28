@@ -170,7 +170,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
 
   void GetStats(
       blink::WebRTCStatsReportCallback callback,
-      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     signaling_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCRtpReceiverInternal::GetStatsOnSignalingThread, this,
@@ -196,7 +196,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
 
   void GetStatsOnSignalingThread(
       blink::WebRTCStatsReportCallback callback,
-      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
         webrtc_receiver_.get(),
         RTCStatsCollectorCallbackImpl::Create(
@@ -298,7 +298,7 @@ RTCRtpReceiver::GetSources() {
 
 void RTCRtpReceiver::GetStats(
     blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   internal_->GetStats(std::move(callback), exposed_group_ids);
 }
 

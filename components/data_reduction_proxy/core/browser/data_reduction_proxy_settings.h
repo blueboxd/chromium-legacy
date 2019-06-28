@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "net/http/http_request_headers.h"
@@ -168,6 +169,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   void SetProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
   void SetConfiguredProxies(const net::ProxyList& proxies);
+  void SetProxiesForHttp(
+      const std::vector<DataReductionProxyServer>& proxies_for_http);
 
   // Returns headers to use for requests to the compression server.
   const net::HttpRequestHeaders& GetProxyRequestHeaders() const;
@@ -195,6 +198,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // InitDataReductionProxySettings has not been called.
   DataReductionProxyConfig* Config() const {
     return config_;
+  }
+
+  const std::vector<DataReductionProxyServer> proxies_for_http() const {
+    return proxies_for_http_;
   }
 
   // Permits changing the underlying |DataReductionProxyConfig| without running
@@ -316,6 +323,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   net::HttpRequestHeaders proxy_request_headers_;
 
   net::ProxyList configured_proxies_;
+  std::vector<DataReductionProxyServer> proxies_for_http_;
 
   network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client_;
 

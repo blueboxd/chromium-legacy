@@ -42,7 +42,7 @@ class InputEngine : public mojom::InputChannel {
                            mojo::PendingRemote<mojom::InputChannel> remote,
                            const std::vector<uint8_t>& extra);
 
-  // mojom::MessageChannel overrides:
+  // mojom::InputChannel overrides:
   void ProcessText(const std::string& message,
                    ProcessTextCallback callback) override;
   void ProcessMessage(const std::vector<uint8_t>& message,

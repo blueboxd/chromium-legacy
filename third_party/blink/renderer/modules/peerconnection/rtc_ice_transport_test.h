@@ -54,7 +54,7 @@ class RTCIceTransportTest : public testing::Test {
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> main_thread_;
   scoped_refptr<base::TestSimpleTaskRunner> worker_thread_;
-  std::vector<Persistent<MockEventListener>> mock_event_listeners_;
+  Vector<Persistent<MockEventListener>> mock_event_listeners_;
 };
 
 }  // namespace blink

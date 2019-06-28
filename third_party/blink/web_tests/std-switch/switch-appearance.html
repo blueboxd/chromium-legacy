@@ -6,7 +6,7 @@ std-switch {
   margin: 0.5em;
 }
 </style>
-<script type="module" async>
+<script type="module">
 import 'std:elements/switch';
 
 
@@ -16,5 +16,8 @@ import 'std:elements/switch';
 <div><std-switch><div style="display:inline-block; text-align:right; width:100%;">off</div></std-switch></div>
 <div><std-switch on></std-switch></div>
 <div><std-switch on>on</std-switch></div>
-
+<div>Focused: <std-switch id="focus"></std-switch></div>
+<script type="module">
+document.getElementById('focus').focus();
+</script>
 </body>

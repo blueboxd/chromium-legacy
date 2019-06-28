@@ -345,7 +345,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
   }
 
   if (configuration->hasIceServers()) {
-    std::vector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
+    WebVector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
     for (const RTCIceServer* ice_server : configuration->iceServers()) {
       Vector<String> url_strings;
       if (ice_server->hasURLs()) {
@@ -393,25 +393,28 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
               "required when the URL scheme is "
               "\"turn\" or \"turns\".");
         }
-        ice_servers.emplace_back();
-        auto& converted_ice_server = ice_servers.back();
+
+        auto converted_ice_server =
+            webrtc::PeerConnectionInterface::IceServer();
         converted_ice_server.urls.push_back(String(url).Utf8());
         converted_ice_server.username = username.Utf8();
         converted_ice_server.password = credential.Utf8();
+
+        ice_servers.emplace_back(std::move(converted_ice_server));
       }
     }
-    web_configuration.servers = ice_servers;
+    web_configuration.servers = ice_servers.ReleaseVector();
   }
 
   if (configuration->hasCertificates()) {
     const HeapVector<Member<RTCCertificate>>& certificates =
         configuration->certificates();
-    std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates_copy(
+    WebVector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates_copy(
         certificates.size());
     for (wtf_size_t i = 0; i < certificates.size(); ++i) {
       certificates_copy[i] = certificates[i]->Certificate();
     }
-    web_configuration.certificates = std::move(certificates_copy);
+    web_configuration.certificates = certificates_copy.ReleaseVector();
   }
 
   web_configuration.ice_candidate_pool_size =
@@ -864,7 +867,7 @@ ScriptPromise RTCPeerConnection::createOffer(
           RTCCreateSessionDescriptionOperation::kCreateOffer, this,
           success_callback, error_callback);
 
-  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers;
+  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers;
   if (offer_options) {
     if (offer_options->OfferToReceiveAudio() != -1 ||
         offer_options->OfferToReceiveVideo() != -1) {
@@ -2802,7 +2805,7 @@ void RTCPeerConnection::DidModifySctpTransport(
 }
 
 void RTCPeerConnection::DidModifyTransceivers(
-    std::vector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers,
+    WebVector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers,
     bool is_remote_description) {
   HeapVector<Member<MediaStreamTrack>> mute_tracks;
   HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>

@@ -207,6 +207,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
+#include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -2105,7 +2106,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::BindRepeating(
-          &WebDatabaseHostImpl::Create, GetID(),
+          &RenderProcessHostImpl::BindWebDatabaseHostImpl,
+          base::Unretained(this),
           base::WrapRefCounted(storage_partition_impl_->GetDatabaseTracker())),
       storage_partition_impl_->GetDatabaseTracker()->task_runner());
 
@@ -2304,6 +2306,13 @@ void RenderProcessHostImpl::BindVideoDecoderService(
   if (!video_decoder_proxy_)
     video_decoder_proxy_.reset(new VideoDecoderProxy());
   video_decoder_proxy_->Add(std::move(request));
+}
+
+void RenderProcessHostImpl::BindWebDatabaseHostImpl(
+    scoped_refptr<storage::DatabaseTracker> db_tracker,
+    blink::mojom::WebDatabaseHostRequest request) {
+  WebDatabaseHostImpl::Create(GetID(), std::move(db_tracker),
+                              std::move(request));
 }
 
 void RenderProcessHostImpl::CreateRendererHost(

@@ -47,6 +47,9 @@ enum MountCompletedStatus {
   error_invalid_archive
 };
 
+// Filesystem to format to.
+enum FormatFileSystemType { vfat, exfat, ntfs };
+
 // File transfer progress state.
 enum TransferState { in_progress, completed, failed };
 
@@ -1019,7 +1022,11 @@ interface Functions {
 
   // Formats a mounted volume.
   // |volumeId| ID of the volume to be formatted.
-  static void formatVolume(DOMString volumeId);
+  // |filesystem| Filesystem type to be formatted to.
+  // |volumeLabel| Label of the drive after formatting.
+  static void formatVolume(DOMString volumeId,
+                           FormatFileSystemType filesystem,
+                           DOMString volumeLabel);
 
   // Renames a mounted volume.
   // |volumeId| ID of the volume to be renamed.

@@ -33,7 +33,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
@@ -55,6 +54,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -293,7 +293,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidModifySctpTransport(WebRTCSctpTransportSnapshot) override;
-  void DidModifyTransceivers(std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
+  void DidModifyTransceivers(WebVector<std::unique_ptr<WebRTCRtpTransceiver>>,
                              bool is_remote_description) override;
   void DidAddRemoteDataChannel(
       scoped_refptr<webrtc::DataChannelInterface> channel) override;

@@ -477,6 +477,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns true if |frame| has DmaBufs.
   bool HasDmaBufs() const;
+
+  // Returns true if both VideoFrames are backed by DMABUF memory and point
+  // to the same set of DMABUFs, meaning that both frames use the same memory.
+  bool IsSameDmaBufsAs(const VideoFrame& frame) const;
 #endif
 
   void AddReadOnlySharedMemoryRegion(base::ReadOnlySharedMemoryRegion* region);

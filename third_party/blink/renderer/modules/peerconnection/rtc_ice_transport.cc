@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 
-#include <vector>
-
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -318,11 +316,11 @@ static cricket::IceParameters ConvertIceParameters(
   return converted_ice_parameters;
 }
 
-static std::vector<webrtc::PeerConnectionInterface::IceServer>
-ConvertIceServers(const HeapVector<Member<RTCIceServer>>& ice_servers) {
-  std::vector<webrtc::PeerConnectionInterface::IceServer> converted_ice_servers;
+static WebVector<webrtc::PeerConnectionInterface::IceServer> ConvertIceServers(
+    const HeapVector<Member<RTCIceServer>>& ice_servers) {
+  Vector<webrtc::PeerConnectionInterface::IceServer> converted_ice_servers;
   for (const RTCIceServer* ice_server : ice_servers) {
-    converted_ice_servers.push_back(ConvertIceServer(ice_server));
+    converted_ice_servers.emplace_back(ConvertIceServer(ice_server));
   }
   return converted_ice_servers;
 }
@@ -350,14 +348,14 @@ void RTCIceTransport::gather(RTCIceGatherOptions* options,
                                       "Can only call gather() once.");
     return;
   }
-  std::vector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
+  WebVector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
   if (options->hasIceServers()) {
     ice_servers = ConvertIceServers(options->iceServers());
   }
   cricket::ServerAddresses stun_servers;
   std::vector<cricket::RelayServerConfig> turn_servers;
-  webrtc::RTCErrorType error_type =
-      webrtc::ParseIceServers(ice_servers, &stun_servers, &turn_servers);
+  webrtc::RTCErrorType error_type = webrtc::ParseIceServers(
+      ice_servers.ReleaseVector(), &stun_servers, &turn_servers);
   if (error_type != webrtc::RTCErrorType::NONE) {
     ThrowExceptionFromRTCError(
         webrtc::RTCError(error_type, "Invalid ICE server URL(s)."),
@@ -417,7 +415,7 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
     if (remote_candidates_.size() > 0) {
       state_ = webrtc::IceTransportState::kChecking;
     }
-    std::vector<cricket::Candidate> initial_remote_candidates;
+    Vector<cricket::Candidate> initial_remote_candidates;
     for (RTCIceCandidate* remote_candidate : remote_candidates_) {
       // This conversion is safe since we throw an exception in
       // addRemoteCandidate on malformed ICE candidates.

@@ -48,6 +48,8 @@ cr.define('app_management', function() {
         ArcPermissionType.LOCATION,
         ArcPermissionType.MICROPHONE,
         ArcPermissionType.NOTIFICATIONS,
+        ArcPermissionType.CONTACTS,
+        ArcPermissionType.STORAGE,
       ];
 
       const permissions = {};

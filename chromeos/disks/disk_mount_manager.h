@@ -175,9 +175,14 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
   // Devices that can be mounted only in its read-only mode will be ignored.
   virtual void RemountAllRemovableDrives(chromeos::MountAccessMode mode) = 0;
 
-  // Formats Device given its mount path. Unmounts the device.
+  // Formats device mounted at |mount_path| with the given filesystem and label.
+  // Also unmounts the device before formatting.
   // Example: mount_path: /media/VOLUME_LABEL
-  virtual void FormatMountedDevice(const std::string& mount_path) = 0;
+  //          filesystem: ntfs
+  //          label: MYUSB
+  virtual void FormatMountedDevice(const std::string& mount_path,
+                                   const std::string& filesystem,
+                                   const std::string& label) = 0;
 
   // Renames Device given its mount path.
   // Example: mount_path: /media/VOLUME_LABEL

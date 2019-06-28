@@ -1045,49 +1045,4 @@ v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(b
   return v8::JustVoid();
 }
 
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethod(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
-  return Proxy()->voidMethod(
-      callback_this_value);
-}
-
-v8::Maybe<bool> V8PersistentCallbackInterface<V8TestCallbackInterface>::booleanMethod(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
-  return Proxy()->booleanMethod(
-      callback_this_value);
-}
-
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodBooleanArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, bool boolArg) {
-  return Proxy()->voidMethodBooleanArg(
-      callback_this_value, boolArg);
-}
-
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodSequenceArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
-  return Proxy()->voidMethodSequenceArg(
-      callback_this_value, sequenceArg);
-}
-
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodFloatArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, float floatArg) {
-  return Proxy()->voidMethodFloatArg(
-      callback_this_value, floatArg);
-}
-
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodTestInterfaceEmptyArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) {
-  return Proxy()->voidMethodTestInterfaceEmptyArg(
-      callback_this_value, testInterfaceEmptyArg);
-}
-
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodTestInterfaceEmptyStringArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
-  return Proxy()->voidMethodTestInterfaceEmptyStringArg(
-      callback_this_value, testInterfaceEmptyArg, stringArg);
-}
-
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::callbackWithThisValueVoidMethodStringArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const String& stringArg) {
-  return Proxy()->callbackWithThisValueVoidMethodStringArg(
-      callback_this_value, stringArg);
-}
-
-v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::customVoidMethodTestInterfaceEmptyArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) {
-  return Proxy()->customVoidMethodTestInterfaceEmptyArg(
-      callback_this_value, testInterfaceEmptyArg);
-}
-
 }  // namespace blink

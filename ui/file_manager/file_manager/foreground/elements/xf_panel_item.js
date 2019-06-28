@@ -114,11 +114,13 @@ class PanelItem extends HTMLElement {
         primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
         primaryButton.dataset.category = 'pause';
+        primaryButton.setAttribute('aria-label', '$i18n{PAUSE_LABEL}');
         buttonSpacer.insertAdjacentElement('beforebegin', primaryButton);
 
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
         secondaryButton.dataset.category = 'cancel';
+        secondaryButton.setAttribute('aria-label', '$i18n{CANCEL_LABEL}');
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;
       case this.panelTypeSummary:
@@ -126,6 +128,7 @@ class PanelItem extends HTMLElement {
         primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
         primaryButton.dataset.category = 'expand';
+        primaryButton.setAttribute('aria-label', '$i18n{EXPAND_LABEL}');
         buttonSpacer.insertAdjacentElement('afterend', primaryButton);
         break;
       case this.panelTypeDone:

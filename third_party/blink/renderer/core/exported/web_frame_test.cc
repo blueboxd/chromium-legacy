@@ -11143,40 +11143,6 @@ class WebFrameSimTest : public SimTest {
   }
 };
 
-// This test ensures that setting the "Force Ignore Zoom" accessibility setting
-// also causes us to override the initial scale set by the page so that we load
-// fully zoomed out. Since we're overriding the minimum-scale, we're making the
-// layout viewport larger. Since |position: fixed| elements are sized based on
-// the layout viewport size, they may be cut off when the page first loads.
-TEST_F(WebFrameSimTest, ForceIgnoreZoomShouldOverrideInitialScale) {
-  UseAndroidSettings();
-  WebView().MainFrameWidget()->Resize(WebSize(500, 300));
-  WebView().SetIgnoreViewportTagScaleLimits(true);
-
-  SimRequest r("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  r.Complete(R"HTML(
-      <!DOCTYPE html>
-      <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1">
-      <style>
-        body, html {
-          width: 100%;
-          height: 100%;
-          margin: 0;
-        }
-        #wide {
-          width: 1000px;
-          height: 10px;
-        }
-      </style>
-      <div id="wide"></div>
-  )HTML");
-
-  Compositor().BeginFrame();
-
-  EXPECT_EQ(0.5f, WebView().PageScaleFactor());
-}
-
 TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
   WebView().MainFrameWidget()->Resize(WebSize(500, 300));
   WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);

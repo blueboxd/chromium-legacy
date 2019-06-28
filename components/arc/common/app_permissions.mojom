@@ -11,9 +11,11 @@ module arc.mojom;
 [Extensible]
 enum AppPermission {
   CAMERA          = 0, // android.manifest.CAMERA
-  LOCATION        = 1, // android.manifest.ACCESS_FINE_LOCATION
+  LOCATION        = 1, // android.manifest.ACCESS_FINE_LOCATION or android.manifest.ACCESS_COARSE_LOCATION
   MICROPHONE      = 2, // android.manifest.RECORD_AUDIO
   NOTIFICATIONS   = 3, // Not a manifest permission
+  CONTACTS        = 4, // android.manifest.READ_CONTACTS and android.manifest.WRITE_CONTACTS
+  STORAGE         = 5, // android.manifest.WRITE_EXTERNAL_STORAGE and android.manifest.READ_EXTERNAL_STORAGE
 };
 
 struct PermissionState {

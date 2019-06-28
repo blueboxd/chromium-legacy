@@ -516,5 +516,15 @@ test.util.async.getPreferences = callback => {
   chrome.fileManagerPrivate.getPreferences(callback);
 };
 
+/**
+ * Stubs out the formatVolume() function in fileManagerPrivate.
+ *
+ * @param {Window} contentWindow Window to be affected.
+ */
+test.util.sync.overrideFormat = contentWindow => {
+  contentWindow.chrome.fileManagerPrivate.formatVolume =
+      (volumeId, filesystem, volumeLabel) => {};
+};
+
 // Register the test utils.
 test.util.registerRemoteTestUtils();

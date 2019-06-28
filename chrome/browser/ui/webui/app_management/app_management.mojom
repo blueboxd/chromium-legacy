@@ -68,6 +68,8 @@ enum ArcPermissionType {
   LOCATION        = 1,
   MICROPHONE      = 2,
   NOTIFICATIONS   = 3,
+  CONTACTS        = 4,
+  STORAGE         = 5,
 };
 
 // This enum takes the important permission values from the

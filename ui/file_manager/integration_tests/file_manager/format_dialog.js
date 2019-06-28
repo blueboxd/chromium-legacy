@@ -9,6 +9,7 @@
  */
 async function openFormatDialog(usbLabel) {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+  await remoteCall.callRemoteTestUtil('overrideFormat', appId, []);
 
   // Focus the directory tree.
   chrome.test.assertTrue(

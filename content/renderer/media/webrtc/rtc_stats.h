@@ -23,7 +23,7 @@ class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
  public:
   RTCStatsReport(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
-      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids);
+      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
   ~RTCStatsReport() override;
   std::unique_ptr<blink::WebRTCStatsReport> CopyHandle() const override;
 
@@ -36,14 +36,15 @@ class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
   const scoped_refptr<const webrtc::RTCStatsReport> stats_report_;
   webrtc::RTCStatsReport::ConstIterator it_;
   const webrtc::RTCStatsReport::ConstIterator end_;
-  std::vector<webrtc::NonStandardGroupId> exposed_group_ids_;
+  blink::WebVector<webrtc::NonStandardGroupId> exposed_group_ids_;
 };
 
 class CONTENT_EXPORT RTCStats : public blink::WebRTCStats {
  public:
-  RTCStats(const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
-           const webrtc::RTCStats* stats,
-           const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids);
+  RTCStats(
+      const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
+      const webrtc::RTCStats* stats,
+      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
   ~RTCStats() override;
 
   blink::WebString Id() const override;
@@ -103,7 +104,7 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
   static rtc::scoped_refptr<RTCStatsCollectorCallbackImpl> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       blink::WebRTCStatsReportCallback callback,
-      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids);
+      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
 
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override;
@@ -112,7 +113,7 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
   RTCStatsCollectorCallbackImpl(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       blink::WebRTCStatsReportCallback callback2,
-      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids);
+      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
   ~RTCStatsCollectorCallbackImpl() override;
 
   void OnStatsDeliveredOnMainThread(
@@ -120,7 +121,7 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   blink::WebRTCStatsReportCallback callback_;
-  std::vector<webrtc::NonStandardGroupId> exposed_group_ids_;
+  blink::WebVector<webrtc::NonStandardGroupId> exposed_group_ids_;
 };
 
 CONTENT_EXPORT void WhitelistStatsForTesting(const char* type);

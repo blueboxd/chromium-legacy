@@ -79,4 +79,10 @@
   <message name="IDS_APP_MANAGEMENT_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of an app.">
     Pinned by administrator
   </message>
+  <message name="IDS_APP_MANAGEMENT_CONTACTS" desc="Label for the Android contacts (address book) permission toggle.">
+    Contacts
+  </message>
+  <message name="IDS_APP_MANAGEMENT_STORAGE" desc="Label for the Android storage permission toggle.">
+    Storage
+  </message>
 </grit-part>

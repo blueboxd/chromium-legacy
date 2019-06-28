@@ -98,7 +98,9 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
                    UnmountPathCallback callback) override;
   void RemountAllRemovableDrives(
       chromeos::MountAccessMode access_mode) override;
-  void FormatMountedDevice(const std::string& mount_path) override;
+  void FormatMountedDevice(const std::string& mount_path,
+                           const std::string& filesystem,
+                           const std::string& label) override;
   void RenameMountedDevice(const std::string& mount_path,
                            const std::string& volume_name) override;
   void UnmountDeviceRecursively(

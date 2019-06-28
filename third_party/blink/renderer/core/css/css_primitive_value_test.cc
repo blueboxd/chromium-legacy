@@ -25,7 +25,8 @@ CSSPrimitiveValue* CreateAddition(UnitValue a, UnitValue b) {
   return CSSPrimitiveValue::Create(
       CSSCalcValue::Create(CSSCalcValue::CreateExpressionNode(
           CSSCalcValue::CreateExpressionNode(Create(a)),
-          CSSCalcValue::CreateExpressionNode(Create(b)), kCalcAdd)));
+          CSSCalcValue::CreateExpressionNode(Create(b)),
+          CSSMathOperator::kAdd)));
 }
 
 TEST(CSSPrimitiveValueTest, IsTime) {

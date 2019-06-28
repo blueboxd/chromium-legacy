@@ -156,24 +156,30 @@ OmniboxEditModel::GetPageClassification() const {
       focus_source_);
 }
 
-const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
+OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() const {
+  // NOTE: it's important this doesn't attempt to access any state that
+  // may come from the active WebContents. At the time this is called, the
+  // active WebContents has already changed.
+
   // Like typing, switching tabs "accepts" the temporary text as the user
   // text, because it makes little sense to have temporary text when the
   // popup is closed.
+  base::string16 user_text;
   if (user_input_in_progress_) {
-    // Weird edge case to match other browsers: if the edit is empty, revert to
-    // the permanent text (so the user can get it back easily) but select it (so
-    // on switching back, typing will "just work").
     const base::string16 display_text = view_->GetText();
-    if (MaybePrependKeyword(display_text).empty()) {
-      base::AutoReset<bool> tmp(&in_revert_, true);
-      view_->RevertAll();
-      view_->SelectAll(true);
-    } else {
-      InternalSetUserText(display_text);
-    }
+    if (!MaybePrependKeyword(display_text).empty())
+      user_text = display_text;
+    // Else case is user deleted all the text. The expectation (which matches
+    // other browsers) is when the user restores the state a revert happens as
+    // well as a select all. The revert shouldn't be done here, as at the time
+    // this is called a revert would revert to the url of the newly activated
+    // tab (because at the time this is called, the WebContents has already
+    // changed). By leaving the |user_text| empty downstream code is able to
+    // detect this and select all.
+  } else {
+    user_text = user_text_;
   }
-  return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
+  return State(user_input_in_progress_, user_text, keyword_, is_keyword_hint_,
                keyword_mode_entry_method_, focus_state_, focus_source_, input_);
 }
 
@@ -210,7 +216,8 @@ void OmniboxEditModel::RestoreState(const State* state) {
   if (state->user_input_in_progress) {
     // NOTE: Be sure to set keyword-related state AFTER invoking
     // SetUserText(), as SetUserText() clears the keyword state.
-    view_->SetUserText(state->user_text, false);
+    if (!state->user_text.empty() || !state->keyword.empty())
+      view_->SetUserText(state->user_text, false);
     keyword_ = state->keyword;
     is_keyword_hint_ = state->is_keyword_hint;
     keyword_mode_entry_method_ = state->keyword_mode_entry_method;

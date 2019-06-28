@@ -233,8 +233,8 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
     if (!root_node) {
       root_node = CSSCalcValue::CreateExpressionNode(first_value);
     }
-    root_node =
-        CSSCalcValue::CreateExpressionNode(root_node, current_node, kCalcAdd);
+    root_node = CSSCalcValue::CreateExpressionNode(root_node, current_node,
+                                                   CSSMathOperator::kAdd);
   }
 
   if (root_node) {

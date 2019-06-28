@@ -122,7 +122,7 @@ static inline bool AreElementsSiblings(const Element& first,
 static LayoutObject* NextInPreOrder(const LayoutObject& object,
                                     const Element* stay_within,
                                     bool skip_descendants = false) {
-  Element* self = ToElement(object.GetNode());
+  auto* self = To<Element>(object.GetNode());
   DCHECK(self);
   Element* next =
       skip_descendants
@@ -225,7 +225,7 @@ static bool FindPlaceForCounter(LayoutObject& counter_owner,
   // We cannot stop searching for counters with the same identifier before we
   // also check this layout object, because it may affect the positioning in the
   // tree of our counter.
-  Element* counter_owner_element = ToElement(counter_owner.GetNode());
+  auto* counter_owner_element = To<Element>(counter_owner.GetNode());
   Element* search_end_element =
       PreviousSiblingOrParentRespectingContainment(*counter_owner_element);
   Element* current_element =
@@ -364,7 +364,7 @@ static bool FindPlaceForCounter(LayoutObject& counter_owner,
 }
 
 static inline Element* ParentElement(LayoutObject& object) {
-  return ToElement(object.GetNode())->parentElement();
+  return To<Element>(object.GetNode())->parentElement();
 }
 
 static CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,

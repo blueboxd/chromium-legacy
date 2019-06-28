@@ -136,7 +136,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                 LayoutObject* before_child = nullptr) override;
 
   Element* GetNode() const {
-    return ToElement(LayoutBoxModelObject::GetNode());
+    return To<Element>(LayoutBoxModelObject::GetNode());
   }
 
   LayoutUnit MarginLeft() const final;

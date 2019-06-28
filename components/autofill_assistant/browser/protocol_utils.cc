@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
+#include "components/autofill_assistant/browser/actions/popup_message_action.h"
 #include "components/autofill_assistant/browser/actions/prompt_action.h"
 #include "components/autofill_assistant/browser/actions/reset_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
@@ -288,6 +289,10 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       case ActionProto::ActionInfoCase::kShowForm: {
         client_action = std::make_unique<ShowFormAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kPopupMessage: {
+        client_action = std::make_unique<PopupMessageAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

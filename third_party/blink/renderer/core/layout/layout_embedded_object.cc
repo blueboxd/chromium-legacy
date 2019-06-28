@@ -49,7 +49,7 @@ static String LocalizedUnavailablePluginReplacementText(
     Node* node,
     LayoutEmbeddedObject::PluginAvailability availability) {
   Locale& locale =
-      node ? ToElement(node)->GetLocale() : Locale::DefaultLocale();
+      node ? To<Element>(node)->GetLocale() : Locale::DefaultLocale();
   switch (availability) {
     case LayoutEmbeddedObject::kPluginAvailable:
       break;

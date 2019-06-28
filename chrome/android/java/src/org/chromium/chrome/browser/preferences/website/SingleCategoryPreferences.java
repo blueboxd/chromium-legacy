@@ -88,6 +88,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
      */
     public static final String EXTRA_SELECTED_DOMAINS = "selected_domains";
 
+    // The list that contains preferences.
+    private ListView mListView;
     // The view to show when the list is empty.
     private TextView mEmptyView;
     // The item for searching the list of items.
@@ -325,10 +327,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.website_preferences);
-        ListView listView = (ListView) getView().findViewById(android.R.id.list);
+        mListView = (ListView) getView().findViewById(android.R.id.list);
         mEmptyView = (TextView) getView().findViewById(android.R.id.empty);
-        listView.setEmptyView(mEmptyView);
-        listView.setDivider(null);
+        mListView.setEmptyView(mEmptyView);
+        mListView.setDivider(null);
 
         mClearButton = (Button) getView().findViewById(R.id.clear_button);
         if (mClearButton != null) mClearButton.setOnClickListener(this);
@@ -882,6 +884,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
         // Only show the link that explains protected content settings when needed.
         if (!mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
             screen.removePreference(explainProtectedMediaKey);
+            mListView.setFocusable(true);
+        } else {
+            // On small screens with no touch input, nested focusable items inside a LinearLayout in
+            // ListView cause focus problems when using a keyboard (crbug.com/974413).
+            mListView.setFocusable(false);
         }
 
         // When this menu opens, make sure the Blocked list is collapsed.

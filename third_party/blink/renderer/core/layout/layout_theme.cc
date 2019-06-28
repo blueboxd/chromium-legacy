@@ -351,9 +351,10 @@ bool LayoutTheme::IsIndeterminate(const Node* node) {
 }
 
 bool LayoutTheme::IsEnabled(const Node* node) {
-  if (!node || !node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return true;
-  return !ToElement(node)->IsDisabledFormControl();
+  return !element->IsDisabledFormControl();
 }
 
 bool LayoutTheme::IsFocused(const Node* node) {
@@ -375,16 +376,15 @@ bool LayoutTheme::IsPressed(const Node* node) {
 }
 
 bool LayoutTheme::IsSpinUpButtonPartPressed(const Node* node) {
-  if (!node || !node->IsActive() || !node->IsElementNode() ||
-      !ToElement(node)->IsSpinButtonElement())
+  const auto* element = DynamicTo<SpinButtonElement>(node);
+  if (!element || !element->IsActive())
     return false;
-  const auto* element = To<SpinButtonElement>(node);
   return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 
 bool LayoutTheme::IsReadOnlyControl(const Node* node) {
-  if (!node || !node->IsElementNode() ||
-      !ToElement(node)->IsFormControlElement())
+  auto* toElement = DynamicTo<Element>(node);
+  if (!toElement || !toElement->IsFormControlElement())
     return false;
   const HTMLFormControlElement* element = ToHTMLFormControlElement(node);
   return element->IsReadOnly();
@@ -393,18 +393,17 @@ bool LayoutTheme::IsReadOnlyControl(const Node* node) {
 bool LayoutTheme::IsHovered(const Node* node) {
   if (!node)
     return false;
-  if (!node->IsElementNode() || !ToElement(node)->IsSpinButtonElement())
+  const auto* element = DynamicTo<SpinButtonElement>(node);
+  if (!element)
     return node->IsHovered();
-  const auto* element = To<SpinButtonElement>(node);
   return element->IsHovered() &&
          element->GetUpDownState() != SpinButtonElement::kIndeterminate;
 }
 
 bool LayoutTheme::IsSpinUpButtonPartHovered(const Node* node) {
-  if (!node || !node->IsElementNode() ||
-      !ToElement(node)->IsSpinButtonElement())
+  const auto* element = DynamicTo<SpinButtonElement>(node);
+  if (!element)
     return false;
-  const auto* element = To<SpinButtonElement>(node);
   return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 

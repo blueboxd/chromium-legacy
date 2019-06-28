@@ -93,7 +93,7 @@ class OmniboxEditModel {
 
   // Returns the current state.  This assumes we are switching tabs, and changes
   // the internal state appropriately.
-  const State GetStateForTabSwitch();
+  State GetStateForTabSwitch() const;
 
   // Resets the tab state, then restores local state from |state|. |state| may
   // be nullptr if there is no saved state.

@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.RequestCoordinatorBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -110,12 +111,12 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
     }
 
     private void saveUrlForOffline(String url) {
-        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(mProfile);
         if (mHost.getActiveTab() != null) {
-            offlinePageBridge.scheduleDownload(mHost.getActiveTab().getWebContents(),
+            OfflinePageBridge.getForProfile(mProfile).scheduleDownload(
+                    mHost.getActiveTab().getWebContents(),
                     OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE, url, DownloadUiActionFlags.ALL);
         } else {
-            offlinePageBridge.savePageLater(
+            RequestCoordinatorBridge.getForProfile(mProfile).savePageLater(
                     url, OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE, true /* userRequested */);
         }
     }

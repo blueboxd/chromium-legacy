@@ -29,15 +29,19 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/extensions_client.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
+#include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -143,6 +147,33 @@ void ChromeExtensionsRendererClient::OnExtensionLoaded(
 void ChromeExtensionsRendererClient::OnExtensionUnloaded(
     const extensions::ExtensionId& extension_id) {
   resource_request_policy_->OnExtensionUnloaded(extension_id);
+}
+
+bool ChromeExtensionsRendererClient::ExtensionAPIEnabledForServiceWorkerScript(
+    const GURL& scope,
+    const GURL& script_url) const {
+  if (!script_url.SchemeIs(extensions::kExtensionScheme))
+    return false;
+
+  if (!extensions::ExtensionsClient::Get()
+           ->ExtensionAPIEnabledInExtensionServiceWorkers())
+    return false;
+
+  const Extension* extension =
+      extensions::RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(
+          script_url);
+
+  if (!extension ||
+      !extensions::BackgroundInfo::IsServiceWorkerBased(extension))
+    return false;
+
+  if (scope != extension->url())
+    return false;
+
+  const std::string& sw_script =
+      extensions::BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
+
+  return extension->GetResourceURL(sw_script) == script_url;
 }
 
 void ChromeExtensionsRendererClient::RenderThreadStarted() {

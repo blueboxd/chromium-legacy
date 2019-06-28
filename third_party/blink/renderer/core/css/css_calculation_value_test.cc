@@ -101,7 +101,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
               CSSPrimitiveValue::Create(20,
                                         CSSPrimitiveValue::UnitType::kPixels),
               true),
-          kCalcAdd),
+          CSSMathOperator::kAdd),
       150, 0);
 
   TestAccumulatePixelsAndPercent(
@@ -115,7 +115,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
               CSSPrimitiveValue::Create(2,
                                         CSSPrimitiveValue::UnitType::kNumber),
               true),
-          kCalcMultiply),
+          CSSMathOperator::kMultiply),
       960, 0);
 
   TestAccumulatePixelsAndPercent(
@@ -130,7 +130,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
                   CSSPrimitiveValue::Create(
                       0.25, CSSPrimitiveValue::UnitType::kNumber),
                   false),
-              kCalcMultiply),
+              CSSMathOperator::kMultiply),
           CSSCalcValue::CreateExpressionNode(
               CSSCalcValue::CreateExpressionNode(
                   CSSPrimitiveValue::Create(
@@ -140,8 +140,8 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
                   CSSPrimitiveValue::Create(
                       40, CSSPrimitiveValue::UnitType::kPercentage),
                   false),
-              kCalcSubtract),
-          kCalcSubtract),
+              CSSMathOperator::kSubtract),
+          CSSMathOperator::kSubtract),
       -37.5, 40);
 }
 

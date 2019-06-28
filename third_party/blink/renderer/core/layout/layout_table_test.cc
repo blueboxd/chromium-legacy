@@ -29,11 +29,11 @@ TEST_F(LayoutTableTest, OverflowViaOutline) {
   )HTML");
   auto* target = GetTableByElementId("target");
   EXPECT_EQ(LayoutRect(0, 0, 100, 200), target->SelfVisualOverflowRect());
-  ToElement(target->GetNode())
+  To<Element>(target->GetNode())
       ->setAttribute(html_names::kStyleAttr, "outline: 2px solid black");
 
   auto* child = GetTableByElementId("child");
-  ToElement(child->GetNode())
+  To<Element>(child->GetNode())
       ->setAttribute(html_names::kStyleAttr, "outline: 2px solid black");
 
   target->GetFrameView()->UpdateAllLifecyclePhases(
@@ -331,7 +331,7 @@ TEST_F(LayoutTableTest, VisualOverflowCleared) {
   )HTML");
   auto* table = GetTableByElementId("table");
   EXPECT_EQ(LayoutRect(-3, -3, 66, 66), table->SelfVisualOverflowRect());
-  ToElement(table->GetNode())
+  To<Element>(table->GetNode())
       ->setAttribute(html_names::kStyleAttr, "box-shadow: initial");
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
@@ -343,12 +343,12 @@ TEST_F(LayoutTableTest, HasNonCollapsedBorderDecoration) {
   auto* table = GetTableByElementId("table");
   EXPECT_FALSE(table->HasNonCollapsedBorderDecoration());
 
-  ToElement(table->GetNode())
+  To<Element>(table->GetNode())
       ->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(table->HasNonCollapsedBorderDecoration());
 
-  ToElement(table->GetNode())
+  To<Element>(table->GetNode())
       ->setAttribute(html_names::kStyleAttr,
                      "border: 1px solid black; border-collapse: collapse");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();

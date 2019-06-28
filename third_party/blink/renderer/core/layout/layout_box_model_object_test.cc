@@ -1139,7 +1139,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
   // Now make the scroller into an actual scroller. This will reparent the
   // sticky element to be a child of the scroller, and will set its previous
   // overflow layer to nullptr.
-  ToElement(scroller->GetNode())
+  To<Element>(scroller->GetNode())
       ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "scroll");
   UpdateAllLifecyclePhasesForTest();
 
@@ -1149,9 +1149,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
   // Making the scroller have visible overflow but still have a PaintLayer
   // (in this case by making it position: relative) will cause us to need to
   // recompute the sticky element's ancestor overflow layer.
-  ToElement(scroller->GetNode())
+  To<Element>(scroller->GetNode())
       ->SetInlineStyleProperty(CSSPropertyID::kPosition, "relative");
-  ToElement(scroller->GetNode())
+  To<Element>(scroller->GetNode())
       ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "visible");
 
   // Now try to scroll to the sticky element, this used to crash.

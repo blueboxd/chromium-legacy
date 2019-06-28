@@ -5362,10 +5362,9 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
   // their own layoutObject in which to override avoidFloats().
   if (IsAtomicInlineLevel())
     return true;
-  Node* node = GetNode();
-  return node && node->IsElementNode() &&
-         (ToElement(node)->IsFormControlElement() ||
-          IsHTMLImageElement(ToElement(node)));
+  auto* element = DynamicTo<Element>(GetNode());
+  return element &&
+         (element->IsFormControlElement() || IsHTMLImageElement(element));
 }
 
 bool LayoutBox::HasNonCompositedScrollbars() const {

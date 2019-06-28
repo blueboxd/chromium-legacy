@@ -75,9 +75,9 @@
           [[getNetworkStateText_(networkState)]]
         </div>
       </div>
-      <template is="dom-if" if="[[isPolicySource(networkState.source)]]">
-        <cr-policy-indicator
-            indicator-type="[[getIndicatorTypeForSource(networkState.source)]]">
+      <template is="dom-if" if="[[isPolicySourceMojo(networkState.source)]]">
+        <cr-policy-indicator indicator-type="[[getIndicatorTypeForSourceMojo(
+            networkState.source)]]">
         </cr-policy-indicator>
       </template>
       <template is="dom-if"

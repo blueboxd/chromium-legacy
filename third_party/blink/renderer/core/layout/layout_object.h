@@ -2436,9 +2436,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   DisplayLockContext* GetDisplayLockContext() const {
     if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
       return nullptr;
-    if (!GetNode() || !GetNode()->IsElementNode())
+    auto* element = DynamicTo<Element>(GetNode());
+    if (!element)
       return nullptr;
-    return ToElement(GetNode())->GetDisplayLockContext();
+    return element->GetDisplayLockContext();
   }
 
  protected:

@@ -3,6 +3,12 @@
 # found in the LICENSE file.
 
 import exceptions
+from .common import WithCodeGeneratorInfo
+from .common import WithComponent
+from .common import WithDebugInfo
+from .common import WithExposure
+from .common import WithExtendedAttributes
+from .identifier_ir_map import IdentifierIRMap
 from .idl_definition import IdlDefinition
 from .idl_member import IdlMember
 
@@ -15,6 +21,35 @@ class Interface(IdlDefinition):
     gathered in an interface.
     https://heycam.github.io/webidl/#idl-interfaces
     """
+
+    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithExposure,
+             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+        def __init__(self,
+                     identifier,
+                     is_partial,
+                     is_mixin,
+                     extended_attributes=None,
+                     exposures=None,
+                     code_generator_info=None,
+                     component=None,
+                     debug_info=None):
+            kind = None
+            if is_partial:
+                if is_mixin:
+                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN
+                else:
+                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE
+            else:
+                if is_mixin:
+                    kind = IdentifierIRMap.IR.Kind.INTERFACE_MIXIN
+                else:
+                    kind = IdentifierIRMap.IR.Kind.INTERFACE
+            IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
+            WithExtendedAttributes.__init__(self, extended_attributes)
+            WithExposure.__init__(self, exposures)
+            WithCodeGeneratorInfo.__init__(self, code_generator_info)
+            WithComponent.__init__(self, component)
+            WithDebugInfo.__init__(self, debug_info)
 
     @property
     def inherited_interface(self):

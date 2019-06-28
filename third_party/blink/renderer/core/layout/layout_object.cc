@@ -2275,12 +2275,11 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
 }
 
 void LayoutObject::ClearBaseComputedStyle() {
-  if (!GetNode())
+  auto* element = DynamicTo<Element>(GetNode());
+  if (!element)
     return;
-  if (!GetNode()->IsElementNode())
-    return;
-  if (ElementAnimations* animations =
-          ToElement(GetNode())->GetElementAnimations())
+
+  if (ElementAnimations* animations = element->GetElementAnimations())
     animations->ClearBaseComputedStyle();
 }
 
@@ -3602,7 +3601,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
       break;
   }
 
-  return node && node->IsElementNode() ? ToElement(node) : nullptr;
+  return DynamicTo<Element>(node);
 }
 
 void LayoutObject::NotifyImageFullyRemoved(ImageResourceContent* image) {

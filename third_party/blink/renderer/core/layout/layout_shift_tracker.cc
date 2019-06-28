@@ -168,6 +168,11 @@ void LayoutShiftTracker::AccumulateJank(
   GeometryMapper::SourceToDestinationRect(property_tree_state.Transform(),
                                           root_state.Transform(), new_rect);
 
+  if (EqualWithinMovementThreshold(old_rect.Location(), new_rect.Location(),
+                                   source)) {
+    return;
+  }
+
   FloatRect clipped_old_rect(old_rect), clipped_new_rect(new_rect);
   if (!clip_rect.IsInfinite()) {
     clipped_old_rect.Intersect(clip_rect.Rect());

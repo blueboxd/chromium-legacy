@@ -169,10 +169,9 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
     return image;
 
   KURL url;
-  Node* node = layout_object_->GetNode();
-  if (node && node->IsElementNode()) {
-    const AtomicString& url_string = ToElement(node)->ImageSourceURL();
-    url = node->GetDocument().CompleteURL(url_string);
+  if (auto* element = DynamicTo<Element>(layout_object_->GetNode())) {
+    const AtomicString& url_string = element->ImageSourceURL();
+    url = element->GetDocument().CompleteURL(url_string);
   }
   return SVGImageForContainer::Create(
       ToSVGImage(image), container_size,

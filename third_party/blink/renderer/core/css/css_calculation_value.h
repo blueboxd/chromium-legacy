@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_math_operator.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -41,13 +42,6 @@
 namespace blink {
 
 class CalculationValue;
-
-enum CalcOperator {
-  kCalcAdd = '+',
-  kCalcSubtract = '-',
-  kCalcMultiply = '*',
-  kCalcDivide = '/'
-};
 
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
@@ -84,7 +78,7 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
   virtual Type GetType() const = 0;
   virtual const CSSCalcExpressionNode* LeftExpressionNode() const = 0;
   virtual const CSSCalcExpressionNode* RightExpressionNode() const = 0;
-  virtual CalcOperator OperatorType() const = 0;
+  virtual CSSMathOperator OperatorType() const = 0;
 
   CalculationCategory Category() const { return category_; }
   virtual CSSPrimitiveValue::UnitType TypeWithCalcResolved() const = 0;
@@ -116,7 +110,7 @@ class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
                                                      bool is_integer = false);
   static CSSCalcExpressionNode* CreateExpressionNode(CSSCalcExpressionNode*,
                                                      CSSCalcExpressionNode*,
-                                                     CalcOperator);
+                                                     CSSMathOperator);
   static CSSCalcExpressionNode* CreateExpressionNode(double pixels,
                                                      double percent);
 

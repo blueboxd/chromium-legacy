@@ -111,8 +111,16 @@ class WPTMetadataBuilder(object):
             metadata_file_contents = "disabled: build_wpt_metadata.py"
         else:
             # For individual tests, we create one file per test, with the name
-            # of the test in the file as well.
-            test_filename = test_name_parts[-1]
+            # of the test in the file as well. This name can contain variants.
+            test_name = test_name_parts[-1]
+
+            # If the test name uses variants, we want to omit them from the
+            # filename.
+            if "?" in test_name:
+                # Update test_name_parts so the created metadata file doesn't
+                # include any variants
+                test_name_parts[-1] = test_name.split("?")[0]
+
             # Append `.ini` to the test filename to indicate it's the metadata
             # file.
             test_name_parts[-1] += ".ini"
@@ -123,5 +131,5 @@ class WPTMetadataBuilder(object):
             # The contents of the metadata file is two lines:
             # 1. the test name inside square brackets
             # 2. an indented line with the test status and reason
-            metadata_file_contents = ("[%s]\n  disabled: build_wpt_metadata.py" % test_filename)
+            metadata_file_contents = ("[%s]\n  disabled: build_wpt_metadata.py" % test_name)
         return metadata_filename, metadata_file_contents

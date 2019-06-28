@@ -179,6 +179,21 @@ float SVGLength::ScaleByPercentage(float input) const {
   return result;
 }
 
+namespace {
+
+const CSSParserContext* GetSVGAttributeParserContext() {
+  // NOTE(ikilpatrick): We will always parse SVG lengths in the insecure
+  // context mode. If a function/unit/etc will require a secure context check
+  // in the future, plumbing will need to be added.
+  DEFINE_STATIC_LOCAL(
+      const Persistent<CSSParserContext>, svg_parser_context,
+      (MakeGarbageCollected<CSSParserContext>(
+          kSVGAttributeMode, SecureContextMode::kInsecureContext)));
+  return svg_parser_context;
+}
+
+}  // namespace
+
 SVGParsingError SVGLength::SetValueAsString(const String& string) {
   // TODO(fs): Preferably we wouldn't need to special-case the null
   // string (which we'll get for example for removeAttribute.)
@@ -189,13 +204,8 @@ SVGParsingError SVGLength::SetValueAsString(const String& string) {
     return SVGParseStatus::kNoError;
   }
 
-  // NOTE(ikilpatrick): We will always parse svg lengths in the insecure
-  // context mode. If a function/unit/etc will require a secure context check
-  // in the future, plumbing will need to be added.
-  auto* svg_parser_context = MakeGarbageCollected<CSSParserContext>(
-      kSVGAttributeMode, SecureContextMode::kInsecureContext);
   const CSSValue* parsed = CSSParser::ParseSingleValue(
-      CSSPropertyID::kX, string, svg_parser_context);
+      CSSPropertyID::kX, string, GetSVGAttributeParserContext());
   const auto* new_value = DynamicTo<CSSPrimitiveValue>(parsed);
   if (!new_value)
     return SVGParseStatus::kExpectedLength;

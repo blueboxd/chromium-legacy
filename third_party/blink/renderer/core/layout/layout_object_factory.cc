@@ -30,8 +30,8 @@ namespace blink {
 namespace {
 
 inline Element* GetElementForLayoutObject(Node& node) {
-  if (node.IsElementNode())
-    return &ToElement(node);
+  if (auto* element = DynamicTo<Element>(node))
+    return element;
   // If |node| is a Document, the layout object is going to be anonymous.
   DCHECK(node.IsDocumentNode());
   return nullptr;

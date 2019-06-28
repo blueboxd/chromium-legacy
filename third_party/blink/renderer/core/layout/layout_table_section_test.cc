@@ -314,7 +314,7 @@ TEST_F(LayoutTableSectionTest, VisualOverflowWithCollapsedBorders) {
 
 static void SetCellsOverflowInRow(LayoutTableRow* row) {
   for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
-    ToElement(cell->GetNode())
+    To<Element>(cell->GetNode())
         ->setAttribute(html_names::kClassAttr, "overflow");
   }
 }

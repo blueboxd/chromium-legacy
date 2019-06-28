@@ -545,7 +545,7 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
                                int indent) {
   WriteStandardPrefix(ts, object, indent);
 
-  Element* element = ToElement(object.GetNode());
+  auto* element = To<Element>(object.GetNode());
   const AtomicString& id = element->GetIdAttribute();
   WriteNameAndQuotedValue(ts, "id", id);
 

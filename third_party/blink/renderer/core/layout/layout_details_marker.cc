@@ -64,7 +64,7 @@ bool LayoutDetailsMarker::IsOpen() const {
     if (!layout_object->GetNode())
       continue;
     if (IsHTMLDetailsElement(*layout_object->GetNode()))
-      return !ToElement(layout_object->GetNode())
+      return !To<Element>(layout_object->GetNode())
                   ->getAttribute(kOpenAttr)
                   .IsNull();
     if (IsHTMLInputElement(*layout_object->GetNode()))

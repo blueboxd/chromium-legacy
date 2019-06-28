@@ -872,7 +872,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
   unsigned item_count_before = Items().size();
 
-  Element* parent = ToElement(layout_block_flow_->GetNode());
+  auto* parent = To<Element>(layout_block_flow_->GetNode());
   Element* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   parent->appendChild(span);
 
@@ -943,7 +943,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddAbsolute) {
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
   unsigned item_count_before = Items().size();
 
-  Element* parent = ToElement(layout_block_flow_->GetNode());
+  auto* parent = To<Element>(layout_block_flow_->GetNode());
   Element* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   parent->appendChild(span);
 
@@ -1008,7 +1008,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddFloat) {
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
   unsigned item_count_before = Items().size();
 
-  Element* parent = ToElement(layout_block_flow_->GetNode());
+  auto* parent = To<Element>(layout_block_flow_->GetNode());
   Element* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   parent->appendChild(span);
 

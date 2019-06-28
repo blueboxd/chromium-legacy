@@ -394,6 +394,7 @@ message ActionProto {
     WaitForNavigationProto wait_for_navigation = 41;
     ConfigureBottomSheetProto configure_bottom_sheet = 42;
     ShowFormProto show_form = 43;
+    PopupMessageProto popup_message = 44;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1445,4 +1446,12 @@ message SelectionInputProto {
 message DirectActionProto {
   // Map to direct actions with the given names.
   repeated string names = 12;
+}
+
+// Action to show a popup bubble on top of the bottom sheet, anchored at the
+// icon. Setting an empty message will remove any existing and visible popup
+// message. A second action replaces a previously shown message.
+message PopupMessageProto {
+  // Message to show in the popup.
+  optional string message = 1;
 }

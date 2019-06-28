@@ -394,6 +394,27 @@ TEST_F(LayoutShiftTrackerTest, ClipWithoutPaintLayer) {
   EXPECT_FLOAT_EQ(0.0, GetLayoutShiftTracker().Score());
 }
 
+TEST_F(LayoutShiftTrackerTest, LocalShiftWithoutViewportShift) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #c { position: relative; width: 300px; height: 100px; transform: scale(0.1); }
+      #j { position: relative; width: 100px; height: 10px; }
+    </style>
+    <div id='c'>
+      <div id='j'></div>
+    </div>
+    </div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 4px"));
+
+  UpdateAllLifecyclePhases();
+  // Make sure no shift score is reported, since the element didn't move in the
+  // viewport.
+  EXPECT_FLOAT_EQ(0.0, GetLayoutShiftTracker().Score());
+}
+
 class LayoutShiftTrackerSimTest : public SimTest {};
 
 TEST_F(LayoutShiftTrackerSimTest, SubframeWeighting) {

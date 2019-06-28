@@ -88,11 +88,12 @@ CSSCalcExpressionNode* CSSMathProduct::ToCalcExpressionNode() const {
 
   CSSCalcExpressionNode* node = CSSCalcValue::CreateExpressionNode(
       NumericValues()[0]->ToCalcExpressionNode(),
-      NumericValues()[1]->ToCalcExpressionNode(), kCalcMultiply);
+      NumericValues()[1]->ToCalcExpressionNode(), CSSMathOperator::kMultiply);
 
   for (wtf_size_t i = 2; i < NumericValues().size(); i++) {
     node = CSSCalcValue::CreateExpressionNode(
-        node, NumericValues()[i]->ToCalcExpressionNode(), kCalcMultiply);
+        node, NumericValues()[i]->ToCalcExpressionNode(),
+        CSSMathOperator::kMultiply);
   }
 
   return node;

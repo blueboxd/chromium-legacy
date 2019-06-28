@@ -282,8 +282,18 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
     // appropriate; otherwise, a subsequent OnFocus() or OnBlur() call could
     // goof up the selection.  See comments on OnActiveTabChanged() call in
     // Browser::ActiveTabChanged().
-    SelectRange(state->selection);
-    saved_selection_for_focus_change_ = state->saved_selection_for_focus_change;
+    if (state->model_state.user_input_in_progress &&
+        state->model_state.user_text.empty() &&
+        state->model_state.keyword.empty()) {
+      // See comment in OmniboxEditModel::GetStateForTabSwitch() for details on
+      // this.
+      SelectAll(true);
+      saved_selection_for_focus_change_ = gfx::Range();
+    } else {
+      SelectRange(state->selection);
+      saved_selection_for_focus_change_ =
+          state->saved_selection_for_focus_change;
+    }
   }
 
   // TODO(msw|oshima): Consider saving/restoring edit history.

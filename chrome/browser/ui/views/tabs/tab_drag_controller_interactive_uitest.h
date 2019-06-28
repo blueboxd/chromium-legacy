@@ -36,7 +36,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
 
   // Adds a new blank tab to |browser|, stops animations and resets the ids of
   // the tabs in |browser|.
-  void AddTabAndResetBrowser(Browser* browser);
+  void AddTabsAndResetBrowser(Browser* browser, int additional_tabs);
 
   // Creates a new Browser and resizes browser() and the new browser to be side
   // by side.

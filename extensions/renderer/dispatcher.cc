@@ -282,11 +282,9 @@ void Dispatcher::DidCreateScriptContext(
   if (context->context_type() == Feature::CONTENT_SCRIPT_CONTEXT)
     InitOriginPermissions(context->extension());
 
-  {
-    std::unique_ptr<ModuleSystem> module_system(
-        new ModuleSystem(context, &source_map_));
-    context->SetModuleSystem(std::move(module_system));
-  }
+  context->SetModuleSystem(
+      std::make_unique<ModuleSystem>(context, &source_map_));
+
   ModuleSystem* module_system = context->module_system();
 
   // Enable natives in startup.
@@ -353,6 +351,8 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     const GURL& script_url) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
+  // TODO(crbug/961821): We may want to give service workers not registered
+  // by extensions minimal bindings, the same as other webpage-like contexts.
   if (!script_url.SchemeIs(kExtensionScheme)) {
     // Early-out if this isn't a chrome-extension:// scheme, because looking up
     // the extension registry is unnecessary if it's not. Checking this will
@@ -388,6 +388,11 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     return;
   }
 
+  // Only the script specific in the manifest's background data gets bindings.
+  //
+  // TODO(crbug/961821): We may want to give other service workers registered
+  // by extensions minimal bindings, just as we might want to give them to
+  // service workers that aren't registered by extensions.
   ScriptContext* context = new ScriptContext(
       v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
       extension, Feature::SERVICE_WORKER_CONTEXT);
@@ -395,7 +400,9 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   context->set_service_worker_scope(service_worker_scope);
   context->set_service_worker_version_id(service_worker_version_id);
 
-  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
+  if (ExtensionsRendererClient::Get()
+          ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                      script_url)) {
     WorkerThreadDispatcher* worker_dispatcher = WorkerThreadDispatcher::Get();
     std::unique_ptr<IPCMessageSender> ipc_sender =
         IPCMessageSender::CreateWorkerThreadIPCMessageSender(
@@ -493,11 +500,9 @@ void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
-  if (!script_url.SchemeIs(kExtensionScheme)) {
-    // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
-    return;
-  }
-  if (!ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
+  if (!ExtensionsRendererClient::Get()
+           ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                       script_url))
     return;
 
   DCHECK(worker_thread_util::IsWorkerThread());
@@ -511,12 +516,13 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
-  if (!script_url.SchemeIs(kExtensionScheme)) {
-    // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
-    return;
-  }
-
-  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
+  if (!ExtensionsRendererClient::Get()
+           ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                       script_url)) {
+    // If extension APIs in service workers aren't enabled, we just need to
+    // remove the context.
+    g_worker_script_context_set.Get().Remove(v8_context, script_url);
+  } else {
     // TODO(lazyboy/devlin): Should this cleanup happen in a worker class, like
     // WorkerThreadDispatcher? If so, we should move the initialization as well.
     ScriptContext* script_context = WorkerThreadDispatcher::GetScriptContext();
@@ -530,10 +536,6 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     // the associated bindings system.
     g_worker_script_context_set.Get().Remove(v8_context, script_url);
     WorkerThreadDispatcher::Get()->RemoveWorkerData(service_worker_version_id);
-  } else {
-    // If extension APIs in service workers aren't enabled, we just need to
-    // remove the context.
-    g_worker_script_context_set.Get().Remove(v8_context, script_url);
   }
 }
 

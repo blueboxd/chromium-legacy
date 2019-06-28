@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_SIZES_CALC_PARSER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_math_operator.h"
 #include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -15,14 +16,14 @@ namespace blink {
 
 struct SizesCalcValue {
   DISALLOW_NEW();
-  double value;
-  bool is_length;
-  UChar operation;
+  double value = 0;
+  bool is_length = false;
+  CSSMathOperator operation = CSSMathOperator::kInvalid;
 
-  SizesCalcValue() : value(0), is_length(false), operation(0) {}
+  SizesCalcValue() = default;
 
   SizesCalcValue(double numeric_value, bool length)
-      : value(numeric_value), is_length(length), operation(0) {}
+      : value(numeric_value), is_length(length) {}
 };
 
 class CORE_EXPORT SizesCalcParser {

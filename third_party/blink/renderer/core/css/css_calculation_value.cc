@@ -272,9 +272,9 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
     return nullptr;
   }
 
-  CalcOperator OperatorType() const override {
+  CSSMathOperator OperatorType() const override {
     NOTREACHED();
-    return kCalcAdd;
+    return CSSMathOperator::kInvalid;
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -328,7 +328,7 @@ static const CalculationCategory kAddSubtractResult[kCalcOther][kCalcOther] = {
 static CalculationCategory DetermineCategory(
     const CSSCalcExpressionNode& left_side,
     const CSSCalcExpressionNode& right_side,
-    CalcOperator op) {
+    CSSMathOperator op) {
   CalculationCategory left_category = left_side.Category();
   CalculationCategory right_category = right_side.Category();
 
@@ -336,17 +336,19 @@ static CalculationCategory DetermineCategory(
     return kCalcOther;
 
   switch (op) {
-    case kCalcAdd:
-    case kCalcSubtract:
+    case CSSMathOperator::kAdd:
+    case CSSMathOperator::kSubtract:
       return kAddSubtractResult[left_category][right_category];
-    case kCalcMultiply:
+    case CSSMathOperator::kMultiply:
       if (left_category != kCalcNumber && right_category != kCalcNumber)
         return kCalcOther;
       return left_category == kCalcNumber ? right_category : left_category;
-    case kCalcDivide:
+    case CSSMathOperator::kDivide:
       if (right_category != kCalcNumber || right_side.IsZero())
         return kCalcOther;
       return left_category;
+    default:
+      break;
   }
 
   NOTREACHED();
@@ -355,18 +357,19 @@ static CalculationCategory DetermineCategory(
 
 static bool IsIntegerResult(const CSSCalcExpressionNode* left_side,
                             const CSSCalcExpressionNode* right_side,
-                            CalcOperator op) {
+                            CSSMathOperator op) {
   // Not testing for actual integer values.
   // Performs W3C spec's type checking for calc integers.
   // http://www.w3.org/TR/css3-values/#calc-type-checking
-  return op != kCalcDivide && left_side->IsInteger() && right_side->IsInteger();
+  return op != CSSMathOperator::kDivide && left_side->IsInteger() &&
+         right_side->IsInteger();
 }
 
 class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
  public:
   static CSSCalcExpressionNode* Create(CSSCalcExpressionNode* left_side,
                                        CSSCalcExpressionNode* right_side,
-                                       CalcOperator op) {
+                                       CSSMathOperator op) {
     DCHECK_NE(left_side->Category(), kCalcOther);
     DCHECK_NE(right_side->Category(), kCalcOther);
 
@@ -382,7 +385,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   static CSSCalcExpressionNode* CreateSimplified(
       CSSCalcExpressionNode* left_side,
       CSSCalcExpressionNode* right_side,
-      CalcOperator op) {
+      CSSMathOperator op) {
     CalculationCategory left_category = left_side->Category();
     CalculationCategory right_category = right_side->Category();
     DCHECK_NE(left_category, kCalcOther);
@@ -399,7 +402,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
     }
 
     // Simplify addition and subtraction between same types.
-    if (op == kCalcAdd || op == kCalcSubtract) {
+    if (op == CSSMathOperator::kAdd || op == CSSMathOperator::kSubtract) {
       if (left_category == right_side->Category()) {
         CSSPrimitiveValue::UnitType left_type =
             left_side->TypeWithCalcResolved();
@@ -437,11 +440,12 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
       }
     } else {
       // Simplify multiplying or dividing by a number for simplifiable types.
-      DCHECK(op == kCalcMultiply || op == kCalcDivide);
+      DCHECK(op == CSSMathOperator::kMultiply ||
+             op == CSSMathOperator::kDivide);
       CSSCalcExpressionNode* number_side = GetNumberSide(left_side, right_side);
       if (!number_side)
         return Create(left_side, right_side, op);
-      if (number_side == left_side && op == kCalcDivide)
+      if (number_side == left_side && op == CSSMathOperator::kDivide)
         return nullptr;
       CSSCalcExpressionNode* other_side =
           left_side == number_side ? right_side : left_side;
@@ -449,7 +453,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
       double number = number_side->DoubleValue();
       if (std::isnan(number) || std::isinf(number))
         return nullptr;
-      if (op == kCalcDivide && !number)
+      if (op == CSSMathOperator::kDivide && !number)
         return nullptr;
 
       CSSPrimitiveValue::UnitType other_type =
@@ -465,7 +469,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
 
   CSSCalcBinaryOperation(CSSCalcExpressionNode* left_side,
                          CSSCalcExpressionNode* right_side,
-                         CalcOperator op,
+                         CSSMathOperator op,
                          CalculationCategory category)
       : CSSCalcExpressionNode(category,
                               IsIntegerResult(left_side, right_side, op)),
@@ -480,19 +484,19 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
       PixelsAndPercent& value,
       float multiplier) const override {
     switch (operator_) {
-      case kCalcAdd:
+      case CSSMathOperator::kAdd:
         left_side_->AccumulatePixelsAndPercent(conversion_data, value,
                                                multiplier);
         right_side_->AccumulatePixelsAndPercent(conversion_data, value,
                                                 multiplier);
         break;
-      case kCalcSubtract:
+      case CSSMathOperator::kSubtract:
         left_side_->AccumulatePixelsAndPercent(conversion_data, value,
                                                multiplier);
         right_side_->AccumulatePixelsAndPercent(conversion_data, value,
                                                 -multiplier);
         break;
-      case kCalcMultiply:
+      case CSSMathOperator::kMultiply:
         DCHECK_NE((left_side_->Category() == kCalcNumber),
                   (right_side_->Category() == kCalcNumber));
         if (left_side_->Category() == kCalcNumber)
@@ -502,7 +506,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
           left_side_->AccumulatePixelsAndPercent(
               conversion_data, value, multiplier * right_side_->DoubleValue());
         break;
-      case kCalcDivide:
+      case CSSMathOperator::kDivide:
         DCHECK_EQ(right_side_->Category(), kCalcNumber);
         left_side_->AccumulatePixelsAndPercent(
             conversion_data, value, multiplier / right_side_->DoubleValue());
@@ -526,15 +530,15 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const override {
     switch (operator_) {
-      case kCalcAdd:
+      case CSSMathOperator::kAdd:
         left_side_->AccumulateLengthArray(length_array, multiplier);
         right_side_->AccumulateLengthArray(length_array, multiplier);
         break;
-      case kCalcSubtract:
+      case CSSMathOperator::kSubtract:
         left_side_->AccumulateLengthArray(length_array, multiplier);
         right_side_->AccumulateLengthArray(length_array, -multiplier);
         break;
-      case kCalcMultiply:
+      case CSSMathOperator::kMultiply:
         DCHECK_NE((left_side_->Category() == kCalcNumber),
                   (right_side_->Category() == kCalcNumber));
         if (left_side_->Category() == kCalcNumber)
@@ -544,7 +548,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
           left_side_->AccumulateLengthArray(
               length_array, multiplier * right_side_->DoubleValue());
         break;
-      case kCalcDivide:
+      case CSSMathOperator::kDivide:
         DCHECK_EQ(right_side_->Category(), kCalcNumber);
         left_side_->AccumulateLengthArray(
             length_array, multiplier / right_side_->DoubleValue());
@@ -556,12 +560,12 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
 
   static String BuildCSSText(const String& left_expression,
                              const String& right_expression,
-                             CalcOperator op) {
+                             CSSMathOperator op) {
     StringBuilder result;
     result.Append('(');
     result.Append(left_expression);
     result.Append(' ');
-    result.Append(static_cast<char>(op));
+    result.Append(ToString(op));
     result.Append(' ');
     result.Append(right_expression);
     result.Append(')');
@@ -594,7 +598,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
     return right_side_;
   }
 
-  CalcOperator OperatorType() const override { return operator_; }
+  CSSMathOperator OperatorType() const override { return operator_; }
 
   CSSPrimitiveValue::UnitType TypeWithCalcResolved() const override {
     switch (category_) {
@@ -654,25 +658,28 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
 
   static double EvaluateOperator(double left_value,
                                  double right_value,
-                                 CalcOperator op) {
+                                 CSSMathOperator op) {
     switch (op) {
-      case kCalcAdd:
+      case CSSMathOperator::kAdd:
         return clampTo<double>(left_value + right_value);
-      case kCalcSubtract:
+      case CSSMathOperator::kSubtract:
         return clampTo<double>(left_value - right_value);
-      case kCalcMultiply:
+      case CSSMathOperator::kMultiply:
         return clampTo<double>(left_value * right_value);
-      case kCalcDivide:
+      case CSSMathOperator::kDivide:
         if (right_value)
           return clampTo<double>(left_value / right_value);
         return std::numeric_limits<double>::quiet_NaN();
+      default:
+        NOTREACHED();
+        break;
     }
     return 0;
   }
 
   const Member<CSSCalcExpressionNode> left_side_;
   const Member<CSSCalcExpressionNode> right_side_;
-  const CalcOperator operator_;
+  const CSSMathOperator operator_;
 };
 
 static ParseState CheckDepthAndIndex(int* depth, CSSParserTokenRange tokens) {
@@ -699,12 +706,6 @@ class CSSCalcExpressionNodeParser {
   }
 
  private:
-  char OperatorValue(const CSSParserToken& token) {
-    if (token.GetType() == kDelimiterToken)
-      return token.Delimiter();
-    return 0;
-  }
-
   CSSCalcExpressionNode* ParseValue(CSSParserTokenRange& tokens) {
     CSSParserToken token = tokens.ConsumeIncludingWhitespace();
     if (!(token.GetType() == kNumberToken ||
@@ -752,9 +753,9 @@ class CSSCalcExpressionNodeParser {
       return nullptr;
 
     while (!tokens.AtEnd()) {
-      char operator_character = OperatorValue(tokens.Peek());
-      if (operator_character != kCalcMultiply &&
-          operator_character != kCalcDivide)
+      CSSMathOperator math_operator = ParseCSSArithmeticOperator(tokens.Peek());
+      if (math_operator != CSSMathOperator::kMultiply &&
+          math_operator != CSSMathOperator::kDivide)
         break;
       tokens.ConsumeIncludingWhitespace();
 
@@ -762,8 +763,8 @@ class CSSCalcExpressionNodeParser {
       if (!rhs)
         return nullptr;
 
-      result = CSSCalcBinaryOperation::CreateSimplified(
-          result, rhs, static_cast<CalcOperator>(operator_character));
+      result =
+          CSSCalcBinaryOperation::CreateSimplified(result, rhs, math_operator);
 
       if (!result)
         return nullptr;
@@ -784,8 +785,9 @@ class CSSCalcExpressionNodeParser {
       return nullptr;
 
     while (!tokens.AtEnd()) {
-      char operator_character = OperatorValue(tokens.Peek());
-      if (operator_character != kCalcAdd && operator_character != kCalcSubtract)
+      CSSMathOperator math_operator = ParseCSSArithmeticOperator(tokens.Peek());
+      if (math_operator != CSSMathOperator::kAdd &&
+          math_operator != CSSMathOperator::kSubtract)
         break;
       if ((&tokens.Peek() - 1)->GetType() != kWhitespaceToken)
         return nullptr;  // calc(1px+ 2px) is invalid
@@ -799,8 +801,8 @@ class CSSCalcExpressionNodeParser {
       if (!rhs)
         return nullptr;
 
-      result = CSSCalcBinaryOperation::CreateSimplified(
-          result, rhs, static_cast<CalcOperator>(operator_character));
+      result =
+          CSSCalcBinaryOperation::CreateSimplified(result, rhs, math_operator);
 
       if (!result)
         return nullptr;
@@ -824,7 +826,7 @@ CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(
 CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(
     CSSCalcExpressionNode* left_side,
     CSSCalcExpressionNode* right_side,
-    CalcOperator op) {
+    CSSMathOperator op) {
   return CSSCalcBinaryOperation::Create(left_side, right_side, op);
 }
 
@@ -838,7 +840,7 @@ CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(double pixels,
       CreateExpressionNode(CSSPrimitiveValue::Create(
                                pixels, CSSPrimitiveValue::UnitType::kPixels),
                            pixels == trunc(pixels)),
-      kCalcAdd);
+      CSSMathOperator::kAdd);
 }
 
 CSSCalcValue* CSSCalcValue::Create(const CSSParserTokenRange& tokens,

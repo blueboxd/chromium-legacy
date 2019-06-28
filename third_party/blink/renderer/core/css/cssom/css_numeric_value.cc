@@ -79,10 +79,10 @@ CSSUnitValue* MaybeMultiplyAsUnitValue(const CSSNumericValueVector& values) {
   return CSSUnitValue::Create(final_value, unit_other_than_number);
 }
 
-CalcOperator CanonicalOperator(CalcOperator op) {
-  if (op == kCalcAdd || op == kCalcSubtract)
-    return kCalcAdd;
-  return kCalcMultiply;
+CSSMathOperator CanonicalOperator(CSSMathOperator op) {
+  if (op == CSSMathOperator::kAdd || op == CSSMathOperator::kSubtract)
+    return CSSMathOperator::kAdd;
+  return CSSMathOperator::kMultiply;
 }
 
 bool CanCombineNodes(const CSSCalcExpressionNode& root,
@@ -94,12 +94,12 @@ bool CanCombineNodes(const CSSCalcExpressionNode& root,
                                      CanonicalOperator(node.OperatorType());
 }
 
-CSSNumericValue* NegateOrInvertIfRequired(CalcOperator parent_op,
+CSSNumericValue* NegateOrInvertIfRequired(CSSMathOperator parent_op,
                                           CSSNumericValue* value) {
   DCHECK(value);
-  if (parent_op == kCalcSubtract)
+  if (parent_op == CSSMathOperator::kSubtract)
     return CSSMathNegate::Create(value);
-  if (parent_op == kCalcDivide)
+  if (parent_op == CSSMathOperator::kDivide)
     return CSSMathInvert::Create(value);
   return value;
 }
@@ -162,7 +162,8 @@ CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
   // Our algorithm collects the children in reverse order, so we have to reverse
   // the values.
   std::reverse(values.begin(), values.end());
-  if (root.OperatorType() == kCalcAdd || root.OperatorType() == kCalcSubtract)
+  if (root.OperatorType() == CSSMathOperator::kAdd ||
+      root.OperatorType() == CSSMathOperator::kSubtract)
     return CSSMathSum::Create(std::move(values));
   return CSSMathProduct::Create(std::move(values));
 }

@@ -207,8 +207,10 @@ void TabDragControllerTest::StopAnimating(TabStrip* tab_strip) {
   tab_strip->StopAnimating(true);
 }
 
-void TabDragControllerTest::AddTabAndResetBrowser(Browser* browser) {
-  AddBlankTabAndShow(browser);
+void TabDragControllerTest::AddTabsAndResetBrowser(Browser* browser,
+                                                   int additional_tabs) {
+  for (int i = 0; i < additional_tabs; i++)
+    AddBlankTabAndShow(browser);
   StopAnimating(GetTabStripForBrowser(browser));
   ResetIDs(browser->tab_strip_model(), 0);
 }
@@ -343,7 +345,7 @@ class TabDragCaptureLostTest : public TabDragControllerTest {
 
 // See description above for details.
 IN_PROC_BROWSER_TEST_F(TabDragCaptureLostTest, ReleaseCaptureOnDrag) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   gfx::Point tab_1_center(GetCenterInScreenCoordinates(tab_strip->tab_at(1)));
@@ -363,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(TabDragCaptureLostTest, ReleaseCaptureOnDrag) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabDragControllerTest, GestureEndShouldEndDragTest) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
@@ -597,7 +599,7 @@ class DetachToBrowserTabDragControllerTest
 
 // Creates a browser with two tabs, drags the second to the first.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
@@ -624,8 +626,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragToUngroupTab) {
   scoped_feature_list_.InitAndEnableFeature(features::kTabGroups);
 
-  AddTabAndResetBrowser(browser());
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 2);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
@@ -641,6 +642,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragToUngroupTab) {
   Tab* last_tab = tab_strip->tab_at(2);
   gfx::Point tab_right_center = last_tab->GetLocalBounds().right_center();
   views::View::ConvertPointToScreen(last_tab, &tab_right_center);
+
   ASSERT_TRUE(DragInputTo(tab_right_center));
   ASSERT_TRUE(ReleaseInput());
 
@@ -655,7 +657,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragToUngroupTab) {
 // pressing a key ends the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        KeyPressShouldEndDragTest) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
@@ -688,7 +690,7 @@ bool SubtreeShouldBeExplored(aura::Window* window,
 // account. This test hangs without the fix. crbug.com/473080.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DragWithMaskedWindows) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   aura::Window* browser_window = browser()->window()->GetNativeWindow();
   const gfx::Rect bounds = browser_window->GetBoundsInScreen();
@@ -763,8 +765,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DragToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -835,8 +836,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        CaptureLostDuringDrag) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Press on first tab so drag is active. Reset WindowFinder to one that causes
   // capture to be lost from within GetLocalProcessWindowAtPoint(), then
@@ -918,8 +918,7 @@ class MaximizedBrowserWindowWaiter {
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DetachToOwnWindow) {
   const gfx::Rect initial_bounds(browser()->window()->GetBounds());
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
@@ -985,8 +984,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
           .work_area();
   browser()->window()->SetBounds(work_area);
   const gfx::Rect initial_bounds(browser()->window()->GetBounds());
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
@@ -1036,8 +1034,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   MaximizedBrowserWindowWaiter(browser()->window()).Wait();
   ASSERT_TRUE(browser()->window()->IsMaximized());
 
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
@@ -1094,8 +1091,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   std::unique_ptr<ImmersiveRevealedLock> lock(
       controller->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_NO));
 
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
@@ -1143,8 +1139,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 // Deletes a tab being dragged before the user moved enough to start a drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DeleteBeforeStartedDragging) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Click on the first tab, but don't move it.
@@ -1168,8 +1163,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DragDoesntStartFromClick) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Click on the first tab, but don't move it.
@@ -1194,8 +1188,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 // Deletes a tab being dragged while still attached.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DeleteTabWhileAttached) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Click on the first tab and move it enough so that it starts dragging but is
@@ -1238,10 +1231,7 @@ void CloseTabsWhileDetachedStep2(const BrowserList* browser_list) {
 // while dragging tabs.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DeleteTabsWhileDetached) {
-  // Add 3 tabs for a total of 4 tabs.
-  AddTabAndResetBrowser(browser());
-  AddTabAndResetBrowser(browser());
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 3);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   EXPECT_EQ("0 1 2 3", IDString(browser()->tab_strip_model()));
 
@@ -1280,8 +1270,7 @@ void PressEscapeWhileDetachedStep2(const BrowserList* browser_list) {
 // Detaches a tab and while detached presses escape to revert the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        PressEscapeWhileDetached) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
@@ -1319,8 +1308,7 @@ void DragAllStep2(DetachToBrowserTabDragControllerTest* test,
 
 // Selects multiple tabs and starts dragging the window.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragAll) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   browser()->tab_strip_model()->ToggleSelectionAt(0);
   const gfx::Rect initial_bounds = browser()->window()->GetBounds();
@@ -1376,8 +1364,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DragAllToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -1434,8 +1421,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DragAllToSeparateWindowAndCancel) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -1483,8 +1469,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -1595,8 +1580,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        CancelOnNewTabWhenDragging) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Move to the first tab and drag it enough so that it detaches.
   const gfx::Point tab_0_center =
@@ -1694,7 +1678,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 // TODO(960915): fix flakiness and re-enable this test on mac/linux.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DISABLED_OffsetForDraggingDetachedTab) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 1);
   ASSERT_FALSE(TabDragController::IsActive());
@@ -1730,7 +1714,7 @@ void DragInMaximizedWindowStep2(DetachToBrowserTabDragControllerTest* test,
 // Creates a browser with two tabs, maximizes it, drags the tab out.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DragInMaximizedWindow) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   browser()->window()->Maximize();
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -1761,7 +1745,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        OffsetForDraggingInMaximizedWindow) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   // Moves the browser window slightly to ensure that the browser's restored
   // bounds are different from the maximized bound's origin.
   browser()->window()->SetBounds(browser()->window()->GetBounds() +
@@ -1774,7 +1758,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        OffsetForDraggingInTabletMode) {
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   // Moves the browser window slightly to ensure that the browser's restored
   // bounds are different from the maximized bound's origin.
   browser()->window()->SetBounds(browser()->window()->GetBounds() +
@@ -1836,7 +1820,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -2043,8 +2027,7 @@ void DoNotAttachToOtherWindowTestStep2(
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DoNotAttachToOtherWindowTest) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -2105,8 +2088,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DeferredTargetTabStripTest) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -2162,8 +2144,7 @@ void FastResizeDuringDraggingStep2(DetachToBrowserTabDragControllerTest* test,
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        FastResizeDuringDragging) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -2284,8 +2265,7 @@ void DragSingleTabToSeparateWindowInSecondDisplayStep2(
 // Drags from browser to a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                        DragSingleTabToSeparateWindowInSecondDisplay) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
@@ -2359,8 +2339,7 @@ void DragTabToWindowInSeparateDisplayStep2(
 // Drags from browser to another browser on a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                        DragTabToWindowInSeparateDisplay) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Create another browser.
@@ -2469,8 +2448,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 // Drags from browser to another browser on a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                        DragTabToWindowOnSecondDisplay) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Create another browser.
@@ -2532,8 +2510,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 // display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                        DragMaxTabToNonMaxWindowInSeparateDisplay) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   browser()->window()->Maximize();
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
@@ -2597,8 +2574,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 // TODO(pkasting) https://crbug.com/910782 Hangs.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                        DISABLED_DragTabToImmersiveBrowserOnSeparateDisplay) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Create another browser.
@@ -2752,8 +2728,7 @@ void CursorDeviceScaleFactorStep(
 // https://crbug.com/918732
 IN_PROC_BROWSER_TEST_P(DifferentDeviceScaleFactorDisplayTabDragControllerTest,
                        DISABLED_CursorDeviceScaleFactor) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move the second browser to the second display.
@@ -2824,8 +2799,7 @@ void CancelDragTabToWindowInSeparateDisplayStep2(
 IN_PROC_BROWSER_TEST_P(
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
     CancelDragTabToWindowIn2ndDisplay) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
@@ -2859,8 +2833,7 @@ IN_PROC_BROWSER_TEST_P(
   display::Screen* screen = display::Screen::GetScreen();
   const std::pair<Display, Display> displays = GetDisplays(screen);
 
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
@@ -2937,8 +2910,7 @@ void PressSecondFingerWhileDetachedStep2(
 // Detaches a tab and while detached presses a second finger.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        PressSecondFingerWhileDetached) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
 
@@ -3009,8 +2981,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        SecondFingerPressTest) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
-  // Add another tab to browser().
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
@@ -3030,7 +3001,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        LeftSnapShouldntCauseMergeAtEnd) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
 
   // Set the last mouse location at the center of tab 0. This shouldn't affect
   // the touch behavior below. See https://crbug.com/914527#c1 for the details
@@ -3098,7 +3069,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        FlingOnStartingDrag) {
   ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
-  AddTabAndResetBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   const gfx::Point tab_0_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(0));

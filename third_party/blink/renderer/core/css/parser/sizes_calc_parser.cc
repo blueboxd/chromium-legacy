@@ -20,10 +20,10 @@ float SizesCalcParser::Result() const {
   return result_;
 }
 
-static bool OperatorPriority(UChar cc, bool& high_priority) {
-  if (cc == '+' || cc == '-')
+static bool OperatorPriority(CSSMathOperator cc, bool& high_priority) {
+  if (cc == CSSMathOperator::kAdd || cc == CSSMathOperator::kSubtract)
     high_priority = false;
-  else if (cc == '*' || cc == '/')
+  else if (cc == CSSMathOperator::kMultiply || cc == CSSMathOperator::kDivide)
     high_priority = true;
   else
     return false;
@@ -35,7 +35,8 @@ bool SizesCalcParser::HandleOperator(Vector<CSSParserToken>& stack,
   // If the token is not an operator, then return. Else determine the
   // precedence of the new operator (op1).
   bool incoming_operator_priority;
-  if (!OperatorPriority(token.Delimiter(), incoming_operator_priority))
+  if (!OperatorPriority(ParseCSSArithmeticOperator(token),
+                        incoming_operator_priority))
     return false;
 
   while (!stack.IsEmpty()) {
@@ -45,7 +46,8 @@ bool SizesCalcParser::HandleOperator(Vector<CSSParserToken>& stack,
     if (top_of_stack.GetType() != kDelimiterToken)
       break;
     bool stack_operator_priority;
-    if (!OperatorPriority(top_of_stack.Delimiter(), stack_operator_priority))
+    if (!OperatorPriority(ParseCSSArithmeticOperator(top_of_stack),
+                          stack_operator_priority))
       return false;
     // ...if op1 is left-associative (all currently supported
     // operators are) and its precedence is equal to that of op2, or
@@ -81,7 +83,7 @@ bool SizesCalcParser::AppendLength(const CSSParserToken& token) {
 
 void SizesCalcParser::AppendOperator(const CSSParserToken& token) {
   SizesCalcValue value;
-  value.operation = token.Delimiter();
+  value.operation = ParseCSSArithmeticOperator(token);
   value_list_.push_back(value);
 }
 
@@ -182,7 +184,8 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
   return true;
 }
 
-static bool OperateOnStack(Vector<SizesCalcValue>& stack, UChar operation) {
+static bool OperateOnStack(Vector<SizesCalcValue>& stack,
+                           CSSMathOperator operation) {
   if (stack.size() < 2)
     return false;
   SizesCalcValue right_operand = stack.back();
@@ -191,28 +194,28 @@ static bool OperateOnStack(Vector<SizesCalcValue>& stack, UChar operation) {
   stack.pop_back();
   bool is_length;
   switch (operation) {
-    case '+':
+    case CSSMathOperator::kAdd:
       if (right_operand.is_length != left_operand.is_length)
         return false;
       is_length = (right_operand.is_length && left_operand.is_length);
       stack.push_back(
           SizesCalcValue(left_operand.value + right_operand.value, is_length));
       break;
-    case '-':
+    case CSSMathOperator::kSubtract:
       if (right_operand.is_length != left_operand.is_length)
         return false;
       is_length = (right_operand.is_length && left_operand.is_length);
       stack.push_back(
           SizesCalcValue(left_operand.value - right_operand.value, is_length));
       break;
-    case '*':
+    case CSSMathOperator::kMultiply:
       if (right_operand.is_length && left_operand.is_length)
         return false;
       is_length = (right_operand.is_length || left_operand.is_length);
       stack.push_back(
           SizesCalcValue(left_operand.value * right_operand.value, is_length));
       break;
-    case '/':
+    case CSSMathOperator::kDivide:
       if (right_operand.is_length || right_operand.value == 0)
         return false;
       stack.push_back(SizesCalcValue(left_operand.value / right_operand.value,
@@ -227,7 +230,7 @@ static bool OperateOnStack(Vector<SizesCalcValue>& stack, UChar operation) {
 bool SizesCalcParser::Calculate() {
   Vector<SizesCalcValue> stack;
   for (const auto& value : value_list_) {
-    if (value.operation == 0) {
+    if (value.operation == CSSMathOperator::kInvalid) {
       stack.push_back(value);
     } else {
       if (!OperateOnStack(stack, value.operation))

@@ -146,7 +146,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f5a4989c91b9f67eaf052a41516676b7cd2ee698',
+  'v8_revision': '5d13106e0fe0ddc34453a98ba01156e7f184f056',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -158,7 +158,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '40495290dceb5aa0f0b87b42ffc65dfc3f896a76',
+  'swiftshader_revision': '74561df3e679cc788330c0b74309ddc0cb0b079e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -205,7 +205,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f51c389d79a4a6f05a22b1c6cc53b9610c053453',
+  'catapult_revision': '6d47875c4c50c731aaa12bdbf41f31be65cea2d4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1364,7 +1364,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '825aad13dcf44624acd375137e6ef7cea1b58eb1',
+    Var('webrtc_git') + '/src.git' + '@' + 'a47ba4119f27fa84831f16b2f7764a5439145a0d',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1405,7 +1405,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@30c1bb6efcdee78ad68ab2aaeaf73b93521b6f24',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@923582ce437aa6d531f13197e3bcf9e07868a7f3',
     'condition': 'checkout_src_internal',
   },
 

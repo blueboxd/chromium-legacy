@@ -1486,3 +1486,69 @@ input:checked + .toggle .highlight {
   background-size: contain;
   opacity: 1;
 }
+
+#colors-theme {
+  border: 1px solid rgb(var(--GG200-rgb));
+  border-radius: 4px;
+  display: none;
+  height: 64px;
+  margin-bottom: 24px;
+  max-width: 544px;
+  width: 100%;
+}
+
+html[darkmode=true] #colors-theme {
+  border-color: rgb(var(--GG700-rgb));
+}
+
+#colors-theme.visible {
+  display: flex;
+}
+
+#colors-theme > * {
+  margin-bottom: auto;
+  margin-top: auto;
+}
+
+#colors-theme-icon {
+  -webkit-mask-image: url(icons/brush.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG700-rgb));
+  height: 24px;
+  margin-inline-end: 20px;
+  margin-inline-start: 24px;
+  width: 24px;
+}
+
+html[darkmode=true] #colors-theme-icon {
+ background-color: rgb(var(--GG200-rgb));
+}
+
+#colors-theme-name {
+  font-weight: bold;
+}
+
+#colors-theme-link {
+  margin-inline-end: 24px;
+  margin-inline-start: auto;
+  text-decoration: none;
+}
+
+#colors-theme-link-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/open_in_new.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG700-rgb));
+  height: 20px;
+  width: 20px;
+}
+
+html[darkmode=true] #colors-theme-link-icon {
+ background-color: rgb(var(--GG200-rgb));
+}
+
+#colors-theme-uninstall {
+  height: fit-content;
+  margin-inline-end: 16px;
+}

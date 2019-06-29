@@ -18,7 +18,9 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
       image_vertical_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_tiling(THEME_BKGRND_IMAGE_NO_REPEAT),
       has_attribution(false),
-      logo_alternate(false) {}
+      logo_alternate(false),
+      has_theme_image(false),
+      theme_name() {}
 
 ThemeBackgroundInfo::~ThemeBackgroundInfo() {
 }
@@ -40,7 +42,8 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
          image_vertical_alignment == rhs.image_vertical_alignment &&
          image_tiling == rhs.image_tiling &&
          has_attribution == rhs.has_attribution &&
-         logo_alternate == rhs.logo_alternate;
+         logo_alternate == rhs.logo_alternate &&
+         has_theme_image == rhs.has_theme_image && theme_name == rhs.theme_name;
 }
 
 InstantMostVisitedItem::InstantMostVisitedItem()

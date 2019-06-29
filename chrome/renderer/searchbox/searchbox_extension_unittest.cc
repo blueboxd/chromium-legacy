@@ -75,7 +75,7 @@ TEST(SearchboxExtensionTest, TestGetIconColor) {
   // Theme with image.
   theme_info.using_default_theme = false;
   theme_info.custom_background_url = GURL();
-  theme_info.theme_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  theme_info.has_theme_image = true;
   EXPECT_EQ(kLightIconColor, GetIconColor(theme_info));
 
   // Theme with image in dark mode.
@@ -85,7 +85,7 @@ TEST(SearchboxExtensionTest, TestGetIconColor) {
   SkColor red_icon_color = CalculateIconColor(SK_ColorRED);
 
   // Theme with no image, in dark mode.
-  theme_info.theme_id = "";
+  theme_info.has_theme_image = false;
   EXPECT_EQ(red_icon_color, GetIconColor(theme_info));
 
   // Theme with no image.

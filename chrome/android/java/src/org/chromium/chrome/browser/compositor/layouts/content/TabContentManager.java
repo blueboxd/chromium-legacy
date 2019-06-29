@@ -301,12 +301,28 @@ public class TabContentManager {
         });
     }
 
+    /**
+     * @param tab The {@link Tab} the thumbnail is for.
+     * @return The file storing the thumbnail in ETC1 format of a certain {@link Tab}.
+     */
+    public static File getTabThumbnailFileEtc1(Tab tab) {
+        return new File(PathUtils.getThumbnailCacheDirectory(), String.valueOf(tab.getId()));
+    }
+
+    /**
+     * @param tab The {@link Tab} the thumbnail is for.
+     * @return The file storing the thumbnail in JPEG format of a certain {@link Tab}.
+     */
+    public static File getTabThumbnailFileJpeg(Tab tab) {
+        return new File(PathUtils.getThumbnailCacheDirectory(), tab.getId() + ".jpeg");
+    }
+
     private void getTabThumbnailFromDisk(@NonNull Tab tab, @NonNull Callback<Bitmap> callback) {
         // Try JPEG thumbnail first before using the more costly nativeGetEtc1TabThumbnail.
         new AsyncTask<Bitmap>() {
             @Override
             public Bitmap doInBackground() {
-                File file = new File(PathUtils.getThumbnailCacheDirectory(), tab.getId() + ".jpeg");
+                File file = getTabThumbnailFileJpeg(tab);
                 if (!file.isFile()) return null;
                 return BitmapFactory.decodeFile(file.getPath());
             }

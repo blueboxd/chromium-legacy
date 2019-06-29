@@ -86,9 +86,8 @@ SkColor CalculateIconColor(SkColor bg_color) {
 // Use dark icon when in dark mode and no background. Otherwise, use
 // light icon for NTPs with images, and themed icon for NTPs with solid color.
 SkColor GetIconColor(const ThemeBackgroundInfo& theme_info) {
-  bool has_background_image =
-      crx_file::id_util::IdIsValid(theme_info.theme_id) ||
-      !theme_info.custom_background_url.is_empty();
+  bool has_background_image = theme_info.has_theme_image ||
+                              !theme_info.custom_background_url.is_empty();
   if (has_background_image)
     return gfx::kGoogleGrey100;
 
@@ -315,7 +314,7 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // theme.
   // This is the CSS "background-image" format.
   // Value is only valid if there's a custom theme background image.
-  if (crx_file::id_util::IdIsValid(theme_info.theme_id)) {
+  if (theme_info.has_theme_image) {
     builder.Set("imageUrl", base::StringPrintf(kCSSBackgroundImageFormat,
                                                theme_info.theme_id.c_str(),
                                                theme_info.theme_id.c_str()));
@@ -378,6 +377,9 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     }
   }
 
+  builder.Set("themeId", theme_info.theme_id);
+  builder.Set("themeName", theme_info.theme_name);
+
   // Assume that a custom background has not been configured and then
   // override based on the condition below.
   builder.Set("customBackgroundConfigured", false);
@@ -407,8 +409,7 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
 
   // Generate fields for themeing NTP elements.
   builder.Set("isNtpBackgroundDark", internal::IsNtpBackgroundDark(ntp_text));
-  builder.Set("useTitleContainer",
-              crx_file::id_util::IdIsValid(theme_info.theme_id));
+  builder.Set("useTitleContainer", theme_info.has_theme_image);
 
   SkColor icon_color = internal::GetIconColor(theme_info);
   builder.Set("iconBackgroundColor", SkColorToArray(isolate, icon_color));

@@ -5093,6 +5093,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC" desc="The description for the option to show most visited sites in the customization menu on the New Tab Page">
         Shortcuts are curated by you
       </message>
+      <message name="IDS_NTP_CUSTOMIZE_3PT_THEME_DESC" desc="The description for the installed third-party themes in the customization menu on the New Tab Page">
+        Current theme you have installed
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL" desc="The label for the third-party theme uninstall button in the customization menu on the New Tab Page">
+        Uninstall
+      </message>
 
       <if expr="is_android">
         <message name="IDS_NTP_EXPLORE_SITES_TILE_TITLE" desc="A label for a button that when clicked takes the user to a tab that contains categorized links to websites that are popular in their country. [CHAR_LIMIT=12]">

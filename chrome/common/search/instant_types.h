@@ -98,6 +98,12 @@ struct ThemeBackgroundInfo {
 
   // True if theme has an alternate logo.
   bool logo_alternate;
+
+  // True if theme has NTP image.
+  bool has_theme_image;
+
+  // The theme name.
+  std::string theme_name;
 };
 
 struct InstantMostVisitedItem {

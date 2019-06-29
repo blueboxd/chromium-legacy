@@ -92,6 +92,9 @@ customize.IDS = {
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
   COLORS_DEFAULT: 'colors-default',
+  COLORS_THEME: 'colors-theme',
+  COLORS_THEME_NAME: 'colors-theme-name',
+  COLORS_THEME_WEBSTORE_LINK: 'colors-theme-link',
   COLORS_MENU: 'colors-menu',
   CUSTOMIZATION_MENU: 'customization-menu',
   CUSTOM_BG: 'custom-bg',
@@ -153,7 +156,8 @@ customize.CLASSES = {
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
   SELECTED_CIRCLE: 'selected-circle',
-  SINGLE_ATTR: 'single-attr'
+  SINGLE_ATTR: 'single-attr',
+  VISIBLE: 'visible'
 };
 
 /**
@@ -1832,6 +1836,18 @@ customize.defaultThemeTileInteraction = function(event) {
  * Loads tiles for colors menu.
  */
 customize.loadColorTiles = function() {
+  // Configure webstore theme elements.
+  // TODO(gayane): Consider reloading when theme changes.
+  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  if (themeInfo.themeId && themeInfo.themeName) {
+    $(customize.IDS.COLORS_THEME).classList.add(customize.CLASSES.VISIBLE);
+    $(customize.IDS.COLORS_THEME_NAME).innerHTML = themeInfo.themeName;
+    $(customize.IDS.COLORS_THEME_WEBSTORE_LINK).href =
+        'https://chrome.google.com/webstore/detail/' + themeInfo.themeId;
+  } else {
+    $(customize.IDS.COLORS_THEME).classList.remove(customize.CLASSES.VISIBLE);
+  }
+
   if (customize.colorMenuLoaded) {
     return;
   }

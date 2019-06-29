@@ -34,6 +34,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -48,6 +49,7 @@ import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
@@ -182,6 +184,12 @@ public class GridTabSwitcherLayoutTest {
             MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                     mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
             if (url != null) mActivityTestRule.loadUrl(url);
+
+            Tab previousTab = mActivityTestRule.getActivity()
+                                      .getTabModelSelector()
+                                      .getCurrentModel()
+                                      .getTabAt(i);
+            checkThumbnailsExist(previousTab);
         }
         ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,
                 null, WAIT_TIMEOUT_SECONDS * 10);
@@ -196,6 +204,13 @@ public class GridTabSwitcherLayoutTest {
 
         GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
         for (int i = 0; i < mRepeat; i++) {
+            Tab currentTab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
+            boolean checkThumbnail = !currentTab.isNativePage();
+
+            if (checkThumbnail)
+                mActivityTestRule.getActivity().getTabContentManager().removeTabThumbnail(
+                        currentTab.getId());
+
             int count = getCaptureCount();
             waitForCaptureRateControl();
             TestThreadUtils.runOnUiThreadBlocking(
@@ -218,6 +233,7 @@ public class GridTabSwitcherLayoutTest {
                 }
             }
             CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
+            if (checkThumbnail) checkThumbnailsExist(currentTab);
 
             // clang-format off
             TestThreadUtils.runOnUiThreadBlocking(
@@ -299,6 +315,13 @@ public class GridTabSwitcherLayoutTest {
         final int initCount = getCaptureCount();
 
         for (int i = 0; i < mRepeat; i++) {
+            Tab currentTab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
+            boolean checkThumbnail = !currentTab.isNativePage();
+
+            if (checkThumbnail)
+                mActivityTestRule.getActivity().getTabContentManager().removeTabThumbnail(
+                        currentTab.getId());
+
             int count = getCaptureCount();
             waitForCaptureRateControl();
             TestThreadUtils.runOnUiThreadBlocking(
@@ -318,6 +341,7 @@ public class GridTabSwitcherLayoutTest {
                 }
             }
             CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
+            if (checkThumbnail) checkThumbnailsExist(currentTab);
 
             int index = mActivityTestRule.getActivity().getCurrentTabModel().index();
             final int targetIndex = switchToAnotherTab ? 1 - index : index;
@@ -367,6 +391,18 @@ public class GridTabSwitcherLayoutTest {
         }
         Assert.assertEquals(expected, getCaptureCount() - initCount);
         assertThumbnailsAreReleased();
+    }
+
+    private void checkThumbnailsExist(Tab tab) {
+        File etc1File = TabContentManager.getTabThumbnailFileEtc1(tab);
+        CriteriaHelper.pollInstrumentationThread(etc1File::exists,
+                "The thumbnail " + etc1File.getName() + " is not found",
+                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
+
+        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab);
+        CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
+                "The thumbnail " + jpegFile.getName() + " is not found",
+                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
     }
 
     private int getCaptureCount() {

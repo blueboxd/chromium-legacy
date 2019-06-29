@@ -55,6 +55,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 
@@ -628,48 +630,63 @@ void InstantService::BuildThemeInfo() {
       theme_provider.GetDisplayProperty(ThemeProperties::NTP_LOGO_ALTERNATE);
   theme_info_->logo_alternate = logo_alternate == 1;
 
-  if (theme_provider.HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-    // Set theme id for theme background image url.
-    theme_info_->theme_id = theme_service->GetThemeID();
+  if (theme_service->UsingExtensionTheme()) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile_)
+            ->enabled_extensions()
+            .GetByID(theme_service->GetThemeID());
+    if (extension) {
+      theme_info_->theme_id = theme_service->GetThemeID();
+      theme_info_->theme_name = extension->name();
 
-    // Set theme background image horizontal alignment.
-    int alignment = theme_provider.GetDisplayProperty(
-        ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
-    if (alignment & ThemeProperties::ALIGN_LEFT)
-      theme_info_->image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_LEFT;
-    else if (alignment & ThemeProperties::ALIGN_RIGHT)
-      theme_info_->image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_RIGHT;
-    else
-      theme_info_->image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
+      if (theme_provider.HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+        theme_info_->has_theme_image = true;
 
-    // Set theme background image vertical alignment.
-    if (alignment & ThemeProperties::ALIGN_TOP)
-      theme_info_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_TOP;
-    else if (alignment & ThemeProperties::ALIGN_BOTTOM)
-      theme_info_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_BOTTOM;
-    else
-      theme_info_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
+        // Set theme background image horizontal alignment.
+        int alignment = theme_provider.GetDisplayProperty(
+            ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
+        if (alignment & ThemeProperties::ALIGN_LEFT)
+          theme_info_->image_horizontal_alignment =
+              THEME_BKGRND_IMAGE_ALIGN_LEFT;
+        else if (alignment & ThemeProperties::ALIGN_RIGHT)
+          theme_info_->image_horizontal_alignment =
+              THEME_BKGRND_IMAGE_ALIGN_RIGHT;
+        else
+          theme_info_->image_horizontal_alignment =
+              THEME_BKGRND_IMAGE_ALIGN_CENTER;
 
-    // Set theme background image tiling.
-    int tiling = theme_provider.GetDisplayProperty(
-        ThemeProperties::NTP_BACKGROUND_TILING);
-    switch (tiling) {
-      case ThemeProperties::NO_REPEAT:
-        theme_info_->image_tiling = THEME_BKGRND_IMAGE_NO_REPEAT;
-        break;
-      case ThemeProperties::REPEAT_X:
-        theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_X;
-        break;
-      case ThemeProperties::REPEAT_Y:
-        theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_Y;
-        break;
-      case ThemeProperties::REPEAT:
-        theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT;
-        break;
+        // Set theme background image vertical alignment.
+        if (alignment & ThemeProperties::ALIGN_TOP)
+          theme_info_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_TOP;
+        else if (alignment & ThemeProperties::ALIGN_BOTTOM)
+          theme_info_->image_vertical_alignment =
+              THEME_BKGRND_IMAGE_ALIGN_BOTTOM;
+        else
+          theme_info_->image_vertical_alignment =
+              THEME_BKGRND_IMAGE_ALIGN_CENTER;
+
+        // Set theme background image tiling.
+        int tiling = theme_provider.GetDisplayProperty(
+            ThemeProperties::NTP_BACKGROUND_TILING);
+        switch (tiling) {
+          case ThemeProperties::NO_REPEAT:
+            theme_info_->image_tiling = THEME_BKGRND_IMAGE_NO_REPEAT;
+            break;
+          case ThemeProperties::REPEAT_X:
+            theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_X;
+            break;
+          case ThemeProperties::REPEAT_Y:
+            theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_Y;
+            break;
+          case ThemeProperties::REPEAT:
+            theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT;
+            break;
+        }
+
+        theme_info_->has_attribution =
+            theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
+      }
     }
-
-    theme_info_->has_attribution =
-        theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
   }
 }
 

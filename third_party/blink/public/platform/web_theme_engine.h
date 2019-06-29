@@ -96,7 +96,6 @@ class WebThemeEngine {
   struct ButtonExtraParams {
     bool checked;
     bool indeterminate;  // Whether the button state is indeterminate.
-    bool is_default;     // Whether the button is default button.
     bool has_border;
     SkColor background_color;
   };

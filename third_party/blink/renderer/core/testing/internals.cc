@@ -1386,7 +1386,7 @@ void Internals::setAutofilledValue(Element* element,
   if (auto* select = ToHTMLSelectElementOrNull(*element))
     select->setValue(value, true /* send_events */);
 
-  ToHTMLFormControlElement(element)->SetAutofillState(
+  To<HTMLFormControlElement>(element)->SetAutofillState(
       blink::WebAutofillState::kAutofilled);
 }
 
@@ -1407,19 +1407,15 @@ void Internals::setAutofilled(Element* element,
                               bool enabled,
                               ExceptionState& exception_state) {
   DCHECK(element);
-  if (!element->IsFormControlElement()) {
+  auto* form_control_element = DynamicTo<HTMLFormControlElement>(element);
+  if (!form_control_element) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidNodeTypeError,
         "The element provided is not a form control element.");
     return;
   }
-  if (enabled) {
-    ToHTMLFormControlElement(element)->SetAutofillState(
-        WebAutofillState::kAutofilled);
-  } else {
-    ToHTMLFormControlElement(element)->SetAutofillState(
-        WebAutofillState::kNotFilled);
-  }
+  form_control_element->SetAutofillState(
+      enabled ? WebAutofillState::kAutofilled : WebAutofillState::kNotFilled);
 }
 
 Range* Internals::rangeFromLocationAndLength(Element* scope,

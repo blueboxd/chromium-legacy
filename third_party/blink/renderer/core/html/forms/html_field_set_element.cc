@@ -49,8 +49,8 @@ bool HTMLFieldSetElement::MatchesValidityPseudoClasses() const {
 
 bool HTMLFieldSetElement::IsValidElement() {
   for (Element* element : *elements()) {
-    if (element->IsFormControlElement()) {
-      if (!ToHTMLFormControlElement(element)->IsNotCandidateOrValid())
+    if (auto* html_form_element = DynamicTo<HTMLFormControlElement>(element)) {
+      if (!html_form_element->IsNotCandidateOrValid())
         return false;
     } else if (auto* html_element = DynamicTo<HTMLElement>(element)) {
       if (html_element->IsFormAssociatedCustomElement() &&

@@ -196,11 +196,9 @@ bool SpatialNavigationController::HandleImeSubmitKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
-  if (!IsHTMLFormControlElement(GetFocusedElement()))
+  auto* element = DynamicTo<HTMLFormControlElement>(GetFocusedElement());
+  if (!element)
     return false;
-
-  HTMLFormControlElement* element =
-      ToHTMLFormControlElement(GetFocusedElement());
 
   if (!element->formOwner())
     return false;

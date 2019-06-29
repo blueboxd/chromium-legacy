@@ -901,17 +901,20 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
           return true;
       }
     } break;
-    case CSSSelector::kPseudoAutofill:
-      return element.IsFormControlElement() &&
-             ToHTMLFormControlElement(element).IsAutofilled();
-    case CSSSelector::kPseudoAutofillPreviewed:
-      return element.IsFormControlElement() &&
-             ToHTMLFormControlElement(element).GetAutofillState() ==
-                 WebAutofillState::kPreviewed;
-    case CSSSelector::kPseudoAutofillSelected:
-      return element.IsFormControlElement() &&
-             ToHTMLFormControlElement(element).GetAutofillState() ==
-                 WebAutofillState::kAutofilled;
+    case CSSSelector::kPseudoAutofill: {
+      auto* html_form_element = DynamicTo<HTMLFormControlElement>(&element);
+      return html_form_element && html_form_element->IsAutofilled();
+    }
+    case CSSSelector::kPseudoAutofillPreviewed: {
+      auto* html_form_element = DynamicTo<HTMLFormControlElement>(&element);
+      return html_form_element && html_form_element->GetAutofillState() ==
+                                      WebAutofillState::kPreviewed;
+    }
+    case CSSSelector::kPseudoAutofillSelected: {
+      auto* html_form_element = DynamicTo<HTMLFormControlElement>(&element);
+      return html_form_element && html_form_element->GetAutofillState() ==
+                                      WebAutofillState::kAutofilled;
+    }
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoWebkitAnyLink:
     case CSSSelector::kPseudoLink:

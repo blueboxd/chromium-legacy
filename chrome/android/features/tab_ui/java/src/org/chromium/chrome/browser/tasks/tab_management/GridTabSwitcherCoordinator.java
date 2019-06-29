@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -197,5 +200,15 @@ public class GridTabSwitcherCoordinator
         }
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
+    }
+
+    /**
+     * Set a hook to receive all the {@link Bitmap}s returned by
+     * {@link TabListMediator.ThumbnailFetcher} for testing.
+     * @param callback The callback to send bitmaps through.
+     */
+    @VisibleForTesting
+    void setBitmapCallbackForTesting(Callback<Bitmap> callback) {
+        TabListMediator.ThumbnailFetcher.sBitmapCallbackForTesting = callback;
     }
 }

@@ -192,10 +192,10 @@ void HTMLFormElement::SubmitImplicitly(Event& event,
                                        bool from_implicit_submission_trigger) {
   int submission_trigger_count = 0;
   bool seen_default_button = false;
-  for (const auto& element : ListedElements()) {
-    if (!element->IsFormControlElement())
+  for (ListedElement* element : ListedElements()) {
+    auto* control = DynamicTo<HTMLFormControlElement>(element);
+    if (!control)
       continue;
-    HTMLFormControlElement* control = ToHTMLFormControlElement(element);
     if (!seen_default_button && control->CanBeSuccessfulSubmitButton()) {
       if (from_implicit_submission_trigger)
         seen_default_button = true;
@@ -283,13 +283,13 @@ void HTMLFormElement::PrepareForSubmission(
   }
 
   // https://github.com/whatwg/html/issues/2253
-  for (const auto& element : ListedElements()) {
-    if (element->IsFormControlElement() &&
-        ToHTMLFormControlElement(element)->BlocksFormSubmission()) {
+  for (ListedElement* element : ListedElements()) {
+    auto* form_control_element = DynamicTo<HTMLFormControlElement>(element);
+    if (form_control_element && form_control_element->BlocksFormSubmission()) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kFormSubmittedWithUnclosedFormControl);
       if (RuntimeEnabledFeatures::UnclosedFormControlIsInvalidEnabled()) {
-        String tag_name = ToHTMLFormControlElement(element)->tagName();
+        String tag_name = To<HTMLFormControlElement>(element)->tagName();
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kSecurity,
             mojom::ConsoleMessageLevel::kError,
@@ -425,11 +425,10 @@ void HTMLFormElement::Submit(Event* event,
     // event handler might add a submit button. We search for a submit
     // button again.
     // TODO(tkent): Do we really need to activate such submit button?
-    for (const auto& listed_element : ListedElements()) {
-      if (!listed_element->IsFormControlElement())
+    for (ListedElement* listed_element : ListedElements()) {
+      auto* control = DynamicTo<HTMLFormControlElement>(listed_element);
+      if (!control)
         continue;
-      HTMLFormControlElement* control =
-          ToHTMLFormControlElement(listed_element);
       DCHECK(!control->IsActivatedSubmit());
       if (control->IsSuccessfulSubmitButton()) {
         submit_button = control;
@@ -543,9 +542,9 @@ void HTMLFormElement::reset() {
   // Copy the element list because |reset()| implementation can update DOM
   // structure.
   ListedElement::List elements(ListedElements());
-  for (const auto& element : elements) {
-    if (element->IsFormControlElement()) {
-      ToHTMLFormControlElement(element)->Reset();
+  for (ListedElement* element : elements) {
+    if (auto* html_form_element = DynamicTo<HTMLFormControlElement>(element)) {
+      html_form_element->Reset();
     } else if (element->IsElementInternals()) {
       CustomElement::EnqueueFormResetCallback(element->ToHTMLElement());
     }
@@ -720,10 +719,10 @@ void HTMLFormElement::setMethod(const AtomicString& value) {
 }
 
 HTMLFormControlElement* HTMLFormElement::FindDefaultButton() const {
-  for (const auto& element : ListedElements()) {
-    if (!element->IsFormControlElement())
+  for (ListedElement* element : ListedElements()) {
+    auto* control = DynamicTo<HTMLFormControlElement>(element);
+    if (!control)
       continue;
-    HTMLFormControlElement* control = ToHTMLFormControlElement(element);
     if (control->CanBeSuccessfulSubmitButton())
       return control;
   }
@@ -741,17 +740,16 @@ bool HTMLFormElement::CheckInvalidControlsAndCollectUnhandled(
   const ListedElement::List& listed_elements = ListedElements();
   HeapVector<Member<ListedElement>> elements;
   elements.ReserveCapacity(listed_elements.size());
-  for (const auto& element : listed_elements)
+  for (ListedElement* element : listed_elements)
     elements.push_back(element);
   int invalid_controls_count = 0;
-  for (const auto& element : elements) {
+  for (ListedElement* element : elements) {
     if (element->Form() != this)
       continue;
     // TOOD(tkent): Virtualize checkValidity().
     bool should_check_validity = false;
-    if (element->IsFormControlElement()) {
-      should_check_validity =
-          ToHTMLFormControlElement(element)->IsSubmittableElement();
+    if (auto* html_form_element = DynamicTo<HTMLFormControlElement>(element)) {
+      should_check_validity = html_form_element->IsSubmittableElement();
     } else if (element->IsElementInternals()) {
       should_check_validity = true;
     }
@@ -783,8 +781,8 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
     SECURITY_DCHECK(ListedElements().Find(ToHTMLObjectElement(element)) !=
                     kNotFound);
   } else {
-    SECURITY_DCHECK(ListedElements().Find(ToHTMLFormControlElement(element)) !=
-                    kNotFound);
+    SECURITY_DCHECK(ListedElements().Find(
+                        To<HTMLFormControlElement>(element)) != kNotFound);
   }
 #endif
   return element;
@@ -881,12 +879,13 @@ void HTMLFormElement::AnonymousNamedGetter(
 }
 
 void HTMLFormElement::InvalidateDefaultButtonStyle() const {
-  for (const auto& control : ListedElements()) {
-    if (!control->IsFormControlElement())
+  for (ListedElement* control : ListedElements()) {
+    auto* html_form_control = DynamicTo<HTMLFormControlElement>(control);
+    if (!html_form_control)
       continue;
-    if (ToHTMLFormControlElement(control)->CanBeSuccessfulSubmitButton()) {
-      ToHTMLFormControlElement(control)->PseudoStateChanged(
-          CSSSelector::kPseudoDefault);
+
+    if (html_form_control->CanBeSuccessfulSubmitButton()) {
+      html_form_control->PseudoStateChanged(CSSSelector::kPseudoDefault);
     }
   }
 }

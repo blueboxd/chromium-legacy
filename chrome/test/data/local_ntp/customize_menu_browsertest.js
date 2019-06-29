@@ -19,6 +19,9 @@ test.customizeMenu = {};
 test.customizeMenu.IDS = {
   BACKGROUNDS_MENU: 'backgrounds-menu',
   CANCEL: 'bg-sel-footer-cancel',
+  COLORS_BUTTON: 'colors-button',
+  COLORS_DEFAULT: 'colors-default',
+  COLORS_MENU: 'colors-menu',
   CUSTOMIZATION_MENU: 'customization-menu',
   DONE: 'bg-sel-footer-done',
   EDIT_BG: 'edit-bg',
@@ -304,6 +307,70 @@ test.customizeMenu.testShortcuts_ChangeShortcutTypeAndVisibility = function() {
   // Check that the EmbeddedSearchAPI was correctly called.
   assertEquals(1, test.customizeMenu.toggleMostVisitedOrCustomLinksCount);
   assertEquals(1, test.customizeMenu.toggleShortcutsVisibilityCount);
+};
+
+/**
+ * Test that Customization dialog doesn't have Colors option when Colors are
+ * disabled.
+ */
+test.customizeMenu.testColors_Disabled = function() {
+  configData.chromeColors = false;
+  init();
+
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  assertFalse(elementIsVisible($(test.customizeMenu.IDS.COLORS_BUTTON)));
+};
+
+/**
+ * Test that Customization dialog has Colors option when Colors are enabled.
+ */
+test.customizeMenu.testColors_Enabled = function() {
+  init();
+
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  assertTrue(elementIsVisible($(test.customizeMenu.IDS.COLORS_BUTTON)));
+};
+
+/**
+ * Test that Colors menu is visible after Colors button is clicked.
+ */
+test.customizeMenu.testColors_MenuVisibility = function() {
+  init();
+
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  assertTrue(elementIsVisible($(test.customizeMenu.IDS.COLORS_BUTTON)));
+  assertFalse(elementIsVisible($(test.customizeMenu.IDS.COLORS_MENU)));
+
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+  assertTrue(elementIsVisible($(test.customizeMenu.IDS.COLORS_MENU)));
+
+  $(test.customizeMenu.IDS.SHORTCUTS_BUTTON).click();
+  assertFalse(elementIsVisible($(test.customizeMenu.IDS.COLORS_MENU)));
+};
+
+
+/**
+ * Test that default tile is visible.
+ */
+test.customizeMenu.testColors_DefaultTile = function() {
+  init();
+
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+  assertTrue(elementIsVisible($(test.customizeMenu.IDS.COLORS_DEFAULT)));
+};
+
+/**
+ * Test that at least one color tile is loaded.
+ */
+test.customizeMenu.testColors_ColorTilesLoaded = function() {
+  init();
+
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+  assertTrue($(test.customizeMenu.IDS.COLORS_MENU).children.length > 1);
+  assertTrue(!!$('color_0').dataset.color);
+  assertTrue(!!$('color_0').style.backgroundImage);
 };
 
 // ******************************* HELPERS *******************************

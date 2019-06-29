@@ -145,7 +145,7 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
   text_block_style->SetUnicodeBidi(start_style.GetUnicodeBidi());
   text_block_style->SetUserSelect(EUserSelect::kText);
   text_block_style->SetUserModify(
-      ToHTMLFormControlElement(host)->IsDisabledOrReadOnly()
+      To<HTMLFormControlElement>(host)->IsDisabledOrReadOnly()
           ? EUserModify::kReadOnly
           : EUserModify::kReadWritePlaintextOnly);
   text_block_style->SetDisplay(EDisplay::kBlock);

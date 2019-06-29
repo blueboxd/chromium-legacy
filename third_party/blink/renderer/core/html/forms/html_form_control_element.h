@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/forms/form_associated.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -174,12 +175,17 @@ inline bool IsHTMLFormControlElement(const Element& element) {
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
-DEFINE_TYPE_CASTS(HTMLFormControlElement,
-                  ListedElement,
-                  control,
-                  control->IsFormControlElement(),
-                  control.IsFormControlElement());
 
+template <>
+struct DowncastTraits<HTMLFormControlElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* element = DynamicTo<Element>(node);
+    return element && element->IsFormControlElement();
+  }
+  static bool AllowFrom(const ListedElement& control) {
+    return control.IsFormControlElement();
+  }
+};
 }  // namespace blink
 
 #endif

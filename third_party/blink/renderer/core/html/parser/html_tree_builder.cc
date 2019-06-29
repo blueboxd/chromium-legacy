@@ -2443,7 +2443,7 @@ void HTMLTreeBuilder::ProcessEndOfFile(AtomicHTMLToken* token) {
       }
       Element* el = tree_.OpenElements()->Top();
       if (IsHTMLTextAreaElement(el))
-        ToHTMLFormControlElement(el)->SetBlocksFormSubmission(true);
+        To<HTMLFormControlElement>(el)->SetBlocksFormSubmission(true);
       tree_.OpenElements()->Pop();
       DCHECK_NE(original_insertion_mode_, kTextMode);
       SetInsertionMode(original_insertion_mode_);

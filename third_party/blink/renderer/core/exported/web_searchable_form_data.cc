@@ -71,10 +71,10 @@ void GetFormEncoding(const HTMLFormElement& form, WTF::TextEncoding* encoding) {
 // button is returned.
 HTMLFormControlElement* ButtonToActivate(const HTMLFormElement& form) {
   HTMLFormControlElement* first_submit_button = nullptr;
-  for (auto& element : form.ListedElements()) {
-    if (!element->IsFormControlElement())
+  for (ListedElement* element : form.ListedElements()) {
+    auto* control = DynamicTo<HTMLFormControlElement>(element);
+    if (!control)
       continue;
-    HTMLFormControlElement* control = ToHTMLFormControlElement(element);
     if (control->IsActivatedSubmit()) {
       // There's a button that is already activated for submit, return
       // nullptr.
@@ -137,20 +137,19 @@ bool IsInDefaultState(const HTMLFormControlElement& form_element) {
 //  - More than one text field
 HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
   HTMLInputElement* text_element = nullptr;
-  for (const auto& item : form.ListedElements()) {
-    if (!item->IsFormControlElement())
+  for (ListedElement* item : form.ListedElements()) {
+    auto* control = DynamicTo<HTMLFormControlElement>(item);
+    if (!control)
       continue;
 
-    HTMLFormControlElement& control = ToHTMLFormControlElement(*item);
-
-    if (control.IsDisabledFormControl() || control.GetName().IsNull())
+    if (control->IsDisabledFormControl() || control->GetName().IsNull())
       continue;
 
-    if (!IsInDefaultState(control) || IsHTMLTextAreaElement(control))
+    if (!IsInDefaultState(*control) || IsHTMLTextAreaElement(*control))
       return nullptr;
 
-    if (IsHTMLInputElement(control) && control.willValidate()) {
-      const HTMLInputElement& input = ToHTMLInputElement(control);
+    if (IsHTMLInputElement(*control) && control->willValidate()) {
+      const HTMLInputElement& input = ToHTMLInputElement(*control);
 
       // Return nothing if a file upload field or a password field are
       // found.
@@ -165,7 +164,7 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
           // searchable.
           return nullptr;
         }
-        text_element = ToHTMLInputElement(&control);
+        text_element = ToHTMLInputElement(control);
       }
     }
   }
@@ -183,16 +182,16 @@ bool BuildSearchString(const HTMLFormElement& form,
                        const WTF::TextEncoding& encoding,
                        const HTMLInputElement* text_element) {
   bool is_element_found = false;
-  for (const auto& item : form.ListedElements()) {
-    if (!item->IsFormControlElement())
+  for (ListedElement* item : form.ListedElements()) {
+    auto* control = DynamicTo<HTMLFormControlElement>(item);
+    if (!control)
       continue;
 
-    HTMLFormControlElement& control = ToHTMLFormControlElement(*item);
-    if (control.IsDisabledFormControl() || control.GetName().IsNull())
+    if (control->IsDisabledFormControl() || control->GetName().IsNull())
       continue;
 
     auto* form_data = MakeGarbageCollected<FormData>(encoding);
-    control.AppendToFormData(*form_data);
+    control->AppendToFormData(*form_data);
 
     for (const auto& entry : form_data->Entries()) {
       if (!encoded_string->IsEmpty())
@@ -201,7 +200,7 @@ bool BuildSearchString(const HTMLFormElement& form,
                                               form_data->Encode(entry->name()),
                                               FormDataEncoder::kNormalizeCRLF);
       encoded_string->push_back('=');
-      if (&control == text_element) {
+      if (control == text_element) {
         encoded_string->Append("{searchTerms}", 13);
         is_element_found = true;
       } else {

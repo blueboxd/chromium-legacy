@@ -111,9 +111,15 @@ public class TabGridDialogMediator {
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
                 List<Tab> relatedTabs = getRelatedTabs(tab.getId());
+                // If the group is empty, update the animation and hide the dialog.
+                if (relatedTabs.size() == 0) {
+                    mCurrentTabId = Tab.INVALID_TAB_ID;
+                    mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
+                    mDialogResetHandler.resetWithListOfTabs(null);
+                    return;
+                }
                 // If current tab is closed and tab group is not empty, hand over ID of the next
                 // tab in the group to mCurrentTabId.
-                if (relatedTabs.size() == 0) return;
                 if (tab.getId() == mCurrentTabId) {
                     mCurrentTabId = relatedTabs.get(0).getId();
                 }

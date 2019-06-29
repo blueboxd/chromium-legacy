@@ -672,8 +672,8 @@ ListedElement* ListedElement::From(Element& element) {
   auto* html_element = ToHTMLElementOrNull(element);
   if (!html_element)
     return nullptr;
-  if (html_element->IsFormControlElement())
-    return ToHTMLFormControlElement(&element);
+  if (auto* form_control_element = DynamicTo<HTMLFormControlElement>(element))
+    return form_control_element;
   if (html_element->IsFormAssociatedCustomElement())
     return &element.EnsureElementInternals();
   if (auto* object = ToHTMLObjectElementOrNull(html_element))
@@ -682,8 +682,8 @@ ListedElement* ListedElement::From(Element& element) {
 }
 
 const HTMLElement& ListedElement::ToHTMLElement() const {
-  if (IsFormControlElement())
-    return ToHTMLFormControlElement(*this);
+  if (auto* form_control_element = DynamicTo<HTMLFormControlElement>(this))
+    return *form_control_element;
   if (IsElementInternals())
     return To<ElementInternals>(*this).Target();
   return ToHTMLObjectElementFromListedElement(*this);

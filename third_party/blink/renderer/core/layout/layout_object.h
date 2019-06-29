@@ -1137,12 +1137,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsRenderedLegendInternal() const;
 
-  // The pseudo element style can be cached or uncached.  Use the cached method
+  // The pseudo element style can be cached or uncached. Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
-  // has no concept of changing state).
-  const ComputedStyle* GetCachedPseudoStyle(
-      PseudoId,
-      const ComputedStyle* parent_style = nullptr) const;
+  // has no concept of changing state). The cached pseudo style always inherits
+  // from the originating element's style (because we can cache only one
+  // version), while the uncached pseudo style can inherit from any style.
+  const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
   scoped_refptr<ComputedStyle> GetUncachedPseudoStyle(
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style = nullptr) const;
@@ -1735,6 +1735,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   /* The following methods are inlined in LayoutObjectInlines.h */
+  // If first line style is requested and there is no applicable first line
+  // style, the functions will return the style of this object.
   inline const ComputedStyle* FirstLineStyle() const;
   inline const ComputedStyle& FirstLineStyleRef() const;
   inline const ComputedStyle* Style(bool first_line) const;
@@ -2638,10 +2640,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       AncestorSkipInfo* = nullptr) const;
 
  private:
-  // Used only by applyFirstLineChanges to get a first line style based off of a
-  // given new style, without accessing the cache.
-  scoped_refptr<const ComputedStyle> UncachedFirstLineStyle() const;
-
   // Adjusts a visual rect in the space of |visual_rect| to be in the space of
   // the |paint_invalidation_container|, if needed. They can be different only
   // if |paint_invalidation_container| is a composited scroller.
@@ -2687,7 +2685,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutFlowThread* LocateFlowThreadContainingBlock() const;
   void RemoveFromLayoutFlowThreadRecursive(LayoutFlowThread*);
 
-  const ComputedStyle* CachedFirstLineStyle() const;
+  // Returns the first line style declared in CSS. The style may be declared on
+  // an ancestor block (see EnclosingFirstLineStyleBlock()) that applies to this
+  // object. Returns nullptr if there is no applicable first line style.
+  // Whether the style applies is based on CSS rules, regardless of whether this
+  // object is really in the first line which is unknown before layout.
+  const ComputedStyle* FirstLineStyleWithoutFallback() const;
+
   StyleDifference AdjustStyleDifference(StyleDifference) const;
 
 #if DCHECK_IS_ON()

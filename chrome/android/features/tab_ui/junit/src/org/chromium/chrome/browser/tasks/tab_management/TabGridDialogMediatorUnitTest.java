@@ -258,6 +258,24 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    public void tabClosure_Last_Current() {
+        // Assume that tab1 is the last tab in the group and it just gets closed.
+        doReturn(new ArrayList<>()).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+        // As last tab in the group, tab1 is definitely the current tab for the dialog.
+        mMediator.setCurrentTabIdForTest(TAB1_ID);
+        // Assume the dialog is showing and the source Rect is not null.
+        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, mRect);
+        mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
+
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+
+        assertThat(mMediator.getCurrentTabIdForTest(), equalTo(Tab.INVALID_TAB_ID));
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
+        verify(mDialogResetHandler).resetWithListOfTabs(null);
+        verify(mGridTabSwitcherResetHandler, never()).resetWithTabList(mTabGroupModelFilter, false);
+    }
+
+    @Test
     public void tabClosure_NotLast_Current_WithDialogHidden() {
         // Assume that tab1 and tab2 are in the same group, but tab2 just gets closed.
         doReturn(new ArrayList<>(Arrays.asList(mTab1)))

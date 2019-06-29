@@ -383,11 +383,8 @@ bool LayoutTheme::IsSpinUpButtonPartPressed(const Node* node) {
 }
 
 bool LayoutTheme::IsReadOnlyControl(const Node* node) {
-  auto* toElement = DynamicTo<Element>(node);
-  if (!toElement || !toElement->IsFormControlElement())
-    return false;
-  const HTMLFormControlElement* element = ToHTMLFormControlElement(node);
-  return element->IsReadOnly();
+  auto* form_control_element = DynamicTo<HTMLFormControlElement>(node);
+  return form_control_element && form_control_element->IsReadOnly();
 }
 
 bool LayoutTheme::IsHovered(const Node* node) {

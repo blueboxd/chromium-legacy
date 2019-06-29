@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'feed_revision': '5708e2dcfff432c1fe4106b876813a7205e32ea0',
+  'feed_revision': 'fe5535b8c88fb3a610273bf115afa4e6a706f565',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_build-tools_version
   # and whatever else without interference from each other.
@@ -1400,7 +1400,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e0e9be59bd27dd6d17f4899f32f1c91994eb735a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0ac929cb6f52a21fd2f837fa2eaaf53f8fbf9fa3',
     'condition': 'checkout_src_internal',
   },
 

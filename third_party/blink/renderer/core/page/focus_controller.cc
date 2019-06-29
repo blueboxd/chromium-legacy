@@ -1127,15 +1127,15 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
   if (!html_element)
     return nullptr;
 
-  if (!element->IsFormControlElement() &&
-      !html_element->isContentEditableForBinding())
+  auto* form_control_element = DynamicTo<HTMLFormControlElement>(element);
+  if (!form_control_element && !html_element->isContentEditableForBinding())
     return nullptr;
 
   HTMLFormElement* form_owner = nullptr;
   if (html_element->isContentEditableForBinding())
     form_owner = Traversal<HTMLFormElement>::FirstAncestor(*element);
   else
-    form_owner = ToHTMLFormControlElement(element)->formOwner();
+    form_owner = form_control_element->formOwner();
 
   if (!form_owner)
     return nullptr;
@@ -1153,10 +1153,9 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
     if (next_html_element->isContentEditableForBinding() &&
         next_element->IsDescendantOf(form_owner))
       return next_element;
-    if (!next_element->IsFormControlElement())
+    auto* form_element = DynamicTo<HTMLFormControlElement>(next_element);
+    if (!form_element)
       continue;
-    HTMLFormControlElement* form_element =
-        ToHTMLFormControlElement(next_element);
     if (form_element->formOwner() != form_owner ||
         form_element->IsDisabledOrReadOnly())
       continue;

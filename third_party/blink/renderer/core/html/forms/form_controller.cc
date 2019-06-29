@@ -53,7 +53,7 @@ inline HTMLFormElement* OwnerFormForState(const ListedElement& control) {
 }
 
 const AtomicString& ControlType(const ListedElement& control) {
-  if (auto* control_element = ToHTMLFormControlElementOrNull(control))
+  if (auto* control_element = DynamicTo<HTMLFormControlElement>(control))
     return control_element->type();
   return To<ElementInternals>(control).Target().localName();
 }

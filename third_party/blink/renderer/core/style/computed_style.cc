@@ -235,32 +235,58 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
     return Difference::kEqual;
   if (!old_style || !new_style)
     return Difference::kInherited;
-  if (old_style->Display() != new_style->Display() &&
-      (old_style->IsDisplayFlexibleOrGridBox() ||
-       old_style->IsDisplayLayoutCustomBox() ||
-       new_style->IsDisplayFlexibleOrGridBox() ||
-       new_style->IsDisplayLayoutCustomBox())) {
+
+  // For inline elements, the new computed first line style will be |new_style|
+  // inheriting from the parent's first line style. If |new_style| is different
+  // from |old_style|'s cached inherited first line style, the new computed
+  // first line style may be different from the old even if |new_style| and
+  // |old_style| equal. Especially if the difference is on inherited properties,
+  // we need to propagate the difference to descendants.
+  // See external/wpt/css/css-pseudo/first-line-change-inline-color*.html.
+  auto inherited_first_line_style_diff = Difference::kEqual;
+  if (const ComputedStyle* cached_inherited_first_line_style =
+          old_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited)) {
+    DCHECK(!new_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited));
+    inherited_first_line_style_diff =
+        ComputeDifferenceIgnoringInheritedFirstLineStyle(
+            *cached_inherited_first_line_style, *new_style);
+  }
+  return std::max(
+      inherited_first_line_style_diff,
+      ComputeDifferenceIgnoringInheritedFirstLineStyle(*old_style, *new_style));
+}
+
+ComputedStyle::Difference
+ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
+    const ComputedStyle& old_style,
+    const ComputedStyle& new_style) {
+  DCHECK_NE(&old_style, &new_style);
+  if (old_style.Display() != new_style.Display() &&
+      (old_style.IsDisplayFlexibleOrGridBox() ||
+       old_style.IsDisplayLayoutCustomBox() ||
+       new_style.IsDisplayFlexibleOrGridBox() ||
+       new_style.IsDisplayLayoutCustomBox())) {
     return Difference::kDisplayAffectingDescendantStyles;
   }
-  if (!old_style->NonIndependentInheritedEqual(*new_style))
+  if (!old_style.NonIndependentInheritedEqual(new_style))
     return Difference::kInherited;
-  if (!old_style->LoadingCustomFontsEqual(*new_style) ||
-      old_style->JustifyItems() != new_style->JustifyItems())
+  if (!old_style.LoadingCustomFontsEqual(new_style) ||
+      old_style.JustifyItems() != new_style.JustifyItems())
     return Difference::kInherited;
-  bool non_inherited_equal = old_style->NonInheritedEqual(*new_style);
-  if (!non_inherited_equal && old_style->HasExplicitlyInheritedProperties()) {
+  bool non_inherited_equal = old_style.NonInheritedEqual(new_style);
+  if (!non_inherited_equal && old_style.HasExplicitlyInheritedProperties()) {
     return Difference::kInherited;
   }
-  if (!old_style->IndependentInheritedEqual(*new_style))
+  if (!old_style.IndependentInheritedEqual(new_style))
     return Difference::kIndependentInherited;
   if (non_inherited_equal) {
-    DCHECK(*old_style == *new_style);
-    if (PseudoStylesEqual(*old_style, *new_style))
+    DCHECK(old_style == new_style);
+    if (PseudoStylesEqual(old_style, new_style))
       return Difference::kEqual;
     return Difference::kPseudoStyle;
   }
-  if (new_style->HasAnyPublicPseudoStyles() ||
-      old_style->HasAnyPublicPseudoStyles())
+  if (new_style.HasAnyPublicPseudoStyles() ||
+      old_style.HasAnyPublicPseudoStyles())
     return Difference::kPseudoStyle;
   return Difference::kNonInherited;
 }

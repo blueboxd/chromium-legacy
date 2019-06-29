@@ -3480,8 +3480,8 @@ TEST_F(WebViewTest, FinishComposingTextDoesntTriggerAutofillTextChange) {
   web_view->SetInitialFocus(false);
 
   WebDocument document = web_view->MainFrameImpl()->GetDocument();
-  HTMLFormControlElement* form =
-      ToHTMLFormControlElement(document.GetElementById("sample"));
+  auto* form = To<HTMLFormControlElement>(
+      static_cast<Element*>(document.GetElementById("sample")));
 
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();

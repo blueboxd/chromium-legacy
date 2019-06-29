@@ -262,7 +262,7 @@ WebFormControlElement& WebFormControlElement::operator=(
 }
 
 WebFormControlElement::operator HTMLFormControlElement*() const {
-  return ToHTMLFormControlElement(private_.Get());
+  return blink::To<HTMLFormControlElement>(private_.Get());
 }
 
 }  // namespace blink

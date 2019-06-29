@@ -104,8 +104,6 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->button.checked = extra_params->button.checked;
       break;
     case WebThemeEngine::kPartButton:
-      native_theme_extra_params->button.is_default =
-          extra_params->button.is_default;
       native_theme_extra_params->button.has_border =
           extra_params->button.has_border;
       // Native buttons have a different focus style.

@@ -2697,7 +2697,7 @@ LayoutUnit LayoutBlockFlow::StartAlignedOffsetForLine(
 void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
   DCHECK(ChildrenInline());
   if (RootInlineBox* first_root_box = FirstRootBox())
-    first_root_box->SetShouldDoFullPaintInvalidationRecursively();
+    first_root_box->SetShouldDoFullPaintInvalidationForFirstLine();
   else if (const NGPaintFragment* paint_fragment = PaintFragment())
     paint_fragment->SetShouldDoFullPaintInvalidationForFirstLine();
 }

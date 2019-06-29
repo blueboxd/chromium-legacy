@@ -95,10 +95,11 @@ class TabListMediator {
     }
 
     /**
-     * The object to set to TabProperties.THUMBNAIL_FETCHER for the TabGridViewBinder to obtain
-     * the thumbnail asynchronously.
+     * The object to set to {@link TabProperties#THUMBNAIL_FETCHER} for the TabGridViewBinder to
+     * obtain the thumbnail asynchronously.
      */
     static class ThumbnailFetcher {
+        static Callback<Bitmap> sBitmapCallbackForTesting;
         private ThumbnailProvider mThumbnailProvider;
         private Tab mTab;
         private boolean mForceUpdate;
@@ -113,8 +114,12 @@ class TabListMediator {
         }
 
         void fetch(Callback<Bitmap> callback) {
+            Callback<Bitmap> forking = (bitmap) -> {
+                if (sBitmapCallbackForTesting != null) sBitmapCallbackForTesting.onResult(bitmap);
+                callback.onResult(bitmap);
+            };
             mThumbnailProvider.getTabThumbnailWithCallback(
-                    mTab, callback, mForceUpdate, mWriteToCache);
+                    mTab, forking, mForceUpdate, mWriteToCache);
         }
     }
 

@@ -12,6 +12,8 @@ import com.google.android.libraries.feed.api.host.config.ApplicationInfo;
 import com.google.android.libraries.feed.api.host.config.Configuration;
 import com.google.android.libraries.feed.api.host.config.DebugBehavior;
 import com.google.android.libraries.feed.api.host.network.NetworkClient;
+import com.google.android.libraries.feed.api.host.storage.ContentStorageDirect;
+import com.google.android.libraries.feed.api.host.storage.JournalStorageDirect;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -168,7 +170,8 @@ public class FeedProcessScopeFactory {
     @VisibleForTesting
     static void createFeedProcessScopeForTesting(FeedScheduler feedScheduler,
             NetworkClient networkClient, FeedOfflineIndicator feedOfflineIndicator,
-            FeedAppLifecycle feedAppLifecycle, FeedLoggingBridge loggingBridge) {
+            FeedAppLifecycle feedAppLifecycle, FeedLoggingBridge loggingBridge,
+            ContentStorageDirect contentStorage, JournalStorageDirect journalStorage) {
         Configuration configHostApi = FeedConfiguration.createConfiguration();
 
         sFeedScheduler = feedScheduler;
@@ -182,6 +185,8 @@ public class FeedProcessScopeFactory {
                 sFeedLoggingBridge, networkClient, sFeedScheduler, DebugBehavior.SILENT,
                 ContextUtils.getApplicationContext(), applicationInfo,
                 new BasicTooltipSupportedApi())
+                                .setContentStorageDirect(contentStorage)
+                                .setJournalStorageDirect(journalStorage)
                                 .build();
     }
 

@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
+import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -25,6 +26,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
+import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -45,6 +48,10 @@ import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.lang.ref.WeakReference;
+import java.util.LinkedList;
+import java.util.List;
+
 /** Tests for the {@link GridTabSwitcherLayout} */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
@@ -63,6 +70,10 @@ public class GridTabSwitcherLayoutTest {
     private GridTabSwitcherLayout mGtsLayout;
     private String mUrl;
     private int mRepeat;
+    private List<WeakReference<Bitmap>> mAllBitmaps = new LinkedList<>();
+    private Callback<Bitmap> mBitmapListener = (bitmap) -> {
+        mAllBitmaps.add(new WeakReference<>(bitmap));
+    };
 
     @Before
     public void setUp() throws InterruptedException {
@@ -76,6 +87,10 @@ public class GridTabSwitcherLayoutTest {
         mGtsLayout = (GridTabSwitcherLayout) layout;
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 3;
+
+        GridTabSwitcherCoordinator coordinator =
+                (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
+        coordinator.setBitmapCallbackForTesting(mBitmapListener);
     }
 
     @Test
@@ -85,6 +100,7 @@ public class GridTabSwitcherLayoutTest {
     public void testTabToGridFromLiveTab() throws InterruptedException {
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
+        assertThumbnailsAreReleased();
     }
 
     @Test
@@ -97,6 +113,7 @@ public class GridTabSwitcherLayoutTest {
         // clang-format on
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
+        assertThumbnailsAreReleased();
     }
 
     @Test
@@ -148,6 +165,7 @@ public class GridTabSwitcherLayoutTest {
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(2, NTP_URL);
         testTabToGrid(NTP_URL);
+        assertThumbnailsAreReleased();
     }
 
     /**
@@ -348,6 +366,7 @@ public class GridTabSwitcherLayoutTest {
             }
         }
         Assert.assertEquals(expected, getCaptureCount() - initCount);
+        assertThumbnailsAreReleased();
     }
 
     private int getCaptureCount() {
@@ -358,5 +377,17 @@ public class GridTabSwitcherLayoutTest {
         // Needs to wait for |kCaptureMinRequestTimeMs| in order to capture another one.
         // TODO(wychen): mock |kCaptureMinRequestTimeMs| to 0 in tests?
         Thread.sleep(2000);
+    }
+
+    private void assertThumbnailsAreReleased() {
+        // Could not directly assert canAllBeGarbageCollected() because objects can be in Cleaner.
+        CriteriaHelper.pollInstrumentationThread(() -> canAllBeGarbageCollected(mAllBitmaps));
+    }
+
+    private boolean canAllBeGarbageCollected(List<WeakReference<Bitmap>> bitmaps) {
+        for (WeakReference<Bitmap> bitmap : bitmaps) {
+            if (!GarbageCollectionTestUtils.canBeGarbageCollected(bitmap)) return false;
+        }
+        return true;
     }
 }

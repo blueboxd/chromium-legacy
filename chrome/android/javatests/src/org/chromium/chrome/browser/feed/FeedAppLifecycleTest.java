@@ -15,6 +15,8 @@ import android.support.test.filters.SmallTest;
 
 import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
 import com.google.android.libraries.feed.api.host.network.NetworkClient;
+import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryContentStorage;
+import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryJournalStorage;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -115,8 +117,8 @@ public class FeedAppLifecycleTest {
             mAppLifecycle =
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
-                    mOfflineIndicator, mAppLifecycle,
-                    new FeedLoggingBridge(profile));
+                    mOfflineIndicator, mAppLifecycle, new FeedLoggingBridge(profile),
+                    new InMemoryContentStorage(), new InMemoryJournalStorage());
         });
 
         mActivityTestRule.startMainActivityOnBlankPage();

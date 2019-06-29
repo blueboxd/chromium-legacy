@@ -1251,9 +1251,9 @@ bool AXNodeObject::IsModal() const {
 }
 
 bool AXNodeObject::IsRequired() const {
-  auto* element = DynamicTo<Element>(GetNode());
-  if (element && element->IsFormControlElement() && HasAttribute(kRequiredAttr))
-    return ToHTMLFormControlElement(element)->IsRequired();
+  auto* form_control = DynamicTo<HTMLFormControlElement>(GetNode());
+  if (form_control && form_control->IsRequired())
+    return true;
 
   if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kRequired))
     return true;

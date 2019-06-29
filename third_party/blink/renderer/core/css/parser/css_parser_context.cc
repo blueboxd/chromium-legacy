@@ -156,8 +156,8 @@ CSSParserContext::CSSParserContext(
     ContentSecurityPolicyDisposition policy_disposition,
     const Document* use_counter_document)
     : base_url_(base_url),
+      should_check_content_security_policy_(policy_disposition),
       origin_clean_(origin_clean),
-      charset_(charset),
       mode_(mode),
       match_mode_(match_mode),
       profile_(profile),
@@ -166,7 +166,7 @@ CSSParserContext::CSSParserContext(
       use_legacy_background_size_shorthand_behavior_(
           use_legacy_background_size_shorthand_behavior),
       secure_context_mode_(secure_context_mode),
-      should_check_content_security_policy_(policy_disposition),
+      charset_(charset),
       document_(use_counter_document) {}
 
 bool CSSParserContext::operator==(const CSSParserContext& other) const {

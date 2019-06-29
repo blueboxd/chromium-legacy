@@ -27,7 +27,7 @@ class CORE_EXPORT CSSParserContext
     : public GarbageCollectedFinalized<CSSParserContext> {
  public:
   // https://drafts.csswg.org/selectors/#profiles
-  enum SelectorProfile { kLiveProfile, kSnapshotProfile };
+  enum SelectorProfile : uint8_t { kLiveProfile, kSnapshotProfile };
 
   // All three of these constructors copy the context and override the current
   // Document handle used for UseCounter.
@@ -131,11 +131,12 @@ class CORE_EXPORT CSSParserContext
  private:
   KURL base_url_;
 
+  ContentSecurityPolicyDisposition should_check_content_security_policy_;
+
   // If true, allows reading and modifying of the CSS rules.
   // https://drafts.csswg.org/cssom/#concept-css-style-sheet-origin-clean-flag
   const bool origin_clean_;
 
-  WTF::TextEncoding charset_;
   CSSParserMode mode_;
   CSSParserMode match_mode_;
   SelectorProfile profile_ = kLiveProfile;
@@ -143,7 +144,8 @@ class CORE_EXPORT CSSParserContext
   bool is_html_document_;
   bool use_legacy_background_size_shorthand_behavior_;
   SecureContextMode secure_context_mode_;
-  ContentSecurityPolicyDisposition should_check_content_security_policy_;
+
+  WTF::TextEncoding charset_;
 
   WeakMember<const Document> document_;
 };

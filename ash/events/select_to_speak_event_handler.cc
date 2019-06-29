@@ -4,26 +4,18 @@
 
 #include "ash/events/select_to_speak_event_handler.h"
 
-#include <string>
-#include <utility>
-
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/public/cpp/select_to_speak_event_handler_delegate.h"
 #include "ash/shell.h"
-#include "base/macros.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window_tree_host.h"
-#include "ui/events/event.h"
-#include "ui/events/event_sink.h"
 
 namespace ash {
 
 const ui::KeyboardCode kSpeakSelectionKey = ui::VKEY_S;
 
 SelectToSpeakEventHandler::SelectToSpeakEventHandler(
-    mojom::SelectToSpeakEventHandlerDelegatePtr delegate_ptr)
-    : delegate_ptr_(std::move(delegate_ptr)) {
-  DCHECK(delegate_ptr_.is_bound());
+    SelectToSpeakEventHandlerDelegate* delegate)
+    : delegate_(delegate) {
+  DCHECK(delegate_);
   Shell::Get()->AddPreTargetHandler(this,
                                     ui::EventTarget::Priority::kAccessibility);
 }
@@ -53,10 +45,6 @@ void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
     touch_id_ = ui::PointerDetails::kUnknownPointerId;
     touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
   }
-}
-
-void SelectToSpeakEventHandler::FlushMojoForTest() {
-  delegate_ptr_.FlushForTesting();
 }
 
 void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
@@ -115,7 +103,7 @@ void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   }
 
   // Forward the key to the chrome process for the extension.
-  delegate_ptr_->DispatchKeyEvent(ui::Event::Clone(*event));
+  delegate_->DispatchKeyEvent(*event);
 
   if (cancel_event)
     CancelEvent(event);
@@ -152,7 +140,7 @@ void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       state_ = INACTIVE;
   }
 
-  delegate_ptr_->DispatchMouseEvent(ui::Event::Clone(*event));
+  delegate_->DispatchMouseEvent(*event);
 
   if (event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSE_RELEASED)
@@ -212,10 +200,10 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       return;
   }
   int flags = ui::EF_LEFT_MOUSE_BUTTON;
-  ui::MouseEvent mutable_event(type, event->location(), event->root_location(),
+  ui::MouseEvent event_to_send(type, event->location(), event->root_location(),
                                event->time_stamp(), flags, flags);
 
-  delegate_ptr_->DispatchMouseEvent(ui::Event::Clone(mutable_event));
+  delegate_->DispatchMouseEvent(event_to_send);
 
   if (event->type() != ui::ET_TOUCH_MOVED) {
     // Don't cancel move events in case focus needs to change.

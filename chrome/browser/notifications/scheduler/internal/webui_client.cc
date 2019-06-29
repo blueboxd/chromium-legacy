@@ -15,7 +15,7 @@ WebUIClient::~WebUIClient() = default;
 void WebUIClient::BeforeShowNotification(
     std::unique_ptr<NotificationData> notification_data,
     NotificationDataCallback callback) {
-  NOTIMPLEMENTED();
+  std::move(callback).Run(std::move(notification_data));
 }
 
 void WebUIClient::OnSchedulerInitialized(bool success,

@@ -722,11 +722,6 @@ TEST_P(ShelfViewTextDirectionTest, GetIdealBoundsOfItemIcon) {
   const gfx::Rect bounds_2 = shelf_view_->GetIdealBoundsOfItemIcon(id_2);
   const gfx::Rect bounds_3 = shelf_view_->GetIdealBoundsOfItemIcon(id_3);
 
-  EXPECT_EQ(shelf_view_->GetIdealBoundsOfItemIcon(ShelfID(kAppListId)),
-            shelf_view_->GetHomeButton()->GetMirroredBounds());
-  EXPECT_EQ(shelf_view_->GetIdealBoundsOfItemIcon(ShelfID(kBackButtonId)),
-            shelf_view_->GetBackButton()->GetMirroredBounds());
-
   // Just items in the overflow area return the overflow button's ideal bounds.
   EXPECT_NE(bounds_1, shelf_view_->GetOverflowButton()->GetMirroredBounds());
   EXPECT_TRUE(GetButtonByID(id_1)->GetMirroredBounds().Contains(bounds_1));

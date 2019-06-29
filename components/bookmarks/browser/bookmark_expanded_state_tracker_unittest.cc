@@ -78,7 +78,7 @@ TEST_F(BookmarkExpandedStateTrackerTest, SetExpandedNodes) {
   EXPECT_EQ(nodes, tracker->GetExpandedNodes());
 
   // Remove the folder, which should remove it from the list of expanded nodes.
-  model_->Remove(model_->bookmark_bar_node()->GetChild(0));
+  model_->Remove(model_->bookmark_bar_node()->children().front().get());
   nodes.erase(n1);
   n1 = nullptr;
   EXPECT_EQ(nodes, tracker->GetExpandedNodes());

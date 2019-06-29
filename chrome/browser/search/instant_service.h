@@ -27,6 +27,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_observer.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -44,10 +45,6 @@ namespace content {
 class RenderProcessHost;
 }  // namespace content
 
-namespace ui {
-class DarkModeObserver;
-}  // namespace ui
-
 extern const char kNtpCustomBackgroundMainColor[];
 
 // Tracks render process host IDs that are associated with Instant, i.e.
@@ -56,7 +53,8 @@ extern const char kNtpCustomBackgroundMainColor[];
 // renderer processes.
 class InstantService : public KeyedService,
                        public content::NotificationObserver,
-                       public ntp_tiles::MostVisitedSites::Observer {
+                       public ntp_tiles::MostVisitedSites::Observer,
+                       public ui::NativeThemeObserver {
  public:
   explicit InstantService(Profile* profile);
   ~InstantService() override;
@@ -148,7 +146,7 @@ class InstantService : public KeyedService,
   ThemeBackgroundInfo* GetInitializedThemeInfo();
 
   // Used for testing.
-  void SetDarkModeThemeForTesting(ui::NativeTheme* theme);
+  void SetNativeThemeForTesting(ui::NativeTheme* theme);
 
   // Used for testing.
   void AddValidBackdropUrlForTesting(const GURL& url) const;
@@ -196,13 +194,12 @@ class InstantService : public KeyedService,
   // Called when a renderer process is terminated.
   void OnRendererProcessTerminated(int process_id);
 
+  // ui::NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
+
   // Called when the search provider changes. Disables custom links if the
   // search provider is not Google.
   void OnSearchProviderChanged();
-
-  // Called when dark mode changes. Updates current theme info as necessary and
-  // notifies that the theme has changed.
-  void OnDarkModeChanged(bool dark_mode);
 
   // ntp_tiles::MostVisitedSites::Observer implementation.
   void OnURLsAvailable(
@@ -238,8 +235,6 @@ class InstantService : public KeyedService,
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
 
-  void CreateDarkModeObserver(ui::NativeTheme* theme);
-
   // Updates custom background prefs with color for the given |image_url|.
   void UpdateCustomBackgroundPrefsWithColor(const GURL& image_url,
                                             SkColor color);
@@ -274,8 +269,9 @@ class InstantService : public KeyedService,
 
   PrefService* pref_service_;
 
-  // Keeps track of any changes to system dark mode.
-  std::unique_ptr<ui::DarkModeObserver> dark_mode_observer_;
+  ScopedObserver<ui::NativeTheme, InstantService> theme_observer_;
+
+  ui::NativeTheme* native_theme_;
 
   NtpBackgroundService* background_service_;
 

@@ -254,17 +254,17 @@ TEST_F(ManagedBookmarkServiceTest, IsDescendantOfManagedNode) {
 
   const BookmarkNode* parent = managed_->managed_node();
   ASSERT_EQ(2u, parent->children().size());
-  EXPECT_TRUE(
-      bookmarks::IsDescendantOf(parent->GetChild(0), managed_->managed_node()));
-  EXPECT_TRUE(
-      bookmarks::IsDescendantOf(parent->GetChild(1), managed_->managed_node()));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->children()[0].get(),
+                                        managed_->managed_node()));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->children()[1].get(),
+                                        managed_->managed_node()));
 
-  parent = parent->GetChild(1);
+  parent = parent->children()[1].get();
   ASSERT_EQ(2u, parent->children().size());
-  EXPECT_TRUE(
-      bookmarks::IsDescendantOf(parent->GetChild(0), managed_->managed_node()));
-  EXPECT_TRUE(
-      bookmarks::IsDescendantOf(parent->GetChild(1), managed_->managed_node()));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->children()[0].get(),
+                                        managed_->managed_node()));
+  EXPECT_TRUE(bookmarks::IsDescendantOf(parent->children()[1].get(),
+                                        managed_->managed_node()));
 }
 
 TEST_F(ManagedBookmarkServiceTest, RemoveAllDoesntRemoveManaged) {
@@ -292,7 +292,8 @@ TEST_F(ManagedBookmarkServiceTest, HasDescendantsOfManagedNode) {
   const BookmarkNode* user_node =
       model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("foo bar"),
                      GURL("http://www.google.com"));
-  const BookmarkNode* managed_node = managed_->managed_node()->GetChild(0);
+  const BookmarkNode* managed_node =
+      managed_->managed_node()->children().front().get();
   ASSERT_TRUE(managed_node);
 
   std::vector<const BookmarkNode*> nodes;

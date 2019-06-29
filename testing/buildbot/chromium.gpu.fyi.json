@@ -8024,6 +8024,31 @@
       {
         "args": [
           "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--no-xvfb"
         ],
@@ -8045,6 +8070,91 @@
           "expiration": 21600
         },
         "test": "angle_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        },
+        "test": "angle_white_box_tests"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
+          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--use-gl=any",
+          "--use-vulkan=native",
+          "--enable-oop-rasterization",
+          "--enable-gpu-rasterization",
+          "--enable-raster-to-sk-image",
+          "--force-gpu-rasterization",
+          "--disable-software-compositing-fallback",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "vulkan_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        },
+        "test": "content_browsertests"
       },
       {
         "args": [
@@ -8493,6 +8603,39 @@
           "--browser=release",
           "--passthrough",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough",
+          "--webgl-conformance-version=2.0.1",
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl2_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
@@ -8684,6 +8827,41 @@
           "expiration": 21600
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
+          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--use-gl=any",
+          "--use-vulkan=native",
+          "--enable-oop-rasterization",
+          "--enable-gpu-rasterization",
+          "--enable-raster-to-sk-image",
+          "--force-gpu-rasterization",
+          "--disable-software-compositing-fallback",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "vulkan_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        },
+        "test": "content_browsertests"
       },
       {
         "args": [

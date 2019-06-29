@@ -132,18 +132,6 @@ class TreeNode : public TreeModelNode {
     return count;
   }
 
-  // Returns the node at |index|.
-  // TODO(https://crbug.com/956419): Remove; use children()[index].
-  const NodeType* GetChild(int index) const {
-    DCHECK_GE(index, 0);
-    DCHECK_LT(size_t{index}, children_.size());
-    return children_[index].get();
-  }
-  NodeType* GetChild(int index) {
-    return const_cast<NodeType*>(
-        static_cast<const NodeType&>(*this).GetChild(index));
-  }
-
   // Returns the index of |node|, or -1 if |node| is not a child of this.
   int GetIndexOf(const NodeType* node) const {
     DCHECK(node);

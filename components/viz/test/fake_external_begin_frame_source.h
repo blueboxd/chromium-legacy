@@ -51,6 +51,8 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
 
   size_t num_observers() const { return observers_.size(); }
 
+  using BeginFrameSource::RequestCallbackOnGpuAvailable;
+
  private:
   void PostTestOnBeginFrame();
 

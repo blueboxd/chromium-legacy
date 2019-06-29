@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
@@ -69,7 +69,7 @@ AccessibilityDetailedView::AccessibilityDetailedView(
 
 void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
 
   spoken_feedback_enabled_ = controller->spoken_feedback_enabled();
@@ -146,7 +146,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   CreateScrollableList();
 
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
 
   spoken_feedback_enabled_ = controller->spoken_feedback_enabled();
@@ -261,7 +261,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 
 void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   using base::RecordAction;
   using base::UserMetricsAction;

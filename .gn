@@ -342,7 +342,6 @@ check_targets = [
   "//third_party/android_swipe_refresh/*",
   "//third_party/android_system_sdk/*",
   "//third_party/android_testrunner/*",
-  "//third_party/android_tools/*",
 
   # "//third_party/angle/*",  # 30ish errors
   "//third_party/apache-portable-runtime/*",

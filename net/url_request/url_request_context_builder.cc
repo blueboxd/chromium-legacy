@@ -360,14 +360,7 @@ void URLRequestContextBuilder::SetCreateLayeredNetworkDelegateCallback(
 
 void URLRequestContextBuilder::set_proxy_delegate(
     std::unique_ptr<ProxyDelegate> proxy_delegate) {
-  DCHECK(!shared_proxy_delegate_);
   proxy_delegate_ = std::move(proxy_delegate);
-}
-
-void URLRequestContextBuilder::set_shared_proxy_delegate(
-    ProxyDelegate* shared_proxy_delegate) {
-  DCHECK(!proxy_delegate_);
-  shared_proxy_delegate_ = shared_proxy_delegate;
 }
 
 void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
@@ -585,14 +578,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   if (proxy_delegate_) {
-    DCHECK(!shared_proxy_delegate_);
     proxy_resolution_service->AssertNoProxyDelegate();
     proxy_resolution_service->SetProxyDelegate(proxy_delegate_.get());
     storage->set_proxy_delegate(std::move(proxy_delegate_));
-  } else if (shared_proxy_delegate_) {
-    proxy_resolution_service->AssertNoProxyDelegate();
-    proxy_resolution_service->SetProxyDelegate(shared_proxy_delegate_);
-    context->set_proxy_delegate(shared_proxy_delegate_);
   }
 
   HttpNetworkSession::Context network_session_context;

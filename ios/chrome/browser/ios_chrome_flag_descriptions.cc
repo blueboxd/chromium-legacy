@@ -402,14 +402,6 @@ const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
 const char kSnapshotDrawViewDescription[] =
     "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";
 
-const char kStorePendingItemInContextName[] =
-    "Store pending item in NavigationContext";
-const char kStorePendingItemInContextDescription[] =
-    "When enabled pending item will be stored in NavigationContext after "
-    "context is created. The item is still stored in NavigationManager if the "
-    "navigated was requested, but context does not yet exist or when "
-    "navigation was aborted.";
-
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";

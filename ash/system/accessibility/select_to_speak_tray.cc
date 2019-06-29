@@ -4,7 +4,7 @@
 
 #include "ash/system/accessibility/select_to_speak_tray.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_constants.h"
@@ -95,19 +95,19 @@ void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
     return;
   }
 
-  ash::mojom::SelectToSpeakState state =
+  ash::SelectToSpeakState state =
       Shell::Get()->accessibility_controller()->GetSelectToSpeakState();
   switch (state) {
-    case ash::mojom::SelectToSpeakState::kSelectToSpeakStateInactive:
+    case ash::SelectToSpeakState::kSelectToSpeakStateInactive:
       icon_->SetImage(inactive_image_);
       SetIsActive(false);
       break;
-    case ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting:
+    case ash::SelectToSpeakState::kSelectToSpeakStateSelecting:
       // Activate the start selection button during selection.
       icon_->SetImage(selecting_image_);
       SetIsActive(true);
       break;
-    case ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking:
+    case ash::SelectToSpeakState::kSelectToSpeakStateSpeaking:
       icon_->SetImage(speaking_image_);
       SetIsActive(true);
       break;

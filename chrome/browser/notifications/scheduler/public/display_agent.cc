@@ -15,8 +15,8 @@ class DisplayAgentDefault : public DisplayAgent {
   ~DisplayAgentDefault() override = default;
 
  private:
-  void ShowNotification(
-      std::unique_ptr<NotificationData> notification_data) override {
+  void ShowNotification(std::unique_ptr<NotificationData> notification_data,
+                        std::unique_ptr<SystemData> system_data) override {
     NOTIMPLEMENTED();
   }
 

@@ -4,7 +4,7 @@
 
 #include "components/exo/keyboard.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
@@ -396,7 +396,7 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged_AccessibilityKeyboard) {
   keyboard->SetDeviceConfigurationDelegate(&configuration_delegate);
   EXPECT_TRUE(keyboard->HasDeviceConfigurationDelegate());
 
-  ash::AccessibilityController* accessibility_controller =
+  ash::AccessibilityControllerImpl* accessibility_controller =
       ash::Shell::Get()->accessibility_controller();
 
   // Enable a11y keyboard calls OnKeyboardTypeChanged() with false.

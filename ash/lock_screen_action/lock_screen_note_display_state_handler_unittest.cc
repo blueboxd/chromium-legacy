@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
@@ -420,16 +419,9 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest,
 
 TEST_F(LockScreenNoteDisplayStateHandlerTest, ScreenA11yAlerts) {
   TestAccessibilityControllerClient a11y_client;
-  AccessibilityController* a11y_controller =
-      Shell::Get()->accessibility_controller();
-  a11y_controller->SetClient(a11y_client.CreateInterfacePtrAndBind());
-
   SimulatePowerButtonPress();
   ASSERT_TRUE(power_manager_client()->backlights_forced_off());
-
-  a11y_controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_OFF,
-            a11y_client.last_a11y_alert());
+  EXPECT_EQ(AccessibilityAlert::SCREEN_OFF, a11y_client.last_a11y_alert());
 
   ui::DeviceDataManagerTestApi devices_test_api;
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
@@ -441,18 +433,14 @@ TEST_F(LockScreenNoteDisplayStateHandlerTest, ScreenA11yAlerts) {
 
   // Screen ON alert is delayed until the screen is turned on after lock screen
   // note launch.
-  a11y_controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_OFF,
-            a11y_client.last_a11y_alert());
+  EXPECT_EQ(AccessibilityAlert::SCREEN_OFF, a11y_client.last_a11y_alert());
 
   Shell::Get()->tray_action()->UpdateLockScreenNoteState(
       mojom::TrayActionState::kActive);
   base::RunLoop().RunUntilIdle();
 
   // Verify that screen on a11y alert has been sent.
-  a11y_controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_ON,
-            a11y_client.last_a11y_alert());
+  EXPECT_EQ(AccessibilityAlert::SCREEN_ON, a11y_client.last_a11y_alert());
 }
 
 TEST_F(LockScreenNoteDisplayStateHandlerTest,

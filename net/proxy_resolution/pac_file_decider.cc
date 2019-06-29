@@ -147,13 +147,8 @@ void PacFileDecider::OnShutdown() {
   if (next_state_ == STATE_NONE)
     return;
 
-  CompletionOnceCallback callback = std::move(callback_);
-
   // Just cancel any pending work.
   Cancel();
-
-  if (callback)
-    std::move(callback).Run(ERR_CONTEXT_SHUT_DOWN);
 }
 
 const ProxyConfigWithAnnotation& PacFileDecider::effective_config() const {

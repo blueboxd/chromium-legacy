@@ -36,6 +36,7 @@
 #include "net/nqe/network_quality_observation_source.h"
 #include "net/nqe/network_quality_store.h"
 #include "net/nqe/observation_buffer.h"
+#include "net/nqe/peer_to_peer_connections_count_observer.h"
 #include "net/nqe/rtt_throughput_estimates_observer.h"
 #include "net/nqe/socket_watcher_factory.h"
 
@@ -134,6 +135,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Removes |observer| from a list of effective connection type observers.
   void RemoveEffectiveConnectionTypeObserver(
       EffectiveConnectionTypeObserver* observer);
+
+  // Adds/Removes |observer| from the list of peer to peer connections count
+  // observers. The observer must register and unregister itself on the same
+  // thread. |observer| would be notified on the thread on which it registered.
+  // |observer| would be notified of the current count of peer to peer
+  // connections in the next message pump.
+  void AddPeerToPeerConnectionsCountObserver(
+      PeerToPeerConnectionsCountObserver* observer);
+  void RemovePeerToPeerConnectionsCountObserver(
+      PeerToPeerConnectionsCountObserver* observer);
 
   // Returns the current HTTP RTT estimate. If the estimate is unavailable,
   // the returned optional value is null. The RTT at the HTTP layer measures the
@@ -393,6 +404,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   base::ObserverList<EffectiveConnectionTypeObserver>::Unchecked
       effective_connection_type_observer_list_;
 
+  // Observer list for changes in peer to peer connections count.
+  base::ObserverList<PeerToPeerConnectionsCountObserver>::Unchecked
+      peer_to_peer_type_observer_list_;
+
   // Params to configure the network quality estimator.
   const std::unique_ptr<NetworkQualityEstimatorParams> params_;
 
@@ -462,6 +477,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // is still registered as an observer.
   void NotifyEffectiveConnectionTypeObserverIfPresent(
       EffectiveConnectionTypeObserver* observer) const;
+
+  // Notifies |observer| of the current count of peer to peer connections.
+  void NotifyPeerToPeerConnectionsCountObserverIfPresent(
+      PeerToPeerConnectionsCountObserver* observer) const;
 
   // Records NQE accuracy metrics. |measuring_duration| should belong to the
   // vector returned by AccuracyRecordingIntervals().

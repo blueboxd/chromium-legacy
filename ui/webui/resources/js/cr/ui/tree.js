@@ -269,6 +269,7 @@ cr.define('cr.ui', function() {
     treeItem.className = 'tree-item';
     treeItem.innerHTML = '<div class="tree-row">' +
         '<span class="expand-icon"></span>' +
+        '<span class="tree-label-icon"></span>' +
         '<span class="tree-label"></span>' +
         '</div>' +
         '<div class="tree-children" role="group"></div>';
@@ -459,11 +460,11 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * The element containing the label text and the icon.
+     * The element containing the label text.
      * @type {!HTMLElement}
      */
     get labelElement() {
-      return this.firstElementChild.lastElementChild;
+      return this.rowElement.lastElementChild;
     },
 
     /**
@@ -478,17 +479,6 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * The URL for the icon.
-     * @type {string}
-     */
-    get icon() {
-      return getComputedStyle(this.labelElement).backgroundImage.slice(4, -1);
-    },
-    set icon(icon) {
-      return this.labelElement.style.backgroundImage = getUrlForCss(icon);
-    },
-
-    /**
      * Whether the tree item is selected or not.
      * @type {boolean}
      */
@@ -499,7 +489,7 @@ cr.define('cr.ui', function() {
       if (this.selected == b) {
         return;
       }
-      const rowItem = this.firstElementChild;
+      const rowItem = this.rowElement;
       const tree = this.tree;
       if (b) {
         this.setAttribute('selected', '');
@@ -526,7 +516,7 @@ cr.define('cr.ui', function() {
       return this.hasAttribute('may-have-children');
     },
     set mayHaveChildren_(b) {
-      const rowItem = this.firstElementChild;
+      const rowItem = this.rowElement;
       if (b) {
         this.setAttribute('may-have-children', '');
         rowItem.setAttribute('may-have-children', '');
@@ -549,7 +539,7 @@ cr.define('cr.ui', function() {
      * @type {boolean}
      */
     set hasChildren(b) {
-      const rowItem = this.firstElementChild;
+      const rowItem = this.rowElement;
       this.setAttribute('has-children', b);
       rowItem.setAttribute('has-children', b);
       if (b) {

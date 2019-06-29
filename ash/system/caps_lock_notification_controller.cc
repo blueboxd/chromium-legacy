@@ -4,7 +4,7 @@
 
 #include "ash/system/caps_lock_notification_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -90,8 +90,7 @@ void CapsLockNotificationController::RegisterProfilePrefs(
 void CapsLockNotificationController::OnCapsLockChanged(bool enabled) {
   // Send an a11y alert.
   Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-      enabled ? mojom::AccessibilityAlert::CAPS_ON
-              : mojom::AccessibilityAlert::CAPS_OFF);
+      enabled ? AccessibilityAlert::CAPS_ON : AccessibilityAlert::CAPS_OFF);
 
   if (enabled) {
     Shell::Get()->metrics()->RecordUserMetricsAction(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 
 #include <utility>
 
@@ -71,7 +71,7 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
 }
 
 TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->autoclick_enabled());
 
@@ -91,7 +91,7 @@ TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->caret_highlight_enabled());
 
@@ -111,7 +111,7 @@ TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->cursor_highlight_enabled());
 
@@ -131,7 +131,7 @@ TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->focus_highlight_enabled());
 
@@ -151,7 +151,7 @@ TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->high_contrast_enabled());
 
@@ -171,7 +171,7 @@ TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->large_cursor_enabled());
 
@@ -208,7 +208,7 @@ TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
 }
 
 TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->mono_audio_enabled());
 
@@ -228,7 +228,7 @@ TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->spoken_feedback_enabled());
 
@@ -248,7 +248,7 @@ TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->sticky_keys_enabled());
 
@@ -272,7 +272,7 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
 }
 
 TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->virtual_keyboard_enabled());
 
@@ -293,45 +293,29 @@ TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
   controller->RemoveObserver(&observer);
 }
 
-// Tests that ash's controller gets shutdown sound duration properly from
-// remote client.
+// The controller should get ShutdownSoundDuration from its client.
 TEST_F(AccessibilityControllerTest, GetShutdownSoundDuration) {
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
   TestAccessibilityControllerClient client;
-  controller->SetClient(client.CreateInterfacePtrAndBind());
-
-  base::TimeDelta sound_duration;
-  controller->PlayShutdownSound(base::BindOnce(
-      [](base::TimeDelta* dst, base::TimeDelta duration) { *dst = duration; },
-      base::Unretained(&sound_duration)));
-  controller->FlushMojoForTest();
   EXPECT_EQ(TestAccessibilityControllerClient::kShutdownSoundDuration,
-            sound_duration);
+            client.PlayShutdownSound());
+  EXPECT_EQ(TestAccessibilityControllerClient::kShutdownSoundDuration,
+            Shell::Get()->accessibility_controller()->PlayShutdownSound());
 }
 
-// Tests that ash's controller gets should toggle spoken feedback via touch
-// properly from remote client.
+// The controller should get ShouldToggleSpokenFeedbackViaTouch from its client.
 TEST_F(AccessibilityControllerTest, GetShouldToggleSpokenFeedbackViaTouch) {
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
   TestAccessibilityControllerClient client;
-  controller->SetClient(client.CreateInterfacePtrAndBind());
-
-  bool should_toggle = false;
-  controller->ShouldToggleSpokenFeedbackViaTouch(base::BindOnce(
-      [](bool* dst, bool should_toggle) { *dst = should_toggle; },
-      base::Unretained(&should_toggle)));
-  controller->FlushMojoForTest();
-  // Expects true which is passed by |client|.
-  EXPECT_TRUE(should_toggle);
+  EXPECT_TRUE(client.ShouldToggleSpokenFeedbackViaTouch());
+  EXPECT_TRUE(Shell::Get()
+                  ->accessibility_controller()
+                  ->ShouldToggleSpokenFeedbackViaTouch());
 }
 
 TEST_F(AccessibilityControllerTest, SetDarkenScreen) {
   ASSERT_FALSE(
       chromeos::FakePowerManagerClient::Get()->backlights_forced_off());
 
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   controller->SetDarkenScreen(true);
   EXPECT_TRUE(chromeos::FakePowerManagerClient::Get()->backlights_forced_off());
@@ -346,7 +330,7 @@ TEST_F(AccessibilityControllerTest, ShowNotificationOnSpokenFeedback) {
       base::ASCIIToUTF16("ChromeVox enabled");
   const base::string16 kChromeVoxEnabled =
       base::ASCIIToUTF16("Press Ctrl + Alt + Z to disable spoken feedback.");
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
 
   // Enabling spoken feedback should show the notification if specified to show
@@ -379,7 +363,7 @@ TEST_F(AccessibilityControllerTest,
       base::ASCIIToUTF16("Press Ctrl + Alt + Z to disable spoken feedback.");
   const base::string16 kBrailleConnectedAndChromeVoxEnabledTitle =
       base::ASCIIToUTF16("Braille and ChromeVox are enabled");
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
 
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
@@ -415,21 +399,21 @@ TEST_F(AccessibilityControllerTest,
 }
 
 TEST_F(AccessibilityControllerTest, SelectToSpeakStateChanges) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
 
   controller->SetSelectToSpeakState(
-      ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
+      ash::SelectToSpeakState::kSelectToSpeakStateSelecting);
   EXPECT_EQ(controller->GetSelectToSpeakState(),
-            ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
+            ash::SelectToSpeakState::kSelectToSpeakStateSelecting);
   EXPECT_EQ(observer.status_changed_count_, 1);
 
   controller->SetSelectToSpeakState(
-      ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking);
+      ash::SelectToSpeakState::kSelectToSpeakStateSpeaking);
   EXPECT_EQ(controller->GetSelectToSpeakState(),
-            ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking);
+            ash::SelectToSpeakState::kSelectToSpeakStateSpeaking);
   EXPECT_EQ(observer.status_changed_count_, 2);
 }
 
@@ -480,7 +464,7 @@ INSTANTIATE_TEST_SUITE_P(,
 TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   constexpr float kMagnifierScale = 4.3f;
 
-  AccessibilityController* accessibility =
+  AccessibilityControllerImpl* accessibility =
       Shell::Get()->accessibility_controller();
   DockedMagnifierControllerImpl* docked_magnifier =
       Shell::Get()->docked_magnifier_controller();

@@ -347,7 +347,8 @@ function getThemeBackgroundInfo() {
  * @return {boolean} Whether the chips should be dark.
  */
 function getUseDarkChips(info) {
-  return info.usingDarkMode && !info.imageUrl;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches &&
+      !info.imageUrl;
 }
 
 /**
@@ -362,9 +363,8 @@ function renderTheme() {
   $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, info.isNtpBackgroundDark);
 
   // Update dark mode styling.
-  isDarkModeEnabled = info.usingDarkMode;
+  isDarkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
   useDarkChips = getUseDarkChips(info);
-  document.documentElement.setAttribute('darkmode', isDarkModeEnabled);
   document.body.classList.toggle('light-chip', !useDarkChips);
 
   const background = [
@@ -463,7 +463,6 @@ function sendThemeInfoToMostVisitedIframe() {
   message.isThemeDark = info.isNtpBackgroundDark;
   message.customBackground = info.customBackgroundConfigured;
   message.useTitleContainer = info.useTitleContainer;
-  message.isDarkMode = getUseDarkChips(info);
   message.iconBackgroundColor = convertToRGBAColor(info.iconBackgroundColor);
   message.useWhiteAddIcon = info.useWhiteAddIcon;
 
@@ -476,25 +475,6 @@ function sendThemeInfoToMostVisitedIframe() {
   message.tileTitleColor = convertToRGBAColor(titleColor);
 
   $(IDS.TILES_IFRAME).contentWindow.postMessage(message, '*');
-}
-
-/**
- * Sends the current theme info to the edit custom link iframe.
- */
-function sendThemeInfoToEditCustomLinkIframe() {
-  if (!configData.isGooglePage) {
-    return;
-  }
-
-  const info = getThemeBackgroundInfo();
-  if (!info) {
-    return;
-  }
-
-  const message = {cmd: 'updateTheme'};
-  message.isDarkMode = info.usingDarkMode;
-
-  $(IDS.CUSTOM_LINKS_EDIT_IFRAME).contentWindow.postMessage(message, '*');
 }
 
 /**
@@ -527,7 +507,6 @@ function onThemeChange() {
   renderTheme();
   renderOneGoogleBarTheme();
   sendThemeInfoToMostVisitedIframe();
-  sendThemeInfoToEditCustomLinkIframe();
 
   // If dark mode has been changed, refresh the MV tiles to render the
   // appropriate icon.
@@ -1304,10 +1283,6 @@ function createIframes() {
     clIframeDialog.classList.add(CLASSES.CUSTOMIZE_DIALOG);
     clIframeDialog.appendChild(clIframe);
     document.body.appendChild(clIframeDialog);
-
-    clIframe.onload = () => {
-      sendThemeInfoToEditCustomLinkIframe();
-    };
 
     if (configData.hideShortcuts) {
       $(IDS.TILES).style.display = 'none';

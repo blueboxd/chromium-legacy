@@ -22,6 +22,9 @@
 
 namespace net {
 
+const size_t HostResolver::ManagerOptions::kDefaultRetryAttempts =
+    static_cast<size_t>(-1);
+
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
     HostResolverManager* manager,
     base::StringPiece host_mapping_rules,

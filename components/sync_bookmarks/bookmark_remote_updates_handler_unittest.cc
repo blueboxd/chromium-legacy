@@ -274,15 +274,16 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children().front()->GetTitle(),
               Eq(ASCIIToUTF16(kId0)));
-  ASSERT_THAT(bookmark_bar_node->GetChild(0)->children().size(), Eq(1u));
+  ASSERT_THAT(bookmark_bar_node->children().front()->children().size(), Eq(1u));
   const bookmarks::BookmarkNode* grandchild =
-      bookmark_bar_node->GetChild(0)->GetChild(0);
+      bookmark_bar_node->children().front()->children().front().get();
   EXPECT_THAT(grandchild->GetTitle(), Eq(ASCIIToUTF16(kId1)));
   ASSERT_THAT(grandchild->children().size(), Eq(1u));
-  EXPECT_THAT(grandchild->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kId2)));
-  EXPECT_THAT(grandchild->GetChild(0)->children().size(), Eq(0u));
+  EXPECT_THAT(grandchild->children().front()->GetTitle(),
+              Eq(ASCIIToUTF16(kId2)));
+  EXPECT_THAT(grandchild->children().front()->children().size(), Eq(0u));
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -379,11 +380,11 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(3u));
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->GetTitle(),
               Eq(ASCIIToUTF16(kId0)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[1]->GetTitle(),
               Eq(ASCIIToUTF16(kId1)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->GetTitle(),
               Eq(ASCIIToUTF16(kId2)));
 }
 
@@ -443,7 +444,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   // Model should have been updated.
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(5u));
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->GetTitle(),
               Eq(ASCIIToUTF16(ids[3])));
 }
 
@@ -503,7 +504,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   // Model should have been updated.
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(5u));
-  EXPECT_THAT(bookmark_bar_node->GetChild(3)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[3]->GetTitle(),
               Eq(ASCIIToUTF16(ids[1])));
 }
 
@@ -563,8 +564,8 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   // Model should have been updated.
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(4u));
-  ASSERT_THAT(bookmark_bar_node->GetChild(1)->children().size(), Eq(1u));
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetChild(0)->GetTitle(),
+  ASSERT_THAT(bookmark_bar_node->children()[1]->children().size(), Eq(1u));
+  EXPECT_THAT(bookmark_bar_node->children()[1]->children()[0]->GetTitle(),
               Eq(ASCIIToUTF16(ids[4])));
 }
 
@@ -810,7 +811,7 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   ASSERT_THAT(tracker.GetEntityForSyncId(kId), NotNull());
 
   // Remove the bookmark from the local bookmark model.
-  bookmark_model->Remove(bookmark_bar_node->GetChild(0));
+  bookmark_model->Remove(bookmark_bar_node->children().front().get());
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(0u));
 
   // Mark the entity as deleted locally.
@@ -897,7 +898,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
 
   // Remove the bookmark from the local bookmark model.
-  bookmark_model()->Remove(bookmark_bar_node->GetChild(0));
+  bookmark_model()->Remove(bookmark_bar_node->children().front().get());
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(0u));
 
   // Mark the entity as deleted locally.
@@ -1012,7 +1013,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
 
   // Remove the bookmark from the local bookmark model.
-  bookmark_model()->Remove(bookmark_bar_node->GetChild(0));
+  bookmark_model()->Remove(bookmark_bar_node->children().front().get());
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(0u));
 
   // Mark the entity as deleted locally.
@@ -1149,7 +1150,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children().front()->GetTitle(),
               Eq(ASCIIToUTF16(kNewRemoteTitle)));
 
   histogram_tester.ExpectBucketCount(

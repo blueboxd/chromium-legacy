@@ -296,10 +296,6 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // Value is always valid.
   builder.Set("usingDefaultTheme", theme_info.using_default_theme);
 
-  // True if dark mode should be applied to the NTP.
-  // Value is always valid.
-  builder.Set("usingDarkMode", theme_info.using_dark_mode);
-
   // Theme color for background as an array with the RGBA components in order.
   // Value is always valid.
   builder.Set("backgroundColorRgba",

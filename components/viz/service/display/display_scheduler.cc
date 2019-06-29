@@ -522,10 +522,13 @@ void DisplayScheduler::DidSwapBuffers() {
 }
 
 void DisplayScheduler::DidReceiveSwapBuffersAck() {
-  begin_frame_source_->SetIsGpuBusy(false);
-
   uint32_t swap_id = next_swap_id_ - pending_swaps_;
   pending_swaps_--;
+
+  // It is important to call this after updating |pending_swaps_| above to
+  // ensure any callback from BeginFrameSource observes the correct swap
+  // throttled state.
+  begin_frame_source_->SetIsGpuBusy(false);
   TRACE_EVENT_ASYNC_END0("viz", "DisplayScheduler:pending_swaps", swap_id);
   ScheduleBeginFrameDeadline();
 }

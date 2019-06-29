@@ -137,6 +137,8 @@ void Find(Browser* browser);
 void FindNext(Browser* browser);
 void FindPrevious(Browser* browser);
 void FindInPage(Browser* browser, bool find_next, bool forward_direction);
+bool CanCloseFind(Browser* browser);
+void CloseFind(Browser* browser);
 void Zoom(Browser* browser, content::PageZoom zoom);
 void FocusToolbar(Browser* browser);
 void FocusLocationBar(Browser* browser);

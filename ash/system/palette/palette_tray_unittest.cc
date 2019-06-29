@@ -11,9 +11,6 @@
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
-#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
-#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
@@ -83,8 +80,6 @@ class PaletteTrayTest : public AshTestBase {
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray();
     test_api_ = std::make_unique<PaletteTrayTestApi>(palette_tray_);
   }
-
-  PaletteTray* palette_tray() { return palette_tray_; }
 
  protected:
   PrefService* active_user_pref_service() {
@@ -752,36 +747,6 @@ TEST_F(PaletteTrayNoSessionTestWithInternalStylus,
   fake_stylus_event_on_all_trays(ui::StylusState::INSERTED);
   EXPECT_FALSE(main_tray->GetBubbleView());
   EXPECT_FALSE(external_tray->GetBubbleView());
-}
-
-class KioskNextPaletteTrayTest : public PaletteTrayTest {
- public:
-  KioskNextPaletteTrayTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
-  }
-
-  void SetUp() override {
-    set_start_session(false);
-    PaletteTrayTest::SetUp();
-    client_ = std::make_unique<MockKioskNextShellClient>();
-  }
-
-  void TearDown() override {
-    client_.reset();
-    PaletteTrayTest::TearDown();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<MockKioskNextShellClient> client_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskNextPaletteTrayTest);
-};
-
-TEST_F(KioskNextPaletteTrayTest, PaletteTrayHidden) {
-  LogInKioskNextUser(GetSessionControllerClient());
-  local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
-  EXPECT_FALSE(palette_tray()->GetVisible());
 }
 
 }  // namespace ash

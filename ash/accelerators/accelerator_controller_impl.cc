@@ -12,7 +12,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/debug_commands.h"
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -38,7 +38,6 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -965,7 +964,7 @@ bool CanHandleToggleDictation() {
 void HandleToggleDictation() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Dictation"));
   Shell::Get()->accessibility_controller()->ToggleDictationFromSource(
-      mojom::DictationToggleSource::kKeyboard);
+      DictationToggleSource::kKeyboard);
 }
 
 bool CanHandleToggleOverview() {
@@ -1074,7 +1073,7 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
 }
 
 void SetHighContrastEnabled(bool enabled) {
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   accessibility_controller->SetHighContrastEnabled(enabled);
   // Value could differ from one that were set because of higher-priority pref
@@ -1095,7 +1094,7 @@ void SetHighContrastEnabled(bool enabled) {
 void HandleToggleHighContrast() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
 
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   const bool current_enabled = controller->high_contrast_enabled();
   const bool dialog_ever_accepted =
@@ -1142,7 +1141,7 @@ void HandleToggleFullscreenMagnifier() {
 void HandleToggleSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   bool old_value = controller->spoken_feedback_enabled();
   controller->SetSpokenFeedbackEnabled(!controller->spoken_feedback_enabled(),
@@ -2060,7 +2059,7 @@ AcceleratorControllerImpl::GetAcceleratorProcessingRestriction(
           ->BuildMruWindowList(kActiveDesk)
           .empty()) {
     Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::WINDOW_NEEDED);
+        AccessibilityAlert::WINDOW_NEEDED);
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   return RESTRICTION_NONE;

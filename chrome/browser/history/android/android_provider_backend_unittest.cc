@@ -576,7 +576,8 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
   EXPECT_FALSE(notifier_.favicon_changed());
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-  const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+  const BookmarkNode* child =
+      bookmark_model_->mobile_node()->children().front().get();
   ASSERT_TRUE(child);
   EXPECT_EQ(row1.title(), child->GetTitle());
   EXPECT_EQ(row1.url(), child->url());
@@ -676,7 +677,8 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   // Verify the row1 has been added in bookmark model.
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-  const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+  const BookmarkNode* child =
+      bookmark_model_->mobile_node()->children().front().get();
   ASSERT_TRUE(child);
   EXPECT_EQ(row1.title(), child->GetTitle());
   EXPECT_EQ(row1.url(), child->url());
@@ -866,7 +868,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   // Verify the row1 has been added in bookmark model.
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-  const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+  const BookmarkNode* child =
+      bookmark_model_->mobile_node()->children().front().get();
   ASSERT_TRUE(child);
   EXPECT_EQ(row1.title(), child->GetTitle());
   EXPECT_EQ(row1.url(), child->url());
@@ -943,7 +946,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   // Verify the bookmark model was updated.
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-  const BookmarkNode* child1 = bookmark_model_->mobile_node()->GetChild(0);
+  const BookmarkNode* child1 =
+      bookmark_model_->mobile_node()->children().front().get();
   ASSERT_TRUE(child1);
   EXPECT_EQ(row1.title(), child1->GetTitle());
   EXPECT_EQ(update_row1.url(), child1->url());
@@ -1627,7 +1631,8 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   // Verify the row1 has been added in bookmark model.
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-  const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+  const BookmarkNode* child =
+      bookmark_model_->mobile_node()->children().front().get();
   ASSERT_TRUE(child);
   EXPECT_EQ(row1.title(), child->GetTitle());
   EXPECT_EQ(row1.url(), child->url());
@@ -1650,7 +1655,8 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   // Verify the row1 is still in bookmark model.
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-  const BookmarkNode* child1 = bookmark_model_->mobile_node()->GetChild(0);
+  const BookmarkNode* child1 =
+      bookmark_model_->mobile_node()->children().front().get();
   ASSERT_TRUE(child1);
   EXPECT_EQ(row1.title(), child1->GetTitle());
   EXPECT_EQ(row1.url(), child1->url());
@@ -1952,7 +1958,8 @@ TEST_F(AndroidProviderBackendTest, InsertWithoutThumbnailDB) {
   EXPECT_FALSE(notifier_.favicon_changed());
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-  const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+  const BookmarkNode* child =
+      bookmark_model_->mobile_node()->children().front().get();
   ASSERT_TRUE(child);
   EXPECT_EQ(row1.title(), child->GetTitle());
   EXPECT_EQ(row1.url(), child->url());
@@ -2007,7 +2014,8 @@ TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
     // Verify the row1 has been added in bookmark model.
     content::RunAllPendingInMessageLoop();
     ASSERT_EQ(1u, bookmark_model_->mobile_node()->children().size());
-    const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+    const BookmarkNode* child =
+        bookmark_model_->mobile_node()->children().front().get();
     ASSERT_TRUE(child);
     EXPECT_EQ(row1.title(), child->GetTitle());
     EXPECT_EQ(row1.url(), child->url());

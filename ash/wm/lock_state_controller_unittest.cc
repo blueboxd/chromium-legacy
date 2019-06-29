@@ -7,8 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shutdown_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -89,9 +87,6 @@ class LockStateControllerTest : public PowerButtonTestBase {
     test_shutdown_controller_ = std::make_unique<TestShutdownController>();
     lock_state_test_api_->set_shutdown_controller(
         test_shutdown_controller_.get());
-
-    a11y_controller_ = Shell::Get()->accessibility_controller();
-    a11y_controller_->SetClient(a11y_client_.CreateInterfacePtrAndBind());
   }
   void TearDown() override {
     test_shutdown_controller_.reset();
@@ -296,15 +291,10 @@ class LockStateControllerTest : public PowerButtonTestBase {
     lock_state_controller_->OnLockScreenHide(closure);
   }
 
-  // Simulate that shutdown sound duration callback is done.
-  void ShutdownSoundPlayed() { a11y_controller_->FlushMojoForTest(); }
-
   std::unique_ptr<ShutdownController::ScopedResetterForTest>
       shutdown_controller_resetter_;
   std::unique_ptr<TestShutdownController> test_shutdown_controller_;
   TestSessionStateAnimator* test_animator_ = nullptr;   // not owned
-  AccessibilityController* a11y_controller_ = nullptr;  // not owned
-  TestAccessibilityControllerClient a11y_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LockStateControllerTest);
@@ -341,7 +331,6 @@ TEST_F(LockStateControllerTest, LegacyShowMenuAndShutDown) {
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
 
-  ShutdownSoundPlayed();
   EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
   lock_state_test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, NumShutdownRequests());
@@ -522,7 +511,6 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
   EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, NumShutdownRequests());
-  ShutdownSoundPlayed();
   EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
   lock_state_test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, NumShutdownRequests());
@@ -546,7 +534,6 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
   EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, NumShutdownRequests());
-  ShutdownSoundPlayed();
   EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
   lock_state_test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, NumShutdownRequests());
@@ -700,7 +687,6 @@ TEST_F(LockStateControllerTest, ShutDownAfterShowPowerMenu) {
   ExpectShutdownAnimationFinished();
   lock_state_test_api_->trigger_shutdown_timeout();
 
-  ShutdownSoundPlayed();
   EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
   EXPECT_EQ(0, NumShutdownRequests());
 

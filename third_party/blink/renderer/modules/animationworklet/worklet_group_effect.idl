@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 [
     Exposed=AnimationWorklet,
-    RuntimeEnabled=AnimationWorklet
+    RuntimeEnabled=GroupEffect
 ] interface WorkletGroupEffect {
   sequence<WorkletAnimationEffect> getChildren();
 };

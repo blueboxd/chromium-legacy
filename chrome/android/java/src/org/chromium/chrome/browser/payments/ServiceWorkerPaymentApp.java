@@ -148,8 +148,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel() != null
-                && activity.getCurrentTabModel().isIncognito();
+        mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
 
         mNeedsInstallation = false;
         mAppName = name;
@@ -195,8 +194,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel() != null
-                && activity.getCurrentTabModel().isIncognito();
+        mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
 
         mNeedsInstallation = true;
         mAppName = name;

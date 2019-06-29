@@ -67,9 +67,9 @@ class NET_EXPORT_PRIVATE DhcpPacFileFetcher {
   // Aborts the in-progress fetch (if any).
   virtual void Cancel() = 0;
 
-  // Fails the in-progress fetch (if any) and future requests will fail
-  // immediately. Must be called before the URLRequestContext the fetcher was
-  // created with is torn down.
+  // Cancels the in-progress fetch (if any), without invoking its callback.
+  // Future requests will fail immediately. Must be called before the
+  // URLRequestContext the fetcher was created with is torn down.
   virtual void OnShutdown() = 0;
 
   // After successful completion of |Fetch()|, this will return the URL

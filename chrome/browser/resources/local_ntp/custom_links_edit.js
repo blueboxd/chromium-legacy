@@ -191,14 +191,6 @@ function focusBackOnCancel(event) {
 }
 
 /**
- * Handler for the 'updateTheme' message from the host page.
- * @param {!Object} info Data received in the message.
- */
-function updateTheme(info) {
-  document.documentElement.setAttribute('darkmode', info.isDarkMode);
-}
-
-/**
  * Event handler for messages from the host page.
  * @param {Event} event Event received.
  */
@@ -224,8 +216,6 @@ function handlePostMessage(event) {
     window.setTimeout(() => {
       $(IDS.TITLE_FIELD).select();
     }, 10);
-  } else if (cmd === 'updateTheme') {
-    updateTheme(args);
   }
 }
 

@@ -12,10 +12,6 @@
 #include "extensions/browser/extension_function.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
-#endif
-
 // API function that enables or disables web content accessibility support.
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
     : public UIThreadExtensionFunction {
@@ -166,13 +162,11 @@ class AccessibilityPrivateGetBatteryDescriptionFunction
  public:
   AccessibilityPrivateGetBatteryDescriptionFunction();
   ResponseAction Run() override;
-  void OnGotBatteryDescription(const base::string16& battery_description);
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getBatteryDescription",
                              ACCESSIBILITY_PRIVATE_GETBATTERYDESCRIPTION)
 
  private:
   ~AccessibilityPrivateGetBatteryDescriptionFunction() override;
-  ash::mojom::AccessibilityControllerPtr controller_ = nullptr;
 };
 
 // API function that opens or closes the virtual keyboard.

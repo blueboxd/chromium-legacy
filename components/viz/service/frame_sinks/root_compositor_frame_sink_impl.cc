@@ -78,6 +78,10 @@ RootCompositorFrameSinkImpl::Create(
     external_begin_frame_source =
         std::make_unique<ExternalBeginFrameSourceAndroid>(restart_id,
                                                           params->refresh_rate);
+    if (output_surface->context_provider() &&
+        output_surface->context_provider()->ContextCapabilities().surfaceless) {
+      external_begin_frame_source->AllowOneBeginFrameAfterGpuBusy();
+    }
 #else
     if (params->disable_frame_rate_limit) {
       synthetic_begin_frame_source =

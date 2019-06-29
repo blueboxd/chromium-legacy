@@ -341,7 +341,7 @@ void CookiesViewHandler::HandleRemoveShownItems(const base::ListValue* args) {
   AllowJavascript();
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();
   while (!parent->children().empty())
-    cookies_tree_model_->DeleteCookieNode(parent->GetChild(0));
+    cookies_tree_model_->DeleteCookieNode(parent->children().front().get());
 }
 
 void CookiesViewHandler::HandleRemoveItem(const base::ListValue* args) {
@@ -375,7 +375,6 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
     std::sort(sorted_sites_.begin(), sorted_sites_.end());
   }
 
-  const int list_item_count = sorted_sites_.size();
   // The layers in the CookieTree are:
   //   root - Top level.
   //   site - www.google.com, example.com, etc.
@@ -383,8 +382,8 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   //   item - Info on the actual thing.
   // Gather list of sites with some highlights of the categories and items.
   std::unique_ptr<base::ListValue> site_list(new base::ListValue);
-  for (int i = 0; i < list_item_count; ++i) {
-    const CookieTreeNode* site = parent->GetChild(sorted_sites_[i].second);
+  for (const auto& sorted_site : sorted_sites_) {
+    const CookieTreeNode* site = parent->children()[sorted_site.second].get();
     base::string16 description;
     for (const auto& category : site->children()) {
       if (!description.empty())
@@ -423,7 +422,8 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
 
   base::DictionaryValue response;
   response.Set(kItems, std::move(site_list));
-  response.Set(kTotal, std::make_unique<base::Value>(list_item_count));
+  response.Set(kTotal,
+               std::make_unique<base::Value>(int{sorted_sites_.size()}));
 
   ResolveJavascriptCallback(base::Value(request_.callback_id_), response);
   request_.Clear();

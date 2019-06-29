@@ -155,10 +155,11 @@ TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
   // f1 should have loaded its children.
   EXPECT_EQ(next_id_before_load + 2, next_menu_id());
   ASSERT_EQ(2u, f1_item->GetSubmenu()->GetMenuItems().size());
-  const BookmarkNode* f1_node = model_->bookmark_bar_node()->GetChild(1);
-  EXPECT_EQ(f1_node->GetChild(0),
+  const BookmarkNode* f1_node =
+      model_->bookmark_bar_node()->children()[1].get();
+  EXPECT_EQ(f1_node->children()[0].get(),
             GetNodeForMenuItem(f1_item->GetSubmenu()->GetMenuItemAt(0)));
-  EXPECT_EQ(f1_node->GetChild(1),
+  EXPECT_EQ(f1_node->children()[1].get(),
             GetNodeForMenuItem(f1_item->GetSubmenu()->GetMenuItemAt(1)));
 
   // F11 shouldn't have loaded yet.
@@ -175,8 +176,8 @@ TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
   EXPECT_EQ(next_id_before_load + 1, next_menu_id());
 
   ASSERT_EQ(1u, f11_item->GetSubmenu()->GetMenuItems().size());
-  const BookmarkNode* f11_node = f1_node->GetChild(1);
-  EXPECT_EQ(f11_node->GetChild(0),
+  const BookmarkNode* f11_node = f1_node->children()[1].get();
+  EXPECT_EQ(f11_node->children()[0].get(),
             GetNodeForMenuItem(f11_item->GetSubmenu()->GetMenuItemAt(0)));
 }
 
@@ -184,14 +185,15 @@ TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
 // have since been deleted.
 TEST_F(BookmarkMenuDelegateTest, RemoveBookmarks) {
   views::MenuDelegate test_delegate;
-  const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(1);
+  const BookmarkNode* node = model_->bookmark_bar_node()->children()[1].get();
   NewDelegate();
   bookmark_menu_delegate_->Init(&test_delegate, NULL, node, 0,
                                 BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                                 BOOKMARK_LAUNCH_LOCATION_NONE);
   LoadAllMenus();
-  std::vector<const BookmarkNode*> nodes_to_remove;
-  nodes_to_remove.push_back(node->GetChild(1));
+  std::vector<const BookmarkNode*> nodes_to_remove = {
+      node->children()[1].get(),
+  };
   bookmark_menu_delegate_->WillRemoveBookmarks(nodes_to_remove);
   nodes_to_remove.clear();
   bookmark_menu_delegate_->DidRemoveBookmarks();
@@ -201,31 +203,32 @@ TEST_F(BookmarkMenuDelegateTest, RemoveBookmarks) {
 // have since been deleted.
 TEST_F(BookmarkMenuDelegateTest, CloseOnRemove) {
   views::MenuDelegate test_delegate;
-  const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(1);
+  const BookmarkNode* node = model_->bookmark_bar_node()->children()[1].get();
   NewDelegate();
   bookmark_menu_delegate_->Init(&test_delegate, nullptr, node, 0,
                                 BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                                 BOOKMARK_LAUNCH_LOCATION_NONE);
   // Any nodes on the bookmark bar should close on remove.
-  EXPECT_TRUE(ShouldCloseOnRemove(model_->bookmark_bar_node()->GetChild(2)));
+  EXPECT_TRUE(
+      ShouldCloseOnRemove(model_->bookmark_bar_node()->children()[2].get()));
 
   // Descendants of the bookmark should not close on remove.
   EXPECT_FALSE(ShouldCloseOnRemove(
-      model_->bookmark_bar_node()->GetChild(1)->GetChild(0)));
+      model_->bookmark_bar_node()->children()[1]->children()[0].get()));
 
-  EXPECT_FALSE(ShouldCloseOnRemove(model_->other_node()->GetChild(0)));
+  EXPECT_FALSE(ShouldCloseOnRemove(model_->other_node()->children()[0].get()));
 
   // Make it so the other node only has one child.
   // Destroy the current delegate so that it doesn't have any references to
   // deleted nodes.
   DestroyDelegate();
   while (model_->other_node()->children().size() > 1)
-    model_->Remove(model_->other_node()->GetChild(1));
+    model_->Remove(model_->other_node()->children()[1].get());
 
   NewDelegate();
   bookmark_menu_delegate_->Init(&test_delegate, nullptr, node, 0,
                                 BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                                 BOOKMARK_LAUNCH_LOCATION_NONE);
   // Any nodes on the bookmark bar should close on remove.
-  EXPECT_TRUE(ShouldCloseOnRemove(model_->other_node()->GetChild(0)));
+  EXPECT_TRUE(ShouldCloseOnRemove(model_->other_node()->children()[0].get()));
 }

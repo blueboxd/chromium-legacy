@@ -16,12 +16,19 @@ namespace notifications {
 // Does actual work to show notification in the UI surface.
 class DisplayAgent {
  public:
+  // Contains data used used by the notification scheduling system internally to
+  // build the notification.
+  struct SystemData {
+    std::string guid;
+  };
+
   // Creates the default DisplayAgent.
   static std::unique_ptr<DisplayAgent> Create();
 
   // Shows the notification in UI.
   virtual void ShowNotification(
-      std::unique_ptr<NotificationData> notification_data) = 0;
+      std::unique_ptr<NotificationData> notification_data,
+      std::unique_ptr<SystemData> system_data) = 0;
 
   virtual ~DisplayAgent() = default;
 

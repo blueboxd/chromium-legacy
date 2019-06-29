@@ -31,7 +31,7 @@ class ScheduledNotificationManager {
    public:
     // Displays a notification to the user.
     virtual void DisplayNotification(
-        std::unique_ptr<NotificationEntry> notification) = 0;
+        std::unique_ptr<NotificationEntry> notification_entry) = 0;
 
     Delegate() = default;
     virtual ~Delegate() = default;

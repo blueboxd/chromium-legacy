@@ -100,7 +100,8 @@ class NET_EXPORT_PRIVATE PacFileDecider {
             CompletionOnceCallback callback);
 
   // Shuts down any in-progress DNS requests, and cancels any ScriptFetcher
-  // requests.  Does not call OnShutdown on the [Dhcp]PacFileFetcher.
+  // requests. Does not call OnShutdown() on the [Dhcp]PacFileFetcher. Any
+  // pending callback will not be invoked.
   void OnShutdown();
 
   const ProxyConfigWithAnnotation& effective_config() const;

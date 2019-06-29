@@ -19,7 +19,8 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
 <if expr="chromeos">
-        <cr-link-row id="cupsPrinters" label="$i18n{cupsPrintersTitle}"
+        <cr-link-row hidden$="[[!showCupsPrinters_]]"
+            id="cupsPrinters" label="$i18n{cupsPrintersTitle}"
             on-click="onTapCupsPrinters_"></cr-link-row>
 </if>
 <if expr="not chromeos">

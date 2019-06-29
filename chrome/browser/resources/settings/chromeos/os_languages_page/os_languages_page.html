@@ -178,6 +178,13 @@
                   <div title="[[item.language.nativeDisplayName]]">
                     [[item.language.displayName]]
                   </div>
+                  <div class="explain-selected"
+                      hidden="[[!isProspectiveUILanguage_(
+                          item.language.code,
+                          languages.prospectiveUILanguage,
+                          pageVisibility.uiDisplayedInThisLanguage)]]">
+                    $i18n{isDisplayedInThisLanguage}
+                  </div>
                 </div>
                 <template is="dom-if" if="[[isRestartRequired_(
                     item.language.code, languages.prospectiveUILanguage)]]"

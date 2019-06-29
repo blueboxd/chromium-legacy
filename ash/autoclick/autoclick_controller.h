@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client_observer.h"
@@ -68,14 +67,14 @@ class ASH_EXPORT AutoclickController
   static base::TimeDelta GetDefaultAutoclickDelay();
 
   // Sets the event type.
-  void SetAutoclickEventType(mojom::AutoclickEventType type);
+  void SetAutoclickEventType(AutoclickEventType type);
 
   // Sets the movement threshold beyond which mouse movements cancel or begin
   // a new Autoclick event.
   void SetMovementThreshold(int movement_threshold);
 
   // Sets the menu position and updates the UI.
-  void SetMenuPosition(mojom::AutoclickMenuPosition menu_position);
+  void SetMenuPosition(AutoclickMenuPosition menu_position);
 
   // Performs the given ScrollPadAction at the current scrolling point.
   void DoScrollAction(ScrollPadAction action);
@@ -123,14 +122,14 @@ class ASH_EXPORT AutoclickController
   void DoAutoclickAction();
   void StartAutoclickGesture();
   void CancelAutoclickAction();
-  void OnActionCompleted(mojom::AutoclickEventType event_type);
+  void OnActionCompleted(AutoclickEventType event_type);
   void InitClickTimers();
   void UpdateRingWidget(const gfx::Point& mouse_location);
   void UpdateRingSize();
   void InitializeScrollLocation();
   void UpdateScrollPosition(const gfx::Point& point_in_screen);
   void HideScrollPosition();
-  void RecordUserAction(mojom::AutoclickEventType event_type) const;
+  void RecordUserAction(AutoclickEventType event_type) const;
   bool DragInProgress() const;
   void CreateMenuBubbleController();
   bool AutoclickMenuContainsPoint(const gfx::Point& point) const;
@@ -153,7 +152,7 @@ class ASH_EXPORT AutoclickController
 
   // Whether Autoclick is currently enabled.
   bool enabled_ = false;
-  mojom::AutoclickEventType event_type_ = kDefaultAutoclickEventType;
+  AutoclickEventType event_type_ = kDefaultAutoclickEventType;
   bool revert_to_left_click_ = true;
   bool stabilize_click_position_ = false;
   int movement_threshold_ = kDefaultAutoclickMovementThreshold;
@@ -163,7 +162,7 @@ class ASH_EXPORT AutoclickController
   // manually, the position will be fixed regardless of language direction and
   // shelf position. This probably means adding a new AutoclickMenuPostion
   // enum for "system default".
-  mojom::AutoclickMenuPosition menu_position_ = kDefaultAutoclickMenuPosition;
+  AutoclickMenuPosition menu_position_ = kDefaultAutoclickMenuPosition;
   int mouse_event_flags_ = ui::EF_NONE;
   // The target window is observed by AutoclickController for the duration
   // of a autoclick gesture.

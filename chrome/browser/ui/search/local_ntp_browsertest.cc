@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -70,8 +71,11 @@ const int kDefaultCustomLinkMaxCount = 10;
 
 // Name for the Most Visited iframe in the NTP.
 const char kMostVisitedIframe[] = "mv-single";
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // Name for the edit/add custom link iframe in the NTP.
 const char kEditCustomLinkIframe[] = "custom-links-edit";
+#endif
 
 // Returns the RenderFrameHost corresponding to the |iframe_name| in the
 // given |tab|. |tab| must correspond to an NTP.
@@ -792,10 +796,20 @@ IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
   EXPECT_EQ("rtl", dir);
 }
 
+// Update/Remove when Linux and/or ChromeOS support dark mode.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+
 // Tests that dark mode styling is properly applied to the local NTP.
 class LocalNTPDarkModeTest : public LocalNTPTest, public DarkModeTestBase {
  public:
   LocalNTPDarkModeTest() {}
+
+ private:
+  void SetUpOnMainThread() override {
+    LocalNTPTest::SetUpOnMainThread();
+
+    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
@@ -803,7 +817,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser()->profile());
   theme()->SetDarkMode(false);
-  instant_service->SetDarkModeThemeForTesting(theme());
+  instant_service->SetNativeThemeForTesting(theme());
+  theme()->NotifyObservers();
 
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
@@ -861,10 +876,13 @@ class LocalNTPDarkModeStartupTest : public LocalNTPDarkModeTest,
   void SetUpOnMainThread() override {
     LocalNTPTest::SetUpOnMainThread();
 
+    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());
     theme()->SetDarkMode(GetParam());
-    instant_service->SetDarkModeThemeForTesting(theme());
+    instant_service->SetNativeThemeForTesting(theme());
+    theme()->NotifyObservers();
   }
 };
 
@@ -887,6 +905,8 @@ IN_PROC_BROWSER_TEST_P(LocalNTPDarkModeStartupTest, DarkModeApplied) {
 }
 
 INSTANTIATE_TEST_SUITE_P(, LocalNTPDarkModeStartupTest, testing::Bool());
+
+#endif
 
 // A minimal implementation of an interstitial page.
 class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {

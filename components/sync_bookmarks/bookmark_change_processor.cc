@@ -639,7 +639,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const BookmarkNode* parent = dst->parent();
     int index = parent->GetIndexOf(dst);
     if (index > -1)
-      model->Remove(parent->GetChild(index));
+      model->Remove(parent->children()[size_t{index}].get());
   }
 
   // A map to keep track of some reordering work we defer until later.

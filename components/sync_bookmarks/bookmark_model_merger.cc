@@ -262,7 +262,7 @@ void BookmarkModelMerger::MergeSubtree(
         continue;
       }
       const bookmarks::BookmarkNode* local_child =
-          local_node->GetChild(local_index);
+          local_node->children()[local_index].get();
       // If local node isn't in the correct position, move it.
       if (remote_index != local_index) {
         bookmark_model_->Move(local_child, local_node, remote_index);

@@ -13,8 +13,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build;
 
-import com.android.webview.chromium.WebViewApkApplication;
-
 import org.chromium.android_webview.VariationsUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -52,11 +50,6 @@ public class AwVariationsSeedFetcher extends JobService {
     private static VariationsSeedFetcher sMockDownloader;
 
     private FetchTask mFetchTask;
-
-    public AwVariationsSeedFetcher() {
-        // Required when running in Monochrome.
-        WebViewApkApplication.initPathUtils();
-    }
 
     private static String getChannelStr() {
         switch (VersionConstants.CHANNEL) {

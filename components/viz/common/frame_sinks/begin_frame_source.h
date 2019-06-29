@@ -159,6 +159,11 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
 
   virtual void AsValueInto(base::trace_event::TracedValue* state) const;
 
+  void AllowOneBeginFrameAfterGpuBusy() {
+    DCHECK(!is_gpu_busy_);
+    allow_one_begin_frame_after_gpu_busy_ = true;
+  }
+
  protected:
   // Returns whether begin-frames to clients should be withheld (because the gpu
   // is still busy, for example). If this returns true, then OnGpuNoLongerBusy()
@@ -176,9 +181,23 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
   // The BeginFrameSource should not send the begin-frame messages to clients if
   // gpu is busy.
   bool is_gpu_busy_ = false;
+
   // Keeps track of whether a begin-frame was paused, and whether
   // OnGpuNoLongerBusy() should be invoked when the gpu is no longer busy.
-  bool request_notification_on_gpu_availability_ = false;
+  enum class GpuBusyThrottlingState {
+    // No BeginFrames ticks were received since gpu was marked busy.
+    kIdle,
+    // One BeginFrame has been dispatched since gpu was marked busy.
+    kOneBeginFrameAfterBusySent,
+    // At least one BeginFrame was throttled since gpu was marked busy. If set
+    // to throttled state, the sub-class is informed to send the throttled
+    // BeginFrame once gpu is marked not busy.
+    kThrottled
+  };
+  GpuBusyThrottlingState gpu_busy_response_state_ =
+      GpuBusyThrottlingState::kIdle;
+
+  bool allow_one_begin_frame_after_gpu_busy_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BeginFrameSource);
 };

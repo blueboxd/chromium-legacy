@@ -60,6 +60,7 @@ class BrowserCommandController : public CommandUpdater,
 #endif
   void PrintingStateChanged();
   void LoadingStateChanged(bool is_loading, bool force);
+  void FindBarVisibilityChanged();
   void ExtensionStateChanged();
 
   // Overriden from CommandUpdater:
@@ -181,6 +182,9 @@ class BrowserCommandController : public CommandUpdater,
 
   // Updates commands for find.
   void UpdateCommandsForFind();
+
+  // Updates the command to close find or stop loading.
+  void UpdateCloseFindOrStop();
 
   // Updates commands for Media Router.
   void UpdateCommandsForMediaRouter();

@@ -353,12 +353,10 @@ enum class BackForwardNavigationType {
         self.webState, URL, /*has_user_gesture=*/true, loadHTMLTransition,
         /*is_renderer_initiated=*/false);
     context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
-    if (web::features::StorePendingItemInContext()) {
-      // Transfer pending item ownership to NavigationContext.
-      // NavigationManager owns pending item after navigation is requested and
-      // until navigation context is created.
-      context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
-    }
+    // Transfer pending item ownership to NavigationContext.
+    // NavigationManager owns pending item after navigation is requested and
+    // until navigation context is created.
+    context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
   } else {
     context = [self registerLoadRequestForURL:URL
                                      referrer:web::Referrer()
@@ -505,16 +503,14 @@ enum class BackForwardNavigationType {
   // WKWebView may have multiple pending items. Move pending item ownership from
   // NavigationManager to NavigationContext. NavigationManager owns pending item
   // after navigation was requested and until NavigationContext is created.
-  if (web::features::StorePendingItemInContext()) {
-    // No need to transfer the ownership for NativeContent URLs, because the
-    // load of NativeContent is synchronous. No need to transfer the ownership
-    // for WebUI navigations, because those navigation do not have access to
-    // NavigationContext.
-    if (![[_delegate webRequestControllerLegacyNativeContentController:self]
-            shouldLoadURLInNativeView:context->GetUrl()]) {
-      if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
-        context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
-      }
+  // No need to transfer the ownership for NativeContent URLs, because the
+  // load of NativeContent is synchronous. No need to transfer the ownership
+  // for WebUI navigations, because those navigation do not have access to
+  // NavigationContext.
+  if (![[_delegate webRequestControllerLegacyNativeContentController:self]
+          shouldLoadURLInNativeView:context->GetUrl()]) {
+    if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
+      context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
     }
   }
 
@@ -553,8 +549,7 @@ enum class BackForwardNavigationType {
   }
 
   if (![self.navigationHandler.navigationStates
-              lastNavigationWithPendingItemInNavigationContext] ||
-      !web::features::StorePendingItemInContext()) {
+              lastNavigationWithPendingItemInNavigationContext]) {
     self.webState->SetIsLoading(false);
   } else {
     // There is another pending navigation, so the state is still loading.

@@ -57,7 +57,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/native_theme/dark_mode_observer.h"
 
 namespace {
 
@@ -187,6 +186,8 @@ InstantService::InstantService(Profile* profile)
     : profile_(profile),
       most_visited_info_(std::make_unique<InstantMostVisitedInfo>()),
       pref_service_(profile_->GetPrefs()),
+      theme_observer_(this),
+      native_theme_(ui::NativeTheme::GetInstanceForNativeUi()),
       weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
@@ -235,8 +236,6 @@ InstantService::InstantService(Profile* profile)
                        profile->GetResourceContext(), instant_io_context_));
   }
 
-  CreateDarkModeObserver(ui::NativeTheme::GetInstanceForNativeUi());
-
   background_service_ = NtpBackgroundServiceFactory::GetForProfile(profile_);
 
   // Listen for theme installation.
@@ -271,6 +270,8 @@ InstantService::InstantService(Profile* profile)
       std::make_unique<ImageDecoderImpl>(),
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess());
+
+  theme_observer_.Add(native_theme_);
 }
 
 InstantService::~InstantService() = default;
@@ -480,8 +481,10 @@ ThemeBackgroundInfo* InstantService::GetInitializedThemeInfo() {
   return theme_info_.get();
 }
 
-void InstantService::SetDarkModeThemeForTesting(ui::NativeTheme* theme) {
-  CreateDarkModeObserver(theme);
+void InstantService::SetNativeThemeForTesting(ui::NativeTheme* theme) {
+  theme_observer_.RemoveAll();
+  native_theme_ = theme;
+  theme_observer_.Add(native_theme_);
 }
 
 void InstantService::Shutdown() {
@@ -543,15 +546,17 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
   }
 }
 
+void InstantService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  DCHECK_EQ(observed_theme, native_theme_);
+  // Force the theme information to rebuild so the correct using_dark_mode value
+  // is sent to the renderer.
+  BuildThemeInfo();
+  UpdateThemeInfo();
+}
+
 void InstantService::OnSearchProviderChanged() {
   DCHECK(most_visited_sites_);
   most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
-}
-
-void InstantService::OnDarkModeChanged(bool dark_mode) {
-  // Force theme information rebuild in order to update dark mode colors.
-  BuildThemeInfo();
-  UpdateThemeInfo();
 }
 
 void InstantService::OnURLsAvailable(
@@ -603,7 +608,7 @@ void InstantService::BuildThemeInfo() {
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
   theme_info_->using_default_theme = theme_service->UsingDefaultTheme();
 
-  theme_info_->using_dark_mode = dark_mode_observer_->InDarkMode();
+  theme_info_->using_dark_mode = native_theme_->SystemDarkModeEnabled();
 
   // Get theme colors.
   const ui::ThemeProvider& theme_provider =
@@ -847,13 +852,6 @@ void InstantService::RemoveLocalBackgroundImageCopy() {
 
 void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {
   background_service_->AddValidBackdropUrlForTesting(url);
-}
-
-void InstantService::CreateDarkModeObserver(ui::NativeTheme* theme) {
-  dark_mode_observer_ = std::make_unique<ui::DarkModeObserver>(
-      theme, base::BindRepeating(&InstantService::OnDarkModeChanged,
-                                 weak_ptr_factory_.GetWeakPtr()));
-  dark_mode_observer_->Start();
 }
 
 // static

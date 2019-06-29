@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_panel.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -72,16 +71,6 @@ AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
 }
 
 AccessibilityPanel::~AccessibilityPanel() = default;
-
-// static
-ash::mojom::AccessibilityControllerPtr
-AccessibilityPanel::GetAccessibilityController() {
-  // Connect to the accessibility mojo interface in ash.
-  ash::mojom::AccessibilityControllerPtr accessibility_controller;
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &accessibility_controller);
-  return accessibility_controller;
-}
 
 void AccessibilityPanel::CloseNow() {
   widget_->CloseNow();

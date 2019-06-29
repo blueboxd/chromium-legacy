@@ -298,6 +298,12 @@ void BrowserCommandController::LoadingStateChanged(bool is_loading,
   UpdateReloadStopState(is_loading, force);
 }
 
+void BrowserCommandController::FindBarVisibilityChanged() {
+  if (is_locked_fullscreen_)
+    return;
+  UpdateCloseFindOrStop();
+}
+
 void BrowserCommandController::ExtensionStateChanged() {
   // Extensions may disable the bookmark editing commands.
   UpdateCommandsForBookmarkEditing();
@@ -564,6 +570,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_FIND_PREVIOUS:
       FindPrevious(browser_);
+      break;
+    case IDC_CLOSE_FIND_OR_STOP:
+      if (CanCloseFind(browser_))
+        CloseFind(browser_);
+      else if (IsCommandEnabled(IDC_STOP))
+        ExecuteCommand(IDC_STOP);
       break;
 
     // Zoom
@@ -1376,6 +1388,7 @@ void BrowserCommandController::UpdateReloadStopState(bool is_loading,
 
   window()->UpdateReloadStopState(is_loading, force);
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
+  UpdateCloseFindOrStop();
 }
 
 void BrowserCommandController::UpdateTabRestoreCommandState() {
@@ -1401,6 +1414,11 @@ void BrowserCommandController::UpdateCommandsForFind() {
   command_updater_.UpdateCommandEnabled(IDC_FIND, enabled);
   command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, enabled);
   command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, enabled);
+}
+
+void BrowserCommandController::UpdateCloseFindOrStop() {
+  bool enabled = CanCloseFind(browser_) || IsCommandEnabled(IDC_STOP);
+  command_updater_.UpdateCommandEnabled(IDC_CLOSE_FIND_OR_STOP, enabled);
 }
 
 void BrowserCommandController::UpdateCommandsForMediaRouter() {

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnifier_utils.h"
 #include "ash/public/cpp/ash_pref_names.h"

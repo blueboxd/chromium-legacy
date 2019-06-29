@@ -6,8 +6,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -561,10 +560,13 @@ void PaletteTray::UpdateTrayIcon() {
 void PaletteTray::OnPaletteEnabledPrefChanged() {
   is_palette_enabled_ = pref_change_registrar_user_->prefs()->GetBoolean(
       prefs::kEnableStylusTools);
-  if (!is_palette_enabled_)
-    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
 
-  UpdateIconVisibility();
+  if (!is_palette_enabled_) {
+    SetVisible(false);
+    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
+  } else {
+    UpdateIconVisibility();
+  }
 }
 
 void PaletteTray::OnHasSeenStylusPrefChanged() {
@@ -595,8 +597,7 @@ bool PaletteTray::HasSeenStylus() {
 void PaletteTray::UpdateIconVisibility() {
   SetVisible(HasSeenStylus() && is_palette_enabled_ &&
              stylus_utils::HasStylusInput() && ShouldShowOnDisplay(this) &&
-             palette_utils::IsInUserSession() &&
-             !Shell::Get()->kiosk_next_shell_controller()->IsEnabled());
+             palette_utils::IsInUserSession());
 }
 
 }  // namespace ash

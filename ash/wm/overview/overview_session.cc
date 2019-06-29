@@ -8,7 +8,7 @@
 #include <functional>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_features.h"
@@ -266,7 +266,7 @@ void OverviewSession::Init(const WindowList& windows,
   base::RecordAction(base::UserMetricsAction("WindowSelector_Overview"));
   // Send an a11y alert.
   Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-      mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED);
+      AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED);
 
   ignore_activations_ = false;
 }

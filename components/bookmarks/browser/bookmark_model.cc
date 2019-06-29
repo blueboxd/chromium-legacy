@@ -746,7 +746,7 @@ void BookmarkModel::NotifyNodeAddedForAllDescendents(const BookmarkNode* node) {
   for (size_t i = 0; i < node->children().size(); ++i) {
     for (BookmarkModelObserver& observer : observers_)
       observer.BookmarkNodeAdded(this, node, i);
-    NotifyNodeAddedForAllDescendents(node->GetChild(i));
+    NotifyNodeAddedForAllDescendents(node->children()[i].get());
   }
 }
 

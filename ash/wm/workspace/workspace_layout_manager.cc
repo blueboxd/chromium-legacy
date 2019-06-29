@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"

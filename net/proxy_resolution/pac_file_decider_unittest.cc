@@ -473,7 +473,8 @@ TEST_F(PacFileDeciderQuickCheckTest, ShutdownDuringResolve) {
 
   decider_->OnShutdown();
   EXPECT_FALSE(resolver_.has_pending_requests());
-  EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_CONTEXT_SHUT_DOWN));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback_.have_result());
 }
 
 // Regression test for http://crbug.com/409698.

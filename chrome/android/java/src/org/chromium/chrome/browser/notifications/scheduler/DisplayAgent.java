@@ -45,23 +45,44 @@ public class DisplayAgent {
     private static final String EXTRA_GUID =
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_GUID";
     /**
-     * Contains all data needed to build Android notification for notification scheduler.
-     * TODO(xingliu): Split this to data used for UI and exposed to clients, and system level data
-     * used internally, see https://crbug.com/977255.
+     * Contains all data needed to build Android notification in the UI, specified by the client.
      */
-    private static class DisplayData {
-        public final String guid;
+    private static class NotificationData {
+        public final String id;
         public final String title;
         public final String message;
         public final Bitmap icon;
 
-        @CalledByNative
-        public DisplayData(String guid, String title, String message, Bitmap icon) {
-            this.guid = guid;
+        private NotificationData(String id, String title, String message, Bitmap icon) {
+            // TODO(xingliu): Populate custom data and client defined id.
+            this.id = id;
             this.title = title;
             this.message = message;
             this.icon = icon;
         }
+    }
+
+    @CalledByNative
+    private static NotificationData buildNotificationData(
+            String id, String title, String message, Bitmap icon) {
+        return new NotificationData(id, title, message, icon);
+    }
+
+    /**
+     * Contains data used used by the notification scheduling system internally to build the
+     * notification.
+     */
+    private static class SystemData {
+        public final String guid;
+
+        public SystemData(String guid) {
+            this.guid = guid;
+        }
+    }
+
+    @CalledByNative
+    private static SystemData buildSystemData(String guid) {
+        return new SystemData(guid);
     }
 
     /**
@@ -120,7 +141,7 @@ public class DisplayAgent {
         }
     }
 
-    private static AndroidNotificationData toAndroidNotificationData(DisplayData data) {
+    private static AndroidNotificationData toAndroidNotificationData(NotificationData data) {
         return new AndroidNotificationData(ChannelId.BROWSER, SystemNotificationType.UNKNOWN);
     }
 
@@ -133,8 +154,8 @@ public class DisplayAgent {
     }
 
     @CalledByNative
-    private static void showNotification(DisplayData displayData) {
-        AndroidNotificationData platformData = toAndroidNotificationData(displayData);
+    private static void showNotification(NotificationData notificationData, SystemData systemData) {
+        AndroidNotificationData platformData = toAndroidNotificationData(notificationData);
         // TODO(xingliu): Plumb platform specific data from native. Support single notification
         // mode and provide correct notification id. Support buttons.
         Context context = ContextUtils.getApplicationContext();
@@ -143,21 +164,21 @@ public class DisplayAgent {
                         platformData.channel, null /* remoteAppPackageName */,
                         new NotificationMetadata(platformData.systemNotificationType,
                                 DISPLAY_AGENT_TAG, DISPLAY_AGENT_NOTIFICATION_ID));
-        builder.setContentTitle(displayData.title);
-        builder.setContentText(displayData.message);
+        builder.setContentTitle(notificationData.title);
+        builder.setContentText(notificationData.message);
 
         // TODO(xingliu): Use the icon from native. Support big icon.
         builder.setSmallIcon(R.drawable.ic_chrome);
 
         // Default content click behavior.
         Intent contentIntent = buildIntent(
-                context, NotificationIntentInterceptor.IntentType.CONTENT_INTENT, displayData.guid);
+                context, NotificationIntentInterceptor.IntentType.CONTENT_INTENT, systemData.guid);
         builder.setContentIntent(PendingIntentProvider.getBroadcast(
                 context, 0, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
         // Default dismiss behavior.
         Intent dismissIntent = buildIntent(
-                context, NotificationIntentInterceptor.IntentType.DELETE_INTENT, displayData.guid);
+                context, NotificationIntentInterceptor.IntentType.DELETE_INTENT, systemData.guid);
         builder.setDeleteIntent(PendingIntentProvider.getBroadcast(
                 context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 

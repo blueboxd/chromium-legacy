@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/modules/animationworklet/css_animation_worklet.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -56,6 +57,12 @@ bool ConvertAnimationEffects(
 
   if (keyframe_effects.IsEmpty()) {
     error_string = "Effects array must be non-empty";
+    return false;
+  }
+
+  if (keyframe_effects.size() > 1 &&
+      !RuntimeEnabledFeatures::GroupEffectEnabled()) {
+    error_string = "Multiple effects are not currently supported";
     return false;
   }
 

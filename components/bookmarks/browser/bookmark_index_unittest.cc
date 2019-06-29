@@ -456,7 +456,7 @@ TEST_F(BookmarkIndexTest, Remove) {
   AddBookmarks(titles, urls, base::size(titles));
 
   // Remove the node and make sure we don't get back any results.
-  model_->Remove(model_->other_node()->GetChild(0));
+  model_->Remove(model_->other_node()->children().front().get());
   ExpectMatches("A", nullptr, 0U);
 }
 
@@ -468,7 +468,8 @@ TEST_F(BookmarkIndexTest, ChangeTitle) {
 
   // Remove the node and make sure we don't get back any results.
   const char* expected[] = { "blah" };
-  model_->SetTitle(model_->other_node()->GetChild(0), ASCIIToUTF16("blah"));
+  model_->SetTitle(model_->other_node()->children().front().get(),
+                   ASCIIToUTF16("blah"));
   ExpectMatches("BlAh", expected, base::size(expected));
 }
 
@@ -480,7 +481,8 @@ TEST_F(BookmarkIndexTest, ChangeURL) {
   AddBookmarks(titles, urls, base::size(titles));
 
   const char* expected[] = { "a" };
-  model_->SetURL(model_->other_node()->GetChild(0), GURL("http://blah"));
+  model_->SetURL(model_->other_node()->children().front().get(),
+                 GURL("http://blah"));
   ExpectMatches("blah", expected, base::size(expected));
 }
 

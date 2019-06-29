@@ -346,12 +346,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if this process currently has backgrounded priority.
   virtual bool IsProcessBackgrounded() = 0;
 
-  enum class KeepAliveClientType {
-    kServiceWorker = 0,
-    kSharedWorker = 1,
-    kFetch = 2,
-    kUnload = 3,
-  };
   // "Keep alive ref count" represents the number of the customers of this
   // render process who wish the renderer process to be alive. While the ref
   // count is positive, |this| object will keep the renderer process alive,
@@ -377,8 +371,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //    Keeps the process alive briefly to give subframe unload handlers a
   //    chance to execute after their parent frame navigates or is detached.
   //    See https://crbug.com/852204.
-  virtual void IncrementKeepAliveRefCount(KeepAliveClientType) = 0;
-  virtual void DecrementKeepAliveRefCount(KeepAliveClientType) = 0;
+  virtual void IncrementKeepAliveRefCount() = 0;
+  virtual void DecrementKeepAliveRefCount() = 0;
 
   // Sets keep alive ref counts to zero. Called when the browser context will be
   // destroyed so this RenderProcessHost can immediately die.

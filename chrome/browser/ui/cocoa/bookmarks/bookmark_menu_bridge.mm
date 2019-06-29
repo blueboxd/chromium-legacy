@@ -100,7 +100,7 @@ void BookmarkMenuBridge::BuildRootMenu() {
   if (!folder_image_) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     folder_image_.reset(
-        [rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).ToNSImage() retain]);
+        [rb.GetNativeImageNamed(IDR_FOLDER_CLOSED).ToNSImage() retain]);
     [folder_image_ setTemplate:YES];
   }
 

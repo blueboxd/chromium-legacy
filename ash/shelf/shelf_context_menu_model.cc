@@ -60,7 +60,7 @@ ShelfContextMenuModel::ShelfContextMenuModel(ShelfItemDelegate* delegate,
                                              int64_t display_id)
     : ui::SimpleMenuModel(this), delegate_(delegate), display_id_(display_id) {
   // Add shelf and wallpaper items if ShelfView or HomeButton are selected.
-  if (!delegate || delegate_->app_id() == kAppListId)
+  if (!delegate)
     AddShelfAndWallpaperItems();
 }
 

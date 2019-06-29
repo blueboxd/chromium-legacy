@@ -28,7 +28,7 @@ component("ash") {
     "ash_service.h",
 
     # TODO: move the following to source. Do NOT add new files here.
-    "accessibility/accessibility_controller.h",
+    "accessibility/accessibility_controller_impl.h",
     "accessibility/accessibility_delegate.h",
     "accessibility/focus_ring_controller.h",
     "app_list/app_list_controller_impl.h",
@@ -124,7 +124,7 @@ component("ash") {
     "accelerometer/accelerometer_reader.h",
     "accelerometer/accelerometer_types.cc",
     "accelerometer/accelerometer_types.h",
-    "accessibility/accessibility_controller.cc",
+    "accessibility/accessibility_controller_impl.cc",
     "accessibility/accessibility_cursor_ring_layer.cc",
     "accessibility/accessibility_cursor_ring_layer.h",
     "accessibility/accessibility_focus_ring.cc",
@@ -1381,6 +1381,7 @@ component("ash") {
     "//third_party/qcms",
     "//third_party/re2",
     "//ui/accessibility",
+    "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base:ui_data_pack",
     "//ui/base/ime/chromeos",

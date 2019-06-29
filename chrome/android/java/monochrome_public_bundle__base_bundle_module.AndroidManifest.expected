@@ -931,7 +931,8 @@
     </activity>
     <activity
         android:label="@string/license_activity_title"
-        android:name="com.android.webview.chromium.LicenseActivity">
+        android:name="com.android.webview.chromium.LicenseActivity"
+        android:process=":webview_apk">
       <intent-filter>
         <action android:name="android.settings.WEBVIEW_LICENSE"/>
         <category android:name="android.intent.category.DEFAULT"/>
@@ -1227,7 +1228,8 @@
     <provider
         android:authorities="org.chromium.chrome.LicenseContentProvider"
         android:exported="true"
-        android:name="com.android.webview.chromium.LicenseContentProvider"/>
+        android:name="com.android.webview.chromium.LicenseContentProvider"
+        android:process=":webview_apk"/>
     <receiver
         android:exported="false"
         android:name="com.google.android.gms.cast.framework.media.MediaIntentReceiver"/>

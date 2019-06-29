@@ -106,7 +106,7 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   Request request_;
 
   // Sorted index list, by site. Indexes refer to |model->GetRoot()| children.
-  typedef std::pair<base::string16, int> LabelAndIndex;
+  typedef std::pair<base::string16, size_t> LabelAndIndex;
   std::vector<LabelAndIndex> sorted_sites_;
 
   std::unique_ptr<CookiesTreeModelUtil> model_util_;

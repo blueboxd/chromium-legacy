@@ -4,7 +4,6 @@
 
 #include "ash/public/cpp/manifest.h"
 
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -45,7 +44,6 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "system_ui",
               service_manager::Manifest::InterfaceList<
-                  mojom::AccessibilityController,
                   mojom::AssistantAlarmTimerController,
                   mojom::AssistantController,
                   mojom::AssistantNotificationController,

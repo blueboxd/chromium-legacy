@@ -35,6 +35,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/download/public/common/auto_resumption_handler.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -438,6 +439,8 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
           DownloadController::CANCEL_REASON_OTHER_NATIVE_RESONS);
       break;
     case DownloadItem::INTERRUPTED:
+      if (item->IsDone())
+        strong_validators_map_.erase(item->GetGuid());
       // When device loses/changes network, we get a NETWORK_TIMEOUT,
       // NETWORK_FAILED or NETWORK_DISCONNECTED error. Download should auto
       // resume in this case.
@@ -485,14 +488,17 @@ bool DownloadController::IsInterruptedDownloadAutoResumable(
     download::DownloadItem* download_item) {
   if (!download_item->GetURL().SchemeIsHTTPOrHTTPS())
     return false;
-
   static int size_limit = DownloadUtils::GetAutoResumptionSizeLimit();
   bool exceeds_size_limit = download_item->GetReceivedBytes() > size_limit;
   std::string etag = download_item->GetETag();
   std::string last_modified = download_item->GetLastModifiedTime();
 
-  if (exceeds_size_limit && etag.empty() && last_modified.empty())
+  if (exceeds_size_limit && etag.empty() && last_modified.empty() &&
+      !base::FeatureList::IsEnabled(
+          download::features::
+              kAllowDownloadResumptionWithoutStrongValidators)) {
     return false;
+  }
 
   // If the download has strong validators, but it caused a restart, stop auto
   // resumption as the server may always send new strong validators on

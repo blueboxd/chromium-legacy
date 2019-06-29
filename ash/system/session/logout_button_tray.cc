@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -66,14 +65,6 @@ void LogoutButtonTray::UpdateAfterShelfAlignmentChange() {
   container_->UpdateAfterShelfAlignmentChange();
 }
 
-void LogoutButtonTray::UpdateVisibility() {
-  LoginStatus login_status = shelf_->GetStatusAreaWidget()->login_status();
-  SetVisible(show_logout_button_in_tray_ &&
-             login_status != LoginStatus::NOT_LOGGED_IN &&
-             login_status != LoginStatus::LOCKED &&
-             !Shell::Get()->kiosk_next_shell_controller()->IsEnabled());
-}
-
 void LogoutButtonTray::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK_EQ(button_, sender);
@@ -131,6 +122,13 @@ void LogoutButtonTray::UpdateLogoutDialogDuration() {
 
 void LogoutButtonTray::UpdateAfterLoginStatusChange() {
   UpdateButtonTextAndImage();
+}
+
+void LogoutButtonTray::UpdateVisibility() {
+  LoginStatus login_status = shelf_->GetStatusAreaWidget()->login_status();
+  SetVisible(show_logout_button_in_tray_ &&
+             login_status != LoginStatus::NOT_LOGGED_IN &&
+             login_status != LoginStatus::LOCKED);
 }
 
 void LogoutButtonTray::UpdateButtonTextAndImage() {

@@ -116,7 +116,7 @@ BEGIN
     "O",            IDC_SHOW_BOOKMARK_MANAGER,  VIRTKEY, CONTROL, SHIFT
     "J",            IDC_SHOW_DOWNLOADS,         VIRTKEY, CONTROL
     "H",            IDC_SHOW_HISTORY,           VIRTKEY, CONTROL
-    VK_ESCAPE,      IDC_STOP,                   VIRTKEY
+    VK_ESCAPE,      IDC_CLOSE_FIND_OR_STOP,     VIRTKEY
     VK_ESCAPE,      IDC_TASK_MANAGER,           VIRTKEY, SHIFT
     "U",            IDC_VIEW_SOURCE,            VIRTKEY, CONTROL
     VK_OEM_MINUS,   IDC_ZOOM_MINUS,             VIRTKEY, CONTROL

@@ -83,14 +83,14 @@ TEST_F(AccessibilityPanelLayoutManagerTest, PanelFullscreen) {
   widget->Show();
 
   layout_manager->SetPanelBounds(gfx::Rect(0, 0, 0, kDefaultPanelHeight),
-                                 mojom::AccessibilityPanelState::FULL_WIDTH);
+                                 AccessibilityPanelState::FULL_WIDTH);
 
   gfx::Rect expected_work_area = screen->GetPrimaryDisplay().work_area();
 
   // When the panel is fullscreen it fills the display and clears the
   // work area.
   layout_manager->SetPanelBounds(gfx::Rect(),
-                                 mojom::AccessibilityPanelState::FULLSCREEN);
+                                 AccessibilityPanelState::FULLSCREEN);
   EXPECT_EQ(widget->GetNativeWindow()->bounds(),
             screen->GetPrimaryDisplay().bounds());
   EXPECT_EQ(screen->GetPrimaryDisplay().work_area().y(), 0);
@@ -98,7 +98,7 @@ TEST_F(AccessibilityPanelLayoutManagerTest, PanelFullscreen) {
   // Restoring the panel to default size restores the bounds and sets
   // the work area.
   layout_manager->SetPanelBounds(gfx::Rect(0, 0, 0, kDefaultPanelHeight),
-                                 mojom::AccessibilityPanelState::FULL_WIDTH);
+                                 AccessibilityPanelState::FULL_WIDTH);
   gfx::Rect expected_bounds(0, 0, screen->GetPrimaryDisplay().bounds().width(),
                             kDefaultPanelHeight);
   EXPECT_EQ(widget->GetNativeWindow()->bounds(), expected_bounds);
@@ -110,17 +110,15 @@ TEST_F(AccessibilityPanelLayoutManagerTest, SetBounds) {
   widget->Show();
 
   gfx::Rect bounds(0, 0, 100, 100);
-  GetLayoutManager()->SetPanelBounds(bounds,
-                                     mojom::AccessibilityPanelState::BOUNDED);
+  GetLayoutManager()->SetPanelBounds(bounds, AccessibilityPanelState::BOUNDED);
   EXPECT_EQ(widget->GetNativeWindow()->bounds(), bounds);
 }
 
 TEST_F(AccessibilityPanelLayoutManagerTest, DisplayBoundsChange) {
   std::unique_ptr<views::Widget> widget = CreateChromeVoxPanel();
   widget->Show();
-  GetLayoutManager()->SetPanelBounds(
-      gfx::Rect(0, 0, 0, kDefaultPanelHeight),
-      mojom::AccessibilityPanelState::FULL_WIDTH);
+  GetLayoutManager()->SetPanelBounds(gfx::Rect(0, 0, 0, kDefaultPanelHeight),
+                                     AccessibilityPanelState::FULL_WIDTH);
 
   // When the display resolution changes the panel still sits at the top of the
   // screen.

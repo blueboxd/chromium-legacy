@@ -11,8 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/accessibility_controller.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/accessibility_focus_ring_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -328,10 +329,6 @@ AccessibilityManager::AccessibilityManager()
       base::BindRepeating(&AccessibilityManager::PostUnloadSwitchAccess,
                           weak_ptr_factory_.GetWeakPtr())));
 
-  // Connect to ash's AccessibilityController interface.
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &accessibility_controller_);
-
   // Connect to the media session service.
   content::GetSystemConnector()->BindInterface(
       media_session::mojom::kServiceName, &audio_focus_manager_ptr_);
@@ -397,9 +394,7 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
     return;
 
   // Update system tray menu visibility.
-  ash::Shell::Get()
-      ->accessibility_controller()
-      ->NotifyAccessibilityStatusChanged();
+  ash::AccessibilityController::Get()->NotifyAccessibilityStatusChanged();
 }
 
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
@@ -552,7 +547,7 @@ void AccessibilityManager::OnLocaleChanged() {
 
 void AccessibilityManager::OnViewFocusedInArc(
     const gfx::Rect& bounds_in_screen) {
-  accessibility_controller_->SetFocusHighlightRect(bounds_in_screen);
+  ash::AccessibilityController::Get()->SetFocusHighlightRect(bounds_in_screen);
 }
 
 bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
@@ -745,7 +740,7 @@ void AccessibilityManager::OnMonoAudioChanged() {
 }
 
 void AccessibilityManager::SetDarkenScreen(bool darken) {
-  accessibility_controller_->SetDarkenScreen(darken);
+  ash::AccessibilityController::Get()->SetDarkenScreen(darken);
 }
 
 void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
@@ -854,8 +849,8 @@ void AccessibilityManager::RequestSelectToSpeakStateChange() {
 }
 
 void AccessibilityManager::OnSelectToSpeakStateChanged(
-    ash::mojom::SelectToSpeakState state) {
-  accessibility_controller_->SetSelectToSpeakState(state);
+    ash::SelectToSpeakState state) {
+  ash::AccessibilityController::Get()->SetSelectToSpeakState(state);
 
   if (select_to_speak_state_observer_for_test_)
     select_to_speak_state_observer_for_test_.Run();
@@ -1196,11 +1191,8 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   callback_list_.Notify(details);
 
   if (details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {
-    ash::Shell::Get()->accessibility_controller()->SetDictationActive(
-        details.enabled);
-    ash::Shell::Get()
-        ->accessibility_controller()
-        ->NotifyAccessibilityStatusChanged();
+    ash::AccessibilityController::Get()->SetDictationActive(details.enabled);
+    ash::AccessibilityController::Get()->NotifyAccessibilityStatusChanged();
     return;
   }
 
@@ -1209,9 +1201,7 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   // chrome and ash).
   if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER ||
       details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {
-    ash::Shell::Get()
-        ->accessibility_controller()
-        ->NotifyAccessibilityStatusChanged();
+    ash::AccessibilityController::Get()->NotifyAccessibilityStatusChanged();
   }
 }
 
@@ -1319,7 +1309,7 @@ void AccessibilityManager::Observe(
         return;
       content::FocusedNodeDetails* node_details =
           content::Details<content::FocusedNodeDetails>(details).ptr();
-      accessibility_controller_->SetFocusHighlightRect(
+      ash::AccessibilityController::Get()->SetFocusHighlightRect(
           node_details->node_bounds_in_screen);
       break;
     }
@@ -1329,7 +1319,7 @@ void AccessibilityManager::Observe(
 void AccessibilityManager::OnBrailleDisplayStateChanged(
     const DisplayState& display_state) {
   braille_display_connected_ = display_state.available;
-  accessibility_controller_->BrailleDisplayStateChanged(
+  ash::AccessibilityController::Get()->BrailleDisplayStateChanged(
       braille_display_connected_);
   UpdateBrailleImeState();
 }
@@ -1591,7 +1581,7 @@ void AccessibilityManager::SetCaretBounds(const gfx::Rect& bounds_in_screen) {
   if (!IsCaretHighlightEnabled())
     return;
 
-  accessibility_controller_->SetCaretBounds(bounds_in_screen);
+  ash::AccessibilityController::Get()->SetCaretBounds(bounds_in_screen);
 
   if (caret_bounds_observer_for_test_)
     caret_bounds_observer_for_test_.Run(bounds_in_screen);
@@ -1657,10 +1647,6 @@ void AccessibilityManager::SetProfileForTest(Profile* profile) {
 void AccessibilityManager::SetBrailleControllerForTest(
     BrailleController* controller) {
   g_braille_controller_for_test = controller;
-}
-
-void AccessibilityManager::FlushForTesting() {
-  accessibility_controller_.FlushForTesting();
 }
 
 void AccessibilityManager::SetFocusRingObserverForTest(

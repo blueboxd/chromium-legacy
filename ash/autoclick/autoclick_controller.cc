@@ -4,7 +4,7 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/autoclick/autoclick_ring_handler.h"
 #include "ash/autoclick/autoclick_scroll_position_handler.h"
@@ -123,7 +123,7 @@ void AutoclickController::SetEnabled(bool enabled,
     // is on.
     menu_bubble_controller_ = std::make_unique<AutoclickMenuBubbleController>();
     menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
-    if (event_type_ == mojom::AutoclickEventType::kScroll) {
+    if (event_type_ == AutoclickEventType::kScroll) {
       InitializeScrollLocation();
       UpdateScrollPosition(scroll_location_);
     }
@@ -146,10 +146,8 @@ void AutoclickController::SetEnabled(bool enabled,
           // Callback for if the user cancels the dialog - marks the
           // feature as enabled again in prefs.
           base::BindOnce([]() {
-            AccessibilityController* controller =
-                Shell::Get()->accessibility_controller();
             // If they cancel, ensure autoclick is enabled.
-            controller->SetAutoclickEnabled(true);
+            Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
           }));
       disable_dialog_ = dialog->GetWeakPtr();
     } else {
@@ -176,12 +174,11 @@ void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
   }
 }
 
-void AutoclickController::SetAutoclickEventType(
-    mojom::AutoclickEventType type) {
+void AutoclickController::SetAutoclickEventType(AutoclickEventType type) {
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetEventType(type);
 
-  if (type == mojom::AutoclickEventType::kScroll) {
+  if (type == AutoclickEventType::kScroll) {
     InitializeScrollLocation();
     UpdateScrollPosition(scroll_location_);
   } else {
@@ -200,8 +197,7 @@ void AutoclickController::SetMovementThreshold(int movement_threshold) {
   UpdateRingSize();
 }
 
-void AutoclickController::SetMenuPosition(
-    mojom::AutoclickMenuPosition menu_position) {
+void AutoclickController::SetMenuPosition(AutoclickMenuPosition menu_position) {
   menu_position_ = menu_position;
   UpdateAutoclickMenuBoundsIfNeeded();
 }
@@ -213,7 +209,7 @@ void AutoclickController::DoScrollAction(ScrollPadAction action) {
                                   -kDefaultAutoclickMovementThreshold);
 
     // Return to left click.
-    event_type_ = mojom::AutoclickEventType::kLeftClick;
+    event_type_ = AutoclickEventType::kLeftClick;
     Shell::Get()->accessibility_controller()->SetAutoclickEventType(
         event_type_);
     return;
@@ -323,10 +319,10 @@ void AutoclickController::DoAutoclickAction() {
 
   // Set the in-progress event type locally so that if the event type is updated
   // in the middle of this event being executed it doesn't change execution.
-  mojom::AutoclickEventType in_progress_event_type = event_type_;
+  AutoclickEventType in_progress_event_type = event_type_;
   RecordUserAction(in_progress_event_type);
 
-  if (in_progress_event_type == mojom::AutoclickEventType::kScroll) {
+  if (in_progress_event_type == AutoclickEventType::kScroll) {
     // A dwell during a scroll.
     // Check if the event is over the scroll bubble controller, and if it is,
     // click on the scroll bubble.
@@ -354,18 +350,17 @@ void AutoclickController::DoAutoclickAction() {
   host->ConvertDIPToPixels(&location_in_pixels);
 
   bool drag_start =
-      in_progress_event_type == mojom::AutoclickEventType::kDragAndDrop &&
+      in_progress_event_type == AutoclickEventType::kDragAndDrop &&
       !drag_event_rewriter_->IsEnabled();
   bool drag_stop = DragInProgress();
 
-  if (in_progress_event_type == mojom::AutoclickEventType::kLeftClick ||
-      in_progress_event_type == mojom::AutoclickEventType::kRightClick ||
-      in_progress_event_type == mojom::AutoclickEventType::kDoubleClick ||
+  if (in_progress_event_type == AutoclickEventType::kLeftClick ||
+      in_progress_event_type == AutoclickEventType::kRightClick ||
+      in_progress_event_type == AutoclickEventType::kDoubleClick ||
       drag_start || drag_stop) {
-    int button =
-        in_progress_event_type == mojom::AutoclickEventType::kRightClick
-            ? ui::EF_RIGHT_MOUSE_BUTTON
-            : ui::EF_LEFT_MOUSE_BUTTON;
+    int button = in_progress_event_type == AutoclickEventType::kRightClick
+                     ? ui::EF_RIGHT_MOUSE_BUTTON
+                     : ui::EF_LEFT_MOUSE_BUTTON;
 
     ui::EventDispatchDetails details;
     if (!drag_stop) {
@@ -392,7 +387,7 @@ void AutoclickController::DoAutoclickAction() {
     details = host->event_sink()->OnEventFromSource(&release_event);
 
     // Now a single click, or half the drag & drop, has been completed.
-    if (in_progress_event_type != mojom::AutoclickEventType::kDoubleClick ||
+    if (in_progress_event_type != AutoclickEventType::kDoubleClick ||
         details.dispatcher_destroyed) {
       OnActionCompleted(in_progress_event_type);
       return;
@@ -417,7 +412,7 @@ void AutoclickController::DoAutoclickAction() {
 }
 
 void AutoclickController::StartAutoclickGesture() {
-  if (event_type_ == mojom::AutoclickEventType::kNoAction) {
+  if (event_type_ == AutoclickEventType::kNoAction) {
     // If we are set to "no action" and the gesture wouldn't occur over
     // the autoclick menu, cancel and return early rather than starting the
     // gesture.
@@ -454,16 +449,15 @@ void AutoclickController::CancelAutoclickAction() {
 }
 
 void AutoclickController::OnActionCompleted(
-    mojom::AutoclickEventType completed_event_type) {
+    AutoclickEventType completed_event_type) {
   // No need to change to left click if the setting is not enabled or the
   // event that just executed already was a left click.
-  if (!revert_to_left_click_ ||
-      event_type_ == mojom::AutoclickEventType::kLeftClick ||
-      completed_event_type == mojom::AutoclickEventType::kLeftClick)
+  if (!revert_to_left_click_ || event_type_ == AutoclickEventType::kLeftClick ||
+      completed_event_type == AutoclickEventType::kLeftClick)
     return;
   // Change the preference, but set it locally so we do not reset any state when
   // AutoclickController::SetAutoclickEventType is called.
-  event_type_ = mojom::AutoclickEventType::kLeftClick;
+  event_type_ = AutoclickEventType::kLeftClick;
   Shell::Get()->accessibility_controller()->SetAutoclickEventType(event_type_);
 }
 
@@ -530,7 +524,7 @@ void AutoclickController::HideScrollPosition() {
 }
 
 bool AutoclickController::DragInProgress() const {
-  return event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
+  return event_type_ == AutoclickEventType::kDragAndDrop &&
          drag_event_rewriter_->IsEnabled();
 }
 
@@ -547,21 +541,21 @@ bool AutoclickController::AutoclickScrollContainsPoint(
 }
 
 void AutoclickController::RecordUserAction(
-    mojom::AutoclickEventType event_type) const {
+    AutoclickEventType event_type) const {
   switch (event_type) {
-    case mojom::AutoclickEventType::kLeftClick:
+    case AutoclickEventType::kLeftClick:
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.LeftClick"));
       return;
-    case mojom::AutoclickEventType::kRightClick:
+    case AutoclickEventType::kRightClick:
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.RightClick"));
       return;
-    case mojom::AutoclickEventType::kDoubleClick:
+    case AutoclickEventType::kDoubleClick:
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.DoubleClick"));
       return;
-    case mojom::AutoclickEventType::kDragAndDrop:
+    case AutoclickEventType::kDragAndDrop:
       // Only log drag-and-drop once per drag-and-drop. It takes two "dwells"
       // to complete a full drag-and-drop cycle, which could lead to double
       // the events logged.
@@ -570,9 +564,9 @@ void AutoclickController::RecordUserAction(
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
       return;
-    case mojom::AutoclickEventType::kScroll:
+    case AutoclickEventType::kScroll:
       // Scroll users actions will be recorded from AutoclickScrollView.
-    case mojom::AutoclickEventType::kNoAction:
+    case AutoclickEventType::kNoAction:
       // No action shouldn't have a UserAction, so we return.
       return;
   }

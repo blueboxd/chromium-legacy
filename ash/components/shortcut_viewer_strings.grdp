@@ -246,6 +246,9 @@
   <message name="IDS_KSV_SHORTCUT_IDC_FIND_PREVIOUS" desc="Human readable version of the keyboard shortcut.">
     <ph name="ctrl">$1<ex>Ctrl</ex></ph><ph name="separator1">$2<ex>+</ex></ph><ph name="shift1">$3<ex>Shift</ex></ph><ph name="separator2">$4<ex>+</ex></ph><ph name="g">$5<ex>v</ex></ph> or <ph name="shift2">$6<ex>Shift</ex></ph><ph name="separator3">$7<ex>+</ex></ph><ph name="enter">$8<ex>v</ex></ph>
   </message>
+  <message name="IDS_KSV_DESCRIPTION_IDC_CLOSE_FIND_OR_STOP" desc="Description of the command in keyboard shortcut viewer.">
+    Close any open find window or stop the loading of your current page
+  </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_FOCUS_LOCATION" desc="Description of the command in keyboard shortcut viewer.">
     Focus address bar
   </message>
@@ -281,9 +284,6 @@
   </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_SHOW_BOOKMARK_BAR" desc="Description of the command in keyboard shortcut viewer.">
     Show or hide the bookmarks bar
-  </message>
-  <message name="IDS_KSV_DESCRIPTION_IDC_STOP" desc="Description of the command in keyboard shortcut viewer.">
-    Stop the loading of your current page
   </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_ZOOM_MINUS" desc="Description of the command in keyboard shortcut viewer.">
     Zoom out on the page

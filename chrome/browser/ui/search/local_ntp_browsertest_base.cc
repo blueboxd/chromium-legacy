@@ -79,19 +79,6 @@ void TestInstantServiceObserver::WaitForThemeApplied(bool theme_installed) {
   run_loop.Run();
 }
 
-void TestInstantServiceObserver::WaitForDarkModeApplied(bool dark_mode) {
-  DCHECK(!quit_closure_dark_mode_);
-
-  expected_dark_mode_ = dark_mode;
-  if (theme_info_.using_dark_mode == dark_mode) {
-    return;
-  }
-
-  base::RunLoop run_loop;
-  quit_closure_theme_ = run_loop.QuitClosure();
-  run_loop.Run();
-}
-
 bool TestInstantServiceObserver::IsUsingDefaultTheme() {
   return theme_info_.using_default_theme;
 }
@@ -116,11 +103,6 @@ void TestInstantServiceObserver::ThemeInfoChanged(
     // Exit when the theme was applied successfully.
     std::move(quit_closure_theme_).Run();
     quit_closure_theme_.Reset();
-  } else if (quit_closure_dark_mode_ &&
-             theme_info_.using_dark_mode == expected_dark_mode_) {
-    // Exit when the theme was applied successfully.
-    std::move(quit_closure_dark_mode_).Run();
-    quit_closure_dark_mode_.Reset();
   }
 }
 
@@ -139,9 +121,10 @@ DarkModeTestBase::DarkModeTestBase() {}
 bool DarkModeTestBase::GetIsDarkModeApplied(
     const content::ToRenderFrameHost& frame) {
   bool dark_mode_applied = false;
-  if (instant_test_utils::GetBoolFromJS(
-          frame, "document.documentElement.getAttribute('darkmode') === 'true'",
-          &dark_mode_applied)) {
+  if (instant_test_utils::GetBoolFromJS(frame,
+                                        " window.matchMedia('(prefers-color-"
+                                        "scheme: dark)').matches === true",
+                                        &dark_mode_applied)) {
     return dark_mode_applied;
   }
   return false;

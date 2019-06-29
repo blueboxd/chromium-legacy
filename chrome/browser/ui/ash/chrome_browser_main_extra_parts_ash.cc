@@ -133,7 +133,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // Must be available at login screen, so initialize before profile.
   accessibility_controller_client_ =
       std::make_unique<AccessibilityControllerClient>();
-  accessibility_controller_client_->Init();
 
   chrome_new_window_client_ = std::make_unique<ChromeNewWindowClient>();
 

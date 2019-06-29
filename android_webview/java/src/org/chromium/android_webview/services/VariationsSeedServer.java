@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
-import com.android.webview.chromium.WebViewApkApplication;
-
 /**
  * VariationsSeedServer is a bound service that shares the Variations seed with all the WebViews
  * on the system. A WebView will bind and call getSeed, passing a file descriptor to which the
@@ -23,11 +21,6 @@ public class VariationsSeedServer extends Service {
             VariationsSeedHolder.getInstance().writeSeedIfNewer(newSeedFile, oldSeedDate);
         }
     };
-
-    public VariationsSeedServer() {
-        // Required when running in Monochrome.
-        WebViewApkApplication.initPathUtils();
-    }
 
     @Override
     public IBinder onBind(Intent intent) {

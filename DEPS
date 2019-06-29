@@ -154,11 +154,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '77c8496b5fd063e70d08a43ca6c994d2d7e7dc66',
+  'angle_revision': 'f116aa9c158b91bc966ef0394d666da4b3e7bcb6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '83dd452c1fe676f2e91da6d859a918199b92740f',
+  'swiftshader_revision': '52edb176f1bde681ec725332852801c13697d962',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -205,7 +205,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '6d4142917944d2e727eb8884c03ac7458249a6df',
+  'catapult_revision': 'b9b1a486ae1e03e0ebb768e21036113bc6e9debf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -273,7 +273,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '7781794b96fb8980d8cdcdfbbf90ee96856fa763',
+  'shaderc_revision': '30d8262c71d9267c213103cf37a412fd6fd4c483',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -628,11 +628,6 @@ deps = {
       'dep_type': 'cipd',
   },
 
-  'src/third_party/android_tools': {
-      'url': Var('chromium_git') + '/android_tools.git' + '@' + '347a7c8078a009e98995985b7ab6ec6b35696dea',
-      'condition': 'checkout_android_native_support',
-  },
-
   'src/third_party/android_build_tools/aapt2': {
       'packages': [
           {
@@ -773,7 +768,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'b62101dead2e9dd10e14252e8b68fbdf56bb40d2',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '9cafb376ebdf0d00a2fc2323e3eef26ccb27fa1d',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -811,7 +806,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '2e0eea217640347bb707a16551ab5741ee233ad7',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '0bd9fbee61bb07481a972d4a7ec5379cee901123',
       'condition': 'checkout_linux',
   },
 
@@ -836,7 +831,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '788d9e0de8132ff47891a9c141436ac6739e2e9f',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'dc37feb99d46bdf499715ceb467d341d24524e0b',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -984,7 +979,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '3874188bd69fe67a825d07584c74451e45063e95',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '9f0f47b1e410b137762f2e3699359f0dbfcdbc05',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'fd97d4326fac6da84452b2d5fe75ff0949368dab',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1364,7 +1359,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '22896d4e785bbafaa5d8c6fb24b570a681dc156e',
+    Var('webrtc_git') + '/src.git' + '@' + '2ce1da53283cd87219fcd111dcf2c60eb613c79f',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1405,7 +1400,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@422e299a1ade60cef01be9516b8cbcb5f82b742e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e0e9be59bd27dd6d17f4899f32f1c91994eb735a',
     'condition': 'checkout_src_internal',
   },
 

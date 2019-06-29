@@ -689,8 +689,8 @@ TEST(DhcpPacFileFetcherWin, OnShutdown) {
   client.RunTest();
 
   client.fetcher_.OnShutdown();
-  EXPECT_TRUE(client.finished_);
-  EXPECT_THAT(client.result_, IsError(ERR_CONTEXT_SHUT_DOWN));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(client.finished_);
 
   client.ResetTestState();
   EXPECT_THAT(client.RunTestThatMayFailSync(), IsError(ERR_CONTEXT_SHUT_DOWN));

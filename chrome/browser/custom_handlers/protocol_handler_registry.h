@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -58,6 +58,11 @@ class ProtocolHandlerRegistry : public KeyedService {
         ProtocolHandlerRegistry* registry);
     virtual void CheckDefaultClientWithOS(const std::string& protocol,
                                           ProtocolHandlerRegistry* registry);
+  };
+
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnProtocolHandlerRegistryChanged() = 0;
   };
 
   // IOThreadDelegate is an IO thread specific object. Access to the class
@@ -116,6 +121,9 @@ class ProtocolHandlerRegistry : public KeyedService {
   // Creates a new instance. Assumes ownership of |delegate|.
   ProtocolHandlerRegistry(content::BrowserContext* context, Delegate* delegate);
   ~ProtocolHandlerRegistry() override;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Called when a site tries to register as a protocol handler. If the request
   // can be handled silently by the registry - either to ignore the request
@@ -290,7 +298,7 @@ class ProtocolHandlerRegistry : public KeyedService {
   // responsible for deleting this Value.
   base::Value* EncodeIgnoredHandlers();
 
-  // Sends a notification of the given type to the NotificationService.
+  // Notifies observers of a change to the registry.
   void NotifyChanged();
 
   // Registers a new protocol handler.
@@ -391,6 +399,8 @@ class ProtocolHandlerRegistry : public KeyedService {
   // Copy of registry data for use on the IO thread. Changes to the registry
   // are posted to the IO thread where updates are applied to this object.
   scoped_refptr<IOThreadDelegate> io_thread_delegate_;
+
+  base::ObserverList<Observer> observers_;
 
   // Makes it possible to invalidate the callback for the
   // DefaultProtocolClientWorker.

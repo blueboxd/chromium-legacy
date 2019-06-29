@@ -11,10 +11,10 @@
 #include "ash/metrics/demo_session_metrics_recorder.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/accessibility_controller.mojom-shared.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -209,7 +209,7 @@ void UserMetricsRecorder::RecordUserClickOnShelfButton(
 
 // static
 void UserMetricsRecorder::RecordUserToggleDictation(
-    mojom::DictationToggleSource source) {
+    DictationToggleSource source) {
   UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosDictation.ToggleDictationMethod",
                             source);
 }

@@ -28,7 +28,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
     //   2) Update GetShortcutsNotPresentInMainMenu() in
     //      global_keyboard_shortcuts_mac.mm.
     {ui::VKEY_F12, ui::EF_NONE, IDC_DEV_TOOLS_TOGGLE},
-    {ui::VKEY_ESCAPE, ui::EF_NONE, IDC_STOP},
+    {ui::VKEY_ESCAPE, ui::EF_NONE, IDC_CLOSE_FIND_OR_STOP},
 
 #if !defined(OS_MACOSX)
     {ui::VKEY_D, ui::EF_PLATFORM_ACCELERATOR, IDC_BOOKMARK_PAGE},

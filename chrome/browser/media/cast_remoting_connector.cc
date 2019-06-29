@@ -633,6 +633,7 @@ void CastRemotingConnector::OnPrefChanged() {
       pref_service_->FindPreference(prefs::kMediaRouterMediaRemotingEnabled);
   bool enabled = false;
   pref->GetValue()->GetAsBoolean(&enabled);
+  remoting_allowed_ = enabled;
   if (!enabled)
     OnStopped(media::mojom::RemotingStopReason::USER_DISABLED);
 }

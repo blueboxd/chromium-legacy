@@ -81,6 +81,7 @@ class PaintCanvasVideoRendererTest : public testing::Test {
   void SetUp() override { gl::GLSurfaceTestSupport::InitializeOneOff(); }
 
   void TearDown() override {
+    renderer_.ResetCache();
     viz::TestGpuServiceHolder::ResetInstance();
     gl::GLSurfaceTestSupport::ShutdownGL();
   }

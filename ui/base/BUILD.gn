@@ -998,7 +998,7 @@ test("ui_base_unittests") {
   } else {
     deps += [
       "//ui/base/accelerators/mojo:unittests",
-      "//ui/base/mojo:unittests",
+      "//ui/base/mojom:unittests",
     ]
   }
 

@@ -114,8 +114,19 @@
         <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED" file="common/easy_unlock_unlocked.png" />
         <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED_HOVER" file="common/easy_unlock_unlocked_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED_PRESSED" file="common/easy_unlock_unlocked_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
-        <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
+        <if expr="is_macosx or is_ios">
+          <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="mac/folder.png" />
+          <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_WHITE" file="mac/folder_white.png" />
+          <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="mac/folder.png" />
+        </if>
+        <if expr="is_win">
+          <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="win/folder_closed.png" />
+          <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="win/folder_open.png" />
+        </if>
+        <if expr="not is_macosx and not is_ios and not is_win">
+          <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
+          <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="common/folder_open.png" />
+        </if>
         <structure type="chrome_scaled_image" name="IDR_SEND_TAB_TO_SELF_ICON_LIGHT" file="common/send_tab_to_self_light_mode_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_SEND_TAB_TO_SELF_ICON_DARK" file="common/send_tab_to_self_dark_mode_icon.png" />
       </if>

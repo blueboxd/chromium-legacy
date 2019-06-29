@@ -689,9 +689,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   const BookmarkNode* bar = GetBookmarkBarNode(kSingleProfileIndex);
   ASSERT_EQ(3u, bar->children().size());
-  EXPECT_EQ(base::ASCIIToUTF16(title0), bar->GetChild(0)->GetTitle());
-  EXPECT_EQ(base::ASCIIToUTF16(title1), bar->GetChild(1)->GetTitle());
-  EXPECT_EQ(base::ASCIIToUTF16(title2), bar->GetChild(2)->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16(title0), bar->children()[0]->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16(title1), bar->children()[1]->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16(title2), bar->children()[2]->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, E2E_ONLY(SanitySetup)) {

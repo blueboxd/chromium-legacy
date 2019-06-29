@@ -4,7 +4,7 @@
 
 #include "ash/accessibility/key_accessibility_enabler.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -65,7 +65,7 @@ TEST_F(KeyAccessibilityEnablerTest, TwoVolumeKeyDown) {
   ui::KeyEvent vol_up_release(ui::ET_KEY_RELEASED, ui::VKEY_VOLUME_UP,
                               ui::EF_NONE);
 
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
 
   ASSERT_FALSE(controller->spoken_feedback_enabled());

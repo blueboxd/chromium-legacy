@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
@@ -86,7 +86,7 @@ TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
 
 TEST_F(VirtualKeyboardControllerTest,
        ForceToShowKeyboardWithKeysetWhenAccessibilityKeyboardIsEnabled) {
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   accessibility_controller->SetVirtualKeyboardEnabled(true);
   ASSERT_TRUE(accessibility_controller->virtual_keyboard_enabled());

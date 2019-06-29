@@ -303,12 +303,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     // handled by the embedder. In that case, update the web controller to
     // correctly reflect the current state.
     if (!webControllerCanShow) {
-      if (!web::features::StorePendingItemInContext()) {
-        if ([self isMainFrameNavigationAction:action]) {
-          [self.delegate navigationHandlerStopLoading:self];
-        }
-      }
-
       // Purge web view if last committed URL is different from the document
       // URL. This can happen if external URL was added to the navigation stack
       // and was loaded using Go Back or Go Forward navigation (in which case
@@ -350,7 +344,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
-  if (!webControllerCanShow && web::features::StorePendingItemInContext()) {
+  if (!webControllerCanShow) {
     allowLoad = NO;
   }
 
@@ -366,8 +360,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   } else {
     if (action.targetFrame.mainFrame) {
       [self.pendingNavigationInfo setCancelled:YES];
-      if (!web::features::StorePendingItemInContext() ||
-          self.navigationManagerImpl->GetPendingItemIndex() == -1) {
+      if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
         // Discard the new pending item to ensure that the current URL is not
         // different from what is displayed on the view. Discard only happens
         // if the last item was not a native view, to avoid ugly animation of
@@ -503,12 +496,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     // Discard the pending item to ensure that the current URL is not different
     // from what is displayed on the view.
     [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
-    if (!web::features::StorePendingItemInContext()) {
-      // Loading will be stopped in webView:didFinishNavigation: callback. This
-      // call is here to preserve the original behavior when pending item is not
-      // stored in NavigationContext.
-      self.webStateImpl->SetIsLoading(false);
-    }
   } else {
     shouldRenderResponse = self.webStateImpl->ShouldAllowResponse(
         WKResponse.response, WKResponse.forMainFrame);
@@ -753,14 +740,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // the pending load.
   self.pendingNavigationInfo = nil;
   _certVerificationErrors->Clear();
-  if (web::features::StorePendingItemInContext()) {
-    // Remove the navigation to immediately get rid of pending item.
-    if (web::WKNavigationState::NONE !=
-        [self.navigationStates stateForNavigation:navigation]) {
-      [self.navigationStates removeNavigation:navigation];
-    }
-  } else {
-    [self forgetNullWKNavigation:navigation];
+  // Remove the navigation to immediately get rid of pending item.
+  if (web::WKNavigationState::NONE !=
+      [self.navigationStates stateForNavigation:navigation]) {
+    [self.navigationStates removeNavigation:navigation];
   }
 }
 
@@ -778,11 +761,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   BOOL committedNavigation =
       [self.navigationStates isCommittedNavigation:navigation];
-  if (!web::features::StorePendingItemInContext()) {
-    // Code in this method relies on existance of pending item.
-    [self.navigationStates setState:web::WKNavigationState::COMMITTED
-                      forNavigation:navigation];
-  }
 
   _certVerificationErrors->Clear();
 
@@ -847,8 +825,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     web::NavigationManager* navigationManager =
         self.webStateImpl->GetNavigationManager();
     GURL pendingURL;
-    if (web::features::StorePendingItemInContext() &&
-        navigationManager->GetPendingItemIndex() == -1) {
+    if (navigationManager->GetPendingItemIndex() == -1) {
       if (context->GetItem()) {
         // Item may not exist if navigation was stopped (see
         // crbug.com/969915).
@@ -933,8 +910,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         !navigation ||
         [[self.navigationStates lastAddedNavigation] isEqual:navigation];
     if (isLastNavigation ||
-        (web::features::StorePendingItemInContext() &&
-         self.navigationManagerImpl->GetPendingItemIndex() == -1)) {
+        self.navigationManagerImpl->GetPendingItemIndex() == -1) {
       [self webPageChangedWithContext:context webView:webView];
     } else if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
       // WKWebView has more than one in progress navigation, and committed
@@ -949,12 +925,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
-  if (web::features::StorePendingItemInContext()) {
-    // No further code relies an existance of pending item, so this navigation
-    // can be marked as "committed".
-    [self.navigationStates setState:web::WKNavigationState::COMMITTED
-                      forNavigation:navigation];
-  }
+  // No further code relies an existance of pending item, so this navigation can
+  // be marked as "committed".
+  [self.navigationStates setState:web::WKNavigationState::COMMITTED
+                    forNavigation:navigation];
 
   // This is the point where the document's URL has actually changed.
   [self.delegate navigationHandler:self
@@ -1113,14 +1087,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   [self.delegate navigationHandler:self didFinishNavigation:context];
 
-  if (web::features::StorePendingItemInContext()) {
-    // Remove the navigation to immediately get rid of pending item.
-    if (web::WKNavigationState::NONE !=
-        [self.navigationStates stateForNavigation:navigation]) {
-      [self.navigationStates removeNavigation:navigation];
-    }
-  } else {
-    [self forgetNullWKNavigation:navigation];
+  // Remove the navigation to immediately get rid of pending item.
+  if (web::WKNavigationState::NONE !=
+      [self.navigationStates stateForNavigation:navigation]) {
+    [self.navigationStates removeNavigation:navigation];
   }
 }
 
@@ -1651,12 +1621,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   web::NavigationContextImpl* context =
       [self.navigationStates contextForNavigation:navigation];
   if (context) {
-    if (web::features::StorePendingItemInContext()) {
-      // This NavigationContext will be destroyed, so return pending item
-      // ownership to NavigationManager. NavigationContext can only own pending
-      // item until the navigation has committed or aborted.
-      self.navigationManagerImpl->SetPendingItem(context->ReleaseItem());
-    }
+    // This NavigationContext will be destroyed, so return pending item
+    // ownership to NavigationManager. NavigationContext can only own pending
+    // item until the navigation has committed or aborted.
+    self.navigationManagerImpl->SetPendingItem(context->ReleaseItem());
     web::NavigationItemImpl* item =
         web::GetItemWithUniqueID(self.navigationManagerImpl, context);
     if (item && item->error_retry_state_machine().state() ==
@@ -1749,7 +1717,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           }
           return;
         }
-      } else if (web::features::StorePendingItemInContext()) {
+      } else {
         if (transition & ui::PAGE_TRANSITION_RELOAD &&
             !(transition & ui::PAGE_TRANSITION_FORWARD_BACK)) {
           // There is no pending item for reload (see crbug.com/676129). So
@@ -2311,8 +2279,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // item will be committed when the native content or webUI is displayed.
   if (!context->IsPlaceholderNavigation()) {
     self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
-    if (web::features::StorePendingItemInContext() &&
-        context->IsLoadingHtmlString()) {
+    if (context->IsLoadingHtmlString()) {
       self.navigationManagerImpl->GetLastCommittedItem()->SetURL(
           context->GetUrl());
     }

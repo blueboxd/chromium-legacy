@@ -634,7 +634,7 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
     if (!child->GetVisible())
       break;
     if (child->bounds().Contains(adjusted_loc))
-      return model_->bookmark_bar_node()->GetChild(i);
+      return model_->bookmark_bar_node()->children()[i].get();
   }
 
   // Then the overflow button.
@@ -1761,7 +1761,8 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
     int button_w = button->width();
     if (button_x < button_w) {
       found = true;
-      const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
+      const BookmarkNode* node =
+          model_->bookmark_bar_node()->children()[i].get();
       if (node->is_folder()) {
         if (button_x <= views::kDropBetweenPixels) {
           location->index = i;

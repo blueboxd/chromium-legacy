@@ -323,18 +323,11 @@ void DhcpPacFileFetcherWin::Cancel() {
 void DhcpPacFileFetcherWin::OnShutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Back up callback, if there is one, as CancelImpl() will destroy it.
-  net::CompletionOnceCallback callback = std::move(callback_);
-
   // Cancel current request, if there is one.
   CancelImpl();
 
   // Prevent future network requests.
   url_request_context_ = nullptr;
-
-  // Invoke callback with error, if present.
-  if (callback)
-    std::move(callback).Run(ERR_CONTEXT_SHUT_DOWN);
 }
 
 void DhcpPacFileFetcherWin::CancelImpl() {

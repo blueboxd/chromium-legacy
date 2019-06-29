@@ -91,7 +91,8 @@ void StringUtil::builderAppendQuotedString(StringBuilder& builder,
 }
 
 // static
-String StringUtil::fromUTF16(const uint16_t* data, size_t length) {
+String StringUtil::fromUTF16LE(const uint16_t* data, size_t length) {
+  // Chromium doesn't support big endian architectures, so it's OK to cast here.
   return String(reinterpret_cast<const UChar*>(data), length);
 }
 

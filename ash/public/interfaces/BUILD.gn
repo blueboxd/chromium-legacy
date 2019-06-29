@@ -8,8 +8,6 @@ mojom("interfaces") {
   disable_variants = true
 
   sources = [
-    "accessibility_controller.mojom",
-    "accessibility_controller_enums.mojom",
     "assistant_controller.mojom",
     "assistant_volume_control.mojom",
     "constants.mojom",
@@ -31,11 +29,9 @@ mojom("interfaces") {
     "//services/content/public/mojom",
     "//services/preferences/public/mojom",
     "//skia/public/interfaces",
-    "//ui/accessibility:ax_enums_mojo",
     "//ui/base/ime/chromeos/public/interfaces",
-    "//ui/base/mojo",
+    "//ui/base/mojom",
     "//ui/display/mojo:interfaces",
-    "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/range/mojo",

@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/trace_event/trace_event.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
 
@@ -42,10 +41,6 @@ size_t StorageObserverList::ObserverCount() const {
 }
 
 void StorageObserverList::OnStorageChange(const StorageObserver::Event& event) {
-  // crbug.com/349708
-  TRACE_EVENT0("io",
-               "HostStorageObserversStorageObserverList::OnStorageChange");
-
   for (auto& observer_state_pair : observer_state_map_)
     observer_state_pair.second.requires_update = true;
 
@@ -54,9 +49,6 @@ void StorageObserverList::OnStorageChange(const StorageObserver::Event& event) {
 
 void StorageObserverList::MaybeDispatchEvent(
     const StorageObserver::Event& event) {
-  // crbug.com/349708
-  TRACE_EVENT0("io", "StorageObserverList::MaybeDispatchEvent");
-
   notification_timer_.Stop();
   base::TimeDelta min_delay = base::TimeDelta::Max();
   bool all_observers_notified = true;
@@ -75,10 +67,6 @@ void StorageObserverList::MaybeDispatchEvent(
       state.last_notification_time = current_time;
 
       if (state.origin == event.filter.origin) {
-        // crbug.com/349708
-        TRACE_EVENT0("io",
-                     "StorageObserverList::MaybeDispatchEvent OnStorageEvent1");
-
         observer->OnStorageEvent(event);
       } else {
         // When the quota and usage of an origin is requested, QuotaManager
@@ -88,10 +76,6 @@ void StorageObserverList::MaybeDispatchEvent(
         // registered.
         StorageObserver::Event dispatch_event(event);
         dispatch_event.filter.origin = state.origin;
-
-        // crbug.com/349708
-        TRACE_EVENT0("io",
-                     "StorageObserverList::MaybeDispatchEvent OnStorageEvent2");
 
         observer->OnStorageEvent(dispatch_event);
       }
@@ -202,9 +186,6 @@ void HostStorageObservers::StartInitialization(
     const StorageObserver::Filter& filter) {
   if (initialized_ || initializing_)
     return;
-  // crbug.com/349708
-  TRACE_EVENT0("io", "HostStorageObservers::StartInitialization");
-
   initializing_ = true;
   quota_manager_->GetUsageAndQuotaForWebApps(
       filter.origin, filter.storage_type,

@@ -9,7 +9,6 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -3038,14 +3037,11 @@ TEST_F(ShelfLayoutManagerTest, TapShelfItemInAutoHideShelf) {
 // Tests the a11y feedback for entering/exiting fullscreen workspace state.
 TEST_F(ShelfLayoutManagerTest, A11yAlertOnWorkspaceState) {
   TestAccessibilityControllerClient client;
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  controller->SetClient(client.CreateInterfacePtrAndBind());
   std::unique_ptr<aura::Window> window1(
       AshTestBase::CreateToplevelTestWindow());
   std::unique_ptr<aura::Window> window2(
       AshTestBase::CreateToplevelTestWindow());
-  EXPECT_NE(mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
+  EXPECT_NE(AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
             client.last_a11y_alert());
 
   // Toggle the current normal window in workspace to fullscreen should send the
@@ -3053,38 +3049,33 @@ TEST_F(ShelfLayoutManagerTest, A11yAlertOnWorkspaceState) {
   const wm::WMEvent fullscreen(wm::WM_EVENT_TOGGLE_FULLSCREEN);
   wm::WindowState* window_state2 = wm::GetWindowState(window2.get());
   window_state2->OnWMEvent(&fullscreen);
-  controller->FlushMojoForTest();
   EXPECT_TRUE(window_state2->IsFullscreen());
-  EXPECT_EQ(mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
+  EXPECT_EQ(AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
             client.last_a11y_alert());
 
   // Toggle the current fullscreen'ed window in workspace to exit fullscreen
   // should send the EXITED alert.
   window_state2->OnWMEvent(&fullscreen);
-  controller->FlushMojoForTest();
   EXPECT_FALSE(window_state2->IsFullscreen());
-  EXPECT_EQ(mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED,
+  EXPECT_EQ(AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED,
             client.last_a11y_alert());
 
   // Fullscreen the |window2| again to prepare for the following tests.
   window_state2->OnWMEvent(&fullscreen);
-  controller->FlushMojoForTest();
   EXPECT_TRUE(window_state2->IsFullscreen());
-  EXPECT_EQ(mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
+  EXPECT_EQ(AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
             client.last_a11y_alert());
   // Changes the current window in workspace from a fullscreen window to a
   // normal window should send the EXITD alert.
   window_state2->Minimize();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED,
+  EXPECT_EQ(AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED,
             client.last_a11y_alert());
 
   // Changes the current window in workspace from a normal window to fullscreen
   // window should send ENTERED alert.
   window_state2->Unminimize();
   EXPECT_TRUE(window_state2->IsFullscreen());
-  controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
+  EXPECT_EQ(AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
             client.last_a11y_alert());
 }
 

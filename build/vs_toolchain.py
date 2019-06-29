@@ -136,14 +136,14 @@ def GetVisualStudioVersion():
   """
 
   env_version = os.environ.get('GYP_MSVS_VERSION')
+  if env_version:
+    return env_version
+
   supported_versions = MSVS_VERSIONS.keys()
 
   # VS installed in depot_tools for Googlers
   if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1'))):
-    if env_version:
-      return env_version
-    else:
-      return supported_versions[0]
+    return supported_versions[0]
 
   # VS installed in system for external developers
   supported_versions_str = ', '.join('{} ({})'.format(v,k)
@@ -161,17 +161,6 @@ def GetVisualStudioVersion():
   if not available_versions:
     raise Exception('No supported Visual Studio can be found.'
                     ' Supported versions are: %s.' % supported_versions_str)
-
-  if env_version:
-    if env_version not in supported_versions:
-      raise Exception('Visual Studio version %s (from GYP_MSVS_VERSION)'
-                      ' is not supported. Supported versions are: %s.'
-                      % (env_version, supported_versions_str))
-    if env_version not in available_versions:
-      raise Exception('Visual Studio version %s (from GYP_MSVS_VERSION)'
-                      ' is not available.' % env_version)
-    return env_version
-
   return available_versions[0]
 
 

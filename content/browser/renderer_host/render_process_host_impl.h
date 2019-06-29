@@ -214,10 +214,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
   bool IsProcessBackgrounded() override;
-  void IncrementKeepAliveRefCount(
-      RenderProcessHost::KeepAliveClientType) override;
-  void DecrementKeepAliveRefCount(
-      RenderProcessHost::KeepAliveClientType) override;
+  void IncrementKeepAliveRefCount() override;
+  void DecrementKeepAliveRefCount() override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
   void Resume() override;
@@ -617,10 +615,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // any other that hang off it.
   void ResetIPC();
 
-  void RecordKeepAliveDuration(RenderProcessHost::KeepAliveClientType,
-                               base::TimeTicks start,
-                               base::TimeTicks end);
-
   // Get an existing RenderProcessHost associated with the given browser
   // context, if possible.  The renderer process is chosen randomly from
   // suitable renderers that share the same context and type (determined by the
@@ -702,12 +696,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<ConnectionFilterController> connection_filter_controller_;
 
   size_t keep_alive_ref_count_;
-
-  // TODO(panicker): Remove these after investigation in
-  // https://crbug.com/823482.
-  static const size_t kNumKeepAliveClients = 4;
-  size_t keep_alive_client_count_[kNumKeepAliveClients];
-  base::TimeTicks keep_alive_client_start_time_[kNumKeepAliveClients];
 
   // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
   // no longer be modified.

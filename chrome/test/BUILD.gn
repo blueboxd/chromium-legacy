@@ -503,11 +503,14 @@ if (is_android) {
     sources = [
       "base/android/android_browser_test.cc",
       "base/android/android_browser_test.h",
+      "base/android/payment_request_test_bridge.cc",
+      "base/android/payment_request_test_bridge.h",
     ]
     public_deps = [
       "//content/test:test_support",
     ]
     deps = [
+      ":android_browsertests_jni_headers",
       "//chrome/browser",
       "//content/public/browser",
     ]
@@ -558,6 +561,13 @@ if (is_android) {
     java_files = [
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
+      "android/browsertests_apk/src/org/chromium/android_browsertests_apk/PaymentRequestTestBridge.java",
+    ]
+  }
+
+  generate_jni("android_browsertests_jni_headers") {
+    sources = [
+      "android/browsertests_apk/src/org/chromium/android_browsertests_apk/PaymentRequestTestBridge.java",
     ]
   }
 

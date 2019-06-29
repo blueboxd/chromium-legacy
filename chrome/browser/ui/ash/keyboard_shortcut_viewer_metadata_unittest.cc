@@ -34,7 +34,7 @@ constexpr char kChromeAcceleratorsHash[] = "15a6c673dc62825b04e80036ad690514";
 // The total number of Chrome accelerators (available on Chrome OS).
 constexpr int kChromeAcceleratorsTotalNum = 92;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "ef8dbf7ba5329cf7de66fdaebc3f5108";
+constexpr char kChromeAcceleratorsHash[] = "7c45362e298cf77aae142dec7154adcf";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 const char* BooleanToString(bool value) {

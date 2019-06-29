@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -200,17 +199,13 @@ TEST_F(DisplayMoveWindowUtilTest, FourDisplays) {
 TEST_F(DisplayMoveWindowUtilTest, A11yAlert) {
   // Layout: [p][1]
   UpdateDisplay("400x300,400x300");
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
   TestAccessibilityControllerClient client;
-  controller->SetClient(client.CreateInterfacePtrAndBind());
 
   aura::Window* window =
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 200, 100));
   wm::ActivateWindow(window);
   PerformMoveWindowAccel();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_MOVED_TO_ANOTHER_DISPLAY,
+  EXPECT_EQ(AccessibilityAlert::WINDOW_MOVED_TO_ANOTHER_DISPLAY,
             client.last_a11y_alert());
 }
 

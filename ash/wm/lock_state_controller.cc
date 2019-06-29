@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/cancel_mode.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/shutdown_controller.h"
@@ -315,20 +315,12 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
   }
   // Play and get shutdown sound duration from chrome in |sound_duration|. And
   // start real shutdown after a delay of |duration|.
-  Shell::Get()->accessibility_controller()->PlayShutdownSound(base::BindOnce(
-      [](base::WeakPtr<LockStateController> self, base::TimeDelta duration,
-         base::TimeDelta sound_duration) {
-        if (!self)
-          return;
-        sound_duration = std::min(
-            sound_duration,
-            base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));
-        duration = std::max(duration, sound_duration);
-        self->real_shutdown_timer_.Start(
-            FROM_HERE, duration, self.get(),
-            &LockStateController::OnRealPowerTimeout);
-      },
-      weak_ptr_factory_.GetWeakPtr(), duration));
+  base::TimeDelta sound_duration =
+      std::min(Shell::Get()->accessibility_controller()->PlayShutdownSound(),
+               base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));
+  duration = std::max(duration, sound_duration);
+  real_shutdown_timer_.Start(FROM_HERE, duration, this,
+                             &LockStateController::OnRealPowerTimeout);
 }
 
 void LockStateController::OnRealPowerTimeout() {

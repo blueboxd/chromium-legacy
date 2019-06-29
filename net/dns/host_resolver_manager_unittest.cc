@@ -5,6 +5,7 @@
 #include "net/dns/host_resolver_manager.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -23,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -338,13 +340,19 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
   }
 
   // Returns the number of attempts that have finished the Resolve() method.
-  int total_attempts_resolved() { return total_attempts_resolved_; }
+  int GetTotalAttemptsResolved() {
+    base::AutoLock auto_lock(lock_);
+    return total_attempts_resolved_;
+  }
 
-  // Returns the first attempt that that has resolved the host.
-  int resolved_attempt_number() { return resolved_attempt_number_; }
-
-  // Returns the current number of blocked attempts.
-  int num_attempts_waiting() { return num_attempts_waiting_; }
+  // Sets the resolved attempt number and unblocks waiting
+  // attempts.
+  void SetResolvedAttemptNumber(int n) {
+    base::AutoLock auto_lock(lock_);
+    EXPECT_EQ(0, resolved_attempt_number_);
+    resolved_attempt_number_ = n;
+    all_done_.Broadcast();
+  }
 
   // HostResolverProc methods.
   int Resolve(const std::string& host,
@@ -2182,8 +2190,69 @@ TEST_F(HostResolverManagerTest, MultipleAttempts) {
   // We should be done with retries, but make sure none erroneously happen.
   test_task_runner->FastForwardUntilNoTasksRemain();
 
-  EXPECT_EQ(resolver_proc->total_attempts_resolved(), kTotalAttempts);
-  EXPECT_EQ(resolver_proc->resolved_attempt_number(), kAttemptNumberToResolve);
+  EXPECT_EQ(resolver_proc->GetTotalAttemptsResolved(), kTotalAttempts);
+}
+
+// Regression test for https://crbug.com/976948.
+//
+// Tests that when the maximum number of retries is set to
+// |HostResolver::ManagerOptions::kDefaultRetryAttempts| the
+// number of retries used is 4 rather than something higher.
+TEST_F(HostResolverManagerTest, DefaultMaxRetryAttempts) {
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_override_scoped_cleanup =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
+  // Instantiate a ResolverProc that will block all incoming requests.
+  auto resolver_proc = base::MakeRefCounted<LookupAttemptHostResolverProc>(
+      nullptr, std::numeric_limits<size_t>::max(),
+      std::numeric_limits<size_t>::max());
+
+  // This corresponds to kDefaultMaxRetryAttempts in
+  // ProcTaskParams::ProcTaskParams(). The correspondence is verified below,
+  // since that symbol is not exported.
+  const size_t expected_max_retries = 4;
+
+  // Use the special value |ManagerOptions::kDefaultRetryAttempts|, which is
+  // expected to translate into |expected_num_retries|.
+  ASSERT_NE(HostResolver::ManagerOptions::kDefaultRetryAttempts,
+            expected_max_retries);
+  ProcTaskParams params(resolver_proc.get(),
+                        HostResolver::ManagerOptions::kDefaultRetryAttempts);
+  ASSERT_EQ(params.max_retry_attempts, expected_max_retries);
+
+  CreateResolverWithLimitsAndParams(kMaxJobs, params,
+                                    false /* ipv6_reachable */,
+                                    false /* check_ipv6_on_wifi */);
+
+  // Resolve "host1". The resolver proc will hang all requests so this
+  // resolution should remain stalled until calling SetResolvedAttemptNumber().
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_FALSE(response.complete());
+
+  // Simulate running the main thread (network task runner) for a long
+  // time. Because none of the attempts posted to worker pool can complete, this
+  // should cause all of the retry attempts to get posted, according to the
+  // exponential backoff schedule.
+  test_task_runner->FastForwardBy(base::TimeDelta::FromMinutes(20));
+
+  // Unblock the resolver proc, then wait for all the worker pool and main
+  // thread tasks to complete. Note that the call to SetResolvedAttemptNumber(1)
+  // will cause all the blocked resolver procs tasks fail with -2.
+  resolver_proc->SetResolvedAttemptNumber(1);
+  const int kExpectedError = -2;
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+  test_task_runner->RunUntilIdle();
+
+  ASSERT_TRUE(response.complete());
+  EXPECT_EQ(kExpectedError, response.result_error());
+
+  // Ensure that the original attempt was executed on the worker pool, as well
+  // as the maximum number of allowed retries, and no more.
+  EXPECT_EQ(static_cast<int>(expected_max_retries + 1),
+            resolver_proc->GetTotalAttemptsResolved());
 }
 
 // If a host resolves to a list that includes 127.0.53.53, this is treated as

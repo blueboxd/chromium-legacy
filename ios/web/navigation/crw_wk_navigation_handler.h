@@ -72,9 +72,6 @@ class WKBackForwardListItemHolder;
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
         createWebUIForURL:(const GURL&)URL;
 
-// Stop Loading current page.
-- (void)navigationHandlerStopLoading:(CRWWKNavigationHandler*)navigationHandler;
-
 // Returns YES if |url| should be loaded in a native view.
 - (BOOL)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
     shouldLoadURLInNativeView:(const GURL&)url;

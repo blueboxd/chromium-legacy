@@ -85,7 +85,8 @@ bool PositionsInTrackerMatchModel(const bookmarks::BookmarkNode* node,
   if (node->children().empty()) {
     return true;
   }
-  syncer::UniquePosition last_pos = PositionOf(node->GetChild(0), tracker);
+  syncer::UniquePosition last_pos =
+      PositionOf(node->children().front().get(), tracker);
   for (size_t i = 1; i < node->children().size(); ++i) {
     syncer::UniquePosition pos = PositionOf(node->children()[i].get(), tracker);
     if (pos.LessThan(last_pos)) {
@@ -235,51 +236,51 @@ TEST(BookmarkModelMergerTest, ShouldMergeLocalAndRemoteModels) {
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(3u));
 
   // Verify Folder 1.
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->GetTitle(),
               Eq(base::ASCIIToUTF16(kFolder1Title)));
-  ASSERT_THAT(bookmark_bar_node->GetChild(0)->children().size(), Eq(3u));
+  ASSERT_THAT(bookmark_bar_node->children()[0]->children().size(), Eq(3u));
 
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->children()[0]->GetTitle(),
               Eq(base::ASCIIToUTF16(kUrl1Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetChild(0)->url(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->children()[0]->url(),
               Eq(GURL(kUrl1)));
 
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetChild(1)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->children()[1]->GetTitle(),
               Eq(base::ASCIIToUTF16(kUrl2Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetChild(1)->url(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->children()[1]->url(),
               Eq(GURL(kAnotherUrl2)));
 
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetChild(2)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->children()[2]->GetTitle(),
               Eq(base::ASCIIToUTF16(kUrl2Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetChild(2)->url(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->children()[2]->url(),
               Eq(GURL(kUrl2)));
 
   // Verify Folder 3.
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[1]->GetTitle(),
               Eq(base::ASCIIToUTF16(kFolder3Title)));
-  ASSERT_THAT(bookmark_bar_node->GetChild(1)->children().size(), Eq(2u));
+  ASSERT_THAT(bookmark_bar_node->children()[1]->children().size(), Eq(2u));
 
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[1]->children()[0]->GetTitle(),
               Eq(base::ASCIIToUTF16(kUrl3Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetChild(0)->url(),
+  EXPECT_THAT(bookmark_bar_node->children()[1]->children()[0]->url(),
               Eq(GURL(kUrl3)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetChild(1)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[1]->children()[1]->GetTitle(),
               Eq(base::ASCIIToUTF16(kUrl4Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetChild(1)->url(),
+  EXPECT_THAT(bookmark_bar_node->children()[1]->children()[1]->url(),
               Eq(GURL(kUrl4)));
 
   // Verify Folder 2.
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->GetTitle(),
               Eq(base::ASCIIToUTF16(kFolder2Title)));
-  ASSERT_THAT(bookmark_bar_node->GetChild(2)->children().size(), Eq(2u));
+  ASSERT_THAT(bookmark_bar_node->children()[2]->children().size(), Eq(2u));
 
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->children()[0]->GetTitle(),
               Eq(base::ASCIIToUTF16(kUrl3Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetChild(0)->url(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->children()[0]->url(),
               Eq(GURL(kUrl3)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetChild(1)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->children()[1]->GetTitle(),
               Eq(base::ASCIIToUTF16(kUrl4Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetChild(1)->url(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->children()[1]->url(),
               Eq(GURL(kUrl4)));
 
   // Verify the tracker contents.
@@ -294,12 +295,12 @@ TEST(BookmarkModelMergerTest, ShouldMergeLocalAndRemoteModels) {
   }
   // Verify that url2(http://www.url2.com), Folder 2 and children have
   // corresponding update.
-  EXPECT_THAT(
-      nodes_with_local_changes,
-      UnorderedElementsAre(bookmark_bar_node->GetChild(0)->GetChild(2),
-                           bookmark_bar_node->GetChild(2),
-                           bookmark_bar_node->GetChild(2)->GetChild(0),
-                           bookmark_bar_node->GetChild(2)->GetChild(1)));
+  EXPECT_THAT(nodes_with_local_changes,
+              UnorderedElementsAre(
+                  bookmark_bar_node->children()[0]->children()[2].get(),
+                  bookmark_bar_node->children()[2].get(),
+                  bookmark_bar_node->children()[2]->children()[0].get(),
+                  bookmark_bar_node->children()[2]->children()[1].get()));
 
   // Verify positions in tracker.
   EXPECT_TRUE(PositionsInTrackerMatchModel(bookmark_bar_node, tracker));
@@ -382,11 +383,11 @@ TEST(BookmarkModelMergerTest, ShouldMergeRemoteReorderToLocalModel) {
       .Merge();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(3u));
 
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[0]->GetTitle(),
               Eq(base::ASCIIToUTF16(kFolder1Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[1]->GetTitle(),
               Eq(base::ASCIIToUTF16(kFolder3Title)));
-  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetTitle(),
+  EXPECT_THAT(bookmark_bar_node->children()[2]->GetTitle(),
               Eq(base::ASCIIToUTF16(kFolder2Title)));
 
   // Verify the tracker contents.

@@ -12,7 +12,6 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/exit_warning_handler.h"
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -392,15 +391,11 @@ class OverviewSessionTest : public AshTestBase {
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_F(OverviewSessionTest, A11yAlertOnOverviewMode) {
   TestAccessibilityControllerClient client;
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  controller->SetClient(client.CreateInterfacePtrAndBind());
   std::unique_ptr<aura::Window> window(CreateTestWindow());
-  EXPECT_NE(mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
+  EXPECT_NE(AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
             client.last_a11y_alert());
   ToggleOverview();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
+  EXPECT_EQ(AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
             client.last_a11y_alert());
 }
 

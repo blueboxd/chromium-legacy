@@ -764,21 +764,19 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   base::RecordAction(base::UserMetricsAction("Stop"));
   // Discard all pending and transient items before notifying WebState observers
   self.navigationManagerImpl->DiscardNonCommittedItems();
-  if (web::features::StorePendingItemInContext()) {
-    for (__strong id navigation in
-         [self.navigationHandler.navigationStates pendingNavigations]) {
-      if (navigation == [NSNull null]) {
-        // null is a valid navigation object passed to WKNavigationDelegate
-        // callbacks and represents window opening action.
-        navigation = nil;
-      }
-      // This will remove pending item for navigations which may still call
-      // WKNavigationDelegate callbacks see (crbug.com/969915).
-      web::NavigationContextImpl* context =
-          [self.navigationHandler.navigationStates
-              contextForNavigation:navigation];
-      context->ReleaseItem();
+  for (__strong id navigation in
+       [self.navigationHandler.navigationStates pendingNavigations]) {
+    if (navigation == [NSNull null]) {
+      // null is a valid navigation object passed to WKNavigationDelegate
+      // callbacks and represents window opening action.
+      navigation = nil;
     }
+    // This will remove pending item for navigations which may still call
+    // WKNavigationDelegate callbacks see (crbug.com/969915).
+    web::NavigationContextImpl* context =
+        [self.navigationHandler.navigationStates
+            contextForNavigation:navigation];
+    context->ReleaseItem();
   }
 
   [self.webView stopLoading];
@@ -1909,13 +1907,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [_containerView resetContent];
   [self setWebView:nil];
 
-  if (web::features::StorePendingItemInContext()) {
-    // webView:didFailProvisionalNavigation:withError: may never be called after
-    // resetting WKWebView, so it is important to clear pending navigations now.
-    for (__strong id navigation in
-         [self.navigationHandler.navigationStates pendingNavigations]) {
-      [self.navigationHandler.navigationStates removeNavigation:navigation];
-    }
+  // webView:didFailProvisionalNavigation:withError: may never be called after
+  // resetting WKWebView, so it is important to clear pending navigations now.
+  for (__strong id navigation in
+       [self.navigationHandler.navigationStates pendingNavigations]) {
+    [self.navigationHandler.navigationStates removeNavigation:navigation];
   }
 }
 
@@ -2210,9 +2206,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // Otherwise, sync the current title for items created by same document
       // navigations.
       if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        auto* pendingItem = web::features::StorePendingItemInContext()
-                                ? newNavigationContext->GetItem()
-                                : self.navigationManagerImpl->GetPendingItem();
+        auto* pendingItem = newNavigationContext->GetItem();
         if (pendingItem)
           pendingItem->SetTitle(self.webStateImpl->GetTitle());
       }
@@ -2284,11 +2278,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
         createWebUIForURL:(const GURL&)URL {
   [self createWebUIForURL:URL];
-}
-
-- (void)navigationHandlerStopLoading:
-    (CRWWKNavigationHandler*)navigationHandler {
-  [self stopLoading];
 }
 
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler

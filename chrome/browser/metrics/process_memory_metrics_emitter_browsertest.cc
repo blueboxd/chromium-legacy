@@ -157,6 +157,29 @@ void CheckMemoryMetric(const std::string& name,
   EXPECT_LT(samples->sum(), maximum_expected_size) << name;
 }
 
+void CheckExperimentalMemoryMetricsForProcessType(
+    const base::HistogramTester& histogram_tester,
+    int count,
+    const char* process_type,
+    int number_of_processes) {
+#if !defined(OS_WIN)
+  CheckMemoryMetric(
+      std::string("Memory.Experimental.") + process_type + "2.Malloc",
+      histogram_tester, count, ValueRestriction::ABOVE_ZERO,
+      number_of_processes);
+#endif
+  CheckMemoryMetric(
+      std::string("Memory.Experimental.") + process_type + "2.BlinkGC",
+      histogram_tester, count, ValueRestriction::NONE, number_of_processes);
+  CheckMemoryMetric(
+      std::string("Memory.Experimental.") + process_type + "2.PartitionAlloc",
+      histogram_tester, count, ValueRestriction::NONE, number_of_processes);
+  // V8 memory footprint can be below 1 MB, which is reported as zero.
+  CheckMemoryMetric(std::string("Memory.Experimental.") + process_type + "2.V8",
+                    histogram_tester, count, ValueRestriction::NONE,
+                    number_of_processes);
+}
+
 void CheckExperimentalMemoryMetrics(
     const base::HistogramTester& histogram_tester,
     int count,
@@ -167,37 +190,12 @@ void CheckExperimentalMemoryMetrics(
                     count, ValueRestriction::ABOVE_ZERO);
 #endif
   if (number_of_renderer_processes) {
-#if !defined(OS_WIN)
-    CheckMemoryMetric("Memory.Experimental.Renderer2.Malloc", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
-                      number_of_renderer_processes);
-#endif
-    CheckMemoryMetric("Memory.Experimental.Renderer2.BlinkGC", histogram_tester,
-                      count, ValueRestriction::NONE,
-                      number_of_renderer_processes);
-    CheckMemoryMetric("Memory.Experimental.Renderer2.PartitionAlloc",
-                      histogram_tester, count, ValueRestriction::NONE,
-                      number_of_renderer_processes);
-    // V8 memory footprint can be below 1 MB, which is reported as zero.
-    CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester,
-                      count, ValueRestriction::NONE,
-                      number_of_renderer_processes);
+    CheckExperimentalMemoryMetricsForProcessType(
+        histogram_tester, count, "Renderer", number_of_renderer_processes);
   }
   if (number_of_extension_processes) {
-#if !defined(OS_WIN)
-    CheckMemoryMetric("Memory.Experimental.Extension2.Malloc", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
-                      number_of_extension_processes);
-#endif
-    CheckMemoryMetric("Memory.Experimental.Extension2.BlinkGC",
-                      histogram_tester, count, ValueRestriction::NONE,
-                      number_of_extension_processes);
-    CheckMemoryMetric("Memory.Experimental.Extension2.PartitionAlloc",
-                      histogram_tester, count, ValueRestriction::NONE,
-                      number_of_extension_processes);
-    CheckMemoryMetric("Memory.Experimental.Extension2.V8", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
-                      number_of_extension_processes);
+    CheckExperimentalMemoryMetricsForProcessType(
+        histogram_tester, count, "Extension", number_of_extension_processes);
   }
   CheckMemoryMetric("Memory.Experimental.Total2.PrivateMemoryFootprint",
                     histogram_tester, count, ValueRestriction::ABOVE_ZERO);
@@ -549,10 +547,6 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_FetchAndEmitMetricsWithExtensions \
-  DISABLED_FetchAndEmitMetricsWithExtensions
-#elif defined(OS_LINUX)
-// Disabled for crbug.com/964025
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
   DISABLED_FetchAndEmitMetricsWithExtensions
 #else

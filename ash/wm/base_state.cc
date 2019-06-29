@@ -4,7 +4,6 @@
 
 #include "ash/wm/base_state.h"
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"

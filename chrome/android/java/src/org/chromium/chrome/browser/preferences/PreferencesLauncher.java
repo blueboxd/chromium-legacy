@@ -190,7 +190,7 @@ public class PreferencesLauncher {
     @CalledByNative
     private static void showAutofillCreditCardSettings(WebContents webContents) {
         RecordUserAction.record("AutofillCreditCardsViewed");
-        showSettingSubpageCompat(webContents, AutofillPaymentMethodsFragment.class);
+        showSettingSubpage(webContents, AutofillPaymentMethodsFragment.class);
     }
 
     @CalledByNative
@@ -202,16 +202,7 @@ public class PreferencesLauncher {
         showPasswordSettings(currentActivity.get(), referrer);
     }
 
-    // TODO(crbug.com/967022): Remove this method when Preference Support Library migration is
-    // complete.
     private static void showSettingSubpage(
-            WebContents webContents, Class<? extends Fragment> fragment) {
-        WeakReference<Activity> currentActivity =
-                webContents.getTopLevelNativeWindow().getActivity();
-        launchSettingsPage(currentActivity.get(), fragment);
-    }
-
-    private static void showSettingSubpageCompat(
             WebContents webContents, Class<? extends android.support.v4.app.Fragment> fragment) {
         WeakReference<Activity> currentActivity =
                 webContents.getTopLevelNativeWindow().getActivity();

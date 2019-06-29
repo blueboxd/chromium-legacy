@@ -88,7 +88,7 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorControllerImpl;
-class AccessibilityController;
+class AccessibilityControllerImpl;
 class AccessibilityDelegate;
 class AccessibilityFocusRingControllerImpl;
 class AshDBusHelper;
@@ -296,7 +296,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   AcceleratorControllerImpl* accelerator_controller() {
     return accelerator_controller_.get();
   }
-  AccessibilityController* accessibility_controller() {
+  AccessibilityControllerImpl* accessibility_controller() {
     return accessibility_controller_.get();
   }
   AccessibilityDelegate* accessibility_delegate() {
@@ -637,7 +637,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WindowPositioner> window_positioner_;
 
   std::unique_ptr<AcceleratorControllerImpl> accelerator_controller_;
-  std::unique_ptr<AccessibilityController> accessibility_controller_;
+  std::unique_ptr<AccessibilityControllerImpl> accessibility_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<AccessibilityFocusRingControllerImpl>
       accessibility_focus_ring_controller_;

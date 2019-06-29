@@ -642,7 +642,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   model_->AddURL(root, 0, title, url);
   ClearCounts();
 
-  model_->Remove(root->GetChild(0));
+  model_->Remove(root->children().front().get());
   ASSERT_EQ(0u, root->children().size());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
@@ -665,7 +665,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
   ClearCounts();
 
   // Now remove the folder.
-  model_->Remove(root->GetChild(0));
+  model_->Remove(root->children().front().get());
   ASSERT_EQ(0u, root->children().size());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
@@ -790,13 +790,13 @@ TEST_F(BookmarkModelTest, Move) {
   observer_details_.ExpectEquals(root, folder1, 1, 0);
   EXPECT_TRUE(folder1 == node->parent());
   EXPECT_EQ(1u, root->children().size());
-  EXPECT_EQ(folder1, root->GetChild(0));
+  EXPECT_EQ(folder1, root->children().front().get());
   EXPECT_EQ(1u, folder1->children().size());
-  EXPECT_EQ(node, folder1->GetChild(0));
+  EXPECT_EQ(node, folder1->children().front().get());
 
   // And remove the folder.
   ClearCounts();
-  model_->Remove(root->GetChild(0));
+  model_->Remove(root->children().front().get());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
   EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == nullptr);
@@ -829,44 +829,44 @@ TEST_F(BookmarkModelTest, Copy) {
   EXPECT_EQ(model_string, actual_model_string);
 
   // Copy 'd' to be after '1:b': URL item from bar to folder.
-  const BookmarkNode* node_to_copy = root->GetChild(2);
-  const BookmarkNode* destination = root->GetChild(1);
+  const BookmarkNode* node_to_copy = root->children()[2].get();
+  const BookmarkNode* destination = root->children()[1].get();
   model_->Copy(node_to_copy, destination, 1);
   actual_model_string = test::ModelStringFromNode(root);
   EXPECT_EQ("a 1:[ b d c ] d 2:[ e f g ] h ", actual_model_string);
 
   // Copy '1:d' to be after 'a': URL item from folder to bar.
-  const BookmarkNode* folder = root->GetChild(1);
-  node_to_copy = folder->GetChild(1);
+  const BookmarkNode* folder = root->children()[1].get();
+  node_to_copy = folder->children()[1].get();
   model_->Copy(node_to_copy, root, 1);
   actual_model_string = test::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e f g ] h ", actual_model_string);
 
   // Copy '1' to be after '2:e': Folder from bar to folder.
-  node_to_copy = root->GetChild(2);
-  destination = root->GetChild(4);
+  node_to_copy = root->children()[2].get();
+  destination = root->children()[4].get();
   model_->Copy(node_to_copy, destination, 1);
   actual_model_string = test::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ",
             actual_model_string);
 
   // Copy '2:1' to be after '2:f': Folder within same folder.
-  folder = root->GetChild(4);
-  node_to_copy = folder->GetChild(1);
+  folder = root->children()[4].get();
+  node_to_copy = folder->children()[1].get();
   model_->Copy(node_to_copy, folder, 3);
   actual_model_string = test::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h ",
             actual_model_string);
 
   // Copy first 'd' to be after 'h': URL item within the bar.
-  node_to_copy = root->GetChild(1);
+  node_to_copy = root->children()[1].get();
   model_->Copy(node_to_copy, root, 6);
   actual_model_string = test::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
             actual_model_string);
 
   // Copy '2' to be after 'a': Folder within the bar.
-  node_to_copy = root->GetChild(4);
+  node_to_copy = root->children()[4].get();
   model_->Copy(node_to_copy, root, 1);
   actual_model_string = test::ModelStringFromNode(root);
   EXPECT_EQ("a 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] d 1:[ b d c ] "
@@ -929,7 +929,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
 
   // Nuke the folder and do another fetch, making sure folder isn't in the
   // returned list.
-  model_->Remove(folder->parent()->GetChild(0));
+  model_->Remove(folder->parent()->children().front().get());
   most_recent_folders = GetMostRecentlyModifiedUserFolders(model_.get(), 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_TRUE(most_recent_folders[0] != folder);
@@ -1036,10 +1036,10 @@ TEST_F(BookmarkModelTest, DISABLED_Sort) {
   const BookmarkNode* parent = model_->bookmark_bar_node();
   PopulateBookmarkNode(&bbn, model_.get(), parent);
 
-  BookmarkNode* child1 = AsMutable(parent->GetChild(1));
+  BookmarkNode* child1 = parent->children()[1].get();
   child1->SetTitle(ASCIIToUTF16("a"));
   child1->Remove(0);
-  BookmarkNode* child3 = AsMutable(parent->GetChild(3));
+  BookmarkNode* child3 = parent->children()[3].get();
   child3->SetTitle(ASCIIToUTF16("C"));
   child3->Remove(0);
 
@@ -1053,10 +1053,10 @@ TEST_F(BookmarkModelTest, DISABLED_Sort) {
 
   // Make sure the order matches (remember, 'a' and 'C' are folders and
   // come first).
-  EXPECT_EQ(parent->GetChild(0)->GetTitle(), ASCIIToUTF16("a"));
-  EXPECT_EQ(parent->GetChild(1)->GetTitle(), ASCIIToUTF16("C"));
-  EXPECT_EQ(parent->GetChild(2)->GetTitle(), ASCIIToUTF16("B"));
-  EXPECT_EQ(parent->GetChild(3)->GetTitle(), ASCIIToUTF16("d"));
+  EXPECT_EQ(parent->children()[0]->GetTitle(), ASCIIToUTF16("a"));
+  EXPECT_EQ(parent->children()[1]->GetTitle(), ASCIIToUTF16("C"));
+  EXPECT_EQ(parent->children()[2]->GetTitle(), ASCIIToUTF16("B"));
+  EXPECT_EQ(parent->children()[3]->GetTitle(), ASCIIToUTF16("d"));
 }
 
 TEST_F(BookmarkModelTest, Reorder) {
@@ -1069,11 +1069,12 @@ TEST_F(BookmarkModelTest, Reorder) {
   ClearCounts();
 
   // Reorder bar node's bookmarks in reverse order.
-  std::vector<const BookmarkNode*> new_order;
-  new_order.push_back(parent->GetChild(3));
-  new_order.push_back(parent->GetChild(2));
-  new_order.push_back(parent->GetChild(1));
-  new_order.push_back(parent->GetChild(0));
+  std::vector<const BookmarkNode*> new_order = {
+      parent->children()[3].get(),
+      parent->children()[2].get(),
+      parent->children()[1].get(),
+      parent->children()[0].get(),
+  };
   model_->ReorderChildren(parent, new_order);
 
   // Make sure we were notified.
@@ -1081,10 +1082,10 @@ TEST_F(BookmarkModelTest, Reorder) {
 
   // Make sure the order matches is correct (it should be reversed).
   ASSERT_EQ(4u, parent->children().size());
-  EXPECT_EQ("D", base::UTF16ToASCII(parent->GetChild(0)->GetTitle()));
-  EXPECT_EQ("C", base::UTF16ToASCII(parent->GetChild(1)->GetTitle()));
-  EXPECT_EQ("B", base::UTF16ToASCII(parent->GetChild(2)->GetTitle()));
-  EXPECT_EQ("A", base::UTF16ToASCII(parent->GetChild(3)->GetTitle()));
+  EXPECT_EQ("D", base::UTF16ToASCII(parent->children()[0]->GetTitle()));
+  EXPECT_EQ("C", base::UTF16ToASCII(parent->children()[1]->GetTitle()));
+  EXPECT_EQ("B", base::UTF16ToASCII(parent->children()[2]->GetTitle()));
+  EXPECT_EQ("A", base::UTF16ToASCII(parent->children()[3]->GetTitle()));
 }
 
 TEST_F(BookmarkModelTest, NodeVisibility) {
@@ -1109,7 +1110,7 @@ TEST_F(BookmarkModelTest, NodeVisibility) {
   PopulateNodeFromString("B", &bbn);
   const BookmarkNode* parent = model_->mobile_node();
   PopulateBookmarkNode(&bbn, model_.get(), parent);
-  EXPECT_TRUE(parent->GetChild(0)->IsVisible());
+  EXPECT_TRUE(parent->children().front()->IsVisible());
 
   // Mobile folder should be visible now that it has a child.
   EXPECT_TRUE(model_->mobile_node()->IsVisible());

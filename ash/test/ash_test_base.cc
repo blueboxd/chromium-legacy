@@ -417,7 +417,7 @@ void AshTestBase::SetAccessibilityPanelHeight(int panel_height) {
   Shell::GetPrimaryRootWindowController()
       ->GetAccessibilityPanelLayoutManagerForTest()
       ->SetPanelBounds(gfx::Rect(0, 0, 0, panel_height),
-                       mojom::AccessibilityPanelState::FULL_WIDTH);
+                       AccessibilityPanelState::FULL_WIDTH);
 }
 
 void AshTestBase::ClearLogin() {

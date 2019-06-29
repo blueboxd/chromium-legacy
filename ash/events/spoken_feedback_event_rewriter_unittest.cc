@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/spoken_feedback_event_rewriter_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -114,7 +114,7 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
 
 // The delegate should not intercept events when spoken feedback is disabled.
 TEST_F(SpokenFeedbackEventRewriterTest, EventsNotConsumedWhenDisabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->spoken_feedback_enabled());
 
@@ -136,7 +136,7 @@ TEST_F(SpokenFeedbackEventRewriterTest, EventsNotConsumedWhenDisabled) {
 
 // The delegate should intercept key events when spoken feedback is enabled.
 TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsConsumedWhenEnabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(controller->spoken_feedback_enabled());
@@ -181,7 +181,7 @@ TEST_F(SpokenFeedbackEventRewriterTest, UnhandledEventsSentToOtherRewriters) {
 }
 
 TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->spoken_feedback_enabled());
 
@@ -212,7 +212,7 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
 }
 
 TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsCaptured) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(controller->spoken_feedback_enabled());

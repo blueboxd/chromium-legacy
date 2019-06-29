@@ -2150,10 +2150,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   if (params_->initial_custom_proxy_config ||
       params_->custom_proxy_config_client_request) {
-    proxy_delegate_ = std::make_unique<NetworkServiceProxyDelegate>(
-        std::move(params_->initial_custom_proxy_config),
-        std::move(params_->custom_proxy_config_client_request));
-    builder.set_shared_proxy_delegate(proxy_delegate_.get());
+    std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate =
+        std::make_unique<NetworkServiceProxyDelegate>(
+            std::move(params_->initial_custom_proxy_config),
+            std::move(params_->custom_proxy_config_client_request));
+    proxy_delegate_ = proxy_delegate.get();
+    builder.set_proxy_delegate(std::move(proxy_delegate));
   }
 
   // |network_service_| may be nullptr in tests.

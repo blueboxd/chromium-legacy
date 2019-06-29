@@ -36,9 +36,6 @@ PRUNE_PATHS = set([
     # Placeholder directory only, not third-party code.
     os.path.join('third_party','adobe'),
 
-    # Already covered by //third_party/android_tools.
-    os.path.join('third_party','android_tools_internal'),
-
     # Build files only, not third-party code.
     os.path.join('third_party','widevine'),
 

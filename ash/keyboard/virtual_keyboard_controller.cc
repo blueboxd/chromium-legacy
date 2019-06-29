@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"

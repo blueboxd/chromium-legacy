@@ -263,7 +263,7 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
 void WKBasedNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  if (!features::StorePendingItemInContext() || !item) {
+  if (!item) {
     CommitPendingItem();
     return;
   }
@@ -818,7 +818,7 @@ int WKBasedNavigationManagerImpl::
 NavigationItemImpl*
 WKBasedNavigationManagerImpl::GetPendingItemInCurrentOrRestoredSession() const {
   if (pending_item_index_ == -1) {
-    if (features::StorePendingItemInContext() && !pending_item_) {
+    if (!pending_item_) {
       return delegate_->GetPendingItem();
     }
     return pending_item_.get();

@@ -694,6 +694,10 @@
       status: "stable",
     },
     {
+      name: "GroupEffect",
+      status: "test",
+    },
+    {
       name: "HeapCompaction",
     },
     {
@@ -1275,6 +1279,9 @@
     {
       name: "RasterInducingScroll",
       status: "experimental",
+    },
+    {
+      name: "RedirectBlankNavigationToTop",
     },
     {
       name: "ReducedReferrerGranularity",

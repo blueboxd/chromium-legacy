@@ -101,7 +101,7 @@ void AppMenuModelAdapter::OnMenuClosed(views::MenuItemView* menu) {
 }
 
 void AppMenuModelAdapter::RecordExecuteCommandHistogram(int command_id) {
-  const bool is_not_from_app = app_id().empty() || app_id() == kAppListId;
+  const bool is_not_from_app = app_id().empty();
   base::UmaHistogramSparse(is_not_from_app ? kNonAppContextMenuExecuteCommand
                                            : kAppContextMenuExecuteCommand,
                            command_id);

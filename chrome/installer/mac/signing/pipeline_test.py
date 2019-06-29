@@ -96,9 +96,6 @@ class TestPipelineHelpers(unittest.TestCase):
 
         self.assertEqual(staple.mock_calls, [
             mock.call(
-                '$W/App Product.app/Contents/Frameworks/Product Framework.framework/XPCServices/AlertNotificationService.xpc'
-            ),
-            mock.call(
                 '$W/App Product.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper.app'
             ),
             mock.call(
@@ -121,9 +118,6 @@ class TestPipelineHelpers(unittest.TestCase):
         pipeline._staple_chrome(paths, dist.to_config(test_config.TestConfig()))
 
         self.assertEqual(staple.mock_calls, [
-            mock.call(
-                '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/XPCServices/AlertNotificationService.xpc'
-            ),
             mock.call(
                 '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper.app'
             ),

@@ -3854,9 +3854,9 @@ TEST_F(ProxyResolutionServiceTest, OnShutdownWithLiveRequest) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
 
   service.OnShutdown();
-  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback.have_result());
   EXPECT_FALSE(fetcher->has_pending_request());
-  EXPECT_TRUE(info.is_direct());
 }
 
 TEST_F(ProxyResolutionServiceTest, OnShutdownFollowedByRequest) {

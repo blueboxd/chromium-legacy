@@ -306,13 +306,13 @@ TEST_F(ManagedBookmarksTrackerTest, IsManaged) {
 
   const BookmarkNode* parent = managed_node();
   ASSERT_EQ(2u, parent->children().size());
-  EXPECT_TRUE(IsManaged(parent->GetChild(0)));
-  EXPECT_TRUE(IsManaged(parent->GetChild(1)));
+  EXPECT_TRUE(IsManaged(parent->children()[0].get()));
+  EXPECT_TRUE(IsManaged(parent->children()[1].get()));
 
-  parent = parent->GetChild(1);
+  parent = parent->children()[1].get();
   ASSERT_EQ(2u, parent->children().size());
-  EXPECT_TRUE(IsManaged(parent->GetChild(0)));
-  EXPECT_TRUE(IsManaged(parent->GetChild(1)));
+  EXPECT_TRUE(IsManaged(parent->children()[0].get()));
+  EXPECT_TRUE(IsManaged(parent->children()[1].get()));
 }
 
 TEST_F(ManagedBookmarksTrackerTest, RemoveAllUserBookmarksDoesntRemoveManaged) {

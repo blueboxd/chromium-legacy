@@ -4,7 +4,7 @@
 
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -109,27 +109,24 @@ TEST_F(AutoclickMenuBubbleControllerTest, ExistsOnlyWhenAutoclickIsRunning) {
 }
 
 TEST_F(AutoclickMenuBubbleControllerTest, CanSelectAutoclickTypeFromBubble) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   // Set to a different event type than the first event in kTestCases.
-  controller->SetAutoclickEventType(mojom::AutoclickEventType::kRightClick);
+  controller->SetAutoclickEventType(AutoclickEventType::kRightClick);
 
   const struct {
     AutoclickMenuView::ButtonId view_id;
-    mojom::AutoclickEventType expected_event_type;
+    AutoclickEventType expected_event_type;
   } kTestCases[] = {
-      {AutoclickMenuView::ButtonId::kLeftClick,
-       mojom::AutoclickEventType::kLeftClick},
+      {AutoclickMenuView::ButtonId::kLeftClick, AutoclickEventType::kLeftClick},
       {AutoclickMenuView::ButtonId::kRightClick,
-       mojom::AutoclickEventType::kRightClick},
+       AutoclickEventType::kRightClick},
       {AutoclickMenuView::ButtonId::kDoubleClick,
-       mojom::AutoclickEventType::kDoubleClick},
+       AutoclickEventType::kDoubleClick},
       {AutoclickMenuView::ButtonId::kDragAndDrop,
-       mojom::AutoclickEventType::kDragAndDrop},
-      {AutoclickMenuView::ButtonId::kScroll,
-       mojom::AutoclickEventType::kScroll},
-      {AutoclickMenuView::ButtonId::kPause,
-       mojom::AutoclickEventType::kNoAction},
+       AutoclickEventType::kDragAndDrop},
+      {AutoclickMenuView::ButtonId::kScroll, AutoclickEventType::kScroll},
+      {AutoclickMenuView::ButtonId::kPause, AutoclickEventType::kNoAction},
   };
 
   for (const auto& test : kTestCases) {
@@ -147,20 +144,18 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanSelectAutoclickTypeFromBubble) {
 }
 
 TEST_F(AutoclickMenuBubbleControllerTest, UnpausesWhenPauseAlreadySelected) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   views::View* pause_button =
       GetMenuButton(AutoclickMenuView::ButtonId::kPause);
   ui::GestureEvent event = CreateTapEvent();
 
   const struct {
-    mojom::AutoclickEventType event_type;
+    AutoclickEventType event_type;
   } kTestCases[]{
-      {mojom::AutoclickEventType::kRightClick},
-      {mojom::AutoclickEventType::kLeftClick},
-      {mojom::AutoclickEventType::kDoubleClick},
-      {mojom::AutoclickEventType::kDragAndDrop},
-      {mojom::AutoclickEventType::kScroll},
+      {AutoclickEventType::kRightClick},  {AutoclickEventType::kLeftClick},
+      {AutoclickEventType::kDoubleClick}, {AutoclickEventType::kDragAndDrop},
+      {AutoclickEventType::kScroll},
   };
 
   for (const auto& test : kTestCases) {
@@ -168,7 +163,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, UnpausesWhenPauseAlreadySelected) {
 
     // First tap pauses.
     pause_button->OnGestureEvent(&event);
-    EXPECT_EQ(mojom::AutoclickEventType::kNoAction,
+    EXPECT_EQ(AutoclickEventType::kNoAction,
               controller->GetAutoclickEventType());
 
     // Second tap unpauses and reverts to previous state.
@@ -178,11 +173,11 @@ TEST_F(AutoclickMenuBubbleControllerTest, UnpausesWhenPauseAlreadySelected) {
 }
 
 TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
 
   // Set to a known position for than the first event in kTestCases.
-  controller->SetAutoclickMenuPosition(mojom::AutoclickMenuPosition::kTopRight);
+  controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopRight);
 
   // Get the full root window bounds to test the position.
   gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
@@ -190,15 +185,14 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
   // Test cases rotate clockwise.
   const struct {
     gfx::Point expected_location;
-    mojom::AutoclickMenuPosition expected_position;
+    AutoclickMenuPosition expected_position;
   } kTestCases[] = {
       {gfx::Point(window_bounds.width(), window_bounds.height()),
-       mojom::AutoclickMenuPosition::kBottomRight},
+       AutoclickMenuPosition::kBottomRight},
       {gfx::Point(0, window_bounds.height()),
-       mojom::AutoclickMenuPosition::kBottomLeft},
-      {gfx::Point(0, 0), mojom::AutoclickMenuPosition::kTopLeft},
-      {gfx::Point(window_bounds.width(), 0),
-       mojom::AutoclickMenuPosition::kTopRight},
+       AutoclickMenuPosition::kBottomLeft},
+      {gfx::Point(0, 0), AutoclickMenuPosition::kTopLeft},
+      {gfx::Point(window_bounds.width(), 0), AutoclickMenuPosition::kTopRight},
   };
 
   // Find the autoclick menu position button.
@@ -224,7 +218,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanChangePosition) {
 }
 
 TEST_F(AutoclickMenuBubbleControllerTest, DefaultChangesWithTextDirection) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
   gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
 
@@ -246,14 +240,14 @@ TEST_F(AutoclickMenuBubbleControllerTest, DefaultChangesWithTextDirection) {
 }
 
 TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleShowsAndCloses) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
-  controller->SetAutoclickEventType(mojom::AutoclickEventType::kLeftClick);
+  controller->SetAutoclickEventType(AutoclickEventType::kLeftClick);
   // No scroll view yet.
   EXPECT_FALSE(GetScrollView());
 
   // Scroll type should cause the scroll view to be shown.
-  controller->SetAutoclickEventType(mojom::AutoclickEventType::kScroll);
+  controller->SetAutoclickEventType(AutoclickEventType::kScroll);
   EXPECT_TRUE(GetScrollView());
 
   // Clicking the scroll close button resets to left click.
@@ -262,14 +256,14 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleShowsAndCloses) {
   ui::GestureEvent event = CreateTapEvent();
   close_button->OnGestureEvent(&event);
   EXPECT_FALSE(GetScrollView());
-  EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
+  EXPECT_EQ(AutoclickEventType::kLeftClick,
             controller->GetAutoclickEventType());
 }
 
 TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
-  controller->SetAutoclickEventType(mojom::AutoclickEventType::kScroll);
+  controller->SetAutoclickEventType(AutoclickEventType::kScroll);
 
   const struct { bool is_RTL; } kTestCases[] = {{true}, {false}};
   for (auto& test : kTestCases) {
@@ -279,8 +273,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is in the top right, the scroll view should be directly
     // under it and along the right side of the screen.
-    controller->SetAutoclickMenuPosition(
-        mojom::AutoclickMenuPosition::kTopRight);
+    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopRight);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().bottom_center()),
               kMenuViewBoundsBuffer);
@@ -288,8 +281,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is in the bottom right, the scroll view is directly above
     // it and along the right side of the screen.
-    controller->SetAutoclickMenuPosition(
-        mojom::AutoclickMenuPosition::kBottomRight);
+    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kBottomRight);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().top_center()),
               kMenuViewBoundsBuffer);
@@ -297,8 +289,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is on the bottom left, the scroll view is directly above it
     // and along the left side of the screen.
-    controller->SetAutoclickMenuPosition(
-        mojom::AutoclickMenuPosition::kBottomLeft);
+    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kBottomLeft);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().top_center()),
               kMenuViewBoundsBuffer);
@@ -306,8 +297,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
     // When the menu is on the top left, the scroll view is directly below it
     // and along the left side of the screen.
-    controller->SetAutoclickMenuPosition(
-        mojom::AutoclickMenuPosition::kTopLeft);
+    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopLeft);
     EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
                   GetMenuViewBounds().bottom_center()),
               kMenuViewBoundsBuffer);
@@ -317,15 +307,14 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
 
 TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleManualPositioning) {
   UpdateDisplay("1000x800");
-  AccessibilityController* controller =
+  AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
-  controller->SetAutoclickEventType(mojom::AutoclickEventType::kScroll);
+  controller->SetAutoclickEventType(AutoclickEventType::kScroll);
 
   const struct { bool is_RTL; } kTestCases[] = {{true}, {false}};
   for (auto& test : kTestCases) {
     base::i18n::SetRTLForTesting(test.is_RTL);
-    controller->SetAutoclickMenuPosition(
-        mojom::AutoclickMenuPosition::kTopRight);
+    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kTopRight);
 
     // Start with a point no where near the autoclick menu.
     gfx::Point point = gfx::Point(400, 400);
@@ -347,8 +336,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleManualPositioning) {
     // Moving the autoclick bubble doesn't impact the scroll bubble once it
     // has been manually set.
     gfx::Rect scroll_bounds = GetScrollViewBounds();
-    controller->SetAutoclickMenuPosition(
-        mojom::AutoclickMenuPosition::kBottomRight);
+    controller->SetAutoclickMenuPosition(AutoclickMenuPosition::kBottomRight);
     EXPECT_EQ(scroll_bounds, GetScrollViewBounds());
 
     // If we position it by the edge of the screen, it should stay on-screen,

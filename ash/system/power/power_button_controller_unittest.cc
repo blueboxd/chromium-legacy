@@ -4,7 +4,6 @@
 
 #include "ash/system/power/power_button_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
@@ -84,9 +83,6 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
     // Run the event loop so that PowerButtonDisplayController can receive the
     // initial backlights-forced-off state.
     base::RunLoop().RunUntilIdle();
-
-    a11y_controller_ = Shell::Get()->accessibility_controller();
-    a11y_controller_->SetClient(a11y_client_.CreateInterfacePtrAndBind());
   }
 
  protected:
@@ -148,9 +144,6 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   void ReleaseLockButton() {
     power_button_controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
   }
-
-  AccessibilityController* a11y_controller_ = nullptr;  // not owned
-  TestAccessibilityControllerClient a11y_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerTest);
@@ -772,19 +765,17 @@ TEST_F(PowerButtonControllerTest, IgnoreForcingOffWhenDisplayIsTurningOn) {
 // Tests that a11y alert is sent on tablet power button induced screen state
 // change.
 TEST_F(PowerButtonControllerTest, A11yAlert) {
+  TestAccessibilityControllerClient a11y_client;
+
   EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
-  a11y_controller_->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_OFF,
-            a11y_client_.last_a11y_alert());
+  EXPECT_EQ(AccessibilityAlert::SCREEN_OFF, a11y_client.last_a11y_alert());
 
   PressPowerButton();
   SendBrightnessChange(kNonZeroBrightness, kUserCause);
-  a11y_controller_->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_ON,
-            a11y_client_.last_a11y_alert());
+  EXPECT_EQ(AccessibilityAlert::SCREEN_ON, a11y_client.last_a11y_alert());
   ReleasePowerButton();
 }
 
@@ -1383,7 +1374,6 @@ TEST_F(PowerButtonControllerTest, LegacyPowerButtonIgnoreExtraPress) {
   EXPECT_EQ(menu_view_before, power_button_test_api_->GetPowerButtonMenuView());
   // This is needed to simulate the shutdown sound having been played,
   // which blocks the shutdown timer.
-  a11y_controller_->FlushMojoForTest();
   // Make sure that the second press did not trigger a shutdown.
   EXPECT_FALSE(lock_state_test_api_->real_shutdown_timer_is_running());
   // Make sure that power menu is still in partially shown state.

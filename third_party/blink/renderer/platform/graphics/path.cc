@@ -42,18 +42,14 @@ namespace blink {
 
 Path::Path() : path_() {}
 
-Path::Path(const Path& other) {
-  path_ = SkPath(other.path_);
-}
+Path::Path(const Path& other) : path_(other.path_) {}
 
-Path::Path(const SkPath& other) {
-  path_ = other;
-}
+Path::Path(const SkPath& other) : path_(other) {}
 
 Path::~Path() = default;
 
 Path& Path::operator=(const Path& other) {
-  path_ = SkPath(other.path_);
+  path_ = other.path_;
   return *this;
 }
 

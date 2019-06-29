@@ -544,16 +544,16 @@ def _CalculateCompressedSize(file_path):
 
 
 def _DoDexAnalysis(apk_filename, report_func):
-  sizes, total_size = method_count.ExtractSizesFromZip(apk_filename)
-
-  dex_metrics = method_count.CONTRIBUTORS_TO_DEX_CACHE
+  sizes, total_size, num_unique_methods = method_count.ExtractSizesFromZip(
+      apk_filename)
   cumulative_sizes = collections.defaultdict(int)
-  for classes_dex_sizes in sizes.values():
-    for key in dex_metrics:
-      cumulative_sizes[key] += classes_dex_sizes[key]
-  for key, label in dex_metrics.iteritems():
-    report_func('Dex', label, cumulative_sizes[key], 'entries')
+  for classes_dex_sizes in sizes.itervalues():
+    for count_type, count in classes_dex_sizes.iteritems():
+      cumulative_sizes[count_type] += count
+  for count_type, count in cumulative_sizes.iteritems():
+    report_func('Dex', count_type, count, 'entries')
 
+  report_func('Dex', 'unique methods', num_unique_methods, 'entries')
   report_func('DexCache', 'DexCache', total_size, 'bytes')
 
 

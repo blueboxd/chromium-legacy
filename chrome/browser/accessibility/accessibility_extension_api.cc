@@ -36,6 +36,8 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/accessibility_controller.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
@@ -57,14 +59,6 @@ const char kErrorNotSupported[] = "This API is not supported on this platform.";
 #if defined(OS_CHROMEOS)
 constexpr int kBackButtonWidth = 45;
 constexpr int kBackButtonHeight = 45;
-
-ash::mojom::AccessibilityControllerPtr GetAccessibilityController() {
-  // Connect to the accessibility mojo interface in ash.
-  ash::mojom::AccessibilityControllerPtr accessibility_controller;
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &accessibility_controller);
-  return accessibility_controller;
-}
 #endif
 
 }  // namespace
@@ -226,7 +220,8 @@ AccessibilityPrivateSetSwitchAccessKeysFunction::Run() {
       accessibility_private::SetSwitchAccessKeys::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetAccessibilityController()->SetSwitchAccessKeysToCapture(params->key_codes);
+  ash::AccessibilityController::Get()->SetSwitchAccessKeysToCapture(
+      params->key_codes);
 
   return RespondNow(NoArguments());
 }
@@ -359,20 +354,20 @@ AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
               *args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   accessibility_private::SelectToSpeakState params_state = params->state;
-  ash::mojom::SelectToSpeakState state;
+  ash::SelectToSpeakState state;
   switch (params_state) {
     case accessibility_private::SelectToSpeakState::
         SELECT_TO_SPEAK_STATE_SELECTING:
-      state = ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting;
+      state = ash::SelectToSpeakState::kSelectToSpeakStateSelecting;
       break;
     case accessibility_private::SelectToSpeakState::
         SELECT_TO_SPEAK_STATE_SPEAKING:
-      state = ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking;
+      state = ash::SelectToSpeakState::kSelectToSpeakStateSpeaking;
       break;
     case accessibility_private::SelectToSpeakState::
         SELECT_TO_SPEAK_STATE_INACTIVE:
     case accessibility_private::SelectToSpeakState::SELECT_TO_SPEAK_STATE_NONE:
-      state = ash::mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
+      state = ash::SelectToSpeakState::kSelectToSpeakStateInactive;
   }
 
   auto* accessibility_manager = chromeos::AccessibilityManager::Get();
@@ -390,16 +385,15 @@ AccessibilityPrivateOnScrollableBoundsForPointFoundFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateToggleDictationFunction::Run() {
-  ash::mojom::DictationToggleSource source =
-      ash::mojom::DictationToggleSource::kChromevox;
+  ash::DictationToggleSource source = ash::DictationToggleSource::kChromevox;
   if (extension()->id() == extension_misc::kSwitchAccessExtensionId)
-    source = ash::mojom::DictationToggleSource::kSwitchAccess;
+    source = ash::DictationToggleSource::kSwitchAccess;
   else if (extension()->id() == extension_misc::kChromeVoxExtensionId)
-    source = ash::mojom::DictationToggleSource::kChromevox;
+    source = ash::DictationToggleSource::kChromevox;
   else
     NOTREACHED();
 
-  GetAccessibilityController()->ToggleDictationFromSource(source);
+  ash::AccessibilityController::Get()->ToggleDictationFromSource(source);
 
   return RespondNow(NoArguments());
 }
@@ -456,7 +450,7 @@ AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
               *args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetAccessibilityController()->ForwardKeyEventsToSwitchAccess(
+  ash::AccessibilityController::Get()->ForwardKeyEventsToSwitchAccess(
       params->should_forward);
 
   return RespondNow(NoArguments());
@@ -470,24 +464,8 @@ AccessibilityPrivateGetBatteryDescriptionFunction::
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateGetBatteryDescriptionFunction::Run() {
-  // Get AccessibilityControllerPtr; needs to exist for lifetime of this
-  // function and its callback.
-  controller_ = GetAccessibilityController();
-
-  // Get battery description from ash and return it via callback.
-  controller_->GetBatteryDescription(
-      base::BindOnce(&AccessibilityPrivateGetBatteryDescriptionFunction::
-                         OnGotBatteryDescription,
-                     this));
-
-  return RespondLater();
-}
-
-void AccessibilityPrivateGetBatteryDescriptionFunction::OnGotBatteryDescription(
-    const base::string16& battery_description) {
-  // Send battery description to extension.
-  Respond(OneArgument(std::make_unique<base::Value>(battery_description)));
-  controller_.reset();
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      ash::AccessibilityController::Get()->GetBatteryDescription())));
 }
 
 ExtensionFunction::ResponseAction
@@ -497,7 +475,8 @@ AccessibilityPrivateSetVirtualKeyboardVisibleFunction::Run() {
           *args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetAccessibilityController()->SetVirtualKeyboardVisible(params->is_visible);
+  ash::AccessibilityController::Get()->SetVirtualKeyboardVisible(
+      params->is_visible);
 
   return RespondNow(NoArguments());
 }

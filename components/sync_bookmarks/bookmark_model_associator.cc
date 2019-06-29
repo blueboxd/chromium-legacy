@@ -729,7 +729,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
     }
 
     context->IncrementSyncItemsAdded();
-    const BookmarkNode* child_node = parent_node->GetChild(i);
+    const BookmarkNode* child_node = parent_node->children()[i].get();
     context->MarkForVersionUpdate(child_node);
     if (child_node->is_folder())
       context->PushNode(sync_child_id);

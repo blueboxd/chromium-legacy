@@ -310,6 +310,14 @@ class GFX_EXPORT RenderText {
   void SetElideBehavior(ElideBehavior elide_behavior);
   ElideBehavior elide_behavior() const { return elide_behavior_; }
 
+  // When display text is elided, determines how whitespace is handled.
+  // If base::nullopt is specified, the default elision for the current elide
+  // behavior will be applied.
+  void SetWhitespaceElision(base::Optional<bool> elide_whitespace);
+  base::Optional<bool> whitespace_elision() const {
+    return whitespace_elision_;
+  }
+
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
 
@@ -900,6 +908,9 @@ class GFX_EXPORT RenderText {
 
   // The behavior for eliding, fading, or truncating.
   ElideBehavior elide_behavior_;
+
+  // The behavior for eliding whitespace when eliding or truncating.
+  base::Optional<bool> whitespace_elision_ = base::nullopt;
 
   // True if the text is elided given the current behavior and display area.
   bool text_elided_;

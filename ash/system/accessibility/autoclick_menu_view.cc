@@ -4,7 +4,7 @@
 
 #include "ash/system/accessibility/autoclick_menu_view.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -155,8 +155,8 @@ const char* AutoclickMenuBubbleView::GetClassName() const {
 
 // ------ AutoclickMenuView  ------ //
 
-AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
-                                     mojom::AutoclickMenuPosition position)
+AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
+                                     AutoclickMenuPosition position)
     : left_click_button_(
           new AutoclickMenuButton(this,
                                   kAutoclickLeftClickIcon,
@@ -242,35 +242,33 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
   UpdatePosition(position);
 }
 
-void AutoclickMenuView::UpdateEventType(mojom::AutoclickEventType type) {
-  left_click_button_->SetToggled(type == mojom::AutoclickEventType::kLeftClick);
-  right_click_button_->SetToggled(type ==
-                                  mojom::AutoclickEventType::kRightClick);
-  double_click_button_->SetToggled(type ==
-                                   mojom::AutoclickEventType::kDoubleClick);
-  drag_button_->SetToggled(type == mojom::AutoclickEventType::kDragAndDrop);
+void AutoclickMenuView::UpdateEventType(AutoclickEventType type) {
+  left_click_button_->SetToggled(type == AutoclickEventType::kLeftClick);
+  right_click_button_->SetToggled(type == AutoclickEventType::kRightClick);
+  double_click_button_->SetToggled(type == AutoclickEventType::kDoubleClick);
+  drag_button_->SetToggled(type == AutoclickEventType::kDragAndDrop);
   if (scroll_button_)
-    scroll_button_->SetToggled(type == mojom::AutoclickEventType::kScroll);
-  pause_button_->SetToggled(type == mojom::AutoclickEventType::kNoAction);
-  if (type != mojom::AutoclickEventType::kNoAction)
+    scroll_button_->SetToggled(type == AutoclickEventType::kScroll);
+  pause_button_->SetToggled(type == AutoclickEventType::kNoAction);
+  if (type != AutoclickEventType::kNoAction)
     event_type_ = type;
 }
 
-void AutoclickMenuView::UpdatePosition(mojom::AutoclickMenuPosition position) {
+void AutoclickMenuView::UpdatePosition(AutoclickMenuPosition position) {
   switch (position) {
-    case mojom::AutoclickMenuPosition::kBottomRight:
+    case AutoclickMenuPosition::kBottomRight:
       position_button_->SetVectorIcon(kAutoclickPositionBottomRightIcon);
       return;
-    case mojom::AutoclickMenuPosition::kBottomLeft:
+    case AutoclickMenuPosition::kBottomLeft:
       position_button_->SetVectorIcon(kAutoclickPositionBottomLeftIcon);
       return;
-    case mojom::AutoclickMenuPosition::kTopLeft:
+    case AutoclickMenuPosition::kTopLeft:
       position_button_->SetVectorIcon(kAutoclickPositionTopLeftIcon);
       return;
-    case mojom::AutoclickMenuPosition::kTopRight:
+    case AutoclickMenuPosition::kTopRight:
       position_button_->SetVectorIcon(kAutoclickPositionTopRightIcon);
       return;
-    case mojom::AutoclickMenuPosition::kSystemDefault:
+    case AutoclickMenuPosition::kSystemDefault:
       position_button_->SetVectorIcon(base::i18n::IsRTL()
                                           ? kAutoclickPositionBottomLeftIcon
                                           : kAutoclickPositionBottomRightIcon);
@@ -281,26 +279,25 @@ void AutoclickMenuView::UpdatePosition(mojom::AutoclickMenuPosition position) {
 void AutoclickMenuView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   if (sender == position_button_) {
-    mojom::AutoclickMenuPosition new_position;
+    AutoclickMenuPosition new_position;
     // Rotate clockwise throughout the screen positions.
     switch (
         Shell::Get()->accessibility_controller()->GetAutoclickMenuPosition()) {
-      case mojom::AutoclickMenuPosition::kBottomRight:
-        new_position = mojom::AutoclickMenuPosition::kBottomLeft;
+      case AutoclickMenuPosition::kBottomRight:
+        new_position = AutoclickMenuPosition::kBottomLeft;
         break;
-      case mojom::AutoclickMenuPosition::kBottomLeft:
-        new_position = mojom::AutoclickMenuPosition::kTopLeft;
+      case AutoclickMenuPosition::kBottomLeft:
+        new_position = AutoclickMenuPosition::kTopLeft;
         break;
-      case mojom::AutoclickMenuPosition::kTopLeft:
-        new_position = mojom::AutoclickMenuPosition::kTopRight;
+      case AutoclickMenuPosition::kTopLeft:
+        new_position = AutoclickMenuPosition::kTopRight;
         break;
-      case mojom::AutoclickMenuPosition::kTopRight:
-        new_position = mojom::AutoclickMenuPosition::kBottomRight;
+      case AutoclickMenuPosition::kTopRight:
+        new_position = AutoclickMenuPosition::kBottomRight;
         break;
-      case mojom::AutoclickMenuPosition::kSystemDefault:
-        new_position = base::i18n::IsRTL()
-                           ? mojom::AutoclickMenuPosition::kTopLeft
-                           : mojom::AutoclickMenuPosition::kBottomLeft;
+      case AutoclickMenuPosition::kSystemDefault:
+        new_position = base::i18n::IsRTL() ? AutoclickMenuPosition::kTopLeft
+                                           : AutoclickMenuPosition::kBottomLeft;
         break;
     }
     Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
@@ -309,24 +306,24 @@ void AutoclickMenuView::ButtonPressed(views::Button* sender,
         "Accessibility.CrosAutoclick.TrayMenu.ChangePosition"));
     return;
   }
-  mojom::AutoclickEventType type;
+  AutoclickEventType type;
   if (sender == left_click_button_) {
-    type = mojom::AutoclickEventType::kLeftClick;
+    type = AutoclickEventType::kLeftClick;
   } else if (sender == right_click_button_) {
-    type = mojom::AutoclickEventType::kRightClick;
+    type = AutoclickEventType::kRightClick;
   } else if (sender == double_click_button_) {
-    type = mojom::AutoclickEventType::kDoubleClick;
+    type = AutoclickEventType::kDoubleClick;
   } else if (sender == drag_button_) {
-    type = mojom::AutoclickEventType::kDragAndDrop;
+    type = AutoclickEventType::kDragAndDrop;
   } else if (sender == scroll_button_) {
-    type = mojom::AutoclickEventType::kScroll;
+    type = AutoclickEventType::kScroll;
   } else if (sender == pause_button_) {
     // If the pause button was already selected, tapping it again turns off
     // pause and returns to the previous type.
     if (pause_button_->IsToggled())
       type = event_type_;
     else
-      type = mojom::AutoclickEventType::kNoAction;
+      type = AutoclickEventType::kNoAction;
   } else {
     return;
   }

@@ -554,7 +554,6 @@ class AccessibilityManagerLoginTest : public OobeBaseTest {
     braille_controller_.SetAvailable(available);
     braille_controller_.GetObserver()->OnBrailleDisplayStateChanged(
         *braille_controller_.GetDisplayState());
-    AccessibilityManager::Get()->FlushForTesting();
   }
 
   int default_autoclick_delay_ = 0;
@@ -677,7 +676,6 @@ class AccessibilityManagerUserTypeTest : public AccessibilityManagerTest,
     braille_controller_.SetAvailable(available);
     braille_controller_.GetObserver()->OnBrailleDisplayStateChanged(
         *braille_controller_.GetDisplayState());
-    AccessibilityManager::Get()->FlushForTesting();
   }
 
   MockBrailleController braille_controller_;

@@ -5,7 +5,8 @@
 #ifndef ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 #define ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 
-#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 
@@ -49,16 +50,16 @@ constexpr base::TimeDelta kDefaultSwitchAccessAutoScanSpeed =
 // The default wait time between last mouse movement and sending autoclick.
 constexpr int kDefaultAutoclickDelayMs = 1000;
 
-constexpr mojom::AutoclickEventType kDefaultAutoclickEventType =
-    mojom::AutoclickEventType::kLeftClick;
+constexpr AutoclickEventType kDefaultAutoclickEventType =
+    AutoclickEventType::kLeftClick;
 
 // The default threshold of mouse movement, measured in DIP, that will initiate
 // a new autoclick.
 constexpr int kDefaultAutoclickMovementThreshold = 20;
 
 // The default automatic click menu position.
-constexpr mojom::AutoclickMenuPosition kDefaultAutoclickMenuPosition =
-    mojom::AutoclickMenuPosition::kSystemDefault;
+constexpr AutoclickMenuPosition kDefaultAutoclickMenuPosition =
+    AutoclickMenuPosition::kSystemDefault;
 
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);

@@ -657,6 +657,54 @@
     "isolated_scripts": [
       {
         "args": [],
+        "isolate_name": "resource_sizes_chrome_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chrome_apk",
+        "override_compile_targets": [
+          "resource_sizes_chrome_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_chrome_modern_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chrome_modern_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_chrome_modern_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400
+        }
+      },
+      {
+        "args": [],
         "isolate_name": "resource_sizes_chrome_modern_public_minimal_apks",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -705,6 +753,30 @@
       },
       {
         "args": [],
+        "isolate_name": "resource_sizes_monochrome_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_monochrome_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_monochrome_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400
+        }
+      },
+      {
+        "args": [],
         "isolate_name": "resource_sizes_monochrome_public_minimal_apks",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -736,6 +808,30 @@
         "name": "resource_sizes_system_webview_apk",
         "override_compile_targets": [
           "resource_sizes_system_webview_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_system_webview_google_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_system_webview_google_apk",
+        "override_compile_targets": [
+          "resource_sizes_system_webview_google_apk"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1228,6 +1324,30 @@
     "isolated_scripts": [
       {
         "args": [],
+        "isolate_name": "resource_sizes_chrome_modern_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chrome_modern_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_chrome_modern_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400
+        }
+      },
+      {
+        "args": [],
         "isolate_name": "resource_sizes_chrome_modern_public_minimal_apks",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -1276,6 +1396,30 @@
       },
       {
         "args": [],
+        "isolate_name": "resource_sizes_monochrome_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_monochrome_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_monochrome_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400
+        }
+      },
+      {
+        "args": [],
         "isolate_name": "resource_sizes_monochrome_public_minimal_apks",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -1307,6 +1451,30 @@
         "name": "resource_sizes_system_webview_apk",
         "override_compile_targets": [
           "resource_sizes_system_webview_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_system_webview_google_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_system_webview_google_apk",
+        "override_compile_targets": [
+          "resource_sizes_system_webview_google_apk"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

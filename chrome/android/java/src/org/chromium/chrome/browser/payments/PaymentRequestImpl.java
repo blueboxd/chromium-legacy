@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.prefeditor.Completable;
@@ -112,6 +111,34 @@ public class PaymentRequestImpl
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
                    PaymentHandlerHostDelegate, PaymentDetailsConverter.MethodChecker {
     /**
+     * A delegate to ask questions about the system, that allows tests to inject behaviour without
+     * having to modify the entire system. This partially mirrors a similar C++
+     * (Content)PaymentRequestDelegate for the C++ implementation, allowing the test harness to
+     * override behaviour in both in a similar fashion.
+     */
+    public interface Delegate {
+        /**
+         * Returns whether the ChromeActivity is currently showing an incognito tab.
+         */
+        boolean isIncognito(ChromeActivity activity);
+        /**
+         * Returns a non-null string if there is an invalid SSL certificate on the currently
+         * loaded page.
+         */
+        String getInvalidSslCertificateErrorMessage(WebContents webContents);
+        /**
+         * Returns true if the given |webContents| is currently active. The |model| should be the
+         * currently active TabModel from the activity.
+         */
+        boolean isWebContentsActive(TabModel model, WebContents webContents);
+        /**
+         * Returns true if the UI can be skipped for "basic-card" scenarios. This will only ever
+         * be true in tests.
+         */
+        boolean skipUiForBasicCard();
+    }
+
+    /**
      * A test-only observer for the PaymentRequest service implementation.
      */
     public interface PaymentRequestServiceObserverForTest {
@@ -162,6 +189,23 @@ public class PaymentRequestImpl
          * Called when the payment response is ready.
          */
         void onPaymentResponseReady();
+    }
+
+    /**
+     * An observer interface injected when running tests to allow them to observe events.
+     * This interface holds events that should be passed back to the native C++ test
+     * harness and mirrors the C++ PaymentRequest::ObserverForTest() interface. Its methods
+     * should be called in the same places that the C++ PaymentRequest object will call its
+     * ObserverForTest.
+     */
+    public interface NativeObserverForTest {
+        void onCanMakePaymentCalled();
+        void onCanMakePaymentReturned();
+        void onHasEnrolledInstrumentCalled();
+        void onHasEnrolledInstrumentReturned();
+        void onNotSupportedError();
+        void onConnectionTerminated();
+        void onAbortCalled();
     }
 
     /** Limit in the number of suggested items in a section. */
@@ -248,6 +292,8 @@ public class PaymentRequestImpl
 
     private final Handler mHandler = new Handler();
     private final RenderFrameHost mRenderFrameHost;
+    private final Delegate mDelegate;
+    private final NativeObserverForTest mNativeObserverForTest;
     private final WebContents mWebContents;
     private final String mTopLevelOrigin;
     private final String mPaymentRequestOrigin;
@@ -368,10 +414,13 @@ public class PaymentRequestImpl
      *
      * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
      */
-    public PaymentRequestImpl(RenderFrameHost renderFrameHost) {
+    public PaymentRequestImpl(RenderFrameHost renderFrameHost, Delegate delegate,
+            NativeObserverForTest nativeObserver) {
         assert renderFrameHost != null;
 
         mRenderFrameHost = renderFrameHost;
+        mDelegate = delegate;
+        mNativeObserverForTest = nativeObserver;
         mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
 
         mPaymentRequestOrigin =
@@ -385,9 +434,7 @@ public class PaymentRequestImpl
 
         mApps = new ArrayList<>();
 
-        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel() != null
-                && activity.getCurrentTabModel().isIncognito();
+        mIsIncognito = mDelegate.isIncognito(ChromeActivity.fromWebContents(mWebContents));
 
         // Do not persist changes on disk in incognito mode.
         mAddressEditor = new AddressEditor(
@@ -451,17 +498,15 @@ public class PaymentRequestImpl
         mJourneyLogger.setRequestedInformation(
                 mRequestShipping, mRequestPayerEmail, mRequestPayerPhone, mRequestPayerName);
 
-        if (OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())) {
-            mProhibitedOriginOrInvalidSslErrorMessage =
-                    SslValidityChecker.getInvalidSslCertificateErrorMessage(mWebContents);
-            if (!TextUtils.isEmpty(mProhibitedOriginOrInvalidSslErrorMessage)) {
-                Log.d(TAG, mProhibitedOriginOrInvalidSslErrorMessage);
-                Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
-                // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
-                // "NotSupportedError".
-                onAllPaymentAppsCreated();
-                return;
-            }
+        mProhibitedOriginOrInvalidSslErrorMessage =
+                mDelegate.getInvalidSslCertificateErrorMessage(mWebContents);
+        if (!TextUtils.isEmpty(mProhibitedOriginOrInvalidSslErrorMessage)) {
+            Log.d(TAG, mProhibitedOriginOrInvalidSslErrorMessage);
+            Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
+            // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
+            // "NotSupportedError".
+            onAllPaymentAppsCreated();
+            return;
         }
 
         mMethodData = getValidatedMethodData(methodData, mCardEditor);
@@ -504,8 +549,7 @@ public class PaymentRequestImpl
         }
         mJourneyLogger.setRequestedPaymentMethodTypes(mMerchantSupportsAutofillPaymentInstruments,
                 requestedMethodGoogle, requestedMethodOther);
-        calculateWhetherShouldSkipShowingPaymentRequestUi(
-                false /* skipUiForNonUrlPaymentMethodIdentifiersForTest */);
+        calculateWhetherShouldSkipShowingPaymentRequestUi(mDelegate.skipUiForBasicCard());
     }
 
     /**
@@ -545,7 +589,7 @@ public class PaymentRequestImpl
         mObservedTabModel.addObserver(mTabModelObserver);
 
         // Only the currently selected tab is allowed to show the payment UI.
-        if (TabModelUtils.getCurrentWebContents(mObservedTabModel) != mWebContents) {
+        if (!mDelegate.isWebContentsActive(mObservedTabModel, mWebContents)) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_SHOW_IN_BACKGROUND_TAB);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
@@ -1618,6 +1662,7 @@ public class PaymentRequestImpl
         if (mClient != null) mClient.onError(reason, debugMessage);
         closeClient();
         closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
     /**
@@ -1645,6 +1690,7 @@ public class PaymentRequestImpl
         } else {
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceUnableToAbort();
         }
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onAbortCalled();
     }
 
     /**
@@ -1813,6 +1859,8 @@ public class PaymentRequestImpl
     public void canMakePayment(boolean legacyMode) {
         if (mClient == null) return;
 
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentCalled();
+
         if (isFinishedQueryingPaymentApps()) {
             respondCanMakePaymentQuery(legacyMode);
         } else {
@@ -1850,6 +1898,7 @@ public class PaymentRequestImpl
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentReturned();
     }
 
     /**
@@ -1858,6 +1907,8 @@ public class PaymentRequestImpl
     @Override
     public void hasEnrolledInstrument(boolean perMethodQuota) {
         if (mClient == null) return;
+
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onHasEnrolledInstrumentCalled();
 
         mHasEnrolledInstrumentUsesPerMethodQuota = perMethodQuota;
 
@@ -1891,6 +1942,9 @@ public class PaymentRequestImpl
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
         }
+        if (mNativeObserverForTest != null) {
+            mNativeObserverForTest.onHasEnrolledInstrumentReturned();
+        }
     }
 
     /**
@@ -1915,6 +1969,7 @@ public class PaymentRequestImpl
         closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
         closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
     /**
@@ -1926,6 +1981,7 @@ public class PaymentRequestImpl
         closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
         closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
     /**
@@ -2061,6 +2117,7 @@ public class PaymentRequestImpl
                             ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
                             : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
             if (!TextUtils.isEmpty(mProhibitedOriginOrInvalidSslErrorMessage)) {
+                if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
                 // Chrome always refuses payments with invalid SSL and in prohibited origin types.
                 disconnectFromClientWithDebugMessage(mProhibitedOriginOrInvalidSslErrorMessage,
                         PaymentErrorReason.NOT_SUPPORTED);
@@ -2070,6 +2127,7 @@ public class PaymentRequestImpl
                 disconnectFromClientWithDebugMessage(
                         ErrorStrings.USER_CANCELLED, PaymentErrorReason.USER_CANCEL);
             } else {
+                if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
                 disconnectFromClientWithDebugMessage(
                         ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE,
                         PaymentErrorReason.NOT_SUPPORTED);

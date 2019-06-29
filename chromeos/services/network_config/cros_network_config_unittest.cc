@@ -89,24 +89,65 @@ class CrosNetworkConfigTest : public testing::Test {
     cros_network_config_->AddObserver(observer_->GenerateInterfacePtr());
   }
 
-  mojom::DeviceStatePropertiesPtr GetDeviceState(mojom::NetworkType type) {
-    mojom::DeviceStatePropertiesPtr result;
+  mojom::NetworkStatePropertiesPtr GetNetworkState(const std::string& guid) {
+    mojom::NetworkStatePropertiesPtr result;
     base::RunLoop run_loop;
-    cros_network_config()->GetDeviceStateList(base::BindOnce(
-        [](mojom::NetworkType type, mojom::DeviceStatePropertiesPtr* result,
-           base::OnceClosure quit_closure,
-           std::vector<mojom::DeviceStatePropertiesPtr> devices) {
-          for (auto& device : devices) {
-            if (device->type == type) {
-              *result = std::move(device);
-              std::move(quit_closure).Run();
-              return;
-            }
-          }
-        },
-        type, &result, run_loop.QuitClosure()));
+    cros_network_config()->GetNetworkState(
+        guid, base::BindOnce(
+                  [](mojom::NetworkStatePropertiesPtr* result,
+                     base::OnceClosure quit_closure,
+                     mojom::NetworkStatePropertiesPtr network) {
+                    *result = std::move(network);
+                    std::move(quit_closure).Run();
+                  },
+                  &result, run_loop.QuitClosure()));
     run_loop.Run();
     return result;
+  }
+
+  std::vector<mojom::NetworkStatePropertiesPtr> GetNetworkStateList(
+      mojom::NetworkFilterPtr filter) {
+    std::vector<mojom::NetworkStatePropertiesPtr> result;
+    base::RunLoop run_loop;
+    cros_network_config()->GetNetworkStateList(
+        std::move(filter),
+        base::BindOnce(
+            [](std::vector<mojom::NetworkStatePropertiesPtr>* result,
+               base::OnceClosure quit_closure,
+               std::vector<mojom::NetworkStatePropertiesPtr> networks) {
+              for (auto& network : networks)
+                result->push_back(std::move(network));
+              std::move(quit_closure).Run();
+            },
+            &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
+  }
+
+  std::vector<mojom::DeviceStatePropertiesPtr> GetDeviceStateList() {
+    std::vector<mojom::DeviceStatePropertiesPtr> result;
+    base::RunLoop run_loop;
+    cros_network_config()->GetDeviceStateList(base::BindOnce(
+        [](std::vector<mojom::DeviceStatePropertiesPtr>* result,
+           base::OnceClosure quit_closure,
+           std::vector<mojom::DeviceStatePropertiesPtr> devices) {
+          for (auto& device : devices)
+            result->push_back(std::move(device));
+          std::move(quit_closure).Run();
+        },
+        &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
+  }
+
+  mojom::DeviceStatePropertiesPtr GetDeviceStateFromList(
+      mojom::NetworkType type) {
+    std::vector<mojom::DeviceStatePropertiesPtr> devices = GetDeviceStateList();
+    for (auto& device : devices) {
+      if (device->type == type)
+        return std::move(device);
+    }
+    return nullptr;
   }
 
   bool SetCellularSimState(const std::string& current_pin_or_puk,
@@ -145,77 +186,67 @@ class CrosNetworkConfigTest : public testing::Test {
 };
 
 TEST_F(CrosNetworkConfigTest, GetNetworkState) {
-  cros_network_config()->GetNetworkState(
-      "eth_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
-        ASSERT_TRUE(result);
-        EXPECT_EQ("eth_guid", result->guid);
-        EXPECT_EQ(mojom::NetworkType::kEthernet, result->type);
-        EXPECT_EQ(mojom::ConnectionStateType::kOnline,
-                  result->connection_state);
-        EXPECT_EQ(mojom::OncSource::kNone, result->source);
-      }));
-  cros_network_config()->GetNetworkState(
-      "wifi1_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
-        ASSERT_TRUE(result);
-        EXPECT_EQ("wifi1_guid", result->guid);
-        EXPECT_EQ(mojom::NetworkType::kWiFi, result->type);
-        EXPECT_EQ(mojom::ConnectionStateType::kConnected,
-                  result->connection_state);
-        ASSERT_TRUE(result->wifi);
-        EXPECT_EQ(mojom::SecurityType::kNone, result->wifi->security);
-        EXPECT_EQ(50, result->wifi->signal_strength);
-        EXPECT_EQ(mojom::OncSource::kNone, result->source);
-      }));
-  cros_network_config()->GetNetworkState(
-      "wifi2_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
-        ASSERT_TRUE(result);
-        EXPECT_EQ("wifi2_guid", result->guid);
-        EXPECT_EQ(mojom::NetworkType::kWiFi, result->type);
-        EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
-                  result->connection_state);
-        ASSERT_TRUE(result->wifi);
-        EXPECT_EQ(mojom::SecurityType::kWpaPsk, result->wifi->security);
-        EXPECT_EQ(100, result->wifi->signal_strength);
-        EXPECT_EQ(mojom::OncSource::kUser, result->source);
-      }));
-  cros_network_config()->GetNetworkState(
-      "wifi3_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
-        ASSERT_TRUE(result);
-        EXPECT_EQ("wifi3_guid", result->guid);
-        EXPECT_EQ(mojom::NetworkType::kWiFi, result->type);
-        EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
-                  result->connection_state);
-        ASSERT_TRUE(result->wifi);
-        EXPECT_EQ(mojom::SecurityType::kWpaPsk, result->wifi->security);
-        EXPECT_EQ(0, result->wifi->signal_strength);
-        EXPECT_EQ(mojom::OncSource::kDevice, result->source);
-      }));
-  cros_network_config()->GetNetworkState(
-      "cellular_guid",
-      base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
-        ASSERT_TRUE(result);
-        EXPECT_EQ("cellular_guid", result->guid);
-        EXPECT_EQ(mojom::NetworkType::kCellular, result->type);
-        EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
-                  result->connection_state);
-        ASSERT_TRUE(result->cellular);
-        EXPECT_EQ(0, result->cellular->signal_strength);
-        EXPECT_EQ("LTE", result->cellular->network_technology);
-        EXPECT_EQ(mojom::ActivationStateType::kActivated,
-                  result->cellular->activation_state);
-        EXPECT_EQ(mojom::OncSource::kNone, result->source);
-      }));
-  cros_network_config()->GetNetworkState(
-      "vpn_guid", base::BindOnce([](mojom::NetworkStatePropertiesPtr result) {
-        ASSERT_TRUE(result);
-        EXPECT_EQ("vpn_guid", result->guid);
-        EXPECT_EQ(mojom::NetworkType::kVPN, result->type);
-        EXPECT_EQ(mojom::ConnectionStateType::kConnecting,
-                  result->connection_state);
-        ASSERT_TRUE(result->vpn);
-        EXPECT_EQ(mojom::VPNType::kL2TPIPsec, result->vpn->type);
-        EXPECT_EQ(mojom::OncSource::kNone, result->source);
-      }));
+  mojom::NetworkStatePropertiesPtr network = GetNetworkState("eth_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ("eth_guid", network->guid);
+  EXPECT_EQ(mojom::NetworkType::kEthernet, network->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kOnline, network->connection_state);
+  EXPECT_EQ(mojom::OncSource::kNone, network->source);
+
+  network = GetNetworkState("wifi1_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ("wifi1_guid", network->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kConnected, network->connection_state);
+  ASSERT_TRUE(network->wifi);
+  EXPECT_EQ(mojom::SecurityType::kNone, network->wifi->security);
+  EXPECT_EQ(50, network->wifi->signal_strength);
+  EXPECT_EQ(mojom::OncSource::kNone, network->source);
+
+  network = GetNetworkState("wifi2_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ("wifi2_guid", network->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            network->connection_state);
+  ASSERT_TRUE(network->wifi);
+  EXPECT_EQ(mojom::SecurityType::kWpaPsk, network->wifi->security);
+  EXPECT_EQ(100, network->wifi->signal_strength);
+  EXPECT_EQ(mojom::OncSource::kUser, network->source);
+
+  network = GetNetworkState("wifi3_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ("wifi3_guid", network->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            network->connection_state);
+  ASSERT_TRUE(network->wifi);
+  EXPECT_EQ(mojom::SecurityType::kWpaPsk, network->wifi->security);
+  EXPECT_EQ(0, network->wifi->signal_strength);
+  EXPECT_EQ(mojom::OncSource::kDevice, network->source);
+
+  network = GetNetworkState("cellular_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ("cellular_guid", network->guid);
+  EXPECT_EQ(mojom::NetworkType::kCellular, network->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            network->connection_state);
+  ASSERT_TRUE(network->cellular);
+  EXPECT_EQ(0, network->cellular->signal_strength);
+  EXPECT_EQ("LTE", network->cellular->network_technology);
+  EXPECT_EQ(mojom::ActivationStateType::kActivated,
+            network->cellular->activation_state);
+  EXPECT_EQ(mojom::OncSource::kNone, network->source);
+
+  network = GetNetworkState("vpn_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ("vpn_guid", network->guid);
+  EXPECT_EQ(mojom::NetworkType::kVPN, network->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kConnecting, network->connection_state);
+  ASSERT_TRUE(network->vpn);
+  EXPECT_EQ(mojom::VPNType::kL2TPIPsec, network->vpn->type);
+  EXPECT_EQ(mojom::OncSource::kNone, network->source);
+
   // TODO(919691): Test ProxyMode once UIProxyConfigService logic is improved.
 }
 
@@ -225,112 +256,88 @@ TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {
   filter->filter = mojom::FilterType::kActive;
   filter->network_type = mojom::NetworkType::kAll;
   filter->limit = mojom::kNoLimit;
-  cros_network_config()->GetNetworkStateList(
-      filter.Clone(),
-      base::BindOnce(
-          [](std::vector<mojom::NetworkStatePropertiesPtr> networks) {
-            ASSERT_EQ(3u, networks.size());
-            EXPECT_EQ("eth_guid", networks[0]->guid);
-            EXPECT_EQ("wifi1_guid", networks[1]->guid);
-            EXPECT_EQ("vpn_guid", networks[2]->guid);
-          }));
+  std::vector<mojom::NetworkStatePropertiesPtr> networks =
+      GetNetworkStateList(filter.Clone());
+  ASSERT_EQ(3u, networks.size());
+  EXPECT_EQ("eth_guid", networks[0]->guid);
+  EXPECT_EQ("wifi1_guid", networks[1]->guid);
+  EXPECT_EQ("vpn_guid", networks[2]->guid);
 
   // First active network
   filter->limit = 1;
-  cros_network_config()->GetNetworkStateList(
-      filter.Clone(),
-      base::BindOnce(
-          [](std::vector<mojom::NetworkStatePropertiesPtr> networks) {
-            ASSERT_EQ(1u, networks.size());
-            EXPECT_EQ("eth_guid", networks[0]->guid);
-          }));
+  networks = GetNetworkStateList(filter.Clone());
+  ASSERT_EQ(1u, networks.size());
+  EXPECT_EQ("eth_guid", networks[0]->guid);
 
   // All wifi networks
   filter->filter = mojom::FilterType::kAll;
   filter->network_type = mojom::NetworkType::kWiFi;
   filter->limit = mojom::kNoLimit;
-  cros_network_config()->GetNetworkStateList(
-      filter.Clone(),
-      base::BindOnce(
-          [](std::vector<mojom::NetworkStatePropertiesPtr> networks) {
-            ASSERT_EQ(3u, networks.size());
-            EXPECT_EQ("wifi1_guid", networks[0]->guid);
-            EXPECT_EQ("wifi2_guid", networks[1]->guid);
-            EXPECT_EQ("wifi3_guid", networks[2]->guid);
-          }));
+  networks = GetNetworkStateList(filter.Clone());
+  ASSERT_EQ(3u, networks.size());
+  EXPECT_EQ("wifi1_guid", networks[0]->guid);
+  EXPECT_EQ("wifi2_guid", networks[1]->guid);
+  EXPECT_EQ("wifi3_guid", networks[2]->guid);
 
   // Visible wifi networks
   filter->filter = mojom::FilterType::kVisible;
-  cros_network_config()->GetNetworkStateList(
-      filter.Clone(),
-      base::BindOnce(
-          [](std::vector<mojom::NetworkStatePropertiesPtr> networks) {
-            ASSERT_EQ(2u, networks.size());
-            EXPECT_EQ("wifi1_guid", networks[0]->guid);
-            EXPECT_EQ("wifi2_guid", networks[1]->guid);
-          }));
+  networks = GetNetworkStateList(filter.Clone());
+  ASSERT_EQ(2u, networks.size());
+  EXPECT_EQ("wifi1_guid", networks[0]->guid);
+  EXPECT_EQ("wifi2_guid", networks[1]->guid);
 
   // Configured wifi networks
   filter->filter = mojom::FilterType::kConfigured;
-  cros_network_config()->GetNetworkStateList(
-      filter.Clone(),
-      base::BindOnce(
-          [](std::vector<mojom::NetworkStatePropertiesPtr> networks) {
-            ASSERT_EQ(2u, networks.size());
-            EXPECT_EQ("wifi2_guid", networks[0]->guid);
-            EXPECT_EQ("wifi3_guid", networks[1]->guid);
-          }));
+  networks = GetNetworkStateList(filter.Clone());
+  ASSERT_EQ(2u, networks.size());
+  EXPECT_EQ("wifi2_guid", networks[0]->guid);
+  EXPECT_EQ("wifi3_guid", networks[1]->guid);
 }
 
 TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
-  cros_network_config()->GetDeviceStateList(
-      base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
-        ASSERT_EQ(3u, devices.size());
-        EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
+  std::vector<mojom::DeviceStatePropertiesPtr> devices = GetDeviceStateList();
+  ASSERT_EQ(3u, devices.size());
+  EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
 
-        // IP address match those set up in FakeShillManagerClient::
-        // SetupDefaultEnvironment(). TODO(stevenjb): Support setting
-        // expectations explicitly in NetworkStateTestHelper.
-        net::IPAddress ipv4_expected;
-        ASSERT_TRUE(ipv4_expected.AssignFromIPLiteral("100.0.0.1"));
-        EXPECT_EQ(ipv4_expected, devices[0]->ipv4_address);
-        net::IPAddress ipv6_expected;
-        ASSERT_TRUE(ipv6_expected.AssignFromIPLiteral("0:0:0:0:100:0:0:1"));
-        EXPECT_EQ(ipv6_expected, devices[0]->ipv6_address);
+  // IP address match those set up in FakeShillManagerClient::
+  // SetupDefaultEnvironment(). TODO(stevenjb): Support setting
+  // expectations explicitly in NetworkStateTestHelper.
+  net::IPAddress ipv4_expected;
+  ASSERT_TRUE(ipv4_expected.AssignFromIPLiteral("100.0.0.1"));
+  EXPECT_EQ(ipv4_expected, devices[0]->ipv4_address);
+  net::IPAddress ipv6_expected;
+  ASSERT_TRUE(ipv6_expected.AssignFromIPLiteral("0:0:0:0:100:0:0:1"));
+  EXPECT_EQ(ipv6_expected, devices[0]->ipv6_address);
 
-        EXPECT_EQ(mojom::NetworkType::kEthernet, devices[1]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[1]->device_state);
+  EXPECT_EQ(mojom::NetworkType::kEthernet, devices[1]->type);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[1]->device_state);
 
-        mojom::DeviceStateProperties* cellular = devices[2].get();
-        EXPECT_EQ(mojom::NetworkType::kCellular, cellular->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
-        EXPECT_FALSE(cellular->sim_absent);
-        ASSERT_TRUE(cellular->sim_lock_status);
-        EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
-        EXPECT_EQ(shill::kSIMLockPin, cellular->sim_lock_status->lock_type);
-        EXPECT_EQ(3, cellular->sim_lock_status->retries_left);
-      }));
+  mojom::DeviceStateProperties* cellular = devices[2].get();
+  EXPECT_EQ(mojom::NetworkType::kCellular, cellular->type);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
+  EXPECT_FALSE(cellular->sim_absent);
+  ASSERT_TRUE(cellular->sim_lock_status);
+  EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
+  EXPECT_EQ(shill::kSIMLockPin, cellular->sim_lock_status->lock_type);
+  EXPECT_EQ(3, cellular->sim_lock_status->retries_left);
 
   // Disable WiFi
   helper().network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
-  cros_network_config()->GetDeviceStateList(
-      base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
-        ASSERT_EQ(3u, devices.size());
-        EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
-      }));
+  devices = GetDeviceStateList();
+  ASSERT_EQ(3u, devices.size());
+  EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
+  EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
 }
 
 TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
-  cros_network_config()->GetDeviceStateList(
-      base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
-        ASSERT_EQ(3u, devices.size());
-        EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
-      }));
+  std::vector<mojom::DeviceStatePropertiesPtr> devices = GetDeviceStateList();
+  ASSERT_EQ(3u, devices.size());
+  EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
+
   // Disable WiFi
   bool succeeded = false;
   cros_network_config()->SetNetworkTypeEnabledState(
@@ -341,18 +348,16 @@ TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
   // Wait for callback to complete; this test does not use mojo bindings.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(succeeded);
-  cros_network_config()->GetDeviceStateList(
-      base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
-        ASSERT_EQ(3u, devices.size());
-        EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
-      }));
+  devices = GetDeviceStateList();
+  ASSERT_EQ(3u, devices.size());
+  EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
+  EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
 }
 
 TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
   // Assert initial state.
   mojom::DeviceStatePropertiesPtr cellular =
-      GetDeviceState(mojom::NetworkType::kCellular);
+      GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular);
   ASSERT_FALSE(cellular->sim_absent);
   ASSERT_TRUE(cellular->sim_lock_status);
@@ -367,7 +372,7 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
                                   /*require_pin=*/false));
 
   // Sim should be unlocked, locking should still be enabled.
-  cellular = GetDeviceState(mojom::NetworkType::kCellular);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
   EXPECT_TRUE(cellular->sim_lock_status->lock_type.empty());
@@ -378,7 +383,7 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
                                   /*require_pin=*/false));
 
   // Sim should be unlocked, locking should be disabled.
-  cellular = GetDeviceState(mojom::NetworkType::kCellular);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   EXPECT_FALSE(cellular->sim_lock_status->lock_enabled);
   EXPECT_TRUE(cellular->sim_lock_status->lock_type.empty());
@@ -389,7 +394,7 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
                                   /*require_pin=*/true));
 
   // Sim should remain unlocked, locking should be enabled.
-  cellular = GetDeviceState(mojom::NetworkType::kCellular);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
   EXPECT_TRUE(cellular->sim_lock_status->lock_type.empty());
@@ -397,7 +402,7 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
   // Lock the sim. (Can not be done via the mojo API).
   helper().device_test()->SetSimLocked(kCellularDevicePath, true);
   base::RunLoop().RunUntilIdle();
-  cellular = GetDeviceState(mojom::NetworkType::kCellular);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   ASSERT_TRUE(cellular->sim_lock_status->lock_enabled);
   ASSERT_EQ(shill::kSIMLockPin, cellular->sim_lock_status->lock_type);
@@ -407,7 +412,7 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
                                    /*require_pin=*/false));
 
   // Ensure sim is still locked and retry count has decreased.
-  cellular = GetDeviceState(mojom::NetworkType::kCellular);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
   EXPECT_EQ(shill::kSIMLockPin, cellular->sim_lock_status->lock_type);
@@ -417,7 +422,7 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
   for (int i = retries - 1; i > 0; --i) {
     SetCellularSimState("incorrect pin", /*new_pin=*/base::nullopt, false);
   }
-  cellular = GetDeviceState(mojom::NetworkType::kCellular);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
   EXPECT_EQ(shill::kSIMLockPuk, cellular->sim_lock_status->lock_type);
@@ -439,7 +444,7 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
                                   /*require_pin=*/false));
 
   // Sim should be unlocked
-  cellular = GetDeviceState(mojom::NetworkType::kCellular);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   EXPECT_TRUE(cellular->sim_lock_status->lock_type.empty());
 }

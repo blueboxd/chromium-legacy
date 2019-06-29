@@ -8,7 +8,7 @@
 #include <cmath>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
@@ -1876,13 +1876,13 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
       current_workspace_window_state ==
           wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
     Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED);
+        AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED);
   } else if (previous_workspace_window_state_ ==
                  wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN &&
              current_workspace_window_state !=
                  wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
     Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
+        AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
   }
   previous_workspace_window_state_ = current_workspace_window_state;
 }

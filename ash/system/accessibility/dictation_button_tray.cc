@@ -4,9 +4,9 @@
 
 #include "ash/system/accessibility/dictation_button_tray.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -48,7 +48,7 @@ DictationButtonTray::~DictationButtonTray() {
 
 bool DictationButtonTray::PerformAction(const ui::Event& event) {
   Shell::Get()->accessibility_controller()->ToggleDictationFromSource(
-      mojom::DictationToggleSource::kButton);
+      DictationToggleSource::kButton);
 
   CheckDictationStatusAndUpdateIcon();
   return true;

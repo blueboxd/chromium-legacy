@@ -843,7 +843,6 @@ function updateTheme(info) {
   document.body.classList.toggle('use-title-container', info.useTitleContainer);
   document.body.classList.toggle('custom-background', info.customBackground);
   document.body.classList.toggle('use-white-add-icon', info.useWhiteAddIcon);
-  document.documentElement.setAttribute('darkmode', info.isDarkMode);
 
   // Reduce font weight on the default(white) background for Mac and CrOS.
   document.body.classList.toggle(

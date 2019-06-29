@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.preferences.autofill;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.preference.Preference;
+import android.support.v7.preference.Preference;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;

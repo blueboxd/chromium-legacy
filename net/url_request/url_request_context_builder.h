@@ -267,13 +267,6 @@ class NET_EXPORT URLRequestContextBuilder {
 
   // Sets the ProxyDelegate.
   void set_proxy_delegate(std::unique_ptr<ProxyDelegate> proxy_delegate);
-  // Allows sharing the PreoxyDelegates with other URLRequestContexts. Should
-  // not be used if set_proxy_delegate() is used. The consumer must ensure the
-  // ProxyDelegate outlives the URLRequestContext returned by the builder.
-  //
-  // TODO(mmenke): Remove this (And update consumers). See:
-  // https://crbug.com/743251.
-  void set_shared_proxy_delegate(ProxyDelegate* shared_proxy_delegate);
 
   // Sets a specific HttpAuthHandlerFactory to be used by the URLRequestContext
   // rather than the default |HttpAuthHandlerRegistryFactory|. The builder
@@ -416,7 +409,6 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<NetworkDelegate> network_delegate_;
   CreateLayeredNetworkDelegate create_layered_network_delegate_callback_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
-  ProxyDelegate* shared_proxy_delegate_ = nullptr;
   std::unique_ptr<CookieStore> cookie_store_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   HttpAuthHandlerFactory* shared_http_auth_handler_factory_ = nullptr;

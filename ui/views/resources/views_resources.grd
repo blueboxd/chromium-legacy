@@ -23,8 +23,6 @@
       <structure type="chrome_scaled_image" name="IDR_CONTENT_BOTTOM_RIGHT_CORNER" file="content_bottom_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_LEFT_SIDE" file="content_left_side.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_RIGHT_SIDE" file="content_right_side.png" />
-      <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="common/folder_open.png" />
-      <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN_RTL" file="common/folder_open_rtl.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME" file="frame_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_MAXIMIZE" file="maximize.png" />

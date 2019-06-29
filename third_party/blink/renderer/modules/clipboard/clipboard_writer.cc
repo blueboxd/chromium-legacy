@@ -28,10 +28,6 @@ class ClipboardImageWriter final : public ClipboardWriter {
   ~ClipboardImageWriter() override = default;
 
  private:
-  // Reference: third_party/blink/renderer/core/imagebitmap/.
-  // Logic modified from CropImageAndApplyColorSpaceConversion, but not using
-  // directly due to extra complexity in imagebitmap that isn't necessary for
-  // async clipboard image decoding.
   void DecodeOnBackgroundThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       DOMArrayBuffer* png_data) override {
@@ -42,6 +38,7 @@ class ClipboardImageWriter final : public ClipboardWriter {
         true, ImageDecoder::kAlphaPremultiplied, ImageDecoder::kDefaultBitDepth,
         ColorBehavior::Tag());
     sk_sp<SkImage> image = nullptr;
+    // |decoder| is nullptr if |png_data| doesn't begin with the PNG signature.
     if (decoder)
       image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
 

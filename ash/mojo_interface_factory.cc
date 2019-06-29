@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_alarm_timer_controller.h"
 #include "ash/assistant/assistant_controller.h"
@@ -35,12 +34,6 @@ namespace {
 
 base::LazyInstance<RegisterInterfacesCallback>::Leaky
     g_register_interfaces_callback = LAZY_INSTANCE_INITIALIZER;
-
-void BindAccessibilityControllerRequestOnMainThread(
-    mojom::AccessibilityControllerRequest request) {
-  if (Shell::HasInstance())
-    Shell::Get()->accessibility_controller()->BindRequest(std::move(request));
-}
 
 void BindAssistantAlarmTimerControllerRequestOnMainThread(
     mojom::AssistantAlarmTimerControllerRequest request) {
@@ -120,9 +113,6 @@ void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-  registry->AddInterface(
-      base::BindRepeating(&BindAccessibilityControllerRequestOnMainThread),
-      main_thread_task_runner);
   if (chromeos::switches::IsAssistantEnabled()) {
     registry->AddInterface(
         base::BindRepeating(

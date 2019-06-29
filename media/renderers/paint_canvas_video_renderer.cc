@@ -1331,24 +1331,33 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   auto* sii = context_provider->SharedImageInterface();
   gpu::gles2::GLES2Interface* source_gl = context_provider->ContextGL();
 
-  // Create a shared image to receive the intermediate RGB result.
-  gpu::Mailbox mailbox = sii->CreateSharedImage(
-      viz::ResourceFormat::RGBA_8888, video_frame.coded_size(),
-      gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
-  gpu::SyncToken creation_sync_token = sii->GenUnverifiedSyncToken();
+  // We need a shared image to receive the intermediate RGB result. Try to reuse
+  // one if compatible, otherwise create a new one.
+  if (yuv_cache_.texture && yuv_cache_.size == video_frame.coded_size() &&
+      yuv_cache_.context_provider == context_provider) {
+    source_gl->WaitSyncTokenCHROMIUM(yuv_cache_.sync_token.GetConstData());
+  } else {
+    yuv_cache_.Reset();
+    yuv_cache_.context_provider = context_provider;
+    yuv_cache_.size = video_frame.coded_size();
+    yuv_cache_.mailbox = sii->CreateSharedImage(
+        viz::ResourceFormat::RGBA_8888, video_frame.coded_size(),
+        gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+    auto creation_sync_token = sii->GenUnverifiedSyncToken();
+    source_gl->WaitSyncTokenCHROMIUM(creation_sync_token.GetConstData());
+    yuv_cache_.texture = source_gl->CreateAndTexStorage2DSharedImageCHROMIUM(
+        yuv_cache_.mailbox.name);
+  }
 
   // On the source GL context, do the YUV->RGB conversion using Skia.
   gpu::SyncToken post_conversion_sync_token;
   {
-    source_gl->WaitSyncTokenCHROMIUM(creation_sync_token.GetConstData());
-    GLuint intermediate_texture =
-        source_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
     source_gl->BeginSharedImageAccessDirectCHROMIUM(
-        intermediate_texture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+        yuv_cache_.texture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
     GrGLTextureInfo backend_texture = {};
     backend_texture.fTarget = GL_TEXTURE_2D;
-    backend_texture.fID = intermediate_texture;
+    backend_texture.fID = yuv_cache_.texture;
     backend_texture.fFormat = GL_RGBA8;
     GrBackendTexture result_texture(video_frame.coded_size().width(),
                                     video_frame.coded_size().height(),
@@ -1359,26 +1368,27 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
         yuv_textures, &result_texture);
 
     gr_context->flush();
-    source_gl->EndSharedImageAccessDirectCHROMIUM(intermediate_texture);
-    source_gl->DeleteTextures(1, &intermediate_texture);
+    source_gl->EndSharedImageAccessDirectCHROMIUM(yuv_cache_.texture);
 
     source_gl->GenUnverifiedSyncTokenCHROMIUM(
         post_conversion_sync_token.GetData());
 
     if (!yuv_image) {
-      sii->DestroySharedImage(post_conversion_sync_token, mailbox);
+      // Conversion failed. Note the last use sync token for destruction.
+      yuv_cache_.sync_token = post_conversion_sync_token;
+      yuv_cache_.Reset();
       return false;
     }
   }
 
   // On the destination GL context, do a copy (with cropping) into the
   // destination texture.
-  gpu::SyncToken post_copy_sync_token;
   {
     destination_gl->WaitSyncTokenCHROMIUM(
         post_conversion_sync_token.GetConstData());
     GLuint intermediate_texture =
-        destination_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+        destination_gl->CreateAndTexStorage2DSharedImageCHROMIUM(
+            yuv_cache_.mailbox.name);
     destination_gl->BeginSharedImageAccessDirectCHROMIUM(
         intermediate_texture, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
@@ -1390,15 +1400,17 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     destination_gl->EndSharedImageAccessDirectCHROMIUM(intermediate_texture);
     destination_gl->DeleteTextures(1, &intermediate_texture);
     destination_gl->GenUnverifiedSyncTokenCHROMIUM(
-        post_copy_sync_token.GetData());
+        yuv_cache_.sync_token.GetData());
   }
-  sii->DestroySharedImage(post_copy_sync_token, mailbox);
 
   // video_frame->UpdateReleaseSyncToken is not necessary since the video frame
   // data we used was CPU-side (IsMappable) to begin with. If there were any
   // textures, we didn't use them.
 
   // The temporary SkImages should be automatically cleaned up here.
+
+  // Kick off a timer to release the cache.
+  last_image_deleting_timer_.Reset();
   return true;
 }
 
@@ -1480,6 +1492,7 @@ void PaintCanvasVideoRenderer::ResetCache() {
   last_image_ = cc::PaintImage();
   last_id_.reset();
   last_image_wraps_video_frame_texture_ = false;
+  yuv_cache_.Reset();
 }
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
@@ -1577,6 +1590,30 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
   last_image_deleting_timer_.Reset();
   DCHECK(!!last_image_);
   return true;
+}
+
+PaintCanvasVideoRenderer::YUVTextureCache::YUVTextureCache() = default;
+PaintCanvasVideoRenderer::YUVTextureCache::~YUVTextureCache() = default;
+
+void PaintCanvasVideoRenderer::YUVTextureCache::Reset() {
+  if (!texture)
+    return;
+  DCHECK(context_provider);
+
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  gl->DeleteTextures(1, &texture);
+  texture = 0;
+  gl->OrderingBarrierCHROMIUM();
+
+  auto* sii = context_provider->SharedImageInterface();
+  sii->DestroySharedImage(sync_token, mailbox);
+
+  // Kick off the GL work up to the OrderingBarrierCHROMIUM above as well as the
+  // SharedImageInterface work, to ensure the shared image memory is released in
+  // a timely fashion.
+  context_provider->ContextSupport()->FlushPendingWork();
+  context_provider.reset();
 }
 
 void PaintCanvasVideoRenderer::CorrectLastImageDimensions(

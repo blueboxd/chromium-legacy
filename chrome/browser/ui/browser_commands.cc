@@ -1094,6 +1094,21 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
   browser->GetFindBarController()->Show(find_next, forward_direction);
 }
 
+bool CanCloseFind(Browser* browser) {
+  WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
+  if (!current_tab)
+    return false;
+
+  FindTabHelper* find_helper = FindTabHelper::FromWebContents(current_tab);
+  return find_helper ? find_helper->find_ui_active() : false;
+}
+
+void CloseFind(Browser* browser) {
+  browser->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
+}
+
 void Zoom(Browser* browser, content::PageZoom zoom) {
   zoom::PageZoom::Zoom(browser->tab_strip_model()->GetActiveWebContents(),
                        zoom);

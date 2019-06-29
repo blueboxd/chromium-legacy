@@ -44,7 +44,7 @@ source_set("feed_core") {
     "//components/feed/core/proto",
     "//components/leveldb_proto",
     "//net",
-    "//ui/base/mojo:mojo",
+    "//ui/base/mojom:mojom",
   ]
 
   deps = [

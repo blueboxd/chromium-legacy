@@ -21,6 +21,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
+#include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client.h"
@@ -194,15 +195,44 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void OnStopTask() override { ScheduleBackgroundTask(); }
 
   // ScheduledNotificationManager::Delegate implementation.
-  void DisplayNotification(
-      std::unique_ptr<NotificationEntry> notification) override {
-    if (!notification) {
+  void DisplayNotification(std::unique_ptr<NotificationEntry> entry) override {
+    if (!entry) {
       DLOG(ERROR) << "Notification entry is null";
       return;
     }
-    // TODO(xingliu): Inform the clients and show the notification.
-    context_->impression_tracker()->AddImpression(notification->type,
-                                                  notification->guid);
+
+    // Inform the client to update notification data.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&NotificationSchedulerImpl::NotifyClientBeforeDisplay,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
+  }
+
+  void NotifyClientBeforeDisplay(std::unique_ptr<NotificationEntry> entry) {
+    auto* client = context_->client_registrar()->GetClient(entry->type);
+    if (!client)
+      return;
+
+    // Detach the notification data for client to rewrite.
+    auto notification_data =
+        std::make_unique<NotificationData>(std::move(entry->notification_data));
+    client->BeforeShowNotification(
+        std::move(notification_data),
+        base::BindOnce(&NotificationSchedulerImpl::AfterClientUpdateData,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
+  }
+
+  void AfterClientUpdateData(
+      std::unique_ptr<NotificationEntry> entry,
+      std::unique_ptr<NotificationData> updated_notification_data) {
+    // Show the notification in UI.
+    auto system_data = std::make_unique<DisplayAgent::SystemData>();
+    system_data->guid = entry->guid;
+    context_->display_agent()->ShowNotification(
+        std::move(updated_notification_data), std::move(system_data));
+
+    // Tracks user impression on the notification to be shown.
+    context_->impression_tracker()->AddImpression(entry->type, entry->guid);
   }
 
   // ImpressionHistoryTracker::Delegate implementation.

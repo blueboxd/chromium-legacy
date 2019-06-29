@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
-import android.preference.PreferenceFragment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.view.KeyEvent;
 import android.widget.EditText;
 
@@ -69,12 +69,13 @@ public class AutofillProfilesFragmentTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
-                (AutofillProfilesFragment) activity.getMainFragment();
+                (AutofillProfilesFragment) activity.getMainFragmentCompat();
 
         // Check the preferences on the initial screen.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
-        PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) activity.getMainFragmentCompat();
         AutofillProfileEditorPreference addProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference(
                         AutofillProfilesFragment.PREF_NEW_PROFILE);
@@ -112,12 +113,13 @@ public class AutofillProfilesFragmentTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
-                (AutofillProfilesFragment) activity.getMainFragment();
+                (AutofillProfilesFragment) activity.getMainFragmentCompat();
 
         // Check the preferences on the initial screen.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
-        PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) activity.getMainFragmentCompat();
         AutofillProfileEditorPreference addProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference(
                         AutofillProfilesFragment.PREF_NEW_PROFILE);
@@ -137,12 +139,13 @@ public class AutofillProfilesFragmentTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
-                (AutofillProfilesFragment) activity.getMainFragment();
+                (AutofillProfilesFragment) activity.getMainFragmentCompat();
 
         // Check the preferences on the initial screen.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
-        PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) activity.getMainFragmentCompat();
         AutofillProfileEditorPreference sebProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("Seb Doe");
         Assert.assertNotNull(sebProfile);
@@ -171,12 +174,13 @@ public class AutofillProfilesFragmentTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
-                (AutofillProfilesFragment) activity.getMainFragment();
+                (AutofillProfilesFragment) activity.getMainFragmentCompat();
 
         // Check the preferences on the initial screen.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
-        PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) activity.getMainFragmentCompat();
         AutofillProfileEditorPreference johnProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("John Doe");
         Assert.assertNotNull(johnProfile);
@@ -215,12 +219,13 @@ public class AutofillProfilesFragmentTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
-                (AutofillProfilesFragment) activity.getMainFragment();
+                (AutofillProfilesFragment) activity.getMainFragmentCompat();
 
         // Check the preferences on the initial screen.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
-        PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) activity.getMainFragmentCompat();
         AutofillProfileEditorPreference bobProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("Bob Doe");
         Assert.assertNotNull(bobProfile);
@@ -243,12 +248,13 @@ public class AutofillProfilesFragmentTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
-                (AutofillProfilesFragment) activity.getMainFragment();
+                (AutofillProfilesFragment) activity.getMainFragmentCompat();
 
         // Check the preferences on the initial screen.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
-        PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) activity.getMainFragmentCompat();
         AutofillProfileEditorPreference billProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference("Bill Doe");
         Assert.assertNotNull(billProfile);
@@ -271,15 +277,15 @@ public class AutofillProfilesFragmentTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         AutofillProfilesFragment.class.getName());
 
-        PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) activity.getMainFragmentCompat();
         AutofillProfileEditorPreference addProfile =
                 (AutofillProfileEditorPreference) fragment.findPreference(
                         AutofillProfilesFragment.PREF_NEW_PROFILE);
         Assert.assertNotNull(addProfile);
 
         // Open AutofillProfileEditorPreference.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> PreferencesTest.clickPreference(fragment, addProfile));
+        TestThreadUtils.runOnUiThreadBlocking(addProfile::performClick);
         rule.setEditorDialogAndWait(addProfile.getEditorDialog());
         // The keyboard is shown as soon as AutofillProfileEditorPreference comes into view.
         waitForKeyboardStatus(true, activity);
@@ -318,8 +324,7 @@ public class AutofillProfilesFragmentTest {
     private void updatePreferencesAndWait(AutofillProfilesFragment profileFragment,
             AutofillProfileEditorPreference profile, String[] values, int buttonId,
             boolean waitForError) throws TimeoutException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> PreferencesTest.clickPreference(profileFragment, profile));
+        TestThreadUtils.runOnUiThreadBlocking(profile::performClick);
 
         rule.setEditorDialogAndWait(profile.getEditorDialog());
         if (values != null) rule.setTextInEditorAndWait(values);

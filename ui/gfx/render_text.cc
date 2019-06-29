@@ -532,6 +532,13 @@ void RenderText::SetElideBehavior(ElideBehavior elide_behavior) {
   }
 }
 
+void RenderText::SetWhitespaceElision(base::Optional<bool> whitespace_elision) {
+  if (whitespace_elision_ != whitespace_elision) {
+    whitespace_elision_ = whitespace_elision;
+    OnDisplayTextAttributeChanged();
+  }
+}
+
 void RenderText::SetDisplayRect(const Rect& r) {
   if (r != display_rect_) {
     display_rect_ = r;
@@ -1690,7 +1697,8 @@ base::string16 RenderText::Elide(const base::string16& text,
       return base::string16();
   }
 
-  StringSlicer slicer(text, ellipsis, elide_in_middle, elide_at_beginning);
+  StringSlicer slicer(text, ellipsis, elide_in_middle, elide_at_beginning,
+                      whitespace_elision_);
 
   // Use binary(-like) search to compute the elided text.  In particular, do
   // an interpolation search, which is a binary search in which each guess

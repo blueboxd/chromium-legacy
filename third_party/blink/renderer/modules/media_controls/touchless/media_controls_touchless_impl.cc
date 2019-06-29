@@ -208,6 +208,9 @@ void MediaControlsTouchlessImpl::OnExitFullscreen() {
 }
 
 void MediaControlsTouchlessImpl::OnKeyDown(KeyboardEvent* event) {
+  if (!MediaElement().ShouldShowControls())
+    return;
+
   bool handled = true;
   switch (event->keyCode()) {
     case VKEY_RETURN:

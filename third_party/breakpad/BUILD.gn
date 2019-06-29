@@ -851,6 +851,24 @@ if (is_win) {
         "breakpad/src/common/windows/symbol_collector_client.h",
       ]
     }
+
+    static_library("ms_symbol_server_converter") {
+      include_dirs = [
+        "$visual_studio_path/DIA SDK/include",
+        "breakpad/src",
+      ]
+
+      sources = [
+        "breakpad/src/tools/windows/converter/ms_symbol_server_converter.cc",
+      ]
+
+      deps = [
+        "//third_party/breakpad:common_windows",
+      ]
+
+      libs = [ "Pathcch.lib" ]
+    }
+
     executable("dump_syms") {
       # TODO(scottmg) using this with VS2015 may break the crash server.
       # https://crbug.com/696671
@@ -878,6 +896,53 @@ if (is_win) {
         "diaguids.lib",
         "imagehlp.lib",
       ]
+
+      if (is_clang) {
+        # clang complains about microsoft-specific goto extensions. Instead of
+        # rewriting decade-old, goto-ridden code, disable the warning.
+        cflags = [ "-Wno-microsoft-goto" ]
+      }
+    }
+
+    executable("google_converter") {
+      include_dirs = [
+        "$visual_studio_path/DIA SDK/include",
+        "breakpad/src",
+      ]
+
+      sources = [
+        "breakpad/src/tools/windows/converter_exe/converter.cc",
+        "breakpad/src/tools/windows/converter_exe/escaping.cc",
+        "breakpad/src/tools/windows/converter_exe/escaping.h",
+        "breakpad/src/tools/windows/converter_exe/http_download.cc",
+        "breakpad/src/tools/windows/converter_exe/tokenizer.cc",
+        "breakpad/src/tools/windows/converter_exe/winhttp_client.cc",
+        "breakpad/src/tools/windows/converter_exe/wininet_client.cc",
+      ]
+
+      deps = [
+        "//third_party/breakpad:common_windows",
+        "//third_party/breakpad:ms_symbol_server_converter",
+      ]
+
+      ldflags = [
+        "/DELAYLOAD:dbghelp.dll",
+        "/DELAYLOAD:dwmapi.dll",
+        "/DELAYLOAD:uxtheme.dll",
+      ]
+
+      lib_dirs = []
+      if (current_cpu == "x64") {
+        lib_dirs += [ "$visual_studio_path/DIA SDK/lib/amd64" ]
+      } else {
+        lib_dirs += [ "$visual_studio_path/DIA SDK/lib" ]
+      }
+
+      libs = [
+        "diaguids.lib",
+        "imagehlp.lib",
+      ]
+
       if (is_clang) {
         # clang complains about microsoft-specific goto extensions. Instead of
         # rewriting decade-old, goto-ridden code, disable the warning.

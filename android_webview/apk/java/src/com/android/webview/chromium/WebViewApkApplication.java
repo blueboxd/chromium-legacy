@@ -30,8 +30,7 @@ public class WebViewApkApplication extends Application {
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
-        initPathUtils();
-        initCommandLine();
+        maybeInitProcessGlobals();
     }
 
     @Override
@@ -40,14 +39,14 @@ public class WebViewApkApplication extends Application {
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
     }
 
-    /** Ensures PathUtils is initialized. */
-    public static void initPathUtils() {
-        PathUtils.setPrivateDataDirectorySuffix("webview");
-    }
-
-    // Overridden by webview shell to point to a different flags file.
-    protected void initCommandLine() {
-        CommandLineUtil.initCommandLine();
+    /** Initializes globals needed for components that run in the "webview_apk" process. */
+    public static void maybeInitProcessGlobals() {
+        // Either "webview_service", or "webview_apk".
+        // "webview_service" is meant to be very light-weight and never load the native library.
+        if (ContextUtils.getProcessName().contains(":webview_")) {
+            PathUtils.setPrivateDataDirectorySuffix("webview");
+            CommandLineUtil.initCommandLine();
+        }
     }
 
     /**

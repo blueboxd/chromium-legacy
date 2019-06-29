@@ -6,7 +6,7 @@ module content.mojom;
 
 import "services/network/public/mojom/network_param.mojom";
 import "ui/accessibility/mojom/ax_tree_id.mojom";
-import "ui/base/mojo/window_open_disposition.mojom";
+import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "url/mojom/url.mojom";

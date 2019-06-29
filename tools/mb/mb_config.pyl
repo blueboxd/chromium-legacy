@@ -659,6 +659,7 @@
       'gpu-fyi-try-android-p-pixel-2-32-deqp-vk': 'deqp_android_vulkan_release_trybot',
       'gpu-fyi-try-android-p-pixel-2-64-vk': 'gpu_tests_android_vulkan_release_trybot_arm64',
       'gpu-fyi-try-android-p-pixel-2-64-deqp-vk': 'deqp_android_vulkan_release_trybot_arm64',
+      'gpu-fyi-try-android-p-pixel-2-skv-32': 'gpu_tests_android_release_trybot',
       'linux_android_dbg_ng': 'android_debug_trybot',
       'try-nougat-phone-tester': 'android_debug_trybot_arm64',
     },

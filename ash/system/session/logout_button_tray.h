@@ -39,8 +39,6 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   void UpdateAfterLoginStatusChange();
   void UpdateAfterShelfAlignmentChange();
 
-  void UpdateVisibility();
-
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
@@ -56,6 +54,7 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
  private:
   void UpdateShowLogoutButtonInTray();
   void UpdateLogoutDialogDuration();
+  void UpdateVisibility();
   void UpdateButtonTextAndImage();
 
   Shelf* const shelf_;

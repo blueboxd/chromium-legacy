@@ -949,10 +949,6 @@ TEST_P(WebStateObserverTest, NewPageNavigation) {
 // Tests loading about://newtab and immediately loading another web page without
 // waiting until about://newtab navigation finishes.
 TEST_P(WebStateObserverTest, AboutNewTabNavigation) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
-
   GURL first_url("about://newtab/");
   const GURL second_url = test_server_->GetURL("/echoall");
 
@@ -1224,9 +1220,6 @@ TEST_P(WebStateObserverTest, WebStateUnsupportedSchemeNavigation) {
 
   // Perform a navigation to url with unsupported scheme.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  if (!web::features::StorePendingItemInContext()) {
-    EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  }
   // ShouldAllowRequest is called to give embedder a chance to handle
   // this unsupported URL scheme.
   WebStatePolicyDecider::RequestInfo expected_request_info(
@@ -1235,9 +1228,7 @@ TEST_P(WebStateObserverTest, WebStateUnsupportedSchemeNavigation) {
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(true));
-  if (web::features::StorePendingItemInContext()) {
-    EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  }
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
   test::LoadUrl(web_state(), url);
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));

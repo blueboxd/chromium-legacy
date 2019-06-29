@@ -150,7 +150,7 @@ cr.define('settings', function() {
         webstoreLink: showOSSettings,
       },
       extensions: false,
-      printing: showOSSettings,
+      printing: true,
       languages: {
         uiDisplayedInThisLanguage: showOSSettings,
         manageInputMethods: showOSSettings,
@@ -201,7 +201,7 @@ cr.define('settings', function() {
         webstoreLink: showOSSettings,
       },
       extensions: true,
-      printing: showOSSettings,
+      printing: true,
       languages: {
         uiDisplayedInThisLanguage: showOSSettings,
         manageInputMethods: showOSSettings,

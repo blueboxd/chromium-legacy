@@ -463,6 +463,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/979855")
     public void testCanGetSchedulerGroup() {
         Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
         // self is always accessible.

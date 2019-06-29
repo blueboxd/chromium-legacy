@@ -60,19 +60,22 @@ DisplayAgentAndroid::DisplayAgentAndroid() = default;
 DisplayAgentAndroid::~DisplayAgentAndroid() = default;
 
 void DisplayAgentAndroid::ShowNotification(
-    std::unique_ptr<notifications::NotificationData> notification_data) {
+    std::unique_ptr<notifications::NotificationData> notification_data,
+    std::unique_ptr<SystemData> system_data) {
   // TODO(xingliu): Refactor and hook to NotificationDisplayService.
   DCHECK(notification_data);
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(!notification_data->title.empty());
   DCHECK(!notification_data->message.empty());
 
-  // TODO(xingliu): Populate the icon to Java.
-  auto java_notification_data = Java_DisplayAgent_Constructor(
+  auto java_notification_data = Java_DisplayAgent_buildNotificationData(
       env, ConvertUTF8ToJavaString(env, notification_data->id),
       ConvertUTF16ToJavaString(env, notification_data->title),
       ConvertUTF16ToJavaString(env, notification_data->message),
       nullptr /*icon*/);
+  auto java_system_data = Java_DisplayAgent_buildSystemData(
+      env, ConvertUTF8ToJavaString(env, system_data->guid));
 
-  Java_DisplayAgent_showNotification(env, java_notification_data);
+  Java_DisplayAgent_showNotification(env, java_notification_data,
+                                     java_system_data);
 }

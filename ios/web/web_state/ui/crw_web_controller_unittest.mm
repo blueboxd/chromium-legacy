@@ -358,9 +358,6 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
 
 // Tests returning pending item stored in navigation context.
 TEST_P(CRWWebControllerTest, TestPendingItem) {
-  if (!web::features::StorePendingItemInContext())
-    return;
-
   ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);
   ASSERT_FALSE([web_controller() lastPendingItemForNewNavigation]);
   ASSERT_FALSE(web_controller().webStateImpl->GetPendingItem());

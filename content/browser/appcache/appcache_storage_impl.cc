@@ -21,7 +21,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
@@ -652,11 +651,6 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
     Schedule();
     return;
   }
-
-  // crbug.com/349708
-  TRACE_EVENT0(
-      "io",
-      "AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule");
 
   // We have to ask the quota manager for the value.
   storage_->pending_quota_queries_.insert(this);

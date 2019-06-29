@@ -4,10 +4,10 @@
 
 #include "ash/events/switch_access_event_handler.h"
 
-#include <set>
-
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/public/cpp/switch_access_event_handler_delegate.h"
 #include "ash/shell.h"
+#include "ui/events/event.h"
 
 namespace ash {
 
@@ -28,9 +28,9 @@ void CancelEvent(ui::Event* event) {
 }  // namespace
 
 SwitchAccessEventHandler::SwitchAccessEventHandler(
-    mojom::SwitchAccessEventHandlerDelegatePtr delegate_ptr)
-    : delegate_ptr_(std::move(delegate_ptr)) {
-  DCHECK(delegate_ptr_.is_bound());
+    SwitchAccessEventHandlerDelegate* delegate)
+    : delegate_(delegate) {
+  DCHECK(delegate_);
   Shell::Get()->AddPreTargetHandler(this,
                                     ui::EventTarget::Priority::kAccessibility);
 }
@@ -39,20 +39,16 @@ SwitchAccessEventHandler::~SwitchAccessEventHandler() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void SwitchAccessEventHandler::FlushMojoForTest() {
-  delegate_ptr_.FlushForTesting();
-}
-
 bool SwitchAccessEventHandler::SetKeyCodesForCommand(
     std::set<int> new_key_codes,
-    mojom::SwitchAccessCommand command) {
+    SwitchAccessCommand command) {
   bool has_changed = false;
   std::set<int> to_clear;
 
   // Clear old values that conflict with the new assignment.
   for (const auto& val : command_for_key_code_) {
     int old_key_code = val.first;
-    mojom::SwitchAccessCommand old_command = val.second;
+    SwitchAccessCommand old_command = val.second;
 
     if (new_key_codes.count(old_key_code) > 0) {
       if (old_command != command) {
@@ -97,14 +93,13 @@ void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     CancelEvent(event);
     // TODO(anastasi): Remove event dispatch once settings migration is
     // complete.
-    delegate_ptr_->DispatchKeyEvent(ui::Event::Clone(*event));
+    delegate_->DispatchKeyEvent(*event);
 
     // The Command events are currently sent, but ignored. The next step of the
     // migration will be to switch from using the key events to using the
     // commands, and the final step will be to remove the key events entirely.
-    mojom::SwitchAccessCommand command =
-        command_for_key_code_[event->key_code()];
-    delegate_ptr_->SendSwitchAccessCommand(command);
+    SwitchAccessCommand command = command_for_key_code_[event->key_code()];
+    delegate_->SendSwitchAccessCommand(command);
   }
 }
 

@@ -535,7 +535,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},
-       IDS_KSV_DESCRIPTION_IDC_STOP,
+       IDS_KSV_DESCRIPTION_IDC_CLOSE_FIND_OR_STOP,
        IDS_KSV_SHORTCUT_ONE_KEY,
        // |accelerator_ids|
        {},

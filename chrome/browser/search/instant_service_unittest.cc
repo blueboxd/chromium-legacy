@@ -517,32 +517,6 @@ class InstantServiceThemeTest : public InstantServiceTest {
   DISALLOW_COPY_AND_ASSIGN(InstantServiceThemeTest);
 };
 
-TEST_F(InstantServiceThemeTest, DarkModeHandler) {
-  testing::StrictMock<MockInstantServiceObserver> mock_observer;
-  instant_service_->AddObserver(&mock_observer);
-  theme()->SetDarkMode(false);
-  instant_service_->SetDarkModeThemeForTesting(theme());
-
-  // Enable dark mode.
-  ThemeBackgroundInfo theme_info;
-  EXPECT_CALL(mock_observer, ThemeInfoChanged(testing::_))
-      .WillOnce(testing::SaveArg<0>(&theme_info));
-  theme()->SetDarkMode(true);
-  theme()->NotifyObservers();
-  thread_bundle()->RunUntilIdle();
-
-  EXPECT_TRUE(theme_info.using_dark_mode);
-
-  // Disable dark mode.
-  EXPECT_CALL(mock_observer, ThemeInfoChanged(testing::_))
-      .WillOnce(testing::SaveArg<0>(&theme_info));
-  theme()->SetDarkMode(false);
-  theme()->NotifyObservers();
-  thread_bundle()->RunUntilIdle();
-
-  EXPECT_FALSE(theme_info.using_dark_mode);
-}
-
 TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com");

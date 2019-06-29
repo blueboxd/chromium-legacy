@@ -32,34 +32,34 @@ const int kAutoclickMenuWidth = 319;
 const int kAutoclickMenuWidthWithScroll = 369;
 const int kAutoclickMenuHeight = 64;
 
-mojom::AutoclickMenuPosition DefaultSystemPosition() {
-  return base::i18n::IsRTL() ? mojom::AutoclickMenuPosition::kBottomLeft
-                             : mojom::AutoclickMenuPosition::kBottomRight;
+AutoclickMenuPosition DefaultSystemPosition() {
+  return base::i18n::IsRTL() ? AutoclickMenuPosition::kBottomLeft
+                             : AutoclickMenuPosition::kBottomRight;
 }
 
 views::BubbleBorder::Arrow GetScrollAnchorAlignmentForPosition(
-    mojom::AutoclickMenuPosition position) {
+    AutoclickMenuPosition position) {
   // If this is the default system position, pick the position based on the
   // language direction.
-  if (position == mojom::AutoclickMenuPosition::kSystemDefault) {
+  if (position == AutoclickMenuPosition::kSystemDefault) {
     position = DefaultSystemPosition();
   }
   // Mirror arrow in RTL languages so that it always stays near the screen
   // edge.
   switch (position) {
-    case mojom::AutoclickMenuPosition::kBottomLeft:
+    case AutoclickMenuPosition::kBottomLeft:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_RIGHT
                                  : views::BubbleBorder::Arrow::TOP_LEFT;
-    case mojom::AutoclickMenuPosition::kTopLeft:
+    case AutoclickMenuPosition::kTopLeft:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_RIGHT
                                  : views::BubbleBorder::Arrow::BOTTOM_LEFT;
-    case mojom::AutoclickMenuPosition::kBottomRight:
+    case AutoclickMenuPosition::kBottomRight:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_LEFT
                                  : views::BubbleBorder::Arrow::TOP_RIGHT;
-    case mojom::AutoclickMenuPosition::kTopRight:
+    case AutoclickMenuPosition::kTopRight:
       return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_LEFT
                                  : views::BubbleBorder::Arrow::BOTTOM_RIGHT;
-    case mojom::AutoclickMenuPosition::kSystemDefault:
+    case AutoclickMenuPosition::kSystemDefault:
       // It's not possible for position to be kSystemDefault here because we've
       // set it via DefaultSystemPosition() above if it was kSystemDefault.
       NOTREACHED();
@@ -80,13 +80,11 @@ AutoclickMenuBubbleController::~AutoclickMenuBubbleController() {
   scroll_bubble_controller_.reset();
 }
 
-void AutoclickMenuBubbleController::SetEventType(
-    mojom::AutoclickEventType type) {
-  if (menu_view_) {
+void AutoclickMenuBubbleController::SetEventType(AutoclickEventType type) {
+  if (menu_view_)
     menu_view_->UpdateEventType(type);
-  }
 
-  if (type == mojom::AutoclickEventType::kScroll) {
+  if (type == AutoclickEventType::kScroll) {
     // If the type is scroll, show the scroll bubble using the
     // scroll_bubble_controller_.
     if (!scroll_bubble_controller_) {
@@ -107,23 +105,22 @@ void AutoclickMenuBubbleController::SetEventType(
 }
 
 void AutoclickMenuBubbleController::SetPosition(
-    mojom::AutoclickMenuPosition new_position) {
+    AutoclickMenuPosition new_position) {
   if (!menu_view_ || !bubble_view_ || !bubble_widget_)
     return;
 
   // Update the menu view's UX if the position has changed, or if it's not the
   // default position (because that can change with language direction).
   if (position_ != new_position ||
-      new_position == mojom::AutoclickMenuPosition::kSystemDefault) {
+      new_position == AutoclickMenuPosition::kSystemDefault) {
     menu_view_->UpdatePosition(new_position);
   }
   position_ = new_position;
 
   // If this is the default system position, pick the position based on the
   // language direction.
-  if (new_position == mojom::AutoclickMenuPosition::kSystemDefault) {
+  if (new_position == AutoclickMenuPosition::kSystemDefault)
     new_position = DefaultSystemPosition();
-  }
 
   // Calculates the ideal bounds.
   // TODO(katie): Support multiple displays: draw the menu on whichever display
@@ -137,17 +134,17 @@ void AutoclickMenuBubbleController::SetPosition(
                   : kAutoclickMenuWidth;
   gfx::Rect new_bounds;
   switch (new_position) {
-    case mojom::AutoclickMenuPosition::kBottomRight:
+    case AutoclickMenuPosition::kBottomRight:
       new_bounds = gfx::Rect(work_area.right() - width,
                              work_area.bottom() - kAutoclickMenuHeight, width,
                              kAutoclickMenuHeight);
       break;
-    case mojom::AutoclickMenuPosition::kBottomLeft:
+    case AutoclickMenuPosition::kBottomLeft:
       new_bounds =
           gfx::Rect(work_area.x(), work_area.bottom() - kAutoclickMenuHeight,
                     width, kAutoclickMenuHeight);
       break;
-    case mojom::AutoclickMenuPosition::kTopLeft:
+    case AutoclickMenuPosition::kTopLeft:
       // Because there is no inset at the top of the widget, add
       // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
       // to ensure correct padding.
@@ -155,7 +152,7 @@ void AutoclickMenuBubbleController::SetPosition(
           work_area.x(), work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
           width, kAutoclickMenuHeight);
       break;
-    case mojom::AutoclickMenuPosition::kTopRight:
+    case AutoclickMenuPosition::kTopRight:
       // Because there is no inset at the top of the widget, add
       // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
       // to ensure correct padding.
@@ -164,7 +161,7 @@ void AutoclickMenuBubbleController::SetPosition(
                     work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp, width,
                     kAutoclickMenuHeight);
       break;
-    case mojom::AutoclickMenuPosition::kSystemDefault:
+    case AutoclickMenuPosition::kSystemDefault:
       return;
   }
 
@@ -202,9 +199,8 @@ void AutoclickMenuBubbleController::SetScrollPoint(
   scroll_bubble_controller_->SetScrollPoint(scroll_location_in_dips);
 }
 
-void AutoclickMenuBubbleController::ShowBubble(
-    mojom::AutoclickEventType type,
-    mojom::AutoclickMenuPosition position) {
+void AutoclickMenuBubbleController::ShowBubble(AutoclickEventType type,
+                                               AutoclickMenuPosition position) {
   // Ignore if bubble widget already exists.
   if (bubble_widget_)
     return;
@@ -330,7 +326,7 @@ void AutoclickMenuBubbleController::BubbleViewDestroyed() {
 void AutoclickMenuBubbleController::OnLocaleChanged() {
   // Layout update is needed when language changes between LTR and RTL, if the
   // position is the system default.
-  if (position_ == mojom::AutoclickMenuPosition::kSystemDefault)
+  if (position_ == AutoclickMenuPosition::kSystemDefault)
     SetPosition(position_);
 }
 

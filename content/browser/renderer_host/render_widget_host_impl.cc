@@ -1444,6 +1444,8 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     const ui::LatencyInfo& latency,
     const std::vector<EditCommand>* commands,
     bool* update_event) {
+  DCHECK(WebInputEvent::IsKeyboardEventType(key_event.GetType()));
+
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
   if (owner_delegate_ &&
       !owner_delegate_->MayRenderWidgetForwardKeyboardEvent(key_event)) {
@@ -1465,11 +1467,6 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
       suppress_events_until_keydown_ = true;
     return;
   }
-
-  // Double check the type to make sure caller hasn't sent us nonsense that
-  // will mess up our key queue.
-  if (!WebInputEvent::IsKeyboardEventType(key_event.GetType()))
-    return;
 
   if (suppress_events_until_keydown_) {
     // If the preceding RawKeyDown event was handled by the browser, then we

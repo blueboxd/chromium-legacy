@@ -1122,6 +1122,27 @@ void NetworkQualityEstimator::RemoveEffectiveConnectionTypeObserver(
   effective_connection_type_observer_list_.RemoveObserver(observer);
 }
 
+void NetworkQualityEstimator::AddPeerToPeerConnectionsCountObserver(
+    PeerToPeerConnectionsCountObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(observer);
+  peer_to_peer_type_observer_list_.AddObserver(observer);
+
+  // Notify the |observer| on the next message pump since |observer| may not
+  // be completely set up for receiving the callbacks.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&NetworkQualityEstimator::
+                         NotifyPeerToPeerConnectionsCountObserverIfPresent,
+                     weak_ptr_factory_.GetWeakPtr(), observer));
+}
+
+void NetworkQualityEstimator::RemovePeerToPeerConnectionsCountObserver(
+    PeerToPeerConnectionsCountObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  peer_to_peer_type_observer_list_.RemoveObserver(observer);
+}
+
 void NetworkQualityEstimator::AddRTTAndThroughputEstimatesObserver(
     RTTAndThroughputEstimatesObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1522,6 +1543,15 @@ void NetworkQualityEstimator::NotifyEffectiveConnectionTypeObserverIfPresent(
   observer->OnEffectiveConnectionTypeChanged(effective_connection_type_);
 }
 
+void NetworkQualityEstimator::NotifyPeerToPeerConnectionsCountObserverIfPresent(
+    PeerToPeerConnectionsCountObserver* observer) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!peer_to_peer_type_observer_list_.HasObserver(observer))
+    return;
+  observer->OnPeerToPeerConnectionsCountChange(p2p_connections_count_);
+}
+
 void NetworkQualityEstimator::NotifyRTTAndThroughputEstimatesObserverIfPresent(
     RTTAndThroughputEstimatesObserver* observer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1697,6 +1727,10 @@ void NetworkQualityEstimator::OnPeerToPeerConnectionsCountChange(
   }
 
   p2p_connections_count_ = count;
+
+  for (auto& observer : peer_to_peer_type_observer_list_) {
+    observer.OnPeerToPeerConnectionsCountChange(p2p_connections_count_);
+  }
 }
 
 uint32_t NetworkQualityEstimator::GetPeerToPeerConnectionsCountChange() const {

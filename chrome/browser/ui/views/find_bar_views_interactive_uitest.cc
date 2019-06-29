@@ -56,6 +56,8 @@ class FindInPageTest : public InProcessBrowserTest {
     return GetFindBarHost()->GetFindBarTesting()->GetFindSelectedText();
   }
 
+  bool IsFindBarVisible() { return GetFindBarHost()->IsFindBarVisible(); }
+
   void ClickOnView(views::View* view) {
     // EventGenerator and ui_test_utils can't target the find bar (on Windows).
     view->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
@@ -610,3 +612,31 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionDuringFind) {
   EXPECT_TRUE(details.number_of_matches() > 0);
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(FindInPageTest, EscapeOnPageClosesFind) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kSimplePage));
+
+  // Open find
+  browser()->GetFindBarController()->Show(false, true);
+  EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // put focus onto the page
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+
+  // Close find with escape
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
+                                              false, false, false));
+
+  // Focus should still be on the page
+  ASSERT_TRUE(IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+  // Find should be closed
+  ASSERT_FALSE(IsFindBarVisible());
+}

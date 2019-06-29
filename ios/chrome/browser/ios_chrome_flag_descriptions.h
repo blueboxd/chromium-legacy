@@ -342,11 +342,6 @@ extern const char kSlimNavigationManagerDescription[];
 extern const char kSnapshotDrawViewName[];
 extern const char kSnapshotDrawViewDescription[];
 
-// Title and description for the flag to store pending item in NavigationContext
-// after context is created.
-extern const char kStorePendingItemInContextName[];
-extern const char kStorePendingItemInContextDescription[];
-
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.
 extern const char kSyncSandboxName[];

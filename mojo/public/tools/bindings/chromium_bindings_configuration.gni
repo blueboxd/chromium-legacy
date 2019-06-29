@@ -50,7 +50,7 @@ _typemap_imports = [
   "//ui/accessibility/mojom/typemaps.gni",
   "//ui/base/accelerators/mojo/typemaps.gni",
   "//ui/base/ime/mojo/typemaps.gni",
-  "//ui/base/mojo/typemaps.gni",
+  "//ui/base/mojom/typemaps.gni",
   "//ui/display/mojo/typemaps.gni",
   "//ui/events/mojo/typemaps.gni",
   "//ui/gfx/typemaps.gni",

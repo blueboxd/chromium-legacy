@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
@@ -50,7 +51,8 @@ namespace content {
 // |context_provider| should not support locking and will be bound to
 // |task_runner_| where all the operations on the context should also happen.
 class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
-    : public media::GpuVideoAcceleratorFactories {
+    : public media::GpuVideoAcceleratorFactories,
+      public viz::ContextLostObserver {
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.  Safe to call from any thread.
@@ -139,7 +141,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
-  void SetContextProviderLost();
+  // viz::ContextLostObserver implementation.
+  void OnContextLost() override;
   void SetContextProviderLostOnMainThread();
 
   void OnSupportedDecoderConfigs(

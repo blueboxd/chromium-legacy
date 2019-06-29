@@ -263,11 +263,11 @@ TEST_F(BookmarkBarViewTest, RemoveNode) {
   EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
 
   // Remove the 2nd node, should still only have 1 visible.
-  model->Remove(bookmark_bar_node->GetChild(1));
+  model->Remove(bookmark_bar_node->children()[1].get());
   EXPECT_EQ("a", GetStringForVisibleButtons());
 
   // Remove the first node, should force a new button (for the 'c' node).
-  model->Remove(bookmark_bar_node->GetChild(0));
+  model->Remove(bookmark_bar_node->children()[0].get());
   ASSERT_EQ("c", GetStringForVisibleButtons());
 }
 
@@ -280,7 +280,7 @@ TEST_F(BookmarkBarViewTest, MoveNode) {
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Move 'c' first resulting in 'c a b d e f'.
-  model->Move(bookmark_bar_node->GetChild(2), bookmark_bar_node, 0);
+  model->Move(bookmark_bar_node->children()[2].get(), bookmark_bar_node, 0);
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Make enough room for 1 node.
@@ -288,17 +288,17 @@ TEST_F(BookmarkBarViewTest, MoveNode) {
   EXPECT_EQ("c", GetStringForVisibleButtons());
 
   // Move 'f' first, resulting in 'f c a b d e'.
-  model->Move(bookmark_bar_node->GetChild(5), bookmark_bar_node, 0);
+  model->Move(bookmark_bar_node->children()[5].get(), bookmark_bar_node, 0);
   SizeUntilButtonsVisible(2);
   EXPECT_EQ("f c", GetStringForVisibleButtons());
 
   // Move 'f' to the end, resulting in 'c a b d e f'.
-  model->Move(bookmark_bar_node->GetChild(0), bookmark_bar_node, 6);
+  model->Move(bookmark_bar_node->children()[0].get(), bookmark_bar_node, 6);
   SizeUntilButtonsVisible(2);
   EXPECT_EQ("c a", GetStringForVisibleButtons());
 
   // Move 'c' after 'a', resulting in 'a c b d e f'.
-  model->Move(bookmark_bar_node->GetChild(0), bookmark_bar_node, 2);
+  model->Move(bookmark_bar_node->children()[0].get(), bookmark_bar_node, 2);
   SizeUntilButtonsVisible(2);
   EXPECT_EQ("a c", GetStringForVisibleButtons());
 }
@@ -311,33 +311,38 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
-  model->SetTitle(bookmark_bar_node->GetChild(0), base::ASCIIToUTF16("a1"));
+  model->SetTitle(bookmark_bar_node->children()[0].get(),
+                  base::ASCIIToUTF16("a1"));
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Make enough room for 1 node.
   SizeUntilButtonsVisible(1);
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model->SetTitle(bookmark_bar_node->GetChild(1), base::ASCIIToUTF16("b1"));
+  model->SetTitle(bookmark_bar_node->children()[1].get(),
+                  base::ASCIIToUTF16("b1"));
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model->SetTitle(bookmark_bar_node->GetChild(5), base::ASCIIToUTF16("f1"));
+  model->SetTitle(bookmark_bar_node->children()[5].get(),
+                  base::ASCIIToUTF16("f1"));
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model->SetTitle(bookmark_bar_node->GetChild(3), base::ASCIIToUTF16("d1"));
+  model->SetTitle(bookmark_bar_node->children()[3].get(),
+                  base::ASCIIToUTF16("d1"));
 
   // Make the second button visible, changes the title of the first to something
   // really long and make sure the second button hides.
   SizeUntilButtonsVisible(2);
   EXPECT_EQ("a1 b1", GetStringForVisibleButtons());
-  model->SetTitle(bookmark_bar_node->GetChild(0),
+  model->SetTitle(bookmark_bar_node->children()[0].get(),
                   base::ASCIIToUTF16("a_really_long_title"));
   EXPECT_LE(1u, test_helper_->GetBookmarkButtonCount());
 
   // Change the title back and make sure the 2nd button is visible again. Don't
   // use GetStringForVisibleButtons() here as more buttons may have been
   // created.
-  model->SetTitle(bookmark_bar_node->GetChild(0), base::ASCIIToUTF16("a1"));
+  model->SetTitle(bookmark_bar_node->children()[0].get(),
+                  base::ASCIIToUTF16("a1"));
   ASSERT_LE(2u, test_helper_->GetBookmarkButtonCount());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(0)->GetVisible());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(1)->GetVisible());

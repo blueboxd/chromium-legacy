@@ -24,16 +24,16 @@ class ASH_EXPORT AutoclickMenuBubbleController
   ~AutoclickMenuBubbleController() override;
 
   // Sets the currently selected event type.
-  void SetEventType(mojom::AutoclickEventType type);
+  void SetEventType(AutoclickEventType type);
 
   // Sets the menu's position on the screen.
-  void SetPosition(mojom::AutoclickMenuPosition position);
+  void SetPosition(AutoclickMenuPosition position);
 
   // Set the scroll menu's position on the screen.
   void SetScrollPoint(gfx::Point scroll_location_in_dips);
 
-  void ShowBubble(mojom::AutoclickEventType event_type,
-                  mojom::AutoclickMenuPosition position);
+  void ShowBubble(AutoclickEventType event_type,
+                  AutoclickMenuPosition position);
 
   void CloseBubble();
 
@@ -66,7 +66,7 @@ class ASH_EXPORT AutoclickMenuBubbleController
   // Owned by views hierarchy.
   AutoclickMenuBubbleView* bubble_view_ = nullptr;
   AutoclickMenuView* menu_view_ = nullptr;
-  mojom::AutoclickMenuPosition position_ = kDefaultAutoclickMenuPosition;
+  AutoclickMenuPosition position_ = kDefaultAutoclickMenuPosition;
 
   views::Widget* bubble_widget_ = nullptr;
 

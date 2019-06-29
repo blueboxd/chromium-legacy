@@ -38,6 +38,7 @@ bool IsCommandAllowedInAppMode(int command_id) {
       IDC_BACK,
       IDC_FORWARD,
       IDC_RELOAD,
+      IDC_CLOSE_FIND_OR_STOP,
       IDC_STOP,
       IDC_RELOAD_BYPASSING_CACHE,
       IDC_RELOAD_CLEARING_CACHE,

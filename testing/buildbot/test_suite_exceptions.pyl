@@ -54,8 +54,6 @@
       'Android FYI Release (Nexus 9)',
       # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
       'Linux FYI Release (AMD R7 240)',
-      # Disabled due to numerous ES2_VULKAN failures crbug.com/940750
-      'Linux FYI Experimental Release (Intel HD 630)',
       # Temporarily disabled due to bad NVIDIA driver upgrade crbug.com/950542
       'Linux FYI Debug (NVIDIA)',
       'Linux FYI GPU TSAN Release',
@@ -81,14 +79,6 @@
         },
       },
     },
-  },
-  'angle_white_box_tests': {
-    'remove_from': [
-      # chromium.gpu.fyi
-      # Vulkan tests fail consistently due to missing extensions.
-      # See crbug.com/940750
-      'Linux FYI Experimental Release (Intel HD 630)',
-    ],
   },
   'breakpad_unittests': {
     'modifications': {
@@ -540,7 +530,6 @@
   'dawn_end2end_tests': {
     'remove_from': [
       # chromium.gpu.fyi
-      'Linux FYI Experimental Release (Intel HD 630)', # https://crbug.com/927459
       'Linux FYI Release (AMD R7 240)', # https://crbug.com/915430
     ],
   },
@@ -1356,8 +1345,6 @@
       'Mac Retina Debug (AMD)',
       'Win10 Debug (NVIDIA)',
       # chromium.gpu.fyi
-      # Disabled due to dbus crashes crbug.com/927465
-      'Linux FYI Experimental Release (Intel HD 630)',
       'Win10 FYI Debug (NVIDIA)',
       'Win7 FYI Debug (AMD)',
     ],
@@ -1629,11 +1616,8 @@
       'Linux FYI GPU TSAN Release',
       'Linux FYI Release (AMD R7 240)',
       'Linux FYI Debug (NVIDIA)',
-      'Linux FYI Experimental Release (NVIDIA)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux FYI Release (NVIDIA)',
-      # Consistent hangs crbug.com/940750
-      'Linux FYI Experimental Release (Intel HD 630)',
     ],
   },
   'wayland_client_perftests': {
@@ -1656,8 +1640,6 @@
   },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
-      # https://crbug.com/927470
-      'Linux FYI Experimental Release (Intel HD 630)',
       # Not enough capacity. https://crbug.com/946694
       'ANGLE GPU Win10 Release (Intel HD 630)',
     ],

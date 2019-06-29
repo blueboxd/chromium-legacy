@@ -127,8 +127,7 @@ SharedWorkerHost::SharedWorkerHost(
   // Keep the renderer process alive that will be hosting the shared worker.
   RenderProcessHost* process_host = RenderProcessHost::FromID(process_id);
   DCHECK(!IsShuttingDown(process_host));
-  process_host->IncrementKeepAliveRefCount(
-      RenderProcessHost::KeepAliveClientType::kSharedWorker);
+  process_host->IncrementKeepAliveRefCount();
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
@@ -148,10 +147,8 @@ SharedWorkerHost::~SharedWorkerHost() {
   }
 
   RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
-  if (!IsShuttingDown(process_host)) {
-    process_host->DecrementKeepAliveRefCount(
-        RenderProcessHost::KeepAliveClientType::kSharedWorker);
-  }
+  if (!IsShuttingDown(process_host))
+    process_host->DecrementKeepAliveRefCount();
 }
 
 // static

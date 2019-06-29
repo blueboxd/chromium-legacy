@@ -53,6 +53,10 @@ std::string CreateLibAssistantConfig() {
   Value internal(Type::DICTIONARY);
   internal.SetKey("surface_type", Value("OPA_CROS"));
 
+  // Prevent LibAssistant from automatically playing ready message TTS during
+  // the startup sequence when the version of LibAssistant has been upgraded.
+  internal.SetKey("override_ready_message", Value(true));
+
   if (base::SysInfo::IsRunningOnChromeOS()) {
     Value logging(Type::DICTIONARY);
     // Redirect libassistant logging to /var/log/chrome/ if has the switch,

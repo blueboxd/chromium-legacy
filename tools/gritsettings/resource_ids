@@ -81,7 +81,7 @@
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
     "includes": [11000],
-    "structures": [11900],
+    "structures": [11850],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
     "structures": [11940],

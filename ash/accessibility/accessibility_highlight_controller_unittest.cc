@@ -7,7 +7,7 @@
 #include <cmath>
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_cursor_ring_layer.h"
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/shell.h"
@@ -302,7 +302,7 @@ TEST_F(AccessibilityHighlightControllerTest, SetCaretBounds) {
   std::unique_ptr<views::Widget> window = CreateTestWidget();
   window->SetBounds(gfx::Rect(5, 5, 300, 300));
 
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   accessibility_controller->SetCaretHighlightEnabled(true);
 

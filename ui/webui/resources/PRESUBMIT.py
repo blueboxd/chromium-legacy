@@ -79,11 +79,26 @@ def _CheckWebDevStyle(input_api, output_api):
   return results
 
 
+def _CheckJsModulizer(input_api, output_api):
+  affected = input_api.AffectedFiles()
+  affected_files = [input_api.os_path.basename(f.LocalPath()) for f in affected]
+
+  results = []
+  if 'js_modulizer.py' in affected_files:
+    presubmit_path = input_api.PresubmitLocalPath()
+    sources = [input_api.os_path.join('tools', 'js_modulizer_test.py')]
+    tests = [input_api.os_path.join(presubmit_path, s) for s in sources]
+    results += input_api.canned_checks.RunUnitTests(
+        input_api, output_api, tests)
+  return results
+
+
 def _CommonChecks(input_api, output_api):
   results = []
   results += _CheckForTranslations(input_api, output_api)
   results += _CheckSvgsOptimized(input_api, output_api)
   results += _CheckWebDevStyle(input_api, output_api)
+  results += _CheckJsModulizer(input_api, output_api)
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api,
                                                          check_js=True)
   return results

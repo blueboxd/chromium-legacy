@@ -61,7 +61,8 @@ enum CalculationCategory {
 
 class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
  public:
-  enum Type { kCssCalcPrimitiveValue = 1, kCssCalcBinaryOperation };
+  virtual bool IsPrimitiveValue() const { return false; }
+  virtual bool IsBinaryOperation() const { return false; }
 
   virtual bool IsZero() const = 0;
   virtual double DoubleValue() const = 0;
@@ -75,10 +76,6 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
   virtual bool operator==(const CSSCalcExpressionNode& other) const {
     return category_ == other.category_ && is_integer_ == other.is_integer_;
   }
-  virtual Type GetType() const = 0;
-  virtual const CSSCalcExpressionNode* LeftExpressionNode() const = 0;
-  virtual const CSSCalcExpressionNode* RightExpressionNode() const = 0;
-  virtual CSSMathOperator OperatorType() const = 0;
 
   CalculationCategory Category() const { return category_; }
   virtual CSSPrimitiveValue::UnitType TypeWithCalcResolved() const = 0;
@@ -98,6 +95,111 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
   CalculationCategory category_;
   bool is_integer_;
   bool is_nested_calc_ = false;
+};
+
+class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
+ public:
+  static CSSCalcPrimitiveValue* Create(CSSPrimitiveValue* value,
+                                       bool is_integer);
+  static CSSCalcPrimitiveValue* Create(double value,
+                                       CSSPrimitiveValue::UnitType type,
+                                       bool is_integer);
+
+  CSSCalcPrimitiveValue(CSSPrimitiveValue* value, bool is_integer);
+
+  bool IsPrimitiveValue() const final { return true; }
+
+  bool IsZero() const final;
+  String CustomCSSText() const final;
+  void AccumulatePixelsAndPercent(
+      const CSSToLengthConversionData& conversion_data,
+      PixelsAndPercent& value,
+      float multiplier) const final;
+  double DoubleValue() const final;
+  double ComputeLengthPx(
+      const CSSToLengthConversionData& conversion_data) const final;
+  void AccumulateLengthArray(CSSLengthArray& length_array,
+                             double multiplier) const final;
+  bool operator==(const CSSCalcExpressionNode& other) const final;
+  CSSPrimitiveValue::UnitType TypeWithCalcResolved() const final;
+  void Trace(blink::Visitor* visitor) final;
+
+ private:
+  Member<CSSPrimitiveValue> value_;
+};
+
+template <>
+struct DowncastTraits<CSSCalcPrimitiveValue> {
+  static bool AllowFrom(const CSSCalcExpressionNode& node) {
+    return node.IsPrimitiveValue();
+  }
+};
+
+class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
+ public:
+  static CSSCalcExpressionNode* Create(CSSCalcExpressionNode* left_side,
+                                       CSSCalcExpressionNode* right_side,
+                                       CSSMathOperator op);
+  static CSSCalcExpressionNode* CreateSimplified(
+      CSSCalcExpressionNode* left_side,
+      CSSCalcExpressionNode* right_side,
+      CSSMathOperator op);
+
+  CSSCalcBinaryOperation(CSSCalcExpressionNode* left_side,
+                         CSSCalcExpressionNode* right_side,
+                         CSSMathOperator op,
+                         CalculationCategory category);
+
+  const CSSCalcExpressionNode* LeftExpressionNode() const { return left_side_; }
+  const CSSCalcExpressionNode* RightExpressionNode() const {
+    return right_side_;
+  }
+  CSSMathOperator OperatorType() const { return operator_; }
+
+  bool IsBinaryOperation() const final { return true; }
+
+  bool IsZero() const final;
+  void AccumulatePixelsAndPercent(
+      const CSSToLengthConversionData& conversion_data,
+      PixelsAndPercent& value,
+      float multiplier) const final;
+  double DoubleValue() const final;
+  double ComputeLengthPx(
+      const CSSToLengthConversionData& conversion_data) const final;
+  void AccumulateLengthArray(CSSLengthArray& length_array,
+                             double multiplier) const final;
+  String CustomCSSText() const final;
+  bool operator==(const CSSCalcExpressionNode& exp) const final;
+  CSSPrimitiveValue::UnitType TypeWithCalcResolved() const final;
+  void Trace(blink::Visitor* visitor) final;
+
+ private:
+  static CSSCalcExpressionNode* GetNumberSide(
+      CSSCalcExpressionNode* left_side,
+      CSSCalcExpressionNode* right_side);
+
+  static String BuildCSSText(const String& left_expression,
+                             const String& right_expression,
+                             CSSMathOperator op);
+
+  double Evaluate(double left_side, double right_side) const {
+    return EvaluateOperator(left_side, right_side, operator_);
+  }
+
+  static double EvaluateOperator(double left_value,
+                                 double right_value,
+                                 CSSMathOperator op);
+
+  const Member<CSSCalcExpressionNode> left_side_;
+  const Member<CSSCalcExpressionNode> right_side_;
+  const CSSMathOperator operator_;
+};
+
+template <>
+struct DowncastTraits<CSSCalcBinaryOperation> {
+  static bool AllowFrom(const CSSCalcExpressionNode& node) {
+    return node.IsBinaryOperation();
+  }
 };
 
 class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {

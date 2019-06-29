@@ -32,16 +32,20 @@
   width: 1px;
 }
 
-html[darkmode=true] .ripple-effect {
-  background-color: rgba(var(--GB300-rgb), 0.32);
+@media (prefers-color-scheme: dark) {
+  .ripple-effect {
+    background-color: rgba(var(--GB300-rgb), 0.32);
+  }
 }
 
 button.primary .ripple-effect {
   background-color: rgba(255, 255, 255, 0.32);
 }
 
-html[darkmode=true] button.primary .ripple-effect {
-  background-color: rgba(0, 0, 0, 0.08);
+@media (prefers-color-scheme: dark) {
+  button.primary .ripple-effect {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
 }
 
 button.paper {
@@ -67,9 +71,11 @@ button.paper.primary {
   color: white;
 }
 
-html[darkmode=true] button.paper.primary {
-  background-color: rgb(var(--GB300-rgb));
-  color: rgb(var(--GG900-rgb));
+@media (prefers-color-scheme: dark) {
+  button.paper.primary {
+    background-color: rgb(var(--GB300-rgb));
+    color: rgb(var(--GG900-rgb));
+  }
 }
 
 button.paper.primary:disabled {
@@ -77,9 +83,11 @@ button.paper.primary:disabled {
   color: rgb(var(--GG600-rgb));
 }
 
-html[darkmode=true] button.paper.primary:disabled {
-  background-color: rgb(var(--GG800-rgb));
-  color: rgb(var(--GG600-rgb));
+@media (prefers-color-scheme: dark) {
+  button.paper.primary:disabled {
+    background-color: rgb(var(--GG800-rgb));
+    color: rgb(var(--GG600-rgb));
+  }
 }
 
 button.paper.primary:hover:not(:disabled) {
@@ -88,8 +96,10 @@ button.paper.primary:hover:not(:disabled) {
       0 1px 3px 1px rgba(var(--GB500-rgb), 0.15);
 }
 
-html[darkmode=true] button.paper.primary:hover:not(:disabled) {
-  background-color: rgb(133, 173, 238);
+@media (prefers-color-scheme: dark) {
+  button.paper.primary:hover:not(:disabled) {
+    background-color: rgb(133, 173, 238);
+  }
 }
 
 button.paper.primary:active:not(:disabled) {
@@ -97,10 +107,12 @@ button.paper.primary:active:not(:disabled) {
       0 3px 6px 2px rgba(var(--GB500-rgb), 0.15);
 }
 
-html[darkmode=true] button.paper.primary:active:not(:disabled) {
-  background-color: rgb(115, 160, 223);
-  box-shadow: 0 1px 2px 0 rgba(var(--GB500-rgb), 0.3),
-      0 3px 6px 2px rgba(var(--GB500-rgb), 0.15);
+@media (prefers-color-scheme: dark) {
+  button.paper.primary:active:not(:disabled) {
+    background-color: rgb(115, 160, 223);
+    box-shadow: 0 1px 2px 0 rgba(var(--GB500-rgb), 0.3),
+        0 3px 6px 2px rgba(var(--GB500-rgb), 0.15);
+  }
 }
 
 button.paper.secondary {
@@ -109,10 +121,12 @@ button.paper.secondary {
   color: rgb(var(--GB600-rgb));
 }
 
-html[darkmode=true] button.paper.secondary {
-  background-color: transparent;
-  border-color: rgb(var(--GG700-rgb));
-  color: rgb(var(--GB300-rgb));
+@media (prefers-color-scheme: dark) {
+  button.paper.secondary {
+    background-color: transparent;
+    border-color: rgb(var(--GG700-rgb));
+    color: rgb(var(--GB300-rgb));
+  }
 }
 
 button.paper.secondary:disabled {
@@ -120,9 +134,11 @@ button.paper.secondary:disabled {
   color: rgb(var(--GG600-rgb));
 }
 
-html[darkmode=true] button.paper.secondary:disabled {
-  border-color: rgb(var(--GG800-rgb));
-  color: rgb(var(--GG600-rgb));
+@media (prefers-color-scheme: dark) {
+  button.paper.secondary:disabled {
+    border-color: rgb(var(--GG800-rgb));
+    color: rgb(var(--GG600-rgb));
+  }
 }
 
 button.paper.secondary:hover:not(:disabled) {
@@ -130,11 +146,13 @@ button.paper.secondary:hover:not(:disabled) {
   border-color: rgb(var(--GB100-rgb));
 }
 
-html[darkmode=true] button.paper.secondary:hover:not(:disabled) {
-  background-color: rgba(var(--GB300-rgb), 0.04);
-  border-color: rgba(var(--GB300-rgb), 0.5);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3),
-      0 1px 3px 1px rgba(0, 0, 0, 0.15);
+@media (prefers-color-scheme: dark) {
+  button.paper.secondary:hover:not(:disabled) {
+    background-color: rgba(var(--GB300-rgb), 0.04);
+    border-color: rgba(var(--GB300-rgb), 0.5);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3),
+        0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  }
 }
 
 button.paper.secondary:active:not(:disabled) {
@@ -144,9 +162,11 @@ button.paper.secondary:active:not(:disabled) {
       0 3px 6px 2px rgba(var(--GG800-rgb), 0.15);
 }
 
-html[darkmode=true] button.paper.secondary:active:not(:disabled) {
-  background-color: rgba(var(--GB300-rgb), 0.08);
-  border-color: rgba(var(--GB300-rgb), 0.5);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3),
-      0 3px 6px 2px rgba(0, 0, 0, 0.15);
+@media (prefers-color-scheme: dark) {
+  button.paper.secondary:active:not(:disabled) {
+    background-color: rgba(var(--GB300-rgb), 0.08);
+    border-color: rgba(var(--GB300-rgb), 0.5);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3),
+        0 3px 6px 2px rgba(0, 0, 0, 0.15);
+    }
 }

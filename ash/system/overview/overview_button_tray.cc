@@ -4,7 +4,6 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -68,24 +67,6 @@ void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
 
 void OverviewButtonTray::SnapRippleToActivated() {
   GetInkDrop()->SnapToActivated();
-}
-
-void OverviewButtonTray::UpdateIconVisibility() {
-  // The visibility of the OverviewButtonTray has diverged from
-  // OverviewController::CanSelect. The visibility of the button should
-  // not change during transient times in which CanSelect is false. Such as when
-  // a modal dialog is present.
-  SessionControllerImpl* session_controller =
-      Shell::Get()->session_controller();
-  bool active_session = session_controller->GetSessionState() ==
-                        session_manager::SessionState::ACTIVE;
-  bool app_mode = session_controller->IsRunningInAppMode();
-
-  bool kiosk_next = Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
-  bool should_show =
-      Shell::Get()->tablet_mode_controller()->ShouldShowOverviewButton();
-
-  SetVisible(should_show && active_session && !app_mode && !kiosk_next);
 }
 
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
@@ -195,6 +176,23 @@ void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 
 const char* OverviewButtonTray::GetClassName() const {
   return "OverviewButtonTray";
+}
+
+void OverviewButtonTray::UpdateIconVisibility() {
+  // The visibility of the OverviewButtonTray has diverged from
+  // OverviewController::CanSelect. The visibility of the button should
+  // not change during transient times in which CanSelect is false. Such as when
+  // a modal dialog is present.
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
+  bool active_session = session_controller->GetSessionState() ==
+                        session_manager::SessionState::ACTIVE;
+  bool app_mode = session_controller->IsRunningInAppMode();
+
+  bool should_show =
+      Shell::Get()->tablet_mode_controller()->ShouldShowOverviewButton();
+
+  SetVisible(should_show && active_session && !app_mode);
 }
 
 }  // namespace ash

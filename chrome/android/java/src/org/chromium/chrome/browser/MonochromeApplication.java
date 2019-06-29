@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Context;
+
 import com.android.webview.chromium.MonochromeLibraryPreloader;
+import com.android.webview.chromium.WebViewApkApplication;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -24,8 +27,9 @@ import org.chromium.content_public.browser.ChildProcessCreationParams;
  */
 public class MonochromeApplication extends ChromeApplication {
     @Override
-    public void onCreate() {
-        super.onCreate();
+    protected void attachBaseContext(Context context) {
+        super.attachBaseContext(context);
+        WebViewApkApplication.maybeInitProcessGlobals();
         if (!LibraryLoader.getInstance().isLoadedByZygote()) {
             LibraryLoader.getInstance().setNativeLibraryPreloader(new MonochromeLibraryPreloader());
         }

@@ -26,10 +26,8 @@
       }
 
       /* Tooltip is hidden since site-list will display a common tooltip. */
-      cr-policy-pref-indicator {
-        --cr-tooltip: {
-          display: none;
-        };
+      cr-policy-pref-indicator::part(tooltip) {
+        display: none;
       }
     </style>
     <div class="list-item" focus-row-container>

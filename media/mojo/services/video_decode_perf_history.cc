@@ -25,7 +25,7 @@ namespace media {
 
 namespace {
 
-const double kMaxSmoothDroppedFramesPercentParamDefault = .10;
+const double kMaxSmoothDroppedFramesPercentParamDefault = .05;
 
 }  // namespace
 

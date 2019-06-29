@@ -24,8 +24,7 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
     RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
     if (!process_host || process_host->IsKeepAliveRefCountDisabled())
       return;
-    process_host->IncrementKeepAliveRefCount(
-        RenderProcessHost::KeepAliveClientType::kFetch);
+    process_host->IncrementKeepAliveRefCount();
   }
 
   void Detach() {
@@ -36,8 +35,7 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
     if (!process_host || process_host->IsKeepAliveRefCountDisabled())
       return;
 
-    process_host->DecrementKeepAliveRefCount(
-        RenderProcessHost::KeepAliveClientType::kFetch);
+    process_host->DecrementKeepAliveRefCount();
   }
 
   void DetachLater(base::TimeDelta timeout) {

@@ -174,7 +174,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
 
 - (web::NavigationItemImpl*)pendingItem {
   if (self.pendingItemIndex == -1) {
-    if (web::features::StorePendingItemInContext() && !_pendingItem) {
+    if (!_pendingItem) {
       return [self.delegate pendingItemForSessionController:self];
     }
     return _pendingItem.get();
@@ -418,20 +418,18 @@ initiationType:(web::NavigationInitiationType)initiationType;
     DCHECK(!_pendingItem);
   }
 
-  web::NavigationItem* item = web::features::StorePendingItemInContext()
-                                  ? self.lastCommittedItem
-                                  : self.currentItem;
   // Update the navigation timestamp now that it's actually happened.
-  if (item)
+  web::NavigationItem* item = self.lastCommittedItem;
+  if (item) {
     item->SetTimestamp(_timeSmoother.GetSmoothedTime(base::Time::Now()));
+    if (_navigationManager)
+      _navigationManager->OnNavigationItemCommitted();
+  }
 
-  if (_navigationManager && item)
-    _navigationManager->OnNavigationItemCommitted();
   DCHECK_EQ(self.pendingItemIndex, -1);
 }
 
 - (void)commitPendingItem:(std::unique_ptr<web::NavigationItemImpl>)item {
-  DCHECK(web::features::StorePendingItemInContext());
   if (!item)
     return;
 

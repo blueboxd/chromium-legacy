@@ -114,6 +114,10 @@ class TestDisplayScheduler : public DisplayScheduler {
 
   bool has_pending_surfaces() { return has_pending_surfaces_; }
 
+  bool is_swap_throttled() const {
+    return pending_swaps_ >= max_pending_swaps_;
+  }
+
  protected:
   int scheduler_begin_frame_deadline_count_;
 };
@@ -789,6 +793,38 @@ TEST_F(DisplaySchedulerTest, SetNeedsOneBeginFrame) {
   // System should be idle again.
   AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
+}
+
+TEST_F(DisplaySchedulerTest, GpuBusyNotifications) {
+  fake_begin_frame_source_.AllowOneBeginFrameAfterGpuBusy();
+
+  SurfaceId root_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+
+  scheduler_.SetVisible(true);
+  scheduler_.SetNewRootSurface(root_surface_id);
+
+  // Swap one frame, since max pending swaps is 1 it puts us in a swap throttled
+  // state.
+  AdvanceTimeAndBeginFrameForTest({root_surface_id});
+  EXPECT_EQ(scheduler_.current_frame_time(), last_begin_frame_args_.frame_time);
+  EXPECT_EQ(client().draw_and_swap_count(), 0);
+  SurfaceDamaged(root_surface_id);
+  scheduler_.BeginFrameDeadlineForTest();
+  EXPECT_EQ(client().draw_and_swap_count(), 1);
+  scheduler_.DidSwapBuffers();
+  EXPECT_TRUE(scheduler_.is_swap_throttled());
+
+  // The next vsync should not be blocked from the swap throttling.
+  EXPECT_FALSE(fake_begin_frame_source_.RequestCallbackOnGpuAvailable());
+
+  // Send the next vsync, after which vsyncs will be blocked on busy gpu.
+  EXPECT_TRUE(fake_begin_frame_source_.RequestCallbackOnGpuAvailable());
+
+  // Ack the pending swap buffers, we should no longer be marked gpu busy.
+  scheduler_.DidReceiveSwapBuffersAck();
+  EXPECT_FALSE(fake_begin_frame_source_.RequestCallbackOnGpuAvailable());
 }
 
 }  // namespace

@@ -48,8 +48,6 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // Sets the ink drop ripple to ACTIVATED immediately with no animations.
   void SnapRippleToActivated();
 
-  void UpdateIconVisibility();
-
   // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -76,6 +74,10 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
 
  private:
   friend class OverviewButtonTrayTest;
+
+  // Sets the icon to visible if tablet mode is enabled and
+  // OverviewController::CanSelect.
+  void UpdateIconVisibility();
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;

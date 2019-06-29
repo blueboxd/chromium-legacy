@@ -112,7 +112,7 @@ void LegacyNavigationManagerImpl::CommitPendingItem() {
 
 void LegacyNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  if (web::features::StorePendingItemInContext() && item) {
+  if (item) {
     [session_controller_ commitPendingItem:std::move(item)];
   } else {
     CommitPendingItem();

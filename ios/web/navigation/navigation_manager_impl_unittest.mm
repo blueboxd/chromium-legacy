@@ -297,10 +297,6 @@ TEST_P(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
 // Tests that NavigationManagerImpl::GetPendingItem() returns item provided by
 // the delegate.
 TEST_P(NavigationManagerTest, GetPendingItemFromDelegate) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
-
   ASSERT_FALSE(navigation_manager()->GetPendingItem());
   auto item = std::make_unique<web::NavigationItemImpl>();
   SimulateReturningPendingItemFromDelegate(item.get());
@@ -310,10 +306,6 @@ TEST_P(NavigationManagerTest, GetPendingItemFromDelegate) {
 // Tests that NavigationManagerImpl::GetPendingItem() ignores item provided by
 // the delegate if navigation manager has own pending item.
 TEST_P(NavigationManagerTest, GetPendingItemIgnoringDelegate) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
-
   ASSERT_FALSE(navigation_manager()->GetPendingItem());
   auto item = std::make_unique<web::NavigationItemImpl>();
   SimulateReturningPendingItemFromDelegate(item.get());
@@ -331,10 +323,6 @@ TEST_P(NavigationManagerTest, GetPendingItemIgnoringDelegate) {
 
 // Tests that GetPendingItem() returns indexed pending item.
 TEST_P(NavigationManagerTest, GetPendingItemWithIndexedPendingEntry) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
-
   GURL url("http://www.url.test");
   navigation_manager()->AddPendingItem(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -2622,9 +2610,6 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentUserAgentType) {
 // Tests that NavigationManagerImpl::CommitPendingItem() is no-op when called
 // with null.
 TEST_P(NavigationManagerTest, CommitNilPendingItem) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
   ASSERT_EQ(0, navigation_manager()->GetItemCount());
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -2644,10 +2629,6 @@ TEST_P(NavigationManagerTest, CommitNilPendingItem) {
 
 // Tests NavigationManagerImpl::CommitPendingItem() with a valid pending item.
 TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
-
   // Create navigation manager with a single forward item and no back items.
   [mock_wk_list_ setCurrentURL:@"http://www.url.test"
                   backListURLs:@[

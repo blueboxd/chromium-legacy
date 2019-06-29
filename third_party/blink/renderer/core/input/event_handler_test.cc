@@ -2086,6 +2086,77 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
   }
 }
 
+TEST_F(EventHandlerSimTest, NeverExposeKeyboardEvent) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
+  GetDocument().GetSettings()->SetScrollAnimatorEnabled(false);
+  GetDocument().GetSettings()->SetWebAppScope(GetDocument().Url());
+  GetDocument().View()->SetDisplayMode(kWebDisplayModeFullscreen);
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      height: 10000px;
+    }
+    </style>
+    Last event: <br>
+    <p id='log'>no event</p>
+    <input id="input1" type="text">
+
+    <script>
+      document.addEventListener('keydown', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keydown cancelable=' + e.cancelable;
+      });
+      document.addEventListener('keyup', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keyup cancelable=' + e.cancelable;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebElement element = GetDocument().getElementById("log");
+  WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
+                     WebInputEvent::GetStaticTimeStampForTests()};
+  e.windows_key_code = VKEY_DOWN;
+  // TODO(crbug.com/949766) Should cleanup these magic number.
+  e.dom_key = 0x00200309;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  // TODO(crbug.com/949766) Should cleanup these magic number.
+  e.dom_key = 0x00200310;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+}
+
 TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
   GetDocument().GetSettings()->SetScrollAnimatorEnabled(false);

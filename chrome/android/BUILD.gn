@@ -382,7 +382,7 @@ android_library("chrome_java") {
     "//third_party/google_android_play_core:com_google_android_play_core_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
-    "//ui/base/mojo:mojo_java",
+    "//ui/base/mojom:mojom_java",
     "//ui/gfx/geometry/mojo:mojo_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
@@ -866,7 +866,7 @@ android_library("chrome_test_java") {
     "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
-    "//ui/base/mojo:mojo_java",
+    "//ui/base/mojom:mojom_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
 
@@ -1647,6 +1647,7 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_base_bundle_module") {
 
 android_library("monochrome_java") {
   deps = [
+    "//android_webview/apk:apk_java",
     "//android_webview/glue",
     "//android_webview/support_library:support_lib_glue_java",
     "//base:base_java",

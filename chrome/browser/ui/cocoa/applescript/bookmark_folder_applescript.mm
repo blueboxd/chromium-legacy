@@ -54,12 +54,12 @@ using bookmarks::BookmarkNode;
   [aBookmarkFolder setBookmarkNode:node];
 }
 
-- (void)insertInBookmarkFolders:(id)aBookmarkFolder atIndex:(int)index {
+- (void)insertInBookmarkFolders:(id)aBookmarkFolder atIndex:(size_t)index {
   // This method gets called when a new bookmark folder is created so
   // the container and property are set here.
   [aBookmarkFolder setContainer:self
                        property:AppleScript::kBookmarkFoldersProperty];
-  int position = [self calculatePositionOfBookmarkFolderAt:index];
+  size_t position = [self calculatePositionOfBookmarkFolderAt:index];
 
   BookmarkModel* model = [self bookmarkModel];
   if (!model)
@@ -76,14 +76,14 @@ using bookmarks::BookmarkNode;
   [aBookmarkFolder setBookmarkNode:node];
 }
 
-- (void)removeFromBookmarkFoldersAtIndex:(int)index {
-  int position = [self calculatePositionOfBookmarkFolderAt:index];
+- (void)removeFromBookmarkFoldersAtIndex:(size_t)index {
+  size_t position = [self calculatePositionOfBookmarkFolderAt:index];
 
   BookmarkModel* model = [self bookmarkModel];
   if (!model)
     return;
 
-  model->Remove(bookmarkNode_->GetChild(position));
+  model->Remove(bookmarkNode_->children()[position].get());
 }
 
 - (NSArray*)bookmarkItems {
@@ -130,12 +130,12 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)insertInBookmarkItems:(BookmarkItemAppleScript*)aBookmarkItem
-                      atIndex:(int)index {
+                      atIndex:(size_t)index {
   // This method gets called when a new bookmark item is created so
   // the container and property are set here.
   [aBookmarkItem setContainer:self
                      property:AppleScript::kBookmarkItemsProperty];
-  int position = [self calculatePositionOfBookmarkItemAt:index];
+  size_t position = [self calculatePositionOfBookmarkItemAt:index];
 
   BookmarkModel* model = [self bookmarkModel];
   if (!model)
@@ -159,40 +159,40 @@ using bookmarks::BookmarkNode;
   [aBookmarkItem setBookmarkNode:node];
 }
 
-- (void)removeFromBookmarkItemsAtIndex:(int)index {
-  int position = [self calculatePositionOfBookmarkItemAt:index];
+- (void)removeFromBookmarkItemsAtIndex:(size_t)index {
+  size_t position = [self calculatePositionOfBookmarkItemAt:index];
 
   BookmarkModel* model = [self bookmarkModel];
   if (!model)
     return;
 
-  model->Remove(bookmarkNode_->GetChild(position));
+  model->Remove(bookmarkNode_->children()[position].get());
 }
 
-- (int)calculatePositionOfBookmarkFolderAt:(int)index {
+- (size_t)calculatePositionOfBookmarkFolderAt:(size_t)index {
   // Traverse through all the child nodes till the required node is found and
   // return its position.
   // AppleScript is 1-based therefore index is incremented by 1.
   ++index;
-  int count = -1;
+  size_t count = 0;
   while (index) {
-    if (bookmarkNode_->GetChild(++count)->is_folder())
+    if (bookmarkNode_->children()[count++]->is_folder())
       --index;
   }
-  return count;
+  return count - 1;
 }
 
-- (int)calculatePositionOfBookmarkItemAt:(int)index {
+- (size_t)calculatePositionOfBookmarkItemAt:(size_t)index {
   // Traverse through all the child nodes till the required node is found and
   // return its position.
   // AppleScript is 1-based therefore index is incremented by 1.
   ++index;
-  int count = -1;
+  size_t count = 0;
   while (index) {
-    if (bookmarkNode_->GetChild(++count)->is_url())
+    if (bookmarkNode_->children()[count++]->is_url())
       --index;
   }
-  return count;
+  return count - 1;
 }
 
 @end

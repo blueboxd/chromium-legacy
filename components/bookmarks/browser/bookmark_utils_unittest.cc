@@ -288,7 +288,8 @@ TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
   ASSERT_EQ(1u, new_folder->children().size());
 
   // Url for added node should be same as url_text.
-  EXPECT_EQ(url_text, ASCIIToUTF16(new_folder->GetChild(0)->url().spec()));
+  EXPECT_EQ(url_text,
+            ASCIIToUTF16(new_folder->children().front()->url().spec()));
 }
 
 TEST_F(BookmarkUtilsTest, CopyPaste) {
@@ -328,8 +329,8 @@ TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
       model->AddURL(bookmark_bar_node, 0, title_text, GURL(url_text));
 
   EXPECT_EQ(url_text,
-            ASCIIToUTF16(bookmark_bar_node->GetChild(0)->url().spec()));
-  EXPECT_EQ(title_text, bookmark_bar_node->GetChild(0)->GetTitle());
+            ASCIIToUTF16(bookmark_bar_node->children()[0]->url().spec()));
+  EXPECT_EQ(title_text, bookmark_bar_node->children()[0]->GetTitle());
 
   // Copy a node to the clipboard.
   std::vector<const BookmarkNode*> nodes;
@@ -344,11 +345,11 @@ TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
 
   // Url for added node should be same as url_text.
   EXPECT_EQ(url_text,
-            ASCIIToUTF16(bookmark_bar_node->GetChild(1)->url().spec()));
+            ASCIIToUTF16(bookmark_bar_node->children()[1]->url().spec()));
   // Title for added node should be numeric subscript suffix with copied node
   // title.
   EXPECT_EQ(ASCIIToUTF16("foobar (1)"),
-            bookmark_bar_node->GetChild(1)->GetTitle());
+            bookmark_bar_node->children()[1]->GetTitle());
 }
 
 TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
@@ -377,7 +378,7 @@ TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
   ASSERT_EQ(1u, folder->children().size());
 
   // Verify that the pasted node contains the same meta info.
-  const BookmarkNode* pasted = folder->GetChild(0);
+  const BookmarkNode* pasted = folder->children().front().get();
   ASSERT_TRUE(pasted->GetMetaInfoMap());
   EXPECT_EQ(2u, pasted->GetMetaInfoMap()->size());
   std::string value;
@@ -510,7 +511,7 @@ TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
   ASSERT_EQ(1u, folder->children().size());
 
   // Verify that the cloned node contains the same meta info.
-  const BookmarkNode* clone = folder->GetChild(0);
+  const BookmarkNode* clone = folder->children().front().get();
   ASSERT_TRUE(clone->GetMetaInfoMap());
   EXPECT_EQ(2u, clone->GetMetaInfoMap()->size());
   std::string value;
@@ -538,10 +539,10 @@ TEST_F(BookmarkUtilsTest, CloneBookmarkResetsNonClonedKey) {
   CloneBookmarkNode(model.get(), elements, parent, 0, true);
   ASSERT_EQ(2u, parent->children().size());
   std::string value;
-  EXPECT_FALSE(parent->GetChild(0)->GetMetaInfo("foo", &value));
+  EXPECT_FALSE(parent->children().front()->GetMetaInfo("foo", &value));
 
   // Other keys should still be cloned.
-  EXPECT_TRUE(parent->GetChild(0)->GetMetaInfo("bar", &value));
+  EXPECT_TRUE(parent->children().front()->GetMetaInfo("bar", &value));
   EXPECT_EQ("kept value", value);
 }
 
@@ -562,10 +563,10 @@ TEST_F(BookmarkUtilsTest, CloneFolderResetsNonClonedKey) {
   CloneBookmarkNode(model.get(), elements, parent, 0, true);
   ASSERT_EQ(2u, parent->children().size());
   std::string value;
-  EXPECT_FALSE(parent->GetChild(0)->GetMetaInfo("foo", &value));
+  EXPECT_FALSE(parent->children().front()->GetMetaInfo("foo", &value));
 
   // Other keys should still be cloned.
-  EXPECT_TRUE(parent->GetChild(0)->GetMetaInfo("bar", &value));
+  EXPECT_TRUE(parent->children().front()->GetMetaInfo("bar", &value));
   EXPECT_EQ("kept value", value);
 }
 

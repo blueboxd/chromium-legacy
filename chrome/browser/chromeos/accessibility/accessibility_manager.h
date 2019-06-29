@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
@@ -38,6 +37,7 @@ class SwitchAccessEventHandlerDelegate;
 
 namespace ash {
 struct AccessibilityFocusRingInfo;
+enum class SelectToSpeakState;
 }  // namespace ash
 
 namespace gfx {
@@ -203,7 +203,7 @@ class AccessibilityManager
   void RequestSelectToSpeakStateChange();
 
   // Called when the Select-to-Speak extension state has changed.
-  void OnSelectToSpeakStateChanged(ash::mojom::SelectToSpeakState state);
+  void OnSelectToSpeakStateChanged(ash::SelectToSpeakState state);
 
   // Invoked to enable or disable switch access.
   void SetSwitchAccessEnabled(bool enabled);
@@ -341,7 +341,6 @@ class AccessibilityManager
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(
       extensions::api::braille_display_private::BrailleController* controller);
-  void FlushForTesting();
   void SetFocusRingObserverForTest(base::RepeatingCallback<void()> observer);
   void SetSelectToSpeakStateObserverForTest(
       base::RepeatingCallback<void()> observer);
@@ -472,9 +471,6 @@ class AccessibilityManager
 
   std::unique_ptr<SwitchAccessEventHandlerDelegate>
       switch_access_event_handler_delegate_;
-
-  // Ash's mojom::AccessibilityController used to request Ash's a11y feature.
-  ash::mojom::AccessibilityControllerPtr accessibility_controller_;
 
   std::map<std::string, std::set<std::string>>
       focus_ring_names_for_extension_id_;

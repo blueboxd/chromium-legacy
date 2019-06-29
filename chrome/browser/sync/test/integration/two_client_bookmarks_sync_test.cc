@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests, Sanity) {
 
   const BookmarkNode* new_folder = AddFolder(0, 2, "New Folder");
   Move(0, GetUniqueNodeByURL(0, google_url), new_folder, 0);
-  SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), "Yahoo!!");
+  SetTitle(0, GetBookmarkBarNode(0)->children().front().get(), "Yahoo!!");
   ASSERT_NE(nullptr, AddURL(0, GetBookmarkBarNode(0), 1, "CNN",
                             GURL("http://www.cnn.com")));
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_NE(nullptr, SetURL(1, GetUniqueNodeByURL(1, initial_url), third_url));
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
-  SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), "Google1");
+  SetTitle(0, GetBookmarkBarNode(0)->children().front().get(), "Google1");
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
@@ -919,7 +919,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
   size_t num_bookmarks_to_move = GetBookmarkBarNode(0)->children().size() - 2;
   for (size_t i = 0; i < num_bookmarks_to_move; ++i) {
-    Move(0, GetBookmarkBarNode(0)->GetChild(2), folder, i);
+    Move(0, GetBookmarkBarNode(0)->children()[2].get(), folder, i);
     ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
     ASSERT_TRUE(AllModelsMatchVerifier());
   }
@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
   size_t num_bookmarks_to_move = folder->children().size() - 2;
   for (size_t i = 0; i < num_bookmarks_to_move; ++i) {
-    Move(0, folder->GetChild(0), GetBookmarkBarNode(0), i);
+    Move(0, folder->children().front().get(), GetBookmarkBarNode(0), i);
     ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
     ASSERT_TRUE(AllModelsMatchVerifier());
   }
@@ -2149,7 +2149,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   // Profile, and has a child node.
   ASSERT_EQ(1u, managed_node0->children().size());
   ASSERT_TRUE(managed_node0->IsVisible());
-  EXPECT_EQ(GURL("http://youtube.com/"), managed_node0->GetChild(0)->url());
+  EXPECT_EQ(GURL("http://youtube.com/"),
+            managed_node0->children().front()->url());
 
   // Verify that the second Profile didn't get this node.
   ASSERT_EQ(0u, managed_node1->children().size());

@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_VIEW_H_
 #define ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_VIEW_H_
 
-#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ui/views/controls/button/button.h"
 
@@ -45,12 +45,11 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
     kPause = 7,
   };
 
-  AutoclickMenuView(mojom::AutoclickEventType type,
-                    mojom::AutoclickMenuPosition position);
+  AutoclickMenuView(AutoclickEventType type, AutoclickMenuPosition position);
   ~AutoclickMenuView() override = default;
 
-  void UpdateEventType(mojom::AutoclickEventType type);
-  void UpdatePosition(mojom::AutoclickMenuPosition position);
+  void UpdateEventType(AutoclickEventType type);
+  void UpdatePosition(AutoclickMenuPosition position);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -71,7 +70,7 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
   // The most recently selected event_type_ excluding kNoAction. This is used
   // when the pause button is selected in order to unpause and reset to the
   // previous state.
-  mojom::AutoclickEventType event_type_ = mojom::AutoclickEventType::kLeftClick;
+  AutoclickEventType event_type_ = AutoclickEventType::kLeftClick;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickMenuView);
 };

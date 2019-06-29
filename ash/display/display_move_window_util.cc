@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <array>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
@@ -78,7 +78,7 @@ void HandleMoveActiveWindowBetweenDisplays() {
       itr == display_id_list.end() ? display_id_list[0] : *itr;
   wm::MoveWindowToDisplay(window, target_display_id);
   Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-      mojom::AccessibilityAlert::WINDOW_MOVED_TO_ANOTHER_DISPLAY);
+      AccessibilityAlert::WINDOW_MOVED_TO_ANOTHER_DISPLAY);
   base::RecordAction(
       base::UserMetricsAction("Accel_Move_Active_Window_Between_Displays"));
 }

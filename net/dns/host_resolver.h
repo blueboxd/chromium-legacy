@@ -120,7 +120,7 @@ class NET_EXPORT HostResolver {
     static const size_t kDefaultParallelism = 0;
 
     // Set |max_system_retry_attempts| to this to select a default retry value.
-    static const size_t kDefaultRetryAttempts = static_cast<size_t>(-1);
+    static const size_t kDefaultRetryAttempts;
 
     // How many resolve requests will be allowed to run in parallel.
     // |kDefaultParallelism| for the resolver to choose a default value.

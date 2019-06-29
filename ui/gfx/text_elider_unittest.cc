@@ -450,13 +450,13 @@ TEST(TextEliderTest, StringSlicerBasicTest) {
             slicer_mid.CutString(5, true));
 }
 
-TEST(TextEliderTest, StringSlicerWhitespace) {
+TEST(TextEliderTest, StringSlicerWhitespace_UseDefault) {
   // Must store strings in variables (StringSlicer retains a reference to them).
   base::string16 text(UTF8ToUTF16("Hello, world!"));
   base::string16 ellipsis(kEllipsisUTF16);
 
   // Eliding the end of a string should result in whitespace being removed
-  // before the ellipsis.
+  // before the ellipsis by default.
   StringSlicer slicer_end(text, ellipsis, false, false);
   EXPECT_EQ(UTF8ToUTF16("Hello,") + kEllipsisUTF16,
             slicer_end.CutString(6, true));
@@ -466,7 +466,7 @@ TEST(TextEliderTest, StringSlicerWhitespace) {
             slicer_end.CutString(8, true));
 
   // Eliding the start of a string should result in whitespace being removed
-  // after the ellipsis.
+  // after the ellipsis by default.
   StringSlicer slicer_begin(text, ellipsis, false, true);
   EXPECT_EQ(kEllipsisUTF16 + UTF8ToUTF16("world!"),
             slicer_begin.CutString(6, true));
@@ -476,7 +476,7 @@ TEST(TextEliderTest, StringSlicerWhitespace) {
             slicer_begin.CutString(8, true));
 
   // Eliding the middle of a string should *NOT* result in whitespace being
-  // removed around the ellipsis.
+  // removed around the ellipsis by default.
   StringSlicer slicer_mid(text, ellipsis, true, false);
   text = UTF8ToUTF16("Hey world!");
   EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("ld!"),
@@ -485,6 +485,131 @@ TEST(TextEliderTest, StringSlicerWhitespace) {
             slicer_mid.CutString(7, true));
   EXPECT_EQ(UTF8ToUTF16("Hey ") + kEllipsisUTF16 + UTF8ToUTF16("rld!"),
             slicer_mid.CutString(8, true));
+}
+
+TEST(TextEliderTest, StringSlicerWhitespace_NoTrim) {
+  // Must store strings in variables (StringSlicer retains a reference to them).
+  base::string16 text(UTF8ToUTF16("Hello, world!"));
+  base::string16 ellipsis(kEllipsisUTF16);
+
+  // Eliding the end of a string should not result in whitespace being removed
+  // before the ellipsis in no-trim mode.
+  StringSlicer slicer_end(text, ellipsis, false, false, false);
+  EXPECT_EQ(UTF8ToUTF16("Hello,") + kEllipsisUTF16,
+            slicer_end.CutString(6, true));
+  EXPECT_EQ(UTF8ToUTF16("Hello, ") + kEllipsisUTF16,
+            slicer_end.CutString(7, true));
+  EXPECT_EQ(UTF8ToUTF16("Hello, w") + kEllipsisUTF16,
+            slicer_end.CutString(8, true));
+
+  // Eliding the start of a string should not result in whitespace being removed
+  // after the ellipsis in no-trim mode.
+  StringSlicer slicer_begin(text, ellipsis, false, true, false);
+  EXPECT_EQ(kEllipsisUTF16 + UTF8ToUTF16("world!"),
+            slicer_begin.CutString(6, true));
+  EXPECT_EQ(kEllipsisUTF16 + UTF8ToUTF16(" world!"),
+            slicer_begin.CutString(7, true));
+  EXPECT_EQ(kEllipsisUTF16 + UTF8ToUTF16(", world!"),
+            slicer_begin.CutString(8, true));
+
+  // Eliding the middle of a string should *NOT* result in whitespace being
+  // removed around the ellipsis in no-trim mode.
+  StringSlicer slicer_mid(text, ellipsis, true, false, false);
+  text = UTF8ToUTF16("Hey world!");
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("ld!"),
+            slicer_mid.CutString(6, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey ") + kEllipsisUTF16 + UTF8ToUTF16("ld!"),
+            slicer_mid.CutString(7, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey ") + kEllipsisUTF16 + UTF8ToUTF16("rld!"),
+            slicer_mid.CutString(8, true));
+}
+
+TEST(TextEliderTest, StringSlicerWhitespace_Trim) {
+  // Must store strings in variables (StringSlicer retains a reference to them).
+  base::string16 text(UTF8ToUTF16("Hello, world!"));
+  base::string16 ellipsis(kEllipsisUTF16);
+
+  // Eliding the end of a string should result in whitespace being removed
+  // before the ellipsis in trim mode.
+  StringSlicer slicer_end(text, ellipsis, false, false, true);
+  EXPECT_EQ(UTF8ToUTF16("Hello,") + kEllipsisUTF16,
+            slicer_end.CutString(6, true));
+  EXPECT_EQ(UTF8ToUTF16("Hello,") + kEllipsisUTF16,
+            slicer_end.CutString(7, true));
+  EXPECT_EQ(UTF8ToUTF16("Hello, w") + kEllipsisUTF16,
+            slicer_end.CutString(8, true));
+
+  // Eliding the start of a string should result in whitespace being removed
+  // after the ellipsis in trim mode.
+  StringSlicer slicer_begin(text, ellipsis, false, true, true);
+  EXPECT_EQ(kEllipsisUTF16 + UTF8ToUTF16("world!"),
+            slicer_begin.CutString(6, true));
+  EXPECT_EQ(kEllipsisUTF16 + UTF8ToUTF16("world!"),
+            slicer_begin.CutString(7, true));
+  EXPECT_EQ(kEllipsisUTF16 + UTF8ToUTF16(", world!"),
+            slicer_begin.CutString(8, true));
+
+  // Eliding the middle of a string *should* result in whitespace being removed
+  // around the ellipsis in trim mode.
+  StringSlicer slicer_mid(text, ellipsis, true, false, true);
+  text = UTF8ToUTF16("Hey world!");
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("ld!"),
+            slicer_mid.CutString(6, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("ld!"),
+            slicer_mid.CutString(7, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("rld!"),
+            slicer_mid.CutString(8, true));
+}
+
+TEST(TextEliderTest, StringSlicer_ElideMiddle_MultipleWhitespace) {
+  // Must store strings in variables (StringSlicer retains a reference to them).
+  base::string16 text(UTF8ToUTF16("Hello  world!"));
+  base::string16 ellipsis(kEllipsisUTF16);
+
+  // Eliding the middle of a string should not result in whitespace being
+  // removed around the ellipsis in default whitespace mode.
+  StringSlicer slicer_default(text, ellipsis, true, false);
+  text = UTF8ToUTF16("Hey  U  man");
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_default.CutString(6, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey ") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_default.CutString(7, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey ") + kEllipsisUTF16 + UTF8ToUTF16(" man"),
+            slicer_default.CutString(8, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey  ") + kEllipsisUTF16 + UTF8ToUTF16(" man"),
+            slicer_default.CutString(9, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey  ") + kEllipsisUTF16 + UTF8ToUTF16("  man"),
+            slicer_default.CutString(10, true));
+
+  // Eliding the middle of a string should not result in whitespace being
+  // removed around the ellipsis in no-trim mode.
+  StringSlicer slicer_notrim(text, ellipsis, true, false, false);
+  text = UTF8ToUTF16("Hey  U  man");
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_notrim.CutString(6, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey ") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_notrim.CutString(7, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey ") + kEllipsisUTF16 + UTF8ToUTF16(" man"),
+            slicer_notrim.CutString(8, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey  ") + kEllipsisUTF16 + UTF8ToUTF16(" man"),
+            slicer_notrim.CutString(9, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey  ") + kEllipsisUTF16 + UTF8ToUTF16("  man"),
+            slicer_notrim.CutString(10, true));
+
+  // Eliding the middle of a string *should* result in whitespace being removed
+  // around the ellipsis in trim mode.
+  StringSlicer slicer_trim(text, ellipsis, true, false, true);
+  text = UTF8ToUTF16("Hey  U  man");
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_trim.CutString(6, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_trim.CutString(7, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_trim.CutString(8, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_trim.CutString(9, true));
+  EXPECT_EQ(UTF8ToUTF16("Hey") + kEllipsisUTF16 + UTF8ToUTF16("man"),
+            slicer_trim.CutString(10, true));
 }
 
 TEST(TextEliderTest, StringSlicerSurrogate) {

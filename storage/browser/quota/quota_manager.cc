@@ -473,9 +473,6 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
 
  protected:
   void Run() override {
-    // crbug.com/349708
-    TRACE_EVENT0("io", "QuotaManager::GetUsageInfoTask::Run");
-
     remaining_trackers_ = 3;
     // This will populate cached hosts and usage info.
     manager()
@@ -496,9 +493,6 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
   }
 
   void Completed() override {
-    // crbug.com/349708
-    TRACE_EVENT0("io", "QuotaManager::GetUsageInfoTask::Completed");
-
     std::move(callback_).Run(std::move(entries_));
     DeleteSoon();
   }
@@ -580,17 +574,11 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
 
   void Completed() override {
     if (error_count_ == 0) {
-      // crbug.com/349708
-      TRACE_EVENT0("io", "QuotaManager::OriginDataDeleter::Completed Ok");
-
       // Only remove the entire origin if we didn't skip any client types.
       if (skipped_clients_ == 0)
         manager()->DeleteOriginFromDatabase(origin_, type_, is_eviction_);
       std::move(callback_).Run(blink::mojom::QuotaStatusCode::kOk);
     } else {
-      // crbug.com/349708
-      TRACE_EVENT0("io", "QuotaManager::OriginDataDeleter::Completed Error");
-
       std::move(callback_).Run(
           blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     }
@@ -664,14 +652,8 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
 
   void Completed() override {
     if (error_count_ == 0) {
-      // crbug.com/349708
-      TRACE_EVENT0("io", "QuotaManager::HostDataDeleter::Completed Ok");
-
       std::move(callback_).Run(blink::mojom::QuotaStatusCode::kOk);
     } else {
-      // crbug.com/349708
-      TRACE_EVENT0("io", "QuotaManager::HostDataDeleter::Completed Error");
-
       std::move(callback_).Run(
           blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     }
@@ -1791,8 +1773,6 @@ void QuotaManager::PostTaskAndReplyWithResultForDBThread(
 std::tuple<int64_t, int64_t> QuotaManager::CallGetVolumeInfo(
     GetVolumeInfoFn get_volume_info_fn,
     const base::FilePath& path) {
-  // crbug.com/349708
-  TRACE_EVENT0("io", "CallGetVolumeInfo");
   if (!base::CreateDirectory(path)) {
     LOG(WARNING) << "Create directory failed for path" << path.value();
     return std::make_tuple<int64_t, int64_t>(0, 0);

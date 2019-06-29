@@ -179,8 +179,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         mPackageManagerDelegate = packageManagerDelegate;
         mCallback = callback;
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel() != null
-                && activity.getCurrentTabModel().isIncognito();
+        mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
     }
 
     /**

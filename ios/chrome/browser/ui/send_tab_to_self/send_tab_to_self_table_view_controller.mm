@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/target_device_info.h"
+#import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
@@ -76,6 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.view.backgroundColor = [UIColor whiteColor];
   self.styler.cellBackgroundColor = [UIColor whiteColor];
   self.tableView.sectionHeaderHeight = 0;
+  self.tableView.sectionFooterHeight = 0;
   [self.tableView
       setSeparatorInset:UIEdgeInsetsMake(0, kTableViewHorizontalSpacing, 0, 0)];
 
@@ -102,16 +104,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierDevicesToSend];
 
-  for (auto const& iter : _target_device_map) {
+  for (auto iter = _target_device_map.begin(); iter != _target_device_map.end();
+       ++iter) {
     int daysSinceLastUpdate =
-        (base::Time::Now() - iter.second.last_updated_timestamp).InDays();
+        (base::Time::Now() - iter->second.last_updated_timestamp).InDays();
 
-    TableViewDetailIconItem* deviceItem =
-        [[TableViewDetailIconItem alloc] initWithType:ItemTypeDevice];
-    deviceItem.text = base::SysUTF8ToNSString(iter.first);
+    SendTabToSelfImageDetailTextItem* deviceItem =
+        [[SendTabToSelfImageDetailTextItem alloc] initWithType:ItemTypeDevice];
+    deviceItem.text = base::SysUTF8ToNSString(iter->first);
     deviceItem.detailText =
         [self sendTabToSelfdaysSinceLastUpdate:daysSinceLastUpdate];
-    switch (iter.second.device_type) {
+    switch (iter->second.device_type) {
       case sync_pb::SyncEnums::TYPE_TABLET:
         deviceItem.iconImageName = @"send_tab_to_self_tablet";
         break;
@@ -126,6 +129,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
         break;
       default:
         deviceItem.iconImageName = @"send_tab_to_self_devices";
+    }
+
+    if (iter == _target_device_map.begin()) {
+      deviceItem.selected = YES;
     }
 
     [model addItem:deviceItem

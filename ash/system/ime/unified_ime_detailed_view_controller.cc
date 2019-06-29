@@ -4,7 +4,7 @@
 
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/shell.h"
 #include "ash/system/ime/tray_ime_chromeos.h"

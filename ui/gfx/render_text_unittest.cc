@@ -987,6 +987,39 @@ TEST_F(RenderTextTest, ElidedText) {
   }
 }
 
+TEST_F(RenderTextTest, ElidedText_NoTrimWhitespace) {
+  const int kGlyphWidth = 10;
+  RenderText* render_text = GetRenderText();
+  gfx::test::RenderTextTestApi render_text_test_api(render_text);
+  render_text_test_api.SetGlyphWidth(kGlyphWidth);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetWhitespaceElision(false);
+
+  // Pick a sufficiently long string that's mostly whitespace.
+  // Tail-eliding this with whitespace elision turned off should look like:
+  // [       ...]
+  // and not like:
+  // [...       ]
+  constexpr wchar_t kInputString[] = L"                     foo";
+  const base::string16 input = WideToUTF16(kInputString);
+  render_text->SetText(input);
+
+  // Choose a width based on being able to display 12 characters (one of which
+  // will be the trailing ellipsis).
+  constexpr int kDesiredChars = 12;
+  constexpr int kRequiredWidth = (kDesiredChars + 0.5f) * kGlyphWidth;
+  render_text->SetDisplayRect(Rect(0, 0, kRequiredWidth, 100));
+
+  // Verify this doesn't change the full text.
+  EXPECT_EQ(input, render_text->text());
+
+  // Verify that the string is truncated to |kDesiredChars| with the ellipsis.
+  const base::string16 result = render_text->GetDisplayText();
+  const base::string16 expected =
+      input.substr(0, kDesiredChars - 1) + kEllipsisUTF16[0];
+  EXPECT_EQ(expected, result);
+}
+
 TEST_F(RenderTextTest, ElidedObscuredText) {
   auto expected_render_text = std::make_unique<RenderTextHarfBuzz>();
   expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));

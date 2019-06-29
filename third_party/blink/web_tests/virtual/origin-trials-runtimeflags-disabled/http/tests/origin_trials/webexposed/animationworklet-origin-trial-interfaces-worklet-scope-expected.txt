@@ -26,9 +26,6 @@ CONSOLE MESSAGE: line 153:     method getTiming
 CONSOLE MESSAGE: line 153:     setter localTime
 CONSOLE MESSAGE: line 153: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153: interface WorkletGroupEffect
-CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method getChildren
 CONSOLE MESSAGE: line 153: interface WritableStream
 CONSOLE MESSAGE: line 153:     getter locked
 CONSOLE MESSAGE: line 153:     method abort
@@ -66,9 +63,6 @@ CONSOLE MESSAGE: line 153:     method getTiming
 CONSOLE MESSAGE: line 153:     setter localTime
 CONSOLE MESSAGE: line 153: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153: interface WorkletGroupEffect
-CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method getChildren
 CONSOLE MESSAGE: line 153: interface WritableStream
 CONSOLE MESSAGE: line 153:     getter locked
 CONSOLE MESSAGE: line 153:     method abort

@@ -376,11 +376,6 @@ void ShelfView::Init() {
 }
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
-  if (id == ShelfID(kAppListId))
-    return GetMirroredRect(GetHomeButton()->ideal_bounds());
-  if (id == ShelfID(kBackButtonId))
-    return GetMirroredRect(GetBackButton()->ideal_bounds());
-
   int index = model_->ItemIndexByID(id);
   if (index < 0 || last_visible_index_ < 0 || index >= view_model_->view_size())
     return gfx::Rect();

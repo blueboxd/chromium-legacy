@@ -87,11 +87,13 @@ CSSMathOperator CanonicalOperator(CSSMathOperator op) {
 
 bool CanCombineNodes(const CSSCalcExpressionNode& root,
                      const CSSCalcExpressionNode& node) {
-  DCHECK_EQ(root.GetType(), CSSCalcExpressionNode::kCssCalcBinaryOperation);
-  if (node.GetType() == CSSCalcExpressionNode::kCssCalcPrimitiveValue)
+  DCHECK(root.IsBinaryOperation());
+  if (!node.IsBinaryOperation())
     return false;
-  return !node.IsNestedCalc() && CanonicalOperator(root.OperatorType()) ==
-                                     CanonicalOperator(node.OperatorType());
+  if (node.IsNestedCalc())
+    return false;
+  return CanonicalOperator(To<CSSCalcBinaryOperation>(root).OperatorType()) ==
+         CanonicalOperator(To<CSSCalcBinaryOperation>(node).OperatorType());
 }
 
 CSSNumericValue* NegateOrInvertIfRequired(CSSMathOperator parent_op,
@@ -105,7 +107,7 @@ CSSNumericValue* NegateOrInvertIfRequired(CSSMathOperator parent_op,
 }
 
 CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
-  if (root.GetType() == CSSCalcExpressionNode::kCssCalcPrimitiveValue) {
+  if (root.IsPrimitiveValue()) {
     const CSSPrimitiveValue::UnitType unit = root.TypeWithCalcResolved();
     auto* value = CSSUnitValue::Create(
         root.DoubleValue(), unit == CSSPrimitiveValue::UnitType::kInteger
@@ -124,7 +126,7 @@ CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
 
   // When the node is a binary operator, we return either a CSSMathSum or a
   // CSSMathProduct.
-  DCHECK_EQ(root.GetType(), CSSCalcExpressionNode::kCssCalcBinaryOperation);
+  DCHECK(root.IsBinaryOperation());
   CSSNumericValueVector values;
 
   // For cases like calc(1 + 2 + 3), the calc expression tree looks like:
@@ -145,15 +147,19 @@ CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
   // the nodes that we encounter.
   const CSSCalcExpressionNode* cur_node = &root;
   do {
-    DCHECK(cur_node->LeftExpressionNode());
-    DCHECK(cur_node->RightExpressionNode());
+    DCHECK(cur_node->IsBinaryOperation());
+    const CSSCalcBinaryOperation* binary_op =
+        To<CSSCalcBinaryOperation>(cur_node);
+    DCHECK(binary_op->LeftExpressionNode());
+    DCHECK(binary_op->RightExpressionNode());
 
-    auto* const value = CalcToNumericValue(*cur_node->RightExpressionNode());
+    auto* const value = CalcToNumericValue(*binary_op->RightExpressionNode());
 
     // If the current node is a '-' or '/', it's really just a '+' or '*' with
     // the right child negated or inverted, respectively.
-    values.push_back(NegateOrInvertIfRequired(cur_node->OperatorType(), value));
-    cur_node = cur_node->LeftExpressionNode();
+    values.push_back(
+        NegateOrInvertIfRequired(binary_op->OperatorType(), value));
+    cur_node = binary_op->LeftExpressionNode();
   } while (CanCombineNodes(root, *cur_node));
 
   DCHECK(cur_node);
@@ -162,8 +168,10 @@ CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
   // Our algorithm collects the children in reverse order, so we have to reverse
   // the values.
   std::reverse(values.begin(), values.end());
-  if (root.OperatorType() == CSSMathOperator::kAdd ||
-      root.OperatorType() == CSSMathOperator::kSubtract)
+  CSSMathOperator operator_type =
+      To<CSSCalcBinaryOperation>(root).OperatorType();
+  if (operator_type == CSSMathOperator::kAdd ||
+      operator_type == CSSMathOperator::kSubtract)
     return CSSMathSum::Create(std::move(values));
   return CSSMathProduct::Create(std::move(values));
 }

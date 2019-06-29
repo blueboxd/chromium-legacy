@@ -587,12 +587,12 @@
                  file="prefs/prefs_types.js"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PRINTING_PAGE_HTML"
-                 file="printing_page/printing_page.html"
+                 file="chromeos/os_printing_page/os_printing_page.html"
                  preprocess="true"
                  allowexternalscript="true"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PRINTING_PAGE_JS"
-                 file="printing_page/printing_page.js"
+                 file="chromeos/os_printing_page/os_printing_page.js"
                  preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CUPS_PRINTER_SHARED_CSS_HTML"

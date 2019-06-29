@@ -89,6 +89,20 @@ class TestEffectiveConnectionTypeObserver
   std::vector<EffectiveConnectionType> effective_connection_types_;
 };
 
+class TestPeerToPeerConnectionsCountObserver
+    : public PeerToPeerConnectionsCountObserver {
+ public:
+  uint32_t count() { return count_; }
+
+ private:
+  // PeerToPeerConnectionsCountObserver:
+  void OnPeerToPeerConnectionsCountChange(uint32_t count) override {
+    count_ = count;
+  }
+
+  uint32_t count_ = 0u;
+};
+
 class TestRTTAndThroughputEstimatesObserver
     : public RTTAndThroughputEstimatesObserver {
  public:
@@ -2962,6 +2976,26 @@ TEST_F(NetworkQualityEstimatorTest, PeerToPeerConnectionCounts) {
   histogram_tester.ExpectUniqueSample("NQE.PeerToPeerConnectionsDuration",
                                       (advance_1 + advance_2).InMilliseconds(),
                                       1);
+}
+
+TEST_F(NetworkQualityEstimatorTest, TestPeerToPeerConnectionsCountObserver) {
+  TestPeerToPeerConnectionsCountObserver observer;
+  TestNetworkQualityEstimator estimator;
+
+  EXPECT_EQ(0u, observer.count());
+  estimator.OnPeerToPeerConnectionsCountChange(5u);
+  base::RunLoop().RunUntilIdle();
+  // |observer| has not yet registered with |estimator|.
+  EXPECT_EQ(0u, observer.count());
+
+  // |observer| should be notified of the current count on registration.
+  estimator.AddPeerToPeerConnectionsCountObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(5u, observer.count());
+
+  estimator.OnPeerToPeerConnectionsCountChange(3u);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3u, observer.count());
 }
 
 }  // namespace net

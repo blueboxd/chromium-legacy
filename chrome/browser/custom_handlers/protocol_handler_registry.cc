@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
@@ -623,6 +622,14 @@ ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
+void ProtocolHandlerRegistry::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ProtocolHandlerRegistry::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void ProtocolHandlerRegistry::PromoteHandler(const ProtocolHandler& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsRegistered(handler));
@@ -718,11 +725,8 @@ base::Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
 }
 
 void ProtocolHandlerRegistry::NotifyChanged() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      content::Source<content::BrowserContext>(context_),
-      content::NotificationService::NoDetails());
+  for (auto& observer : observers_)
+    observer.OnProtocolHandlerRegistryChanged();
 }
 
 void ProtocolHandlerRegistry::RegisterProtocolHandler(

@@ -378,8 +378,12 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   if (found == pending_swap_callbacks_.end())
     return;
 
-  std::move(found->second).Run(params);
+  // Erase the entry before running the callback to guard against the callback
+  // mutating the |pending_swap_callbacks_|.
+  auto callback = std::move(found->second);
   pending_swap_callbacks_.erase(found);
+
+  std::move(callback).Run(params);
 }
 
 void GLES2Implementation::SendErrorMessage(std::string message, int32_t id) {
@@ -417,8 +421,13 @@ void GLES2Implementation::OnSwapBufferPresented(
   auto found = pending_presentation_callbacks_.find(swap_id);
   if (found == pending_presentation_callbacks_.end())
     return;
-  std::move(found->second).Run(feedback);
+
+  // Erase the entry before running the callback to guard against the callback
+  // mutating the |pending_presentation_callbacks_|.
+  auto callback = std::move(found->second);
   pending_presentation_callbacks_.erase(found);
+
+  std::move(callback).Run(feedback);
 }
 
 void GLES2Implementation::OnGpuControlReturnData(

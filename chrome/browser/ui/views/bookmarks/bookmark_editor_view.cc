@@ -480,7 +480,7 @@ void BookmarkEditorView::ExpandAndSelect() {
   EditorNode* b_node =
       FindNodeWithID(tree_model_->GetRoot(), folder_id_to_select);
   if (!b_node)
-    b_node = tree_model_->GetRoot()->GetChild(0);  // Bookmark bar node.
+    b_node = tree_model_->GetRoot()->children().front().get();  // Bookmark bar.
 
   tree_view_->SetSelectedNode(b_node);
 }
@@ -493,10 +493,10 @@ BookmarkEditorView::CreateRootNode() {
   CreateNodes(bb_root_node, root_node.get());
   DCHECK_GE(root_node->children().size(), 2u);
   DCHECK_LE(root_node->children().size(), 4u);
-  DCHECK_EQ(BookmarkNode::BOOKMARK_BAR, bb_root_node->GetChild(0)->type());
-  DCHECK_EQ(BookmarkNode::OTHER_NODE, bb_root_node->GetChild(1)->type());
+  DCHECK_EQ(BookmarkNode::BOOKMARK_BAR, bb_root_node->children()[0]->type());
+  DCHECK_EQ(BookmarkNode::OTHER_NODE, bb_root_node->children()[1]->type());
   if (root_node->children().size() >= 3)
-    DCHECK_EQ(BookmarkNode::MOBILE, bb_root_node->GetChild(2)->type());
+    DCHECK_EQ(BookmarkNode::MOBILE, bb_root_node->children()[2]->type());
   return root_node;
 }
 

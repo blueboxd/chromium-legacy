@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_STATUS_AREA_WIDGET_H_
 
 #include "ash/ash_export.h"
-#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
@@ -33,8 +32,7 @@ class VirtualKeyboardTray;
 // the bottom-right of the screen. Exists separately from ShelfView/ShelfWidget
 // so that it can be shown in cases where the rest of the shelf is hidden (e.g.
 // on secondary monitors at the login screen).
-class ASH_EXPORT StatusAreaWidget : public views::Widget,
-                                    public KioskNextShellObserver {
+class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
   StatusAreaWidget(aura::Window* status_container, Shelf* shelf);
   ~StatusAreaWidget() override;
@@ -98,9 +96,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // Overridden from views::Widget:
   const ui::NativeTheme* GetNativeTheme() const override;
   bool OnNativeWidgetActivationChanged(bool active) override;
-
-  // KioskNextShellObserver:
-  void OnKioskNextEnabled() override;
 
   // TODO(jamescook): Introduce a test API instead of these methods.
   LogoutButtonTray* logout_button_tray_for_testing() {

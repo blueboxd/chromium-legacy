@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
@@ -16,7 +16,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -30,7 +29,7 @@ namespace ash {
 
 namespace {
 
-AccessibilityController* GetA11yController() {
+AccessibilityControllerImpl* GetA11yController() {
   return Shell::Get()->accessibility_controller();
 }
 
@@ -133,20 +132,14 @@ void TouchExplorationManager::OnTwoFingerTouchStart() {
 
 void TouchExplorationManager::OnTwoFingerTouchStop() {
   // Can be null during shutdown.
-  AccessibilityController* controller = GetA11yController();
-  if (controller)
+  if (AccessibilityControllerImpl* controller = GetA11yController())
     controller->OnTwoFingerTouchStop();
 }
 
 void TouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
-  GetA11yController()->ShouldToggleSpokenFeedbackViaTouch(base::BindOnce(
-      [](int tick_count, bool should_toggle) {
-        if (!should_toggle)
-          return;
-        GetA11yController()->PlaySpokenFeedbackToggleCountdown(tick_count);
-      },
-      tick_count));
+  if (GetA11yController()->ShouldToggleSpokenFeedbackViaTouch())
+    GetA11yController()->PlaySpokenFeedbackToggleCountdown(tick_count);
 }
 
 void TouchExplorationManager::PlayTouchTypeEarcon() {
@@ -154,14 +147,11 @@ void TouchExplorationManager::PlayTouchTypeEarcon() {
 }
 
 void TouchExplorationManager::ToggleSpokenFeedback() {
-  GetA11yController()->ShouldToggleSpokenFeedbackViaTouch(
-      base::BindOnce([](bool should_toggle) {
-        if (!should_toggle)
-          return;
-        GetA11yController()->SetSpokenFeedbackEnabled(
-            !GetA11yController()->spoken_feedback_enabled(),
-            A11Y_NOTIFICATION_SHOW);
-      }));
+  if (GetA11yController()->ShouldToggleSpokenFeedbackViaTouch()) {
+    GetA11yController()->SetSpokenFeedbackEnabled(
+        !GetA11yController()->spoken_feedback_enabled(),
+        A11Y_NOTIFICATION_SHOW);
+  }
 }
 
 void TouchExplorationManager::OnWindowActivated(

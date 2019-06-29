@@ -16,8 +16,9 @@ class DisplayAgentAndroid : public notifications::DisplayAgent {
   ~DisplayAgentAndroid() override;
 
  private:
-  void ShowNotification(std::unique_ptr<notifications::NotificationData>
-                            notification_data) override;
+  void ShowNotification(
+      std::unique_ptr<notifications::NotificationData> notification_data,
+      std::unique_ptr<SystemData> system_data) override;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayAgentAndroid);
 };

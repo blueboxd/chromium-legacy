@@ -89,9 +89,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                  PaletteInvocationMethod method) override;
   void RecordPaletteModeCancellation(PaletteModeCancelType type) override;
 
-  // Sets the icon to visible if the palette can be used.
-  void UpdateIconVisibility();
-
  private:
   friend class PaletteTrayTestApi;
 
@@ -114,6 +111,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // Updates the tray icon from the palette tool manager.
   void UpdateTrayIcon();
+
+  // Sets the icon to visible if the palette can be used.
+  void UpdateIconVisibility();
 
   // Called when the palette enabled pref has changed.
   void OnPaletteEnabledPrefChanged();

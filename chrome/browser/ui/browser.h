@@ -449,9 +449,12 @@ class Browser : public TabStripModelObserver,
   // transition, and WindowFullscreenStateChanged is at the end.
   void WindowFullscreenStateWillChange();
   void WindowFullscreenStateChanged();
+
   // Only used on Mac. Called when the top ui style has been changed since this
   // may trigger bookmark bar state change.
   void FullscreenTopUIStateChanged();
+
+  void OnFindBarVisibilityChanged();
 
   // Assorted browser commands ////////////////////////////////////////////////
 

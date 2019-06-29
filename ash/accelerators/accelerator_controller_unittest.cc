@@ -9,7 +9,7 @@
 #include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -553,7 +553,7 @@ TEST_F(AcceleratorControllerTest, RotateScreen) {
   display::Display::Rotation initial_rotation =
       GetActiveDisplayRotation(display.id());
   ui::test::EventGenerator* generator = GetEventGenerator();
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
 
   EXPECT_FALSE(accessibility_controller
@@ -860,7 +860,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 }
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
 
   // The press event should not toggle the AppList, the release should instead.
@@ -1625,20 +1625,16 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 }
 
 TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
-  TestAccessibilityControllerClient client;
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
-  accessibility_controller->SetClient(client.CreateInterfacePtrAndBind());
+  TestAccessibilityControllerClient client;
 
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     accessibility_controller->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::NONE);
-    accessibility_controller->FlushMojoForTest();
+        AccessibilityAlert::NONE);
     EXPECT_TRUE(
         controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {}));
-    accessibility_controller->FlushMojoForTest();
-    EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_NEEDED,
-              client.last_a11y_alert());
+    EXPECT_EQ(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 
   // Make sure we don't alert if we do have a window.
@@ -1647,12 +1643,9 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     accessibility_controller->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::NONE);
-    accessibility_controller->FlushMojoForTest();
+        AccessibilityAlert::NONE);
     controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
-    accessibility_controller->FlushMojoForTest();
-    EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
-              client.last_a11y_alert());
+    EXPECT_NE(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 
   // Don't alert if we have a minimized window either.
@@ -1661,19 +1654,16 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
     wm::ActivateWindow(window.get());
     controller_->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
     accessibility_controller->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::NONE);
-    accessibility_controller->FlushMojoForTest();
+        AccessibilityAlert::NONE);
     controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
-    accessibility_controller->FlushMojoForTest();
-    EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
-              client.last_a11y_alert());
+    EXPECT_NE(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 }
 
 TEST_F(AcceleratorControllerTest, TestDialogCancel) {
   ui::Accelerator accelerator(ui::VKEY_H,
                               ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Pressing cancel on the dialog should have no effect.
   EXPECT_FALSE(
@@ -1693,7 +1683,7 @@ TEST_F(AcceleratorControllerTest, TestToggleHighContrast) {
                               ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
   // High Contrast Mode Enabled dialog and notification should be shown.
   EXPECT_FALSE(IsConfirmationDialogOpen());
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(
       accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
@@ -1900,7 +1890,7 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
   EXPECT_FALSE(IsConfirmationDialogOpen());
 
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Toggle the fullscreen magnifier on/off, dialog should be shown on first use
   // of accelerator.
@@ -1942,7 +1932,7 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
   EXPECT_FALSE(IsConfirmationDialogOpen());
 
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Toggle the docked magnifier on/off, dialog should be shown on first use of
   // accelerator.

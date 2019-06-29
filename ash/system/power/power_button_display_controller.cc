@@ -4,7 +4,7 @@
 
 #include "ash/system/power/power_button_display_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
@@ -79,8 +79,8 @@ void PowerButtonDisplayController::OnBacklightsForcedOffChanged(
     bool forced_off) {
   if (send_accessibility_alert_on_backlights_forced_off_change_) {
     Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
-        forced_off ? mojom::AccessibilityAlert::SCREEN_OFF
-                   : mojom::AccessibilityAlert::SCREEN_ON);
+        forced_off ? AccessibilityAlert::SCREEN_OFF
+                   : AccessibilityAlert::SCREEN_ON);
   }
   send_accessibility_alert_on_backlights_forced_off_change_ = false;
 }

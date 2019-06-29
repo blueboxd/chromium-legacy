@@ -121,18 +121,40 @@ void BeginFrameSource::SetIsGpuBusy(bool busy) {
     return;
   is_gpu_busy_ = busy;
   if (is_gpu_busy_) {
-    DCHECK(!request_notification_on_gpu_availability_);
-  } else if (request_notification_on_gpu_availability_) {
-    request_notification_on_gpu_availability_ = false;
-    OnGpuNoLongerBusy();
+    DCHECK_EQ(gpu_busy_response_state_, GpuBusyThrottlingState::kIdle);
+    return;
   }
+
+  const bool was_throttled =
+      gpu_busy_response_state_ == GpuBusyThrottlingState::kThrottled;
+  gpu_busy_response_state_ = GpuBusyThrottlingState::kIdle;
+  if (was_throttled)
+    OnGpuNoLongerBusy();
 }
 
 bool BeginFrameSource::RequestCallbackOnGpuAvailable() {
-  if (!is_gpu_busy_)
+  if (!is_gpu_busy_) {
+    DCHECK_EQ(gpu_busy_response_state_, GpuBusyThrottlingState::kIdle);
     return false;
-  request_notification_on_gpu_availability_ = true;
-  return true;
+  }
+
+  switch (gpu_busy_response_state_) {
+    case GpuBusyThrottlingState::kIdle:
+      if (allow_one_begin_frame_after_gpu_busy_) {
+        gpu_busy_response_state_ =
+            GpuBusyThrottlingState::kOneBeginFrameAfterBusySent;
+        return false;
+      }
+      FALLTHROUGH;
+    case GpuBusyThrottlingState::kOneBeginFrameAfterBusySent:
+      gpu_busy_response_state_ = GpuBusyThrottlingState::kThrottled;
+      return true;
+    case GpuBusyThrottlingState::kThrottled:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 void BeginFrameSource::AsValueInto(

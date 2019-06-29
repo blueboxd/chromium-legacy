@@ -4,16 +4,24 @@
 
 package org.chromium.android_webview.shell;
 
-import com.android.webview.chromium.WebViewApkApplication;
+import android.app.Application;
+import android.content.Context;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.PathUtils;
 
 /**
  * The android_webview shell Application subclass.
  */
-public class AwShellApplication extends WebViewApkApplication {
+public class AwShellApplication extends Application {
+    // Called by the framework for ALL processes. Runs before ContentProviders are created.
+    // Quirk: context.getApplicationContext() returns null during this method.
     @Override
-    protected void initCommandLine() {
+    protected void attachBaseContext(Context context) {
+        super.attachBaseContext(context);
+        ContextUtils.initApplicationContext(this);
+        PathUtils.setPrivateDataDirectorySuffix("webview");
         CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
     }
 }

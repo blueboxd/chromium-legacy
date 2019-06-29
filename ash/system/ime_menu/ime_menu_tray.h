@@ -51,8 +51,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // opt-in IME menu.
   bool ShouldShowKeyboardToggle() const;
 
-  void UpdateIconVisibility();
-
   // TrayBackgroundView:
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
@@ -105,9 +103,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool is_emoji_enabled_;
   bool is_handwriting_enabled_;
   bool is_voice_enabled_;
-
-  //  Whether the IME menu has been enabled.
-  bool is_enabled_;
 
   base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_;
 

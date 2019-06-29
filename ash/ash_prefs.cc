@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/ash_prefs.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -32,7 +32,7 @@ namespace {
 
 // Registers prefs whose default values are same in user and signin prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
-  AccessibilityController::RegisterProfilePrefs(registry, for_test);
+  AccessibilityControllerImpl::RegisterProfilePrefs(registry, for_test);
   AppListControllerImpl::RegisterProfilePrefs(registry);
   AssistantController::RegisterProfilePrefs(registry);
   BluetoothPowerController::RegisterProfilePrefs(registry);

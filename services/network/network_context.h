@@ -384,7 +384,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   }
 
   NetworkServiceProxyDelegate* proxy_delegate() const {
-    return proxy_delegate_.get();
+    return proxy_delegate_;
   }
 
   void set_network_qualities_pref_delegate_for_testing(
@@ -569,7 +569,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            base::UniquePtrComparator>
       host_resolvers_;
 
-  std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
+  NetworkServiceProxyDelegate* proxy_delegate_ = nullptr;
 
   // Used for Signed Exchange certificate verification.
   int next_cert_verify_id_ = 0;

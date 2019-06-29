@@ -51,7 +51,10 @@ def _staple_chrome(paths, dist_config):
     part_paths = [
         part.path
         for part in parts.values()
-        if part.path[-4:] in ('.app', '.xpc')
+        # TODO(https://crbug.com/979725): Reinstate .xpc bundle stapling once
+        # the signing environment is on a macOS release that supports
+        # Xcode 10.2 or newer.
+        if part.path[-4:] in ('.app',)
     ]
     # Reverse-sort the paths so that more nested paths are stapled before
     # less-nested ones.

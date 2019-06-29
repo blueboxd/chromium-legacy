@@ -1350,6 +1350,11 @@ void OmniboxViewViews::OnBlur() {
   // text, since the start of the text may not be at the left edge).
   gfx::RenderText* render_text = GetRenderText();
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);
+
+  // In cases where there's a lot of whitespace in the text being shown, we want
+  // the elision marker to be at the right of the text field, so don't elide
+  // whitespace to the left of the elision point.
+  render_text->SetWhitespaceElision(false);
   render_text->SetDisplayOffset(0);
 
   // Focus changes can affect the visibility of any keyword hint.

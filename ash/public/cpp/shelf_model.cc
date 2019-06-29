@@ -40,10 +40,6 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 
 }  // namespace
 
-// TODO(michaelpg): Rename App List item to Home Button.
-const char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
-const char kBackButtonId[] = "icmmkgojeloilfifneofeejijgdhjknf";
-
 ShelfModel* ShelfModel::Get() {
   DCHECK(g_shelf_model);
   return g_shelf_model;

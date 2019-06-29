@@ -15,6 +15,57 @@
         <structure name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\ntp4\new_incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
+        <!-- Bookmarks WebUI. -->
+        <if expr="optimize_webui">
+          <then>
+            <structure name="IDR_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\bookmarks\vulcanized.html" use_base_dir="false" preprocess="true" type="chrome_html" compress="gzip" />
+            <structure name="IDR_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\bookmarks\crisper.js" use_base_dir="false" preprocess="true" type="chrome_html" compress="gzip" />
+          </then>
+          <else>
+            <structure name="IDR_BOOKMARKS_ACTIONS_HTML" file="resources\bookmarks\actions.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_ACTIONS_JS" file="resources\bookmarks\actions.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_API_LISTENER_HTML" file="resources\bookmarks\api_listener.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_API_LISTENER_JS" file="resources\bookmarks\api_listener.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_APP_HTML" file="resources\bookmarks\app.html" type="chrome_html" preprocess="true" />
+            <structure name="IDR_BOOKMARKS_APP_JS" file="resources\bookmarks\app.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_BOOKMARKS_HTML" file="resources\bookmarks\bookmarks.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_COMMAND_MANAGER_HTML" file="resources\bookmarks\command_manager.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_COMMAND_MANAGER_JS" file="resources\bookmarks\command_manager.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_CONSTANTS_HTML" file="resources\bookmarks\constants.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_CONSTANTS_JS" file="resources\bookmarks\constants.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_DEBOUNCER_HTML" file="resources\bookmarks\debouncer.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_DEBOUNCER_JS" file="resources\bookmarks\debouncer.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_DIALOG_FOCUS_MANAGER_HTML" file="resources\bookmarks\dialog_focus_manager.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_DIALOG_FOCUS_MANAGER_JS" file="resources\bookmarks\dialog_focus_manager.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_DND_MANAGER_HTML" file="resources\bookmarks\dnd_manager.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_DND_MANAGER_JS" file="resources\bookmarks\dnd_manager.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_EDIT_DIALOG_HTML" file="resources\bookmarks\edit_dialog.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_EDIT_DIALOG_JS" file="resources\bookmarks\edit_dialog.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_FOLDER_NODE_HTML" file="resources\bookmarks\folder_node.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_FOLDER_NODE_JS" file="resources\bookmarks\folder_node.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_ITEM_HTML" file="resources\bookmarks\item.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_ITEM_JS" file="resources\bookmarks\item.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_LIST_HTML" file="resources\bookmarks\list.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_LIST_JS" file="resources\bookmarks\list.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_HTML" file="resources\bookmarks\mouse_focus_behavior.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_JS" file="resources\bookmarks\mouse_focus_behavior.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_REDUCERS_HTML" file="resources\bookmarks\reducers.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_REDUCERS_JS" file="resources\bookmarks\reducers.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_ROUTER_HTML" file="resources\bookmarks\router.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_ROUTER_JS" file="resources\bookmarks\router.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_SHARED_STYLE_HTML" file="resources\bookmarks\shared_style.html" preprocess="true" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_SHARED_VARS_HTML" file="resources\bookmarks\shared_vars.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_STORE_CLIENT_HTML" file="resources\bookmarks\store_client.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_STORE_CLIENT_JS" file="resources\bookmarks\store_client.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_STORE_HTML" file="resources\bookmarks\store.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_STORE_JS" file="resources\bookmarks\store.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_STRINGS_HTML" file="resources\bookmarks\strings.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_TOOLBAR_HTML" file="resources\bookmarks\toolbar.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_TOOLBAR_JS" file="resources\bookmarks\toolbar.js" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_UTIL_HTML" file="resources\bookmarks\util.html" type="chrome_html" />
+            <structure name="IDR_BOOKMARKS_UTIL_JS" file="resources\bookmarks\util.js" type="chrome_html" />
+          </else>
+        </if>
       </if>
       <if expr="not is_android and not chromeos">
         <structure name="IDR_WELCOME_CSS" file="resources\welcome\welcome.css" type="chrome_html" preprocess="true"/>
@@ -246,61 +297,6 @@
       </if>
 
       <if expr="not is_android">
-        <!-- Bookmarks WebUI. -->
-        <include name="IDR_BOOKMARKS_IMAGES_FOLDER_OPEN_SVG" file="resources\bookmarks\images\folder_open.svg" type="BINDATA" />
-        <include name="IDR_BOOKMARKS_IMAGES_FOLDER_SVG" file="resources\bookmarks\images\folder.svg" type="BINDATA" />
-        <if expr="optimize_webui">
-          <then>
-            <include name="IDR_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\bookmarks\vulcanized.html" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\bookmarks\crisper.js" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
-          </then>
-          <else>
-            <include name="IDR_BOOKMARKS_ACTIONS_HTML" file="resources\bookmarks\actions.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_ACTIONS_JS" file="resources\bookmarks\actions.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_API_LISTENER_HTML" file="resources\bookmarks\api_listener.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_API_LISTENER_JS" file="resources\bookmarks\api_listener.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_APP_HTML" file="resources\bookmarks\app.html" type="BINDATA" preprocess="true" />
-            <include name="IDR_BOOKMARKS_APP_JS" file="resources\bookmarks\app.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_BOOKMARKS_HTML" file="resources\bookmarks\bookmarks.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_COMMAND_MANAGER_HTML" file="resources\bookmarks\command_manager.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_COMMAND_MANAGER_JS" file="resources\bookmarks\command_manager.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_CONSTANTS_HTML" file="resources\bookmarks\constants.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_CONSTANTS_JS" file="resources\bookmarks\constants.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_DEBOUNCER_HTML" file="resources\bookmarks\debouncer.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_DEBOUNCER_JS" file="resources\bookmarks\debouncer.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_DIALOG_FOCUS_MANAGER_HTML" file="resources\bookmarks\dialog_focus_manager.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_DIALOG_FOCUS_MANAGER_JS" file="resources\bookmarks\dialog_focus_manager.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_DND_MANAGER_HTML" file="resources\bookmarks\dnd_manager.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_DND_MANAGER_JS" file="resources\bookmarks\dnd_manager.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_EDIT_DIALOG_HTML" file="resources\bookmarks\edit_dialog.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_EDIT_DIALOG_JS" file="resources\bookmarks\edit_dialog.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_FOLDER_NODE_HTML" file="resources\bookmarks\folder_node.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_FOLDER_NODE_JS" file="resources\bookmarks\folder_node.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_ITEM_HTML" file="resources\bookmarks\item.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_ITEM_JS" file="resources\bookmarks\item.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_LIST_HTML" file="resources\bookmarks\list.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_LIST_JS" file="resources\bookmarks\list.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_HTML" file="resources\bookmarks\mouse_focus_behavior.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_JS" file="resources\bookmarks\mouse_focus_behavior.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_REDUCERS_HTML" file="resources\bookmarks\reducers.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_REDUCERS_JS" file="resources\bookmarks\reducers.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_ROUTER_HTML" file="resources\bookmarks\router.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_ROUTER_JS" file="resources\bookmarks\router.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_SHARED_STYLE_HTML" file="resources\bookmarks\shared_style.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_SHARED_VARS_HTML" file="resources\bookmarks\shared_vars.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_STORE_CLIENT_HTML" file="resources\bookmarks\store_client.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_STORE_CLIENT_JS" file="resources\bookmarks\store_client.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_STORE_HTML" file="resources\bookmarks\store.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_STORE_JS" file="resources\bookmarks\store.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_STRINGS_HTML" file="resources\bookmarks\strings.html" type="BINDATA" />
-
-            <include name="IDR_BOOKMARKS_TOOLBAR_HTML" file="resources\bookmarks\toolbar.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_TOOLBAR_JS" file="resources\bookmarks\toolbar.js" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_UTIL_HTML" file="resources\bookmarks\util.html" type="BINDATA" />
-            <include name="IDR_BOOKMARKS_UTIL_JS" file="resources\bookmarks\util.js" type="BINDATA" />
-          </else>
-        </if>
-
         <!-- History. -->
         <include name="IDR_HISTORY_CONSTANTS_HTML" file="resources\history\constants.html" type="BINDATA" />
         <include name="IDR_HISTORY_CONSTANTS_JS" file="resources\history\constants.js" type="BINDATA" />

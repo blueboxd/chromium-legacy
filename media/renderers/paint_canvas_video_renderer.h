@@ -217,6 +217,29 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   // Used for unit test.
   SkISize last_image_dimensions_for_testing_;
 
+  struct YUVTextureCache {
+    YUVTextureCache();
+    ~YUVTextureCache();
+    void Reset();
+
+    // The ContextProvider that holds the texture.
+    scoped_refptr<viz::ContextProvider> context_provider;
+
+    // The size of the texture.
+    gfx::Size size;
+
+    // The shared image backing the texture.
+    gpu::Mailbox mailbox;
+
+    // The GL texture.
+    uint32_t texture = 0;
+
+    // A SyncToken after last usage, used for reusing or destroying texture and
+    // shared image.
+    gpu::SyncToken sync_token;
+  };
+  YUVTextureCache yuv_cache_;
+
   DISALLOW_COPY_AND_ASSIGN(PaintCanvasVideoRenderer);
 };
 

@@ -34,7 +34,7 @@ void AccessibilityPanelLayoutManager::SetAlwaysVisible(bool always_visible) {
 
 void AccessibilityPanelLayoutManager::SetPanelBounds(
     const gfx::Rect& bounds,
-    mojom::AccessibilityPanelState state) {
+    AccessibilityPanelState state) {
   if (!panel_window_)
     return;
 
@@ -107,9 +107,9 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
   gfx::Rect bounds = panel_bounds_;
 
   // The panel can make itself fill the screen (including covering the shelf).
-  if (panel_state_ == mojom::AccessibilityPanelState::FULLSCREEN) {
+  if (panel_state_ == AccessibilityPanelState::FULLSCREEN) {
     bounds = root_window->bounds();
-  } else if (panel_state_ == mojom::AccessibilityPanelState::FULL_WIDTH) {
+  } else if (panel_state_ == AccessibilityPanelState::FULL_WIDTH) {
     bounds.set_x(0);
     bounds.set_width(root_window->bounds().width());
 
@@ -146,7 +146,7 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
 
 void AccessibilityPanelLayoutManager::UpdateWorkAreaForPanelHeight() {
   bool has_height = panel_window_ && panel_window_->bounds().y() == 0 &&
-                    panel_state_ == mojom::AccessibilityPanelState::FULL_WIDTH;
+                    panel_state_ == AccessibilityPanelState::FULL_WIDTH;
   Shell::GetPrimaryRootWindowController()
       ->work_area_insets()
       ->SetAccessibilityPanelHeight(

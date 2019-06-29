@@ -219,6 +219,7 @@
 -ServiceWorkerTest.ServiceWorkerPostsMessageToBackgroundClient
 -ServiceWorkerTest.ServiceWorkerSuspensionOnExtensionUnload
 -ServiceWorkerTest.UpdateRefreshesServiceWorker
+-ServiceWorkerTest.VerifyNoApiBindings
 -ServiceWorkerTest.WebAccessibleResourcesFetch
 -ServiceWorkerTest.WebAccessibleResourcesIframeSrc
 -SitePerProcessDebuggerExtensionApiTest.Debugger

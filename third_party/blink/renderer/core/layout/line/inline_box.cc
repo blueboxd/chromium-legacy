@@ -352,14 +352,13 @@ LayoutPoint InlineBox::FlipForWritingMode(const LayoutPoint& point) const {
   return Root().Block().FlipForWritingMode(point);
 }
 
-void InlineBox::SetShouldDoFullPaintInvalidationForFirstLine() {
-  GetLineLayoutItem().StyleRef().ClearCachedPseudoStyles();
+void InlineBox::SetShouldDoFullPaintInvalidationRecursively() {
   GetLineLayoutItem().SetShouldDoFullPaintInvalidation();
   if (!IsInlineFlowBox())
     return;
   for (InlineBox* child = ToInlineFlowBox(this)->FirstChild(); child;
        child = child->NextOnLine())
-    child->SetShouldDoFullPaintInvalidationForFirstLine();
+    child->SetShouldDoFullPaintInvalidationRecursively();
 }
 
 void InlineBox::SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded() {

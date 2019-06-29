@@ -5,6 +5,19 @@
 cr.exportPath('settings');
 
 /**
+ * Credential represents a CTAP2 resident credential enumerated from a security
+ * key.
+ *
+ * id: (required) The hex encoding of the CBOR-serialized
+ *     PublicKeyCredentialDescriptor of the credential.
+ *
+ * relyingPartyId: (required) The RP ID (i.e. the site that created the
+ *     credential; eTLD+n)
+ *
+ * userName: (required) The PublicKeyCredentialUserEntity.name
+ *
+ * userDisplayName: (required) The PublicKeyCredentialUserEntity.display_name
+ *
  * @typedef {{id: string,
  *            relyingPartyId: string,
  *            userName: string,
@@ -68,6 +81,14 @@ cr.define('settings', function() {
     credentialManagementEnumerate() {}
 
     /**
+     * Deletes the credentials with the given IDs from the security key.
+     * @param {!Array<!string>} ids
+     * @return {!Promise<!string>} a localized response message to display to
+     *     the user (on either success or error)
+     */
+    credentialManagementDeleteCredentials(ids) {}
+
+    /**
      * Starts a reset operation by flashing all security keys and sending a
      * reset command to the one that the user activates. Resolves with a CTAP
      * error code.
@@ -114,6 +135,11 @@ cr.define('settings', function() {
     /** @override */
     credentialManagementEnumerate() {
       return cr.sendWithPromise('securityKeyCredentialManagementEnumerate');
+    }
+
+    /** @override */
+    credentialManagementDeleteCredentials(ids) {
+      return cr.sendWithPromise('securityKeyCredentialManagementDelete', ids);
     }
 
     /** @override */

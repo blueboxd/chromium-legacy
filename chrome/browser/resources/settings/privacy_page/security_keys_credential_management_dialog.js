@@ -32,10 +32,7 @@ Polymer({
      * The list of credentials displayed in the dialog.
      * @private {!Array<!Credential>}
      */
-    credentials_: {
-      type: Array,
-      value: () => [],
-    },
+    credentials_: Array,
 
     /**
      * The message displayed on the "error" dialog page.
@@ -50,11 +47,23 @@ Polymer({
     confirmButtonVisible_: Boolean,
 
     /** @private */
+    confirmButtonDisabled_: Boolean,
+
+    /** @private */
+    confirmButtonLabel_: String,
+
+    /** @private */
     closeButtonVisible_: Boolean,
+
+    /** @private */
+    deleteInProgress_: Boolean,
   },
 
   /** @private {?settings.SecurityKeysBrowserProxy} */
   browserProxy_: null,
+
+  /** @private {?Set<string>} */
+  checkedCredentialIds_: null,
 
   /** @override */
   attached: function() {
@@ -62,6 +71,7 @@ Polymer({
     this.addWebUIListener(
         'security-keys-credential-management-finished',
         this.onError_.bind(this));
+    this.checkedCredentialIds_ = new Set();
     this.browserProxy_ = settings.SecurityKeysBrowserProxyImpl.getInstance();
     this.browserProxy_.startCredentialManagement().then(
         this.collectPin_.bind(this));
@@ -119,6 +129,10 @@ Polymer({
    * @param {!Array<!Credential>} credentials
    */
   onCredentials_: function(credentials) {
+    if (!credentials.length) {
+      this.onError_(this.i18n('securityKeysCredentialManagementNoCredentials'));
+      return;
+    }
     this.credentials_ = credentials;
     this.$.credentialList.fire('iron-resize');
     this.dialogPage_ = 'credentials';
@@ -134,13 +148,18 @@ Polymer({
         break;
       case 'pinPrompt':
         this.cancelButtonVisible_ = true;
+        this.confirmButtonLabel_ = this.i18n('ok');
+        this.confirmButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
         this.closeButtonVisible_ = false;
         break;
       case 'credentials':
-        this.cancelButtonVisible_ = false;
-        this.confirmButtonVisible_ = false;
-        this.closeButtonVisible_ = true;
+        this.cancelButtonVisible_ = true;
+        this.confirmButtonLabel_ =
+            this.i18n('securityKeysCredentialManagementErase');
+        this.confirmButtonDisabled_ = true;
+        this.confirmButtonVisible_ = true;
+        this.closeButtonVisible_ = false;
         break;
       case 'error':
         this.cancelButtonVisible_ = false;
@@ -148,12 +167,21 @@ Polymer({
         this.closeButtonVisible_ = true;
         break;
     }
+    this.fire('credential-management-dialog-ready-for-testing');
   },
 
   /** @private */
   confirmButtonClick_: function() {
-    assert(this.dialogPage_ == 'pinPrompt');
-    this.submitPIN_();
+    switch (this.dialogPage_) {
+      case 'pinPrompt':
+        this.submitPIN_();
+        break;
+      case 'credentials':
+        this.deleteSelectedCredentials_();
+        break;
+      default:
+        assertNotReached();
+    }
   },
 
   /** @private */
@@ -182,19 +210,10 @@ Polymer({
   /**
    * @private
    * @param {?string} str
-   * @return {boolean} true if the string doesn't exist or is empty.
+   * @return {boolean} Whether this credential has been selected for removal.
    */
   isEmpty_: function(str) {
     return !str || str.length == 0;
-  },
-
-  /**
-   * @private
-   * @param {?Array<Object>} list
-   * @return {boolean} true if the list exists and has items.
-   */
-  hasSome_: function(list) {
-    return !!(list && list.length);
   },
 
   /**
@@ -206,5 +225,46 @@ Polymer({
     // listener within settings-animated-pages.
     e.stopPropagation();
   },
+
+  /**
+   * Handler for checking or unchecking a credential.
+   * @param {!Event} e
+   * @private
+   */
+  checkedCredentialsChanged_: function(e) {
+    const credentialId = e.target.dataset.id;
+    if (e.target.checked) {
+      this.checkedCredentialIds_.add(credentialId);
+    } else {
+      this.checkedCredentialIds_.delete(credentialId);
+    }
+    this.confirmButtonDisabled_ = this.checkedCredentialIds_.size == 0;
+  },
+
+  /**
+   * @private
+   * @param {string} credentialId
+   * @return {boolean} true if the checkbox for |credentialId| is checked
+   */
+  credentialIsChecked_: function(credentialId) {
+    return this.checkedCredentialIds_.has(credentialId);
+  },
+
+  /** @private */
+  deleteSelectedCredentials_: function() {
+    assert(this.dialogPage_ == 'credentials');
+    assert(this.credentials_ && this.credentials_.length > 0);
+    assert(this.checkedCredentialIds_.size > 0);
+
+    this.deleteInProgress_ = true;
+    this.browserProxy_
+        .credentialManagementDeleteCredentials(
+            Array.from(this.checkedCredentialIds_))
+        .then((err) => {
+          this.deleteInProgress_ = false;
+          this.onError_(err);
+        });
+  },
+
 });
 })();

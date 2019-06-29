@@ -3017,6 +3017,7 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE},
       {"securityKeysNoCredentialManagement",
        IDS_SETTINGS_SECURITY_KEYS_NO_CREDENTIAL_MANAGEMENT},
+      {"securityKeysCredentialManagementErase", IDS_REMOVE},
       {"securityKeysCredentialManagementRemoved",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED},
       {"securityKeysCredentialManagementDesc",

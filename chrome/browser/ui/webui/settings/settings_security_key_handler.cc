@@ -76,9 +76,15 @@ void SecurityKeysHandler::RegisterMessages() {
       base::BindRepeating(
           &SecurityKeysHandler::HandleCredentialManagementEnumerate,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "securityKeyCredentialManagementDelete",
+      base::BindRepeating(
+          &SecurityKeysHandler::HandleCredentialManagementDelete,
+          base::Unretained(this)));
 }
 
 void SecurityKeysHandler::OnJavascriptAllowed() {}
+
 void SecurityKeysHandler::OnJavascriptDisallowed() {
   // If Javascript is disallowed, |Close| will invalidate all current WeakPtrs
   // and thus drop all pending callbacks. This means that
@@ -317,6 +323,30 @@ void SecurityKeysHandler::HandleCredentialManagementEnumerate(
       &SecurityKeysHandler::OnHaveCredentials, weak_factory_->GetWeakPtr()));
 }
 
+void SecurityKeysHandler::HandleCredentialManagementDelete(
+    const base::ListValue* args) {
+  DCHECK_EQ(State::kCredentialManagementReady, state_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(2u, args->GetSize());
+  DCHECK(credential_management_);
+  DCHECK(callback_id_.empty());
+
+  state_ = State::kCredentialManagementDeleting;
+  callback_id_ = args->GetList()[0].GetString();
+  std::vector<std::vector<uint8_t>> credential_ids;
+  for (const base::Value& el : args->GetList()[1].GetList()) {
+    std::vector<uint8_t> credential_id;
+    if (!base::HexStringToBytes(el.GetString(), &credential_id)) {
+      NOTREACHED();
+      continue;
+    }
+    credential_ids.emplace_back(std::move(credential_id));
+  }
+  credential_management_->DeleteCredentials(
+      std::move(credential_ids),
+      base::BindOnce(&SecurityKeysHandler::OnCredentialsDeleted,
+                     weak_factory_->GetWeakPtr()));
+}
 void SecurityKeysHandler::OnCredentialManagementReady() {
   DCHECK(state_ == State::kCredentialManagementStart ||
          state_ == State::kCredentialManagementPIN);
@@ -350,20 +380,22 @@ void SecurityKeysHandler::OnHaveCredentials(
   state_ = State::kCredentialManagementReady;
 
   base::Value::ListStorage credentials;
-  if (responses) {
-    for (const auto& response : *responses) {
-      for (const auto& credential : response.credentials) {
-        base::DictionaryValue credential_value;
-        credential_value.SetString(
-            "id", base::HexEncode(credential.credential_id.id().data(),
-                                  credential.credential_id.id().size()));
-        credential_value.SetString("relyingPartyId", response.rp.id);
-        credential_value.SetString("userName",
-                                   credential.user.name.value_or(""));
-        credential_value.SetString("userDisplayName",
-                                   credential.user.display_name.value_or(""));
-        credentials.emplace_back(std::move(credential_value));
+  for (const auto& response : *responses) {
+    for (const auto& credential : response.credentials) {
+      base::DictionaryValue credential_value;
+      std::string credential_id =
+          base::HexEncode(credential.credential_id_cbor_bytes.data(),
+                          credential.credential_id_cbor_bytes.size());
+      if (credential_id.empty()) {
+        NOTREACHED();
+        continue;
       }
+      credential_value.SetString("id", std::move(credential_id));
+      credential_value.SetString("relyingPartyId", response.rp.id);
+      credential_value.SetString("userName", credential.user.name.value_or(""));
+      credential_value.SetString("userDisplayName",
+                                 credential.user.display_name.value_or(""));
+      credentials.emplace_back(std::move(credential_value));
     }
   }
 
@@ -392,6 +424,24 @@ void SecurityKeysHandler::OnCredentialManagementGatherPIN(
   DCHECK_EQ(state_, State::kCredentialManagementPIN);
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                             base::Value(static_cast<int>(num_retries)));
+}
+
+void SecurityKeysHandler::OnCredentialsDeleted(
+    device::CtapDeviceResponseCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(State::kCredentialManagementDeleting, state_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(credential_management_);
+  DCHECK(!callback_id_.empty());
+
+  state_ = State::kCredentialManagementReady;
+
+  ResolveJavascriptCallback(
+      base::Value(std::move(callback_id_)),
+      base::Value(l10n_util::GetStringUTF8(
+          status == device::CtapDeviceResponseCode::kSuccess
+              ? IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_SUCCESS
+              : IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_FAILED)));
 }
 
 void SecurityKeysHandler::OnCredentialManagementFinished(

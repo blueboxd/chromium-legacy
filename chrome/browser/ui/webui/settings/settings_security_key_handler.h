@@ -59,6 +59,7 @@ class SecurityKeysHandler : public SettingsPageUIHandler {
     kCredentialManagementPIN,
     kCredentialManagementReady,
     kCredentialManagementGettingCredentials,
+    kCredentialManagementDeleting,
   };
 
   void Close();
@@ -79,6 +80,7 @@ class SecurityKeysHandler : public SettingsPageUIHandler {
   void HandleCredentialManagement(const base::ListValue* args);
   void HandleCredentialManagementPIN(const base::ListValue* args);
   void HandleCredentialManagementEnumerate(const base::ListValue* args);
+  void HandleCredentialManagementDelete(const base::ListValue* args);
   void OnCredentialManagementReady();
   void OnHaveCredentials(
       device::CtapDeviceResponseCode status,
@@ -88,6 +90,7 @@ class SecurityKeysHandler : public SettingsPageUIHandler {
       base::Optional<size_t> remaining_credentials);
   void OnCredentialManagementGatherPIN(int64_t num_retries,
                                        base::OnceCallback<void(std::string)>);
+  void OnCredentialsDeleted(device::CtapDeviceResponseCode status);
   void OnCredentialManagementFinished(device::FidoReturnCode status);
 
   void HandleClose(const base::ListValue* args);

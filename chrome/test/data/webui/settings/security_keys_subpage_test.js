@@ -10,6 +10,10 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
       'setPIN',
       'reset',
       'completeReset',
+      'startCredentialManagement',
+      'credentialManagementProvidePIN',
+      'credentialManagementEnumerate',
+      'credentialManagementDeleteCredentials',
       'close',
     ]);
 
@@ -66,6 +70,26 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   /** @override */
   completeReset() {
     return this.handleMethod_('completeReset');
+  }
+
+  /** @override */
+  startCredentialManagement() {
+    return this.handleMethod_('startCredentialManagement');
+  }
+
+  /** @override */
+  credentialManagementProvidePIN(pin) {
+    return this.handleMethod_('credentialManagementProvidePIN', pin);
+  }
+
+  /** @override */
+  credentialManagementEnumerate() {
+    return this.handleMethod_('credentialManagementEnumerate');
+  }
+
+  /** @override */
+  credentialManagementDeleteCredentials(ids) {
+    return this.handleMethod_('credentialManagementDeleteCredentials', ids);
   }
 
   /** @override */
@@ -445,5 +469,141 @@ suite('SecurityKeysSetPINDialog', function() {
     await browserProxy.whenCalled('close');
     assertShown('success');
     assertComplete();
+  });
+});
+
+suite('SecurityKeysCredentialManagement', function() {
+  let dialog = null;
+
+  setup(function() {
+    browserProxy = new TestSecurityKeysBrowserProxy();
+    settings.SecurityKeysBrowserProxyImpl.instance_ = browserProxy;
+    PolymerTest.clearBody();
+    dialog = document.createElement(
+        'settings-security-keys-credential-management-dialog');
+  });
+
+  function assertShown(expectedID) {
+    const allDivs = ['initial', 'pinPrompt', 'credentials', 'error'];
+    assertTrue(allDivs.includes(expectedID));
+
+    const allShown =
+        allDivs.filter(id => dialog.$[id].className == 'iron-selected');
+    assertEquals(allShown.length, 1);
+    assertEquals(allShown[0], expectedID);
+  }
+
+  test('Initialization', async function() {
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+  });
+
+  test('Cancel', async function() {
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+    dialog.$.cancelButton.click();
+    await browserProxy.whenCalled('close');
+    assertFalse(dialog.$.dialog.open);
+  });
+
+  test('Finished', async function() {
+    const startResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'startCredentialManagement', startResolver.promise);
+
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+    startResolver.resolve();
+
+    const errorString = 'foo bar baz';
+    cr.webUIListenerCallback(
+        'security-keys-credential-management-finished', errorString);
+    assertShown('error');
+    assertTrue(dialog.$.error.textContent.trim().includes(errorString));
+  });
+
+  test('Credentials', async function() {
+    const startCredentialManagementResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'startCredentialManagement', startCredentialManagementResolver.promise);
+    const pinResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'credentialManagementProvidePIN', pinResolver.promise);
+    const enumerateResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'credentialManagementEnumerate', enumerateResolver.promise);
+    const deleteResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'credentialManagementDeleteCredentials', deleteResolver.promise);
+
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+
+    // Simulate PIN entry.
+    let uiReady = test_util.eventToPromise(
+        'credential-management-dialog-ready-for-testing', dialog);
+    startCredentialManagementResolver.resolve();
+    await uiReady;
+    assertShown('pinPrompt');
+    dialog.$.pin.value = '0000';
+    dialog.$.confirmButton.click();
+    const pin = await browserProxy.whenCalled('credentialManagementProvidePIN');
+    assertEquals(pin, '0000');
+
+    // Show a list of three credentials.
+    pinResolver.resolve();
+    await browserProxy.whenCalled('credentialManagementEnumerate');
+    uiReady = test_util.eventToPromise(
+        'credential-management-dialog-ready-for-testing', dialog);
+    const credentials = [
+      {
+        id: 'aaaaaa',
+        relyingPartyId: 'acme.com',
+        userName: 'userA@example.com',
+        userDisplayName: 'User Aaa',
+      },
+      {
+        id: 'bbbbbb',
+        relyingPartyId: 'acme.com',
+        userName: 'userB@example.com',
+        userDisplayName: 'User B',
+      },
+      {
+        id: 'cccccc',
+        relyingPartyId: 'acme.com',
+        userName: 'userC@example.com',
+        userDisplayName: 'User C',
+      },
+    ];
+    enumerateResolver.resolve(credentials);
+    await uiReady;
+    assertShown('credentials');
+    assertEquals(dialog.$.credentialList.items, credentials);
+
+    // Select two of the credentials and delete them.
+    Polymer.flush();
+    assertTrue(dialog.$.confirmButton.disabled);
+    const checkboxes = Array.from(
+        Polymer.dom(dialog.$.credentialList).querySelectorAll('cr-checkbox'));
+    assertEquals(checkboxes.length, 3);
+    assertEquals(checkboxes.filter(el => el.checked).length, 0);
+    checkboxes[1].click();
+    checkboxes[2].click();
+    assertFalse(dialog.$.confirmButton.disabled);
+
+    dialog.$.confirmButton.click();
+    const credentialIds =
+        await browserProxy.whenCalled('credentialManagementDeleteCredentials');
+    assertDeepEquals(credentialIds, ['bbbbbb', 'cccccc']);
+    uiReady = test_util.eventToPromise(
+        'credential-management-dialog-ready-for-testing', dialog);
+    deleteResolver.resolve('foobar' /* localized response message */);
+    await uiReady;
+    assertShown('error');
+    assertTrue(dialog.$.error.textContent.trim().includes('foobar'));
   });
 });

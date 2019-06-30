@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -39,7 +40,11 @@
 #if defined(OS_MACOSX)
 #include <CoreVideo/CVPixelBuffer.h>
 #include "base/mac/scoped_cftyperef.h"
-#endif
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_LINUX)
+#include "base/files/scoped_file.h"
+#endif  // defined(OS_LINUX)
 
 namespace media {
 

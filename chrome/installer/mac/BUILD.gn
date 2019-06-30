@@ -73,7 +73,7 @@ action("notarization_sentinel") {
   args = [
     rebase_path(_output, root_out_dir),
     "echo",
-    "yes",
+    "yes-1",
   ]
 
   outputs = [

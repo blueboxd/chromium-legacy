@@ -432,11 +432,12 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space,
   output_color_space_ = output_color_space;
   blending_color_space_ = output_color_space_.GetBlendingColorSpace();
   sdr_white_level_ = sdr_white_level;
-  // Do all ui::Compositor rasterization to sRGB because UI resources will not
-  // have their color conversion results cached, and will suffer repeated
-  // image color conversions.
-  // https://crbug.com/769677
-  host_->SetRasterColorSpace(gfx::ColorSpace::CreateSRGB());
+  // When GPU raster is disabled, do all ui::Compositor rasterization to sRGB
+  // because UI resources will not have their color conversion results cached,
+  // and will suffer repeated image color conversions. https://crbug.com/769677
+  host_->SetRasterColorSpace(features::IsUiGpuRasterizationEnabled()
+                                 ? output_color_space_.GetRasterColorSpace()
+                                 : gfx::ColorSpace::CreateSRGB());
   // Always force the ui::Compositor to re-draw all layers, because damage
   // tracking bugs result in black flashes.
   // https://crbug.com/804430

@@ -247,18 +247,6 @@ class QuicTestPacketMaker {
       quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length);
 
-  // Saves the serialized QUIC stream data in |stream_data|.
-  std::unique_ptr<quic::QuicReceivedPacket> MakeRequestHeadersPacketAndSaveData(
-      uint64_t packet_number,
-      quic::QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      spdy::SpdyPriority priority,
-      spdy::SpdyHeaderBlock headers,
-      quic::QuicStreamId parent_stream_id,
-      size_t* spdy_headers_frame_length,
-      std::string* stream_data);
-
   std::unique_ptr<quic::QuicReceivedPacket> MakeRequestHeadersAndRstPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
@@ -300,12 +288,6 @@ class QuicTestPacketMaker {
       uint64_t packet_number,
       bool should_include_version);
 
-  // Same as above, but also saves the serialized QUIC stream data in
-  // |stream_data|.
-  std::unique_ptr<quic::QuicReceivedPacket>
-  MakeInitialSettingsPacketAndSaveData(uint64_t packet_number,
-                                       std::string* stream_data);
-
   std::unique_ptr<quic::QuicReceivedPacket> MakePriorityPacket(
       uint64_t packet_number,
       bool should_include_version,
@@ -321,6 +303,11 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       const std::vector<Http2StreamDependency>& priority_frames);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRetransmissionPacket(
+      uint64_t original_packet_number,
+      uint64_t new_packet_number,
+      bool should_include_version);
 
   void SetEncryptionLevel(quic::EncryptionLevel level);
 
@@ -340,19 +327,21 @@ class QuicTestPacketMaker {
 
   void Reset();
 
-  quic::QuicStreamOffset header_stream_offset() {
-    return stream_offsets_[quic::QuicUtils::GetHeadersStreamId(
-        version_.transport_version)];
-  }
-
-  void set_header_stream_offset(quic::QuicStreamOffset offset) {
-    stream_offsets_[quic::QuicUtils::GetHeadersStreamId(
-        version_.transport_version)] = offset;
+  quic::QuicStreamOffset stream_offset(quic::QuicStreamId stream_id) {
+    return stream_offsets_[stream_id];
   }
 
   void set_coalesce_http_frames(bool coalesce_http_frames) {
     coalesce_http_frames_ = coalesce_http_frames;
   }
+
+  void set_save_packet_frames(bool save_packet_frames) {
+    save_packet_frames_ = save_packet_frames;
+  }
+
+  std::vector<std::string> QpackEncodeHeaders(quic::QuicStreamId stream_id,
+                                              spdy::SpdyHeaderBlock headers,
+                                              size_t* encoded_data_length);
 
  private:
   // QpackEncoder::DecoderStreamErrorDelegate implementation that does nothing
@@ -400,10 +389,6 @@ class QuicTestPacketMaker {
       bool fin,
       const std::vector<std::string>& data);
 
-  std::vector<std::string> QpackEncodeHeaders(quic::QuicStreamId stream_id,
-                                              spdy::SpdyHeaderBlock headers,
-                                              size_t* encoded_data_length);
-
   quic::QuicPacketNumberLength GetPacketNumberLength() const;
 
   quic::QuicConnectionId DestinationConnectionId() const;
@@ -420,6 +405,7 @@ class QuicTestPacketMaker {
   spdy::SpdyFramer spdy_response_framer_;
   quic::HttpEncoder http_encoder_;
   bool coalesce_http_frames_;
+  bool save_packet_frames_;
   DecoderStreamErrorDelegate decoder_stream_error_delegate_;
   EncoderStreamSenderDelegate encoder_stream_sender_delegate_;
   quic::QpackEncoder qpack_encoder_;
@@ -429,6 +415,8 @@ class QuicTestPacketMaker {
   quic::Perspective perspective_;
   quic::EncryptionLevel encryption_level_;
   quic::QuicLongHeaderType long_header_type_;
+  std::vector<std::unique_ptr<std::string>> saved_stream_data_;
+  std::map<quic::QuicPacketNumber, quic::QuicFrames> saved_frames_;
 
   // If true, generated request headers will include non-default HTTP2 stream
   // dependency info.

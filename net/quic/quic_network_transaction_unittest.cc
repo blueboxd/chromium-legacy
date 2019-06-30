@@ -159,14 +159,17 @@ std::string GenerateQuicVersionsListForAltSvcHeader(
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllVersionsExcept99();
+      quic::AllSupportedVersions();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
-    params.push_back(PoolingTestParams{version, SAME_AS_FIRST, false});
-    params.push_back(PoolingTestParams{version, SAME_AS_FIRST, true});
-    params.push_back(PoolingTestParams{version, SAME_AS_SECOND, false});
-    params.push_back(PoolingTestParams{version, SAME_AS_SECOND, true});
-    params.push_back(PoolingTestParams{version, DIFFERENT, false});
-    params.push_back(PoolingTestParams{version, DIFFERENT, true});
+    // TODO(rch): crbug.com/978745 - Make this work with TLS
+    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
+      params.push_back(PoolingTestParams{version, SAME_AS_FIRST, false});
+      params.push_back(PoolingTestParams{version, SAME_AS_FIRST, true});
+      params.push_back(PoolingTestParams{version, SAME_AS_SECOND, false});
+      params.push_back(PoolingTestParams{version, SAME_AS_SECOND, true});
+      params.push_back(PoolingTestParams{version, DIFFERENT, false});
+      params.push_back(PoolingTestParams{version, DIFFERENT, true});
+    }
   }
   return params;
 }
@@ -957,10 +960,21 @@ class QuicNetworkTransactionTest
   }
 };
 
+quic::ParsedQuicVersionVector AllSupportedVersionsWithoutTls() {
+  quic::ParsedQuicVersionVector versions;
+  for (auto version : quic::AllSupportedVersions()) {
+    // TODO(rch): crbug.com/978745 - Make this work with TLS
+    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
+      versions.push_back(version);
+    }
+  }
+  return versions;
+}
+
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicNetworkTransactionTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
+    ::testing::Combine(::testing::ValuesIn(AllSupportedVersionsWithoutTls()),
                        ::testing::Bool()));
 
 TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
@@ -1155,11 +1169,20 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   int log_stream_id;
   ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &log_stream_id));
-  EXPECT_EQ(quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            static_cast<quic::QuicStreamId>(log_stream_id));
+  if (quic::VersionUsesQpack(version_.transport_version)) {
+    EXPECT_EQ(GetNthClientInitiatedBidirectionalStreamId(0),
+              static_cast<quic::QuicStreamId>(log_stream_id));
+  } else {
+    EXPECT_EQ(quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
+              static_cast<quic::QuicStreamId>(log_stream_id));
+  }
 }
 
 TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
+  // TODO(rch): honor the max header list size. b/136108828
+  if (quic::VersionUsesQpack(version_.transport_version))
+    return;
+
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -1178,23 +1201,35 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
   response_headers["key6"] = std::string(30000, 'A');
   response_headers["key7"] = std::string(30000, 'A');
   response_headers["key8"] = std::string(30000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
+  quic::QuicStreamId stream_id;
+  std::string response_data;
+  if (quic::VersionUsesQpack(version_.transport_version)) {
+    stream_id = GetNthClientInitiatedBidirectionalStreamId(0);
+    std::vector<std::string> encoded = server_maker_.QpackEncodeHeaders(
+        stream_id, std::move(response_headers), nullptr);
+    for (const auto& e : encoded) {
+      response_data += e;
+    }
+  } else {
+    stream_id = quic::QuicUtils::GetHeadersStreamId(version_.transport_version);
+    spdy::SpdyHeadersIR headers_frame(
+        GetNthClientInitiatedBidirectionalStreamId(0),
+        std::move(response_headers));
+    spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+    spdy::SpdySerializedFrame spdy_frame =
+        response_framer.SerializeFrame(headers_frame);
+    response_data = std::string(spdy_frame.data(), spdy_frame.size());
+  }
 
   uint64_t packet_number = 1;
   size_t chunk_size = 1200;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+  for (size_t offset = 0; offset < response_data.length();
+       offset += chunk_size) {
+    size_t len = std::min(chunk_size, response_data.length() - offset);
     mock_quic_data.AddRead(
-        ASYNC,
-        ConstructServerDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
+        ASYNC, ConstructServerDataPacket(
+                   packet_number++, stream_id, false, false,
+                   base::StringPiece(response_data.data() + offset, len)));
   }
 
   std::string header = ConstructDataHeader(6);
@@ -1227,6 +1262,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
                        true, GetRequestHeaders("GET", "https", "/")));
+
   spdy::SpdyHeaderBlock response_headers = GetResponseHeaders("200 OK");
   response_headers["key1"] = std::string(30000, 'A');
   response_headers["key2"] = std::string(30000, 'A');
@@ -1237,23 +1273,36 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
   response_headers["key7"] = std::string(30000, 'A');
   response_headers["key8"] = std::string(30000, 'A');
   response_headers["key9"] = std::string(30000, 'A');
-  spdy::SpdyHeadersIR headers_frame(
-      GetNthClientInitiatedBidirectionalStreamId(0),
-      std::move(response_headers));
-  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySerializedFrame spdy_frame =
-      response_framer.SerializeFrame(headers_frame);
+
+  quic::QuicStreamId stream_id;
+  std::string response_data;
+  if (quic::VersionUsesQpack(version_.transport_version)) {
+    stream_id = GetNthClientInitiatedBidirectionalStreamId(0);
+    std::vector<std::string> encoded = server_maker_.QpackEncodeHeaders(
+        stream_id, std::move(response_headers), nullptr);
+    for (const auto& e : encoded) {
+      response_data += e;
+    }
+  } else {
+    stream_id = quic::QuicUtils::GetHeadersStreamId(version_.transport_version);
+    spdy::SpdyHeadersIR headers_frame(
+        GetNthClientInitiatedBidirectionalStreamId(0),
+        std::move(response_headers));
+    spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+    spdy::SpdySerializedFrame spdy_frame =
+        response_framer.SerializeFrame(headers_frame);
+    response_data = std::string(spdy_frame.data(), spdy_frame.size());
+  }
 
   uint64_t packet_number = 1;
   size_t chunk_size = 1200;
-  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
-    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+  for (size_t offset = 0; offset < response_data.length();
+       offset += chunk_size) {
+    size_t len = std::min(chunk_size, response_data.length() - offset);
     mock_quic_data.AddRead(
-        ASYNC,
-        ConstructServerDataPacket(
-            packet_number++,
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
+        ASYNC, ConstructServerDataPacket(
+                   packet_number++, stream_id, false, false,
+                   base::StringPiece(response_data.data() + offset, len)));
   }
 
   std::string header = ConstructDataHeader(6);
@@ -2161,7 +2210,6 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
-  std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
 
   // The request will initially go out over QUIC.
@@ -2270,7 +2318,6 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
-  std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
 
   // The request will initially go out over QUIC.
@@ -2391,7 +2438,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
-  std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
 
   // The request will initially go out over QUIC.
@@ -2514,52 +2560,37 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset settings_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
   // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      3, true, false, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 3, true));
   // TLP 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 4, true));
   // RTO 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      6, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 5, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 6, true));
   // RTO 2
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 7, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 8, true));
   // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      9, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 9, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 10, true));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       11, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -2617,59 +2648,42 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset settings_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
   // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      3, true, false, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 3, true));
   // TLP 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 4, true));
   // RTO 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      6, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 5, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 6, true));
   // RTO 2
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 7, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 8, true));
   // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      9, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 9, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 10, true));
   // RTO 4
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      11, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      12, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 11, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 12, true));
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       13, true, quic::QUIC_TOO_MANY_RTOS,
@@ -2726,67 +2740,78 @@ TEST_P(QuicNetworkTransactionTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset settings_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
 
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
                          quic::QUIC_STREAM_CANCELLED));
-  // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, true, false, request_data));
-  // TLP 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, true, false, settings_data));
-  // RTO 1
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRstPacket(
-                         6, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, true, false, request_data));
-  // RTO 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, true, false, settings_data));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRstPacket(
-                         9, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
-  // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      11, true, false, settings_data));
-  // RTO 4
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(
-                       12, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED));
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      13, true, false, request_data));
+  if (quic::VersionUsesQpack(version_.transport_version)) {
+    // Since the headers are sent on the data stream, when the stream is reset
+    // the headers are no longer retransmitted.
+    // TLP 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 4, true));
+    // TLP 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 5, true));
+    // RTO 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 6, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 7, true));
+    // RTO 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 9, true));
+    // RTO 3
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 10, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 11, true));
+    // RTO 4
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 13, true));
+  } else {
+    // TLP 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 4, true));
+    // TLP 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 5, true));
+    // RTO 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 6, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 7, true));
+    // RTO 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 9, true));
+    // RTO 3
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 10, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 11, true));
+    // RTO 4
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 12, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 13, true));
+  }
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       14, true, quic::QUIC_TOO_MANY_RTOS,
@@ -2910,52 +2935,37 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset settings_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
   // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      3, true, false, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 3, true));
   // TLP 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 4, true));
   // RTO 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      6, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 5, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 6, true));
   // RTO 2
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 7, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 8, true));
   // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      9, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 9, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 10, true));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       11, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -3037,52 +3047,37 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset settings_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
   // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      3, true, false, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 3, true));
   // TLP 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 4, true));
   // RTO 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      6, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 5, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 6, true));
   // RTO 2
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 7, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 8, true));
   // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      9, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 9, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 10, true));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       11, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -3168,23 +3163,16 @@ TEST_P(QuicNetworkTransactionTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset setting_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
 
   quic_data.AddRead(ASYNC, ConstructServerResponseHeadersPacket(
                                1, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -3196,40 +3184,32 @@ TEST_P(QuicNetworkTransactionTest,
                                quic::QuicTime::Delta::FromMilliseconds(25)));
 
   // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, false, false, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 4, false));
   // TLP 2
-  client_maker_.set_header_stream_offset(setting_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, false, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 5, false));
   // RTO 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      6, false, false, request_data));
-  client_maker_.set_header_stream_offset(setting_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, false, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 6, false));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 7, false));
   // RTO 2
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, false, false, request_data));
-  client_maker_.set_header_stream_offset(setting_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      9, false, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 8, false));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 9, false));
   // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, false, false, request_data));
-  client_maker_.set_header_stream_offset(setting_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      11, false, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 10, false));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 11, false));
 
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeAckAndConnectionClosePacket(
-            12, false, quic::QuicTime::Delta::FromMilliseconds(4000), 1, 1, 1,
-            quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
+  quic_data.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeAckAndConnectionClosePacket(
+          12, false, quic::QuicTime::Delta::FromMilliseconds(4000), 1, 1, 1,
+          quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);
@@ -3296,59 +3276,43 @@ TEST_P(QuicNetworkTransactionTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset settings_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
+
   // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      3, true, false, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 3, true));
   // TLP 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 4, true));
   // RTO 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      6, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 5, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 6, true));
   // RTO 2
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 7, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 8, true));
   // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      9, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 9, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 10, true));
   // RTO 4
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      11, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      12, true, false, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(1, 11, true));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeRetransmissionPacket(2, 12, true));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       13, true, quic::QUIC_TOO_MANY_RTOS,
@@ -3430,67 +3394,79 @@ TEST_P(QuicNetworkTransactionTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
-  quic::QuicStreamOffset request_header_stream_offset =
-      client_maker_.header_stream_offset();
+  client_maker_.set_save_packet_frames(true);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  quic::QuicStreamOffset settings_header_stream_offset =
-      client_maker_.header_stream_offset();
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
 
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
                          quic::QUIC_STREAM_CANCELLED));
-  // TLP 1
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      4, true, false, request_data));
-  // TLP 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      5, true, false, settings_data));
-  // RTO 1
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRstPacket(
-                         6, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      7, true, false, request_data));
-  // RTO 2
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      8, true, false, settings_data));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRstPacket(
-                         9, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED));
-  // RTO 3
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      10, true, false, request_data));
-  client_maker_.set_header_stream_offset(settings_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      11, true, false, settings_data));
-  // RTO 4
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(
-                       12, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED));
-  client_maker_.set_header_stream_offset(request_header_stream_offset);
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
-                                      13, true, false, request_data));
+  if (quic::VersionUsesQpack(version_.transport_version)) {
+    // Since the headers are sent on the data stream, when the stream is reset
+    // the headers are no longer retransmitted.
+    // TLP 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 4, true));
+    // TLP 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 5, true));
+    // RTO 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 6, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 7, true));
+    // RTO 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 9, true));
+    // RTO 3
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 10, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 11, true));
+    // RTO 4
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 13, true));
+  } else {
+    // TLP 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 4, true));
+    // TLP 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 5, true));
+    // RTO 1
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 6, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 7, true));
+    // RTO 2
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 9, true));
+    // RTO 3
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 10, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(2, 11, true));
+    // RTO 4
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(3, 12, true));
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeRetransmissionPacket(1, 13, true));
+  }
+
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       14, true, quic::QUIC_TOO_MANY_RTOS,
@@ -3636,19 +3612,15 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeRequestHeadersPacketAndSaveData(
-                         1, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                         true, priority, GetRequestHeaders("GET", "https", "/"),
-                         0, nullptr, &request_data));
-
-  std::string settings_data;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeInitialSettingsPacketAndSaveData(2, &settings_data));
+      client_maker_.MakeRequestHeadersPacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(2));
 
   quic_data.AddRead(ASYNC,
                     ConstructServerRstPacket(
@@ -6161,7 +6133,11 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
   quic::QuicStreamOffset expected_raw_header_response_size =
-      server_maker_.header_stream_offset();
+      server_maker_.stream_offset(
+          quic::VersionUsesQpack(version_.transport_version)
+              ? GetNthClientInitiatedBidirectionalStreamId(0)
+              : quic::QuicUtils::GetHeadersStreamId(
+                    version_.transport_version));
 
   std::string header = ConstructDataHeader(18);
   mock_quic_data.AddRead(
@@ -6242,14 +6218,20 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
             GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
   }
 
-  quic::QuicStreamOffset server_header_offset =
-      server_maker_.header_stream_offset();
+  const quic::QuicStreamOffset initial_offset = server_maker_.stream_offset(
+      quic::VersionUsesQpack(version_.transport_version)
+          ? GetNthClientInitiatedBidirectionalStreamId(0)
+          : quic::QuicUtils::GetHeadersStreamId(version_.transport_version));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
+  const quic::QuicStreamOffset final_offset = server_maker_.stream_offset(
+      quic::VersionUsesQpack(version_.transport_version)
+          ? GetNthClientInitiatedBidirectionalStreamId(0)
+          : quic::QuicUtils::GetHeadersStreamId(version_.transport_version));
   quic::QuicStreamOffset expected_raw_header_response_size =
-      server_maker_.header_stream_offset() - server_header_offset;
+      final_offset - initial_offset;
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
@@ -8042,6 +8024,12 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
   // in HEADERS frames for requests and PRIORITY frames).
   if (version_.transport_version < quic::QUIC_VERSION_43 ||
       !client_headers_include_h2_stream_dependency_) {
+    return;
+  }
+
+  if (quic::VersionUsesQpack(version_.transport_version)) {
+    // TODO(rch): both stream_dependencies and priority frames need to be
+    // supported in IETF QUIC.
     return;
   }
 

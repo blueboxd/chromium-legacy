@@ -173,18 +173,13 @@ class MergingTest(unittest.TestCase):  # pragma: no cover
             {'a': {'b': 'A'}}, {'a': {'b': 'C'}})
 
   def test_merge_metadata(self):
-    metadata = {'metadata': {'tags': ['foo', 'bar']}}
-    results_merger.merge_test_results(
-        [extend(GOOD_JSON_TEST_RESULT_0, metadata),
-         extend(GOOD_JSON_TEST_RESULT_1, metadata)])
-
-  def test_merge_metadata_raises_exception(self):
     metadata1 = {'metadata': {'tags': ['foo', 'bar']}}
     metadata2 = {'metadata': {'tags': ['foo', 'bat']}}
-    with self.assertRaises(results_merger.MergeException):
-      results_merger.merge_test_results(
-          [extend(GOOD_JSON_TEST_RESULT_0, metadata1),
-          extend(GOOD_JSON_TEST_RESULT_1, metadata2)])
+    merged_results = results_merger.merge_test_results(
+        [extend(GOOD_JSON_TEST_RESULT_0, metadata1),
+         extend(GOOD_JSON_TEST_RESULT_1, metadata2)])
+    self.assertEquals(
+        merged_results['metadata']['tags'], ['foo', 'bat'])
 
   def test_merge_json_test_results_nop(self):
     good_json_results = (

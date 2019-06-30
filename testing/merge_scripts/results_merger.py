@@ -24,12 +24,13 @@ OPTIONAL_MATCHING = (
     'has_wdiff',
     'path_delimiter',
     'pixel_tests_enabled',
-    'random_order_seed',
-    'metadata'
+    'random_order_seed'
     )
 
+# The last shard's value for these fields will show up in the merged results
 OPTIONAL_IGNORED = (
     'layout_tests_dir',
+    'metadata'
     )
 
 # These fields are optional and will be summed together

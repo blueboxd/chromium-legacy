@@ -455,11 +455,10 @@ async function createShortcut(appId, directoryName) {
 
   await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
   await remoteCall.waitForElement(
-      appId,
-      '[command="#create-folder-shortcut"]:not([hidden]):not([disabled])');
+      appId, '[command="#pin-folder"]:not([hidden]):not([disabled])');
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId,
-      ['[command="#create-folder-shortcut"]:not([hidden]):not([disabled])']));
+      ['[command="#pin-folder"]:not([hidden]):not([disabled])']));
 
   await remoteCall.waitForElement(
       appId, `.tree-item[entry-label="${directoryName}"]`);

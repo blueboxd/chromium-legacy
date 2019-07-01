@@ -377,13 +377,6 @@ AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
-AccessibilityPrivateOnScrollableBoundsForPointFoundFunction::Run() {
-  // TODO(crbug.com/978163) When this occurs the bounds should be sent to the
-  // autoclick_controller for processing.
-  return RespondNow(NoArguments());
-}
-
-ExtensionFunction::ResponseAction
 AccessibilityPrivateToggleDictationFunction::Run() {
   ash::DictationToggleSource source = ash::DictationToggleSource::kChromevox;
   if (extension()->id() == extension_misc::kSwitchAccessExtensionId)

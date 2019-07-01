@@ -1041,6 +1041,8 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_geometry_changed_callback(
       base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,
                           base::Unretained(remote_surface_resource)));
+  shell_surface->set_surface_destroyed_callback(base::BindOnce(
+      &wl_resource_destroy, base::Unretained(remote_surface_resource)));
 
   DCHECK(wl_resource_get_version(remote_surface_resource) >= 10);
   shell_surface->set_bounds_changed_callback(

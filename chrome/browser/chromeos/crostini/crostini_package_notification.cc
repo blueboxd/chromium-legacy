@@ -7,9 +7,13 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
@@ -23,6 +27,10 @@ constexpr char kNotifierCrostiniPackageOperation[] =
 
 }  // namespace
 
+int CrostiniPackageNotification::GetButtonCountForTesting() {
+  return notification_->buttons().size();
+}
+
 CrostiniPackageNotification::NotificationSettings::NotificationSettings() {}
 CrostiniPackageNotification::NotificationSettings::NotificationSettings(
     const NotificationSettings& rhs) = default;
@@ -32,6 +40,7 @@ CrostiniPackageNotification::CrostiniPackageNotification(
     Profile* profile,
     NotificationType notification_type,
     PackageOperationStatus status,
+    const ContainerId& container_id,
     const base::string16& app_name,
     const std::string& notification_id,
     CrostiniPackageService* package_service)
@@ -43,9 +52,11 @@ CrostiniPackageNotification::CrostiniPackageNotification(
           GetNotificationSettingsForTypeAndAppName(notification_type,
                                                    app_name)),
       visible_(true),
+      container_id_(container_id),
       weak_ptr_factory_(this) {
   if (status == PackageOperationStatus::RUNNING) {
     running_start_time_ = base::TimeTicks::Now();
+    CrostiniRegistryServiceFactory::GetForProfile(profile_)->AddObserver(this);
   }
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &ash::kNotificationLinuxIcon;
@@ -68,10 +79,20 @@ CrostiniPackageNotification::CrostiniPackageNotification(
   UpdateProgress(status, 0 /*progress_percent*/);
 }
 
-CrostiniPackageNotification::~CrostiniPackageNotification() = default;
+CrostiniPackageNotification::~CrostiniPackageNotification() {
+  CrostiniRegistryServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+}
 
 PackageOperationStatus CrostiniPackageNotification::GetOperationStatus() const {
   return current_status_;
+}
+
+void CrostiniPackageNotification::OnRegistryUpdated(
+    CrostiniRegistryService* registry_service,
+    const std::vector<std::string>& updated_apps,
+    const std::vector<std::string>& removed_apps,
+    const std::vector<std::string>& inserted_apps) {
+  inserted_apps_.insert(inserted_apps.begin(), inserted_apps.end());
 }
 
 // static
@@ -136,19 +157,48 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
   if (status == PackageOperationStatus::RUNNING &&
       current_status_ != PackageOperationStatus::RUNNING) {
     running_start_time_ = base::TimeTicks::Now();
+    CrostiniRegistryServiceFactory::GetForProfile(profile_)->AddObserver(this);
   }
   current_status_ = status;
 
   base::string16 title;
   base::string16 body;
+  std::vector<message_center::ButtonInfo> buttons;
   message_center::NotificationType notification_type =
       message_center::NOTIFICATION_TYPE_SIMPLE;
   bool never_timeout = false;
+  app_count_ = 0;
+  CrostiniRegistryService* crostini_registry_service =
+      CrostiniRegistryServiceFactory::GetForProfile(profile_);
 
   switch (status) {
     case PackageOperationStatus::SUCCEEDED:
       title = notification_settings_.success_title;
       body = notification_settings_.success_body;
+
+      if (notification_type_ == NotificationType::PACKAGE_INSTALL) {
+        // Try and match up launcher icons with the install we just finished. We
+        // don't have a perfect solution to this, but under normal circumstances
+        // we shouldn't see icons appearing during an install that aren't
+        // because of that install.
+        for (const std::string& app_id : inserted_apps_) {
+          auto registration =
+              crostini_registry_service->GetRegistration(app_id);
+          if (registration.has_value() &&
+              registration->VmName() == container_id_.first &&
+              registration->ContainerName() == container_id_.second) {
+            app_id_ = app_id;
+            app_count_++;
+          }
+        }
+        if (app_count_ == 1) {
+          buttons.push_back(
+              message_center::ButtonInfo(l10n_util::GetStringUTF16(
+                  IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_COMPLETED_BUTTON)));
+        }
+      }
+      crostini_registry_service->RemoveObserver(this);
+
       break;
 
     case PackageOperationStatus::FAILED:
@@ -194,6 +244,7 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
 
   notification_->set_title(title);
   notification_->set_message(body);
+  notification_->set_buttons(buttons);
   notification_->set_type(notification_type);
   notification_->set_progress(progress_percent);
   notification_->set_never_timeout(never_timeout);
@@ -214,6 +265,21 @@ void CrostiniPackageNotification::Close(bool by_user) {
   } else {
     // This call deletes us.
     package_service_->NotificationCompleted(this);
+  }
+}
+
+void CrostiniPackageNotification::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  if (app_count_ == 0) {
+    LaunchCrostiniApp(profile_, kCrostiniTerminalId,
+                      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  } else if (app_count_ == 1) {
+    DCHECK(!app_id_.empty());
+    LaunchCrostiniApp(profile_, app_id_,
+                      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  } else {
+    AppListClientImpl::GetInstance()->ShowAppList();
   }
 }
 

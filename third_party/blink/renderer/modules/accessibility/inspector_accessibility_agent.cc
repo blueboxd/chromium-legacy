@@ -405,6 +405,10 @@ class SparseAttributeAXPropertyAdapter
     }
   }
 
+  void AddIntAttribute(AXIntAttribute attribute, int32_t value) override {}
+
+  void AddUIntAttribute(AXUIntAttribute attribute, uint32_t value) override {}
+
   void AddStringAttribute(AXStringAttribute attribute,
                           const String& value) override {
     switch (attribute) {

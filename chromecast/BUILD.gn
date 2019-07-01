@@ -98,7 +98,7 @@ cast_test_group("cast_tests") {
     tests += [ "//chromecast/media/cma/backend:cast_audio_backend_unittests" ]
   }
 
-  if (is_android && is_cast_using_cma_backend) {
+  if (is_android) {
     tests += [ "//chromecast/media/cma/backend/android:cast_android_cma_backend_unittests" ]
   }
 
@@ -594,7 +594,6 @@ buildflag_header("chromecast_buildflags") {
     "IS_ANDROID_THINGS_NON_PUBLIC=$is_android_things_non_public",
     "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
     "IS_CAST_DESKTOP_BUILD=$is_cast_desktop_build",
-    "IS_CAST_USING_CMA_BACKEND=$is_cast_using_cma_backend",
     "IS_SINGLE_VOLUME=$is_single_volume",
     "SUPPORTS_MULTIZONE=$supports_multizone",
     "USE_ANDROID_USER_AGENT=$use_android_user_agent",

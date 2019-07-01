@@ -2,7 +2,7 @@ rootWebArea
 ++genericContainer ignored
 ++++grid ariaColumnCount=5
 ++++++row selected=false
-++++++++columnHeader name='cell 2' ariaCellColumnIndex=2 selected=false
+++++++++columnHeader name='cell 2' ariaCellColumnIndex=2 ariaCellColumnSpan=2 selected=false
 ++++++++++staticText name='cell 2'
 ++++++++++++inlineTextBox name='cell 2'
 ++++++++columnHeader name='cell 4' ariaCellColumnIndex=4 selected=false

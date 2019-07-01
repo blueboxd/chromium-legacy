@@ -370,6 +370,9 @@
 
     void setCapsLockState(boolean enabled);
 
+    // pseudo: One of ":focus", ":focus-within", ":active", and ":hover".
+    [RaisesException] void setPseudoClassState(Element element, DOMString pseudo, boolean enabled);
+
     // Returns whether the scrollbar was able to be shown or hidden; not all platforms
     // support overlay scrollbars.
     boolean setScrollbarVisibilityInScrollableArea(Node node, boolean visible);

@@ -696,7 +696,7 @@
   testcase.dirContextMenuShortcut = async () => {
     const menus = [
       ['#rename', false],
-      ['#remove-folder-shortcut', true],
+      ['#unpin-folder', true],
       ['#share-with-linux', true],
     ];
     const entry = ENTRIES.directoryD;
@@ -1135,7 +1135,7 @@
       ['#paste-into-folder', false],
       ['#share-with-linux', true],
       ['#rename', false],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', false],
       ['#new-folder', false],
     ];
@@ -1145,7 +1145,7 @@
       ['#paste-into-folder', true],
       ['#share-with-linux', true],
       ['#rename', true],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', true],
       ['#new-folder', true],
     ];
@@ -1206,7 +1206,7 @@
       ['#paste-into-folder', true],
       ['#share-with-linux', true],
       ['#rename', true],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', true],
       ['#new-folder', true],
     ];
@@ -1225,7 +1225,7 @@
       ['#paste-into-folder', false],
       ['#share-with-linux', true],
       ['#rename', false],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', false],
       ['#new-folder', false],
     ];
@@ -1376,7 +1376,7 @@
       ['#paste-into-folder', true],
       ['#share-with-linux', true],
       ['#rename', false],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', true],
       ['#new-folder', true],
     ];

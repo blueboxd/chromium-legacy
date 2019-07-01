@@ -154,8 +154,10 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kTextUnderlineStyle:
     case ax::mojom::IntAttribute::kAriaColumnCount:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
+    case ax::mojom::IntAttribute::kAriaCellColumnSpan:
     case ax::mojom::IntAttribute::kAriaRowCount:
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
+    case ax::mojom::IntAttribute::kAriaCellRowSpan:
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
     case ax::mojom::IntAttribute::kDropeffect:
       return false;
@@ -947,11 +949,17 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kAriaCellColumnIndex:
         result += " aria_cell_column_index=" + value;
         break;
+      case ax::mojom::IntAttribute::kAriaCellColumnSpan:
+        result += " aria_cell_column_span=" + value;
+        break;
       case ax::mojom::IntAttribute::kAriaRowCount:
         result += " aria_row_count=" + value;
         break;
       case ax::mojom::IntAttribute::kAriaCellRowIndex:
         result += " aria_cell_row_index=" + value;
+        break;
+      case ax::mojom::IntAttribute::kAriaCellRowSpan:
+        result += " aria_cell_row_span=" + value;
         break;
       case ax::mojom::IntAttribute::kTableRowCount:
         result += " rows=" + value;

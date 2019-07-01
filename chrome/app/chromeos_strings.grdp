@@ -3630,6 +3630,9 @@
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_COMPLETED_MESSAGE" desc="Message in the Notification for Linux package installation once installation has completed successfully.">
     App is available in your terminal. There may also be an icon in your Launcher.
   </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_COMPLETED_BUTTON" desc="Button text in the Notification for Linux package installation once installation has completed successfully.">
+    Launch
+  </message>
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_ERROR_TITLE" desc="Title of the Notification for Linux package installation when there is an error during installation.">
     Error while installing
   </message>

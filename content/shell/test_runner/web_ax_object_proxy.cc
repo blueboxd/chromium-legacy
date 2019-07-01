@@ -600,6 +600,8 @@ class SparseAttributeAdapter : public blink::WebAXSparseAttributeClient {
   ~SparseAttributeAdapter() override {}
 
   std::map<blink::WebAXBoolAttribute, bool> bool_attributes;
+  std::map<blink::WebAXIntAttribute, int32_t> int_attributes;
+  std::map<blink::WebAXUIntAttribute, int32_t> uint_attributes;
   std::map<blink::WebAXStringAttribute, blink::WebString> string_attributes;
   std::map<blink::WebAXObjectAttribute, blink::WebAXObject> object_attributes;
   std::map<blink::WebAXObjectVectorAttribute,
@@ -610,6 +612,16 @@ class SparseAttributeAdapter : public blink::WebAXSparseAttributeClient {
   void AddBoolAttribute(blink::WebAXBoolAttribute attribute,
                         bool value) override {
     bool_attributes[attribute] = value;
+  }
+
+  void AddIntAttribute(blink::WebAXIntAttribute attribute,
+                       int32_t value) override {
+    int_attributes[attribute] = value;
+  }
+
+  void AddUIntAttribute(blink::WebAXUIntAttribute attribute,
+                        uint32_t value) override {
+    uint_attributes[attribute] = value;
   }
 
   void AddStringAttribute(blink::WebAXStringAttribute attribute,
@@ -708,6 +720,12 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("current", &WebAXObjectProxy::Current)
       .SetProperty("invalid", &WebAXObjectProxy::Invalid)
       .SetProperty("keyShortcuts", &WebAXObjectProxy::KeyShortcuts)
+      .SetProperty("ariaColumnCount", &WebAXObjectProxy::AriaColumnCount)
+      .SetProperty("ariaColumnIndex", &WebAXObjectProxy::AriaColumnIndex)
+      .SetProperty("ariaColumnSpan", &WebAXObjectProxy::AriaColumnSpan)
+      .SetProperty("ariaRowCount", &WebAXObjectProxy::AriaRowCount)
+      .SetProperty("ariaRowIndex", &WebAXObjectProxy::AriaRowIndex)
+      .SetProperty("ariaRowSpan", &WebAXObjectProxy::AriaRowSpan)
       .SetProperty("live", &WebAXObjectProxy::Live)
       .SetProperty("orientation", &WebAXObjectProxy::Orientation)
       .SetProperty("relevant", &WebAXObjectProxy::Relevant)
@@ -1325,6 +1343,54 @@ std::string WebAXObjectProxy::KeyShortcuts() {
   return attribute_adapter
       .string_attributes[blink::WebAXStringAttribute::kAriaKeyShortcuts]
       .Utf8();
+}
+
+int32_t WebAXObjectProxy::AriaColumnCount() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .int_attributes[blink::WebAXIntAttribute::kAriaColumnCount];
+}
+
+uint32_t WebAXObjectProxy::AriaColumnIndex() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .uint_attributes[blink::WebAXUIntAttribute::kAriaColumnIndex];
+}
+
+uint32_t WebAXObjectProxy::AriaColumnSpan() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .uint_attributes[blink::WebAXUIntAttribute::kAriaColumnSpan];
+}
+
+int32_t WebAXObjectProxy::AriaRowCount() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .int_attributes[blink::WebAXIntAttribute::kAriaRowCount];
+}
+
+uint32_t WebAXObjectProxy::AriaRowIndex() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .uint_attributes[blink::WebAXUIntAttribute::kAriaRowIndex];
+}
+
+uint32_t WebAXObjectProxy::AriaRowSpan() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .uint_attributes[blink::WebAXUIntAttribute::kAriaRowSpan];
 }
 
 std::string WebAXObjectProxy::Live() {

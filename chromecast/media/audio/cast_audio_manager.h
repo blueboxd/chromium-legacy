@@ -116,6 +116,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
 #endif
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CastAudioManagerTest, CanMakeStreamProxy);
   friend class CastAudioMixer;
   friend class CastAudioManagerTest;
   friend class CastAudioOutputStreamTest;

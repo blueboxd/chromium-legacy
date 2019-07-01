@@ -90,7 +90,8 @@ void SignOutFromSettings() {
   WaitForMatcher(grey_accessibilityID(kFakeAddAccountViewIdentifier));
   // Close the SSO view controller.
   id<GREYMatcher> matcher =
-      chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel");
+      grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
+                 grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
   // Make sure the SSO view controller is fully removed before ending the test.
   // The tear down needs to remove other view controllers, and it cannot be done

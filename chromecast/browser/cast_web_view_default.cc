@@ -81,18 +81,9 @@ CastWebViewDefault::CastWebViewDefault(
 #endif
 
 #if BUILDFLAG(IS_ANDROID_THINGS)
-// Configure the ducking multiplier for AThings speakers. When CMA backend is
-// used we don't want the Chromium MediaSession to duck since we are doing
-// our own ducking. When no CMA backend is used we rely on the MediaSession
-// for ducking. In that case set it to a proper value to match the ducking
-// done in CMA backend.
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
-  // passthrough, i.e., disable ducking
+  // Configure the ducking multiplier for AThings speakers. We don't want the
+  // Chromium MediaSession to duck since we are doing our own ducking.
   constexpr double kDuckingMultiplier = 1.0;
-#else
-  // duck by -30dB
-  constexpr double kDuckingMultiplier = 0.03;
-#endif
   content::MediaSession::Get(web_contents_.get())
       ->SetDuckingVolumeMultiplier(kDuckingMultiplier);
 #endif

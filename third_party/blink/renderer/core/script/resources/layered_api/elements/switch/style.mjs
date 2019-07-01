@@ -111,6 +111,29 @@ export function styleSheetFactory() {
 :host(:not(:focus-visible):focus) {
   outline: none;
 }
+
+:host(:not(:disabled):hover) #thumb {
+  max-inline-size: 26px;
+  min-inline-size: 26px;
+}
+
+:host([on]:not(:disabled):hover) #thumb {
+  margin-inline-start: calc(0px - 26px - ${THUMB_MARGIN_END});
+}
+
+:host(:active) #track {
+  background: #dddddd;
+}
+
+:host([on]:active) #track {
+  border: 2px solid #77bbff;
+  box-shadow: 0 0 0 2px #f8f8f8;
+}
+
+:host([on]:active) #trackFill {
+  background: #77bbff;
+}
+
 `);
     }
     return styleSheet;

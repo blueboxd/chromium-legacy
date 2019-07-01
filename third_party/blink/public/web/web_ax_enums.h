@@ -92,6 +92,18 @@ enum class WebAXBoolAttribute {
   kAriaBusy,
 };
 
+enum class WebAXIntAttribute {
+  kAriaColumnCount,
+  kAriaRowCount,
+};
+
+enum class WebAXUIntAttribute {
+  kAriaColumnIndex,
+  kAriaColumnSpan,
+  kAriaRowIndex,
+  kAriaRowSpan,
+};
+
 // Sparse attributes of a WebAXObject whose value is a string.
 // In order for it to be a sparse attribute the default value
 // must be "".

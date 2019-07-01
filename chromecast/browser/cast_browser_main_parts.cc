@@ -365,7 +365,6 @@ CastBrowserMainParts::CastBrowserMainParts(
 }
 
 CastBrowserMainParts::~CastBrowserMainParts() {
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   if (cast_content_browser_client_->GetMediaTaskRunner() &&
       media_pipeline_backend_manager_) {
     // Make sure that media_pipeline_backend_manager_ is destroyed after any
@@ -382,10 +381,8 @@ CastBrowserMainParts::~CastBrowserMainParts() {
     cast_content_browser_client_->GetMediaTaskRunner()->DeleteSoon(
         FROM_HERE, media_pipeline_backend_manager_.release());
   }
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 }
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 media::MediaPipelineBackendManager*
 CastBrowserMainParts::media_pipeline_backend_manager() {
   if (!media_pipeline_backend_manager_) {
@@ -395,7 +392,6 @@ CastBrowserMainParts::media_pipeline_backend_manager() {
   }
   return media_pipeline_backend_manager_.get();
 }
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
 media::MediaCapsImpl* CastBrowserMainParts::media_caps() {
   return media_caps_.get();
@@ -568,9 +564,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           video_plane_controller_.get(), window_manager_.get()));
   cast_browser_process_->cast_service()->Initialize();
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   cast_content_browser_client_->media_resource_tracker()->InitializeMediaLib();
-#endif
   ::media::InitializeMediaLibrary();
   media_caps_->Initialize();
 

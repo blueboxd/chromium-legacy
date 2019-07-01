@@ -11,7 +11,7 @@ document.write(`
     <command id="share" label="Share"></command>
     <command id="manage-in-drive" label="Manage in Drive"></command>
     <command id="toggle-pinned" label="Toggle pinned"></command>
-    <command id="remove-folder-shortcut" label="Remove folder shortcut">
+    <command id="unpin-folder" label="Remove folder shortcut">
     </command>
 
     <cr-menu id="menu">

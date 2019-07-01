@@ -142,6 +142,7 @@ android_library("cast_shell_java") {
     ":reactive_android_java",
     "//base:base_java",
     "//chromecast/base:base_java",
+    "//chromecast/media/cma/backend/android:audio_track_java",
     "//components/crash/android:java",
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:view_java",
@@ -150,15 +151,9 @@ android_library("cast_shell_java") {
     "//media/base/android:media_java",
     "//net/android:net_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
-
-    # TODO(slan): We may need to pass this in as a parameter.
     "//third_party/android_deps:com_android_support_support_core_utils_java",
     "//ui/android:ui_java",
   ]
-
-  if (is_cast_using_cma_backend) {
-    deps += [ "//chromecast/media/cma/backend/android:audio_track_java" ]
-  }
 
   if (is_android_things_non_public) {
     deps += [ ":cast_shell_android_things_sys_info_java" ]

@@ -476,10 +476,10 @@ class AudioSinkAudioTrackImpl {
     }
 
     int getUnderrunCount() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return mAudioTrack.getUnderrunCount();
         }
-        // Using pre-M API.
+        // Using pre-N API.
         return 0;
     }
 

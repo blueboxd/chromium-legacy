@@ -718,6 +718,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
 
 void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
   auto* widget = views::Widget::GetWidgetForNativeWindow(window());
+  const bool was_pip = old_window_state_type == WindowStateType::kPip;
   if (IsPip()) {
     CollisionDetectionUtils::MarkWindowPriorityForCollisionDetection(
         window(), CollisionDetectionUtils::RelativePriority::kPictureInPicture);
@@ -733,13 +734,13 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
         window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
     // There may already be a system ui window on the initial position.
     UpdatePipBounds();
-    if (old_window_state_type != WindowStateType::kPip) {
+    if (!was_pip) {
       window()->SetProperty(ash::kPrePipWindowStateTypeKey,
                             old_window_state_type);
     }
 
     CollectPipEnterExitMetrics(window(), /*enter=*/true);
-  } else if (old_window_state_type == WindowStateType::kPip) {
+  } else if (was_pip) {
     if (widget) {
       widget->widget_delegate()->SetCanActivate(true);
       Shell::Get()->focus_cycler()->RemoveWidget(widget);
@@ -749,6 +750,10 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
 
     CollectPipEnterExitMetrics(window(), /*enter=*/false);
   }
+  // PIP uses restore bounds in its own special context. Reset it in PIP
+  // enter/exit transition so that it won't be used wrongly.
+  if (IsPip() || was_pip)
+    ClearRestoreBounds();
 }
 
 void WindowState::UpdatePipBounds() {

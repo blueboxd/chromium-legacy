@@ -97,7 +97,6 @@ class CastContentBrowserClient
   // Returns the task runner that must be used for media IO.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // Gets object for enforcing video resolution policy restrictions.
   virtual media::VideoResolutionPolicy* GetVideoResolutionPolicy();
 
@@ -113,7 +112,6 @@ class CastContentBrowserClient
   std::unique_ptr<::media::AudioManager> CreateAudioManager(
       ::media::AudioLogFactory* audio_log_factory) override;
   bool OverridesAudioManager() override;
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   media::MediaCapsImpl* media_caps();
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -296,13 +294,11 @@ class CastContentBrowserClient
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_FUCHSIA)
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.
   std::unique_ptr<base::Thread> media_thread_;
 
   // Tracks usage of media resource by e.g. CMA pipeline, CDM.
   media::MediaResourceTracker* media_resource_tracker_ = nullptr;
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;

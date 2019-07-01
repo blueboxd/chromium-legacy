@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 import("//chrome/browser/resources/chromeos/chromevox/run_jsbundler.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
-import("//third_party/closure_compiler/compile_js.gni")
 
 assert(is_chromeos)
 
@@ -72,66 +71,4 @@ manifest("autoclick_manifest") {
 manifest("autoclick_guest_manifest") {
   output_file = "$autoclick_dir/manifest_guest.json"
   is_guest_manifest = true
-}
-
-source_set("browser_tests") {
-  testonly = true
-  assert(enable_extensions)
-
-  deps = [
-    ":autoclick_extjs_tests",
-  ]
-
-  data = [
-    "$root_out_dir/chrome_100_percent.pak",
-    "$root_out_dir/chrome_200_percent.pak",
-    "$root_out_dir/locales/en-US.pak",
-    "$root_out_dir/resources.pak",
-    "$root_out_dir/resources/chromeos/autoclick/",
-    "$root_out_dir/test_data/chrome/browser/resources/chromeos/autoclick/",
-
-    # The test uses data from the original location, not the copied one.
-    "//chrome/browser/resources/chromeos/chromevox/",
-    "//chrome/browser/resources/chromeos/autoclick/",
-    "//chrome/test/data/webui/test_api.js",
-    "//chrome/third_party/mock4js/",
-    "//third_party/accessibility-audit/axs_testing.js",
-    "//third_party/chaijs/chai.js",
-    "//ui/webui/resources/js/cr.js",
-  ]
-}
-
-js2gtest("autoclick_extjs_tests") {
-  test_type = "extension"
-  sources = [
-    "autoclick_test.extjs",
-  ]
-  gen_include_files = [
-    "../chromevox/testing/callback_helper.js",
-    "mock_accessibility_private.js",
-  ]
-
-  # The test base classes generate C++ code with these deps.
-  deps = [
-    "//ash",
-    "//ash/keyboard/ui",
-    "//base",
-    "//chrome/browser/chromeos",
-    "//chrome/common",
-  ]
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-}
-
-js_type_check("closure_compile") {
-  deps = [
-    ":autoclick",
-  ]
-}
-
-js_library("autoclick") {
-  deps = []
-  externs_list = [
-    "$externs_path/accessibility_private.js",
-    "$externs_path/automation.js",
-  ]
 }

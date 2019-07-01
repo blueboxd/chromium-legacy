@@ -311,8 +311,7 @@ AccessibilityManager::AccessibilityManager()
       base::WrapUnique(new AccessibilityExtensionLoader(
           extension_misc::kAutoclickExtensionId,
           resources_path.Append(extension_misc::kAutoclickExtensionPath),
-          base::BindRepeating(&AccessibilityManager::PostUnloadAutoclick,
-                              weak_ptr_factory_.GetWeakPtr())));
+          base::Closure() /* post_unload */));
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kChromeVoxExtensionId,
       resources_path.Append(extension_misc::kChromeVoxExtensionPath),
@@ -688,9 +687,8 @@ void AccessibilityManager::OnAutoclickChanged() {
 
   autoclick_enabled_ = enabled;
   if (enabled) {
-    autoclick_extension_loader_->Load(
-        profile_, base::BindRepeating(&AccessibilityManager::PostLoadAutoclick,
-                                      weak_ptr_factory_.GetWeakPtr()));
+    autoclick_extension_loader_->Load(profile_,
+                                      base::Closure() /* done_callback */);
     // TODO: Construct a delegate to connect Autoclick and its controller in
     // ash.
   } else {
@@ -1477,15 +1475,6 @@ void AccessibilityManager::PostUnloadSwitchAccess() {
 void AccessibilityManager::OnSwitchAccessPanelDestroying() {
   switch_access_panel_widget_observer_.reset(nullptr);
   switch_access_panel_ = nullptr;
-}
-
-void AccessibilityManager::PostLoadAutoclick() {
-  InitializeFocusRings(extension_misc::kAutoclickExtensionId);
-}
-
-void AccessibilityManager::PostUnloadAutoclick() {
-  // Clear the accessibility focus ring.
-  RemoveFocusRings(extension_misc::kAutoclickExtensionId);
 }
 
 void AccessibilityManager::SetKeyboardListenerExtensionId(

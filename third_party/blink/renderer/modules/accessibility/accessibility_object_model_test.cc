@@ -269,6 +269,8 @@ class SparseAttributeAdapter : public AXSparseAttributeClient {
   ~SparseAttributeAdapter() = default;
 
   HashMap<AXBoolAttribute, bool> bool_attributes;
+  HashMap<AXIntAttribute, int32_t> int_attributes;
+  HashMap<AXUIntAttribute, uint32_t> uint_attributes;
   HashMap<AXStringAttribute, String> string_attributes;
   HeapHashMap<AXObjectAttribute, Member<AXObject>> object_attributes;
   HeapHashMap<AXObjectVectorAttribute, VectorOf<AXObject>>
@@ -278,6 +280,16 @@ class SparseAttributeAdapter : public AXSparseAttributeClient {
   void AddBoolAttribute(AXBoolAttribute attribute, bool value) override {
     ASSERT_TRUE(bool_attributes.find(attribute) == bool_attributes.end());
     bool_attributes.insert(attribute, value);
+  }
+
+  void AddIntAttribute(AXIntAttribute attribute, int32_t value) override {
+    ASSERT_TRUE(int_attributes.find(attribute) == int_attributes.end());
+    int_attributes.insert(attribute, value);
+  }
+
+  void AddUIntAttribute(AXUIntAttribute attribute, uint32_t value) override {
+    ASSERT_TRUE(uint_attributes.find(attribute) == uint_attributes.end());
+    uint_attributes.insert(attribute, value);
   }
 
   void AddStringAttribute(AXStringAttribute attribute,

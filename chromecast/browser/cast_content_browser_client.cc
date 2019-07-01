@@ -240,10 +240,8 @@ CastContentBrowserClient::CastContentBrowserClient(
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   DCHECK(!media_resource_tracker_)
       << "ResetMediaResourceTracker was not called";
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   cast_network_contexts_.reset();
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                      url_request_context_factory_.release());
@@ -267,7 +265,6 @@ void CastContentBrowserClient::InitializeURLLoaderThrottleDelegate() {}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CastContentBrowserClient::GetMediaTaskRunner() {
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("CastMediaThread"));
     base::Thread::Options options;
@@ -281,12 +278,8 @@ CastContentBrowserClient::GetMediaTaskRunner() {
         base::ThreadTaskRunnerHandle::Get(), media_thread_->task_runner());
   }
   return media_thread_->task_runner();
-#else
-  return nullptr;
-#endif
 }
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 media::VideoResolutionPolicy*
 CastContentBrowserClient::GetVideoResolutionPolicy() {
   return nullptr;
@@ -369,7 +362,6 @@ bool CastContentBrowserClient::OverridesAudioManager() {
 #endif  // defined(OS_ANDROID)
   return true;
 }
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
 std::unique_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory(

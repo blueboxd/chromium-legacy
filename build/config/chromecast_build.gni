@@ -21,10 +21,6 @@ declare_args() {
 
   # Set this true for an audio-only Chromecast build.
   is_cast_audio_only = false
-
-  # If true, use cast CMA backend instead of default chromium media pipeline.
-  # TODO(sanfin): Remove this flag when all builds enable CMA.
-  is_cast_using_cma_backend = !is_android
 }
 
 # Note(slan): This arg depends on the value of is_chromecast, and thus must be
@@ -43,8 +39,7 @@ declare_args() {
 declare_args() {
   # True to enable the cast renderer.  It is enabled by default for non-android
   # builds.
-  enable_cast_renderer =
-      is_chromecast && is_cast_using_cma_backend && !is_android
+  enable_cast_renderer = is_chromecast && !is_android
 }
 
 # Configures media options for cast.  See media/media_options.gni

@@ -104,6 +104,43 @@ class AXContentNodeDataSparseAttributeAdapter
     }
   }
 
+  void AddIntAttribute(blink::WebAXIntAttribute attribute,
+                       int32_t value) override {
+    switch (attribute) {
+      case blink::WebAXIntAttribute::kAriaColumnCount:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount, value);
+        break;
+      case blink::WebAXIntAttribute::kAriaRowCount:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount, value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void AddUIntAttribute(blink::WebAXUIntAttribute attribute,
+                        uint32_t value) override {
+    switch (attribute) {
+      case blink::WebAXUIntAttribute::kAriaColumnIndex:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
+                              value);
+        break;
+      case blink::WebAXUIntAttribute::kAriaColumnSpan:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnSpan,
+                              value);
+        break;
+      case blink::WebAXUIntAttribute::kAriaRowIndex:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
+                              value);
+        break;
+      case blink::WebAXUIntAttribute::kAriaRowSpan:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowSpan, value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
   void AddStringAttribute(blink::WebAXStringAttribute attribute,
                           const blink::WebString& value) override {
     switch (attribute) {

@@ -8,7 +8,7 @@ rootWebArea
 ++++++++columnHeader name='cell 3' ariaCellRowIndex=3 selected=false
 ++++++++++staticText name='cell 3'
 ++++++++++++inlineTextBox name='cell 3'
-++++++++columnHeader name='cell 4' ariaCellRowIndex=3 selected=false
+++++++++columnHeader name='cell 4' ariaCellRowIndex=3 ariaCellRowSpan=2 selected=false
 ++++++++++staticText name='cell 4'
 ++++++++++++inlineTextBox name='cell 4'
 ++++++row ariaCellRowIndex=4 selected=false

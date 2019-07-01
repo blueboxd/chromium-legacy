@@ -110,7 +110,7 @@
   async function removeShortcut(appId, directory) {
     const caller = getCaller();
     const removeShortcutMenuItem =
-        '[command="#remove-folder-shortcut"]:not([hidden]):not([disabled])';
+        '[command="#unpin-folder"]:not([hidden]):not([disabled])';
 
     // Right-click for context menu with retry.
     await repeatUntil(async () => {
@@ -137,7 +137,7 @@
     // Click the remove shortcut menu item.
     await remoteCall.waitAndClickElement(
         appId,
-        ['#roots-context-menu [command="#remove-folder-shortcut"]:' +
+        ['#roots-context-menu [command="#unpin-folder"]:' +
          'not([hidden])']);
 
     await remoteCall.waitForElementLost(appId, directory.navItem);

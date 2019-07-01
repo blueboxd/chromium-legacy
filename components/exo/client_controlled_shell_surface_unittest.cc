@@ -2125,4 +2125,49 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
   ASSERT_EQ(0, bounds_change_count());
 }
 
+TEST_F(ClientControlledShellSurfaceTest,
+       DoNotSavePipBoundsAcrossMultiplePipTransition) {
+  // Create a PIP window:
+  const gfx::Size content_size(100, 100);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(content_size));
+
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+
+  const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
+  shell_surface->SetGeometry(original_bounds);
+  shell_surface->SetPip();
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(10, 10, 100, 100), window->bounds());
+  shell_surface->GetWidget()->Show();
+
+  const gfx::Rect moved_bounds(gfx::Point(20, 20), content_size);
+  shell_surface->SetGeometry(moved_bounds);
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(20, 20, 100, 100), window->bounds());
+
+  shell_surface->SetRestored();
+  surface->Commit();
+  shell_surface->SetGeometry(original_bounds);
+  shell_surface->SetPip();
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(10, 10, 100, 100), window->bounds());
+
+  shell_surface->SetGeometry(moved_bounds);
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(20, 20, 100, 100), window->bounds());
+
+  shell_surface->SetRestored();
+  surface->Commit();
+  shell_surface->SetGeometry(moved_bounds);
+  shell_surface->SetPip();
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(20, 20, 100, 100), window->bounds());
+}
+
 }  // namespace exo

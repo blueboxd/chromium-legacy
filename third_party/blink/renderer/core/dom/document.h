@@ -783,6 +783,10 @@ class CORE_EXPORT Document : public ContainerNode,
   const UserActionElementSet& UserActionElements() const {
     return user_action_elements_;
   }
+  // Returns false if the function fails.  e.g. |pseudo| is not supported.
+  bool SetPseudoStateForTesting(Element& element,
+                                const String& pseudo,
+                                bool matches);
   void SetAutofocusElement(Element*);
   Element* AutofocusElement() const { return autofocus_element_.Get(); }
   void SetSequentialFocusNavigationStartingPoint(Node*);

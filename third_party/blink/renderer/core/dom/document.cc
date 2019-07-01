@@ -300,6 +300,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -7368,6 +7369,29 @@ TextAutosizer* Document::GetTextAutosizer() {
   if (!text_autosizer_)
     text_autosizer_ = MakeGarbageCollected<TextAutosizer>(this);
   return text_autosizer_.Get();
+}
+
+bool Document::SetPseudoStateForTesting(Element& element,
+                                        const String& pseudo,
+                                        bool matches) {
+  DCHECK(WebTestSupport::IsRunningWebTest());
+  auto& set = UserActionElements();
+  if (pseudo == ":focus") {
+    set.SetFocused(&element, matches);
+    element.PseudoStateChanged(CSSSelector::kPseudoFocus);
+  } else if (pseudo == ":focus-within") {
+    set.SetHasFocusWithin(&element, matches);
+    element.PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
+  } else if (pseudo == ":active") {
+    set.SetActive(&element, matches);
+    element.PseudoStateChanged(CSSSelector::kPseudoActive);
+  } else if (pseudo == ":hover") {
+    set.SetHovered(&element, matches);
+    element.PseudoStateChanged(CSSSelector::kPseudoHover);
+  } else {
+    return false;
+  }
+  return true;
 }
 
 void Document::SetAutofocusElement(Element* element) {

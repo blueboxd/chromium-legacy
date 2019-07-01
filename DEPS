@@ -142,7 +142,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '205224fbd5175d953f1ccd1734b04ec946619d67',
+  'skia_revision': 'dcb832ac631f0e17cdf8fd9ec924a02d71553afe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -445,7 +445,7 @@ deps = {
   },
 
   'src/ios/third_party/earl_grey2/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'e3c928c5abc94848e96b52b50e5468b275769ef3',
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '0267411fc3bf1bef0fa3cb88e4287f6fd40c5705',
       'condition': 'checkout_ios',
   },
 
@@ -1400,7 +1400,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5b0b9f9be4be54aab43b65b2b167eed252d73772',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@42e859eb5bca0eb64371e4a588c17bd30f05857b',
     'condition': 'checkout_src_internal',
   },
 

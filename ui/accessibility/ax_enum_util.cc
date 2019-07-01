@@ -1439,10 +1439,14 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "ariaColumnCount";
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
       return "ariaCellColumnIndex";
+    case ax::mojom::IntAttribute::kAriaCellColumnSpan:
+      return "ariaCellColumnSpan";
     case ax::mojom::IntAttribute::kAriaRowCount:
       return "ariaRowCount";
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
       return "ariaCellRowIndex";
+    case ax::mojom::IntAttribute::kAriaCellRowSpan:
+      return "ariaCellRowSpan";
     case ax::mojom::IntAttribute::kTableRowCount:
       return "tableRowCount";
     case ax::mojom::IntAttribute::kTableColumnCount:
@@ -1561,10 +1565,14 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kAriaColumnCount;
   if (0 == strcmp(int_attribute, "ariaCellColumnIndex"))
     return ax::mojom::IntAttribute::kAriaCellColumnIndex;
+  if (0 == strcmp(int_attribute, "ariaCellColumnSpan"))
+    return ax::mojom::IntAttribute::kAriaCellColumnSpan;
   if (0 == strcmp(int_attribute, "ariaRowCount"))
     return ax::mojom::IntAttribute::kAriaRowCount;
   if (0 == strcmp(int_attribute, "ariaCellRowIndex"))
     return ax::mojom::IntAttribute::kAriaCellRowIndex;
+  if (0 == strcmp(int_attribute, "ariaCellRowSpan"))
+    return ax::mojom::IntAttribute::kAriaCellRowSpan;
   if (0 == strcmp(int_attribute, "tableRowCount"))
     return ax::mojom::IntAttribute::kTableRowCount;
   if (0 == strcmp(int_attribute, "tableColumnCount"))

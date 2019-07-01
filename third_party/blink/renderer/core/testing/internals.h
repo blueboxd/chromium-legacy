@@ -540,6 +540,10 @@ class Internals final : public ScriptWrappable {
   String unscopableMethod();
 
   void setCapsLockState(bool enabled);
+  void setPseudoClassState(Element* element,
+                           const String& pseudo,
+                           bool enabled,
+                           ExceptionState& exception_state);
 
   bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);
 

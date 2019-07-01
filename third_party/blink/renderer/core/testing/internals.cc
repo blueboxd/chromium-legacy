@@ -3304,6 +3304,17 @@ void Internals::setCapsLockState(bool enabled) {
       enabled ? OverrideCapsLockState::kOn : OverrideCapsLockState::kOff);
 }
 
+void Internals::setPseudoClassState(Element* element,
+                                    const String& pseudo,
+                                    bool matches,
+                                    ExceptionState& exception_state) {
+  if (!element->GetDocument().SetPseudoStateForTesting(*element, pseudo,
+                                                       matches)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      pseudo + " is not supported");
+  }
+}
+
 bool Internals::setScrollbarVisibilityInScrollableArea(Node* node,
                                                        bool visible) {
   if (ScrollableArea* scrollable_area = ScrollableAreaForNode(node)) {

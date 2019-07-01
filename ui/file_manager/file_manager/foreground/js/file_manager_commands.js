@@ -1985,7 +1985,7 @@ CommandHandler.COMMANDS_['manage-plugin-vm-sharing'] =
 /**
  * Creates a shortcut of the selected folder (single only).
  */
-CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
+CommandHandler.COMMANDS_['pin-folder'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
     const actionsController = fileManager.actionsController;
@@ -2047,7 +2047,7 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
 /**
  * Removes the folder shortcut.
  */
-CommandHandler.COMMANDS_['remove-folder-shortcut'] = new class extends Command {
+CommandHandler.COMMANDS_['unpin-folder'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
     const actionsController = fileManager.actionsController;

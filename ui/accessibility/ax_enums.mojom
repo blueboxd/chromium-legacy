@@ -506,8 +506,10 @@ enum IntAttribute {
   // aria_col* and aria_row* attributes
   kAriaColumnCount,
   kAriaCellColumnIndex,
+  kAriaCellColumnSpan,
   kAriaRowCount,
   kAriaCellRowIndex,
+  kAriaCellRowSpan,
 
   // Table attributes.
   kTableRowCount,

@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_MANAGER_IMPL_H_
 
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
@@ -43,9 +42,7 @@ class NativeFileSystemTransferTokenImpl;
 // This class is not thread safe, it is constructed on the UI thread, and after
 // that all methods should be called on the IO thread.
 class CONTENT_EXPORT NativeFileSystemManagerImpl
-    : public base::RefCountedThreadSafe<NativeFileSystemManagerImpl,
-                                        BrowserThread::DeleteOnIOThread>,
-      public NativeFileSystemEntryFactory,
+    : public NativeFileSystemEntryFactory,
       public blink::mojom::NativeFileSystemManager {
  public:
   using BindingContext = NativeFileSystemEntryFactory::BindingContext;
@@ -145,10 +142,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   storage::FileSystemOperationRunner* operation_runner();
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
-  friend class base::DeleteHelper<NativeFileSystemManagerImpl>;
   ~NativeFileSystemManagerImpl() override;
-
   void DidOpenSandboxedFileSystem(const BindingContext& binding_context,
                                   GetSandboxedFileSystemCallback callback,
                                   const GURL& root,

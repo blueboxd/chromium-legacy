@@ -76,9 +76,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
                        CastContentBrowserClient* cast_content_browser_client);
   ~CastBrowserMainParts() override;
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
-#endif
   media::MediaCapsImpl* media_caps();
   content::BrowserContext* browser_context();
 
@@ -117,13 +115,13 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<base::RepeatingTimer> crash_reporter_timer_;
 #endif
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // Tracks all media pipeline backends.
   std::unique_ptr<media::MediaPipelineBackendManager>
       media_pipeline_backend_manager_;
 
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   std::unique_ptr<CastMemoryPressureMonitor> memory_pressure_monitor_;
-#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionsClient> extensions_client_;

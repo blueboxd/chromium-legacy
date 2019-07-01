@@ -884,7 +884,7 @@ ActionsModel.CommonActionId = {
  * @enum {string}
  */
 ActionsModel.InternalActionId = {
-  CREATE_FOLDER_SHORTCUT: 'create-folder-shortcut',
-  REMOVE_FOLDER_SHORTCUT: 'remove-folder-shortcut',
+  CREATE_FOLDER_SHORTCUT: 'pin-folder',
+  REMOVE_FOLDER_SHORTCUT: 'unpin-folder',
   MANAGE_IN_DRIVE: 'manage-in-drive'
 };

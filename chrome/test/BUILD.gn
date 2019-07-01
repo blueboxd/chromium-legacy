@@ -1334,7 +1334,6 @@ if (!is_android) {
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/media/router:test_support",
-        "//chrome/browser/resources/chromeos/autoclick:browser_tests",
         "//chrome/browser/resources/chromeos/chromevox:browser_tests",
         "//chrome/browser/resources/chromeos/login:browser_tests",
         "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",

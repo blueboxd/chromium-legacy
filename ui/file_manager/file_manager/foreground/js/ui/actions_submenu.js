@@ -80,7 +80,7 @@ class ActionsSubmenu {
     // Removing shortcuts is not rendered in the submenu to keep the previous
     // behavior. Shortcuts can be removed in the left nav using the roots menu.
     // TODO(mtomasz): Consider rendering the menu item here for consistency.
-    util.queryDecoratedElement('#remove-folder-shortcut', cr.ui.Command)
+    util.queryDecoratedElement('#unpin-folder', cr.ui.Command)
         .canExecuteChange(element);
 
     // Both save-for-offline and offline-not-necessary are handled by the single

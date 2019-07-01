@@ -48,18 +48,6 @@ cast_source_set("backend") {
   ]
 }
 
-cast_source_set("cast_media_android_dummy") {
-  sources = [
-    "cast_media_android_dummy.cc",
-  ]
-  deps = [
-    "//base",
-    "//chromecast:chromecast_buildflags",
-    "//chromecast/public",
-    "//chromecast/public/media",
-  ]
-}
-
 # Target for OEM partners to override media shared library, i.e.
 # libcast_media_1.0.so. This target is only used to build executables
 # with correct linkage information.

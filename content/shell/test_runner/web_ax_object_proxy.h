@@ -141,6 +141,12 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int SetSize();
   int ClickPointX();
   int ClickPointY();
+  int32_t AriaColumnCount();
+  uint32_t AriaColumnIndex();
+  uint32_t AriaColumnSpan();
+  int32_t AriaRowCount();
+  uint32_t AriaRowIndex();
+  uint32_t AriaRowSpan();
   int32_t RowCount();
   int32_t RowHeadersCount();
   int32_t ColumnCount();

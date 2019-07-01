@@ -362,9 +362,6 @@ class AccessibilityManager
   void PostLoadSwitchAccess();
   void PostUnloadSwitchAccess();
 
-  void PostLoadAutoclick();
-  void PostUnloadAutoclick();
-
   void UpdateAlwaysShowMenuFromPref();
   void OnLargeCursorChanged();
   void OnStickyKeysChanged();

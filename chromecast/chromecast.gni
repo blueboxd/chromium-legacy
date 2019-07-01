@@ -152,7 +152,7 @@ enable_chromecast_extensions = enable_extensions
 # Use Chromecast CDMs for protected content. Some Android platforms use
 # MediaDrm for CDM support.
 declare_args() {
-  use_chromecast_cdms = is_cast_using_cma_backend
+  use_chromecast_cdms = true
 }
 
 foreach(target_type,

@@ -258,15 +258,6 @@ chrome.accessibilityPrivate.sendSyntheticMouseEvent = function(mouseEvent) {};
 chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
 
 /**
- * Called by the Autoclick extension when findScrollableBoundsForPoint has found
- * a scrolling container. |rect| will be the bounds of the nearest scrollable
- * ancestor of the node at the point requested using
- * findScrollableBoundsForPoint.
- * @param {!chrome.accessibilityPrivate.ScreenRect} rect
- */
-chrome.accessibilityPrivate.onScrollableBoundsForPointFound = function(rect) {};
-
-/**
  * Toggles dictation between active and inactive states.
  */
 chrome.accessibilityPrivate.toggleDictation = function() {};
@@ -325,11 +316,3 @@ chrome.accessibilityPrivate.onSwitchAccessCommand;
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onAnnounceForAccessibility;
-
-/**
- * Called when an internal component within accessibility wants to find the
- * nearest scrolling container at a given screen coordinate. Used in Automatic
- * Clicks.
- * @type {!ChromeEvent}
- */
-chrome.accessibilityPrivate.findScrollableBoundsForPoint;

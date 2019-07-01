@@ -211,8 +211,7 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
   RunThreadsUntilIdle();
 }
 
-#if defined(OS_ANDROID) && !BUILDFLAG(IS_ANDROID_THINGS)
-// Android things emulators do not support AC3 codec
+#if defined(OS_ANDROID)
 TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
   const ::media::AudioParameters kAC3AudioParams(
       ::media::AudioParameters::AUDIO_BITSTREAM_AC3,
@@ -220,22 +219,23 @@ TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
       256);
   ::media::AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
       kAC3AudioParams, "", ::media::AudioManager::LogCallback());
-  EXPECT_TRUE(stream->Open());
+  EXPECT_TRUE(stream);
+  // Only run the rest of the test if the device supports AC3.
+  if (stream->Open()) {
+    EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
+        .WillRepeatedly(Invoke(OnMoreData));
+    EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+    stream->Start(&mock_source_callback_);
+    RunThreadsUntilIdle();
 
-  EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
-      .WillRepeatedly(Invoke(OnMoreData));
-  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
-  stream->Start(&mock_source_callback_);
-  RunThreadsUntilIdle();
-
-  stream->Stop();
-  RunThreadsUntilIdle();
-
+    stream->Stop();
+    RunThreadsUntilIdle();
+  }
   stream->Close();
 }
-#endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_ANDROID_THINGS)
+#endif  // defined(OS_ANDROID)
 
-TEST_F(CastAudioManagerTest, DISABLED_CanMakeStreamProxy) {
+TEST_F(CastAudioManagerTest, CanMakeStreamProxy) {
   SetUpBackendAndDecoder();
   ::media::AudioOutputStream* stream =
       audio_manager_->MakeAudioOutputStreamProxy(kDefaultAudioParams, "");
@@ -251,8 +251,6 @@ TEST_F(CastAudioManagerTest, DISABLED_CanMakeStreamProxy) {
 
   stream->Close();
   RunThreadsUntilIdle();
-  // TODO(steinbock) Figure out why stream is not unregistering itself from
-  // audio_manager_
 }
 
 TEST_F(CastAudioManagerTest, CanMakeMixerStream) {

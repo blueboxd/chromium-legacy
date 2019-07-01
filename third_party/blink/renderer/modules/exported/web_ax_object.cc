@@ -78,6 +78,16 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
                                     value);
   }
 
+  void AddIntAttribute(AXIntAttribute attribute, int32_t value) override {
+    attribute_map_.AddIntAttribute(static_cast<WebAXIntAttribute>(attribute),
+                                   value);
+  }
+
+  void AddUIntAttribute(AXUIntAttribute attribute, uint32_t value) override {
+    attribute_map_.AddUIntAttribute(static_cast<WebAXUIntAttribute>(attribute),
+                                    value);
+  }
+
   void AddStringAttribute(AXStringAttribute attribute,
                           const String& value) override {
     attribute_map_.AddStringAttribute(

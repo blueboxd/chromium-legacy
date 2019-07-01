@@ -119,6 +119,13 @@ void CrostiniPackageService::Shutdown() {
   manager->RemoveLinuxPackageOperationProgressObserver(this);
   manager->RemovePendingAppListUpdatesObserver(this);
   manager->RemoveVmShutdownObserver(this);
+
+  // CrostiniPackageNotification registers itself as a CrostiniRegistryService
+  // observer, so they need to be destroyed here while the
+  // CrostiniRegistryService still exists.
+  running_notifications_.clear();
+  queued_uninstalls_.clear();
+  finished_notifications_.clear();
 }
 
 void CrostiniPackageService::SetNotificationStateChangeCallbackForTesting(
@@ -276,7 +283,8 @@ void CrostiniPackageService::CreateRunningNotification(
   running_notifications_[container_id] =
       std::make_unique<CrostiniPackageNotification>(
           profile_, notification_type, PackageOperationStatus::RUNNING,
-          base::UTF8ToUTF16(app_name), GetUniqueNotificationId(), this);
+          container_id, base::UTF8ToUTF16(app_name), GetUniqueNotificationId(),
+          this);
 }
 
 void CrostiniPackageService::CreateQueuedUninstall(
@@ -288,8 +296,8 @@ void CrostiniPackageService::CreateQueuedUninstall(
       std::make_unique<CrostiniPackageNotification>(
           profile_,
           CrostiniPackageNotification::NotificationType::APPLICATION_UNINSTALL,
-          PackageOperationStatus::QUEUED, base::UTF8ToUTF16(app_name),
-          GetUniqueNotificationId(), this));
+          PackageOperationStatus::QUEUED, container_id,
+          base::UTF8ToUTF16(app_name), GetUniqueNotificationId(), this));
 }
 
 void CrostiniPackageService::UpdatePackageOperationStatus(

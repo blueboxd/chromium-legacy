@@ -267,6 +267,13 @@ initWithRootViewController:(UIViewController*)rootViewController
         !unified_consent::IsUnifiedConsentFeatureEnabled();
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
     [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+    // TODO(crbug.com/980037) Remove this and properly handle swipe to dismiss
+    // settings.
+    if (@available(iOS 13, *)) {
+      self.modalInPresentation = YES;
+    }
+#endif
   }
   return self;
 }

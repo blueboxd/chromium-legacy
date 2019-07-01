@@ -20,15 +20,9 @@ group("media") {
 # Handles the various differences between (ATV, Things, desktop, device builds).
 group("libcast_media") {
   if (is_android) {
-    if (is_cast_using_cma_backend) {
-      deps = [
-        "//chromecast/media/cma/backend/android:cast_media_android",
-      ]
-    } else {
-      deps = [
-        "//chromecast/media/cma/backend:cast_media_android_dummy",
-      ]
-    }
+    deps = [
+      "//chromecast/media/cma/backend/android:cast_media_android",
+    ]
   } else if (is_fuchsia) {
     deps = [
       "//chromecast/media/cma/backend/fuchsia:media_backend",
@@ -70,6 +64,7 @@ test("cast_media_unittests") {
     "//chromecast/base/metrics:test_support",
     "//chromecast/common/mojom",
     "//chromecast/media/cma:test_support",
+    "//chromecast/media/cma:unittests",
     "//chromecast/public",
     "//content/test:test_support",
     "//media:test_support",
@@ -80,14 +75,11 @@ test("cast_media_unittests") {
     "//testing/gtest",
   ]
 
-  if (is_cast_using_cma_backend) {
-    deps += [ "//chromecast/media/cma:unittests" ]
-    if (is_android) {
-      deps += [
-        "//chromecast/media/cma/backend/android:audio_track_java",
-        "//media/base/android:media_java",
-      ]
-      shard_timeout = 300
-    }
+  if (is_android) {
+    deps += [
+      "//chromecast/media/cma/backend/android:audio_track_java",
+      "//media/base/android:media_java",
+    ]
+    shard_timeout = 300
   }
 }

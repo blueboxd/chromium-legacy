@@ -44,6 +44,18 @@ enum class AXBoolAttribute {
   kAriaBusy,
 };
 
+enum class AXIntAttribute {
+  kAriaColumnCount,
+  kAriaRowCount,
+};
+
+enum class AXUIntAttribute {
+  kAriaColumnIndex,
+  kAriaColumnSpan,
+  kAriaRowIndex,
+  kAriaRowSpan,
+};
+
 enum class AXStringAttribute {
   kAriaKeyShortcuts,
   kAriaRoleDescription,

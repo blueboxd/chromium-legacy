@@ -100,10 +100,10 @@
       <command id="delete" shortcut="Backspace|Alt Delete">
       <command id="refresh" label="$i18n{REFRESH_BUTTON_LABEL}"
                shortcut="b|Ctrl" hidden>
-      <command id="create-folder-shortcut"
-               label="$i18n{CREATE_FOLDER_SHORTCUT_BUTTON_LABEL}">
-      <command id="remove-folder-shortcut"
-               label="$i18n{REMOVE_FOLDER_SHORTCUT_BUTTON_LABEL}">
+      <command id="pin-folder"
+               label="$i18n{PIN_FOLDER_BUTTON_LABEL}">
+      <command id="unpin-folder"
+               label="$i18n{UNPIN_FOLDER_BUTTON_LABEL}">
       <command id="new-folder" label="$i18n{NEW_FOLDER_BUTTON_LABEL}"
                shortcut="e|Ctrl">
       <command id="new-window" label="$i18n{NEW_WINDOW_BUTTON_LABEL}"
@@ -210,7 +210,7 @@
       <hr visibleif="full-page">
       <cr-menu-item command="#get-info"></cr-menu-item>
       <cr-menu-item command="#rename"></cr-menu-item>
-      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
+      <cr-menu-item command="#pin-folder"></cr-menu-item>
       <cr-menu-item command="#delete" class="hide-on-toolbar">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
       <cr-menu-item command="#zip-selection"></cr-menu-item>
       <cr-menu-item command="#share-with-linux"></cr-menu-item>
@@ -230,7 +230,7 @@
       <cr-menu-item command="#unmount"></cr-menu-item>
       <cr-menu-item command="#format"></cr-menu-item>
       <cr-menu-item command="#rename"></cr-menu-item>
-      <cr-menu-item command="#remove-folder-shortcut"></cr-menu-item>
+      <cr-menu-item command="#unpin-folder"></cr-menu-item>
       <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
       <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
@@ -250,7 +250,7 @@
       <hr visibleif="full-page">
       <cr-menu-item command="#format"></cr-menu-item>
       <cr-menu-item command="#rename"></cr-menu-item>
-      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
+      <cr-menu-item command="#pin-folder"></cr-menu-item>
       <cr-menu-item command="#delete">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
       <hr visibleif="saveas-file full-page">
       <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"></cr-menu-item>

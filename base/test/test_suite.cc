@@ -27,8 +27,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
-#include "base/process/process.h"
-#include "base/process/process_handle.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
@@ -45,7 +43,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/process/port_provider_mac.h"
 #if defined(OS_IOS)
 #include "base/test/test_listener_ios.h"
 #endif  // OS_IOS
@@ -147,44 +144,6 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
   DISALLOW_COPY_AND_ASSIGN(CheckForLeakedGlobals);
 };
 
-// base::Process is not available on iOS
-#if !defined(OS_IOS)
-class CheckProcessPriority : public testing::EmptyTestEventListener {
- public:
-  CheckProcessPriority() { CHECK(!IsProcessBackgrounded()); }
-
-  void OnTestStart(const testing::TestInfo& test) override {
-    EXPECT_FALSE(IsProcessBackgrounded());
-  }
-  void OnTestEnd(const testing::TestInfo& test) override {
-    EXPECT_FALSE(IsProcessBackgrounded());
-  }
-
- private:
-#if defined(OS_MACOSX)
-  // Returns the calling process's task port, ignoring its argument.
-  class CurrentProcessPortProvider : public PortProvider {
-    mach_port_t TaskForPid(ProcessHandle process) const override {
-      // This PortProvider implementation only works for the current process.
-      CHECK_EQ(process, base::GetCurrentProcessHandle());
-      return mach_task_self();
-    }
-  };
-#endif
-
-  bool IsProcessBackgrounded() const {
-#if defined(OS_MACOSX)
-    CurrentProcessPortProvider port_provider;
-    return Process::Current().IsProcessBackgrounded(&port_provider);
-#else
-    return Process::Current().IsProcessBackgrounded();
-#endif
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(CheckProcessPriority);
-};
-#endif  // !defined(OS_IOS)
-
 const std::string& GetProfileName() {
   static const NoDestructor<std::string> profile_name([]() {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -229,7 +188,7 @@ void InitializeLogging() {
 
 }  // namespace
 
-int RunUnitTestsUsingBaseTestSuite(int argc, char** argv) {
+int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
   TestSuite test_suite(argc, argv);
   return LaunchUnitTests(argc, argv,
                          BindOnce(&TestSuite::Run, Unretained(&test_suite)));
@@ -442,8 +401,9 @@ void AbortHandler(int signal) {
 
 void TestSuite::SuppressErrorDialogs() {
 #if defined(OS_WIN)
-  UINT new_flags =
-      SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX;
+  UINT new_flags = SEM_FAILCRITICALERRORS |
+                   SEM_NOGPFAULTERRORBOX |
+                   SEM_NOOPENFILEERRORBOX;
 
   // Preserve existing error mode, as discussed at
   // http://blogs.msdn.com/oldnewthing/archive/2004/07/27/198410.aspx
@@ -559,9 +519,6 @@ void TestSuite::Initialize() {
   listeners.Append(new ResetCommandLineBetweenTests);
   if (check_for_leaked_globals_)
     listeners.Append(new CheckForLeakedGlobals);
-#if !defined(OS_IOS)
-  listeners.Append(new CheckProcessPriority);
-#endif
 
   AddTestLauncherResultPrinter();
 

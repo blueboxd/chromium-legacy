@@ -132,6 +132,11 @@ extern const char kAutofillAssistantChromeEntryName[] =
 extern const char kAutofillAssistantChromeEntryDescription[] =
     "Initiate autofill assistant from within Chrome.";
 
+extern const char kAutofillAssistantDirectActionsName[] =
+    "Autofill Assistant direct actions";
+extern const char kAutofillAssistantDirectActionsDescription[] =
+    "When enabled, expose direct actions from the Autofill Assistant.";
+
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =
@@ -1501,12 +1506,6 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
-const char kPasswordsKeyboardAccessoryName[] =
-    "Add password-related functions to keyboard accessory";
-const char kPasswordsKeyboardAccessoryDescription[] =
-    "Adds password generation button and toggle for the passwords bottom sheet "
-    "to the keyboard accessory. Replaces password generation popups.";
-
 const char kPasswordsMigrateLinuxToLoginDBName[] =
     "Migrate passwords to \"Login Data\"";
 const char kPasswordsMigrateLinuxToLoginDBDescription[] =
@@ -2244,6 +2243,10 @@ const char kContextualSearchUnityIntegrationName[] =
     "Contextual Search integration with Unified Consent";
 const char kContextualSearchUnityIntegrationDescription[] =
     "Enables integration of Tap to Search with Unified Consent.";
+
+const char kDirectActionsName[] = "Direct actions";
+const char kDirectActionsDescription[] =
+    "Enables direct actions (Android Q and more).";
 
 const char kDownloadProgressInfoBarName[] = "Enable download progress infobar";
 const char kDownloadProgressInfoBarDescription[] =

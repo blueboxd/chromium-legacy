@@ -26,45 +26,41 @@ class ClientStatus;
 // An action to autofill a form using a local address or credit card.
 class AutofillAction : public Action {
  public:
-  explicit AutofillAction(const ActionProto& proto);
+  explicit AutofillAction(ActionDelegate* delegate, const ActionProto& proto);
   ~AutofillAction() override;
 
  private:
   enum FieldValueStatus { UNKNOWN, EMPTY, NOT_EMPTY };
 
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   void EndAction(ProcessedActionStatusProto status);
   void EndAction(const ClientStatus& status);
 
   // Fill the form using data in client memory. Return whether filling succeeded
   // or not through OnAddressFormFilled or OnCardFormFilled.
-  void FillFormWithData(ActionDelegate* delegate);
-  void OnWaitForElement(ActionDelegate* delegate, bool element_found);
+  void FillFormWithData();
+  void OnWaitForElement(bool element_found);
 
   // Called after getting full credit card with its cvc.
-  void OnGetFullCard(ActionDelegate* delegate,
-                     std::unique_ptr<autofill::CreditCard> card,
+  void OnGetFullCard(std::unique_ptr<autofill::CreditCard> card,
                      const base::string16& cvc);
 
   // Called when the credit card form has been filled.
   void OnCardFormFilled(const ClientStatus& status);
 
   // Called when the address form has been filled.
-  void OnAddressFormFilled(ActionDelegate* delegate,
-                           const ClientStatus& status);
+  void OnAddressFormFilled(const ClientStatus& status);
 
   // Check whether all required fields have a non-empty value. If it is the
   // case, finish the action successfully. If it's not and |allow_fallback|
   // false, fail the action. If |allow_fallback| is true, try again by filling
   // the failed fields without Autofill.
-  void CheckRequiredFields(ActionDelegate* delegate, bool allow_fallback);
+  void CheckRequiredFields(bool allow_fallback);
 
   // Triggers the check for a specific field.
-  void CheckRequiredFieldsSequentially(ActionDelegate* delegate,
-                                       bool allow_fallback,
+  void CheckRequiredFieldsSequentially(bool allow_fallback,
                                        int required_fields_index);
 
   // Updates |required_fields_value_status_|.
@@ -73,7 +69,7 @@ class AutofillAction : public Action {
                                const std::string& value);
 
   // Called when all required fields have been checked.
-  void OnCheckRequiredFieldsDone(ActionDelegate* delegate, bool allow_fallback);
+  void OnCheckRequiredFieldsDone(bool allow_fallback);
 
   // Get the value of |address_field| associated to profile |profile|. Return
   // empty string if there is no data available.
@@ -83,13 +79,11 @@ class AutofillAction : public Action {
 
   // Sets fallback field values for empty fields from
   // |required_fields_value_status_|.
-  void SetFallbackFieldValuesSequentially(ActionDelegate* delegate,
-                                          int required_fields_index);
+  void SetFallbackFieldValuesSequentially(int required_fields_index);
 
   // Called after trying to set form values without Autofill in case of fallback
   // after failed validation.
-  void OnSetFallbackFieldValue(ActionDelegate* delegate,
-                               int required_fields_index,
+  void OnSetFallbackFieldValue(int required_fields_index,
                                const ClientStatus& status);
 
   // Usage of the autofilled address. Ignored if autofilling a card.

@@ -29,13 +29,18 @@ def run_shell(command, extra_options=''):
   return os.system(command)
 
 
-def gn(out_dir, gn_args, gn_extra=[]):
-  return run(['gn', 'gen', out_dir, "--args=%s" % gn_args] + gn_extra)
+def gn(out_dir, gn_args, gn_extra=None):
+  cmd = ['gn', 'gen', out_dir, "--args=%s" % gn_args]
+  if gn_extra:
+    cmd += gn_extra
+  return run(cmd)
 
 
-def build(out_dir, build_target, extra_options=[]):
-  return run(['ninja', '-C', out_dir, build_target] +
-             get_ninja_jobs_options() + extra_options)
+def build(out_dir, build_target, extra_options=None):
+  cmd = ['ninja', '-C', out_dir, build_target] + get_ninja_jobs_options()
+  if extra_options:
+    cmd += extra_options
+  return run(cmd)
 
 
 def install(out_dir):

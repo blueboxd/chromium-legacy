@@ -107,11 +107,8 @@ void PasswordAccessoryControllerImpl::OnFillingTriggered(
 bool PasswordAccessoryController::AllowedForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
-  if (vr::VrTabHelper::IsInVr(web_contents)) {
-    return false;  // TODO(crbug.com/902305): Re-enable if possible.
-  }
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordsKeyboardAccessory);
+  // TODO(crbug.com/902305): Re-enable if possible.
+  return !vr::VrTabHelper::IsInVr(web_contents);
 }
 
 // static

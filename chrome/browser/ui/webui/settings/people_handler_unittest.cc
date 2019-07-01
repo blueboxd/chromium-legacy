@@ -1392,6 +1392,8 @@ class PeopleHandlerDiceUnifiedConsentTest
     : public ::testing::TestWithParam<std::tuple<bool, bool>> {};
 
 TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
+
   // Do not be in first run, so that the profiles are not created as "new
   // profiles" and automatically migrated to Dice.
   first_run::ResetCachedSentinelDataForTesting();

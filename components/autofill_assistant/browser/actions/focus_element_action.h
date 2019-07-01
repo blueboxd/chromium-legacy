@@ -16,21 +16,19 @@ namespace autofill_assistant {
 // An action to focus a given element on Web. Scrolling to it first if required.
 class FocusElementAction : public Action {
  public:
-  explicit FocusElementAction(const ActionProto& proto);
+  explicit FocusElementAction(ActionDelegate* delegate,
+                              const ActionProto& proto);
   ~FocusElementAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnWaitForElement(ActionDelegate* delegate,
-                        ProcessActionCallback callback,
+  void OnWaitForElement(ProcessActionCallback callback,
                         const Selector& selector,
                         const TopPadding& top_padding,
                         bool element_found);
-  void OnFocusElement(ActionDelegate* delegate,
-                      ProcessActionCallback callback,
+  void OnFocusElement(ProcessActionCallback callback,
                       const ClientStatus& status);
 
   base::WeakPtrFactory<FocusElementAction> weak_ptr_factory_;

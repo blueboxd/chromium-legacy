@@ -6,8 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_PAGE_SCHEDULER_IMPL_H_
 
 #include <memory>
-#include <set>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +21,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
 namespace trace_event {
@@ -80,7 +79,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
 
   // Virtual for testing.
-  virtual void ReportIntervention(const std::string& message);
+  virtual void ReportIntervention(const String& message);
 
   bool IsPageVisible() const;
   bool IsFrozen() const;
@@ -238,7 +237,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void DoFreezePage();
 
   TraceableVariableController tracing_controller_;
-  std::set<FrameSchedulerImpl*> frame_schedulers_;
+  HashSet<FrameSchedulerImpl*> frame_schedulers_;
   MainThreadSchedulerImpl* main_thread_scheduler_;
 
   PageVisibilityState page_visibility_;

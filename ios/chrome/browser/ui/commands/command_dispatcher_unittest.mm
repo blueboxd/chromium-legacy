@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#import "ios/chrome/browser/ui/metrics/metrics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -120,34 +119,6 @@
 
 - (int)methodToAddFirstArgument:(int)first toSecond:(int)second {
   return first + second;
-}
-
-@end
-
-#pragma mark - TestMetricsRecorder
-
-// A MetricsRecorder that provides information about calls to
-// |recordMetricForInvocation:|.
-@interface TestMetricsRecorder : NSObject<MetricsRecorder>
-
-// Number of times |recordMetricForInvocation:| was called.
-@property(nonatomic, assign) int callCount;
-
-// The NSInvocation from the most recent call to |recordMetricForInvocation:|.
-@property(nonatomic, strong) NSInvocation* mostRecentInvocation;
-
-@end
-
-@implementation TestMetricsRecorder
-
-@synthesize callCount = _callCount;
-@synthesize mostRecentInvocation = _mostRecentInvocation;
-
-- (void)recordMetricForInvocation:(NSInvocation*)anInvocation {
-  self.callCount += 1;
-
-  [anInvocation retainArguments];
-  self.mostRecentInvocation = anInvocation;
 }
 
 @end
@@ -394,120 +365,4 @@ TEST_F(CommandDispatcherTest, RespondsToSelector) {
       respondsToSelector:@selector(startDispatchingToTarget:forSelector:)]);
   EXPECT_TRUE(
       [dispatcher respondsToSelector:@selector(stopDispatchingForSelector:)]);
-}
-
-// Tests that a registered MetricsRecorder is successfully
-// notified when commands with no arguments are invoked on the dispatcher.
-TEST_F(CommandDispatcherTest, MetricsRecorderNoArguments) {
-  id dispatcher = [[CommandDispatcher alloc] init];
-  CommandDispatcherTestSimpleTarget* target =
-      [[CommandDispatcherTestSimpleTarget alloc] init];
-  TestMetricsRecorder* recorder = [[TestMetricsRecorder alloc] init];
-
-  [dispatcher startDispatchingToTarget:target forSelector:@selector(show)];
-  [dispatcher registerMetricsRecorder:recorder forSelector:@selector(show)];
-
-  [dispatcher startDispatchingToTarget:target forSelector:@selector(hide)];
-  [dispatcher registerMetricsRecorder:recorder forSelector:@selector(hide)];
-
-  [dispatcher show];
-  EXPECT_EQ(1, recorder.callCount);
-  EXPECT_EQ(@selector(show), recorder.mostRecentInvocation.selector);
-
-  [dispatcher hide];
-  EXPECT_EQ(2, recorder.callCount);
-  EXPECT_EQ(@selector(hide), recorder.mostRecentInvocation.selector);
-}
-
-// Tests that a registered MetricsRecorder is successfully
-// notified when commands with arguments are invoked on the dispatcher.
-TEST_F(CommandDispatcherTest, MetricsRecorderWithArguments) {
-  id dispatcher = [[CommandDispatcher alloc] init];
-  CommandDispatcherTestTargetWithArguments* target =
-      [[CommandDispatcherTestTargetWithArguments alloc] init];
-  TestMetricsRecorder* recorder = [[TestMetricsRecorder alloc] init];
-
-  [dispatcher startDispatchingToTarget:target
-                           forSelector:@selector(methodWithInt:)];
-  [dispatcher registerMetricsRecorder:recorder
-                          forSelector:@selector(methodWithInt:)];
-  [dispatcher startDispatchingToTarget:target
-                           forSelector:@selector(methodWithObject:)];
-  [dispatcher registerMetricsRecorder:recorder
-                          forSelector:@selector(methodWithObject:)];
-
-  const int int_argument = 4;
-  [dispatcher methodWithInt:int_argument];
-
-  EXPECT_EQ(1, recorder.callCount);
-  EXPECT_EQ(@selector(methodWithInt:), recorder.mostRecentInvocation.selector);
-  int received_int_argument = 0;
-  // The index of the int argument is 2, as indices 0 and 1 are reserved for
-  // hidden arguments.
-  [recorder.mostRecentInvocation getArgument:&received_int_argument atIndex:2];
-  EXPECT_EQ(int_argument, received_int_argument);
-
-  NSObject* object_argument = [[NSObject alloc] init];
-  [dispatcher methodWithObject:object_argument];
-
-  EXPECT_EQ(2, recorder.callCount);
-  EXPECT_EQ(@selector(methodWithObject:),
-            recorder.mostRecentInvocation.selector);
-  __unsafe_unretained NSObject* received_object_argument = nil;
-  // The index of the object argument is 2, as indices 0 and 1 are reserved for
-  // hidden arguments.
-  [recorder.mostRecentInvocation getArgument:&received_object_argument
-                                     atIndex:2];
-  EXPECT_NSEQ(object_argument, received_object_argument);
-}
-
-// Tests that the correct MetricsRecorders are notified for an invocation
-// when multiple recorders are registered.
-TEST_F(CommandDispatcherTest, MetricsRecorderMultipleRecorders) {
-  id dispatcher = [[CommandDispatcher alloc] init];
-  CommandDispatcherTestSimpleTarget* showTarget =
-      [[CommandDispatcherTestSimpleTarget alloc] init];
-  TestMetricsRecorder* showRecorder = [[TestMetricsRecorder alloc] init];
-  CommandDispatcherTestSimpleTarget* hideTarget =
-      [[CommandDispatcherTestSimpleTarget alloc] init];
-  TestMetricsRecorder* hideRecorder = [[TestMetricsRecorder alloc] init];
-
-  [dispatcher startDispatchingToTarget:showTarget forSelector:@selector(show)];
-  [dispatcher registerMetricsRecorder:showRecorder forSelector:@selector(show)];
-  [dispatcher startDispatchingToTarget:hideTarget forSelector:@selector(hide)];
-  [dispatcher registerMetricsRecorder:hideRecorder forSelector:@selector(hide)];
-
-  [dispatcher show];
-  EXPECT_EQ(1, showRecorder.callCount);
-  EXPECT_EQ(@selector(show), showRecorder.mostRecentInvocation.selector);
-  EXPECT_EQ(0, hideRecorder.callCount);
-  EXPECT_NSEQ(nil, hideRecorder.mostRecentInvocation);
-
-  [dispatcher hide];
-  EXPECT_EQ(1, hideRecorder.callCount);
-  EXPECT_EQ(@selector(hide), hideRecorder.mostRecentInvocation.selector);
-  EXPECT_EQ(1, showRecorder.callCount);
-  EXPECT_EQ(@selector(show), showRecorder.mostRecentInvocation.selector);
-}
-
-// Tests that if a selector registered to a MetricsRecorder is deregistered,
-// the MetricsRecorder is no longer notified when the selector is invoked on the
-// dispatcher.
-TEST_F(CommandDispatcherTest, DeregisterMetricsRecorder) {
-  id dispatcher = [[CommandDispatcher alloc] init];
-  CommandDispatcherTestSimpleTarget* target =
-      [[CommandDispatcherTestSimpleTarget alloc] init];
-  TestMetricsRecorder* recorder = [[TestMetricsRecorder alloc] init];
-
-  [dispatcher startDispatchingToTarget:target forSelector:@selector(show)];
-  [dispatcher registerMetricsRecorder:recorder forSelector:@selector(show)];
-
-  [dispatcher show];
-  EXPECT_EQ(1, recorder.callCount);
-  EXPECT_EQ(@selector(show), recorder.mostRecentInvocation.selector);
-
-  [dispatcher deregisterMetricsRecordingForSelector:@selector(show)];
-
-  [dispatcher show];
-  EXPECT_EQ(1, recorder.callCount);
 }

@@ -14,13 +14,13 @@ namespace autofill_assistant {
 
 class ExpectNavigationAction : public Action {
  public:
-  explicit ExpectNavigationAction(const ActionProto& proto);
+  explicit ExpectNavigationAction(ActionDelegate* delegate,
+                                  const ActionProto& proto);
   ~ExpectNavigationAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExpectNavigationAction);
 };

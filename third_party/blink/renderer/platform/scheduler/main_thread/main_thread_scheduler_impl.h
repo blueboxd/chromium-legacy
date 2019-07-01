@@ -8,9 +8,7 @@
 #include <map>
 #include <memory>
 #include <random>
-#include <set>
 #include <stack>
-#include <string>
 
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
@@ -48,6 +46,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
@@ -671,7 +670,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   base::TimeDelta EstimateLongestJankFreeTaskDuration() const;
 
   // Report an intervention to all WebViews in this process.
-  void BroadcastIntervention(const std::string& message);
+  void BroadcastIntervention(const String& message);
 
   void ApplyTaskQueuePolicy(
       MainThreadTaskQueue* task_queue,
@@ -843,7 +842,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
     base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
-    std::set<PageSchedulerImpl*> page_schedulers;                 // Not owned.
+    HashSet<PageSchedulerImpl*> page_schedulers;  // Not owned.
     base::ObserverList<RAILModeObserver>::Unchecked
         rail_mode_observers;                                      // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                        // Not owned.

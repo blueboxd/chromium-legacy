@@ -1793,7 +1793,7 @@
       },
       'linux-blink-animation-use-time-delta': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1805,7 +1805,7 @@
       },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
@@ -1817,7 +1817,7 @@
       },
       'linux-blink-heap-unified-gc': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
@@ -1829,7 +1829,7 @@
       },
       'linux-blink-heap-verification': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
@@ -3736,7 +3736,7 @@
       },
       'Linux ASan Tests (sandboxed)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'sandboxed_chromium_memory_linux_gtests',
@@ -3809,7 +3809,7 @@
       },
       'WebKit Linux ASAN': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3817,7 +3817,7 @@
       },
       'WebKit Linux Leak': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3825,7 +3825,7 @@
       },
       'WebKit Linux MSAN': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',

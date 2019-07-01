@@ -243,7 +243,7 @@ void PresentationAvailabilityState::TryRemoveAvailabilityListener(
 
 PresentationAvailabilityState::ListeningStatus*
 PresentationAvailabilityState::GetListeningStatus(const KURL& url) const {
-  auto status_it =
+  auto* status_it =
       std::find_if(availability_listening_status_.begin(),
                    availability_listening_status_.end(),
                    [&url](const std::unique_ptr<ListeningStatus>& status) {

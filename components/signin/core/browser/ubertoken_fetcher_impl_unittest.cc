@@ -10,7 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,6 +53,7 @@ class UbertokenFetcherImplTest : public testing::Test {
   UbertokenFetcherImplTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        token_service_(&pref_service_),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &url_loader_factory_)) {
@@ -64,7 +66,8 @@ class UbertokenFetcherImplTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  FakeOAuth2TokenService token_service_;
+  TestingPrefServiceSimple pref_service_;
+  FakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   MockUbertokenConsumer consumer_;

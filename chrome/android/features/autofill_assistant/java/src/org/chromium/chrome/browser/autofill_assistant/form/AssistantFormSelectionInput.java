@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant.form;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +56,7 @@ class AssistantFormSelectionInput extends AssistantFormInput {
             TextView choiceView = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(
                     choiceView, R.style.TextAppearance_BlackCaptionDefault);
+            choiceView.setGravity(Gravity.CENTER_VERTICAL);
             choiceView.setText(choice.getLabel());
 
             int index = i; // needed for the lambda.

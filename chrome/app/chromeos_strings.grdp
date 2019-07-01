@@ -3886,8 +3886,11 @@
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LOCATION_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
     Set up your fingerprint
   </message>
-  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor on the device.">
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION" desc="The label that explains that the fingerprint sensor is in the power button.">
     Touch the power button with your finger
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor on the device.">
+      Touch the fingerprint sensor with your finger
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_PROGRESS_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
     Lift, then touch again

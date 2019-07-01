@@ -45,9 +45,10 @@ public abstract class AssistantFormInput {
     }
 
     @CalledByNative
-    private static AssistantFormCounter createCounter(
-            String label, String subtext, int initialValue, int minValue, int maxValue) {
-        return new AssistantFormCounter(label, subtext, initialValue, minValue, maxValue);
+    private static AssistantFormCounter createCounter(String label, String subtext,
+            int initialValue, int minValue, int maxValue, int[] allowedValues) {
+        return AssistantFormCounter.create(
+                label, subtext, initialValue, minValue, maxValue, allowedValues);
     }
 
     @CalledByNative

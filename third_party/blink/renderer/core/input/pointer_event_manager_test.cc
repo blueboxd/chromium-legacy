@@ -163,12 +163,12 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerDown,
                              WebPointerProperties::PointerType::kTouch),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+      {}, {}));
 
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerDown,
                              WebPointerProperties::PointerType::kPen),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+      {}, {}));
 
   GetEventHandler().HandleMousePressEvent(
       CreateTestMouseEvent(WebInputEvent::kMouseDown, WebFloatPoint(100, 100)));
@@ -180,7 +180,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerCausedUaAction,
                              WebPointerProperties::PointerType::kPen),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+      {}, {}));
   ASSERT_EQ(callback->mouseEventCount(), 0);
   ASSERT_EQ(callback->touchEventCount(), 1);
   ASSERT_EQ(callback->penEventCount(), 1);
@@ -188,7 +188,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerCausedUaAction,
                              WebPointerProperties::PointerType::kTouch),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+      {}, {}));
   ASSERT_EQ(callback->mouseEventCount(), 0);
   ASSERT_EQ(callback->touchEventCount(), 1);
   ASSERT_EQ(callback->penEventCount(), 1);
@@ -220,7 +220,7 @@ TEST_F(PointerEventManagerTest, PointerEventCoordinates) {
                              WebPointerProperties::PointerType::kTouch,
                              WebFloatPoint(150, 200), WebFloatPoint(100, 50),
                              10, 10, 16, 24),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+      {}, {}));
 
   ASSERT_EQ(callback->last_client_x_, 75);
   ASSERT_EQ(callback->last_client_y_, 100);
@@ -255,7 +255,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
                                WebPointerProperties::PointerType::kMouse,
                                WebFloatPoint(150, 210), WebFloatPoint(100, 50),
                                10, 10),
-        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+        {}, {}));
     // The first pointermove event has movement_x/y 0.
     ASSERT_EQ(callback->last_screen_x_, 100);
     ASSERT_EQ(callback->last_screen_y_, 50);
@@ -267,7 +267,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
                                WebPointerProperties::PointerType::kMouse,
                                WebFloatPoint(150, 200), WebFloatPoint(132, 29),
                                10, 10),
-        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+        {}, {}));
     // pointermove event movement = event.screenX/Y - last_event.screenX/Y.
     ASSERT_EQ(callback->last_screen_x_, 132);
     ASSERT_EQ(callback->last_screen_y_, 29);
@@ -279,7 +279,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
                                WebPointerProperties::PointerType::kMouse,
                                WebFloatPoint(150, 210),
                                WebFloatPoint(113.8, 32.7), 10, 10),
-        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+        {}, {}));
     // fractional screen coordinates result in fractional movement.
     ASSERT_FLOAT_EQ(callback->last_screen_x_, 113.8);
     ASSERT_FLOAT_EQ(callback->last_screen_y_, 32.7);
@@ -297,7 +297,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
                                WebPointerProperties::PointerType::kMouse,
                                WebFloatPoint(150, 210),
                                WebFloatPoint(100, 16.25), 1024, -8765),
-        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+        {}, {}));
     ASSERT_EQ(callback->last_screen_x_, 100);
     ASSERT_EQ(callback->last_screen_y_, 16.25);
     ASSERT_EQ(callback->last_movement_x_, 1024);

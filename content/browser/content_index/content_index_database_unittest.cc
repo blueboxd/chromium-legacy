@@ -7,12 +7,14 @@
 #include <string>
 
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/browser/content_index_provider.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/origin.h"
 
 namespace content {
@@ -91,6 +93,12 @@ void GetEntriesCallback(
   std::move(quit_closure).Run();
 }
 
+SkBitmap CreateTestIcon() {
+  SkBitmap icon;
+  icon.allocN32Pixels(42, 42);
+  return icon;
+}
+
 }  // namespace
 
 class ContentIndexDatabaseTest : public ::testing::Test {
@@ -122,7 +130,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     blink::mojom::ContentIndexError error;
     database_->AddEntry(
         service_worker_registration_id_, origin_, std::move(description),
-        SkBitmap(),
+        CreateTestIcon(),
         base::BindOnce(&DatabaseErrorCallback, run_loop.QuitClosure(), &error));
     run_loop.Run();
 
@@ -150,6 +158,18 @@ class ContentIndexDatabaseTest : public ::testing::Test {
                        &descriptions));
     run_loop.Run();
     return descriptions;
+  }
+
+  SkBitmap GetIcon(const std::string& id) {
+    base::RunLoop run_loop;
+    SkBitmap out_icon;
+    database_->GetIcon(service_worker_registration_id_, id,
+                       base::BindLambdaForTesting([&](SkBitmap icon) {
+                         out_icon = std::move(icon);
+                         run_loop.Quit();
+                       }));
+    run_loop.Run();
+    return out_icon;
   }
 
   MockContentIndexProvider* provider() {
@@ -322,6 +342,22 @@ TEST_F(ContentIndexDatabaseTest, ProviderInitializatied) {
     database()->InitializeProviderWithEntries();
     thread_bundle().RunUntilIdle();
   }
+}
+
+TEST_F(ContentIndexDatabaseTest, IconLifetimeTiedToEntry) {
+  // Initially we don't have an icon.
+  EXPECT_TRUE(GetIcon("id").isNull());
+
+  EXPECT_EQ(AddEntry(CreateDescription("id")),
+            blink::mojom::ContentIndexError::NONE);
+  SkBitmap icon = GetIcon("id");
+  EXPECT_FALSE(icon.isNull());
+  EXPECT_FALSE(icon.drawsNothing());
+  EXPECT_EQ(icon.width(), 42);
+  EXPECT_EQ(icon.height(), 42);
+
+  EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
+  EXPECT_TRUE(GetIcon("id").isNull());
 }
 
 }  // namespace content

@@ -71,14 +71,14 @@ class CompositorThreadInputPriorityTest : public CompositorThreadSchedulerTest {
 
 namespace {
 
-void RunTestTask(std::string name, Vector<std::string>* log) {
+void RunTestTask(String name, Vector<String>* log) {
   log->push_back(name);
 }
 
 }  // namespace
 
 TEST_F(CompositorThreadInputPriorityTest, HighestPriorityInput) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
 
   scheduler_->DefaultTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
@@ -89,8 +89,7 @@ TEST_F(CompositorThreadInputPriorityTest, HighestPriorityInput) {
 
   mock_task_runner_->RunUntilIdle();
 
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("input"),
-                                              std::string("default")));
+  EXPECT_THAT(run_order, testing::ElementsAre("input", "default"));
 }
 
 class CompositorThreadNoInputPriorityTest
@@ -104,7 +103,7 @@ class CompositorThreadNoInputPriorityTest
 };
 
 TEST_F(CompositorThreadNoInputPriorityTest, InputNotPrioritized) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
 
   scheduler_->DefaultTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
@@ -115,8 +114,7 @@ TEST_F(CompositorThreadNoInputPriorityTest, InputNotPrioritized) {
 
   mock_task_runner_->RunUntilIdle();
 
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("default"),
-                                              std::string("input")));
+  EXPECT_THAT(run_order, testing::ElementsAre("default", "input"));
 }
 }  // namespace compositor_thread_scheduler_unittest
 }  // namespace scheduler

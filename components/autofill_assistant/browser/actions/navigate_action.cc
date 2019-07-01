@@ -13,21 +13,22 @@
 
 namespace autofill_assistant {
 
-NavigateAction::NavigateAction(const ActionProto& proto) : Action(proto) {
+NavigateAction::NavigateAction(ActionDelegate* delegate,
+                               const ActionProto& proto)
+    : Action(delegate, proto) {
   DCHECK(proto_.has_navigate());
 }
 
 NavigateAction::~NavigateAction() {}
 
-void NavigateAction::InternalProcessAction(ActionDelegate* delegate,
-                                           ProcessActionCallback callback) {
+void NavigateAction::InternalProcessAction(ProcessActionCallback callback) {
   // We know to expect navigation to happen, since we're about to cause it. This
   // allows scripts to put wait_for_navigation just after navigate, if needed,
   // without having to add an expect_navigation first.
-  delegate->ExpectNavigation();
+  delegate_->ExpectNavigation();
 
   GURL url(proto_.navigate().url());
-  delegate->LoadURL(url);
+  delegate_->LoadURL(url);
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

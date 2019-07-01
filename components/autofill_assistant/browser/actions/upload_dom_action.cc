@@ -12,30 +12,28 @@
 
 namespace autofill_assistant {
 
-UploadDomAction::UploadDomAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+UploadDomAction::UploadDomAction(ActionDelegate* delegate,
+                                 const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_upload_dom());
 }
 
 UploadDomAction::~UploadDomAction() {}
 
-void UploadDomAction::InternalProcessAction(ActionDelegate* delegate,
-                                            ProcessActionCallback callback) {
+void UploadDomAction::InternalProcessAction(ProcessActionCallback callback) {
   Selector selector = Selector(proto_.upload_dom().tree_root());
   if (selector.empty()) {
     DVLOG(1) << __func__ << ": empty selector";
     UpdateProcessedAction(INVALID_SELECTOR);
     return;
   }
-  delegate->ShortWaitForElement(
-      selector,
-      base::BindOnce(&UploadDomAction::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+  delegate_->ShortWaitForElement(
+      selector, base::BindOnce(&UploadDomAction::OnWaitForElement,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               std::move(callback), selector));
 }
 
-void UploadDomAction::OnWaitForElement(ActionDelegate* delegate,
-                                       ProcessActionCallback callback,
+void UploadDomAction::OnWaitForElement(ProcessActionCallback callback,
                                        const Selector& selector,
                                        bool element_found) {
   if (!element_found) {
@@ -44,7 +42,7 @@ void UploadDomAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->GetOuterHtml(
+  delegate_->GetOuterHtml(
       selector,
       base::BindOnce(&UploadDomAction::OnGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

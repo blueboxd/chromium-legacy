@@ -43,6 +43,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
 
+  bool IsTracingActive() override;
+
   void Connect(mojom::PerfettoServicePtr perfetto_service);
 
   void set_in_process_shmem_arbiter(perfetto::SharedMemoryArbiter* arbiter) {
@@ -99,6 +101,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void BindClientAndHostPipesOnSequence(mojom::ProducerClientRequest,
                                         mojom::ProducerHostPtrInfo);
 
+  uint32_t data_sources_tracing_ = 0;
   std::unique_ptr<mojo::Binding<mojom::ProducerClient>> binding_;
   mojom::ProducerHostPtr producer_host_;
   std::unique_ptr<MojoSharedMemory> shared_memory_;

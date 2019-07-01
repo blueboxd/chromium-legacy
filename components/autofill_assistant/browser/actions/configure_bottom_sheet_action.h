@@ -15,13 +15,13 @@ namespace autofill_assistant {
 // Action to configure the viewport and peek height of the sheet.
 class ConfigureBottomSheetAction : public Action {
  public:
-  explicit ConfigureBottomSheetAction(const ActionProto& proto);
+  explicit ConfigureBottomSheetAction(ActionDelegate* delegate,
+                                      const ActionProto& proto);
   ~ConfigureBottomSheetAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   void OnWindowHeightChange(const ClientStatus& status);
   void OnTimeout();

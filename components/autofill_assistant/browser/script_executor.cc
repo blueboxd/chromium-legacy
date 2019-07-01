@@ -531,7 +531,7 @@ bool ScriptExecutor::ProcessNextActionResponse(const std::string& response) {
   bool should_update_scripts = false;
   std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseActions(
-      response, &last_global_payload_, &last_script_payload_, &actions_,
+      this, response, &last_global_payload_, &last_script_payload_, &actions_,
       &scripts, &should_update_scripts);
   if (!parse_result) {
     return false;
@@ -611,9 +611,9 @@ void ScriptExecutor::ProcessAction(Action* action) {
   navigation_info_.Clear();
   navigation_info_.set_has_error(delegate_->HasNavigationError());
 
-  action->ProcessAction(this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             base::TimeTicks::Now()));
+  action->ProcessAction(base::BindOnce(&ScriptExecutor::OnProcessedAction,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       base::TimeTicks::Now()));
 }
 
 void ScriptExecutor::GetNextActions() {

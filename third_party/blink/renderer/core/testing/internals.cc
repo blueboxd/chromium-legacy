@@ -3170,7 +3170,7 @@ unsigned Internals::canvasFontCacheMaxFonts() {
 void Internals::setScrollChain(ScrollState* scroll_state,
                                const HeapVector<Member<Element>>& elements,
                                ExceptionState&) {
-  std::deque<DOMNodeId> scroll_chain;
+  Deque<DOMNodeId> scroll_chain;
   for (wtf_size_t i = 0; i < elements.size(); ++i)
     scroll_chain.push_back(DOMNodeIds::IdForNode(elements[i].Get()));
   scroll_state->SetScrollChain(scroll_chain);

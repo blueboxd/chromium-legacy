@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,8 +15,6 @@
 #endif
 
 namespace {
-// Action button blue background color.
-const CGFloat kBlueHexColor = 0x1A73E8;
 // Default Button title Color.
 const CGFloat kDefaultButtonTitleColor = 0xFFFFFF;
 // Alpha value for the disabled action button.
@@ -76,7 +75,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
   cell.button.accessibilityIdentifier = self.buttonAccessibilityIdentifier;
   cell.button.backgroundColor = self.buttonBackgroundColor
                                     ? self.buttonBackgroundColor
-                                    : UIColorFromRGB(kBlueHexColor);
+                                    : [UIColor colorNamed:kTintColor];
   cell.button.enabled = self.enabled;
   if (!self.enabled) {
     cell.button.backgroundColor = [cell.button.backgroundColor

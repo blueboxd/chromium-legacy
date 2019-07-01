@@ -153,8 +153,6 @@ class ArcTracingDataSource
                         const perfetto::DataSourceConfig& data_source_config) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    DCHECK(!producer_);
-    producer_ = producer;
     data_source_config_ = data_source_config;
 
     for (ArcTracingBridge* bridge : bridges_) {
@@ -269,7 +267,6 @@ class ArcTracingDataSource
   // Called when all bridges have completed stopping, notifying
   // PerfettoProducer.
   base::OnceClosure stop_complete_callback_;
-  tracing::PerfettoProducer* producer_ = nullptr;
   perfetto::DataSourceConfig data_source_config_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingDataSource);

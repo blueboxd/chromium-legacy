@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::_;
@@ -38,12 +39,12 @@ namespace idle_helper_unittest {
 using base::sequence_manager::SequenceManager;
 using base::sequence_manager::TaskQueue;
 
-void AppendToVectorTestTask(Vector<std::string>* vector, std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
-void AppendToVectorIdleTestTask(Vector<std::string>* vector,
-                                std::string value,
+void AppendToVectorIdleTestTask(Vector<String>* vector,
+                                String value,
                                 base::TimeTicks deadline) {
   AppendToVectorTestTask(vector, value);
 }
@@ -485,25 +486,20 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
 
 TEST_F(IdleHelperWithMessageLoopTest,
        NonNestableIdleTaskDoesntExecuteInNestedLoop) {
-  Vector<std::string> order;
+  Vector<String> order;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("1")));
+      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "1"));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("2")));
+      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "2"));
 
   Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
       tasks_to_post_from_nested_loop;
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("3")),
-      false));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "3"), false));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("4")),
-      true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "4"), true));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("5")),
-      true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "5"), true));
 
   default_task_runner_->PostTask(
       FROM_HERE,
@@ -517,9 +513,7 @@ TEST_F(IdleHelperWithMessageLoopTest,
       test_task_runner_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
   base::RunLoop().RunUntilIdle();
   // Note we expect task 3 to run last because it's non-nestable.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("1"), std::string("2"),
-                                          std::string("4"), std::string("5"),
-                                          std::string("3")));
+  EXPECT_THAT(order, testing::ElementsAre("1", "2", "4", "5", "3"));
 }
 
 TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriod) {

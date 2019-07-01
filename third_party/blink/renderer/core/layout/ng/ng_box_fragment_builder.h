@@ -95,9 +95,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Prepare for a break token before the specified line.
   NGBoxFragmentBuilder& AddBreakBeforeLine(int line_number);
 
-  // Update if we have fragmented in this flow.
-  NGBoxFragmentBuilder& PropagateBreak(const NGLayoutResult&);
-  NGBoxFragmentBuilder& PropagateBreak(const NGPhysicalContainerFragment&);
+  NGBoxFragmentBuilder& AddResult(const NGLayoutResult&,
+                                  const LogicalOffset,
+                                  const LayoutInline* = nullptr);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGLogicalStaticPosition&,
@@ -232,6 +232,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 #endif
 
  private:
+  // Update whether we have fragmented in this flow.
+  NGBoxFragmentBuilder& PropagateBreak(const NGLayoutResult&);
+
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
   const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;

@@ -134,8 +134,8 @@ source_set("headers") {
       "//media",
       "//media/capture:capture_base",
       "//media/capture:capture_lib",
-      "//media/mojo/interfaces:interfaces",
     ]
+    public_deps += [ "//media/mojo/interfaces:interfaces" ]
   }
 
   if (is_android || is_win) {

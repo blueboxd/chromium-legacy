@@ -93,25 +93,37 @@ MetadataBoxController.GENERAL_METADATA_NAME = [
 
 /**
  * Update the view of metadata box.
- *
+ * @param {!Event} event
  * @private
  */
-MetadataBoxController.prototype.updateView_ = function() {
+MetadataBoxController.prototype.updateView_ = function(event) {
   if (!this.quickView_.metadataBoxActive) {
     return;
   }
+
   const entry = this.quickViewModel_.getSelectedEntry();
   const isSameEntry = util.isSameEntry(entry, this.previousEntry_);
   this.previousEntry_ = entry;
-  // Do not clear isSizeLoading and size fields when the entry is not changed.
-  this.metadataBox_.clear(isSameEntry);
+
   if (!entry) {
+    // Do not clear isSizeLoading and size fields when the entry is not changed.
+    this.metadataBox_.clear(isSameEntry);
     return;
   }
-  this.metadataModel_
-      .get([entry], MetadataBoxController.GENERAL_METADATA_NAME.concat([
-        'alternateUrl', 'externalFileUrl', 'hosted'
-      ]))
+
+  if (event.type === 'date-time-format-changed') {
+    // Update the displayed entry modificationTime format only, and return.
+    this.metadataModel_.get([entry], ['modificationTime'])
+        .then(this.updateModificationTime_.bind(this, entry, isSameEntry));
+    return;
+  }
+
+  // Do not clear isSizeLoading and size fields when the entry is not changed.
+  this.metadataBox_.clear(isSameEntry);
+
+  const metadata = MetadataBoxController.GENERAL_METADATA_NAME.concat(
+      ['alternateUrl', 'externalFileUrl', 'hosted']);
+  this.metadataModel_.get([entry], metadata)
       .then(this.onGeneralMetadataLoaded_.bind(this, entry, isSameEntry));
 };
 
@@ -141,10 +153,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
         /** @type {!DirectoryEntry} */ (entry), isSameEntry);
   }
 
-  if (item.modificationTime) {
-    this.metadataBox_.modificationTime =
-        this.fileMetadataFormatter_.formatModDate(item.modificationTime);
-  }
+  this.updateModificationTime_(entry, isSameEntry, items);
 
   if (item.externalFileUrl || item.alternateUrl) {
     this.metadataModel_.get([entry], ['contentMimeType']).then(items => {
@@ -202,14 +211,34 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
 };
 
 /**
+ * Updates the metadata box modificationTime.
+ *
+ * @param {!Entry} entry
+ * @param {boolean} isSameEntry if the entry is not changed from the last time.
+ * @param {!Array<!MetadataItem>} items
+ *
+ * @private
+ */
+MetadataBoxController.prototype.updateModificationTime_ = function(
+    entry, isSameEntry, items) {
+  const item = items[0];
+
+  if (item.modificationTime) {
+    this.metadataBox_.modificationTime =
+        this.fileMetadataFormatter_.formatModDate(item.modificationTime);
+  } else {
+    this.metadataBox_.modificationTime = '';
+  }
+};
+
+/**
  * Set a current directory's size in metadata box.
  * If previous getDirectorySize is still running, next getDirectorySize is not
  * called at the time. After the previous callback is finished, getDirectorySize
  * that corresponds to the last setDirectorySize_ is called.
  *
  * @param {!DirectoryEntry} entry
- * @param {boolean} isSameEntry
- *     if the entry is not changed from the last time.
+ * @param {boolean} isSameEntry if the entry is not changed from the last time.
  *
  * @private
  */

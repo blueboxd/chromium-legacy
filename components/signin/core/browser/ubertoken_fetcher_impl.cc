@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
 namespace {
@@ -32,7 +31,7 @@ const int UbertokenFetcherImpl::kMaxRetries = 3;
 
 UbertokenFetcherImpl::UbertokenFetcherImpl(
     const CoreAccountId& account_id,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,
     gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -49,7 +48,7 @@ UbertokenFetcherImpl::UbertokenFetcherImpl(
 UbertokenFetcherImpl::UbertokenFetcherImpl(
     const CoreAccountId& account_id,
     const std::string& access_token,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,
     GaiaAuthFetcherFactory factory,
     bool is_bound_to_channel_id)

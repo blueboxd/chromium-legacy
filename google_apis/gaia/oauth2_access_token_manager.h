@@ -18,7 +18,6 @@ class SharedURLLoaderFactory;
 
 class OAuth2AccessTokenFetcher;
 class OAuth2TokenService;
-class OAuth2TokenServiceDelegate;
 
 // Class that manages requests for OAuth2 access tokens.
 class OAuth2AccessTokenManager {
@@ -31,18 +30,26 @@ class OAuth2AccessTokenManager {
     Delegate();
     virtual ~Delegate();
 
+    // Creates and returns an OAuth2AccessTokenFetcher.
     virtual std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
         const CoreAccountId& account_id,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         OAuth2AccessTokenConsumer* consumer) WARN_UNUSED_RESULT = 0;
 
+    // Returns |true| if a refresh token is available for |account_id|, and
+    // |false| otherwise.
+    virtual bool HasRefreshToken(const CoreAccountId& account_id) const = 0;
+
     // Attempts to fix the error if possible.  Returns true if the error was
-    // fixed and false otherwise.
+    // fixed and false otherwise. Default implementation returns false.
     virtual bool FixRequestErrorIfPossible();
 
+    // Returns a SharedURLLoaderFactory object that will be used as part of
+    // fetching access tokens. Default implementation returns nullptr.
     virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
         const;
 
+    // Called when an access token is invalidated.
     virtual void OnAccessTokenInvalidated(const CoreAccountId& account_id,
                                           const std::string& client_id,
                                           const std::set<std::string>& scopes,
@@ -151,12 +158,11 @@ class OAuth2AccessTokenManager {
   typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
       TokenCache;
 
-  // TODO(https://crbug.com/967598): Remove |token_service| and
-  // |service_delegate| once OAuth2AccessTokenManager fully manages access
-  // tokens independently of OAuth2TokenService.
+  // TODO(https://crbug.com/967598): Remove |token_service| once
+  // OAuth2AccessTokenManager fully manages access tokens independently of
+  // OAuth2TokenService.
   explicit OAuth2AccessTokenManager(
       OAuth2TokenService* token_service,
-      OAuth2TokenServiceDelegate* service_delegate,
       OAuth2AccessTokenManager::Delegate* delegate);
   virtual ~OAuth2AccessTokenManager();
 
@@ -309,9 +315,6 @@ class OAuth2AccessTokenManager {
   // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
   // fully manages access tokens independently of OAuth2TokenService.
   OAuth2TokenService* token_service_;
-  // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
-  // is created without OAuth2TokenService.
-  OAuth2TokenServiceDelegate* token_service_delegate_;
   Delegate* delegate_;
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.

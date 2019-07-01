@@ -180,13 +180,20 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
 }
 
 void AddFingerprintResources(content::WebUIDataSource* source) {
-  if (quick_unlock::IsFingerprintReaderOnKeyboard()) {
-    source->AddResourcePath("fingerprint_scanner_animation.png",
-                            IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION);
-  } else {
-    source->AddResourcePath("fingerprint_scanner_animation.png",
-                            IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION);
+  int animation_id;
+  switch (quick_unlock::GetFingerprintLocation()) {
+    case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
+      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION;
+      break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
+      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION;
+      break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_TOP_RIGHT:
+      // TODO(rsorokin): Add animation for KEYBOARD_TOP_RIGHT.
+      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION;
+      break;
   }
+  source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
 }
 
 // Default and non-shared resource definition for kOobeDisplay display type.

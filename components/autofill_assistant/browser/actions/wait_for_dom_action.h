@@ -20,7 +20,7 @@ class BatchElementChecker;
 // An action to ask Chrome to wait for a DOM element to process next action.
 class WaitForDomAction : public Action {
  public:
-  explicit WaitForDomAction(const ActionProto& proto);
+  explicit WaitForDomAction(ActionDelegate* delegate, const ActionProto& proto);
   ~WaitForDomAction() override;
 
  private:
@@ -48,8 +48,7 @@ class WaitForDomAction : public Action {
   };
 
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   // Initializes |require_all_| and |conditions_| from |proto_|.
   void AddConditionsFromProto();

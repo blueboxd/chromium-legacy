@@ -146,7 +146,8 @@ public class AssistantPaymentRequestPaymentMethodSection
     }
 
     private void addAutocompleteInformationToEditor(PersonalDataManager.AutofillProfile profile) {
-        if (mEditor == null) {
+        // The check for non-null label is necessary to prevent crash in editor when opening.
+        if (mEditor == null || profile.getLabel() == null) {
             return;
         }
         mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));

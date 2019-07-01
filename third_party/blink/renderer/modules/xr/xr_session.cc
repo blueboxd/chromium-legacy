@@ -788,7 +788,7 @@ void XRSession::OnInputStateChangeInternal(
   // We use a separate array of inactive sources here rather than just
   // processing removed, because if we replaced any input sources, they would
   // also be in removed, and we'd remove our newly added source.
-  std::vector<uint32_t> inactive_sources;
+  Vector<uint32_t> inactive_sources;
   for (unsigned i = 0; i < input_sources_->length(); i++) {
     auto* input_source = (*input_sources_)[i];
     if (input_source->activeFrameId() != frame_id) {

@@ -38,8 +38,8 @@ TEST_F(PopupMessageActionTest, NoMessage) {
         callback_,
         Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
   }
-  PopupMessageAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PopupMessageAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 }
 
 TEST_F(PopupMessageActionTest, WithMessage) {
@@ -53,8 +53,8 @@ TEST_F(PopupMessageActionTest, WithMessage) {
         Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
   }
   prompt_proto_->set_message(message);
-  PopupMessageAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PopupMessageAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 }
 
 }  // namespace

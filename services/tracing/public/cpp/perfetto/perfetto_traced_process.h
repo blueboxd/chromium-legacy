@@ -36,12 +36,13 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
 
     void StartTracingWithID(
         uint64_t data_source_id,
-        PerfettoProducer* producer_client,
+        PerfettoProducer* producer,
         const perfetto::DataSourceConfig& data_source_config);
 
     virtual void StartTracing(
-        PerfettoProducer* producer_client,
+        PerfettoProducer* producer,
         const perfetto::DataSourceConfig& data_source_config) = 0;
+    // StopTracing must set |producer_| to nullptr before invoking the callback.
     virtual void StopTracing(
         base::OnceClosure stop_complete_callback = base::OnceClosure()) = 0;
 
@@ -52,6 +53,10 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
 
     const std::string& name() const { return name_; }
     uint64_t data_source_id() const { return data_source_id_; }
+    const PerfettoProducer* producer() const { return producer_; }
+
+   protected:
+    PerfettoProducer* producer_ = nullptr;
 
    private:
     uint64_t data_source_id_ = 0;
@@ -62,14 +67,17 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   static PerfettoTracedProcess* Get();
 
   ProducerClient* producer_client();
+  SystemProducer* SystemProducerForTesting();
 
   ~PerfettoTracedProcess();
 
-  // Sets the ProducerClient and returns the old pointer. If tests want to
-  // restore the state of the world they should store the pointer and call this
-  // method again with it as the parameter.
+  // Sets the ProducerClient (or SystemProducer) and returns the old pointer. If
+  // tests want to restore the state of the world they should store the pointer
+  // and call this method again with it as the parameter when finished.
   std::unique_ptr<ProducerClient> SetProducerClientForTesting(
       std::unique_ptr<ProducerClient> client);
+  std::unique_ptr<SystemProducer> SetSystemProducerForTesting(
+      std::unique_ptr<SystemProducer> producer);
   void ClearDataSourcesForTesting();
   static void DeleteSoonForTesting(std::unique_ptr<PerfettoTracedProcess>);
 
@@ -80,13 +88,29 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // ownership and is responsible for making sure the data source outlives the
   // PerfettoTracedProcess.
   void AddDataSource(DataSourceBase*);
-  const std::set<DataSourceBase*>& data_sources() { return data_sources_; }
+  // Can only be called on GetTaskRunner()'s sequence.
+  const std::set<DataSourceBase*>& data_sources();
 
+  // If the provided |producer| can begin tracing then |start_tracing| will be
+  // invoked (unless cancelled by the Perfetto service) at some point later
+  // using the GetTaskRunner()'s sequence and this function will return true.
+  // Otherwise the return value will be false and start_tracing will not be
+  // invoked at all. This function must be called on GetTaskRunners()'s
+  // sequence.
+  bool CanStartTracing(PerfettoProducer* producer,
+                       base::OnceCallback<void()> start_tracing);
+
+  // Be careful when using ResetTaskRunnerForTesting. There is a PostTask in the
+  // constructor of PerfettoTracedProcess, so before this class is constructed
+  // is the only safe time to call this.
   static void ResetTaskRunnerForTesting();
+
+  static void ReconstructForTesting(const char* system_socket);
 
  protected:
   // protected for testing.
   PerfettoTracedProcess();
+  explicit PerfettoTracedProcess(const char* system_socket);
 
  private:
   friend class base::NoDestructor<PerfettoTracedProcess>;

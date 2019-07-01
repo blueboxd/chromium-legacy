@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,8 +68,6 @@ void FingerprintSetupScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("setupFingerprintScreenTitle",
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_TITLE);
-  builder->Add("setupFingerprintScreenDescription",
-               IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_DESCRIPTION);
   builder->Add("skipFingerprintSetup",
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_SKIP);
   builder->Add("fingerprintSetupLater",
@@ -91,6 +90,19 @@ void FingerprintSetupScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_MOVE_FINGER);
   builder->Add("setupFingerprintScanTryAgain",
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_TRY_AGAIN);
+  int description_id;
+  switch (quick_unlock::GetFingerprintLocation()) {
+    case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
+      description_id =
+          IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION;
+      break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
+    case quick_unlock::FingerprintLocation::KEYBOARD_TOP_RIGHT:
+      description_id =
+          IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION;
+      break;
+  }
+  builder->Add("setupFingerprintScreenDescription", description_id);
 }
 
 void FingerprintSetupScreenHandler::RegisterMessages() {

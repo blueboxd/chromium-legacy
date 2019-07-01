@@ -6,16 +6,23 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator.DIVIDER_TAG;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestDelegate;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantTermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalExpander;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalExpanderAccordion;
+import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.payments.AutofillContact;
+import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -64,6 +71,39 @@ public class AutofillAssistantPaymentRequestTestHelper {
         }
     }
 
+    /**
+     * Simple mock delegate which stores the currently selected PR items.
+     *  TODO(crbug.com/860868): Remove this once PR is fully a MVC component, in which case one
+     *  should be able to get the currently selected items by asking the model.
+     */
+    static class MockDelegate implements AssistantPaymentRequestDelegate {
+        AutofillContact mContact;
+        AutofillAddress mAddress;
+        AutofillPaymentInstrument mPaymentMethod;
+        @AssistantTermsAndConditionsState
+        int mTermsStatus;
+
+        @Override
+        public void onContactInfoChanged(@Nullable AutofillContact contact) {
+            mContact = contact;
+        }
+
+        @Override
+        public void onShippingAddressChanged(@Nullable AutofillAddress address) {
+            mAddress = address;
+        }
+
+        @Override
+        public void onPaymentMethodChanged(@Nullable AutofillPaymentInstrument paymentInstrument) {
+            mPaymentMethod = paymentInstrument;
+        }
+
+        @Override
+        public void onTermsAndConditionsChanged(@AssistantTermsAndConditionsState int state) {
+            mTermsStatus = state;
+        }
+    }
+
     public AutofillAssistantPaymentRequestTestHelper()
             throws TimeoutException, InterruptedException {
         registerDataObserver();
@@ -88,6 +128,22 @@ public class AutofillAssistantPaymentRequestTestHelper {
                 () -> PersonalDataManager.getInstance().setProfile(profile));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
+    }
+
+    /**
+     * Adds a new profile with dummy data to the personal data manager.
+     *
+     * @param fullName The full name for the profile to create.
+     * @param email The email for the profile to create.
+     * @return the GUID of the created profile.
+     */
+    public String addDummyProfile(String fullName, String email)
+            throws TimeoutException, InterruptedException {
+        PersonalDataManager.AutofillProfile profile = new PersonalDataManager.AutofillProfile(
+                "" /* guid */, "https://www.example.com" /* origin */, fullName, "Acme Inc.",
+                "123 Main", "California", "Los Angeles", "", "90210", "", "Uzbekistan",
+                "555 123-4567", email, "");
+        return setProfile(profile);
     }
 
     public CreditCard getCreditCard(final String guid) {
@@ -117,6 +173,38 @@ public class AutofillAssistantPaymentRequestTestHelper {
                 () -> PersonalDataManager.getInstance().setCreditCard(card));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
+    }
+
+    /**
+     * Adds a credit card with dummy data to the personal data manager.
+     *
+     * @param billingAddressId The billing address profile GUID.
+     * @return the GUID of the created credit card
+     */
+    public String addDummyCreditCard(String billingAddressId)
+            throws TimeoutException, InterruptedException {
+        String profileName = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> PersonalDataManager.getInstance().getProfile(billingAddressId).getFullName());
+
+        PersonalDataManager.CreditCard creditCard = new PersonalDataManager.CreditCard("",
+                "https://example.com", true, true, profileName, "4111111111111111", "1111", "12",
+                "2050", "visa", org.chromium.chrome.autofill_assistant.R.drawable.visa_card,
+                CardType.UNKNOWN, billingAddressId, "" /* serverId */);
+        return setCreditCard(creditCard);
+    }
+
+    public void deleteProfile(final String guid) throws InterruptedException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> PersonalDataManager.getInstance().deleteProfile(guid));
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
+    }
+
+    public void deleteCreditCard(final String guid) throws InterruptedException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> PersonalDataManager.getInstance().deleteCreditCard(guid));
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
     private void registerDataObserver() throws TimeoutException, InterruptedException {

@@ -7,19 +7,29 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/content_index/content_index.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/origin.h"
+
+// TODO(crbug.com/973844): Move image utility functions to common library.
+using content::background_fetch::DeserializeIcon;
+using content::background_fetch::SerializeIcon;
 
 namespace content {
 
 namespace {
 
 constexpr char kEntryPrefix[] = "content_index:entry_";
+constexpr char kIconPrefix[] = "content_index:icon_";
 
 std::string EntryKey(const std::string& id) {
   return kEntryPrefix + id;
+}
+
+std::string IconKey(const std::string& id) {
+  return kIconPrefix + id;
 }
 
 std::string CreateSerializedContentEntry(
@@ -81,19 +91,33 @@ void ContentIndexDatabase::AddEntry(
     blink::mojom::ContentDescriptionPtr description,
     const SkBitmap& icon,
     blink::mojom::ContentIndexService::AddCallback callback) {
+  SerializeIcon(icon,
+                base::BindOnce(&ContentIndexDatabase::DidSerializeIcon,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               service_worker_registration_id, origin,
+                               std::move(description), std::move(callback)));
+}
+
+void ContentIndexDatabase::DidSerializeIcon(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    blink::mojom::ContentDescriptionPtr description,
+    blink::mojom::ContentIndexService::AddCallback callback,
+    std::string serialized_icon) {
   base::Time entry_time = base::Time::Now();
-  std::string key = EntryKey(description->id);
-  std::string value = CreateSerializedContentEntry(*description, entry_time);
-  DCHECK(!value.empty());
+  std::string entry_key = EntryKey(description->id);
+  std::string icon_key = IconKey(description->id);
+  std::string entry_value =
+      CreateSerializedContentEntry(*description, entry_time);
 
   // Entry to pass over to the provider.
   ContentIndexEntry entry(service_worker_registration_id,
                           std::move(description), entry_time);
 
-  // TODO(crbug.com/973844): Serialize and store icon.
   service_worker_context_->StoreRegistrationUserData(
       service_worker_registration_id, origin.GetURL(),
-      {{std::move(key), std::move(value)}},
+      {{std::move(entry_key), std::move(entry_value)},
+       {std::move(icon_key), std::move(serialized_icon)}},
       base::BindOnce(&ContentIndexDatabase::DidAddEntry,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(entry)));
@@ -119,7 +143,7 @@ void ContentIndexDatabase::DeleteEntry(
     const std::string& entry_id,
     blink::mojom::ContentIndexService::DeleteCallback callback) {
   service_worker_context_->ClearRegistrationUserData(
-      service_worker_registration_id, {EntryKey(entry_id)},
+      service_worker_registration_id, {EntryKey(entry_id), IconKey(entry_id)},
       base::BindOnce(
           &ContentIndexDatabase::DidDeleteEntry, weak_ptr_factory_.GetWeakPtr(),
           service_worker_registration_id, entry_id, std::move(callback)));
@@ -236,8 +260,25 @@ void ContentIndexDatabase::GetIcon(
     int64_t service_worker_registration_id,
     const std::string& description_id,
     base::OnceCallback<void(SkBitmap)> icon_callback) {
-  // TODO(crbug.com/973844): Implement this after icon is fetched & persisted.
-  std::move(icon_callback).Run(SkBitmap());
+  service_worker_context_->GetRegistrationUserData(
+      service_worker_registration_id, {IconKey(description_id)},
+      base::BindOnce(&ContentIndexDatabase::DidGetSerializedIcon,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(icon_callback)));
+}
+
+void ContentIndexDatabase::DidGetSerializedIcon(
+    base::OnceCallback<void(SkBitmap)> icon_callback,
+    const std::vector<std::string>& data,
+    blink::ServiceWorkerStatusCode status) {
+  if (status != blink::ServiceWorkerStatusCode::kOk || data.empty()) {
+    std::move(icon_callback).Run(SkBitmap());
+    return;
+  }
+
+  DCHECK_EQ(data.size(), 1u);
+
+  DeserializeIcon(std::make_unique<std::string>(data[0]),
+                  std::move(icon_callback));
 }
 
 void ContentIndexDatabase::Shutdown() {

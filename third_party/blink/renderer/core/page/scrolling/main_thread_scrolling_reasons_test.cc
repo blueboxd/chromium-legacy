@@ -56,12 +56,13 @@ class MainThreadScrollingReasonsTest
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  void NavigateTo(const std::string& url) {
-    frame_test_helpers::LoadFrame(GetWebView()->MainFrameImpl(), url);
+  void NavigateTo(const String& url) {
+    frame_test_helpers::LoadFrame(GetWebView()->MainFrameImpl(), url.Utf8());
   }
 
-  void LoadHTML(const std::string& html) {
-    frame_test_helpers::LoadHTMLString(GetWebView()->MainFrameImpl(), html,
+  void LoadHTML(const String& html) {
+    frame_test_helpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                       html.Utf8(),
                                        url_test_helpers::ToKURL("about:blank"));
   }
 
@@ -70,10 +71,9 @@ class MainThreadScrollingReasonsTest
         WebWidget::LifecycleUpdateReason::kTest);
   }
 
-  void RegisterMockedHttpURLLoad(const std::string& file_name) {
+  void RegisterMockedHttpURLLoad(const String& file_name) {
     url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
-        WebString::FromUTF8(file_name));
+        WebString(base_url_), test::CoreTestDataPath(), WebString(file_name));
   }
 
   uint32_t GetViewMainThreadScrollingReasons() const {
@@ -98,7 +98,7 @@ class MainThreadScrollingReasonsTest
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
  protected:
-  std::string base_url_;
+  String base_url_;
 
  private:
   static void ConfigureSettings(WebSettings* settings) {
@@ -324,12 +324,12 @@ class NonCompositedMainThreadScrollingReasonsTest
     RegisterMockedHttpURLLoad("two_scrollable_area.html");
     NavigateTo(base_url_ + "two_scrollable_area.html");
   }
-  void TestNonCompositedReasons(const std::string& target,
-                                const uint32_t reason) {
+  void TestNonCompositedReasons(const String& target, const uint32_t reason) {
     GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
     Document* document = GetFrame()->GetDocument();
     Element* container = document->getElementById("scroller1");
-    container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
+    container->setAttribute("class", target.Utf8().c_str(),
+                            ASSERT_NO_EXCEPTION);
     ForceFullCompositingUpdate();
 
     PaintLayerScrollableArea* scrollable_area =
@@ -362,7 +362,8 @@ class NonCompositedMainThreadScrollingReasonsTest
     EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
 
     // Add target attribute would again lead to scroll on main thread
-    container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
+    container->setAttribute("class", target.Utf8().c_str(),
+                            ASSERT_NO_EXCEPTION);
     ForceFullCompositingUpdate();
 
     EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &

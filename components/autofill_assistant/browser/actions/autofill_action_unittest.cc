@@ -156,11 +156,11 @@ class AutofillActionTest : public testing::Test {
   }
 
   ProcessedActionStatusProto ProcessAction(const ActionProto& action_proto) {
-    AutofillAction action(action_proto);
+    AutofillAction action(&mock_action_delegate_, action_proto);
     // We can use DirectCallback given that methods in ActionDelegate are mocked
     // and return directly.
     DirectCallback callback;
-    action.ProcessAction(&mock_action_delegate_, callback.Get());
+    action.ProcessAction(callback.Get());
     return callback.GetResultOrDie()->status();
   }
 

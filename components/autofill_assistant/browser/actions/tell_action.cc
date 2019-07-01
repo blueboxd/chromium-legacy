@@ -11,16 +11,16 @@
 
 namespace autofill_assistant {
 
-TellAction::TellAction(const ActionProto& proto) : Action(proto) {
+TellAction::TellAction(ActionDelegate* delegate, const ActionProto& proto)
+    : Action(delegate, proto) {
   DCHECK(proto_.has_tell());
 }
 
 TellAction::~TellAction() {}
 
-void TellAction::InternalProcessAction(ActionDelegate* delegate,
-                                       ProcessActionCallback callback) {
+void TellAction::InternalProcessAction(ProcessActionCallback callback) {
   // tell.message in the proto is localized.
-  delegate->SetStatusMessage(proto_.tell().message());
+  delegate_->SetStatusMessage(proto_.tell().message());
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

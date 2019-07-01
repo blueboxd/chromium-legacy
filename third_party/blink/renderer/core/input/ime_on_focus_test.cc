@@ -54,13 +54,13 @@ class ImeOnFocusTest : public testing::Test {
  protected:
   void SendGestureTap(WebView*, IntPoint);
   void Focus(const AtomicString& element);
-  void RunImeOnFocusTest(std::string file_name,
+  void RunImeOnFocusTest(String file_name,
                          int,
                          IntPoint tap_point = IntPoint(-1, -1),
                          const AtomicString& focus_element = g_null_atom,
-                         std::string frame = "");
+                         String frame = "");
 
-  std::string base_url_;
+  String base_url_;
   frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<Document> document_;
 };
@@ -87,19 +87,18 @@ void ImeOnFocusTest::Focus(const AtomicString& element) {
 }
 
 void ImeOnFocusTest::RunImeOnFocusTest(
-    std::string file_name,
+    String file_name,
     int expected_virtual_keyboard_request_count,
     IntPoint tap_point,
     const AtomicString& focus_element,
-    std::string frame) {
+    String frame) {
   ImeRequestTrackingWebWidgetClient client;
-  RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                test::CoreTestDataPath(),
-                                WebString::FromUTF8(file_name));
+  RegisterMockedURLLoadFromBase(WebString(base_url_), test::CoreTestDataPath(),
+                                WebString(file_name));
   WebViewImpl* web_view =
       web_view_helper_.Initialize(nullptr, nullptr, &client);
   web_view->MainFrameWidget()->Resize(WebSize(800, 1200));
-  LoadFrame(web_view->MainFrameImpl(), base_url_ + file_name);
+  LoadFrame(web_view->MainFrameImpl(), base_url_.Utf8() + file_name.Utf8());
   document_ = web_view_helper_.GetWebView()
                   ->MainFrameImpl()
                   ->GetDocument()
@@ -112,13 +111,12 @@ void ImeOnFocusTest::RunImeOnFocusTest(
   if (tap_point.X() >= 0 && tap_point.Y() >= 0)
     SendGestureTap(web_view, tap_point);
 
-  if (!frame.empty()) {
-    RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                  test::CoreTestDataPath(),
-                                  WebString::FromUTF8(frame));
+  if (!frame.IsEmpty()) {
+    RegisterMockedURLLoadFromBase(WebString(base_url_),
+                                  test::CoreTestDataPath(), WebString(frame));
     WebLocalFrame* child_frame =
         web_view->MainFrame()->FirstChild()->ToWebLocalFrame();
-    LoadFrame(child_frame, base_url_ + frame);
+    LoadFrame(child_frame, base_url_.Utf8() + frame.Utf8());
   }
 
   if (!focus_element.IsNull())

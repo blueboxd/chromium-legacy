@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_
 
-#include <deque>
 #include <memory>
 
 #include "base/macros.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 
@@ -129,7 +129,7 @@ class CORE_EXPORT ScrollManager
 
   void RecomputeScrollChain(const Node& start_node,
                             const ScrollState&,
-                            std::deque<DOMNodeId>& scroll_chain);
+                            Deque<DOMNodeId>& scroll_chain);
   bool CanScroll(const ScrollState&, const Node& current_node);
 
   // scroller_size is set only when scrolling non root scroller.
@@ -153,7 +153,7 @@ class CORE_EXPORT ScrollManager
   const Member<LocalFrame> frame_;
 
   // Only used with the ScrollCustomization runtime enabled feature.
-  std::deque<DOMNodeId> current_scroll_chain_;
+  Deque<DOMNodeId> current_scroll_chain_;
 
   Member<Node> scroll_gesture_handling_node_;
 

@@ -277,8 +277,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
   } timestamp_based_event_comparison;
   std::sort(all_coalesced_events.begin(), all_coalesced_events.end(),
             timestamp_based_event_comparison);
-  WebCoalescedInputEvent result(event, std::vector<const WebInputEvent*>(),
-                                std::vector<const WebInputEvent*>());
+  WebCoalescedInputEvent result(event, {}, {});
   for (const auto& web_pointer_event : all_coalesced_events) {
     if (web_pointer_event.GetType() == WebInputEvent::kPointerDown) {
       // TODO(crbug.com/732842): Technically we should never receive the

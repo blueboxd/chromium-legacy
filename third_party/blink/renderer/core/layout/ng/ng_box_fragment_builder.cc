@@ -139,26 +139,14 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
   return *this;
 }
 
-NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
-    const NGLayoutResult& child_layout_result) {
-  if (LIKELY(!has_block_fragmentation_))
-    return *this;
-  if (!did_break_)
-    PropagateBreak(child_layout_result.PhysicalFragment());
-  if (child_layout_result.HasForcedBreak())
-    SetHasForcedBreak();
-  else
-    PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
-  return *this;
-}
-
-NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
-    const NGPhysicalContainerFragment& child_fragment) {
-  DCHECK(has_block_fragmentation_);
-  if (!did_break_) {
-    const auto* token = child_fragment.BreakToken();
-    did_break_ = token && !token->IsFinished();
-  }
+NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddResult(
+    const NGLayoutResult& child_layout_result,
+    const LogicalOffset offset,
+    const LayoutInline* inline_container) {
+  const auto& fragment = child_layout_result.PhysicalFragment();
+  AddChild(fragment, offset, inline_container);
+  if (fragment.IsBox())
+    PropagateBreak(child_layout_result);
   return *this;
 }
 
@@ -209,6 +197,21 @@ void NGBoxFragmentBuilder::AddBaseline(NGBaselineRequest request,
 EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
     EBreakBetween break_before) const {
   return JoinFragmentainerBreakValues(previous_break_after_, break_before);
+}
+
+NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
+    const NGLayoutResult& child_layout_result) {
+  if (LIKELY(!has_block_fragmentation_))
+    return *this;
+  if (!did_break_) {
+    const auto* token = child_layout_result.PhysicalFragment().BreakToken();
+    did_break_ = token && !token->IsFinished();
+  }
+  if (child_layout_result.HasForcedBreak())
+    SetHasForcedBreak();
+  else
+    PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
+  return *this;
 }
 
 scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(

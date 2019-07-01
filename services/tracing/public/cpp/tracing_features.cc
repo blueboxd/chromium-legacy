@@ -38,6 +38,9 @@ const base::Feature kTracingServiceInProcess {
 #endif
 };
 
+const base::Feature kEnablePerfettoSystemTracing{
+    "EnablePerfettoSystemTracing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 namespace tracing {

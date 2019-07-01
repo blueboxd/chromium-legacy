@@ -1643,6 +1643,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/first_run/first_run_ui.h",
       "webui/chromeos/image_source.cc",
       "webui/chromeos/image_source.h",
+      "webui/chromeos/insession_confirm_password_change_handler_chromeos.cc",
+      "webui/chromeos/insession_confirm_password_change_handler_chromeos.h",
       "webui/chromeos/insession_password_change_handler_chromeos.cc",
       "webui/chromeos/insession_password_change_handler_chromeos.h",
       "webui/chromeos/insession_password_change_ui.cc",

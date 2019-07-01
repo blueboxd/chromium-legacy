@@ -33,7 +33,7 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace worker_scheduler_unittest {
 
-void AppendToVectorTestTask(Vector<std::string>* vector, std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
@@ -123,8 +123,8 @@ class WorkerSchedulerTest : public testing::Test {
   void RunUntilIdle() { mock_task_runner_->FastForwardUntilNoTasksRemain(); }
 
   // Helper for posting a task.
-  void PostTestTask(Vector<std::string>* run_order,
-                    const std::string& task_descriptor,
+  void PostTestTask(Vector<String>* run_order,
+                    const String& task_descriptor,
                     TaskType task_type) {
     worker_scheduler_->GetTaskRunner(task_type)->PostTask(
         FROM_HERE, WTF::Bind(&AppendToVectorTestTask,
@@ -142,7 +142,7 @@ class WorkerSchedulerTest : public testing::Test {
 };
 
 TEST_F(WorkerSchedulerTest, TestPostTasks) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTask(&run_order, "T1", TaskType::kInternalTest);
   PostTestTask(&run_order, "T2", TaskType::kInternalTest);
   RunUntilIdle();
@@ -281,7 +281,7 @@ TEST_F(WorkerSchedulerTest,
 }
 
 TEST_F(WorkerSchedulerTest, MAYBE_PausableTasks) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   auto pause_handle = worker_scheduler_->Pause();
   // Tests interlacing pausable, throttable and unpausable tasks and
   // ensures that the pausable & throttable tasks don't run when paused.
@@ -300,7 +300,7 @@ TEST_F(WorkerSchedulerTest, MAYBE_PausableTasks) {
 }
 
 TEST_F(WorkerSchedulerTest, MAYBE_NestedPauseHandlesTasks) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   auto pause_handle = worker_scheduler_->Pause();
   {
     auto pause_handle2 = worker_scheduler_->Pause();

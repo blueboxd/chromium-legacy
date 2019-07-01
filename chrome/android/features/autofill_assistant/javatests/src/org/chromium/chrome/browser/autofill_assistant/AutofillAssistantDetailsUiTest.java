@@ -23,7 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+import android.support.test.filters.MediumTest;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -123,7 +123,7 @@ public class AutofillAssistantDetailsUiTest {
 
     /** Tests assumptions about the initial state of the details. */
     @Test
-    @SmallTest
+    @MediumTest
     public void testInitialState() throws Exception {
         AssistantDetailsModel model = new AssistantDetailsModel();
         AssistantDetailsCoordinator coordinator = createCoordinator(model);
@@ -134,7 +134,7 @@ public class AutofillAssistantDetailsUiTest {
 
     /** Tests visibility of views. */
     @Test
-    @SmallTest
+    @MediumTest
     public void testVisibility() throws Exception {
         AssistantDetailsModel model = new AssistantDetailsModel();
         AssistantDetailsCoordinator coordinator = createCoordinator(model);
@@ -160,7 +160,7 @@ public class AutofillAssistantDetailsUiTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testTitle() throws Exception {
         AssistantDetailsModel model = new AssistantDetailsModel();
         AssistantDetailsCoordinator coordinator = createCoordinator(model);
@@ -204,7 +204,7 @@ public class AutofillAssistantDetailsUiTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testDescriptionLine1() throws Exception {
         Locale locale = LocaleUtils.forLanguageTag("en-US");
         AssistantDetailsModel model = new AssistantDetailsModel();
@@ -249,7 +249,7 @@ public class AutofillAssistantDetailsUiTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testDescriptionLine1NonUSLocale() throws Exception {
         Locale locale = LocaleUtils.forLanguageTag("de-DE");
         AssistantDetailsModel model = new AssistantDetailsModel();
@@ -271,7 +271,7 @@ public class AutofillAssistantDetailsUiTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testDescriptionLine2() throws Exception {
         AssistantDetailsModel model = new AssistantDetailsModel();
         AssistantDetailsCoordinator coordinator = createCoordinator(model);
@@ -299,7 +299,7 @@ public class AutofillAssistantDetailsUiTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testDescriptionLine3() throws Exception {
         AssistantDetailsModel model = new AssistantDetailsModel();
         AssistantDetailsCoordinator coordinator = createCoordinator(model);

@@ -11,17 +11,17 @@
 
 namespace autofill_assistant {
 
-ShowInfoBoxAction::ShowInfoBoxAction(const ActionProto& proto)
-    : Action(proto) {}
+ShowInfoBoxAction::ShowInfoBoxAction(ActionDelegate* delegate,
+                                     const ActionProto& proto)
+    : Action(delegate, proto) {}
 
 ShowInfoBoxAction::~ShowInfoBoxAction() {}
 
-void ShowInfoBoxAction::InternalProcessAction(ActionDelegate* delegate,
-                                              ProcessActionCallback callback) {
+void ShowInfoBoxAction::InternalProcessAction(ProcessActionCallback callback) {
   if (!proto_.show_info_box().has_info_box()) {
-    delegate->ClearInfoBox();
+    delegate_->ClearInfoBox();
   } else {
-    delegate->SetInfoBox(InfoBox(proto_.show_info_box()));
+    delegate_->SetInfoBox(InfoBox(proto_.show_info_box()));
   }
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));

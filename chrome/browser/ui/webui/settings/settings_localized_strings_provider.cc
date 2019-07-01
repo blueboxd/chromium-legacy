@@ -70,6 +70,7 @@
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -1301,6 +1302,36 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
                           base::size(kLocalizedStrings));
 }
 
+void AddFingerprintStrings(content::WebUIDataSource* html_source) {
+  int instruction_id, aria_label_id;
+  using FingerprintLocation = chromeos::quick_unlock::FingerprintLocation;
+  switch (chromeos::quick_unlock::GetFingerprintLocation()) {
+    case FingerprintLocation::TABLET_POWER_BUTTON:
+      instruction_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON;
+      aria_label_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON_ARIA_LABEL;
+      break;
+    case FingerprintLocation::KEYBOARD_TOP_RIGHT:
+      instruction_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD;
+      aria_label_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_TOP_RIGHT_ARIA_LABEL;
+      break;
+    case FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
+      // TODO(rsorokin): Add correct strings for KEYBOARD_BOTTOM_RIGHT.
+      instruction_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD;
+      aria_label_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_TOP_RIGHT_ARIA_LABEL;
+      break;
+  }
+  html_source->AddLocalizedString(
+      "configureFingerprintInstructionLocateScannerStep", instruction_id);
+  html_source->AddLocalizedString("configureFingerprintScannerStepAriaLabel",
+                                  aria_label_id);
+}
+
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"internetAddConnection", IDS_SETTINGS_INTERNET_ADD_CONNECTION},
@@ -1730,10 +1761,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"accountManagerUnmanagedLabel",
      IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_UNMANAGED_ACCOUNT},
     {"configureFingerprintTitle", IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TITLE},
-    {"configureFingerprintInstructionLocateScannerStep",
-     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER},
-    {"configureFingerprintScannerStepAriaLabel",
-     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_ARIA_LABEL},
     {"configureFingerprintInstructionReadyStep",
      IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_READY},
     {"configureFingerprintLiftFinger",
@@ -1971,6 +1998,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           base::size(localized_strings));
+#if defined(OS_CHROMEOS)
+  AddFingerprintStrings(html_source);
+#endif  // OS_CHROMEOS
   html_source->AddString("managementPage",
                          ManagementUI::GetManagementPageSubtitle(profile));
 

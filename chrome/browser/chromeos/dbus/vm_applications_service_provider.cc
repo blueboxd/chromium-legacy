@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -106,8 +106,8 @@ void VmApplicationsServiceProvider::LaunchTerminal(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (crostini::IsCrostiniEnabled(profile) &&
       request.owner_id() == crostini::CryptohomeIdForProfile(profile)) {
-    crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerTerminal(
-        request.vm_name(), request.container_name(),
+    crostini::LaunchContainerTerminal(
+        profile, request.vm_name(), request.container_name(),
         std::vector<std::string>(request.params().begin(),
                                  request.params().end()));
   }

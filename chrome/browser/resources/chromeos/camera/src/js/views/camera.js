@@ -284,6 +284,9 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
       resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
     }
     for (const [captureResolution, previewCandidates] of resolCandidates) {
+      if (supportedModes && !supportedModes.includes(mode)) {
+        break;
+      }
       for (const constraints of previewCandidates) {
         try {
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -291,7 +294,7 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
             supportedModes = await this.modes_.getSupportedModes(stream);
             if (!supportedModes.includes(mode)) {
               stream.getTracks()[0].stop();
-              return false;
+              break;
             }
           }
           await this.preview_.start(stream);

@@ -43,7 +43,6 @@ void TestDataSource::WritePacketBigly() {
 void TestDataSource::StartTracing(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
-  producer_ = producer;
   config_ = data_source_config;
 
   if (send_packet_count_ > 0) {
@@ -55,9 +54,14 @@ void TestDataSource::StartTracing(
       writer->NewTracePacket()->set_for_testing()->set_str(kPerfettoTestString);
     }
   }
+  if (!start_tracing_callback_.is_null()) {
+    std::move(start_tracing_callback_).Run();
+  }
 }
 
 void TestDataSource::StopTracing(base::OnceClosure stop_complete_callback) {
+  DCHECK(producer_);
+  producer_ = nullptr;
   std::move(stop_complete_callback).Run();
 }
 
@@ -65,6 +69,10 @@ void TestDataSource::Flush(base::RepeatingClosure flush_complete_callback) {
   if (flush_complete_callback) {
     flush_complete_callback.Run();
   }
+}
+void TestDataSource::set_start_tracing_callback(
+    base::OnceClosure start_tracing_callback) {
+  start_tracing_callback_ = std::move(start_tracing_callback);
 }
 
 MockProducerClient::MockProducerClient(

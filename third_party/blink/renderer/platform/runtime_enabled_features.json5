@@ -712,6 +712,7 @@
     },
     {
       name: "HeapUnifiedGCScheduling",
+      status: "stable",
     },
     {
       name: "HrefTranslate",

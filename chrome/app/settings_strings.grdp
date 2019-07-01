@@ -3869,12 +3869,21 @@
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TITLE" desc="Title of the add fingerprint dialog popup.">
       Set up your fingerprint
     </message>
-    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER" desc="Text in the add fingerprint dialog telling users to place finger on the sensor.">
+
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON" desc="Text in the add fingerprint dialog telling users to place finger on the power button which is the sensor.">
       Touch the power button with your finger
     </message>
-     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_ARIA_LABEL" desc="Aria label in the add fingerprint dialog telling users where the fingerprint sensor is. Only visible by screen reader software.">
+     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON_ARIA_LABEL" desc="Aria label in the add fingerprint dialog telling users that the fingerprint sensor is in the power button. Only visible by screen reader software.">
       The fingerprint sensor is in the power button. Touch it lightly with any finger.
     </message>
+
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD" desc="Text in the add fingerprint dialog telling users to place finger on the sensor on the keyboard.">
+      Touch the fingerprint sensor with your finger
+    </message>
+     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_TOP_RIGHT_ARIA_LABEL" desc="Aria label in the add fingerprint dialog telling users that the fingerprint sensor is on the keyboard. Only visible by screen reader software.">
+      The fingerprint sensor is the top right-hand key on your keyboard. Touch it lightly with any finger.
+    </message>
+
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_READY" desc="Text in the add fingerprint dialog that confirms user's fingerprint scan was successful.">
       Fingerprint added.
     </message>

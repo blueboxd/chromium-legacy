@@ -12,15 +12,15 @@
 
 namespace autofill_assistant {
 
-SelectOptionAction::SelectOptionAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+SelectOptionAction::SelectOptionAction(ActionDelegate* delegate,
+                                       const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_select_option());
 }
 
 SelectOptionAction::~SelectOptionAction() {}
 
-void SelectOptionAction::InternalProcessAction(ActionDelegate* delegate,
-                                               ProcessActionCallback callback) {
+void SelectOptionAction::InternalProcessAction(ProcessActionCallback callback) {
   const SelectOptionProto& select_option = proto_.select_option();
 
   // A non prefilled |select_option| is not supported.
@@ -37,15 +37,13 @@ void SelectOptionAction::InternalProcessAction(ActionDelegate* delegate,
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
-  delegate->ShortWaitForElement(
-      selector,
-      base::BindOnce(&SelectOptionAction::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+  delegate_->ShortWaitForElement(
+      selector, base::BindOnce(&SelectOptionAction::OnWaitForElement,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               std::move(callback), selector));
 }
 
-void SelectOptionAction::OnWaitForElement(ActionDelegate* delegate,
-                                          ProcessActionCallback callback,
+void SelectOptionAction::OnWaitForElement(ProcessActionCallback callback,
                                           const Selector& selector,
                                           bool element_found) {
   if (!element_found) {
@@ -54,7 +52,7 @@ void SelectOptionAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->SelectOption(
+  delegate_->SelectOption(
       selector, proto_.select_option().selected_option(),
       base::BindOnce(&::autofill_assistant::SelectOptionAction::OnSelectOption,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

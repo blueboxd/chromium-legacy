@@ -17,13 +17,13 @@ namespace autofill_assistant {
 // a second one.
 class PopupMessageAction : public Action {
  public:
-  explicit PopupMessageAction(const ActionProto& proto);
+  explicit PopupMessageAction(ActionDelegate* delegate,
+                              const ActionProto& proto);
   ~PopupMessageAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(PopupMessageAction);
 };

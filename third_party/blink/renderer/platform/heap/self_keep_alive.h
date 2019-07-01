@@ -47,6 +47,10 @@ class SelfKeepAlive final {
   SelfKeepAlive() = default;
 
   explicit SelfKeepAlive(Self* self) { Assign(self); }
+  SelfKeepAlive(const PersistentLocation& location, Self* self)
+      : keep_alive_(location) {
+    Assign(self);
+  }
 
   SelfKeepAlive& operator=(Self* self) {
     Assign(self);

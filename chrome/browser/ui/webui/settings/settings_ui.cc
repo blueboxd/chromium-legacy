@@ -470,9 +470,14 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           fingerprint_unlock_enabled);
   if (fingerprint_unlock_enabled) {
+    using FingerprintLocation = chromeos::quick_unlock::FingerprintLocation;
+    const FingerprintLocation location =
+        chromeos::quick_unlock::GetFingerprintLocation();
+    // TODO(rsorokin): reevaluate once we have KEYBOARD_TOP_RIGHT animation.
     html_source->AddBoolean(
         "isFingerprintReaderOnKeyboard",
-        chromeos::quick_unlock::IsFingerprintReaderOnKeyboard());
+        location == FingerprintLocation::KEYBOARD_BOTTOM_RIGHT ||
+            location == FingerprintLocation::KEYBOARD_TOP_RIGHT);
   }
   html_source->AddBoolean("lockScreenNotificationsEnabled",
                           ash::features::IsLockScreenNotificationsEnabled());

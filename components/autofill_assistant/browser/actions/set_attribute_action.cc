@@ -12,16 +12,16 @@
 
 namespace autofill_assistant {
 
-SetAttributeAction::SetAttributeAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+SetAttributeAction::SetAttributeAction(ActionDelegate* delegate,
+                                       const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK_GT(proto_.set_attribute().element().selectors_size(), 0);
   DCHECK_GT(proto_.set_attribute().attribute_size(), 0);
 }
 
 SetAttributeAction::~SetAttributeAction() {}
 
-void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
-                                               ProcessActionCallback callback) {
+void SetAttributeAction::InternalProcessAction(ProcessActionCallback callback) {
   Selector selector = Selector(proto_.set_attribute().element());
   if (selector.empty()) {
     DVLOG(1) << __func__ << ": empty selector";
@@ -29,15 +29,13 @@ void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
-  delegate->ShortWaitForElement(
-      selector,
-      base::BindOnce(&SetAttributeAction::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+  delegate_->ShortWaitForElement(
+      selector, base::BindOnce(&SetAttributeAction::OnWaitForElement,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               std::move(callback), selector));
 }
 
-void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
-                                          ProcessActionCallback callback,
+void SetAttributeAction::OnWaitForElement(ProcessActionCallback callback,
                                           const Selector& selector,
                                           bool element_found) {
   if (!element_found) {
@@ -46,7 +44,7 @@ void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->SetAttribute(
+  delegate_->SetAttribute(
       selector, ExtractVector(proto_.set_attribute().attribute()),
       proto_.set_attribute().value(),
       base::BindOnce(&SetAttributeAction::OnSetAttribute,

@@ -214,7 +214,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   std::vector<AccountInfo> accounts;
   for (auto& account_info : accounts_with_tokens) {
     DCHECK(!account_info.IsEmpty());
-    if (!identity::LegacyIsUsernameAllowedByPatternFromPrefs(
+    if (!identity::IsUsernameAllowedByPatternFromPrefs(
             g_browser_process->local_state(), account_info.email,
             prefs::kGoogleServicesUsernamePattern)) {
       continue;

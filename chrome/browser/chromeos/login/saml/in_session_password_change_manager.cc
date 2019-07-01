@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/insession_password_change_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
@@ -43,6 +44,13 @@ void InSessionPasswordChangeManager::ChangePassword(
   authenticator_->MigrateKey(user_context, old_password);
 }
 
+void InSessionPasswordChangeManager::HandlePasswordScrapeFailure() {
+  // TODO(https://crbug.com/930109): Show different versions of the dialog
+  // depending on whether any usable passwords were scraped.
+  PasswordChangeDialog::Dismiss();
+  ConfirmPasswordChangeDialog::Show();
+}
+
 void InSessionPasswordChangeManager::OnAuthSuccess(
     const UserContext& user_context) {
   VLOG(3) << "Cryptohome password is changed.";
@@ -57,7 +65,10 @@ void InSessionPasswordChangeManager::OnAuthSuccess(
       /*modified_time=*/base::Time::Now(), /*expiration_time=*/base::Time(),
       loaded.password_change_url())
       .SaveToPrefs(primary_profile_->GetPrefs());
+
   DismissSamlPasswordExpiryNotification(primary_profile_);
+  PasswordChangeDialog::Dismiss();
+  ConfirmPasswordChangeDialog::Dismiss();
 }
 
 void InSessionPasswordChangeManager::OnAuthFailure(const AuthFailure& error) {

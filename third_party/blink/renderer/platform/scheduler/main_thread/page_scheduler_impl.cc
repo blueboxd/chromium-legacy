@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -341,8 +340,8 @@ void PageSchedulerImpl::OnNavigation() {
   reported_background_throttling_since_navigation_ = false;
 }
 
-void PageSchedulerImpl::ReportIntervention(const std::string& message) {
-  delegate_->ReportIntervention(String::FromUTF8(message));
+void PageSchedulerImpl::ReportIntervention(const String& message) {
+  delegate_->ReportIntervention(message);
 }
 
 base::TimeTicks PageSchedulerImpl::EnableVirtualTime() {
@@ -545,7 +544,7 @@ void PageSchedulerImpl::OnThrottlingReported(
     return;
   reported_background_throttling_since_navigation_ = true;
 
-  std::string message = base::StringPrintf(
+  String message = String::Format(
       "Timer tasks have taken too much time while the page was in the "
       "background. "
       "As a result, they have been deferred for %.3f seconds. "
@@ -553,7 +552,7 @@ void PageSchedulerImpl::OnThrottlingReported(
       "for more details",
       throttling_duration.InSecondsF());
 
-  delegate_->ReportIntervention(String::FromUTF8(message));
+  delegate_->ReportIntervention(message);
 }
 
 void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(

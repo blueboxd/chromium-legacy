@@ -58,8 +58,18 @@ void DummyProducer::ActivateTriggers(const std::vector<std::string>&) {}
 // tracing::PerfettoProducer functions.
 void DummyProducer::NewDataSourceAdded(
     const PerfettoTracedProcess::DataSourceBase* const data_source) {}
+bool DummyProducer::IsTracingActive() {
+  return false;
+}
 
 // Functions expected for SystemProducer
-void DummyProducer::Disconnect() {}
+void DummyProducer::DisconnectWithReply(
+    base::OnceClosure on_disconnect_complete) {
+  std::move(on_disconnect_complete).Run();
+}
+
+bool DummyProducer::IsDummySystemProducerForTesting() {
+  return true;
+}
 
 }  // namespace tracing

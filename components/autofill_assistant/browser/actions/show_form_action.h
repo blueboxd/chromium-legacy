@@ -16,17 +16,15 @@ namespace autofill_assistant {
 // An action to show a form than can be filled by the user.
 class ShowFormAction : public Action {
  public:
-  explicit ShowFormAction(const ActionProto& proto);
+  explicit ShowFormAction(ActionDelegate* delegate, const ActionProto& proto);
   ~ShowFormAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnFormValuesChanged(ActionDelegate* delegate,
-                           const FormProto::Result* form_result);
-  void OnButtonClicked(ActionDelegate* delegate);
+  void OnFormValuesChanged(const FormProto::Result* form_result);
+  void OnButtonClicked();
   bool IsFormValid(const FormProto& form, const FormProto::Result& result);
   bool IsCounterInputValid(const CounterInputProto& input,
                            const CounterInputProto::Result& result);

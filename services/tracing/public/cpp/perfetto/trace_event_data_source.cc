@@ -21,6 +21,7 @@
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
@@ -111,6 +112,10 @@ void TraceEventMetadataSource::GenerateMetadata(
   }
   trace_packet = perfetto::TraceWriter::TracePacketHandle();
 
+  // We already have the |trace_writer| and |trace_packet|, so regardless of if
+  // we need to return due to privacy we need to null out the |producer_| to
+  // inform the system that we are done tracing with this |producer_|
+  producer_ = nullptr;
   if (privacy_filtering_enabled_) {
     return;
   }
@@ -167,6 +172,7 @@ void TraceEventMetadataSource::StopTracing(
                        base::Unretained(this), std::move(trace_writer_)),
         std::move(stop_complete_callback));
   } else {
+    producer_ = nullptr;
     trace_writer_.reset();
     chrome_config_ = std::string();
     std::move(stop_complete_callback).Run();
@@ -250,7 +256,7 @@ void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
     base::AutoLock lock(lock_);
     // No need to do anything if startup tracing has already been set,
     // or we know Perfetto has already been setup.
-    if (startup_writer_registry_ || producer_client_) {
+    if (startup_writer_registry_ || producer_) {
       DCHECK(!privacy_filtering_enabled || privacy_filtering_enabled_);
       return;
     }
@@ -278,8 +284,7 @@ void TraceEventDataSource::StartTracing(
     }
     privacy_filtering_enabled_ = should_enable_filtering;
 
-    DCHECK(!producer_client_);
-    producer_client_ = producer;
+    producer_ = producer;
     target_buffer_ = data_source_config.target_buffer();
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
@@ -332,8 +337,8 @@ void TraceEventDataSource::StopTracing(
   {
     // Prevent recreation of ThreadLocalEventSinks after flush.
     base::AutoLock lock(lock_);
-    DCHECK(producer_client_);
-    producer_client_ = nullptr;
+    DCHECK(producer_);
+    producer_ = nullptr;
     target_buffer_ = 0;
   }
 
@@ -410,15 +415,15 @@ ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
     bool thread_will_flush) {
   base::AutoLock lock(lock_);
   // |startup_writer_registry_| only exists during startup tracing before we
-  // connect to the service. |producer_client_| is reset when tracing is
+  // connect to the service. |producer_| is reset when tracing is
   // stopped.
   std::unique_ptr<perfetto::StartupTraceWriter> trace_writer;
   uint32_t session_id = session_id_.load(std::memory_order_relaxed);
   if (startup_writer_registry_) {
     trace_writer = startup_writer_registry_->CreateUnboundTraceWriter();
-  } else if (producer_client_) {
+  } else if (producer_) {
     trace_writer = std::make_unique<perfetto::StartupTraceWriter>(
-        producer_client_->CreateTraceWriter(target_buffer_));
+        producer_->CreateTraceWriter(target_buffer_));
   }
 
   if (!trace_writer) {

@@ -1522,7 +1522,6 @@ group("child_dependencies") {
     "//chrome/utility",
     "//components/gwp_asan/buildflags",
     "//components/services/heap_profiling",
-    "//components/sync",
     "//content/public/child",
     "//pdf",
     "//third_party/blink/public:blink_devtools_frontend_resources",

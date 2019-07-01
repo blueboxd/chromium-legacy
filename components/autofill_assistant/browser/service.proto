@@ -1296,13 +1296,23 @@ message CounterInputProto {
     // Text shown below the label. Optional.
     optional string subtext = 5;
 
-    // The minimum value this counter can have.
+    // The possible values this counter can have. If empty, the possible values
+    // will be all integer values between |min_value| and |max_value|.
+    // Note that the order of the values matters and they will not be
+    // automatically sorted.
+    repeated int32 allowed_values = 6;
+
+    // The minimum value this counter can have. Ignored if |allowed_values| is
+    // not empty.
     optional int32 min_value = 2 [default = -0x80000000];  // kint32min
 
-    // The maximum value this counter can have.
+    // The maximum value this counter can have. Ignored if |allowed_values| is
+    // not empty.
     optional int32 max_value = 3 [default = 0x7FFFFFFF];  // kint32max
 
-    // The initial value of the counter.
+    // The initial value of the counter. If |allowed_values| is not empty, it
+    // must contain |initial_value| or it will otherwise default to the first
+    // value.
     optional int32 initial_value = 4 [default = 0];
   }
 

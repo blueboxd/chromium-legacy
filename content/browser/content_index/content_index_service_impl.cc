@@ -62,6 +62,7 @@ void ContentIndexServiceImpl::Add(
     const SkBitmap& icon,
     AddCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(crbug.com/973844): Add parameter validation.
 
   content_index_context_->database().AddEntry(service_worker_registration_id,
                                               origin_, std::move(description),

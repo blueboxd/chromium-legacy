@@ -2377,8 +2377,7 @@ void MainThreadSchedulerImpl::OnPageResumed() {
   memory_purge_manager_.OnPageResumed();
 }
 
-void MainThreadSchedulerImpl::BroadcastIntervention(
-    const std::string& message) {
+void MainThreadSchedulerImpl::BroadcastIntervention(const String& message) {
   helper_.CheckOnValidThread();
   for (auto* page_scheduler : main_thread_only().page_schedulers)
     page_scheduler->ReportIntervention(message);

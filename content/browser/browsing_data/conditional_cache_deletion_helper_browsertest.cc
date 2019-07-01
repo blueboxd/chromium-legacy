@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -137,7 +138,14 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
 
 // Tests that ConditionalCacheDeletionHelper only deletes those cache entries
 // that match the condition.
-IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
+// Disabled on Android due to flakiness. See https://crbug.com/978891.
+#if defined(OS_ANDROID)
+#define MAYBE_Condition DISABLED_Condition
+#else
+#define MAYBE_Condition Condition
+#endif
+IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
+                       MAYBE_Condition) {
   std::set<GURL> urls = {
       embedded_test_server()->GetURL("foo.com", "/title1.html"),
       embedded_test_server()->GetURL("bar.com", "/title1.html"),
@@ -187,7 +195,15 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
 //
 // It previously flaked on Mac 10.11 (crbug.com/646119) and on Linux/ChromeOS
 // (crbug.com/624836) but it seems to be stable now.
-IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, TimeAndURL) {
+
+// Disabled on Android due to flakiness. See https://crbug.com/978891.
+#if defined(OS_ANDROID)
+#define MAYBE_TimeAndURL DISABLED_TimeAndURL
+#else
+#define MAYBE_TimeAndURL TimeAndURL
+#endif
+IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
+                       MAYBE_TimeAndURL) {
   // https://crbug.com/911171: this test depends on the timing of the cache,
   // which changes if it's running out-of-process.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))

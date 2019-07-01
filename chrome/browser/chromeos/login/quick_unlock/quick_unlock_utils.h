@@ -16,7 +16,7 @@ class Profile;
 namespace chromeos {
 namespace quick_unlock {
 
-// Enumeration specifiying the possible intervals before a strong auth
+// Enumeration specifying the possible intervals before a strong auth
 // (password) is required to use quick unlock. These values correspond to the
 // policy items of QuickUnlockTimeout (policy ID 352) in policy_templates.json,
 // and should be updated accordingly.
@@ -25,6 +25,13 @@ enum class PasswordConfirmationFrequency {
   TWELVE_HOURS = 1,
   TWO_DAYS = 2,
   WEEK = 3
+};
+
+// Enumeration specifying the possible fingerprint sensor locations.
+enum class FingerprintLocation {
+  TABLET_POWER_BUTTON = 0,
+  KEYBOARD_TOP_RIGHT = 1,
+  KEYBOARD_BOTTOM_RIGHT = 2,
 };
 
 base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
@@ -42,11 +49,11 @@ bool IsPinEnabled(PrefService* pref_service);
 // Returns true if the fingerprint is allowed for specified profile.
 bool IsFingerprintEnabled(Profile* profile);
 
-// Whether fingerprint setup UI should use resources that indicate the
-// fingerprint sensor placement for laptops, rather than tablets.
-// TODO(yulunwu): Reevaluate this once the fingerprint UI settings are supported
-// by cros_config.
-bool IsFingerprintReaderOnKeyboard();
+// Returns fingerprint sensor location depending on the board name. Used to
+// display correct UI. Returns TABLET by default.
+// TODO(rsorokin): Reevaluate this once the fingerprint UI settings are
+// supported by cros_config.
+FingerprintLocation GetFingerprintLocation();
 
 // Enable or Disable quick-unlock modes for testing
 void EnabledForTesting(bool state);

@@ -30,10 +30,10 @@ TEST(XRViewTest, UpdatePoseMatrix) {
 
   view.UpdatePoseMatrix(pose_matrix);
   TransformationMatrix view_transform_matrix = view.Transform();
-  const std::vector<double> actual_matrix =
+  const Vector<double> actual_matrix =
       GetMatrixDataForTest(view_transform_matrix);
 
-  const std::vector<double> expected_matrix{
+  const Vector<double> expected_matrix{
       0.154251,  0.000000,  0.988032,  0.000000,  -0.840720, 0.525322,
       0.131253,  0.000000,  -0.519035, -0.850904, 0.081032,  0.000000,
       -2.392795, -2.502067, 3.517570,  1.000000};

@@ -10,14 +10,14 @@
 
 namespace autofill_assistant {
 
-Action::Action(const ActionProto& proto) : proto_(proto) {}
+Action::Action(ActionDelegate* delegate, const ActionProto& proto)
+    : proto_(proto), delegate_(delegate) {}
 
 Action::~Action() {}
 
-void Action::ProcessAction(ActionDelegate* delegate,
-                           ProcessActionCallback callback) {
+void Action::ProcessAction(ProcessActionCallback callback) {
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
-  InternalProcessAction(delegate, std::move(callback));
+  InternalProcessAction(std::move(callback));
 }
 
 void Action::UpdateProcessedAction(ProcessedActionStatusProto status_proto) {

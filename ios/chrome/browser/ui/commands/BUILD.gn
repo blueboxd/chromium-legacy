@@ -35,7 +35,6 @@ source_set("commands") {
     "//components/browsing_data/core",
     "//components/signin/core/browser",
     "//ios/chrome/browser/browsing_data:browsing_data_remove_mask",
-    "//ios/chrome/browser/ui/metrics",
     "//ios/web",
     "//net",
     "//url",
@@ -51,7 +50,6 @@ source_set("unit_tests") {
   deps = [
     ":commands",
     "//base",
-    "//ios/chrome/browser/ui/metrics",
     "//testing/gtest",
   ]
 }

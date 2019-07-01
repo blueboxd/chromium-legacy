@@ -58,12 +58,12 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kAtomicPhase,
     kAtomicPhaseCompaction,
     kAtomicPhaseMarking,
+    kAtomicSweepAndCompact,
     kCompleteSweep,
     kEagerSweep,
+    kIncrementalMarkingFinalize,
     kIncrementalMarkingStartMarking,
     kIncrementalMarkingStep,
-    kIncrementalMarkingFinalize,
-    kIncrementalMarkingFinalizeMarking,
     kInvokePreFinalizers,
     kLazySweepInIdle,
     kLazySweepOnAllocation,
@@ -71,7 +71,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kMarkProcessWorklist,
     kMarkNotFullyConstructedObjects,
     kMarkWeakProcessing,
-    kUnifiedMarkingAtomicPrologue,
+    kStandAloneAtomicMarking,
+    kUnifiedAtomicMarkingEpilogue,
+    kUnifiedAtomicMarkingPrologue,
+    kUnifiedAtomicMarkingTransitiveClosure,
     kUnifiedMarkingStep,
     kVisitCrossThreadPersistents,
     kVisitDOMWrappers,
@@ -85,53 +88,59 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   static const char* ToString(Id id) {
     switch (id) {
-      case Id::kAtomicPhase:
+      case kAtomicPhase:
         return "BlinkGC.AtomicPhase";
-      case Id::kAtomicPhaseCompaction:
+      case kAtomicPhaseCompaction:
         return "BlinkGC.AtomicPhaseCompaction";
-      case Id::kAtomicPhaseMarking:
+      case kAtomicPhaseMarking:
         return "BlinkGC.AtomicPhaseMarking";
-      case Id::kCompleteSweep:
+      case kAtomicSweepAndCompact:
+        return "BlinkGC.AtomicSweepAndCompact";
+      case kCompleteSweep:
         return "BlinkGC.CompleteSweep";
-      case Id::kEagerSweep:
+      case kEagerSweep:
         return "BlinkGC.EagerSweep";
-      case Id::kIncrementalMarkingStartMarking:
-        return "BlinkGC.IncrementalMarkingStartMarking";
-      case Id::kIncrementalMarkingStep:
-        return "BlinkGC.IncrementalMarkingStep";
-      case Id::kIncrementalMarkingFinalize:
+      case kIncrementalMarkingFinalize:
         return "BlinkGC.IncrementalMarkingFinalize";
-      case Id::kIncrementalMarkingFinalizeMarking:
-        return "BlinkGC.IncrementalMarkingFinalizeMarking";
-      case Id::kInvokePreFinalizers:
+      case kIncrementalMarkingStartMarking:
+        return "BlinkGC.IncrementalMarkingStartMarking";
+      case kIncrementalMarkingStep:
+        return "BlinkGC.IncrementalMarkingStep";
+      case kInvokePreFinalizers:
         return "BlinkGC.InvokePreFinalizers";
-      case Id::kLazySweepInIdle:
+      case kLazySweepInIdle:
         return "BlinkGC.LazySweepInIdle";
-      case Id::kLazySweepOnAllocation:
+      case kLazySweepOnAllocation:
         return "BlinkGC.LazySweepOnAllocation";
-      case Id::kMarkInvokeEphemeronCallbacks:
+      case kMarkInvokeEphemeronCallbacks:
         return "BlinkGC.MarkInvokeEphemeronCallbacks";
-      case Id::kMarkNotFullyConstructedObjects:
+      case kMarkNotFullyConstructedObjects:
         return "BlinkGC.MarkNotFullyConstructedObjects";
-      case Id::kMarkProcessWorklist:
+      case kMarkProcessWorklist:
         return "BlinkGC.MarkProcessWorklist";
-      case Id::kMarkWeakProcessing:
+      case kMarkWeakProcessing:
         return "BlinkGC.MarkWeakProcessing";
-      case kUnifiedMarkingAtomicPrologue:
+      case kStandAloneAtomicMarking:
+        return "BlinkGC.StandAloneAtomicMarking";
+      case kUnifiedAtomicMarkingEpilogue:
+        return "BlinkGC.UnifiedMarkingAtomicEpilogue";
+      case kUnifiedAtomicMarkingPrologue:
         return "BlinkGC.UnifiedMarkingAtomicPrologue";
+      case kUnifiedAtomicMarkingTransitiveClosure:
+        return "BlinkGC.UnifiedMarkingAtomicTransitiveClosure";
       case kUnifiedMarkingStep:
         return "BlinkGC.UnifiedMarkingStep";
-      case Id::kVisitCrossThreadPersistents:
+      case kVisitCrossThreadPersistents:
         return "BlinkGC.VisitCrossThreadPersistents";
-      case Id::kVisitDOMWrappers:
+      case kVisitDOMWrappers:
         return "BlinkGC.VisitDOMWrappers";
-      case Id::kVisitPersistentRoots:
+      case kVisitPersistentRoots:
         return "BlinkGC.VisitPersistentRoots";
-      case Id::kVisitPersistents:
+      case kVisitPersistents:
         return "BlinkGC.VisitPersistents";
-      case Id::kVisitStackRoots:
+      case kVisitStackRoots:
         return "BlinkGC.VisitStackRoots";
-      default:
+      case kNumScopeIds:
         NOTREACHED();
     }
     return nullptr;
@@ -229,6 +238,9 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   using EnabledConcurrentScope = InternalScope<kEnabled, kConcurrentThread>;
   using DevToolsScope = InternalScope<kDevTools>;
 
+  // BlinkGCInV8Scope keeps track of time spent in Blink's GC when called by V8.
+  // This is necessary to avoid double-accounting of Blink's time when computing
+  // the overall time (V8 + Blink) spent in GC on the main thread.
   class PLATFORM_EXPORT BlinkGCInV8Scope {
     DISALLOW_NEW();
     DISALLOW_COPY_AND_ASSIGN(BlinkGCInV8Scope);
@@ -249,14 +261,35 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   };
 
   // POD to hold interesting data accumulated during a garbage collection cycle.
-  // The event is always fully polulated when looking at previous events but
+  // The event is always fully populated when looking at previous events but
   // is only be partially populated when looking at the current event. See
   // members on when they are available.
+  //
+  // Note that all getters include time for stand-alone as well as unified heap
+  // GCs. E.g., |atomic_marking_time()| report the marking time of the atomic
+  // phase, independent of whether the GC was a stand-alone or unified heap GC.
   struct PLATFORM_EXPORT Event {
-    double marking_time_in_ms() const;
-    double marking_time_in_bytes_per_second() const;
+    // Overall time spent in the GC cycle. This includes marking time as well as
+    // sweeping time.
+    base::TimeDelta gc_cycle_time() const;
+
+    // Time spent incrementally marking the heap.
+    base::TimeDelta incremental_marking_time() const;
+
+    // Time spent in atomically marking the heap.
+    base::TimeDelta atomic_marking_time() const;
+
+    // Overall time spent marking the heap.
+    base::TimeDelta marking_time() const;
+
+    // Overall time spent sweeping the heap.
     base::TimeDelta sweeping_time() const;
+
+    // Time spent in concurrent tasks sweeping the heap.
     base::TimeDelta concurrent_sweeping_time() const;
+
+    // Marking speed in bytes/s.
+    double marking_time_in_bytes_per_second() const;
 
     // Marked bytes collected during sweeping.
     size_t marked_bytes = 0;
@@ -326,6 +359,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   base::TimeDelta estimated_marking_time() const;
 
   size_t marked_bytes() const;
+  base::TimeDelta marking_time_so_far() const;
+
   int64_t allocated_bytes_since_prev_gc() const;
 
   size_t allocated_space_bytes() const;
@@ -338,9 +373,6 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // Statistics for the previously running garbage collection.
   const Event& previous() const { return previous_; }
 
-  base::TimeDelta marking_time_so_far() const {
-    return base::TimeDelta::FromMilliseconds(current_.marking_time_in_ms());
-  }
 
   void RegisterObserver(ThreadHeapStatsObserver* observer);
   void UnregisterObserver(ThreadHeapStatsObserver* observer);

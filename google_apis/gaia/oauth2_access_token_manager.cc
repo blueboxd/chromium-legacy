@@ -12,7 +12,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 int OAuth2AccessTokenManager::max_fetch_retry_num_ = 5;
@@ -383,13 +382,10 @@ const CoreAccountId& OAuth2AccessTokenManager::Fetcher::GetAccountId() const {
 
 OAuth2AccessTokenManager::OAuth2AccessTokenManager(
     OAuth2TokenService* token_service,
-    OAuth2TokenServiceDelegate* token_service_delegate,
     OAuth2AccessTokenManager::Delegate* delegate)
     : token_service_(token_service),
-      token_service_delegate_(token_service_delegate),
       delegate_(delegate) {
   DCHECK(token_service_);
-  DCHECK(token_service_delegate_);
   DCHECK(delegate_);
 }
 
@@ -607,7 +603,7 @@ OAuth2AccessTokenManager::StartRequestForClientWithContext(
   for (auto& observer : diagnostics_observer_list_)
     observer.OnAccessTokenRequested(account_id, consumer->id(), scopes);
 
-  if (!token_service_delegate_->RefreshTokenIsAvailable(account_id)) {
+  if (!delegate_->HasRefreshToken(account_id)) {
     GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
 
     for (auto& observer : diagnostics_observer_list_) {

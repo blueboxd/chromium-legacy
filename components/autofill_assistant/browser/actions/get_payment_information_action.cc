@@ -24,15 +24,15 @@
 namespace autofill_assistant {
 
 GetPaymentInformationAction::GetPaymentInformationAction(
+    ActionDelegate* delegate,
     const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_get_payment_information());
 }
 
 GetPaymentInformationAction::~GetPaymentInformationAction() {}
 
 void GetPaymentInformationAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
   const GetPaymentInformationProto& get_payment_information =
       proto_.get_payment_information();
@@ -82,16 +82,15 @@ void GetPaymentInformationAction::InternalProcessAction(
 
   payment_options->callback =
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
-                     weak_ptr_factory_.GetWeakPtr(), delegate,
+                     weak_ptr_factory_.GetWeakPtr(),
                      std::move(get_payment_information), std::move(callback));
   if (get_payment_information.has_prompt()) {
-    delegate->SetStatusMessage(get_payment_information.prompt());
+    delegate_->SetStatusMessage(get_payment_information.prompt());
   }
-  delegate->GetPaymentInformation(std::move(payment_options));
+  delegate_->GetPaymentInformation(std::move(payment_options));
 }
 
 void GetPaymentInformationAction::OnGetPaymentInformation(
-    ActionDelegate* delegate,
     const GetPaymentInformationProto& get_payment_information,
     ProcessActionCallback callback,
     std::unique_ptr<PaymentInformation> payment_information) {
@@ -105,12 +104,12 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
               .basic_card_issuer_network;
       processed_action_proto_->mutable_payment_details()
           ->set_card_issuer_network(card_issuer_network);
-      delegate->GetClientMemory()->set_selected_card(
+      delegate_->GetClientMemory()->set_selected_card(
           std::move(payment_information->card));
 
       if (!get_payment_information.billing_address_name().empty()) {
         DCHECK(payment_information->billing_address);
-        delegate->GetClientMemory()->set_selected_address(
+        delegate_->GetClientMemory()->set_selected_address(
             get_payment_information.billing_address_name(),
             std::move(payment_information->billing_address));
       }
@@ -118,7 +117,7 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
 
     if (!get_payment_information.shipping_address_name().empty()) {
       DCHECK(payment_information->shipping_address);
-      delegate->GetClientMemory()->set_selected_address(
+      delegate_->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
           std::move(payment_information->shipping_address));
     }
@@ -143,7 +142,7 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
       contact_profile.SetRawInfo(
           autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
           base::ASCIIToUTF16(payment_information->payer_phone));
-      delegate->GetClientMemory()->set_selected_address(
+      delegate_->GetClientMemory()->set_selected_address(
           contact_details_proto.contact_details_name(),
           std::make_unique<autofill::AutofillProfile>(contact_profile));
     }

@@ -5,8 +5,6 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 
 #include <memory>
-#include <set>
-#include <string>
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -80,7 +78,7 @@ void UpdatePriority(MainThreadTaskQueue* task_queue) {
 
 // Extract a substring from |source| from [start to end), trimming leading
 // whitespace.
-std::string ExtractAndTrimString(std::string source, size_t start, size_t end) {
+String ExtractAndTrimString(String source, size_t start, size_t end) {
   DCHECK(start < source.length());
   DCHECK(end <= source.length());
   DCHECK(start <= end);
@@ -88,27 +86,28 @@ std::string ExtractAndTrimString(std::string source, size_t start, size_t end) {
   while (start < end && source[start] == ' ')
     ++start;
   if (start < end)
-    return source.substr(start, end - start);
+    return source.Substring(start, end - start);
   return "";
 }
 
-std::set<std::string> TaskTypesFromFieldTrialParam(const char* param) {
-  std::set<std::string> result;
-  std::string task_type_list = base::GetFieldTrialParamValueByFeature(
-      kThrottleAndFreezeTaskTypes, param);
+HashSet<String> TaskTypesFromFieldTrialParam(const char* param) {
+  HashSet<String> result;
+  String task_type_list =
+      String::FromUTF8(base::GetFieldTrialParamValueByFeature(
+          kThrottleAndFreezeTaskTypes, param));
   if (!task_type_list.length())
     return result;
   // Extract the individual names, separated by ",".
   size_t pos = 0, start = 0;
-  while ((pos = task_type_list.find(',', start)) != std::string::npos) {
-    std::string task_type = ExtractAndTrimString(task_type_list, start, pos);
+  while ((pos = task_type_list.find(',', start)) != kNotFound) {
+    String task_type = ExtractAndTrimString(task_type_list, start, pos);
     // Not valid to start with "," or have ",," in the list.
     DCHECK(task_type.length());
     result.insert(task_type);
     start = pos + 1;
   }
   // Handle the last or only task type name.
-  std::string task_type =
+  String task_type =
       ExtractAndTrimString(task_type_list, start, task_type_list.length());
   DCHECK(task_type.length());
   result.insert(task_type);
@@ -368,8 +367,8 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
             static_cast<size_t>(TaskType::kCount));
   // Using std set and strings here because field trial parameters are std
   // strings, and we cannot use WTF strings as Blink is not yet initialized.
-  std::set<std::string> throttleable_task_type_names;
-  std::set<std::string> freezable_task_type_names;
+  HashSet<String> throttleable_task_type_names;
+  HashSet<String> freezable_task_type_names;
   if (base::FeatureList::IsEnabled(kThrottleAndFreezeTaskTypes)) {
     throttleable_task_type_names =
         TaskTypesFromFieldTrialParam(kThrottleableTaskTypesListParam);
@@ -380,19 +379,19 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
     TaskType type = static_cast<TaskType>(i);
     base::Optional<QueueTraits> queue_traits =
         CreateQueueTraitsForTaskType(type);
-    if (queue_traits && (!throttleable_task_type_names.empty() ||
-                         !freezable_task_type_names.empty())) {
+    if (queue_traits && (!throttleable_task_type_names.IsEmpty() ||
+                         !freezable_task_type_names.IsEmpty())) {
       const char* task_type_name = TaskTypeNames::TaskTypeToString(type);
-      if (throttleable_task_type_names.erase(task_type_name))
+      if (!throttleable_task_type_names.Take(task_type_name).IsEmpty())
         queue_traits->SetCanBeThrottled(true);
-      if (freezable_task_type_names.erase(task_type_name))
+      if (freezable_task_type_names.Take(task_type_name).IsEmpty())
         queue_traits->SetCanBeFrozen(true);
     }
     frame_task_types_to_queue_traits[i] = queue_traits;
   }
   // Protect against configuration errors.
-  DCHECK(throttleable_task_type_names.empty());
-  DCHECK(freezable_task_type_names.empty());
+  DCHECK(throttleable_task_type_names.IsEmpty());
+  DCHECK(freezable_task_type_names.IsEmpty());
 }
 
 // static

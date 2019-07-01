@@ -13,13 +13,13 @@ namespace autofill_assistant {
 // Action to show informational content in the sheet.
 class ShowInfoBoxAction : public Action {
  public:
-  explicit ShowInfoBoxAction(const ActionProto& proto);
+  explicit ShowInfoBoxAction(ActionDelegate* delegate,
+                             const ActionProto& proto);
   ~ShowInfoBoxAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(ShowInfoBoxAction);
 };

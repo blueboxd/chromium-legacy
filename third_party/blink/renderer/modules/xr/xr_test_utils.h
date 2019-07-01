@@ -17,7 +17,7 @@ namespace blink {
 
 constexpr double kEpsilon = 0.0001;
 
-std::vector<double> GetMatrixDataForTest(const TransformationMatrix& matrix);
+Vector<double> GetMatrixDataForTest(const TransformationMatrix& matrix);
 DOMPointInit* MakePointForTest(double x, double y, double z, double w);
 
 }  // namespace blink

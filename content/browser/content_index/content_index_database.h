@@ -55,6 +55,11 @@ class CONTENT_EXPORT ContentIndexDatabase
   void Shutdown();
 
  private:
+  void DidSerializeIcon(int64_t service_worker_registration_id,
+                        const url::Origin& origin,
+                        blink::mojom::ContentDescriptionPtr description,
+                        blink::mojom::ContentIndexService::AddCallback callback,
+                        std::string serialized_icon);
   void DidAddEntry(blink::mojom::ContentIndexService::AddCallback callback,
                    ContentIndexEntry entry,
                    blink::ServiceWorkerStatusCode status);
@@ -70,6 +75,9 @@ class CONTENT_EXPORT ContentIndexDatabase
   void DidGetAllEntries(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
+  void DidGetSerializedIcon(base::OnceCallback<void(SkBitmap)> icon_callback,
+                            const std::vector<std::string>& data,
+                            blink::ServiceWorkerStatusCode status);
 
   ContentIndexProvider* provider_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -30,11 +31,7 @@
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -52,7 +49,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "dbus/message.h"
 #include "extensions/browser/extension_registry.h"
-#include "net/base/escape.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -64,8 +60,6 @@
 namespace crostini {
 
 namespace {
-
-const char kSeparator[] = "--";
 
 chromeos::CiceroneClient* GetCiceroneClient() {
   return chromeos::DBusThreadManager::Get()->GetCiceroneClient();
@@ -1460,83 +1454,6 @@ void CrostiniManager::OnListUsbDevices(
     mount_points.push_back(std::make_pair(vm_name, dev.guest_port()));
   }
   std::move(callback).Run(/*success=*/true, std::move(mount_points));
-}
-
-// static
-GURL CrostiniManager::GenerateVshInCroshUrl(
-    Profile* profile,
-    const std::string& vm_name,
-    const std::string& container_name,
-    const std::vector<std::string>& terminal_args) {
-  std::string vsh_crosh = base::StringPrintf(
-      "chrome-extension://%s/html/crosh.html?command=vmshell",
-      kCrostiniCroshBuiltinAppId);
-  std::string vm_name_param = net::EscapeQueryParamValue(
-      base::StringPrintf("--vm_name=%s", vm_name.c_str()), false);
-  std::string container_name_param = net::EscapeQueryParamValue(
-      base::StringPrintf("--target_container=%s", container_name.c_str()),
-      false);
-  std::string owner_id_param = net::EscapeQueryParamValue(
-      base::StringPrintf("--owner_id=%s",
-                         CryptohomeIdForProfile(profile).c_str()),
-      false);
-
-  std::vector<std::string> pieces = {vsh_crosh, vm_name_param,
-                                     container_name_param, owner_id_param};
-  if (!terminal_args.empty()) {
-    // Separates the command args from the args we are passing into the
-    // terminal to be executed.
-    pieces.emplace_back(kSeparator);
-    for (auto arg : terminal_args) {
-      pieces.emplace_back(net::EscapeQueryParamValue(arg, false));
-    }
-  }
-
-  GURL vsh_in_crosh_url(base::JoinString(pieces, "&args[]="));
-  return vsh_in_crosh_url;
-}
-
-// static
-AppLaunchParams CrostiniManager::GenerateTerminalAppLaunchParams(
-    Profile* profile) {
-  AppLaunchParams launch_params(
-      profile, kCrostiniCroshBuiltinAppId,
-      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceAppLauncher);
-  launch_params.override_app_name =
-      AppNameFromCrostiniAppId(kCrostiniTerminalId);
-  return launch_params;
-}
-
-// static
-Browser* CrostiniManager::CreateContainerTerminal(
-    const AppLaunchParams& launch_params,
-    const GURL& vsh_in_crosh_url) {
-  return CreateApplicationWindow(launch_params, vsh_in_crosh_url);
-}
-
-// static
-void CrostiniManager::ShowContainerTerminal(
-    const AppLaunchParams& launch_params,
-    const GURL& vsh_in_crosh_url,
-    Browser* browser) {
-  ShowApplicationWindow(launch_params, vsh_in_crosh_url, browser,
-                        WindowOpenDisposition::NEW_FOREGROUND_TAB);
-  browser->window()->GetNativeWindow()->SetProperty(
-      kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
-}
-
-void CrostiniManager::LaunchContainerTerminal(
-    const std::string& vm_name,
-    const std::string& container_name,
-    const std::vector<std::string>& terminal_args) {
-  GURL vsh_in_crosh_url =
-      GenerateVshInCroshUrl(profile_, vm_name, container_name, terminal_args);
-  AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile_);
-
-  Browser* browser = CreateContainerTerminal(launch_params, vsh_in_crosh_url);
-  ShowContainerTerminal(launch_params, vsh_in_crosh_url, browser);
 }
 
 void CrostiniManager::SearchApp(const std::string& vm_name,

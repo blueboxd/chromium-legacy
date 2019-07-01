@@ -118,7 +118,7 @@ cca.views.camera.Modes = function(
       },
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
-      nextMode: 'video-mode',
+      nextMode: 'photo-mode',
     },
   };
 

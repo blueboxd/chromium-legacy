@@ -30,7 +30,7 @@ OAuth2TokenService::OAuth2TokenService(
   DCHECK(delegate_);
   AddObserver(this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
-      this /* OAuth2TokenService* */, delegate_.get(),
+      this /* OAuth2TokenService* */,
       this /* OAuth2AccessTokenManager::Delegate* */);
 }
 
@@ -86,6 +86,11 @@ void OAuth2TokenService::OnAccessTokenInvalidated(
     const std::string& access_token) {
   delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
                                       access_token);
+}
+
+bool OAuth2TokenService::HasRefreshToken(
+    const CoreAccountId& account_id) const {
+  return RefreshTokenIsAvailable(account_id);
 }
 
 void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {
@@ -283,4 +288,9 @@ size_t OAuth2TokenService::GetNumPendingRequestsForTesting(
     const OAuth2AccessTokenManager::ScopeSet& scopes) const {
   return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
                                                          scopes);
+}
+
+void OAuth2TokenService::OverrideAccessTokenManagerForTesting(
+    std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
+  token_manager_ = std::move(token_manager);
 }

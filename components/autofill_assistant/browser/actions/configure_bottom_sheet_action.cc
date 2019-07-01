@@ -11,13 +11,13 @@
 
 namespace autofill_assistant {
 
-ConfigureBottomSheetAction::ConfigureBottomSheetAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {}
+ConfigureBottomSheetAction::ConfigureBottomSheetAction(ActionDelegate* delegate,
+                                                       const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {}
 
 ConfigureBottomSheetAction::~ConfigureBottomSheetAction() {}
 
 void ConfigureBottomSheetAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
   const ConfigureBottomSheetProto& proto = proto_.configure_bottom_sheet();
 
@@ -26,7 +26,7 @@ void ConfigureBottomSheetAction::InternalProcessAction(
     // be visible to Javascript before moving on to another action. To do that,
     // this action registers a callback *before* making any change and waits for
     // a 'resize' event in the Javascript side.
-    bool resize = delegate->GetResizeViewport();
+    bool resize = delegate_->GetResizeViewport();
     bool expect_resize =
         (!resize &&
          proto.viewport_resizing() == ConfigureBottomSheetProto::RESIZE) ||
@@ -34,7 +34,7 @@ void ConfigureBottomSheetAction::InternalProcessAction(
          (proto.viewport_resizing() == ConfigureBottomSheetProto::NO_RESIZE ||
           (proto.peek_mode() !=
                ConfigureBottomSheetProto::UNDEFINED_PEEK_MODE &&
-           proto.peek_mode() != delegate->GetPeekMode())));
+           proto.peek_mode() != delegate_->GetPeekMode())));
     if (expect_resize) {
       callback_ = std::move(callback);
 
@@ -43,21 +43,21 @@ void ConfigureBottomSheetAction::InternalProcessAction(
                    base::BindOnce(&ConfigureBottomSheetAction::OnTimeout,
                                   weak_ptr_factory_.GetWeakPtr()));
 
-      delegate->WaitForWindowHeightChange(
+      delegate_->WaitForWindowHeightChange(
           base::BindOnce(&ConfigureBottomSheetAction::OnWindowHeightChange,
                          weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
   if (proto.viewport_resizing() == ConfigureBottomSheetProto::RESIZE) {
-    delegate->SetResizeViewport(true);
+    delegate_->SetResizeViewport(true);
   } else if (proto.viewport_resizing() ==
              ConfigureBottomSheetProto::NO_RESIZE) {
-    delegate->SetResizeViewport(false);
+    delegate_->SetResizeViewport(false);
   }
 
   if (proto.peek_mode() != ConfigureBottomSheetProto::UNDEFINED_PEEK_MODE) {
-    delegate->SetPeekMode(proto.peek_mode());
+    delegate_->SetPeekMode(proto.peek_mode());
   }
 
   if (callback) {

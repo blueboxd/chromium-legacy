@@ -101,6 +101,10 @@ perfetto::SharedMemoryArbiter* ProducerClient::GetSharedMemoryArbiter() {
                              : shared_memory_arbiter_.get();
 }
 
+bool ProducerClient::IsTracingActive() {
+  return data_sources_tracing_ > 0;
+}
+
 void ProducerClient::OnTracingStart(
     mojo::ScopedSharedBufferHandle shared_memory) {
   // If we're using in-process mode, we don't need to set up our
@@ -134,9 +138,30 @@ void ProducerClient::StartDataSource(
   // TODO(oysteine): Support concurrent tracing sessions.
   for (auto* data_source : PerfettoTracedProcess::Get()->data_sources()) {
     if (data_source->name() == data_source_config.name()) {
-      data_source->StartTracingWithID(id, this, data_source_config);
-      // TODO(eseckler): Consider plumbing this callback through |data_source|.
-      std::move(callback).Run();
+      ++data_sources_tracing_;
+      // ProducerClient should never be denied permission to start, but it will
+      // only start tracing once the callback passed below is called.
+      bool result = PerfettoTracedProcess::Get()->CanStartTracing(
+          this,
+          base::BindOnce(
+              [](base::WeakPtr<ProducerClient> weak_ptr,
+                 PerfettoTracedProcess::DataSourceBase* data_source,
+                 perfetto::DataSourceInstanceID id,
+                 const perfetto::DataSourceConfig& data_source_config,
+                 StartDataSourceCallback callback) {
+                if (!weak_ptr) {
+                  return;
+                }
+                DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
+                data_source->StartTracingWithID(id, weak_ptr.get(),
+                                                data_source_config);
+                // TODO(eseckler): Consider plumbing this callback through
+                // |data_source|.
+                std::move(callback).Run();
+              },
+              weak_ptr_factory_.GetWeakPtr(), data_source, id,
+              data_source_config, std::move(callback)));
+      DCHECK(result);
       return;
     }
   }
@@ -147,8 +172,18 @@ void ProducerClient::StopDataSource(uint64_t id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto* data_source : PerfettoTracedProcess::Get()->data_sources()) {
-    if (data_source->data_source_id() == id) {
-      data_source->StopTracing(std::move(callback));
+    if (data_source->data_source_id() == id &&
+        data_source->producer() == this) {
+      data_source->StopTracing(base::BindOnce(
+          [](base::WeakPtr<ProducerClient> weak_ptr,
+             StopDataSourceCallback callback, uint64_t id) {
+            std::move(callback).Run();
+            if (weak_ptr) {
+              DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
+              --weak_ptr->data_sources_tracing_;
+            }
+          },
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback), id));
       return;
     }
   }

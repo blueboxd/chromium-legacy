@@ -18,22 +18,11 @@ class PrefService;
 
 namespace identity {
 
-// Returns true if the username is allowed based on the pattern string.
-bool IsUsernameAllowedByPattern(base::StringPiece username,
-                                base::StringPiece pattern);
-
-// Returns true if the username is either allowed based on a pattern registered
-// as |pattern_pref_name| with the preferences service referenced by |prefs|,
-// or if such pattern can't be retrieved from |prefs|. This is a legacy
-// method intended to be used to migrate from
-// PrimaryAccountPolicyManager::IsAllowedUsername() only while
-// PrimaryAccountPolicyManager::Initialize() can still accept a null
-// PrefService*, and can be removed once that's no longer the case (see
-// crbug.com/908121).
-bool LegacyIsUsernameAllowedByPatternFromPrefs(
-    PrefService* prefs,
-    const std::string& username,
-    const std::string& pattern_pref_name);
+// Returns true if the username is allowed based on a pattern registered
+// as |pattern_pref_name| with the preferences service referenced by |prefs|.
+bool IsUsernameAllowedByPatternFromPrefs(const PrefService* prefs,
+                                         const std::string& username,
+                                         const std::string& pattern_pref_name);
 }  // namespace identity
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_IDENTITY_UTILS_H_

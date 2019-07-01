@@ -19,16 +19,15 @@ namespace autofill_assistant {
 // using hardcoded css styling since it depends on the content of a page.
 class HighlightElementAction : public Action {
  public:
-  explicit HighlightElementAction(const ActionProto& proto);
+  explicit HighlightElementAction(ActionDelegate* delegate,
+                                  const ActionProto& proto);
   ~HighlightElementAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnWaitForElement(ActionDelegate* delegate,
-                        ProcessActionCallback callback,
+  void OnWaitForElement(ProcessActionCallback callback,
                         const Selector& selector,
                         bool element_found);
   void OnHighlightElement(ProcessActionCallback callback,

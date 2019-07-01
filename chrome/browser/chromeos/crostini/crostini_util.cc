@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
@@ -340,18 +341,15 @@ void LaunchCrostiniApp(Profile* profile,
       return;
     }
 
-    GURL vsh_in_crosh_url = crostini::CrostiniManager::GenerateVshInCroshUrl(
+    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
         profile, vm_name, container_name, std::vector<std::string>());
-    AppLaunchParams launch_params =
-        crostini::CrostiniManager::GenerateTerminalAppLaunchParams(profile);
+    AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile);
     // Create the terminal here so it's created in the right display. If the
     // browser creation is delayed into the callback the root window for new
     // windows setting can be changed due to the launcher or shelf dismissal.
-    Browser* browser = crostini::CrostiniManager::CreateContainerTerminal(
-        launch_params, vsh_in_crosh_url);
-    launch_closure =
-        base::BindOnce(&crostini::CrostiniManager::ShowContainerTerminal,
-                       launch_params, vsh_in_crosh_url, browser);
+    Browser* browser = CreateContainerTerminal(launch_params, vsh_in_crosh_url);
+    launch_closure = base::BindOnce(&ShowContainerTerminal, launch_params,
+                                    vsh_in_crosh_url, browser);
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
     launch_closure = base::BindOnce(

@@ -898,9 +898,6 @@ extern const char kPassiveDocumentWheelEventListenersDescription[];
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
-extern const char kPasswordsKeyboardAccessoryName[];
-extern const char kPasswordsKeyboardAccessoryDescription[];
-
 extern const char kPasswordsMigrateLinuxToLoginDBName[];
 extern const char kPasswordsMigrateLinuxToLoginDBDescription[];
 
@@ -1262,6 +1259,9 @@ extern const char kAutoFetchOnNetErrorPageDescription[];
 extern const char kAutofillAccessoryViewName[];
 extern const char kAutofillAccessoryViewDescription[];
 
+extern const char kAutofillAssistantDirectActionsName[];
+extern const char kAutofillAssistantDirectActionsDescription[];
+
 extern const char kAutofillUseMobileLabelDisambiguationName[];
 extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 
@@ -1324,6 +1324,9 @@ extern const char kContextualSearchTranslationModelDescription[];
 
 extern const char kContextualSearchUnityIntegrationName[];
 extern const char kContextualSearchUnityIntegrationDescription[];
+
+extern const char kDirectActionsName[];
+extern const char kDirectActionsDescription[];
 
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];

@@ -1244,6 +1244,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchUnityIntegrationDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchUnityIntegration)},
+    {"direct-actions", flag_descriptions::kDirectActionsName,
+     flag_descriptions::kDirectActionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDirectActions)},
     {"explore-sites", flag_descriptions::kExploreSitesName,
      flag_descriptions::kExploreSitesDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kExploreSites,
@@ -2111,13 +2114,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"PasswordImport", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
-#if defined(OS_ANDROID)
-    {"passwords-keyboard-accessory",
-     flag_descriptions::kPasswordsKeyboardAccessoryName,
-     flag_descriptions::kPasswordsKeyboardAccessoryDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kPasswordsKeyboardAccessory)},
-#endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-android-web-contents-dark-mode",
      flag_descriptions::kAndroidWebContentsDarkMode,
@@ -3675,6 +3671,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillAssistantChromeEntryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          autofill_assistant::features::kAutofillAssistantChromeEntry)},
+
+    {"autofill-assistant-direct-actions",
+     flag_descriptions::kAutofillAssistantDirectActionsName,
+     flag_descriptions::kAutofillAssistantDirectActionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill_assistant::features::kAutofillAssistantDirectActions)},
 #endif  // defined(OS_ANDROID)
 
     {"disable-best-effort-tasks",

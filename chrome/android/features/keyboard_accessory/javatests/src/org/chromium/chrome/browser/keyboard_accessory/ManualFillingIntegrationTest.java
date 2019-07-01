@@ -61,8 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Integration tests for keyboard accessory and accessory sheet with other Chrome components.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
-        ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManualFillingIntegrationTest {
     @Rule

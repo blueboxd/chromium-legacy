@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/insession_confirm_password_change_handler_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/insession_password_change_handler_chromeos.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/pref_names.h"
@@ -34,6 +35,8 @@ namespace chromeos {
 namespace {
 
 PasswordChangeDialog* g_dialog = nullptr;
+
+ConfirmPasswordChangeDialog* g_confirm_dialog = nullptr;
 
 std::string GetPasswordChangeUrl(Profile* profile) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -64,10 +67,17 @@ base::string16 GetManagementNotice(Profile* profile) {
                                     host);
 }
 
-constexpr int kMaxDialogWidth = 768;
-constexpr int kMaxDialogHeight = 640;
+constexpr int kMaxPasswordChangeDialogWidth = 768;
+constexpr int kMaxPasswordChangeDialogHeight = 640;
 
-gfx::Size GetPasswordChangeDialogSize() {
+// TODO(https://crbug.com/930109): Change these numbers depending on what is
+// shown in the dialog.
+constexpr int kMaxConfirmPasswordChangeDialogWidth = 560;
+constexpr int kMaxConfirmPasswordChangeDialogHeight = 420;
+
+// Given a desired width and height, returns the same size if it fits on screen,
+// or the closest possible size that will fit on the screen.
+gfx::Size FitSizeToDisplay(int max_width, int max_height) {
   const display::Display display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
@@ -78,8 +88,8 @@ gfx::Size GetPasswordChangeDialogSize() {
     display_size = gfx::Size(display_size.height(), display_size.width());
   }
 
-  display_size = gfx::Size(std::min(display_size.width(), kMaxDialogWidth),
-                           std::min(display_size.height(), kMaxDialogHeight));
+  display_size = gfx::Size(std::min(display_size.width(), max_width),
+                           std::min(display_size.height(), max_height));
 
   return display_size;
 }
@@ -96,9 +106,11 @@ PasswordChangeDialog::~PasswordChangeDialog() {
 }
 
 void PasswordChangeDialog::GetDialogSize(gfx::Size* size) const {
-  *size = GetPasswordChangeDialogSize();
+  *size = FitSizeToDisplay(kMaxPasswordChangeDialogWidth,
+                           kMaxPasswordChangeDialogHeight);
 }
 
+// static
 void PasswordChangeDialog::Show(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (g_dialog) {
@@ -107,6 +119,13 @@ void PasswordChangeDialog::Show(Profile* profile) {
   }
   g_dialog = new PasswordChangeDialog(GetManagementNotice(profile));
   g_dialog->ShowSystemDialog();
+}
+
+// static
+void PasswordChangeDialog::Dismiss() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (g_dialog)
+    g_dialog->Close();
 }
 
 InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
@@ -133,6 +152,38 @@ InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
 }
 
 InSessionPasswordChangeUI::~InSessionPasswordChangeUI() = default;
+
+ConfirmPasswordChangeDialog::ConfirmPasswordChangeDialog()
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIConfirmPasswordChangeUrl),
+                              /*title=*/base::string16()) {}
+
+ConfirmPasswordChangeDialog::~ConfirmPasswordChangeDialog() {
+  DCHECK_EQ(this, g_confirm_dialog);
+  g_confirm_dialog = nullptr;
+}
+
+void ConfirmPasswordChangeDialog::GetDialogSize(gfx::Size* size) const {
+  *size = FitSizeToDisplay(kMaxConfirmPasswordChangeDialogWidth,
+                           kMaxConfirmPasswordChangeDialogHeight);
+}
+
+// static
+void ConfirmPasswordChangeDialog::Show() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (g_confirm_dialog) {
+    g_confirm_dialog->Focus();
+    return;
+  }
+  g_confirm_dialog = new ConfirmPasswordChangeDialog();
+  g_confirm_dialog->ShowSystemDialog();
+}
+
+// static
+void ConfirmPasswordChangeDialog::Dismiss() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (g_confirm_dialog)
+    g_confirm_dialog->Close();
+}
 
 InSessionConfirmPasswordChangeUI::InSessionConfirmPasswordChangeUI(
     content::WebUI* web_ui)
@@ -165,8 +216,8 @@ InSessionConfirmPasswordChangeUI::InSessionConfirmPasswordChangeUI(
   source->AddResourcePath("confirm_password_change.js",
                           IDR_CONFIRM_PASSWORD_CHANGE_JS);
 
-  // TODO(https://crbug.com/930109): Add JS and message handler to handle tap
-  // on the save button, errors, etc.
+  web_ui->AddMessageHandler(
+      std::make_unique<InSessionConfirmPasswordChangeHandler>());
 
   content::WebUIDataSource::Add(profile, source);
 }

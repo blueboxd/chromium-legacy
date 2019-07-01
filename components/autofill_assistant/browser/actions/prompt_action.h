@@ -24,13 +24,12 @@ namespace autofill_assistant {
 // Allow the selection of one or more suggestions.
 class PromptAction : public Action {
  public:
-  explicit PromptAction(const ActionProto& proto);
+  explicit PromptAction(ActionDelegate* delegate, const ActionProto& proto);
   ~PromptAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   void RunPeriodicChecks();
   void SetupPreconditions();
@@ -46,7 +45,6 @@ class PromptAction : public Action {
   void OnSuggestionChosen(int choice_index);
 
   ProcessActionCallback callback_;
-  ActionDelegate* delegate_;
 
   // preconditions_[i] contains the element preconditions for
   // proto.prompt.choice[i].

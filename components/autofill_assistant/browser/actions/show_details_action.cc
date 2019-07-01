@@ -17,14 +17,15 @@
 
 namespace autofill_assistant {
 
-ShowDetailsAction::ShowDetailsAction(const ActionProto& proto) : Action(proto) {
+ShowDetailsAction::ShowDetailsAction(ActionDelegate* delegate,
+                                     const ActionProto& proto)
+    : Action(delegate, proto) {
   DCHECK(proto_.has_show_details());
 }
 
 ShowDetailsAction::~ShowDetailsAction() {}
 
-void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
-                                              ProcessActionCallback callback) {
+void ShowDetailsAction::InternalProcessAction(ProcessActionCallback callback) {
   std::unique_ptr<Details> details = nullptr;
   bool details_valid = true;
 
@@ -37,17 +38,17 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
     case ShowDetailsProto::DataToShowCase::kContactDetails:
       details = std::make_unique<Details>();
       details_valid = Details::UpdateFromContactDetails(
-          proto_.show_details(), delegate->GetClientMemory(), details.get());
+          proto_.show_details(), delegate_->GetClientMemory(), details.get());
       break;
     case ShowDetailsProto::DataToShowCase::kShippingAddress:
       details = std::make_unique<Details>();
       details_valid = Details::UpdateFromShippingAddress(
-          proto_.show_details(), delegate->GetClientMemory(), details.get());
+          proto_.show_details(), delegate_->GetClientMemory(), details.get());
       break;
     case ShowDetailsProto::DataToShowCase::kCreditCard:
       details = std::make_unique<Details>();
       details_valid = Details::UpdateFromSelectedCreditCard(
-          proto_.show_details(), delegate->GetClientMemory(), details.get());
+          proto_.show_details(), delegate_->GetClientMemory(), details.get());
       break;
     case ShowDetailsProto::DataToShowCase::DATA_TO_SHOW_NOT_SET:
       // Clear Details. Calling SetDetails with nullptr clears the details.
@@ -58,7 +59,7 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
     DVLOG(1) << "Failed to fill the details";
     UpdateProcessedAction(INVALID_ACTION);
   } else {
-    delegate->SetDetails(std::move(details));
+    delegate_->SetDetails(std::move(details));
     UpdateProcessedAction(ACTION_APPLIED);
   }
 

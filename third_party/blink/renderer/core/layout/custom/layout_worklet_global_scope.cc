@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
@@ -45,7 +46,13 @@ LayoutWorkletGlobalScope::LayoutWorkletGlobalScope(
     WorkerReportingProxy& reporting_proxy,
     PendingLayoutRegistry* pending_layout_registry)
     : WorkletGlobalScope(std::move(creation_params), reporting_proxy, frame),
-      pending_layout_registry_(pending_layout_registry) {}
+      pending_layout_registry_(pending_layout_registry) {
+  // Enable a separate microtask queue for LayoutWorklet.
+  //
+  // TODO(yutak): Set agent for all worklets and workers, not just
+  // LayoutWorklet.
+  SetAgent(Agent::CreateForWorkerOrWorklet(ToIsolate(frame)));
+}
 
 LayoutWorkletGlobalScope::~LayoutWorkletGlobalScope() = default;
 

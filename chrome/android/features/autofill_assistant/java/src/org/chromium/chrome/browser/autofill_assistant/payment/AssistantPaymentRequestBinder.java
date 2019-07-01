@@ -260,10 +260,10 @@ class AssistantPaymentRequestBinder
                     view.mTermsSection.setOrigin(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
                             webContents.getLastCommittedUrl()));
                 }
-                view.startListenToPersonalDataManager(
-                        ()
-                                -> AssistantPaymentRequestBinder.this.updateAvailableProfiles(
-                                        model, view));
+                view.startListenToPersonalDataManager(() -> {
+                    AssistantPaymentRequestBinder.this.updateAvailableProfiles(model, view);
+                    AssistantPaymentRequestBinder.this.updateAvailablePaymentMethods(model);
+                });
             } else {
                 view.stopListenToPersonalDataManager();
             }

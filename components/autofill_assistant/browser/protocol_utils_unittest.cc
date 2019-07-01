@@ -231,8 +231,9 @@ TEST(ProtocolUtilsTest, ParseActionsParseError) {
   bool unused;
   std::vector<std::unique_ptr<Action>> unused_actions;
   std::vector<std::unique_ptr<Script>> unused_scripts;
-  EXPECT_FALSE(ProtocolUtils::ParseActions(
-      "invalid", nullptr, nullptr, &unused_actions, &unused_scripts, &unused));
+  EXPECT_FALSE(ProtocolUtils::ParseActions(nullptr, "invalid", nullptr, nullptr,
+                                           &unused_actions, &unused_scripts,
+                                           &unused));
 }
 
 TEST(ProtocolUtilsTest, ParseActionsValid) {
@@ -251,7 +252,7 @@ TEST(ProtocolUtilsTest, ParseActionsValid) {
   std::vector<std::unique_ptr<Action>> actions;
   std::vector<std::unique_ptr<Script>> scripts;
 
-  EXPECT_TRUE(ProtocolUtils::ParseActions(proto_str, &global_payload,
+  EXPECT_TRUE(ProtocolUtils::ParseActions(nullptr, proto_str, &global_payload,
                                           &script_payload, &actions, &scripts,
                                           &should_update_scripts));
   EXPECT_EQ("global_payload", global_payload);
@@ -273,8 +274,9 @@ TEST(ProtocolUtilsTest, ParseActionsEmptyUpdateScriptList) {
   std::vector<std::unique_ptr<Action>> unused_actions;
 
   EXPECT_TRUE(ProtocolUtils::ParseActions(
-      proto_str, /* global_payload= */ nullptr, /* script_payload */ nullptr,
-      &unused_actions, &scripts, &should_update_scripts));
+      nullptr, proto_str, /* global_payload= */ nullptr,
+      /* script_payload */ nullptr, &unused_actions, &scripts,
+      &should_update_scripts));
   EXPECT_TRUE(should_update_scripts);
   EXPECT_TRUE(scripts.empty());
 }
@@ -298,8 +300,9 @@ TEST(ProtocolUtilsTest, ParseActionsUpdateScriptListFullFeatured) {
   std::vector<std::unique_ptr<Action>> unused_actions;
 
   EXPECT_TRUE(ProtocolUtils::ParseActions(
-      proto_str, /* global_payload= */ nullptr, /* script_payload= */ nullptr,
-      &unused_actions, &scripts, &should_update_scripts));
+      nullptr, proto_str, /* global_payload= */ nullptr,
+      /* script_payload= */ nullptr, &unused_actions, &scripts,
+      &should_update_scripts));
   EXPECT_TRUE(should_update_scripts);
   EXPECT_THAT(scripts, SizeIs(1));
   EXPECT_THAT("a", Eq(scripts[0]->handle.path));

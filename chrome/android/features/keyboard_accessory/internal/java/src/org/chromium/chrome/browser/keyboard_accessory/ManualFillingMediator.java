@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.keyboard_accessory;
 
 import static org.chromium.chrome.browser.ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY;
 import static org.chromium.chrome.browser.ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID;
-import static org.chromium.chrome.browser.ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY;
 import static org.chromium.chrome.browser.ChromeFeatureList.TOUCH_TO_FILL_ANDROID;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KEYBOARD_EXTENSION_STATE;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.EXTENDING_KEYBOARD;
@@ -614,10 +613,9 @@ class ManualFillingMediator extends EmptyTabObserver
                 return false;
             case AccessoryTabType.CREDIT_CARDS: // Intentional fallthrough.
             case AccessoryTabType.ADDRESSES:
-                if (!ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID)) return false;
-                // Intentional fallthrough. The restrictions for passwords apply to other tabs.
+                return ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID);
             case AccessoryTabType.PASSWORDS:
-                return ChromeFeatureList.isEnabled(PASSWORDS_KEYBOARD_ACCESSORY);
+                return true;
             case AccessoryTabType.TOUCH_TO_FILL:
                 return ChromeFeatureList.isEnabled(TOUCH_TO_FILL_ANDROID);
         }

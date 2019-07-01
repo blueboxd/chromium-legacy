@@ -68,11 +68,7 @@ Polymer({
   onSaveTap_: function() {
     this.currentValidationError_ = this.findFirstError_();
     if (this.currentValidationError_ == ValidationErrorType.NO_ERROR) {
-      // TODO(olsen): Send a message to a handler to change the password,
-      // instead of just showing an alert.
-      alert(
-          'changePassword(' + this.old_password_ + ', ' + this.new_password_ +
-          ')');
+      chrome.send('changePassword', [this.old_password_, this.new_password_]);
     }
   },
 

@@ -34,8 +34,7 @@ class MockObserver : public WorkerThread::Observer {
   WorkerThreadRegistry* runner_;
 };
 
-// TODO(https://crbug.com/969562): Flakes on some systems due to thread ids.
-TEST_F(WorkerThreadRegistryTest, DISABLED_BasicObservingAndWorkerId) {
+TEST_F(WorkerThreadRegistryTest, BasicObservingAndWorkerId) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   EXPECT_CALL(o, WillStopCurrentWorkerThread()).Times(1);
@@ -45,8 +44,7 @@ TEST_F(WorkerThreadRegistryTest, DISABLED_BasicObservingAndWorkerId) {
   FakeStop();
 }
 
-// TODO(https://crbug.com/969562): Flakes on some systems due to thread ids.
-TEST_F(WorkerThreadRegistryTest, DISABLED_CanRemoveSelfDuringNotification) {
+TEST_F(WorkerThreadRegistryTest, CanRemoveSelfDuringNotification) {
   MockObserver o;
   o.RemoveSelfOnNotify();
   o.runner_ = &task_runner_;
@@ -56,8 +54,7 @@ TEST_F(WorkerThreadRegistryTest, DISABLED_CanRemoveSelfDuringNotification) {
   FakeStop();
 }
 
-// TODO(https://crbug.com/969562): Flakes on some systems due to thread ids.
-TEST_F(WorkerThreadRegistryTest, DISABLED_TaskRunnerRemovedCorrectly) {
+TEST_F(WorkerThreadRegistryTest, TaskRunnerRemovedCorrectly) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   FakeStart();

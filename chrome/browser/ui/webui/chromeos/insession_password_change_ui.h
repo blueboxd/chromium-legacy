@@ -14,9 +14,11 @@ class Profile;
 
 namespace chromeos {
 
+// System dialog wrapping chrome:://password-change
 class PasswordChangeDialog : public SystemWebDialogDelegate {
  public:
   static void Show(Profile* profile);
+  static void Dismiss();
 
  protected:
   explicit PasswordChangeDialog(const base::string16& title);
@@ -37,6 +39,23 @@ class InSessionPasswordChangeUI : public ui::WebDialogUI {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InSessionPasswordChangeUI);
+};
+
+// System dialog wrapping chrome://confirm-password-change
+class ConfirmPasswordChangeDialog : public SystemWebDialogDelegate {
+ public:
+  static void Show();
+  static void Dismiss();
+
+ protected:
+  ConfirmPasswordChangeDialog();
+  ~ConfirmPasswordChangeDialog() override;
+
+  // ui::WebDialogDelegate:
+  void GetDialogSize(gfx::Size* size) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConfirmPasswordChangeDialog);
 };
 
 // For chrome:://confirm-password-change

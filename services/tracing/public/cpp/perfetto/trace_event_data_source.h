@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
-#include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 
 namespace perfetto {
@@ -66,7 +65,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
   // PerfettoTracedProcess::DataSourceBase implementation, called by
   // ProducerClent.
   void StartTracing(
-      PerfettoProducer* producer_client,
+      PerfettoProducer* producer,
       const perfetto::DataSourceConfig& data_source_config) override;
   void StopTracing(base::OnceClosure stop_complete_callback) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
@@ -120,7 +119,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // gets destroyed. PerfettoProducer::CreateTraceWriter can be
   // called by the TraceEventDataSource on any thread.
   void StartTracing(
-      PerfettoProducer* producer_client,
+      PerfettoProducer* producer,
       const perfetto::DataSourceConfig& data_source_config) override;
 
   // Called from the PerfettoProducer.
@@ -172,7 +171,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   base::Lock lock_;  // Protects subsequent members.
   uint32_t target_buffer_ = 0;
-  PerfettoProducer* producer_client_ = nullptr;
   // We own the registry during startup, but transfer its ownership to the
   // PerfettoProducer once the perfetto service is available. Only set if
   // SetupStartupTracing() is called.

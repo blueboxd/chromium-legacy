@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -647,14 +648,13 @@ void CrostiniInstallerView::ShowLoginShell() {
   DCHECK_EQ(state_, State::MOUNT_CONTAINER);
   UpdateState(State::SHOW_LOGIN_SHELL);
 
-  crostini::CrostiniManager* crostini_manager =
-      crostini::CrostiniManager::GetForProfile(profile_);
-  crostini_manager->LaunchContainerTerminal(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
-      std::vector<std::string>());
+  crostini::LaunchContainerTerminal(profile_, crostini::kCrostiniDefaultVmName,
+                                    crostini::kCrostiniDefaultContainerName,
+                                    std::vector<std::string>());
 
   RecordSetupResultHistogram(SetupResult::kSuccess);
-  crostini_manager->UpdateLaunchMetricsForEnterpriseReporting();
+  crostini::CrostiniManager::GetForProfile(profile_)
+      ->UpdateLaunchMetricsForEnterpriseReporting();
   RecordTimeFromDeviceSetupToInstallMetric();
   if (!has_logged_timing_result_) {
     UMA_HISTOGRAM_LONG_TIMES(kCrostiniTimeToInstallSuccess,

@@ -116,15 +116,22 @@ bool IsPinEnabled(PrefService* pref_service) {
   return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
 }
 
-// Returns true if the fingerprint sensor is on the keyboard.
+// Returns fingerprint location depending on the board name.
 // TODO(crbug.com/938738): Replace this disallowed board name reference
 // with a flag that's determined based on settings from chromeos-config.
-bool IsFingerprintReaderOnKeyboard() {
+// TODO(rsorokin): Add browser tests for different assets.
+FingerprintLocation GetFingerprintLocation() {
   const std::vector<std::string> board =
       base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   const std::string board_name = board[0];
-  return board_name == "nami";
+  if (board_name == "nocturne")
+    return FingerprintLocation::TABLET_POWER_BUTTON;
+  if (board_name == "nami")
+    return FingerprintLocation::KEYBOARD_BOTTOM_RIGHT;
+  if (board_name == "hatch")
+    return FingerprintLocation::KEYBOARD_TOP_RIGHT;
+  return FingerprintLocation::TABLET_POWER_BUTTON;
 }
 
 bool IsFingerprintEnabled(Profile* profile) {

@@ -59,6 +59,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableCompanyName,
     &autofill_assistant::features::kAutofillAssistant,
+    &autofill_assistant::features::kAutofillAssistantDirectActions,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kAllowStartingServiceManagerOnly,
@@ -125,6 +126,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchUnityIntegration,
     &kCustomContextMenu,
     &kDelegateOverscrollSwipes,
+    &kDirectActions,
     &kDownloadLocationShowImageInGallery,
     &kDownloadProgressInfoBar,
     &kDownloadHomeV2,
@@ -208,7 +210,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kQueryInOmnibox,
     &omnibox::kUIExperimentShowSuggestionFavicons,
     &password_manager::features::kGooglePasswordManager,
-    &password_manager::features::kPasswordsKeyboardAccessory,
     &password_manager::features::kTouchToFillAndroid,
     &safe_browsing::kCaptureSafetyNetId,
     &signin::kMiceFeature,
@@ -375,6 +376,9 @@ const base::Feature kCustomContextMenu{"CustomContextMenu",
 
 const base::Feature kDelegateOverscrollSwipes{
     "DelegateOverscrollSwipes", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDirectActions{"DirectActions",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDrawVerticallyEdgeToEdge{
     "DrawVerticallyEdgeToEdge", base::FEATURE_DISABLED_BY_DEFAULT};

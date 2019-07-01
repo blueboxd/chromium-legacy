@@ -168,13 +168,22 @@ source_set("tests") {
     ]
   }
 
-  if (is_android && can_unwind_with_cfi_table && is_official_build) {
-    sources +=
-        [ "public/cpp/stack_sampling/stack_unwinder_android_unittest.cc" ]
-    deps += [
-      ":jni_headers",
-      ":tracing_test_helper_java",
+  if (is_android) {
+    sources += [
+      "perfetto/system_perfetto_unittest.cc",
+      "perfetto/system_test_utils.cc",
+      "perfetto/system_test_utils.h",
     ]
+    deps += [ "//third_party/perfetto/src/tracing:ipc" ]
+
+    if (can_unwind_with_cfi_table && is_official_build) {
+      sources +=
+          [ "public/cpp/stack_sampling/stack_unwinder_android_unittest.cc" ]
+      deps += [
+        ":jni_headers",
+        ":tracing_test_helper_java",
+      ]
+    }
   }
 }
 

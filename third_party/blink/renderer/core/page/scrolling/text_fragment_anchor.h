@@ -27,7 +27,7 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                        bool same_document_navigation);
 
   TextFragmentAnchor(
-      const std::vector<TextFragmentSelector>& text_fragment_selectors,
+      const Vector<TextFragmentSelector>& text_fragment_selectors,
       LocalFrame& frame);
   ~TextFragmentAnchor() override = default;
 
@@ -48,7 +48,7 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   void DidFindAmbiguousMatch() override;
 
  private:
-  std::vector<TextFragmentFinder> text_fragment_finders_;
+  Vector<TextFragmentFinder> text_fragment_finders_;
 
   Member<LocalFrame> frame_;
 

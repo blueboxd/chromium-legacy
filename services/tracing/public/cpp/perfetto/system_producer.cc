@@ -7,4 +7,9 @@
 namespace tracing {
 SystemProducer::SystemProducer(PerfettoTaskRunner* task_runner)
     : PerfettoProducer(task_runner) {}
+
+bool SystemProducer::IsDummySystemProducerForTesting() {
+  return false;
+}
+
 }  // namespace tracing

@@ -1077,9 +1077,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
                                      previous_inflow_position))
     return false;
 
-  container_builder_.AddChild(layout_result->PhysicalFragment(),
-                              logical_offset);
-  container_builder_.PropagateBreak(*layout_result);
+  container_builder_.AddResult(*layout_result, logical_offset);
 
   // The margins we store will be used by e.g. getComputedStyle().
   // When calculating these values, ignore any floats that might have
@@ -1511,9 +1509,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
                                      previous_inflow_position))
     return false;
 
-  container_builder_.AddChild(physical_fragment, logical_offset);
-  if (child.IsBlock())
-    container_builder_.PropagateBreak(*layout_result);
+  container_builder_.AddResult(*layout_result, logical_offset);
 
   if (auto* block_child = DynamicTo<NGBlockNode>(child)) {
     // We haven't yet resolved margins wrt. overconstrainedness, unless that was
@@ -2345,8 +2341,8 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
         positioned_float.bfc_offset, bfc_offset, float_inline_size,
         container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
-    container_builder_.AddChild(physical_fragment, logical_offset);
-    container_builder_.PropagateBreak(*positioned_float.layout_result);
+    container_builder_.AddResult(*positioned_float.layout_result,
+                                 logical_offset);
   }
 
   unpositioned_floats_.Shrink(0);

@@ -63,10 +63,6 @@ const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
 const base::Feature kPasswordImport = {"PasswordImport",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Adds password-related features to the keyboard accessory on mobile devices.
-const base::Feature kPasswordsKeyboardAccessory = {
-    "PasswordsKeyboardAccessory", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Deletes entries from local database on Mac which cannot be decrypted when
 // merging data with Sync.
 const base::Feature kRecoverPasswordsForSyncUsers = {

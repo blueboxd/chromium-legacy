@@ -62,19 +62,17 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
   VLOG(2) << "UnifiedHeapController::EnterFinalPause";
   ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
       thread_state_->Heap().stats_collector());
-  ThreadHeapStatsCollector::Scope stats_scope(
+  ThreadHeapStatsCollector::Scope global_atomic_phase_scope(
       thread_state_->Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPhase);
+  ThreadHeapStatsCollector::Scope mark_prologue_scope(
+      thread_state_->Heap().stats_collector(),
+      ThreadHeapStatsCollector::kUnifiedAtomicMarkingPrologue);
   thread_state_->EnterAtomicPause();
   thread_state_->EnterGCForbiddenScope();
-  {
-    ThreadHeapStatsCollector::Scope mark_prologue_scope(
-        thread_state_->Heap().stats_collector(),
-        ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue);
-    thread_state_->AtomicPauseMarkPrologue(
-        ToBlinkGCStackState(stack_state), BlinkGC::kIncrementalMarking,
-        thread_state_->current_gc_data_.reason);
-  }
+  thread_state_->AtomicPauseMarkPrologue(
+      ToBlinkGCStackState(stack_state), BlinkGC::kIncrementalMarking,
+      thread_state_->current_gc_data_.reason);
 }
 
 void UnifiedHeapController::TraceEpilogue(
@@ -84,24 +82,29 @@ void UnifiedHeapController::TraceEpilogue(
   {
     ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
         thread_state_->Heap().stats_collector());
-    ThreadHeapStatsCollector::Scope stats_scope(
+    ThreadHeapStatsCollector::Scope global_atomic_phase_scope(
         thread_state_->Heap().stats_collector(),
         ThreadHeapStatsCollector::kAtomicPhase);
-    thread_state_->AtomicPauseMarkEpilogue(BlinkGC::kIncrementalMarking);
-    thread_state_->LeaveAtomicPause();
-    thread_state_->LeaveGCForbiddenScope();
+    {
+      ThreadHeapStatsCollector::Scope stats_scope(
+          thread_state_->Heap().stats_collector(),
+          ThreadHeapStatsCollector::kUnifiedAtomicMarkingEpilogue);
+      thread_state_->AtomicPauseMarkEpilogue(BlinkGC::kIncrementalMarking);
+      thread_state_->LeaveAtomicPause();
+      thread_state_->LeaveGCForbiddenScope();
+    }
     thread_state_->AtomicPauseSweepAndCompact(BlinkGC::kIncrementalMarking,
                                               BlinkGC::kLazySweeping);
-  }
 
-  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled()) {
-    ThreadHeapStatsCollector* const stats_collector =
-        thread_state_->Heap().stats_collector();
-    summary->allocated_size =
-        static_cast<size_t>(stats_collector->marked_bytes());
-    summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
+    if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled()) {
+      ThreadHeapStatsCollector* const stats_collector =
+          thread_state_->Heap().stats_collector();
+      summary->allocated_size =
+          static_cast<size_t>(stats_collector->marked_bytes());
+      summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
+    }
+    buffered_allocated_size_ = 0;
   }
-  buffered_allocated_size_ = 0;
 
   if (!thread_state_->IsSweepingInProgress()) {
     // Sweeping was finished during the atomic pause. Update statistics needs to
@@ -135,11 +138,12 @@ void UnifiedHeapController::RegisterV8References(
 
 bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
   VLOG(2) << "UnifiedHeapController::AdvanceTracing";
-  ThreadHeapStatsCollector::Scope advance_tracing_scope(
-      thread_state_->Heap().stats_collector(),
-      ThreadHeapStatsCollector::kUnifiedMarkingStep);
-
+  ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
+      thread_state_->Heap().stats_collector());
   if (!thread_state_->in_atomic_pause()) {
+    ThreadHeapStatsCollector::Scope advance_tracing_scope(
+        thread_state_->Heap().stats_collector(),
+        ThreadHeapStatsCollector::kUnifiedMarkingStep);
     // V8 calls into embedder tracing from its own marking to ensure
     // progress. Oilpan will additionally schedule marking steps.
     ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
@@ -148,8 +152,16 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
     is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarking(deadline);
     return is_tracing_done_;
   }
-  thread_state_->AtomicPauseMarkTransitiveClosure();
-  is_tracing_done_ = true;
+  {
+    ThreadHeapStatsCollector::Scope advance_tracing_scope(
+        thread_state_->Heap().stats_collector(),
+        ThreadHeapStatsCollector::kUnifiedAtomicMarkingTransitiveClosure);
+    ThreadHeapStatsCollector::Scope global_atomic_phase_scope(
+        thread_state_->Heap().stats_collector(),
+        ThreadHeapStatsCollector::kAtomicPhase);
+    thread_state_->AtomicPauseMarkTransitiveClosure();
+    is_tracing_done_ = true;
+  }
   return true;
 }
 

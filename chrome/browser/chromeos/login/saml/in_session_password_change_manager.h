@@ -36,6 +36,10 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer {
   void ChangePassword(const std::string& old_password,
                       const std::string& new_password);
 
+  // Handle a failure to scrape the passwords during in-session password change,
+  // by showing a dialog for the user to confirm their old + new password.
+  void HandlePasswordScrapeFailure();
+
   // AuthStatusConsumer:
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;

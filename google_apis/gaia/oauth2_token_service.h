@@ -75,6 +75,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
                                 const std::string& client_id,
                                 const std::set<std::string>& scopes,
                                 const std::string& access_token) override;
+  bool HasRefreshToken(const CoreAccountId& account_id) const override;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);
@@ -182,6 +183,9 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
       const std::string& client_id,
       const CoreAccountId& account_id,
       const OAuth2AccessTokenManager::ScopeSet& scopes) const;
+  // Override |token_manager_| for testing.
+  void OverrideAccessTokenManagerForTesting(
+      std::unique_ptr<OAuth2AccessTokenManager> token_manager);
 
   OAuth2TokenServiceDelegate* GetDelegate();
   const OAuth2TokenServiceDelegate* GetDelegate() const;

@@ -78,8 +78,8 @@ class WaitForDomActionTest : public testing::Test {
   void Run() {
     ActionProto action_proto;
     *action_proto.mutable_wait_for_dom() = proto_;
-    WaitForDomAction action(action_proto);
-    action.ProcessAction(&mock_action_delegate_, callback_.Get());
+    WaitForDomAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
   }
 
   MockActionDelegate mock_action_delegate_;

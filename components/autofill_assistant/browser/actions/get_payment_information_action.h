@@ -19,15 +19,14 @@ namespace autofill_assistant {
 // Triggers PaymentRequest to collect user data.
 class GetPaymentInformationAction : public Action {
  public:
-  explicit GetPaymentInformationAction(const ActionProto& proto);
+  explicit GetPaymentInformationAction(ActionDelegate* delegate,
+                                       const ActionProto& proto);
   ~GetPaymentInformationAction() override;
 
  private:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   void OnGetPaymentInformation(
-      ActionDelegate* delegate,
       const GetPaymentInformationProto& get_payment_information,
       ProcessActionCallback callback,
       std::unique_ptr<PaymentInformation> payment_information);

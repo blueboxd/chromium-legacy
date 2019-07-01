@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_task_environment.h"
@@ -53,40 +52,39 @@ int TimeTicksToIntMs(const base::TimeTicks& time) {
       (time - ScopedSaveStartTicks::timeline_start_ticks_).InMilliseconds());
 }
 
-void RecordTimelineTask(Vector<std::string>* timeline,
+void RecordTimelineTask(Vector<String>* timeline,
                         const base::TickClock* clock) {
-  timeline->push_back(base::StringPrintf("run RecordTimelineTask @ %d",
-                                         TimeTicksToIntMs(clock->NowTicks())));
+  timeline->push_back(String::Format("run RecordTimelineTask @ %d",
+                                     TimeTicksToIntMs(clock->NowTicks())));
 }
 
-void AppendToVectorTestTask(Vector<std::string>* vector, std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
-void AppendToVectorIdleTestTask(Vector<std::string>* vector,
-                                std::string value,
+void AppendToVectorIdleTestTask(Vector<String>* vector,
+                                String value,
                                 base::TimeTicks deadline) {
   AppendToVectorTestTask(vector, value);
 }
 
-void TimelineIdleTestTask(Vector<std::string>* timeline,
-                          base::TimeTicks deadline) {
-  timeline->push_back(base::StringPrintf("run TimelineIdleTestTask deadline %d",
-                                         TimeTicksToIntMs(deadline)));
+void TimelineIdleTestTask(Vector<String>* timeline, base::TimeTicks deadline) {
+  timeline->push_back(String::Format("run TimelineIdleTestTask deadline %d",
+                                     TimeTicksToIntMs(deadline)));
 }
 
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
   WorkerThreadSchedulerForTest(base::sequence_manager::SequenceManager* manager,
                                const base::TickClock* clock_,
-                               Vector<std::string>* timeline)
+                               Vector<String>* timeline)
       : WorkerThreadScheduler(WebThreadType::kTestThread, manager, nullptr),
         clock_(clock_),
         timeline_(timeline) {}
 
   WorkerThreadSchedulerForTest(base::sequence_manager::SequenceManager* manager,
                                const base::TickClock* clock_,
-                               Vector<std::string>* timeline,
+                               Vector<String>* timeline,
                                WorkerSchedulerProxy* proxy)
       : WorkerThreadScheduler(WebThreadType::kTestThread, manager, proxy),
         clock_(clock_),
@@ -113,8 +111,8 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
       base::TimeTicks now,
       base::TimeDelta* next_long_idle_period_delay_out) override {
     if (timeline_) {
-      timeline_->push_back(base::StringPrintf("CanEnterLongIdlePeriod @ %d",
-                                              TimeTicksToIntMs(now)));
+      timeline_->push_back(
+          String::Format("CanEnterLongIdlePeriod @ %d", TimeTicksToIntMs(now)));
     }
     return WorkerThreadScheduler::CanEnterLongIdlePeriod(
         now, next_long_idle_period_delay_out);
@@ -122,7 +120,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
 
   void IsNotQuiescent() override {
     if (timeline_) {
-      timeline_->push_back(base::StringPrintf(
+      timeline_->push_back(String::Format(
           "IsNotQuiescent @ %d", TimeTicksToIntMs(clock_->NowTicks())));
     }
     WorkerThreadScheduler::IsNotQuiescent();
@@ -134,7 +132,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
   }
 
   const base::TickClock* clock_;        // Not owned.
-  Vector<std::string>* timeline_;       // Not owned.
+  Vector<String>* timeline_;            // Not owned.
   base::OnceClosure on_microtask_checkpoint_;
 };
 
@@ -166,12 +164,12 @@ class WorkerThreadSchedulerTest : public testing::Test {
   }
 
   void RunUntilIdle() {
-    timeline_.push_back(base::StringPrintf(
+    timeline_.push_back(String::Format(
         "RunUntilIdle begin @ %d",
         TimeTicksToIntMs(task_environment_.GetMockTickClock()->NowTicks())));
     // RunUntilIdle with auto-advancing for the mock clock.
     task_environment_.FastForwardUntilNoTasksRemain();
-    timeline_.push_back(base::StringPrintf(
+    timeline_.push_back(String::Format(
         "RunUntilIdle end @ %d",
         TimeTicksToIntMs(task_environment_.GetMockTickClock()->NowTicks())));
   }
@@ -181,22 +179,21 @@ class WorkerThreadSchedulerTest : public testing::Test {
   // task identifier specifies the task type:
   // - 'D': Default task
   // - 'I': Idle task
-  void PostTestTasks(Vector<std::string>* run_order,
-                     const std::string& task_descriptor) {
-    std::istringstream stream(task_descriptor);
+  void PostTestTasks(Vector<String>* run_order, const String& task_descriptor) {
+    std::istringstream stream(task_descriptor.Utf8());
     while (!stream.eof()) {
       std::string task;
       stream >> task;
       switch (task[0]) {
         case 'D':
           default_task_runner_->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'I':
           idle_task_runner_->PostIdleTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorIdleTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         default:
           NOTREACHED();
@@ -216,7 +213,7 @@ class WorkerThreadSchedulerTest : public testing::Test {
   ScopedSaveStartTicks save_start_ticks_{task_environment_.NowTicks()};
   std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
       sequence_manager_;
-  Vector<std::string> timeline_;
+  Vector<String> timeline_;
   std::unique_ptr<WorkerThreadSchedulerForTest> scheduler_;
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
@@ -228,35 +225,31 @@ class WorkerThreadSchedulerTest : public testing::Test {
 }  // namespace
 
 TEST_F(WorkerThreadSchedulerTest, TestPostDefaultTask) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "D1 D2 D3 D4");
 
   RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("D3"), std::string("D4")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "D3", "D4"));
 }
 
 TEST_F(WorkerThreadSchedulerTest, TestPostIdleTask) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1");
 
   RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("I1"));
 }
 
 TEST_F(WorkerThreadSchedulerTest, TestPostDefaultAndIdleTasks) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D2 D3 D4");
 
   RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D2"), std::string("D3"),
-                                   std::string("D4"), std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D2", "D3", "D4", "I1"));
 }
 
 TEST_F(WorkerThreadSchedulerTest, TestPostDefaultDelayedAndIdleTasks) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D2 D3 D4");
 
   default_task_runner_->PostDelayedTask(
@@ -265,9 +258,7 @@ TEST_F(WorkerThreadSchedulerTest, TestPostDefaultDelayedAndIdleTasks) {
 
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D2"), std::string("D3"),
-                                   std::string("D4"), std::string("I1"),
-                                   std::string("DELAYED")));
+              testing::ElementsAre("D2", "D3", "D4", "I1", "DELAYED"));
 }
 
 TEST_F(WorkerThreadSchedulerTest, TestIdleTaskWhenIsNotQuiescent) {
@@ -286,7 +277,7 @@ TEST_F(WorkerThreadSchedulerTest, TestIdleTaskWhenIsNotQuiescent) {
 
   RunUntilIdle();
 
-  std::string expected_timeline[] = {
+  String expected_timeline[] = {
       "CanEnterLongIdlePeriod @ 0",   "Post default task",
       "RunUntilIdle begin @ 0",       "run RecordTimelineTask @ 0",
       "RunUntilIdle end @ 0",         "Post idle task",
@@ -311,7 +302,7 @@ TEST_F(WorkerThreadSchedulerTest, TestIdleDeadlineWithPendingDelayedTask) {
 
   RunUntilIdle();
 
-  std::string expected_timeline[] = {
+  String expected_timeline[] = {
       "CanEnterLongIdlePeriod @ 0",
       "Post delayed and idle tasks",
       "RunUntilIdle begin @ 0",
@@ -338,7 +329,7 @@ TEST_F(WorkerThreadSchedulerTest,
 
   RunUntilIdle();
 
-  std::string expected_timeline[] = {
+  String expected_timeline[] = {
       "CanEnterLongIdlePeriod @ 0",
       "Post delayed and idle tasks",
       "RunUntilIdle begin @ 0",
@@ -356,20 +347,18 @@ TEST_F(WorkerThreadSchedulerTest, TestPostIdleTaskAfterRunningUntilIdle) {
       base::TimeDelta::FromMilliseconds(1000));
   RunUntilIdle();
 
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 I2 D3");
 
   RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D3"), std::string("I1"),
-                                   std::string("I2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D3", "I1", "I2"));
 }
 
-void PostIdleTask(Vector<std::string>* timeline,
+void PostIdleTask(Vector<String>* timeline,
                   const base::TickClock* clock,
                   SingleThreadIdleTaskRunner* idle_task_runner) {
-  timeline->push_back(base::StringPrintf("run PostIdleTask @ %d",
-                                         TimeTicksToIntMs(clock->NowTicks())));
+  timeline->push_back(String::Format("run PostIdleTask @ %d",
+                                     TimeTicksToIntMs(clock->NowTicks())));
 
   idle_task_runner->PostIdleTask(
       FROM_HERE, base::BindOnce(&TimelineIdleTestTask, timeline));
@@ -414,20 +403,20 @@ TEST_F(WorkerThreadSchedulerTest, TestLongIdlePeriodTimeline) {
                      base::Unretained(task_environment_.GetMockTickClock())));
   RunUntilIdle();
 
-  std::string expected_timeline[] = {"CanEnterLongIdlePeriod @ 0",
-                                     "PostFirstIdleTask",
-                                     "RunUntilIdle begin @ 50",
-                                     "CanEnterLongIdlePeriod @ 50",
-                                     "run TimelineIdleTestTask deadline 80",
-                                     "run PostIdleTask @ 80",
-                                     "IsNotQuiescent @ 80",
-                                     "CanEnterLongIdlePeriod @ 380",
-                                     "run TimelineIdleTestTask deadline 430",
-                                     "RunUntilIdle end @ 380",
-                                     "Post RecordTimelineTask",
-                                     "RunUntilIdle begin @ 380",
-                                     "run RecordTimelineTask @ 380",
-                                     "RunUntilIdle end @ 380"};
+  String expected_timeline[] = {"CanEnterLongIdlePeriod @ 0",
+                                "PostFirstIdleTask",
+                                "RunUntilIdle begin @ 50",
+                                "CanEnterLongIdlePeriod @ 50",
+                                "run TimelineIdleTestTask deadline 80",
+                                "run PostIdleTask @ 80",
+                                "IsNotQuiescent @ 80",
+                                "CanEnterLongIdlePeriod @ 380",
+                                "run TimelineIdleTestTask deadline 430",
+                                "RunUntilIdle end @ 380",
+                                "Post RecordTimelineTask",
+                                "RunUntilIdle begin @ 380",
+                                "run RecordTimelineTask @ 380",
+                                "RunUntilIdle end @ 380"};
 
   EXPECT_THAT(timeline_, ElementsAreArray(expected_timeline));
 }
@@ -524,7 +513,7 @@ class WorkerThreadSchedulerWithProxyTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
       sequence_manager_;
-  Vector<std::string> timeline_;
+  Vector<String> timeline_;
   std::unique_ptr<FrameScheduler::Delegate> frame_scheduler_delegate_;
   std::unique_ptr<FrameScheduler> frame_scheduler_;
   std::unique_ptr<WorkerSchedulerProxy> worker_scheduler_proxy_;

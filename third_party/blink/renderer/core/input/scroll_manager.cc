@@ -153,8 +153,8 @@ static bool CanPropagate(const ScrollState& scroll_state, const Node& node) {
 
 void ScrollManager::RecomputeScrollChain(const Node& start_node,
                                          const ScrollState& scroll_state,
-                                         std::deque<DOMNodeId>& scroll_chain) {
-  DCHECK(scroll_chain.empty());
+                                         Deque<DOMNodeId>& scroll_chain) {
+  DCHECK(scroll_chain.IsEmpty());
   scroll_chain.clear();
 
   DCHECK(start_node.GetLayoutObject());
@@ -248,15 +248,14 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
 
   document.UpdateStyleAndLayout();
 
-  std::deque<DOMNodeId> scroll_chain;
+  Deque<DOMNodeId> scroll_chain;
   std::unique_ptr<ScrollStateData> scroll_state_data =
       std::make_unique<ScrollStateData>();
   ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
   RecomputeScrollChain(*node, *scroll_state, scroll_chain);
 
-  while (!scroll_chain.empty()) {
-    Node* scroll_chain_node = DOMNodeIds::NodeForId(scroll_chain.back());
-    scroll_chain.pop_back();
+  while (!scroll_chain.IsEmpty()) {
+    Node* scroll_chain_node = DOMNodeIds::NodeForId(scroll_chain.TakeLast());
     DCHECK(scroll_chain_node);
 
     LayoutBox* box = ToLayoutBox(scroll_chain_node->GetLayoutObject());
@@ -366,7 +365,7 @@ void ScrollManager::CustomizedScroll(ScrollState& scroll_state) {
   if (scroll_state.deltaX() || scroll_state.deltaY())
     frame_->GetDocument()->UpdateStyleAndLayout();
 
-  DCHECK(!current_scroll_chain_.empty());
+  DCHECK(!current_scroll_chain_.IsEmpty());
 
   scroll_state.SetScrollChain(current_scroll_chain_);
 
@@ -486,7 +485,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
                        TRACE_EVENT_SCOPE_THREAD, "length",
                        current_scroll_chain_.size());
 
-  if (current_scroll_chain_.empty()) {
+  if (current_scroll_chain_.IsEmpty()) {
     // If a child has a non-empty scroll chain, we need to consider that instead
     // of simply returning WebInputEventResult::kNotHandled.
     return child_result;
@@ -569,7 +568,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     return result;
   }
 
-  if (current_scroll_chain_.empty()) {
+  if (current_scroll_chain_.IsEmpty()) {
     TRACE_EVENT_INSTANT0("input", "Empty Scroll Chain",
                          TRACE_EVENT_SCOPE_THREAD);
     return WebInputEventResult::kNotHandled;
@@ -629,7 +628,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     // Send the overscroll event to the node that scrolling is latched to which
     // is either previously scrolled node or the last node in the scroll chain.
     Node* overscroll_target = previous_gesture_scrolled_node_;
-    if (!overscroll_target && !current_scroll_chain_.empty())
+    if (!overscroll_target && !current_scroll_chain_.IsEmpty())
       overscroll_target = DOMNodeIds::NodeForId(current_scroll_chain_.front());
 
     if (overscroll_target) {
@@ -671,7 +670,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     }
 
     PassScrollGestureEvent(gesture_event, node->GetLayoutObject());
-    if (current_scroll_chain_.empty()) {
+    if (current_scroll_chain_.IsEmpty()) {
       ClearGestureScrollState();
       return WebInputEventResult::kNotHandled;
     }
@@ -696,7 +695,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
       // Send the scrollend event to the node that scrolling is latched to
       // which is either previously scrolled node or the last node in the
       // scroll chain.
-      DCHECK(!current_scroll_chain_.empty());
+      DCHECK(!current_scroll_chain_.IsEmpty());
       if (previous_gesture_scrolled_node_) {
         previous_gesture_scrolled_node_->GetDocument()
             .EnqueueScrollEndEventForNode(previous_gesture_scrolled_node_);
@@ -790,7 +789,7 @@ gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
 }
 
 void ScrollManager::ScrollEndForSnapFling() {
-  if (current_scroll_chain_.empty()) {
+  if (current_scroll_chain_.IsEmpty()) {
     NotifyScrollPhaseEndForCustomizedScroll();
     ClearGestureScrollState();
     return;

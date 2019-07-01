@@ -92,8 +92,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
-@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
-        ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY,
+@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY,
         ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
 public class ManualFillingControllerTest {
     @Mock

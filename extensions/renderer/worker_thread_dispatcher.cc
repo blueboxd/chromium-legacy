@@ -95,7 +95,7 @@ void WorkerThreadDispatcher::ForwardIPC(int worker_thread_id,
 bool WorkerThreadDispatcher::OnControlMessageReceived(
     const IPC::Message& message) {
   if (HandlesMessageOnWorkerThread(message)) {
-    int worker_thread_id = base::kInvalidThreadId;
+    int worker_thread_id = content::WorkerThread::kInvalidWorkerThreadId;
     // TODO(lazyboy): Route |message| directly to the child thread using routed
     // IPC. Probably using mojo?
     bool found = base::PickleIterator(message).ReadInt(&worker_thread_id);
@@ -230,8 +230,7 @@ void WorkerThreadDispatcher::AddWorkerData(
     g_data_tls.Pointer()->Set(new_data);
   }
 
-  int worker_thread_id = base::PlatformThread::CurrentId();
-  DCHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
+  int worker_thread_id = content::WorkerThread::GetCurrentId();
   {
     base::AutoLock lock(task_runner_map_lock_);
     auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
@@ -282,8 +281,7 @@ void WorkerThreadDispatcher::RemoveWorkerData(
     g_data_tls.Pointer()->Set(nullptr);
   }
 
-  int worker_thread_id = base::PlatformThread::CurrentId();
-  DCHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
+  int worker_thread_id = content::WorkerThread::GetCurrentId();
   {
     base::AutoLock lock(task_runner_map_lock_);
     task_runner_map_.erase(worker_thread_id);

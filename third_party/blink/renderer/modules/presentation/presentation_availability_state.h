@@ -6,8 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_STATE_H_
 
 #include <memory>
-#include <set>
-#include <vector>
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
@@ -120,7 +118,7 @@ class MODULES_EXPORT PresentationAvailabilityState
   ListeningStatus* GetListeningStatus(const KURL&) const;
 
   // ListeningStatus for known URLs.
-  std::vector<std::unique_ptr<ListeningStatus>> availability_listening_status_;
+  Vector<std::unique_ptr<ListeningStatus>> availability_listening_status_;
 
   // Set of AvailabilityListener for known PresentationRequests.
   HeapVector<Member<AvailabilityListener>> availability_listeners_;

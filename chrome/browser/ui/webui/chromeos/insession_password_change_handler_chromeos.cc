@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
-#include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -58,18 +57,18 @@ void InSessionPasswordChangeHandler::HandleChangePassword(
       ProfileHelper::Get()->GetUserByProfile(Profile::FromWebUI(web_ui()));
   user_manager::UserManager::Get()->SaveForceOnlineSignin(user->GetAccountId(),
                                                           true);
+  auto* in_session_password_change_manager =
+      g_browser_process->platform_part()->in_session_password_change_manager();
+  CHECK(in_session_password_change_manager);
+
   if (new_passwords.GetList().size() == 1 &&
       old_passwords.GetList().size() > 0) {
-    auto* in_session_password_change_manager =
-        g_browser_process->platform_part()
-            ->in_session_password_change_manager();
-    CHECK(in_session_password_change_manager);
     in_session_password_change_manager->ChangePassword(
         old_passwords.GetList()[0].GetString(),
         new_passwords.GetList()[0].GetString());
+  } else {
+    in_session_password_change_manager->HandlePasswordScrapeFailure();
   }
-
-  // TODO(https://crbug.com/930109): Failed to scrape passwords - show dialog.
 }
 
 void InSessionPasswordChangeHandler::RegisterMessages() {

@@ -102,7 +102,7 @@ void ThreadHeapStatsCollector::IncreaseCollectedWrapperCount(size_t count) {
 
 void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
   DCHECK(!is_started_);
-  DCHECK_EQ(0.0, current_.marking_time_in_ms());
+  DCHECK(current_.marking_time().is_zero());
   is_started_ = true;
   current_.reason = reason;
 }
@@ -170,17 +170,37 @@ base::TimeDelta ThreadHeapStatsCollector::estimated_marking_time() const {
   return base::TimeDelta::FromSecondsD(estimated_marking_time_in_seconds());
 }
 
-double ThreadHeapStatsCollector::Event::marking_time_in_ms() const {
-  return (scope_data[kIncrementalMarkingStartMarking] +
-          scope_data[kIncrementalMarkingStep] +
-          scope_data[kIncrementalMarkingFinalizeMarking] +
-          scope_data[kAtomicPhaseMarking])
-      .InMillisecondsF();
+base::TimeDelta ThreadHeapStatsCollector::Event::incremental_marking_time()
+    const {
+  return scope_data[kIncrementalMarkingStartMarking] +
+         scope_data[kIncrementalMarkingStep] + scope_data[kUnifiedMarkingStep];
+}
+
+base::TimeDelta ThreadHeapStatsCollector::Event::atomic_marking_time() const {
+  return scope_data[kStandAloneAtomicMarking] +
+         scope_data[kUnifiedAtomicMarkingPrologue] +
+         scope_data[kUnifiedAtomicMarkingEpilogue] +
+         scope_data[kUnifiedAtomicMarkingTransitiveClosure];
+}
+
+base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {
+  return incremental_marking_time() + atomic_marking_time();
 }
 
 double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
     const {
-  return marked_bytes ? marking_time_in_ms() / 1000 / marked_bytes : 0.0;
+  return marked_bytes ? marking_time().InMillisecondsF() / 1000 / marked_bytes
+                      : 0.0;
+}
+
+base::TimeDelta ThreadHeapStatsCollector::Event::gc_cycle_time() const {
+  // Note that scopes added here also have to have a proper BlinkGCInV8Scope
+  // scope if they are nested in a V8 scope.
+  return marking_time() +
+         scope_data[ThreadHeapStatsCollector::kAtomicSweepAndCompact] +
+         scope_data[ThreadHeapStatsCollector::kCompleteSweep] +
+         scope_data[ThreadHeapStatsCollector::kLazySweepInIdle] +
+         scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
@@ -200,6 +220,10 @@ int64_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
 
 size_t ThreadHeapStatsCollector::marked_bytes() const {
   return current_.marked_bytes;
+}
+
+base::TimeDelta ThreadHeapStatsCollector::marking_time_so_far() const {
+  return current_.marking_time();
 }
 
 size_t ThreadHeapStatsCollector::allocated_space_bytes() const {

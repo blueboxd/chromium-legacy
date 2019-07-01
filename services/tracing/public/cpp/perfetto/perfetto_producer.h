@@ -56,6 +56,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer
   virtual void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) = 0;
 
+  // Returns true if this PerfettoProducer is currently tracing.
+  virtual bool IsTracingActive() = 0;
+
   static void DeleteSoonForTesting(
       std::unique_ptr<PerfettoProducer> perfetto_producer);
 

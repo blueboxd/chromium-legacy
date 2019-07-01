@@ -17,7 +17,8 @@ namespace autofill_assistant {
 
 class WaitForNavigationAction : public Action {
  public:
-  explicit WaitForNavigationAction(const ActionProto& proto);
+  explicit WaitForNavigationAction(ActionDelegate* delegate,
+                                   const ActionProto& proto);
   ~WaitForNavigationAction() override;
 
  private:
@@ -25,11 +26,10 @@ class WaitForNavigationAction : public Action {
       base::TimeDelta::FromSeconds(20);
 
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   void OnWaitForNavigation(bool has_navigation_error);
-  void OnTimeout(ActionDelegate* delegate);
+  void OnTimeout();
   void SendResult(ProcessedActionStatusProto status);
 
   ProcessActionCallback callback_;

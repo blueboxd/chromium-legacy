@@ -222,6 +222,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "autofill-assistant-direct-actions",
+    "owners": [ "//components/autofill_assistant/OWNERS" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "autofill-cache-query-responses",
     "owners": [ "rogerm" ],
     "expiry_milestone": 72
@@ -562,6 +567,11 @@
     "name": "dial-media-route-provider",
     "owners": [ "mfoltz", "takumif" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "direct-actions",
+    "owners": [ "szermatt", "tedchoc", "twellington" ],
+    "expiry_milestone": 81
   },
   {
     "name": "direct-manipulation-stylus",

@@ -50,9 +50,11 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
   // tracing::PerfettoProducer functions.
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
+  bool IsTracingActive() override;
 
   // Functions expected for SystemProducer
-  void Disconnect() override;
+  void DisconnectWithReply(base::OnceClosure on_disconnect_complete) override;
+  bool IsDummySystemProducerForTesting() override;
 };
 }  // namespace tracing
 

@@ -40,6 +40,10 @@
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
+namespace base {
+class Location;
+}
+
 namespace v8 {
 class Value;
 }
@@ -83,6 +87,17 @@ class PLATFORM_EXPORT Visitor {
   inline ThreadHeap& Heap() const { return state_->Heap(); }
 
   // Static visitor implementation forwarding to dynamic interface.
+
+  template <typename T>
+  void TraceRoot(const T* t, const base::Location& location) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+    if (!t)
+      return;
+    VisitRoot(const_cast<void*>(reinterpret_cast<const void*>(t)),
+              TraceDescriptorFor(t), location);
+  }
 
   // Member version of the one-argument templated trace method.
   template <typename T>
@@ -212,6 +227,10 @@ class PLATFORM_EXPORT Visitor {
   }
 
   // Dynamic visitor interface.
+
+  virtual void VisitRoot(void* t, TraceDescriptor desc, const base::Location&) {
+    Visit(t, desc);
+  }
 
   // Visits an object through a strong reference.
   virtual void Visit(void*, TraceDescriptor) = 0;

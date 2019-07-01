@@ -3959,7 +3959,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
     // Record marking speed as counter generation requires valid marking timings
     // for heaps >1MB.
     ThreadHeapStatsCollector::Scope stats_scope(
-        heap.stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseMarking);
+        heap.stats_collector(),
+        ThreadHeapStatsCollector::kStandAloneAtomicMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
 
@@ -3991,7 +3992,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
     // Record marking speed as counter generation requires valid marking timings
     // for heaps >1MB.
     ThreadHeapStatsCollector::Scope stats_scope(
-        heap.stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseMarking);
+        heap.stats_collector(),
+        ThreadHeapStatsCollector::kStandAloneAtomicMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
 

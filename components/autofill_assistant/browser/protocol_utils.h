@@ -63,7 +63,8 @@ class ProtocolUtils {
   // scripts. The bool |should_update_scripts| makes clear the destinction
   // between an empty list of |scripts| or the scripts field not even set in the
   // proto. Return false if parse failed, otherwise return true.
-  static bool ParseActions(const std::string& response,
+  static bool ParseActions(ActionDelegate* delegate,
+                           const std::string& response,
                            std::string* return_global_payload,
                            std::string* return_script_payload,
                            std::vector<std::unique_ptr<Action>>* actions,

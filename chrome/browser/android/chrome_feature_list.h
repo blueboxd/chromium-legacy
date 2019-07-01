@@ -59,6 +59,7 @@ extern const base::Feature kContextualSearchTranslationModel;
 extern const base::Feature kContextualSearchUnityIntegration;
 extern const base::Feature kCustomContextMenu;
 extern const base::Feature kDelegateOverscrollSwipes;
+extern const base::Feature kDirectActions;
 extern const base::Feature kDontPrefetchLibraries;
 extern const base::Feature kDownloadAutoResumptionThrottling;
 extern const base::Feature kDownloadLocationShowImageInGallery;

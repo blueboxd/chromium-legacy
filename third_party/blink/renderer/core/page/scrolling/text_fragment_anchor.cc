@@ -26,9 +26,8 @@ constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
 constexpr size_t kTextFragmentIdentifierPrefixArrayLength =
     base::size(kTextFragmentIdentifierPrefix);
 
-bool ParseTargetTextIdentifier(
-    const String& fragment,
-    std::vector<TextFragmentSelector>* out_selectors) {
+bool ParseTargetTextIdentifier(const String& fragment,
+                               Vector<TextFragmentSelector>* out_selectors) {
   DCHECK(out_selectors);
 
   size_t start_pos = 0;
@@ -67,7 +66,7 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(
       same_document_navigation)
     return nullptr;
 
-  std::vector<TextFragmentSelector> selectors;
+  Vector<TextFragmentSelector> selectors;
 
   if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &selectors))
     return nullptr;
@@ -76,17 +75,17 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(
 }
 
 TextFragmentAnchor::TextFragmentAnchor(
-    const std::vector<TextFragmentSelector>& text_fragment_selectors,
+    const Vector<TextFragmentSelector>& text_fragment_selectors,
     LocalFrame& frame)
     : frame_(&frame),
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
-  DCHECK(!text_fragment_selectors.empty());
+  DCHECK(!text_fragment_selectors.IsEmpty());
   DCHECK(frame_->View());
 
   metrics_->DidCreateAnchor(text_fragment_selectors.size());
 
-  text_fragment_finders_.reserve(text_fragment_selectors.size());
+  text_fragment_finders_.ReserveCapacity(text_fragment_selectors.size());
   for (TextFragmentSelector selector : text_fragment_selectors)
     text_fragment_finders_.emplace_back(*this, selector);
 }

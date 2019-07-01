@@ -170,6 +170,7 @@ public abstract class ChromeFeatureList {
     public static final String ANDROID_SITE_SETTINGS_UI_REFRESH = "AndroidSiteSettingsUIRefresh";
     public static final String APP_NOTIFICATION_STATUS_MESSAGING = "AppNotificationStatusMessaging";
     public static final String AUTOFILL_ASSISTANT = "AutofillAssistant";
+    public static final String AUTOFILL_ASSISTANT_DIRECT_ACTIONS = "AutofillAssistantDirectActions";
     public static final String AUTOFILL_MANUAL_FALLBACK_ANDROID = "AutofillManualFallbackAndroid";
     public static final String AUTOFILL_REFRESH_STYLE_ANDROID = "AutofillRefreshStyleAndroid";
     public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory";
@@ -218,6 +219,7 @@ public abstract class ChromeFeatureList {
             "ContextualSearchUnityIntegration";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String DELEGATE_OVERSCROLL_SWIPES = "DelegateOverscrollSwipes";
+    public static final String DIRECT_ACTIONS = "DirectActions";
     public static final String DOWNLOAD_LOCATION_SHOW_IMAGE_IN_GALLERY =
             "DownloadLocationShowImageInGallery";
     public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
@@ -285,7 +287,6 @@ public abstract class ChromeFeatureList {
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String OVERSCROLL_HISTORY_NAVIGATION = "OverscrollHistoryNavigation";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
-    public static final String PASSWORDS_KEYBOARD_ACCESSORY = "PasswordsKeyboardAccessory";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
     public static final String PER_METHOD_CAN_MAKE_PAYMENT_QUOTA =
             "WebPaymentsPerMethodCanMakePaymentQuota";

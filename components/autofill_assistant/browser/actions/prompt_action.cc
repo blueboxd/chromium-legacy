@@ -18,24 +18,22 @@
 
 namespace autofill_assistant {
 
-PromptAction::PromptAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+PromptAction::PromptAction(ActionDelegate* delegate, const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_prompt());
 }
 
 PromptAction::~PromptAction() {}
 
-void PromptAction::InternalProcessAction(ActionDelegate* delegate,
-                                         ProcessActionCallback callback) {
+void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
   if (proto_.prompt().choices_size() == 0) {
     UpdateProcessedAction(INVALID_ACTION);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
 
-  delegate_ = delegate;
   callback_ = std::move(callback);
-  delegate->SetStatusMessage(proto_.prompt().message());
+  delegate_->SetStatusMessage(proto_.prompt().message());
 
   SetupPreconditions();
   UpdateUserActions();
@@ -44,7 +42,7 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
     RunPeriodicChecks();
     timer_ = std::make_unique<base::RepeatingTimer>();
     timer_->Start(FROM_HERE,
-                  delegate->GetSettings().periodic_script_check_interval,
+                  delegate_->GetSettings().periodic_script_check_interval,
                   base::BindRepeating(&PromptAction::RunPeriodicChecks,
                                       weak_ptr_factory_.GetWeakPtr()));
   }

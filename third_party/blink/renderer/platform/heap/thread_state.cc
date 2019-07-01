@@ -980,110 +980,51 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
 void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_ENUMERATION("BlinkGC.GCReason", event.reason);
 
-  // Blink GC cycle time.
-  const base::TimeDelta cycle_duration =
-      event.scope_data
-          [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
-      event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep] +
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhase] +
-      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep] +
-      event.scope_data[ThreadHeapStatsCollector::kLazySweepInIdle] +
-      event.scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", cycle_duration);
-
-  const base::TimeDelta incremental_marking_duration =
-      event.scope_data
-          [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
-      event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep];
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", event.gc_cycle_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
-                      incremental_marking_duration);
+                      event.incremental_marking_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", event.marking_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingAllObjects",
+                      event.sweeping_time());
+  UMA_HISTOGRAM_TIMES(
+      "BlinkGC.TimeForInvokingPreFinalizers",
+      event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
+  UMA_HISTOGRAM_TIMES(
+      "BlinkGC.TimeForHeapCompaction",
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseCompaction]);
+  UMA_HISTOGRAM_TIMES(
+      "BlinkGC.TimeForGlobalWeakProcessing",
+      event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
 
-  const base::TimeDelta marking_duration =
-      event.scope_data
-          [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
-      event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep] +
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking];
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", marking_duration);
-
+  base::TimeDelta marking_duration = event.marking_time();
   constexpr size_t kMinObjectSizeForReportingThroughput = 1024 * 1024;
   if (base::TimeTicks::IsHighResolution() &&
       (event.object_size_in_bytes_before_sweeping >
        kMinObjectSizeForReportingThroughput) &&
       !marking_duration.is_zero()) {
     DCHECK_GT(marking_duration.InMillisecondsF(), 0.0);
-    // For marking throughput computation all marking steps, independent of
-    // whether they are triggered from V8 or Blink, are relevant.
-    const base::TimeDelta blink_marking_duration =
-        marking_duration +
-        event.scope_data
-            [ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue] +
-        event.scope_data[ThreadHeapStatsCollector::kUnifiedMarkingStep];
     const int main_thread_marking_throughput_mb_per_s = static_cast<int>(
         static_cast<double>(event.object_size_in_bytes_before_sweeping) /
-        blink_marking_duration.InMillisecondsF() * 1000 / 1024 / 1024);
+        marking_duration.InMillisecondsF() * 1000 / 1024 / 1024);
     UMA_HISTOGRAM_COUNTS_100000("BlinkGC.MainThreadMarkingThroughput",
                                 main_thread_marking_throughput_mb_per_s);
   }
 
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
+  // TODO(mlippautz): Convert the following histograms to "TimeFor..." notation.
 
-  UMA_HISTOGRAM_TIMES(
-      "BlinkGC.AtomicPhaseMarking",
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
+  UMA_HISTOGRAM_TIMES("BlinkGC.AtomicPhaseMarking",
+                      event.atomic_marking_time());
 
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.CompleteSweep",
       event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]);
-
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingAllObjects",
-                      event.sweeping_time());
-
-  UMA_HISTOGRAM_TIMES(
-      "BlinkGC.TimeForInvokingPreFinalizers",
-      event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
-
-  UMA_HISTOGRAM_TIMES(
-      "BlinkGC.TimeForHeapCompaction",
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseCompaction]);
 
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,
       ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
   object_size_freed_by_heap_compaction.Count(
       CappedSizeInKB(event.compaction_freed_bytes));
-
-  UMA_HISTOGRAM_TIMES(
-      "BlinkGC.TimeForGlobalWeakProcessing",
-      event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
-
-  constexpr base::TimeDelta kSlowIncrementalMarkingFinalizeTheshold =
-      base::TimeDelta::FromMilliseconds(40);
-  if (event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingFinalize] >
-      kSlowIncrementalMarkingFinalizeTheshold) {
-    UMA_HISTOGRAM_TIMES(
-        "BlinkGC.SlowIncrementalMarkingFinalize.IncrementalMarkingFinalize",
-        event
-            .scope_data[ThreadHeapStatsCollector::kIncrementalMarkingFinalize]);
-    UMA_HISTOGRAM_TIMES(
-        "BlinkGC.SlowIncrementalMarkingFinalize.AtomicPhaseMarking",
-        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
-    UMA_HISTOGRAM_TIMES(
-        "BlinkGC.SlowIncrementalMarkingFinalize.VisitCrossThreadPersistents",
-        event.scope_data
-            [ThreadHeapStatsCollector::kVisitCrossThreadPersistents]);
-    UMA_HISTOGRAM_TIMES(
-        "BlinkGC.SlowIncrementalMarkingFinalize.VisitDOMWrappers",
-        event.scope_data[ThreadHeapStatsCollector::kVisitDOMWrappers]);
-    UMA_HISTOGRAM_TIMES(
-        "BlinkGC.SlowIncrementalMarkingFinalize.MarkWeakProcessing",
-        event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
-    UMA_HISTOGRAM_TIMES(
-        "BlinkGC.SlowIncrementalMarkingFinalize.InvokePreFinalizers",
-        event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
-    UMA_HISTOGRAM_TIMES(
-        "BlinkGC.SlowIncrementalMarkingFinalize.EagerSweep",
-        event.scope_data[ThreadHeapStatsCollector::kEagerSweep]);
-  }
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
                       ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
@@ -1103,9 +1044,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   switch (event.reason) {
 #define COUNT_BY_GC_REASON(reason)                                        \
   case BlinkGC::GCReason::k##reason: {                                    \
-    UMA_HISTOGRAM_TIMES(                                                  \
-        "BlinkGC.AtomicPhaseMarking_" #reason,                            \
-        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]); \
+    UMA_HISTOGRAM_TIMES("BlinkGC.AtomicPhaseMarking_" #reason,            \
+                        event.atomic_marking_time());                     \
     DEFINE_STATIC_LOCAL(CustomCountHistogram,                             \
                         collection_rate_reason_histogram,                 \
                         ("BlinkGC.CollectionRate_" #reason, 1, 100, 20)); \
@@ -1491,6 +1431,9 @@ void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
 void ThreadState::AtomicPauseSweepAndCompact(
     BlinkGC::MarkingType marking_type,
     BlinkGC::SweepingType sweeping_type) {
+  ThreadHeapStatsCollector::EnabledScope stats(
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kAtomicSweepAndCompact);
   AtomicPauseScope atomic_pause_scope(this);
   AtomicPauseEpilogue(marking_type, sweeping_type);
   if (marking_type == BlinkGC::kTakeSnapshot) {
@@ -1525,6 +1468,9 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
           ThreadHeapStatsCollector::kAtomicPhaseMarking, "lazySweeping",
           sweeping_type == BlinkGC::kLazySweeping ? "yes" : "no", "gcReason",
           BlinkGC::ToString(reason));
+      ThreadHeapStatsCollector::EnabledScope stats3(
+          Heap().stats_collector(),
+          ThreadHeapStatsCollector::kStandAloneAtomicMarking);
       AtomicPauseMarkPrologue(stack_state, marking_type, reason);
       AtomicPauseMarkTransitiveClosure();
       AtomicPauseMarkEpilogue(marking_type);

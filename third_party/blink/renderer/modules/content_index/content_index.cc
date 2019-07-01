@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -22,6 +23,9 @@ namespace blink {
 namespace {
 
 constexpr base::TimeDelta kIconFetchTimeout = base::TimeDelta::FromSeconds(30);
+
+// TODO(crbug.com/973844): Find the ideal icon dimensions.
+constexpr int kMaxIconDimension = 256;
 
 // Validates |description|. If there is an error, an error message to be passed
 // to a TypeError is passed. Otherwise a null string is returned.
@@ -86,10 +90,9 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   resource_request.SetTimeoutInterval(kIconFetchTimeout);
 
   auto* threaded_icon_loader = MakeGarbageCollected<ThreadedIconLoader>();
-  // TODO(crbug.com/973844): Find the ideal icon dimensions.
   threaded_icon_loader->Start(
       registration_->GetExecutionContext(), resource_request,
-      /* resize_dimensions= */ base::nullopt,
+      /* resize_dimensions= */ WebSize(kMaxIconDimension, kMaxIconDimension),
       WTF::Bind(&ContentIndex::DidGetIcon, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(threaded_icon_loader),
                 mojom::blink::ContentDescription::From(description)));

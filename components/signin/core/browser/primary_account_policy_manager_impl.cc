@@ -100,10 +100,13 @@ void PrimaryAccountPolicyManagerImpl::OnSigninAllowedPrefChanged(
 bool PrimaryAccountPolicyManagerImpl::IsAllowedUsername(
     const std::string& username) const {
   const PrefService* local_state = local_state_pref_registrar_.prefs();
-  if (!local_state)
-    return true;  // In a unit test with no local state - all names are allowed.
 
-  std::string pattern =
-      local_state->GetString(prefs::kGoogleServicesUsernamePattern);
-  return identity::IsUsernameAllowedByPattern(username, pattern);
+  // TODO(crbug.com/908121): We need to deal for now with the fact that many
+  // unit tests have a null |local_state| passed to InitializePolicy(), in which
+  // case all usernames are considered 'allowed'.
+  if (!local_state)
+    return true;
+
+  return identity::IsUsernameAllowedByPatternFromPrefs(
+      local_state, username, prefs::kGoogleServicesUsernamePattern);
 }

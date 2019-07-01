@@ -78,12 +78,12 @@ class RootScrollerTest : public testing::Test,
     }
   }
 
-  WebViewImpl* Initialize(const std::string& page_name,
+  WebViewImpl* Initialize(const String& page_name,
                           frame_test_helpers::TestWebWidgetClient* client) {
     return InitializeInternal(base_url_ + page_name, client);
   }
 
-  WebViewImpl* Initialize(const std::string& page_name) {
+  WebViewImpl* Initialize(const String& page_name) {
     return InitializeInternal(base_url_ + page_name, nullptr);
   }
 
@@ -101,10 +101,9 @@ class RootScrollerTest : public testing::Test,
     settings->SetMainFrameResizesAreOrientationChanges(true);
   }
 
-  void RegisterMockedHttpURLLoad(const std::string& file_name) {
+  void RegisterMockedHttpURLLoad(const String& file_name) {
     url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
-        WebString::FromUTF8(file_name));
+        WebString(base_url_), test::CoreTestDataPath(), WebString(file_name));
   }
 
   void ExecuteScript(const WebString& code) {
@@ -177,9 +176,9 @@ class RootScrollerTest : public testing::Test,
   }
 
   WebViewImpl* InitializeInternal(
-      const std::string& url,
+      const String& url,
       frame_test_helpers::TestWebWidgetClient* client) {
-    helper_.InitializeAndLoad(url, nullptr, nullptr, client,
+    helper_.InitializeAndLoad(url.Utf8(), nullptr, nullptr, client,
                               &ConfigureSettings);
 
     // Initialize browser controls to be shown.
@@ -196,7 +195,7 @@ class RootScrollerTest : public testing::Test,
         DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 
-  std::string base_url_;
+  String base_url_;
   std::unique_ptr<frame_test_helpers::TestWebViewClient> view_client_;
   frame_test_helpers::WebViewHelper helper_;
   RuntimeEnabledFeatures::Backup features_backup_;
@@ -800,8 +799,8 @@ TEST_F(RootScrollerTest, RemoteMainFrame) {
         WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
     local_frame = frame_test_helpers::CreateLocalChild(*remote_main_frame);
 
-    frame_test_helpers::LoadFrame(local_frame,
-                                  base_url_ + "root-scroller-child.html");
+    frame_test_helpers::LoadFrame(
+        local_frame, base_url_.Utf8() + "root-scroller-child.html");
     widget = local_frame->FrameWidget();
     widget->Resize(WebSize(400, 400));
   }
@@ -1614,7 +1613,7 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScroller) {
   // overflow: auto and overflow: scroll should cause a valid element to be
   // promoted to root scroller. Otherwise, they shouldn't, even if they're
   // otherwise a valid root scroller element.
-  std::vector<std::tuple<String, String, Node*>> test_cases = {
+  Vector<std::tuple<String, String, Node*>> test_cases = {
       {"overflow", "hidden", &GetDocument()},
       {"overflow", "auto", container},
       {"overflow", "scroll", container},
@@ -2824,7 +2823,7 @@ TEST_F(ImplicitRootScrollerSimTest, ClippingAncestorPreventsPromotion) {
   Compositor().BeginFrame();
 
   // Each of these style-value pairs should prevent promotion of the iframe.
-  std::vector<std::tuple<String, String>> test_cases = {
+  Vector<std::tuple<String, String>> test_cases = {
       {"overflow", "scroll"},
       {"overflow", "hidden"},
       {"overflow", "auto"},

@@ -20,16 +20,14 @@ class ClickAction : public Action {
  public:
   enum ClickType { TAP = 0, JAVASCRIPT = 1, CLICK = 2 };
 
-  explicit ClickAction(const ActionProto& proto);
+  explicit ClickAction(ActionDelegate* delegate, const ActionProto& proto);
   ~ClickAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnWaitForElement(ActionDelegate* delegate,
-                        ProcessActionCallback callback,
+  void OnWaitForElement(ProcessActionCallback callback,
                         const Selector& selector,
                         bool element_found);
   void OnClick(ProcessActionCallback callback, const ClientStatus& status);

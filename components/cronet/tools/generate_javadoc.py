@@ -17,10 +17,12 @@ SDK_DIR = os.path.join(REPOSITORY_ROOT, 'third_party', 'android_sdk', 'public')
 
 sys.path.insert(0, os.path.join(REPOSITORY_ROOT, 'build/android/gyp'))
 sys.path.insert(0, os.path.join(REPOSITORY_ROOT, 'net/tools/net_docs'))
-from util import build_utils  # pylint: disable=import-error
+# pylint: disable=wrong-import-position
+from util import build_utils
 import net_docs
 from markdown.postprocessors import Postprocessor
 from markdown.extensions import Extension
+# pylint: enable=wrong-import-position
 
 
 class CronetPostprocessor(Postprocessor):

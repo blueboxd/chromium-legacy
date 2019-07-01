@@ -16,6 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::_;
@@ -28,7 +29,7 @@ namespace scheduler {
 namespace scheduler_helper_unittest {
 
 namespace {
-void AppendToVectorTestTask(Vector<std::string>* vector, std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
@@ -91,7 +92,7 @@ class SchedulerHelperTest : public testing::Test {
 };
 
 TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   default_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   default_task_runner_->PostTask(
@@ -102,9 +103,7 @@ TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D4"));
 
   task_environment_.RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("D3"), std::string("D4")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "D3", "D4"));
 }
 
 TEST_F(SchedulerHelperTest, TestRentrantTask) {
@@ -127,7 +126,7 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 }
 
 TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
-  Vector<std::string> run_order;
+  Vector<String> run_order;
   scheduler_helper_->DefaultTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   scheduler_helper_->DefaultTaskRunner()->PostTask(

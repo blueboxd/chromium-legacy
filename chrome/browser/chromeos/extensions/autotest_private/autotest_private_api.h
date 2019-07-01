@@ -432,6 +432,17 @@ class AutotestPrivateRemovePrinterFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetAllEnterprisePoliciesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getAllEnterprisePolicies",
+                             AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES)
+
+ private:
+  ~AutotestPrivateGetAllEnterprisePoliciesFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateBootstrapMachineLearningServiceFunction
     : public UIThreadExtensionFunction {
  public:

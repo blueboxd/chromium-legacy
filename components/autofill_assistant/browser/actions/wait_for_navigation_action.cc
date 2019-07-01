@@ -11,15 +11,15 @@
 
 namespace autofill_assistant {
 
-WaitForNavigationAction::WaitForNavigationAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+WaitForNavigationAction::WaitForNavigationAction(ActionDelegate* delegate,
+                                                 const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_wait_for_navigation());
 }
 
 WaitForNavigationAction::~WaitForNavigationAction() {}
 
 void WaitForNavigationAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
   callback_ = std::move(callback);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
@@ -29,9 +29,8 @@ void WaitForNavigationAction::InternalProcessAction(
 
   timer_.Start(FROM_HERE, timeout,
                base::BindOnce(&WaitForNavigationAction::OnTimeout,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              base::Unretained(delegate)));
-  if (!delegate->WaitForNavigation(
+                              weak_ptr_factory_.GetWeakPtr()));
+  if (!delegate_->WaitForNavigation(
           base::BindOnce(&WaitForNavigationAction::OnWaitForNavigation,
                          weak_ptr_factory_.GetWeakPtr()))) {
     DVLOG(1) << __func__
@@ -51,13 +50,13 @@ void WaitForNavigationAction::OnWaitForNavigation(bool success) {
   SendResult(success ? ACTION_APPLIED : NAVIGATION_ERROR);
 }
 
-void WaitForNavigationAction::OnTimeout(ActionDelegate* delegate) {
+void WaitForNavigationAction::OnTimeout() {
   if (!callback_) {
     // Navigation has ended before.
     return;
   }
 
-  if (delegate->ExpectedNavigationHasStarted()) {
+  if (delegate_->ExpectedNavigationHasStarted()) {
     // Navigation has started. Wait for it to end and to be reported to
     // OnWaitForNavigation.
     return;

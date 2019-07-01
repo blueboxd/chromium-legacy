@@ -14,18 +14,18 @@
 
 namespace autofill_assistant {
 
-FocusElementAction::FocusElementAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+FocusElementAction::FocusElementAction(ActionDelegate* delegate,
+                                       const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_focus_element());
 }
 
 FocusElementAction::~FocusElementAction() {}
 
-void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
-                                               ProcessActionCallback callback) {
+void FocusElementAction::InternalProcessAction(ProcessActionCallback callback) {
   const FocusElementProto& focus_element = proto_.focus_element();
   if (!focus_element.title().empty()) {
-    delegate->SetStatusMessage(focus_element.title());
+    delegate_->SetStatusMessage(focus_element.title());
   }
   Selector selector = Selector(focus_element.element()).MustBeVisible();
   if (selector.empty()) {
@@ -52,15 +52,13 @@ void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
       break;
   }
 
-  delegate->ShortWaitForElement(
-      selector,
-      base::BindOnce(&FocusElementAction::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector, top_padding));
+  delegate_->ShortWaitForElement(
+      selector, base::BindOnce(&FocusElementAction::OnWaitForElement,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               std::move(callback), selector, top_padding));
 }
 
-void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
-                                          ProcessActionCallback callback,
+void FocusElementAction::OnWaitForElement(ProcessActionCallback callback,
                                           const Selector& selector,
                                           const TopPadding& top_padding,
                                           bool element_found) {
@@ -70,17 +68,15 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->FocusElement(
+  delegate_->FocusElement(
       selector, top_padding,
       base::BindOnce(&FocusElementAction::OnFocusElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FocusElementAction::OnFocusElement(ActionDelegate* delegate,
-                                        ProcessActionCallback callback,
+void FocusElementAction::OnFocusElement(ProcessActionCallback callback,
                                         const ClientStatus& status) {
-  delegate->SetTouchableElementArea(
+  delegate_->SetTouchableElementArea(
       proto().focus_element().touchable_element_area());
   UpdateProcessedAction(status);
   std::move(callback).Run(std::move(processed_action_proto_));

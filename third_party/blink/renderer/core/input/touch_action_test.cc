@@ -94,14 +94,14 @@ class TouchActionTest : public testing::Test {
  public:
   TouchActionTest() : base_url_("http://www.test.com/") {
     url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
+        WebString(base_url_), test::CoreTestDataPath(),
         "touch-action-tests.css", "text/css");
     url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
-        "touch-action-tests.js", "text/javascript");
+        WebString(base_url_), test::CoreTestDataPath(), "touch-action-tests.js",
+        "text/javascript");
     url_test_helpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
-        "white-1x1.png", "image/png");
+        WebString(base_url_), test::CoreTestDataPath(), "white-1x1.png",
+        "image/png");
   }
 
   void TearDown() override {
@@ -111,20 +111,20 @@ class TouchActionTest : public testing::Test {
   }
 
  protected:
-  void RunTouchActionTest(std::string file);
-  void RunShadowDOMTest(std::string file);
-  void RunIFrameTest(std::string file);
+  void RunTouchActionTest(String file);
+  void RunShadowDOMTest(String file);
+  void RunIFrameTest(String file);
   void SendTouchEvent(WebView*, WebInputEvent::Type, IntPoint client_point);
-  WebViewImpl* SetupTest(std::string file, TouchActionTrackingWebWidgetClient*);
+  WebViewImpl* SetupTest(String file, TouchActionTrackingWebWidgetClient*);
   void RunTestOnTree(ContainerNode* root,
                      WebView*,
                      TouchActionTrackingWebWidgetClient&);
 
-  std::string base_url_;
+  String base_url_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
-void TouchActionTest::RunTouchActionTest(std::string file) {
+void TouchActionTest::RunTouchActionTest(String file) {
   TouchActionTrackingWebWidgetClient client;
 
   // runTouchActionTest() loads a document in a frame, setting up a
@@ -147,7 +147,7 @@ void TouchActionTest::RunTouchActionTest(std::string file) {
   web_view_helper_.Reset();
 }
 
-void TouchActionTest::RunShadowDOMTest(std::string file) {
+void TouchActionTest::RunShadowDOMTest(String file) {
   TouchActionTrackingWebWidgetClient client;
 
   WebViewImpl* web_view = SetupTest(file, &client);
@@ -175,7 +175,7 @@ void TouchActionTest::RunShadowDOMTest(std::string file) {
   web_view_helper_.Reset();
 }
 
-void TouchActionTest::RunIFrameTest(std::string file) {
+void TouchActionTest::RunIFrameTest(String file) {
   TouchActionTrackingWebWidgetClient client;
 
   WebViewImpl* web_view = SetupTest(file, &client);
@@ -195,14 +195,13 @@ void TouchActionTest::RunIFrameTest(std::string file) {
 }
 
 WebViewImpl* TouchActionTest::SetupTest(
-    std::string file,
+    String file,
     TouchActionTrackingWebWidgetClient* client) {
   url_test_helpers::RegisterMockedURLLoadFromBase(
-      WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
-      WebString::FromUTF8(file));
+      WebString(base_url_), test::CoreTestDataPath(), WebString(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + file, nullptr, nullptr, client);
+      base_url_.Utf8() + file.Utf8(), nullptr, nullptr, client);
 
   // Set size to enable hit testing, and avoid line wrapping for consistency
   // with browser.
@@ -243,19 +242,20 @@ void TouchActionTest::RunTestOnTree(
     Element* element = elements->item(index);
     element->scrollIntoViewIfNeeded();
 
-    std::string failure_context("Test case: ");
+    StringBuilder failure_context;
+    failure_context.Append("Test case: ");
     if (element->HasID()) {
-      failure_context.append(element->GetIdAttribute().Ascii());
+      failure_context.Append(element->GetIdAttribute());
     } else if (element->firstChild()) {
-      failure_context.append("\"");
-      failure_context.append(element->firstChild()
+      failure_context.Append("\"");
+      failure_context.Append(element->firstChild()
                                  ->textContent(false)
                                  .StripWhiteSpace()
                                  .Ascii()
                                  .data());
-      failure_context.append("\"");
+      failure_context.Append("\"");
     } else {
-      failure_context += "<missing ID>";
+      failure_context.Append("<missing ID>");
     }
 
     // Run each test three times at different positions in the element.
@@ -264,7 +264,7 @@ void TouchActionTest::RunTestOnTree(
     // the first border box (which we can easily visualize in a browser for
     // debugging).
     Persistent<DOMRectList> rects = element->getClientRects();
-    ASSERT_GE(rects->length(), 0u) << failure_context;
+    ASSERT_GE(rects->length(), 0u) << failure_context.ToString();
     Persistent<DOMRect> r = rects->item(0);
     FloatRect client_float_rect =
         FloatRect(r->left(), r->top(), r->width(), r->height());
@@ -272,7 +272,7 @@ void TouchActionTest::RunTestOnTree(
     for (int loc_idx = 0; loc_idx < 3; loc_idx++) {
       IntPoint frame_point;
       std::stringstream context_stream;
-      context_stream << failure_context << " (";
+      context_stream << failure_context.ToString() << " (";
       switch (loc_idx) {
         case 0:
           frame_point = client_rect.Center();
@@ -296,7 +296,7 @@ void TouchActionTest::RunTestOnTree(
               frame_point);
       context_stream << "=" << window_point.X() << "," << window_point.Y()
                      << ").";
-      std::string failure_context_pos = context_stream.str();
+      String failure_context_pos = String::FromUTF8(context_stream.str());
 
       LocalFrame* main_frame =
           To<LocalFrame>(WebFrame::ToCoreFrame(*web_view->MainFrame()));

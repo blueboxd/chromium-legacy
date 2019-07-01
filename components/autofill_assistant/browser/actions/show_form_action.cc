@@ -14,23 +14,23 @@
 
 namespace autofill_assistant {
 
-ShowFormAction::ShowFormAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+ShowFormAction::ShowFormAction(ActionDelegate* delegate,
+                               const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_show_form() && proto_.show_form().has_form());
 }
 
 ShowFormAction::~ShowFormAction() {}
 
-void ShowFormAction::InternalProcessAction(ActionDelegate* delegate,
-                                           ProcessActionCallback callback) {
+void ShowFormAction::InternalProcessAction(ProcessActionCallback callback) {
   callback_ = std::move(callback);
 
   // Show the form. This will call OnFormValuesChanged with the initial result,
   // which will in turn show the "Continue" chip.
-  if (!delegate->SetForm(
+  if (!delegate_->SetForm(
           std::make_unique<FormProto>(proto_.show_form().form()),
           base::BindRepeating(&ShowFormAction::OnFormValuesChanged,
-                              weak_ptr_factory_.GetWeakPtr(), delegate))) {
+                              weak_ptr_factory_.GetWeakPtr()))) {
     // The form contains unsupported or invalid inputs.
     UpdateProcessedAction(UNSUPPORTED);
     std::move(callback_).Run(std::move(processed_action_proto_));
@@ -38,8 +38,7 @@ void ShowFormAction::InternalProcessAction(ActionDelegate* delegate,
   }
 }
 
-void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
-                                         const FormProto::Result* form_result) {
+void ShowFormAction::OnFormValuesChanged(const FormProto::Result* form_result) {
   // Copy the current values to the action result.
   *processed_action_proto_->mutable_form_result() = *form_result;
 
@@ -52,13 +51,12 @@ void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
     user_action.chip.type = HIGHLIGHTED_ACTION;
   }
   user_action.enabled = IsFormValid(proto_.show_form().form(), *form_result);
-  user_action.callback =
-      base::BindOnce(&ShowFormAction::OnButtonClicked,
-                     weak_ptr_factory_.GetWeakPtr(), delegate);
+  user_action.callback = base::BindOnce(&ShowFormAction::OnButtonClicked,
+                                        weak_ptr_factory_.GetWeakPtr());
 
   std::unique_ptr<std::vector<UserAction>> user_actions;
   user_actions->emplace_back(std::move(user_action));
-  delegate->Prompt(std::move(user_actions));
+  delegate_->Prompt(std::move(user_actions));
 }
 
 bool ShowFormAction::IsFormValid(const FormProto& form,
@@ -175,9 +173,9 @@ bool ShowFormAction::IsSelectionInputValid(
   return n >= min_selected;
 }
 
-void ShowFormAction::OnButtonClicked(ActionDelegate* delegate) {
+void ShowFormAction::OnButtonClicked() {
   DCHECK(callback_);
-  delegate->SetForm(nullptr, base::DoNothing());
+  delegate_->SetForm(nullptr, base::DoNothing());
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback_).Run(std::move(processed_action_proto_));
 }

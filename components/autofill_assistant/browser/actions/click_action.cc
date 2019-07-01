@@ -13,8 +13,8 @@
 
 namespace autofill_assistant {
 
-ClickAction::ClickAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+ClickAction::ClickAction(ActionDelegate* delegate, const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_click());
   switch (proto.click().click_type()) {
     case ClickProto_ClickType_NOT_SET:  // default: TAP
@@ -32,8 +32,7 @@ ClickAction::ClickAction(const ActionProto& proto)
 
 ClickAction::~ClickAction() {}
 
-void ClickAction::InternalProcessAction(ActionDelegate* delegate,
-                                        ProcessActionCallback callback) {
+void ClickAction::InternalProcessAction(ProcessActionCallback callback) {
   Selector selector =
       Selector(proto_.click().element_to_click()).MustBeVisible();
   if (selector.empty()) {
@@ -42,15 +41,13 @@ void ClickAction::InternalProcessAction(ActionDelegate* delegate,
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
-  delegate->ShortWaitForElement(
-      selector,
-      base::BindOnce(&ClickAction::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+  delegate_->ShortWaitForElement(selector,
+                                 base::BindOnce(&ClickAction::OnWaitForElement,
+                                                weak_ptr_factory_.GetWeakPtr(),
+                                                std::move(callback), selector));
 }
 
-void ClickAction::OnWaitForElement(ActionDelegate* delegate,
-                                   ProcessActionCallback callback,
+void ClickAction::OnWaitForElement(ProcessActionCallback callback,
                                    const Selector& selector,
                                    bool element_found) {
   if (!element_found) {
@@ -59,7 +56,7 @@ void ClickAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->ClickOrTapElement(
+  delegate_->ClickOrTapElement(
       selector, click_type_,
       base::BindOnce(&::autofill_assistant::ClickAction::OnClick,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

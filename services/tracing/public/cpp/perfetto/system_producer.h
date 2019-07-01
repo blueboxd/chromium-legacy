@@ -10,13 +10,20 @@
 
 namespace tracing {
 
-class SystemProducer : public PerfettoProducer, public perfetto::Producer {
+class COMPONENT_EXPORT(TRACING_CPP) SystemProducer : public PerfettoProducer,
+                                                     public perfetto::Producer {
  public:
   SystemProducer(PerfettoTaskRunner* task_runner);
   // Since Chrome does not support concurrent tracing sessions, and system
   // tracing is always lower priority than human or DevTools initiated tracing,
   // all system producers must be able to disconnect and stop tracing.
-  virtual void Disconnect() = 0;
+  //
+  // Should call |on_disconnect_complete| after any active tracing sessions was
+  // terminated (i.e. all DataSources have been stopped).
+  virtual void DisconnectWithReply(
+      base::OnceClosure on_disconnect_complete) = 0;
+
+  virtual bool IsDummySystemProducerForTesting();
 };
 }  // namespace tracing
 

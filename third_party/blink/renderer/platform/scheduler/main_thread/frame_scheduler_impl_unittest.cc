@@ -12,7 +12,6 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -283,7 +282,7 @@ void IncrementCounter(int* counter) {
   ++*counter;
 }
 
-void RecordQueueName(std::string name, Vector<std::string>* tasks) {
+void RecordQueueName(String name, Vector<String>* tasks) {
   tasks->push_back(std::move(name));
 }
 
@@ -551,7 +550,7 @@ TEST_F(FrameSchedulerImplTest, FramePostsCpuTasksThroughReloadRenavigate) {
                     {FrameScheduler::FrameType::kSubframe,
                      FrameScheduler::NavigationType::kSameDocument, true, 1}};
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(base::StringPrintf(
+    SCOPED_TRACE(String::Format(
         "FrameType: %d, NavigationType: %d : TaskTime.is_zero %d, CallCount %d",
         test_case.frame_type, test_case.navigation_type,
         test_case.expect_task_time_zero, test_case.expected_total_calls));
@@ -579,7 +578,7 @@ TEST_F(FrameSchedulerImplTest, FramePostsCpuTasksThroughReloadRenavigate) {
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
-  Vector<std::string> tasks;
+  Vector<String> tasks;
   LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RecordQueueName, LoadingTaskQueue()->GetName(), &tasks));
@@ -603,11 +602,11 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   EXPECT_THAT(tasks, UnorderedElementsAre());
   base::RunLoop().RunUntilIdle();
   // Everything runs except throttleable tasks (timers)
-  EXPECT_THAT(tasks, UnorderedElementsAre(
-                         std::string(LoadingTaskQueue()->GetName()),
-                         std::string(DeferrableTaskQueue()->GetName()),
-                         std::string(PausableTaskQueue()->GetName()),
-                         std::string(UnpausableTaskQueue()->GetName())));
+  EXPECT_THAT(tasks,
+              UnorderedElementsAre(String(LoadingTaskQueue()->GetName()),
+                                   String(DeferrableTaskQueue()->GetName()),
+                                   String(PausableTaskQueue()->GetName()),
+                                   String(UnpausableTaskQueue()->GetName())));
 
   tasks.clear();
   LoadingTaskQueue()->task_runner()->PostTask(
@@ -618,7 +617,7 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   base::RunLoop().RunUntilIdle();
   // loading task runs
   EXPECT_THAT(tasks,
-              UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
+              UnorderedElementsAre(String(LoadingTaskQueue()->GetName())));
 
   tasks.clear();
   LoadingTaskQueue()->task_runner()->PostTask(
@@ -636,7 +635,7 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   base::RunLoop().RunUntilIdle();
   // loading task runs
   EXPECT_THAT(tasks,
-              UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
+              UnorderedElementsAre(String(LoadingTaskQueue()->GetName())));
 }
 
 TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,

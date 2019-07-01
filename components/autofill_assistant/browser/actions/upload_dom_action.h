@@ -15,16 +15,14 @@ namespace autofill_assistant {
 
 class UploadDomAction : public Action {
  public:
-  explicit UploadDomAction(const ActionProto& proto);
+  explicit UploadDomAction(ActionDelegate* delegate, const ActionProto& proto);
   ~UploadDomAction() override;
 
  private:
   // Overrides Action:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnWaitForElement(ActionDelegate* delegate,
-                        ProcessActionCallback callback,
+  void OnWaitForElement(ProcessActionCallback callback,
                         const Selector& selector,
                         bool element_found);
   void OnGetOuterHtml(ProcessActionCallback callback,

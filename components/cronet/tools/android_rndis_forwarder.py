@@ -14,9 +14,10 @@ import sys
 REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
-from core import path_util
+from core import path_util  # pylint: disable=wrong-import-position
 sys.path.append(path_util.GetTelemetryDir())
 
+# pylint: disable=wrong-import-position
 from telemetry.core import platform
 from telemetry.core import util
 from telemetry.internal.platform import android_device
@@ -24,6 +25,8 @@ from telemetry.internal.util import binary_manager
 
 from devil.android import device_errors
 from devil.android import device_utils
+# pylint: enable=wrong-import-position
+
 
 class AndroidRndisForwarder(object):
   """Forwards traffic using RNDIS. Assumes the device has root access."""

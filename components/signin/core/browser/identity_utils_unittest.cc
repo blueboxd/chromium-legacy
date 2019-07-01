@@ -41,61 +41,65 @@ class IdentityUtilsTest : public testing::Test {
   TestingPrefServiceSimple prefs_;
 };
 
-TEST_F(IdentityUtilsTest, IsUsernameAllowedByPattern_EmptyPatterns) {
-  EXPECT_TRUE(identity::IsUsernameAllowedByPattern(kUsername, ""));
-  EXPECT_FALSE(identity::IsUsernameAllowedByPattern(kUsername, "   "));
+TEST_F(IdentityUtilsTest, IsUsernameAllowedByPatternFromPrefs_EmptyPatterns) {
+  prefs()->SetString(kRegisteredPattern, "");
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(),kUsername, kRegisteredPattern);
+
+  prefs()->SetString(kRegisteredPattern, "   ");
+  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern);
 }
 
-TEST_F(IdentityUtilsTest, IsUsernameAllowedByPattern_InvalidWildcardPatterns) {
-  // identity::IsUsernameAllowedByPattern should recognize invalid wildcard
-  // patterns like "*@foo.com" and insert a "." before them automatically.
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kValidWildcardPattern));
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kInvalidWildcardPattern));
+TEST_F(IdentityUtilsTest,
+       IsUsernameAllowedByPatternFromPrefs_InvalidWildcardPatterns) {
+  // identity::IsUsernameAllowedByPatternFromPrefs should recognize invalid
+  // wildcard patterns like "*@foo.com" and insert a "." before them
+  // automatically.
+  prefs()->SetString(kRegisteredPattern, kValidWildcardPattern);
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern);
+
+  prefs()->SetString(kRegisteredPattern, kInvalidWildcardPattern);
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern);
 }
 
-TEST_F(IdentityUtilsTest, IsUsernameAllowedByPattern_MatchingWildcardPatterns) {
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kMatchingPattern1));
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kMatchingPattern2));
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kMatchingPattern3));
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kMatchingPattern4));
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kMatchingPattern5));
-  EXPECT_TRUE(
-      identity::IsUsernameAllowedByPattern(kUsername, kMatchingPattern6));
-
-  EXPECT_FALSE(
-      identity::IsUsernameAllowedByPattern(kUsername, kNonMatchingPattern));
-  EXPECT_FALSE(identity::IsUsernameAllowedByPattern(
-      kUsername, kNonMatchingUsernamePattern));
-  EXPECT_FALSE(identity::IsUsernameAllowedByPattern(kUsername,
-                                                    kNonMatchingDomainPattern));
-}
-
-TEST_F(IdentityUtilsTest, LegacyIsUsernameAllowedByPatternFromPrefs) {
-  // Passing a null local state should return 'allowed'.
-  EXPECT_TRUE(identity::LegacyIsUsernameAllowedByPatternFromPrefs(
-      nullptr, kUsername, kRegisteredPattern));
-
-  // Now set different values for the named pattern and check against them.
+TEST_F(IdentityUtilsTest,
+       IsUsernameAllowedByPatternFromPrefs_MatchingWildcardPatterns) {
   prefs()->SetString(kRegisteredPattern, kMatchingPattern1);
-  EXPECT_TRUE(identity::LegacyIsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
-
-  prefs()->SetString(kRegisteredPattern, kNonMatchingUsernamePattern);
-  EXPECT_FALSE(identity::LegacyIsUsernameAllowedByPatternFromPrefs(
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
       prefs(), kUsername, kRegisteredPattern));
 
   prefs()->SetString(kRegisteredPattern, kMatchingPattern2);
-  EXPECT_TRUE(identity::LegacyIsUsernameAllowedByPatternFromPrefs(
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern));
+
+  prefs()->SetString(kRegisteredPattern, kMatchingPattern3);
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern));
+
+  prefs()->SetString(kRegisteredPattern, kMatchingPattern4);
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern));
+
+  prefs()->SetString(kRegisteredPattern, kMatchingPattern5);
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern));
+
+  prefs()->SetString(kRegisteredPattern, kMatchingPattern6);
+  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern));
+
+  prefs()->SetString(kRegisteredPattern, kNonMatchingPattern);
+  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
+      prefs(), kUsername, kRegisteredPattern));
+
+  prefs()->SetString(kRegisteredPattern, kNonMatchingUsernamePattern);
+  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
       prefs(), kUsername, kRegisteredPattern));
 
   prefs()->SetString(kRegisteredPattern, kNonMatchingDomainPattern);
-  EXPECT_FALSE(identity::LegacyIsUsernameAllowedByPatternFromPrefs(
+  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
       prefs(), kUsername, kRegisteredPattern));
 }

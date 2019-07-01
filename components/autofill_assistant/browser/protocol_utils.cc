@@ -177,7 +177,8 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
 }
 
 // static
-bool ProtocolUtils::ParseActions(const std::string& response,
+bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
+                                 const std::string& response,
                                  std::string* return_global_payload,
                                  std::string* return_script_payload,
                                  std::vector<std::unique_ptr<Action>>* actions,
@@ -203,101 +204,108 @@ bool ProtocolUtils::ParseActions(const std::string& response,
     std::unique_ptr<Action> client_action;
     switch (action.action_info_case()) {
       case ActionProto::ActionInfoCase::kClick: {
-        client_action = std::make_unique<ClickAction>(action);
+        client_action = std::make_unique<ClickAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kTell: {
-        client_action = std::make_unique<TellAction>(action);
+        client_action = std::make_unique<TellAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kFocusElement: {
-        client_action = std::make_unique<FocusElementAction>(action);
+        client_action = std::make_unique<FocusElementAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kUseAddress:
       case ActionProto::ActionInfoCase::kUseCard: {
-        client_action = std::make_unique<AutofillAction>(action);
+        client_action = std::make_unique<AutofillAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {
-        client_action = std::make_unique<WaitForDomAction>(action);
+        client_action = std::make_unique<WaitForDomAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kSelectOption: {
-        client_action = std::make_unique<SelectOptionAction>(action);
+        client_action = std::make_unique<SelectOptionAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kNavigate: {
-        client_action = std::make_unique<NavigateAction>(action);
+        client_action = std::make_unique<NavigateAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kPrompt: {
-        client_action = std::make_unique<PromptAction>(action);
+        client_action = std::make_unique<PromptAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kStop: {
-        client_action = std::make_unique<StopAction>(action);
+        client_action = std::make_unique<StopAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kReset: {
-        client_action = std::make_unique<ResetAction>(action);
+        client_action = std::make_unique<ResetAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kHighlightElement: {
-        client_action = std::make_unique<HighlightElementAction>(action);
+        client_action =
+            std::make_unique<HighlightElementAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kUploadDom: {
-        client_action = std::make_unique<UploadDomAction>(action);
+        client_action = std::make_unique<UploadDomAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowDetails: {
-        client_action = std::make_unique<ShowDetailsAction>(action);
+        client_action = std::make_unique<ShowDetailsAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kGetPaymentInformation: {
-        client_action = std::make_unique<GetPaymentInformationAction>(action);
+        client_action =
+            std::make_unique<GetPaymentInformationAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kSetFormValue: {
-        client_action = std::make_unique<SetFormFieldValueAction>(action);
+        client_action =
+            std::make_unique<SetFormFieldValueAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowProgressBar: {
-        client_action = std::make_unique<ShowProgressBarAction>(action);
+        client_action =
+            std::make_unique<ShowProgressBarAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kSetAttribute: {
-        client_action = std::make_unique<SetAttributeAction>(action);
+        client_action = std::make_unique<SetAttributeAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowInfoBox: {
-        client_action = std::make_unique<ShowInfoBoxAction>(action);
+        client_action = std::make_unique<ShowInfoBoxAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kExpectNavigation: {
-        client_action = std::make_unique<ExpectNavigationAction>(action);
+        client_action =
+            std::make_unique<ExpectNavigationAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForNavigation: {
-        client_action = std::make_unique<WaitForNavigationAction>(action);
+        client_action =
+            std::make_unique<WaitForNavigationAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kConfigureBottomSheet: {
-        client_action = std::make_unique<ConfigureBottomSheetAction>(action);
+        client_action =
+            std::make_unique<ConfigureBottomSheetAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowForm: {
-        client_action = std::make_unique<ShowFormAction>(action);
+        client_action = std::make_unique<ShowFormAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kPopupMessage: {
-        client_action = std::make_unique<PopupMessageAction>(action);
+        client_action = std::make_unique<PopupMessageAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
         DVLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
-        client_action = std::make_unique<UnsupportedAction>(action);
+        client_action = std::make_unique<UnsupportedAction>(delegate, action);
         break;
       }
         // Intentionally no default case to ensure a compilation error for new
@@ -307,7 +315,7 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       DVLOG(1) << "Encountered action with Unknown or unsupported action with "
                   "action_case="
                << action.action_info_case();
-      client_action = std::make_unique<UnsupportedAction>(action);
+      client_action = std::make_unique<UnsupportedAction>(delegate, action);
     }
     actions->emplace_back(std::move(client_action));
   }

@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/metrics/metrics_recorder.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,9 +18,6 @@
 @implementation CommandDispatcher {
   // Stores which target to forward to for a given selector.
   std::unordered_map<SEL, __weak id> _forwardingTargets;
-
-  // Stores which MetricsRecorder to notify for a given selector.
-  std::unordered_map<SEL, __weak id<MetricsRecorder>> _metricsRecorders;
 }
 
 - (void)startDispatchingToTarget:(id)target forSelector:(SEL)selector {
@@ -75,27 +71,10 @@
   }
 }
 
-- (void)registerMetricsRecorder:(id<MetricsRecorder>)recorder
-                    forSelector:(SEL)selector {
-  DCHECK(![self metricsRecorderForSelector:selector]);
-
-  _metricsRecorders[selector] = recorder;
-}
-
-- (void)deregisterMetricsRecordingForSelector:(SEL)selector {
-  _metricsRecorders.erase(selector);
-}
-
 #pragma mark - NSObject
 
 // Overridden to forward messages to registered handlers.
 - (id)forwardingTargetForSelector:(SEL)selector {
-  // If the selector is registered with a MetricsRecorder, return nil to force
-  // |forwardInvocation| to handle message forwarding. |forwardInvocation|
-  // provides an NSInvocation that is required by the MetricsRecorders.
-  if ([self metricsRecorderForSelector:selector])
-    return nil;
-
   id target = [self targetForSelector:selector];
   if (target)
     return target;
@@ -108,25 +87,6 @@
   if ([self targetForSelector:selector])
     return YES;
   return [super respondsToSelector:selector];
-}
-
-// Overriden to forward messages to registered handlers when an NSInvocation is
-// required.
-- (void)forwardInvocation:(NSInvocation*)anInvocation {
-  SEL selector = anInvocation.selector;
-
-  id<MetricsRecorder> recorder = [self metricsRecorderForSelector:selector];
-  if (recorder) {
-    [recorder recordMetricForInvocation:anInvocation];
-  }
-
-  id target = [self targetForSelector:selector];
-  if ([target respondsToSelector:selector]) {
-    [anInvocation invokeWithTarget:target];
-    return;
-  }
-
-  [super forwardInvocation:anInvocation];
 }
 
 // Overriden because overrides of |forwardInvocation| also require an override
@@ -149,15 +109,6 @@
   if (target == _forwardingTargets.end())
     return nil;
   return target->second;
-}
-
-// Returns the MetricsRecorder registered to be notified when |selector| is
-// invoked on the dispatcher.
-- (id<MetricsRecorder>)metricsRecorderForSelector:(SEL)selector {
-  auto recorder = _metricsRecorders.find(selector);
-  if (recorder == _metricsRecorders.end())
-    return nil;
-  return recorder->second;
 }
 
 @end

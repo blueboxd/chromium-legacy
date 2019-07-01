@@ -9,14 +9,14 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/oauth2_access_token_manager.h"
 
 // Allow to retrieves an uber-auth token for the user. This class uses the
-// |OAuth2TokenService| and considers that the user is already logged in. It
-// will use the OAuth2 access token to generate the uber-auth token.
+// |ProfileOAuth2TokenService| and considers that the user is already logged in.
+// It will use the OAuth2 access token to generate the uber-auth token.
 //
 // This class should be used on a single thread, but it can be whichever thread
 // that you like.
@@ -24,7 +24,6 @@
 // This class can handle one request at a time.
 
 class GoogleServiceAuthError;
-class OAuth2TokenService;
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -53,7 +52,7 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
   // returns base GaiaAuthFetcher instances.
   UbertokenFetcherImpl(
       const CoreAccountId& account_id,
-      OAuth2TokenService* token_service,
+      ProfileOAuth2TokenService* token_service,
       CompletionCallback ubertoken_callback,
       gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -62,7 +61,7 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
   // Constructs an instance and starts fetching the ubertoken for |account_id|.
   UbertokenFetcherImpl(const CoreAccountId& account_id,
                        const std::string& access_token,
-                       OAuth2TokenService* token_service,
+                       ProfileOAuth2TokenService* token_service,
                        CompletionCallback ubertoken_callback,
                        GaiaAuthFetcherFactory factory,
                        bool is_bound_to_channel_id = true);
@@ -86,7 +85,7 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
   // Exchanges an oauth2 access token for an uber-auth token.
   void ExchangeTokens();
 
-  OAuth2TokenService* token_service_;
+  ProfileOAuth2TokenService* token_service_;
   CompletionCallback ubertoken_callback_;
   bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;

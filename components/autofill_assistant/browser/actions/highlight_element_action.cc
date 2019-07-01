@@ -12,15 +12,15 @@
 
 namespace autofill_assistant {
 
-HighlightElementAction::HighlightElementAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+HighlightElementAction::HighlightElementAction(ActionDelegate* delegate,
+                                               const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_highlight_element());
 }
 
 HighlightElementAction::~HighlightElementAction() {}
 
 void HighlightElementAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
   Selector selector =
       Selector(proto_.highlight_element().element()).MustBeVisible();
@@ -30,15 +30,13 @@ void HighlightElementAction::InternalProcessAction(
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
-  delegate->ShortWaitForElement(
-      selector,
-      base::BindOnce(&HighlightElementAction::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+  delegate_->ShortWaitForElement(
+      selector, base::BindOnce(&HighlightElementAction::OnWaitForElement,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               std::move(callback), selector));
 }
 
-void HighlightElementAction::OnWaitForElement(ActionDelegate* delegate,
-                                              ProcessActionCallback callback,
+void HighlightElementAction::OnWaitForElement(ProcessActionCallback callback,
                                               const Selector& selector,
                                               bool element_found) {
   if (!element_found) {
@@ -47,7 +45,7 @@ void HighlightElementAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->HighlightElement(
+  delegate_->HighlightElement(
       selector,
       base::BindOnce(&HighlightElementAction::OnHighlightElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

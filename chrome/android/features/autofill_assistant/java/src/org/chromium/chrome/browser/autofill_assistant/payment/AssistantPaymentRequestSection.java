@@ -168,6 +168,8 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
             mIgnoreItemSelectedNotifications = true;
             selectItem(initiallySelectedItem);
             mIgnoreItemSelectedNotifications = false;
+        } else if (mListener != null) {
+            mListener.onResult(null);
         }
     }
 

@@ -36,7 +36,7 @@ WorkerThread::WorkerThread(const ThreadCreationParams& params)
   base::SimpleThread::Options options;
   options.priority = params.thread_priority;
   thread_ = std::make_unique<SimpleThreadImpl>(
-      params.name ? params.name : std::string(), options,
+      params.name ? params.name : String(), options,
       std::move(non_main_thread_scheduler_factory), supports_gc_,
       const_cast<scheduler::WorkerThread*>(this));
   if (supports_gc_) {
@@ -88,12 +88,12 @@ void WorkerThread::ShutdownOnThread() {
 }
 
 WorkerThread::SimpleThreadImpl::SimpleThreadImpl(
-    const std::string& name_prefix,
+    const String& name_prefix,
     const base::SimpleThread ::Options& options,
     NonMainThreadSchedulerFactory factory,
     bool supports_gc,
     WorkerThread* worker_thread)
-    : SimpleThread(name_prefix, options),
+    : SimpleThread(name_prefix.Utf8(), options),
       thread_(worker_thread),
       scheduler_factory_(std::move(factory)),
       supports_gc_(supports_gc) {

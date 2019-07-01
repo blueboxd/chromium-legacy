@@ -61,9 +61,9 @@ class ConfigureBottomSheetActionTest : public testing::Test {
   void Run() {
     ActionProto action_proto;
     *action_proto.mutable_configure_bottom_sheet() = proto_;
-    action_ = std::make_unique<ConfigureBottomSheetAction>(action_proto);
+    action_ = std::make_unique<ConfigureBottomSheetAction>(
+        &mock_action_delegate_, action_proto);
     action_->ProcessAction(
-        &mock_action_delegate_,
         base::BindOnce(base::BindLambdaForTesting(
             [&](std::unique_ptr<ProcessedActionProto> result) {
               processed_action_ = *result;

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 using testing::_;
 using testing::AnyOf;
@@ -35,24 +36,24 @@ class MockIdleTask {
 
 class TestObserver : public Thread::TaskObserver {
  public:
-  explicit TestObserver(std::string* calls) : calls_(calls) {}
+  explicit TestObserver(StringBuilder* calls) : calls_(calls) {}
 
   ~TestObserver() override = default;
 
   void WillProcessTask(const base::PendingTask&) override {
-    calls_->append(" willProcessTask");
+    calls_->Append(" willProcessTask");
   }
 
   void DidProcessTask(const base::PendingTask&) override {
-    calls_->append(" didProcessTask");
+    calls_->Append(" didProcessTask");
   }
 
  private:
-  std::string* calls_;  // NOT OWNED
+  StringBuilder* calls_;  // NOT OWNED
 };
 
-void RunTestTask(std::string* calls) {
-  calls->append(" run");
+void RunTestTask(StringBuilder* calls) {
+  calls->Append(" run");
 }
 
 void AddTaskObserver(Thread* thread, TestObserver* observer) {
@@ -120,7 +121,7 @@ TEST_F(WorkerThreadTest, TestDefaultTask) {
 }
 
 TEST_F(WorkerThreadTest, TestTaskObserver) {
-  std::string calls;
+  StringBuilder calls;
   TestObserver observer(&calls);
 
   RunOnWorkerThread(FROM_HERE,
@@ -136,7 +137,8 @@ TEST_F(WorkerThreadTest, TestTaskObserver) {
   // Sometimes we get an internal scheduler task running before or after
   // TestTask as well. This is not a bug, and we need to make sure the test
   // doesn't fail when that happens.
-  EXPECT_THAT(calls, testing::HasSubstr("willProcessTask run didProcessTask"));
+  EXPECT_THAT(calls.ToString().Utf8(),
+              testing::HasSubstr("willProcessTask run didProcessTask"));
 }
 
 TEST_F(WorkerThreadTest, TestShutdown) {

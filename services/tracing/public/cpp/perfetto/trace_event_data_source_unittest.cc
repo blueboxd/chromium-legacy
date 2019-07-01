@@ -20,6 +20,7 @@
 #include "base/trace_event/thread_instruction_count.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/ext/base/utils.h"

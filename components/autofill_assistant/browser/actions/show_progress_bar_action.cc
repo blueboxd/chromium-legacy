@@ -14,24 +14,24 @@
 
 namespace autofill_assistant {
 
-ShowProgressBarAction::ShowProgressBarAction(const ActionProto& proto)
-    : Action(proto) {
+ShowProgressBarAction::ShowProgressBarAction(ActionDelegate* delegate,
+                                             const ActionProto& proto)
+    : Action(delegate, proto) {
   DCHECK(proto_.has_show_progress_bar());
 }
 
 ShowProgressBarAction::~ShowProgressBarAction() {}
 
 void ShowProgressBarAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
   if (!proto_.show_progress_bar().message().empty()) {
-    delegate->SetStatusMessage(proto_.show_progress_bar().message());
+    delegate_->SetStatusMessage(proto_.show_progress_bar().message());
   }
   int progress =
       std::min(100, std::max(0, proto_.show_progress_bar().progress()));
-  delegate->SetProgress(progress);
+  delegate_->SetProgress(progress);
   if (proto_.show_progress_bar().has_hide()) {
-    delegate->SetProgressVisible(!proto_.show_progress_bar().hide());
+    delegate_->SetProgressVisible(!proto_.show_progress_bar().hide());
   }
 
   UpdateProcessedAction(ACTION_APPLIED);

@@ -11,17 +11,17 @@
 
 namespace autofill_assistant {
 
-ExpectNavigationAction::ExpectNavigationAction(const ActionProto& proto)
-    : Action(proto) {
+ExpectNavigationAction::ExpectNavigationAction(ActionDelegate* delegate,
+                                               const ActionProto& proto)
+    : Action(delegate, proto) {
   DCHECK(proto_.has_expect_navigation());
 }
 
 ExpectNavigationAction::~ExpectNavigationAction() {}
 
 void ExpectNavigationAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
-  delegate->ExpectNavigation();
+  delegate_->ExpectNavigation();
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

@@ -51,8 +51,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY,
-        ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AutofillKeyboardAccessoryIntegrationTest {
     @Rule

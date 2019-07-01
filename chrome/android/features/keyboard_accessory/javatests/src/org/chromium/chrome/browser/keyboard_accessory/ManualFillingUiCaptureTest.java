@@ -45,8 +45,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
-        ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManualFillingUiCaptureTest {
     @Rule

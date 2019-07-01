@@ -13,8 +13,9 @@
 
 namespace autofill_assistant {
 
-SetFormFieldValueAction::SetFormFieldValueAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+SetFormFieldValueAction::SetFormFieldValueAction(ActionDelegate* delegate,
+                                                 const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_set_form_value());
   DCHECK_GT(proto_.set_form_value().element().selectors_size(), 0);
   DCHECK_GT(proto_.set_form_value().value_size(), 0);
@@ -24,7 +25,6 @@ SetFormFieldValueAction::SetFormFieldValueAction(const ActionProto& proto)
 SetFormFieldValueAction::~SetFormFieldValueAction() {}
 
 void SetFormFieldValueAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
   Selector selector =
       Selector(proto_.set_form_value().element()).MustBeVisible();
@@ -34,15 +34,13 @@ void SetFormFieldValueAction::InternalProcessAction(
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
-  delegate->ShortWaitForElement(
-      selector,
-      base::BindOnce(&SetFormFieldValueAction::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+  delegate_->ShortWaitForElement(
+      selector, base::BindOnce(&SetFormFieldValueAction::OnWaitForElement,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               std::move(callback), selector));
 }
 
-void SetFormFieldValueAction::OnWaitForElement(ActionDelegate* delegate,
-                                               ProcessActionCallback callback,
+void SetFormFieldValueAction::OnWaitForElement(ProcessActionCallback callback,
                                                const Selector& selector,
                                                bool element_found) {
   if (!element_found) {
@@ -51,12 +49,11 @@ void SetFormFieldValueAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
   // Start with first value, then call OnSetFieldValue() recursively until done.
-  OnSetFieldValue(delegate, std::move(callback), selector, /* next = */ 0,
+  OnSetFieldValue(std::move(callback), selector, /* next = */ 0,
                   OkClientStatus());
 }
 
-void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
-                                              ProcessActionCallback callback,
+void SetFormFieldValueAction::OnSetFieldValue(ProcessActionCallback callback,
                                               const Selector& selector,
                                               int next,
                                               const ClientStatus& status) {
@@ -76,22 +73,22 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
         // If we are already using keyboard simulation or we are trying to set
         // an empty value, no need to trigger keyboard fallback. Simply move on
         // to next value after |SetFieldValue| is done.
-        delegate->SetFieldValue(
+        delegate_->SetFieldValue(
             selector, key_field.text(), simulate_key_presses,
             delay_in_millisecond,
             base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
-                           weak_ptr_factory_.GetWeakPtr(), delegate,
-                           std::move(callback), selector,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                           selector,
                            /* next = */ next + 1));
       } else {
         // Trigger a check for keyboard fallback when |SetFieldValue| is done.
-        delegate->SetFieldValue(
+        delegate_->SetFieldValue(
             selector, key_field.text(), simulate_key_presses,
             delay_in_millisecond,
             base::BindOnce(
                 &SetFormFieldValueAction::OnSetFieldValueAndCheckFallback,
-                weak_ptr_factory_.GetWeakPtr(), delegate, std::move(callback),
-                selector, /* next = */ next));
+                weak_ptr_factory_.GetWeakPtr(), std::move(callback), selector,
+                /* next = */ next));
       }
       break;
     case SetFormFieldValueProto_KeyPress::kKeycode:
@@ -100,56 +97,54 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
       // this field is now deprecated and only works for US-ASCII characters.
       // You should use the `keyboard_input' field instead.
       if (key_field.keycode() < 128) {  // US-ASCII
-        delegate->SendKeyboardInput(
+        delegate_->SendKeyboardInput(
             selector, {key_field.keycode()}, delay_in_millisecond,
             base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
-                           weak_ptr_factory_.GetWeakPtr(), delegate,
-                           std::move(callback), selector,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                           selector,
                            /* next = */ next + 1));
       } else {
         DVLOG(3)
             << "SetFormFieldValueProto_KeyPress: field `keycode' is deprecated "
             << "and only supports US-ASCII values (encountered "
             << key_field.keycode() << "). Use field `key' instead.";
-        OnSetFieldValue(delegate, std::move(callback), selector, next,
+        OnSetFieldValue(std::move(callback), selector, next,
                         ClientStatus(INVALID_ACTION));
       }
       break;
     case SetFormFieldValueProto_KeyPress::kKeyboardInput:
-      delegate->SendKeyboardInput(
+      delegate_->SendKeyboardInput(
           selector, UTF8ToUnicode(key_field.keyboard_input()),
           delay_in_millisecond,
           base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
-                         weak_ptr_factory_.GetWeakPtr(), delegate,
-                         std::move(callback), selector,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         selector,
                          /* next = */ next + 1));
       break;
     default:
       DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
-      OnSetFieldValue(delegate, std::move(callback), selector, next,
+      OnSetFieldValue(std::move(callback), selector, next,
                       ClientStatus(INVALID_ACTION));
       break;
   }
 }
 
 void SetFormFieldValueAction::OnSetFieldValueAndCheckFallback(
-    ActionDelegate* delegate,
     ProcessActionCallback callback,
     const Selector& selector,
     int next,
     const ClientStatus& status) {
   if (!status.ok()) {
-    OnSetFieldValue(delegate, std::move(callback), selector, next + 1, status);
+    OnSetFieldValue(std::move(callback), selector, next + 1, status);
     return;
   }
-  delegate->GetFieldValue(
+  delegate_->GetFieldValue(
       selector, base::BindOnce(&SetFormFieldValueAction::OnGetFieldValue,
-                               weak_ptr_factory_.GetWeakPtr(), delegate,
+                               weak_ptr_factory_.GetWeakPtr(),
                                std::move(callback), selector, next));
 }
 
-void SetFormFieldValueAction::OnGetFieldValue(ActionDelegate* delegate,
-                                              ProcessActionCallback callback,
+void SetFormFieldValueAction::OnGetFieldValue(ProcessActionCallback callback,
                                               const Selector& selector,
                                               int next,
                                               bool get_value_status,
@@ -158,8 +153,7 @@ void SetFormFieldValueAction::OnGetFieldValue(ActionDelegate* delegate,
 
   // Move to next value if |GetFieldValue| failed.
   if (!get_value_status) {
-    OnSetFieldValue(delegate, std::move(callback), selector, next + 1,
-                    OkClientStatus());
+    OnSetFieldValue(std::move(callback), selector, next + 1, OkClientStatus());
     return;
   }
 
@@ -173,19 +167,18 @@ void SetFormFieldValueAction::OnGetFieldValue(ActionDelegate* delegate,
 
     // Run |SetFieldValue| with keyboard simulation on and move on to next value
     // afterwards.
-    delegate->SetFieldValue(
+    delegate_->SetFieldValue(
         selector, key_field.text(), /*simulate_key_presses = */ true,
         proto_.set_form_value().delay_in_millisecond(),
         base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
-                       weak_ptr_factory_.GetWeakPtr(), delegate,
-                       std::move(callback), selector,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       selector,
                        /* next = */ next + 1));
     return;
   }
 
   // Move to next value in all other cases.
-  OnSetFieldValue(delegate, std::move(callback), selector, next + 1,
-                  OkClientStatus());
+  OnSetFieldValue(std::move(callback), selector, next + 1, OkClientStatus());
 }
 
 }  // namespace autofill_assistant

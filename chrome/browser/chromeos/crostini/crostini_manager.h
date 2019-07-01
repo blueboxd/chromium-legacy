@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/service.pb.h"
@@ -262,16 +261,6 @@ class CrostiniManager : public KeyedService,
   // Returns true if the /dev/kvm directory is present.
   static bool IsDevKvmPresent();
 
-  // Generate the URL for Crostini terminal application.
-  static GURL GenerateVshInCroshUrl(
-      Profile* profile,
-      const std::string& vm_name,
-      const std::string& container_name,
-      const std::vector<std::string>& terminal_args);
-
-  // Generate AppLaunchParams for the Crostini terminal application.
-  static AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile);
-
   // Upgrades cros-termina component if the current version is not compatible.
   void MaybeUpgradeCrostini();
 
@@ -482,23 +471,6 @@ class CrostiniManager : public KeyedService,
       void(bool success, std::vector<std::pair<std::string, uint8_t>> devices)>;
   void ListUsbDevices(const std::string& vm_name,
                       ListUsbDevicesCallback callback);
-
-  // Create the crosh-in-a-window that displays a shell in an container on a VM.
-  static Browser* CreateContainerTerminal(const AppLaunchParams& launch_params,
-                                          const GURL& vsh_in_crosh_url);
-
-  // Shows the already created crosh-in-a-window that displays a shell in an
-  // already running container on a VM.
-  static void ShowContainerTerminal(const AppLaunchParams& launch_params,
-                                    const GURL& vsh_in_crosh_url,
-                                    Browser* browser);
-
-  // Launches the crosh-in-a-window that displays a shell in an already running
-  // container on a VM and passes |terminal_args| as parameters to that shell
-  // which will cause them to be executed as program inside that shell.
-  void LaunchContainerTerminal(const std::string& vm_name,
-                               const std::string& container_name,
-                               const std::vector<std::string>& terminal_args);
 
   // Searches for not installed packages that have names matching the passed
   // plaintext search query and returns a vector containing their names.

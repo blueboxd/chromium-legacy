@@ -14,7 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+import android.support.test.filters.MediumTest;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -84,7 +84,7 @@ public class AutofillAssistantInfoBoxUiTest {
 
     /** Tests assumptions about the initial state of the infobox. */
     @Test
-    @SmallTest
+    @MediumTest
     public void testInitialState() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AssistantInfoBoxModel model = new AssistantInfoBoxModel();
@@ -97,7 +97,7 @@ public class AutofillAssistantInfoBoxUiTest {
 
     /** Tests for an infobox with a message, but without an image. */
     @Test
-    @SmallTest
+    @MediumTest
     public void testMessageNoImage() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AssistantInfoBoxModel model = new AssistantInfoBoxModel();
@@ -115,7 +115,7 @@ public class AutofillAssistantInfoBoxUiTest {
 
     /** Tests for an infobox with message and image. */
     @Test
-    @SmallTest
+    @MediumTest
     public void testImage() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AssistantInfoBoxModel model = new AssistantInfoBoxModel();
@@ -132,7 +132,7 @@ public class AutofillAssistantInfoBoxUiTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testVisibility() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AssistantInfoBoxModel model = new AssistantInfoBoxModel();

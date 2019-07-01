@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -27,8 +28,6 @@ const CGFloat kProfileImageFixedSize = 48;
 // UI Refresh Constants:
 // Text label gray color.
 const CGFloat kGrayHexColor = 0x6d6d72;
-// Action button blue background color.
-const CGFloat kBlueHexColor = 0x1A73E8;
 // Vertical spacing between stackView and cell contentView.
 const CGFloat kStackViewVerticalPadding = 11.0;
 // Horizontal spacing between stackView and cell contentView.
@@ -105,7 +104,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     UIButton* primaryButton;
     UIEdgeInsets primaryButtonInsets;
     primaryButton = [[UIButton alloc] init];
-    primaryButton.backgroundColor = UIColorFromRGB(kBlueHexColor);
+    primaryButton.backgroundColor = [UIColor colorNamed:kTintColor];
     [primaryButton.titleLabel
         setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
     primaryButton.layer.cornerRadius = kButtonCornerRadius;
@@ -130,7 +129,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     secondaryButton = [[UIButton alloc] init];
     [secondaryButton.titleLabel
         setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]];
-    [secondaryButton setTitleColor:UIColorFromRGB(kBlueHexColor)
+    [secondaryButton setTitleColor:[UIColor colorNamed:kTintColor]
                           forState:UIControlStateNormal];
     _secondaryButton = secondaryButton;
     DCHECK(_secondaryButton);

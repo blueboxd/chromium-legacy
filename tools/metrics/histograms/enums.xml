@@ -19836,6 +19836,7 @@ Called by update_net_error_codes.py.-->
   <int value="1348" label="LOGIN_ISRUNNINGINLOGINPROFILE"/>
   <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
   <int value="1350" label="ACTION_SETICON"/>
+  <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -33475,6 +33476,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2082462043" label="ViewPasswords:disabled"/>
   <int value="-2082042818"
       label="AutofillCreditCardLastUsedDateDisplay:enabled"/>
+  <int value="-2080657940" label="DirectActions:disabled"/>
   <int value="-2080504230" label="TabHoverCards:disabled"/>
   <int value="-2077268643" label="disable-device-enumeration"/>
   <int value="-2075870708" label="MediaRemotingEncrypted:disabled"/>
@@ -34034,6 +34036,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1343259222" label="RegionalLocalesAsDisplayUI:disabled"/>
   <int value="-1342961844" label="InlineUpdateFlow:disabled"/>
   <int value="-1342039126" label="AshNewSystemMenu:enabled"/>
+  <int value="-1341685799" label="AutofillAssistantDirectActions:enabled"/>
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1338306372" label="BrowserTouchBar:enabled"/>
@@ -34677,6 +34680,7 @@ from previous Chrome versions.
   <int value="-408769228" label="ArcGraphicBuffersVisualizationTool:disabled"/>
   <int value="-406850932" label="EnableEmojiContextMenu:enabled"/>
   <int value="-405380243" label="enable-encryption-migration"/>
+  <int value="-403701720" label="DirectActions:enabled"/>
   <int value="-402038055"
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:enabled"/>
   <int value="-401170566"
@@ -34785,6 +34789,7 @@ from previous Chrome versions.
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-260355779" label="UnfilteredBluetoothDevices:enabled"/>
+  <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
   <int value="-254887599" label="google-profile-info"/>
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>

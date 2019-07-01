@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.pressBack;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
@@ -48,6 +50,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -71,6 +74,10 @@ public class AutofillAssistantPaymentRequestUiTest {
 
     private CustomTabActivity getActivity() {
         return mCustomTabActivityTestRule.getActivity();
+    }
+
+    private WebContents getWebContents() {
+        return mCustomTabActivityTestRule.getWebContents();
     }
 
     /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
@@ -216,6 +223,8 @@ public class AutofillAssistantPaymentRequestUiTest {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
         AssistantPaymentRequestCoordinator coordinator =
                 TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
+                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
         AutofillAssistantPaymentRequestTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
@@ -227,6 +236,7 @@ public class AutofillAssistantPaymentRequestUiTest {
             model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
             model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
             model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
             model.set(AssistantPaymentRequestModel.VISIBLE, true);
         });
 
@@ -275,6 +285,123 @@ public class AutofillAssistantPaymentRequestUiTest {
             assertThat(paymentsList.getItemCount(), is(0));
             assertThat(shippingList.getItemCount(), is(0));
         });
+
+        /* Test delegate status. */
+        assertThat(delegate.mPaymentMethod, nullValue());
+        assertThat(delegate.mContact, nullValue());
+        assertThat(delegate.mAddress, nullValue());
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
+    }
+
+    /**
+     * Shows a payment request, then adds a new contact to the personal data manager.
+     * Tests whether the new contact is added to the payment request.
+     */
+    @Test
+    @MediumTest
+    public void testContactDetailsLiveUpdate() throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator =
+                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // WEB_CONTENTS are necessary for the creation of the editors.
+            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, getWebContents());
+            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
+            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
+            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+        });
+
+        /* Contact details section should be empty. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(isDisplayed()));
+        AssistantChoiceList contactsList = TestThreadUtils.runOnUiThreadBlocking(
+                () -> viewHolder.mContactSection.findViewById(R.id.section_choice_list));
+        assertThat(contactsList.getItemCount(), is(0));
+
+        /* Add profile to the personal data manager. */
+        String profileId = mHelper.addDummyProfile("John Doe", "john@gmail.com");
+
+        /* Contact details section should now contain and have pre-selected the new contact. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(not(isDisplayed())));
+        assertThat(contactsList.getItemCount(), is(1));
+        onView(allOf(withId(R.id.contact_summary),
+                       isDescendantOfA(is(viewHolder.mContactSection.getCollapsedView()))))
+                .check(matches(withText("john@gmail.com")));
+
+        /* Remove profile from personal data manager. Section should be empty again. */
+        mHelper.deleteProfile(profileId);
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(isDisplayed()));
+        assertThat(contactsList.getItemCount(), is(0));
+
+        /* Tap the 'add' button to open the editor, to make sure that it still works. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .perform(click());
+        onView(withId(R.id.payments_edit_cancel_button)).perform(pressBack());
+    }
+
+    /**
+     * Shows a payment request, then adds a new payment method to the personal data manager.
+     * Tests whether the new payment method is added to the payment request.
+     */
+    @Test
+    @MediumTest
+    public void testPaymentMethodsLiveUpdate() throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator =
+                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // WEB_CONTENTS are necessary for the creation of the editors.
+            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, getWebContents());
+            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
+            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+        });
+
+        /* Payment method section should be empty and show the 'add' button in the title. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(isDisplayed()));
+        AssistantChoiceList paymentsList = TestThreadUtils.runOnUiThreadBlocking(
+                () -> viewHolder.mPaymentSection.findViewById(R.id.section_choice_list));
+        assertThat(paymentsList.getItemCount(), is(0));
+
+        /* Add profile and credit card to the personal data manager. */
+        String billingAddressId = mHelper.addDummyProfile("Jill Doe", "jill@gmail.com");
+        String creditCardId = mHelper.addDummyCreditCard(billingAddressId);
+
+        /* Payment method section contains the new credit card, which should be pre-selected. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(not(isDisplayed())));
+        assertThat(paymentsList.getItemCount(), is(1));
+        onView(allOf(withId(R.id.credit_card_name), isDescendantOfA(is(paymentsList.getItem(0)))))
+                .check(matches(withText("Jill Doe")));
+
+        /* Remove credit card from personal data manager. Section should be empty again. */
+        mHelper.deleteCreditCard(creditCardId);
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(isDisplayed()));
+        assertThat(paymentsList.getItemCount(), is(0));
+
+        /* Tap the 'add' button to open the editor, to make sure that it still works. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .perform(click());
+        onView(withId(R.id.payments_edit_cancel_button)).perform(pressBack());
     }
 
     /**
@@ -299,6 +426,8 @@ public class AutofillAssistantPaymentRequestUiTest {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
         AssistantPaymentRequestCoordinator coordinator =
                 TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
+                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
         AutofillAssistantPaymentRequestTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
@@ -310,6 +439,7 @@ public class AutofillAssistantPaymentRequestUiTest {
             model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
             model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
             model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
             model.set(AssistantPaymentRequestModel.VISIBLE, true);
         });
 
@@ -359,6 +489,69 @@ public class AutofillAssistantPaymentRequestUiTest {
         testShippingAddress("Maggie Simpson", "Acme Inc., 123 Main, 90210 Los Angeles, California",
                 "Acme Inc., 123 Main, 90210 Los Angeles, California, Uzbekistan",
                 viewHolder.mShippingSection.getCollapsedView(), shippingList.getItem(0));
+
+        /* Check delegate status. */
+        assertThat(delegate.mPaymentMethod.getCard().getNumber(), is("4111111111111111"));
+        assertThat(delegate.mPaymentMethod.getCard().getName(), is("Jon Doe"));
+        assertThat(delegate.mPaymentMethod.getCard().getBasicCardIssuerNetwork(), is("visa"));
+        assertThat(delegate.mPaymentMethod.getCard().getBillingAddressId(), is(billingAddressId));
+        assertThat(delegate.mPaymentMethod.getCard().getMonth(), is("12"));
+        assertThat(delegate.mPaymentMethod.getCard().getYear(), is("2050"));
+        assertThat(delegate.mContact.getPayerName(), is("Maggie Simpson"));
+        assertThat(delegate.mContact.getPayerEmail(), is("maggie@simpson.com"));
+        assertThat(delegate.mAddress.getProfile().getFullName(), is("Maggie Simpson"));
+        assertThat(delegate.mAddress.getProfile().getStreetAddress(), containsString("123 Main"));
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
+    }
+
+    /**
+     * When the last contact info, payment method or shipping address is removed from the personal
+     * data manager, the user's selection has implicitly changed (from whatever it was before to
+     * null).
+     */
+    @Test
+    @MediumTest
+    public void testRemoveLastItemImplicitSelection() throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator =
+                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
+                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+
+        /* Add complete profile and credit card to the personal data manager. */
+        String profileId = mHelper.addDummyProfile("John Doe", "john@gmail.com");
+        String creditCardId = mHelper.addDummyCreditCard(profileId);
+
+        /* Request all PR sections. */
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
+            model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
+            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
+            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
+            model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
+            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+        });
+
+        /* Profile and payment method should be automatically selected. */
+        assertThat(delegate.mContact, not(nullValue()));
+        assertThat(delegate.mAddress, not(nullValue()));
+        assertThat(delegate.mPaymentMethod, not(nullValue()));
+
+        // Remove payment method and profile
+        mHelper.deleteCreditCard(creditCardId);
+        mHelper.deleteProfile(profileId);
+
+        // Note: before asserting that the delegate was updated, we need to ensure that the
+        // UI thread has processed all events.
+        onView(is(coordinator.getView())).check(matches(isDisplayed()));
+
+        assertThat(delegate.mContact, nullValue());
+        assertThat(delegate.mAddress, nullValue());
+        assertThat(delegate.mPaymentMethod, nullValue());
     }
 
     private void testContact(String expectedContactSummary, String expectedContactFullDescription,

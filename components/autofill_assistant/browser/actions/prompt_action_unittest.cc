@@ -70,8 +70,8 @@ TEST_F(PromptActionTest, ChoicesMissing) {
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 }
 
 TEST_F(PromptActionTest, SelectButtons) {
@@ -86,8 +86,8 @@ TEST_F(PromptActionTest, SelectButtons) {
   cancel_proto->mutable_chip()->set_type(NORMAL_ACTION);
   cancel_proto->set_server_payload("cancel");
 
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 
   ASSERT_THAT(user_actions_, Pointee(SizeIs(2)));
 
@@ -120,8 +120,8 @@ TEST_F(PromptActionTest, ReportDirectAction) {
   maybe_proto->mutable_direct_action()->add_names("I_guess");
   maybe_proto->set_server_payload("maybe");
 
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 
   ASSERT_THAT(user_actions_, Pointee(SizeIs(2)));
 
@@ -139,8 +139,8 @@ TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
   ok_proto->set_server_payload("ok");
   ok_proto->add_show_only_if_element_exists()->add_selectors("element");
 
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 
   ASSERT_THAT(user_actions_, Pointee(IsEmpty()));
 
@@ -165,8 +165,8 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
   ok_proto->set_allow_disabling(true);
   ok_proto->add_show_only_if_element_exists()->add_selectors("element");
 
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
@@ -189,8 +189,8 @@ TEST_F(PromptActionTest, AutoSelect) {
   choice_proto->mutable_auto_select_if_element_exists()->add_selectors(
       "element");
 
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
   EXPECT_THAT(user_actions_, Pointee(SizeIs(0)));
 
   EXPECT_CALL(mock_web_controller_,
@@ -218,8 +218,8 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
   choice_proto->mutable_auto_select_if_element_exists()->add_selectors(
       "element");
 
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
 
@@ -241,8 +241,8 @@ TEST_F(PromptActionTest, Terminate) {
   ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
   {
-    PromptAction action(proto_);
-    action.ProcessAction(&mock_action_delegate_, callback_.Get());
+    PromptAction action(&mock_action_delegate_, proto_);
+    action.ProcessAction(callback_.Get());
   }
 
   // Chips pointing to a deleted action do nothing.

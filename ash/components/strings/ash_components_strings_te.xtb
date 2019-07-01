@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">మునుపటి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
 <translation id="2246352309084894470">పూర్తి స్క్రీన్ లాంచర్‌ను తెరవండి/మూసివేయండి</translation>
+<translation id="2354531887393764880">బిందువు గుర్తు</translation>
 <translation id="2382644247745281995">ప్రస్తుత కీబోర్డ్ లేఅవుట్‌తో మద్దతు లేదు</translation>
 <translation id="2397416548179033562">Chrome మెనూను చూపు</translation>
 <translation id="2424073332829844142">Caps Lock ఆన్ మరియు ఆఫ్ చేయండి</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">మీ అరలో హైలైట్ చేయబడిన అంశాన్ని తెరవండి</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 నుండి 8</translation>
 <translation id="3837047332182291558">కీబోర్డ్‌ని మరింత ప్రకాశవంతం చేయండి (నేపథ్య కాంతి ఉన్న కీబోర్డ్‌లకు మాత్రమే)</translation>
+<translation id="3949671998904569433">కామా గుర్తు</translation>
 <translation id="3976863468609830880">మీ అరలోని చివరి చిహ్నాన్ని క్లిక్ చేయండి</translation>
 <translation id="3994783594793697310">డిస్‌ప్లే జూమ్ స్థాయిని రీసెట్ చేస్తుంది</translation>
 <translation id="4026843240379844265">యాక్టివ్ విండోను డిస్‌ప్లేల మధ్య తరల్చండి</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">తర్వాత అందుబాటులో ఉన్న ఇన్‌పుట్ విధానానికి మారండి</translation>
 <translation id="743754632698445141">యాప్‌ను అన్‌పిన్ చేయండి</translation>
 <translation id="7439718573248533901">తర్వాతి అక్షరాన్ని తొలగించండి (ముందుకు తొలగింపు)</translation>
+<translation id="7500368597227394048">హైఫన్ గుర్తు</translation>
 <translation id="7611271430932669992">దృష్టిని పాప్అప్‌లు మరియు డైలాగ్‌లపైకి మార్చండి</translation>
 <translation id="766326951329901120">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను సాదా వచనంగా అతికించండి</translation>
+<translation id="7703010453515335249">ఎడమ బ్రాకెట్</translation>
 <translation id="7724603315864178912">కత్తిరించు</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="SPACE" /> లేదా <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">బ్రౌజర్‌లో ఫైల్‌ను తెరవండి</translation>
-<translation id="7917881398263220094">మీ ప్రస్తుత పేజీ లోడ్ కాకుండా ఆపివేయండి</translation>
 <translation id="7952165122793773711">1 నుండి 8 వరకు ట్యాబ్‌లలోకి వెళ్లండి</translation>
 <translation id="8026334261755873520">బ్రౌజింగ్ డేటాను క్లియర్ చేయి</translation>
 <translation id="8130528849632411619">పత్రం ప్రారంభం వద్దకు వెళ్లండి</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> లేదా <ph name="E" /></translation>
 <translation id="8232835244134740473">వీటి మధ్య దృష్టిని మార్చండి: స్థితి ప్రాంతం (మీ ఖాతా చిత్రం కనిపించే ప్రాంతం), లాంచర్, చిరునామా బార్, బుక్‌మార్క్‌ల బార్ (కనిపించినట్లయితే), తెరచి ఉన్న వెబ్‌పేజీ మరియు డౌన్‌లోడ్‌ల బార్ (కనిపించినట్లయితే).</translation>
 <translation id="8234414138295101081">స్క్రీన్‌ని 90 డిగ్రీలు తిప్పండి</translation>
+<translation id="8241665785394195545">కుడి బ్రాకెట్</translation>
 <translation id="8264941229485248811">డెవలపర్ సాధనాల ఇన్‌స్పెక్టర్‌ను చూపండి లేదా దాచండి</translation>
 <translation id="836869401750819675">డౌన్‌లోడ్‌ల పేజీని తెరవండి</translation>
 <translation id="8388247778047144397">లింక్‌ను ట్యాబ్ స్ట్రిప్‌లోని ఖాళీ ప్రాంతంలోకి లాగండి</translation>

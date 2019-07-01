@@ -6,17 +6,25 @@
 
 #include <Security/Security.h>
 
+#include "base/atomicops.h"
+#include "base/bind.h"
+#include "base/callback_list.h"
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "crypto/mac_security_services_lock.h"
+#include "net/base/hash_value.h"
+#include "net/base/network_notification_thread_mac.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parse_name.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_mac.h"
+#include "third_party/boringssl/src/include/openssl/sha.h"
 
 namespace net {
 
@@ -27,6 +35,8 @@ namespace {
 
 // Indicates the trust status of a certificate.
 enum class TrustStatus {
+  // Trust status is unknown / uninitialized.
+  UNKNOWN,
   // Certificate inherits trust value from its issuer. If the certificate is the
   // root of the chain, this implies distrust.
   UNSPECIFIED,
@@ -151,53 +161,312 @@ TrustStatus IsTrustSettingsTrustedForPolicy(CFArrayRef trust_settings,
   return TrustStatus::UNSPECIFIED;
 }
 
-// Returns true if the certificate |cert_handle| is trusted for the policy
-// |policy_oid|.
-TrustStatus IsSecCertificateTrustedForPolicy(
+// Returns the trust status for |cert_handle| for the policy |policy_oid| in
+// |trust_domain|.
+TrustStatus IsCertificateTrustedForPolicyInDomain(
     const scoped_refptr<ParsedCertificate>& cert,
-    SecCertificateRef cert_handle,
-    const CFStringRef policy_oid) {
+    const CFStringRef policy_oid,
+    SecTrustSettingsDomain trust_domain) {
+  // TODO(eroman): Inefficient -- path building will convert between
+  // SecCertificateRef and ParsedCertificate representations multiple times
+  // (when getting the issuers, and again here).
+  //
+  // This conversion will also be done for each domain the cert policy is
+  // checked, but the TrustDomainCache ensures this function is only called on
+  // domains that actually have settings for the cert. The common case is that
+  // a cert will have trust settings in only zero or one domains, and when in
+  // more than one domain it would generally be because one domain is
+  // overriding the setting in the next, so it would only get done once anyway.
+  base::ScopedCFTypeRef<SecCertificateRef> cert_handle =
+      x509_util::CreateSecCertificateFromBytes(cert->der_cert().UnsafeData(),
+                                               cert->der_cert().Length());
+  if (!cert_handle)
+    return TrustStatus::UNSPECIFIED;
+
   const bool is_self_issued =
       cert->normalized_subject() == cert->normalized_issuer();
-  // Evaluate trust domains in user, admin, system order. Admin settings can
-  // override system ones, and user settings can override both admin and system.
-  for (const auto& trust_domain :
-       {kSecTrustSettingsDomainUser, kSecTrustSettingsDomainAdmin,
-        kSecTrustSettingsDomainSystem}) {
-    base::ScopedCFTypeRef<CFArrayRef> trust_settings;
-    OSStatus err;
-    {
-      base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-      err = SecTrustSettingsCopyTrustSettings(cert_handle, trust_domain,
-                                              trust_settings.InitializeInto());
-    }
-    if (err == errSecItemNotFound) {
-      // No trust settings for that domain.. try the next.
-      continue;
-    }
-    if (err) {
-      OSSTATUS_LOG(ERROR, err) << "SecTrustSettingsCopyTrustSettings error";
-      continue;
-    }
-    TrustStatus trust = IsTrustSettingsTrustedForPolicy(
-        trust_settings, is_self_issued, policy_oid);
-    if (trust != TrustStatus::UNSPECIFIED)
-      return trust;
+
+  base::ScopedCFTypeRef<CFArrayRef> trust_settings;
+  OSStatus err;
+  {
+    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+    err = SecTrustSettingsCopyTrustSettings(cert_handle, trust_domain,
+                                            trust_settings.InitializeInto());
+  }
+  if (err == errSecItemNotFound) {
+    // No trust settings for that domain.. try the next.
+    return TrustStatus::UNSPECIFIED;
+  }
+  if (err) {
+    OSSTATUS_LOG(ERROR, err) << "SecTrustSettingsCopyTrustSettings error";
+    return TrustStatus::UNSPECIFIED;
+  }
+  TrustStatus trust = IsTrustSettingsTrustedForPolicy(
+      trust_settings, is_self_issued, policy_oid);
+  return trust;
+}
+
+// Caches calculated trust status for certificates present in a single trust
+// domain.
+class TrustDomainCache {
+ public:
+  TrustDomainCache(SecTrustSettingsDomain domain, CFStringRef policy_oid)
+      : domain_(domain), policy_oid_(policy_oid) {
+    DCHECK(policy_oid_);
   }
 
-  // No trust settings, or none of the settings were for the correct policy, or
-  // had the correct trust result.
-  return TrustStatus::UNSPECIFIED;
+  // (Re-)Initializes the cache with the certs in |domain_| set to UNKNOWN trust
+  // status.
+  void Initialize() {
+    trust_status_cache_.clear();
+
+    base::ScopedCFTypeRef<CFArrayRef> cert_array;
+    OSStatus rv;
+    {
+      base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+      rv = SecTrustSettingsCopyCertificates(domain_,
+                                            cert_array.InitializeInto());
+    }
+    if (rv != noErr) {
+      // Note: SecTrustSettingsCopyCertificates can legitimately return
+      // errSecNoTrustSettings if there are no trust settings in |domain_|.
+      return;
+    }
+    std::vector<std::pair<SHA256HashValue, TrustStatus>> trust_status_vector;
+    for (CFIndex i = 0, size = CFArrayGetCount(cert_array); i < size; ++i) {
+      SecCertificateRef cert = reinterpret_cast<SecCertificateRef>(
+          const_cast<void*>(CFArrayGetValueAtIndex(cert_array, i)));
+      trust_status_vector.emplace_back(x509_util::CalculateFingerprint256(cert),
+                                       TrustStatus::UNKNOWN);
+    }
+    trust_status_cache_ = base::flat_map<SHA256HashValue, TrustStatus>(
+        std::move(trust_status_vector));
+  }
+
+  // Returns the trust status for |cert| in |domain_|.
+  TrustStatus IsCertTrusted(const scoped_refptr<ParsedCertificate>& cert,
+                            const SHA256HashValue& cert_hash) {
+    auto cache_iter = trust_status_cache_.find(cert_hash);
+    if (cache_iter == trust_status_cache_.end()) {
+      // Cert does not have trust settings in this domain, return UNSPECIFIED.
+      return TrustStatus::UNSPECIFIED;
+    }
+
+    if (cache_iter->second != TrustStatus::UNKNOWN) {
+      // Cert has trust settings and trust has already been calculated, return
+      // the cached value.
+      return cache_iter->second;
+    }
+
+    // Cert has trust settings but trust has not been calculated yet.
+    // Calculate it now, insert into cache, and return.
+    TrustStatus cert_trust =
+        IsCertificateTrustedForPolicyInDomain(cert, policy_oid_, domain_);
+    cache_iter->second = cert_trust;
+    return cert_trust;
+  }
+
+  // Returns true if the certificate with |cert_hash| is present in |domain_|.
+  bool ContainsCert(const SHA256HashValue& cert_hash) const {
+    return trust_status_cache_.find(cert_hash) != trust_status_cache_.end();
+  }
+
+ private:
+  const SecTrustSettingsDomain domain_;
+  const CFStringRef policy_oid_;
+  base::flat_map<SHA256HashValue, TrustStatus> trust_status_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrustDomainCache);
+};
+
+SHA256HashValue CalculateFingerprint256(const der::Input& buffer) {
+  SHA256HashValue sha256;
+  SHA256(buffer.UnsafeData(), buffer.Length(), sha256.data);
+  return sha256;
 }
+
+// Watches macOS keychain for trust setting changes, and notifies any
+// registered callbacks. This is necessary as the keychain callback API is
+// keyed only on the callback function pointer rather than function pointer +
+// context, so it cannot be safely registered multiple callbacks with the same
+// function pointer and different contexts.
+class KeychainTrustSettingsChangedNotifier {
+ public:
+  // Registers |callback| to be run when the keychain trust settings change.
+  // Must be called on the network notification thread.  |callback| will be run
+  // on the network notification thread. The returned Subscription must be
+  // destroyed on the network notification thread.
+  static std::unique_ptr<base::CallbackList<void()>::Subscription> AddCallback(
+      base::RepeatingClosure callback) {
+    DCHECK(GetNetworkNotificationThreadMac()->RunsTasksInCurrentSequence());
+    return Get()->callback_list_.Add(std::move(callback));
+  }
+
+ private:
+  friend base::NoDestructor<KeychainTrustSettingsChangedNotifier>;
+
+  KeychainTrustSettingsChangedNotifier() {
+    DCHECK(GetNetworkNotificationThreadMac()->RunsTasksInCurrentSequence());
+    OSStatus status = SecKeychainAddCallback(
+        &KeychainTrustSettingsChangedNotifier::KeychainCallback,
+        kSecTrustSettingsChangedEventMask, this);
+    if (status != noErr)
+      OSSTATUS_LOG(ERROR, status) << "SecKeychainAddCallback failed";
+  }
+
+  ~KeychainTrustSettingsChangedNotifier() = delete;
+
+  static OSStatus KeychainCallback(SecKeychainEvent keychain_event,
+                                   SecKeychainCallbackInfo* info,
+                                   void* context) {
+    KeychainTrustSettingsChangedNotifier* notifier =
+        reinterpret_cast<KeychainTrustSettingsChangedNotifier*>(context);
+    notifier->callback_list_.Notify();
+    return errSecSuccess;
+  }
+
+  static KeychainTrustSettingsChangedNotifier* Get() {
+    static base::NoDestructor<KeychainTrustSettingsChangedNotifier> notifier;
+    return notifier.get();
+  }
+
+  base::CallbackList<void()> callback_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeychainTrustSettingsChangedNotifier);
+};
+
+// Observes keychain events and increments the value returned by Iteration()
+// each time the trust settings change.
+class KeychainTrustObserver {
+ public:
+  KeychainTrustObserver() {
+    GetNetworkNotificationThreadMac()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &KeychainTrustObserver::RegisterCallbackOnNotificationThread,
+            base::Unretained(this)));
+  }
+
+  // Destroying the observer unregisters the callback. Must be destroyed on the
+  // notification thread in order to safely release |subscription_|.
+  ~KeychainTrustObserver() {
+    DCHECK(GetNetworkNotificationThreadMac()->RunsTasksInCurrentSequence());
+  }
+
+  // Returns the current iteration count, which is incremented every time
+  // keychain trust settings change. This may be called from any thread.
+  int64_t Iteration() const { return base::subtle::Acquire_Load(&iteration_); }
+
+ private:
+  void RegisterCallbackOnNotificationThread() {
+    DCHECK(GetNetworkNotificationThreadMac()->RunsTasksInCurrentSequence());
+    subscription_ =
+        KeychainTrustSettingsChangedNotifier::AddCallback(base::BindRepeating(
+            &KeychainTrustObserver::Increment, base::Unretained(this)));
+  }
+
+  void Increment() { base::subtle::Barrier_AtomicIncrement(&iteration_, 1); }
+
+  // Only accessed on the notification thread.
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription_;
+
+  base::subtle::Atomic64 iteration_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(KeychainTrustObserver);
+};
 
 }  // namespace
 
+// TrustCache caches the calculated trust status of certificates with trust
+// settings in each of the three trust domains, and ensures the cache is reset
+// if trust settings are modified.
+class TrustStoreMac::TrustCache {
+ public:
+  explicit TrustCache(CFStringRef policy_oid)
+      : system_domain_cache_(kSecTrustSettingsDomainSystem, policy_oid),
+        admin_domain_cache_(kSecTrustSettingsDomainAdmin, policy_oid),
+        user_domain_cache_(kSecTrustSettingsDomainUser, policy_oid) {
+    keychain_observer_ = std::make_unique<KeychainTrustObserver>();
+  }
+
+  ~TrustCache() {
+    GetNetworkNotificationThreadMac()->DeleteSoon(
+        FROM_HERE, std::move(keychain_observer_));
+  }
+
+  // Returns true if |cert| is present in kSecTrustSettingsDomainSystem.
+  bool IsKnownRoot(const ParsedCertificate* cert) {
+    SHA256HashValue cert_hash = CalculateFingerprint256(cert->der_cert());
+
+    base::AutoLock lock(cache_lock_);
+    MaybeInitializeCache();
+    return system_domain_cache_.ContainsCert(cert_hash);
+  }
+
+  // Returns the trust status for |cert|.
+  TrustStatus IsCertTrusted(const scoped_refptr<ParsedCertificate>& cert) {
+    SHA256HashValue cert_hash = CalculateFingerprint256(cert->der_cert());
+
+    base::AutoLock lock(cache_lock_);
+    MaybeInitializeCache();
+
+    // Evaluate trust domains in user, admin, system order. Admin settings can
+    // override system ones, and user settings can override both admin and
+    // system.
+    for (TrustDomainCache* trust_domain_cache :
+         {&user_domain_cache_, &admin_domain_cache_, &system_domain_cache_}) {
+      TrustStatus ts = trust_domain_cache->IsCertTrusted(cert, cert_hash);
+      if (ts != TrustStatus::UNSPECIFIED)
+        return ts;
+    }
+
+    // Cert did not have trust settings in any domain.
+    return TrustStatus::UNSPECIFIED;
+  }
+
+ private:
+  // (Re-)Initialize the cache if necessary. Must be called after acquiring
+  // |cache_lock_| and before accessing any of the |*_domain_cache_| members.
+  void MaybeInitializeCache() {
+    cache_lock_.AssertAcquired();
+    int64_t keychain_iteration = keychain_observer_->Iteration();
+    if (iteration_ == keychain_iteration)
+      return;
+
+    iteration_ = keychain_iteration;
+    user_domain_cache_.Initialize();
+    admin_domain_cache_.Initialize();
+    if (!system_domain_initialized_) {
+      // In practice, the system trust domain does not change during runtime,
+      // and SecTrustSettingsCopyCertificates on the system domain is quite
+      // slow, so the system domain cache is not reset on keychain changes.
+      system_domain_cache_.Initialize();
+      system_domain_initialized_ = true;
+    }
+  }
+
+  std::unique_ptr<KeychainTrustObserver> keychain_observer_;
+
+  base::Lock cache_lock_;
+  // |cache_lock_| must be held while accessing any following members.
+  int64_t iteration_ = -1;
+  bool system_domain_initialized_ = false;
+  TrustDomainCache system_domain_cache_;
+  TrustDomainCache admin_domain_cache_;
+  TrustDomainCache user_domain_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrustCache);
+};
+
 TrustStoreMac::TrustStoreMac(CFTypeRef policy_oid)
-    : policy_oid_(base::mac::CFCastStrict<CFStringRef>(policy_oid)) {
-  DCHECK(policy_oid_);
-}
+    : trust_cache_(std::make_unique<TrustCache>(
+          base::mac::CFCastStrict<CFStringRef>(policy_oid))) {}
 
 TrustStoreMac::~TrustStoreMac() = default;
+
+bool TrustStoreMac::IsKnownRoot(const ParsedCertificate* cert) const {
+  return trust_cache_->IsKnownRoot(cert);
+}
 
 void TrustStoreMac::SyncGetIssuersOf(const ParsedCertificate* cert,
                                      ParsedCertificateList* issuers) {
@@ -243,19 +512,7 @@ void TrustStoreMac::SyncGetIssuersOf(const ParsedCertificate* cert,
 
 void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
                              CertificateTrust* trust) const {
-  // TODO(eroman): Inefficient -- path building will convert between
-  // SecCertificateRef and ParsedCertificate representations multiple times
-  // (when getting the issuers, and again here).
-  base::ScopedCFTypeRef<SecCertificateRef> cert_handle =
-      x509_util::CreateSecCertificateFromBytes(cert->der_cert().UnsafeData(),
-                                               cert->der_cert().Length());
-  if (!cert_handle) {
-    *trust = CertificateTrust::ForUnspecified();
-    return;
-  }
-
-  TrustStatus trust_status =
-      IsSecCertificateTrustedForPolicy(cert, cert_handle, policy_oid_);
+  TrustStatus trust_status = trust_cache_->IsCertTrusted(cert);
   switch (trust_status) {
     case TrustStatus::TRUSTED:
       *trust = CertificateTrust::ForTrustAnchor();
@@ -266,6 +523,11 @@ void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
     case TrustStatus::UNSPECIFIED:
       *trust = CertificateTrust::ForUnspecified();
       return;
+    case TrustStatus::UNKNOWN:
+      // UNKNOWN is an implementation detail of TrustCache and should never be
+      // returned.
+      NOTREACHED();
+      break;
   }
 
   *trust = CertificateTrust::ForUnspecified();

@@ -24,10 +24,12 @@ const base::Feature kNetworkServiceSandbox{"NetworkServiceSandbox",
 // sandbox::MITIGATION_EXTENSION_POINT_DISABLE.
 const base::Feature kWinSboxDisableExtensionPoints{
     "WinSboxDisableExtensionPoint", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
 
+#if !defined(OS_ANDROID)
 // Controls whether the isolated XR service is sandboxed.
 const base::Feature kXRSandbox{"XRSandbox", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN)
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace features
 }  // namespace service_manager

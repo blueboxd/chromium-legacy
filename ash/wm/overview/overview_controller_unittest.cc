@@ -111,7 +111,9 @@ class TestOverviewObserver : public OverviewObserver {
     DCHECK(selector);
     last_animation_was_slide_ =
         selector->enter_exit_overview_type() ==
-        OverviewSession::EnterExitOverviewType::kWindowsMinimized;
+            OverviewSession::EnterExitOverviewType::kSlideInEnter ||
+        selector->enter_exit_overview_type() ==
+            OverviewSession::EnterExitOverviewType::kSlideOutExit;
   }
 
   AnimationState starting_animation_state_ = UNKNOWN;
@@ -276,7 +278,7 @@ TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
   // Exit to home launcher. Slide animation should be used, and all windows
   // should be minimized.
   Shell::Get()->overview_controller()->EndOverview(
-      OverviewSession::EnterExitOverviewType::kWindowsMinimized);
+      OverviewSession::EnterExitOverviewType::kSlideOutExit);
   EXPECT_TRUE(observer.last_animation_was_slide());
   ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());

@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Ir para a guia anterior</translation>
 <translation id="2194790690264064655">Pressione <ph name="CTRL" /> e clique em um link</translation>
 <translation id="2246352309084894470">Abrir/fechar o acesso rápido em tela cheia</translation>
+<translation id="2354531887393764880">ponto final</translation>
 <translation id="2382644247745281995">Não compatível com o layout de teclado atual</translation>
 <translation id="2397416548179033562">Exibir o menu do Google Chrome</translation>
 <translation id="2424073332829844142">Ativar e desativar a tecla Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Abrir o item destacado na estante</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="3837047332182291558">Deixar o teclado mais brilhante (apenas para teclados retroiluminados)</translation>
+<translation id="3949671998904569433">vírgula</translation>
 <translation id="3976863468609830880">Clicar no último ícone da estante</translation>
 <translation id="3994783594793697310">Redefinir nível de zoom da tela</translation>
 <translation id="4026843240379844265">Mover janela ativa entre telas</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Alternar para o próximo método de entrada disponível</translation>
 <translation id="743754632698445141">Liberar um app</translation>
 <translation id="7439718573248533901">Excluir a próxima letra (excluir para frente)</translation>
+<translation id="7500368597227394048">hífen</translation>
 <translation id="7611271430932669992">Mover o foco para pop-ups e caixas de diálogo</translation>
 <translation id="766326951329901120">Colar conteúdo da área de transferência como texto simples</translation>
+<translation id="7703010453515335249">colchete esquerdo</translation>
 <translation id="7724603315864178912">Recortar</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="SPACE" /> ou <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Abrir um arquivo no navegador</translation>
-<translation id="7917881398263220094">Parar o carregamento da página atual</translation>
 <translation id="7952165122793773711">Ir para as guias 1 a 8</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8232835244134740473">Alternar foco entre: a área de status (onde a imagem da sua conta é exibida), o acesso rápido, a barra de endereço, a barra de favoritos (se estiver visível), a página da Web que está aberta e a barra de downloads (se estiver visível).</translation>
 <translation id="8234414138295101081">Girar a tela em 90 graus</translation>
+<translation id="8241665785394195545">colchete direito</translation>
 <translation id="8264941229485248811">Mostrar ou ocultar o inspetor de Ferramentas para Desenvolvedores</translation>
 <translation id="836869401750819675">Abrir Downloads</translation>
 <translation id="8388247778047144397">Arrastar o link até uma área em branco na barra de guias</translation>

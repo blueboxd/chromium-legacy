@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Kan redigera</translation>
 <translation id="1984603991036629094">Armeniskt fonetiskt tangentbord</translation>
 <translation id="2001796770603320721">Hantera i Drive</translation>
+<translation id="2009067268969781306">Om du formaterar en enhet raderas all data som lagras på den. Det går inte att ångra åtgärden.</translation>
 <translation id="2028997212275086731">RAR-arkiv</translation>
 <translation id="2046702855113914483">Ramen (nudelsoppa)</translation>
-<translation id="204914487372604757">Skapa genväg</translation>
 <translation id="2070909990982335904">Namn som börjar med en punkt är reserverade för systemet. Välj ett annat namn.</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2080010875307505892">Serbiskt tangentbord</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Tangentbord för arabiska</translation>
 <translation id="4261901459838235729">Presentation i Google Dokument</translation>
 <translation id="4290535918735525311">1 mapp delas med Linux</translation>
+<translation id="42981349822642051">Expandera</translation>
 <translation id="4298972503445160211">Danskt tangentbord </translation>
 <translation id="4299729908419173967">brasilianska</translation>
 <translation id="4309915981827077375">Allmän information</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Visa fler ...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911">Filer på sammanlagt <ph name="TOTAL_FILE_SIZE" /> tas bort</translation>
 <translation id="509429900233858213">Det har uppstått ett fel.</translation>
 <translation id="5098629044894065541">hebreiska</translation>
 <translation id="5123433949759960244">Basketboll</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Säkerhetskopiering i molnet för Chrome OS</translation>
 <translation id="5756666464756035725">ungerska (QWERTY)</translation>
 <translation id="5771585441665576801">Translitterera (geia → γεια)</translation>
+<translation id="5776325638577448643">Ta bort och formatera</translation>
 <translation id="57838592816432529">Stäng av ljudet</translation>
 <translation id="5788127256798019331">Play-filer</translation>
 <translation id="5790193330357274855">kazakiska</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Ge Linux-appar behörighet att ändra filer i mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Franskt BÉPO-tangentbord</translation>
 <translation id="5911887972742538906">Ett fel uppstod under installationen av Linux-programmet.</translation>
+<translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Kopieringen misslyckades. Oväntat fel: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Ge Linux-appar behörighet att ändra filer på din Google Drive. Ändringarna synkas till dina andra enheter.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Öppna med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Väntar på information om lagringsutrymme ...</translation>
 <translation id="6205710420833115353">Vissa åtgärder tar längre tid än väntat. Vill du avbryta dem?</translation>
+<translation id="6224253798271602650">Formatera <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Det gick inte att spela upp filen.</translation>
 <translation id="6248400709929739064">Aktivera undertexter</translation>
 <translation id="6264347891387618177">Translitterering (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Dvorak-tangentbord för programmerare i USA</translation>
 <translation id="7191454237977785534">Spara filen som</translation>
 <translation id="7222624196722476520">Bulgariskt fonetiskt tangentbord</translation>
+<translation id="7238097264433196391">Enhetens namn</translation>
 <translation id="7248671827512403053">Program</translation>
 <translation id="7268659760406822741">Tillgängliga tjänster</translation>
 <translation id="7283041136720745563">Inte tillräckligt med utrymme på Google Drive.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">slovenska</translation>
 <translation id="7982283708762922719">Höjd</translation>
 <translation id="7987485481246785146">Tangentbord baserat på sorani/kurdiska och arabiska</translation>
-<translation id="799547531016638432">Ta bort genväg</translation>
 <translation id="799923393800005025">Kan visa</translation>
 <translation id="8008366997883261463">Hund</translation>
 <translation id="8028993641010258682">Storlek</translation>

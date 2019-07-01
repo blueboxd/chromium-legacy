@@ -436,7 +436,7 @@
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
 <translation id="7285236536143823449">ОК</translation>
 <translation id="7291368939935408496">Подготовка паролей…</translation>
-<translation id="7293171162284876153">Чтобы начать синхронизацию, нажмите "Синхронизировать данные Chrome".</translation>
+<translation id="7293171162284876153">Чтобы начать ее, нажмите "Синхронизировать данные Chrome".</translation>
 <translation id="7336264872878993241">Скачивается: <ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">ОК</translation>
 <translation id="7348502496356775519">Закладка</translation>
@@ -477,6 +477,7 @@
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7971521879845308059">Блок. вспл. окна</translation>
 <translation id="7982789257301363584">Сеть</translation>
+<translation id="8007420562015504427">Поиск в режиме инкогнито</translation>
 <translation id="8019783059653722575">Это нужно, чтобы сохранять и загружать фотографии</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8023878949384262191">Разворачивает раздел.</translation>
@@ -491,6 +492,7 @@
 <translation id="8225985093977202398">Файлы, сохраненные в кеше</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8281781826761538115">Язык по умолчанию: <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Новый поиск</translation>
 <translation id="8328777765163860529">Закрыть все</translation>
 <translation id="8381750437846184350">Укажите, как Google может использовать историю браузера для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="8407669440184693619">Паролей для этого сайта не найдено</translation>

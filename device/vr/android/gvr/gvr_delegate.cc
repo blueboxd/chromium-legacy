@@ -154,7 +154,7 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
 
   // Add headset angular velocity to the pose.
   double epsilon_seconds = kAngularVelocityEpsilonNanos * 1e-9;
-  pose->angularVelocity =
+  pose->angular_velocity =
       GetAngularVelocityFromPoses(*head_mat_ptr, head_mat_2, epsilon_seconds);
 
   return pose;

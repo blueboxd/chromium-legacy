@@ -17,6 +17,8 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +58,7 @@ class LookupKeyUploaderTest : public chromeos::DeviceSettingsTestBase {
 
   void AdvanceTime() { clock_.Advance(lookup_key_uploader_->kRetryFrequency); }
   void Start() {
-    lookup_key_uploader_->OnStoreLoaded(nullptr);
+    lookup_key_uploader_->OnStoreLoaded(&policy_store_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -64,6 +66,7 @@ class LookupKeyUploaderTest : public chromeos::DeviceSettingsTestBase {
   base::SimpleTestClock clock_;
   MockEnrollmentCertificateUploader certificate_uploader_;
   std::unique_ptr<LookupKeyUploader> lookup_key_uploader_;
+  MockCloudPolicyStore policy_store_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LookupKeyUploaderTest);
@@ -115,6 +118,28 @@ TEST_F(LookupKeyUploaderTest, DoesNotUploadVeryFrequently) {
   Start();
   ExpectSavedIdToBe(kValidRsuDeviceId);
   EXPECT_FALSE(NeedsUpload());
+}
+
+TEST_F(LookupKeyUploaderTest, UploadsEvenWhenSubmittedBeforeIfForcedByPolicy) {
+  EXPECT_CALL(certificate_uploader_, ObtainAndUploadCertificate(_))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke([](base::OnceCallback<void(bool status)> callback) {
+            std::move(callback).Run(true);
+          }));
+  SetCryptohomeReplyTo(kValidRsuDeviceId);
+  Start();
+  ExpectSavedIdToBe(kValidRsuDeviceId);
+  EXPECT_FALSE(NeedsUpload());
+
+  // We set the policy for obtaining RSU lookup key.
+  policy_store_.policy_ = std::make_unique<enterprise_management::PolicyData>();
+  policy_store_.policy_->mutable_client_action_required()
+      ->set_enrollment_certificate_needed(true);
+
+  // We expect the ObtainAndUploadCertificate to called twice.
+  AdvanceTime();
+  Start();
 }
 
 }  // namespace policy

@@ -264,6 +264,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // a preconnect.
   const bool prefetch_after_preconnect_;
 
+  // True by default, otherwise navigation scores will not be normalized
+  // by the sum of metrics weights nor normalized from 0 to 100 across
+  // all navigation scores for a page.
+  const bool normalize_navigation_scores_;
+
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
   base::TimeTicks last_click_timing_;

@@ -46,7 +46,7 @@ TEST(DiceAccountReconcilorDelegateTest, RevokeTokens) {
         &client, AccountConsistencyMethod::kDiceMigration);
     // Gaia accounts are not empty, don't revoke.
     gaia::ListedAccount gaia_account;
-    gaia_account.id = "other";
+    gaia_account.id = CoreAccountId("other");
     EXPECT_EQ(
         signin::AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke,
         delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
@@ -71,7 +71,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
         &client, AccountConsistencyMethod::kDiceMigration);
-    delegate.OnReconcileFinished("account", true /* is_reconcile_noop */);
+    delegate.OnReconcileFinished(CoreAccountId("account"),
+                                 true /* is_reconcile_noop */);
   }
 
   pref_service.SetBoolean(prefs::kTokenServiceDiceCompatible, true);
@@ -83,7 +84,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
         &client, AccountConsistencyMethod::kDiceMigration);
-    delegate.OnReconcileFinished("account", false /* is_reconcile_noop */);
+    delegate.OnReconcileFinished(CoreAccountId("account"),
+                                 false /* is_reconcile_noop */);
   }
 
   {
@@ -92,7 +94,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     EXPECT_CALL(client, SetReadyForDiceMigration(true)).Times(1);
     DiceAccountReconcilorDelegate delegate(
         &client, AccountConsistencyMethod::kDiceMigration);
-    delegate.OnReconcileFinished("account", true /* is_reconcile_noop */);
+    delegate.OnReconcileFinished(CoreAccountId("account"),
+                                 true /* is_reconcile_noop */);
   }
 }
 

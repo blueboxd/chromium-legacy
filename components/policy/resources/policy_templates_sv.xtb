@@ -367,6 +367,11 @@
           Om principen inaktiveras eller inte har ställts in inaktiveras inställningarna för Kerberos-konton. Det går då inte att lägga till Kerberos-konton och autentisering med Kerberos kan inte användas. Alla befintliga Kerberos-konton raderas och alla sparade lösenord raderas.</translation>
 <translation id="1561424797596341174">Åsidosättningar av policyn för felsökningsversioner av fjärråtkomstvärden</translation>
 <translation id="1561967320164410511">U2F plus tillägg för enskild attestering</translation>
+<translation id="1566329065312331399">
+      När den här principen är inställd på falskt kan powerwash inte startas av enheten.
+      När principen är inställd på sant kan powerwash startas av enheten.
+      Om principen inte ställs in är falskt standardvärdet, vilket innebär att powerwash inte kan startas av enheten.
+      </translation>
 <translation id="1574554504290354326">Inställningen har fasats ut. Använd SafeBrowsingExtendedReportingEnabled i stället. Att aktivera eller inaktivera SafeBrowsingExtendedReportingEnabled motsvarar att ställa in SafeBrowsingExtendedReportingOptInAllowed på falskt.
 
       Om den här policyn är inställd på falskt kan inte användare välja att skicka viss systeminformation och visst sidinnehåll till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka viss systeminformation och visst sidinnehåll till Säker webbsökning i syfte att identifiera skadliga appar och webbplatser.
@@ -408,6 +413,7 @@
 
       Obs! Att delegera kontrollen över vilken version av <ph name="PRODUCT_OS_NAME" /> som används till en kioskapp rekommenderas inte, eftersom det kan leda till att uppdateringar av programvaran och viktiga säkerhetskorrigeringar inte längre görs på enheten. Om du delegerar valet av <ph name="PRODUCT_OS_NAME" />-version kan användarnas säkerhet äventyras.</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
+<translation id="1700811900332333712">Tillåt att powerwash begärs av enheten</translation>
 <translation id="1704516734140344991">Konfigurerar tillgängligheten och beteendet för uppdateringar av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Enskilda inställningar kan anges som JSON-egenskaper:
@@ -2064,6 +2070,15 @@
       Under den tiden visas upprepade uppmaningar att starta om för användaren. På <ph name="PRODUCT_OS_NAME" />-enheter visas en avisering om att starta om i systemfältet i enlighet med principen <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-webbläsare ändras appmenyn för att visa att en omstart behövs när en tredjedel av tidsperioden har gått. Aviseringen byter färg när två tredjedelar av tidsperioden har gått och igen när tidsperioden har löpt ut. För ytterligare aviseringar som aktiveras med principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> används samma schema.
 
       Om principen inte ställs in används som standard tidsperioden 345 600 000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604 800 000 millisekunder (en vecka) för <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Den här inställningen, SitePerProcess, kan användas för att förhindra att användarna väljer bort standardbeteendet att isolera alla webbplatser. Observera att det även går att isolera ursprung mer precist med principen IsolateOrigins.
+      När principen är aktiverad kan användarna inte välja bort standardbeteendet att varje webbplats körs i en egen process.
+      Om principen inte har ställts in eller om den inaktiveras kan användaren välja bort webbplatsisolering
+      (t.ex. med flaggan Disable site isolation på sidan chrome://flags).  Att principen inaktiveras och/eller saknar inställning innebär inte att webbplatsisolering inaktiveras.
+      I version 76 och tidigare av <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att även du ställer in enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> på samma värde. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
+
+      OBS! Den här principen gäller inte Android. Om du vill aktivera SitePerProcess på Android använder du principen SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME" /> så att användarna kan fylla i webbformulär automatiskt med kreditkortsuppgifter som har sparats sedan tidigare.
 
       Om inställningen inaktiveras visas inga förslag med Autofyll och inga kreditkortsuppgifter fylls i. Ytterligare kreditkortsuppgifter som användaren kan ange på webben sparas inte heller.
@@ -2212,6 +2227,7 @@
 <translation id="5148753489738115745">Innebär att du kan ange ytterligare parametrar som används när <ph name="PRODUCT_FRAME_NAME" /> startar <ph name="PRODUCT_NAME" />.
 
           Om policyn inte anges används standardkommandoraden.</translation>
+<translation id="5152787786897382519">I både Chromium och Google Chrome finns principgrupper som måste användas tillsammans för att styra över vissa funktioner. Dessa uppsättningar representeras av följande principgrupper. Eftersom principer kan komma från flera olika källor gäller endast värden som kommer från källor med högst prioritet. Värden från en källa med lägre prioritet i samma grupp ignoreras. Prioriteringsordningen förklaras i <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Hur ofta nätverkspaket för övervakning skickas, i millisekunder.
 
       Om principen inte har angetts är standardintervallet 3 minuter. Det lägsta
@@ -2761,6 +2777,7 @@
 <translation id="5983708779415553259">Standardbeteende för webbplatser som inte ingår i ett innehållspaket</translation>
 <translation id="5997543603646547632">Använd 24-timmarsklocka som standard</translation>
 <translation id="5997846976342452720">Ange om plugin-sökaren ska inaktiveras (utfasad)</translation>
+<translation id="5998198091336830580">Denna princip är del av följande atomiska grupp (endast principer från källan med högst prioritet i gruppen gäller):</translation>
 <translation id="6017568866726630990">Visa systemets utskriftsdialogruta istället för förhandsgranskning av utskriften.
 
       När inställningen är aktiverad öppnar <ph name="PRODUCT_NAME" /> systemets utskriftsdialogruta istället för den inbyggda förhandsgranskningen av utskriften när en användare skriver ut en sida.
@@ -3513,6 +3530,9 @@
       När principen är inställd på falskt samlas information som kan användas för att identifiera enheter inte in.
 
       Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Den här principen gäller inloggningsskärmen. Se även principen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gäller användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipen tillämpas.
+      </translation>
 <translation id="737655323154569539">Begränsar pappersformatet för utskrift. Om principen har lämnats utan inställning eller är inställd på en tom lista används ingen begränsning.</translation>
 <translation id="7389872682701720082">Om du aktiverar den här inställningen kan pluginprogram som inte är inaktuella alltid köras.
 
@@ -3850,6 +3870,7 @@
 
           Se även principerna CookiesAllowedForUrls och CookiesSessionOnlyForUrls. Observera att webbadressmönstren i de här tre principerna inte får överlappa varandra – det är inte definierat vilken av principerna som har företräde i så fall.</translation>
 <translation id="8099880303030573137">Inaktivitetstid när enheten drivs av batteriet</translation>
+<translation id="8101381354936029836">Atomisk grupp för princip:</translation>
 <translation id="8102913158860568230">Standardinställning för medieuppspelning</translation>
 <translation id="8104186956182795918">Låter dig ange om webbplatser får visa bilder. Bildvisning kan tillåtas för alla webbplatser eller nekas för alla webbplatser.
 
@@ -4060,6 +4081,15 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Spara inte webbhistorik</translation>
 <translation id="8499172469244085141">Standardinställningar (kan åsidosättas av användare)</translation>
+<translation id="849962487677588458">Den här principen är utfasad och ska tas bort från Chrome 78 utan att ersättas av ett annat tillägg.
+
+      Den här principen aktiverar HTTP/0.9 på andra portar än 80 för HTTP och 443 för HTTPS.
+
+      Principen är inaktiverad som standard och om den aktiveras löper användare risk att utsättas för säkerhetsbristen https://crbug.com/600352.
+
+      Principen är avsedd att ge företag möjlighet att migrera befintliga servrar från HTTP/0.9. Principen tas bort framöver.
+
+      Om principen inte har angetts, inaktiveras HTTP/0.9 på portar som inte har angetts som standard.</translation>
 <translation id="8507835864888987300">Anger en målversion för automatiska uppdateringar.
 
       Anger prefixet för en målversion som <ph name="PRODUCT_OS_NAME" /> uppdateras till. Om enheten kör en tidigare version än prefixet som har angetts uppdateras operativsystemet till den senaste versionen med prefixet i fråga Om enheten redan har en senare version beror resultatet på värdet för <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Prefixformatet fungerar per komponent som i följande exempel:

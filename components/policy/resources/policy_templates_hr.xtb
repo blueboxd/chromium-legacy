@@ -352,6 +352,11 @@
           Ako se to pravilo onemogući ili ne postavi, postavke Kerberos računa nisu omogućene. Ne može se dodati nijedan Kerberos račun i ne može se koristiti autentifikacija koju pruža Kerberos. Brišu se svi postojeći Kerberos računi i sve pohranjene zaporke.</translation>
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1561967320164410511">U2F i proširenja za pojedinačno atestiranje</translation>
+<translation id="1566329065312331399">
+      Kada se postavi na false, to pravilo ne dopušta uređaju pokretanje Powerwasha.
+      Kada se postavi na true, uređaju je dopušteno pokretanje Powerwasha.
+      Ako se ne postavi, zadana je vrijednost false, što znači da uređaju nije dopušteno pokretanje Powerwasha.
+      </translation>
 <translation id="1574554504290354326">Ta je postavka obustavljena, upotrijebite SafeBrowsingExtendedReportingEnabled. Omogućivanje ili onemogućivanje postavke SafeBrowsingExtendedReportingEnabled ekvivalentno je postavljanju SafeBrowsingExtendedReportingOptInAllowed na False.
 
       Ako se to pravilo postavi na False, korisnici ne mogu odabrati slanje nekih podataka o sustavu i sadržaja stranice Googleovim poslužiteljima. Ako se pravilo postavi na True ili se ne konfigurira, korisnici će moći slati neke podatke o sustavu i sadržaj stranice Sigurnom pregledavanju radi otkrivanja opasnih aplikacija i web-lokacija.
@@ -393,6 +398,7 @@
 
       Upozorenje: ne preporučuje se ovlastiti kiosk aplikaciju za upravljanje verzijom proizvoda <ph name="PRODUCT_OS_NAME" /> jer uređaj tako može prestati primati ažuriranja softvera i važne sigurnosne ispravke. Davanje ovlasti za upravljanje verzijom proizvoda <ph name="PRODUCT_OS_NAME" /> korisnike može izložiti opasnosti.</translation>
 <translation id="1675002386741412210">Podržano na:</translation>
+<translation id="1700811900332333712">Dopusti uređaju zahtijevanje Powerwasha</translation>
 <translation id="1704516734140344991">Konfigurira dostupnost i ponašanje funkcije ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme.
 
       Pojedinačne postavke mogu se navesti u JSON svojstvima:
@@ -2017,6 +2023,15 @@
       Tijekom tog će se vremena korisniku prikazivati ponavljajuća obavijest o potrebnom ažuriranju. Za <ph name="PRODUCT_OS_NAME" /> uređaje obavijest o ponovnom pokretanju prikazuje se na traci sustava u skladu s pravilom <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Za preglednike <ph name="PRODUCT_NAME" /> izbornik aplikacije mijenja se kada istekne trećina razdoblja obavijesti kako bi se naznačilo da je potrebno ponovno pokretanje. Boja te obavijesti mijenja se kada isteknu dvije trećine razdoblja i još jednom kada istekne cijelo razdoblje. Dodatne obavijesti omogućene pravilom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> za preglednike imaju isti raspored.
 
       Ako se ne postavi, za <ph name="PRODUCT_OS_NAME" /> uređaje upotrebljava se zadano razdoblje od 345.600.000 milisekundi (četiri dana), a za <ph name="PRODUCT_NAME" /> zadano razdoblje od 604.800.000 milisekundi (jedan tjedan).</translation>
+<translation id="4777805166623621364">
+      Ova postavka, SitePerProcess, može se koristiti kako bi se korisnicima onemogućilo da se isključe iz zadanog ponašanja izolacije svih web-lokacija. Napominjemo da pravilo IsolateOrigins također može biti korisno za izolaciju dodatnih, preciznije određenih izvora.
+      Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
+      Ako se pravilo ne konfigurira ili se onemogući, korisnik će se moći isključiti iz izolacije web-lokacije
+      (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).  Ako se to pravilo postavi na onemogućeno i/ili ne konfigurira, ono ne isključuje izolaciju web-lokacije.
+      Na proizvodu <ph name="PRODUCT_OS_NAME" /> do verzije 76 preporučuje se postaviti pravila za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost koju navode korisnička pravila.
+
+      NAPOMENA: to se pravilo ne primjenjuje na Androidu. Da biste omogućili SitePerProcess na Androidu, postavite pravilo SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Omogućuje značajku Automatsko popunjavanje na usluzi <ph name="PRODUCT_NAME" /> i omogućuje korisnicima automatsko unošenje podataka o kreditnim karticama u web-obrasce pomoću prethodno pohranjenih podataka.
 
       Ako se ta postavka onemogući, Automatsko popunjavanje nikada neće predlagati niti unositi podatke o kreditnim karticama niti će spremiti dodatne podatke o kreditnim karticama koje bi korisnik mogao unijeti tijekom pregledavanja weba.
@@ -2162,6 +2177,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5148753489738115745">Omogućuje vam da odredite dodatne parametre koji se upotrebljavaju kada <ph name="PRODUCT_FRAME_NAME" /> pokreće uslugu <ph name="PRODUCT_NAME" />.
 
           Ako se to pravilo ne postavi, upotrebljavat će se zadani naredbeni redak.</translation>
+<translation id="5152787786897382519">Chromium i Google Chrome imaju neke grupe međusobno ovisnih pravila koja omogućuju upravljanje značajkom. Te su skupine predstavljene sljedećim grupama pravila. S obzirom da pravila mogu imati više izvora, primjenjuju se samo vrijednosti koje potječu iz izvora pravila najvišeg prioriteta. Vrijednosti koje potječu iz izvora nižeg prioriteta u istoj grupi zanemarit će se. Redoslijed prioriteta definiran je u pravilu <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Učestalost slanja mrežnih paketa za praćenje u milisekundama.
 
       Ako se to pravilo ne postavi, zadani interval iznosi 3 minute. Minimalni
@@ -2685,6 +2701,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5983708779415553259">Zadano ponašanje za web-lokacije koje nisu ni u jednom paketu sadržaja</translation>
 <translation id="5997543603646547632">Upotrijebi sat s 24-satnim prikazom prema zadanim postavkama</translation>
 <translation id="5997846976342452720">Određuje treba li onemogućiti alat za traženje dodataka (obustavljen)</translation>
+<translation id="5998198091336830580">To je pravilo dio sljedeće atomske grupe (primjenjuju se samo pravila iz izvora najvišeg prioriteta u grupi):</translation>
 <translation id="6017568866726630990">Prikaži dijalog ispisa iz sustava umjesto pretpregleda ispisa.
 
       Kada je omogućena ta postavka, proizvod <ph name="PRODUCT_NAME" /> otvorit će dijalog ispisa iz sustava umjesto ugrađenog pretpregleda ispisa kada korisnik zatraži ispis stranice.
@@ -3411,6 +3428,9 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se pravilo postavi na False, ne prikupljaju se informacije koje se mogu upotrijebiti za identifikaciju računala.
 
       To se pravilo primjenjuje samo kada je omogućeno pravilo <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a računalo je prijavljeno tokenom <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučuje se postaviti oba pravila na istu vrijednost. Ako se vrijednosti ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost navedena korisničkim pravilima.
+      </translation>
 <translation id="737655323154569539">Ograničava veličinu stranice ispisa. Nepostavljanje pravila i prazan skup smatraju se nepostojanjem ograničenja.</translation>
 <translation id="7389872682701720082">Ako omogućite tu postavku, dodaci koji nisu zastarjeli uvijek će se pokretati.
 
@@ -3737,6 +3757,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Pogledajte i pravila "CookiesAllowedForUrls" i "CookiesSessionOnlyForUrls". Napominjemo da između tih triju pravila ne smiju postojati uzorci URL-ova u sukobu jer nije navedeno koje pravilo ima prednost.</translation>
 <translation id="8099880303030573137">Odgoda neaktivnosti za vrijeme baterijskog napajanja</translation>
+<translation id="8101381354936029836">Atomska grupa pravila:</translation>
 <translation id="8102913158860568230">Zadana postavka za medijski stream</translation>
 <translation id="8104186956182795918">Omogućuje da postavite smiju li web-lokacije prikazivati slike. Prikazivanje slika može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije.
 
@@ -3945,6 +3966,15 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Onemogući pohranjivanje povijesti preglednika</translation>
 <translation id="8499172469244085141">Zadane postavke (korisnici ih mogu prebrisati)</translation>
+<translation id="849962487677588458">To se pravilo ukida, a njegovo je uklanjanje predviđeno u Chromeu 78, bez pružanja zamjenskog pravila.
+
+      Pravilo omogućuje HTTP/0.9 na svim priključcima osim 80 za HTTP i 443 za HTTPS.
+
+      To je pravilo onemogućeno prema zadanim postavkama i ako se omogući, korisnici će biti izloženi sigurnosnoj poteškoći https://crbug.com/600352.
+
+      Tim se pravilom želi pružiti mogućnost organizacijama za premještanje postojećih poslužitelja s protokola HTTP/0.9 i uklonit će se u budućnosti.
+
+      Ako se to pravilo ne postavi, HTTP/0.9 onemogućit će se na priključcima koji nisu zadani.</translation>
 <translation id="8507835864888987300">Postavlja ciljnu verziju za Automatska ažuriranja.
 
       Određuje prefiks ciljne verzije na koju bi se <ph name="PRODUCT_OS_NAME" /> trebao ažurirati. Ako je verzija na uređaju starija od navedenog prefiksa, ažurirat će se na najnoviju verziju s navedenim prefiksom. Ako uređaj već ima noviju verziju, učinak će ovisiti o vrijednosti postavljenoj u pravilu <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Format prefiksa funkcionira prema komponentama kao što je prikazano u sljedećem primjeru:

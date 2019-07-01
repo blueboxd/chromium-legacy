@@ -92,9 +92,9 @@
 <translation id="197560921582345123">Δυνατότητα επεξεργασίας</translation>
 <translation id="1984603991036629094">Αρμενικό φωνητικό πληκτρολόγιο</translation>
 <translation id="2001796770603320721">Διαχείριση στο Drive</translation>
+<translation id="2009067268969781306">Η διαμόρφωση ενός δίσκου θα διαγράψει όλα τα δεδομένα που έχουν αποθηκευτεί σε αυτόν. Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.</translation>
 <translation id="2028997212275086731">Αρχείο RAR</translation>
 <translation id="2046702855113914483">Ράμεν</translation>
-<translation id="204914487372604757">Δημιουργία συντόμευσης</translation>
 <translation id="2070909990982335904">Τα ονόματα που αρχίζουν με τελεία προορίζονται για το σύστημα. Επιλέξτε ένα άλλο όνομα.</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2080010875307505892">Πληκτρολόγιο με σερβικούς χαρακτήρες</translation>
@@ -275,6 +275,7 @@
 <translation id="426015154560005552">Πληκτρολόγιο Αραβικών</translation>
 <translation id="4261901459838235729">Παρουσίαση Google</translation>
 <translation id="4290535918735525311">1 φάκελος που κοινοποιήθηκε με Linux</translation>
+<translation id="42981349822642051">Επέκταση</translation>
 <translation id="4298972503445160211">Πληκτρολόγιο με δανέζικους χαρακτήρες</translation>
 <translation id="4299729908419173967">Βραζιλιάνικα</translation>
 <translation id="4309915981827077375">Γενικές πληροφορίες</translation>
@@ -351,6 +352,7 @@
 <translation id="5038625366300922036">Δείτε περισσότερα…</translation>
 <translation id="5061708541166515394">Αντίθεση</translation>
 <translation id="5068919226082848014">Πίτσα</translation>
+<translation id="5081517858322016911">Θα διαγραφούν αρχεία που καταλαμβάνουν συνολικά <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Παρουσιάστηκε σφάλμα.</translation>
 <translation id="5098629044894065541">Εβραϊκά
 </translation>
@@ -425,6 +427,7 @@
 <translation id="5752453871435543420">Αντίγραφο ασφαλείας στο cloud για το Chrome OS</translation>
 <translation id="5756666464756035725">QWERTY Ουγγρικών</translation>
 <translation id="5771585441665576801">Μεταγραφή (geia → γεια)</translation>
+<translation id="5776325638577448643">Διαγραφή και διαμόρφωση</translation>
 <translation id="57838592816432529">Σίγαση</translation>
 <translation id="5788127256798019331">Αρχεία Play</translation>
 <translation id="5790193330357274855">Καζαχστανικά</translation>
@@ -441,6 +444,7 @@
 <translation id="5857774240076772505">Δώστε στις εφαρμογές Linux την άδεια να τροποποιούν αρχεία στον φάκελο <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Πληκτρολόγιο BÉPO Γαλλικών</translation>
 <translation id="5911887972742538906">Παρουσιάστηκε σφάλμα κατά την εγκατάσταση της εφαρμογής σας Linux.</translation>
+<translation id="5912396950572065471">Διαμόρφωση</translation>
 <translation id="5913638992615760742">Αποτυχία λειτουργίας αντιγραφής, μη αναμενόμενο σφάλμα: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Δώστε στις εφαρμογές Linux την άδεια να τροποποιούν αρχεία στο Google Drive σας. Οι αλλαγές θα συγχρονιστούν με τις άλλες συσκευές σας.</translation>
@@ -465,6 +469,7 @@
 <translation id="6189412234224385711">Άνοιγμα με <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Αναμονή για πληροφορίες χώρου...</translation>
 <translation id="6205710420833115353">Ορισμένες λειτουργίες διαρκούν περισσότερο από το αναμενόμενο. Θέλετε να τις ματαιώσετε;</translation>
+<translation id="6224253798271602650">Διαμόρφωση <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Δεν ήταν δυνατή η αναπαραγωγή αυτού του αρχείου.</translation>
 <translation id="6248400709929739064">Ενεργοποίηση υπότιτλων</translation>
 <translation id="6264347891387618177">Μεταγραφή (selam → ሰላም)</translation>
@@ -546,6 +551,7 @@
 <translation id="719009910964971313">Πληκτρολόγιο US Programmer Dvorak</translation>
 <translation id="7191454237977785534">Αποθήκευση αρχείου ως</translation>
 <translation id="7222624196722476520">Φωνητικό πληκτρολόγιο με βουλγαρικούς χαρακτήρες</translation>
+<translation id="7238097264433196391">Όνομα δίσκου</translation>
 <translation id="7248671827512403053">Εφαρμογή</translation>
 <translation id="7268659760406822741">Διαθέσιμες υπηρεσίες</translation>
 <translation id="7283041136720745563">Το όριό σας στο Google Drive δεν είναι αρκετά μεγάλο.</translation>
@@ -619,7 +625,6 @@
 <translation id="7969525169268594403">Σλοβενικά</translation>
 <translation id="7982283708762922719">Ύψος</translation>
 <translation id="7987485481246785146">Πληκτρολόγιο Σορανί Κουρδικών βασισμένο στα Αραβικά</translation>
-<translation id="799547531016638432">Κατάργηση συντόμευσης</translation>
 <translation id="799923393800005025">Δυνατότητα προβολής</translation>
 <translation id="8008366997883261463">Τεριέ Τζακ Ράσελ</translation>
 <translation id="8028993641010258682">Μέγεθος</translation>

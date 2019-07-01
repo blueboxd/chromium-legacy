@@ -232,6 +232,11 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     UpdateShapeOutsideInfoIfNeeded(
         *layout_result, constraint_space.PercentageResolutionInlineSize());
 
+    // Even if we can reuse the result, we may still need to recalculate our
+    // overflow.
+    if (box_->NeedsLayoutOverflowRecalc())
+      box_->RecalcLayoutOverflow();
+
     return layout_result;
   }
 

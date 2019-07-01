@@ -37,10 +37,10 @@ bool MirrorAccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError()
   return true;
 }
 
-std::string MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
-    const std::vector<std::string>& chrome_accounts,
+CoreAccountId MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
+    const std::vector<CoreAccountId>& chrome_accounts,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
-    const std::string& primary_account,
+    const CoreAccountId& primary_account,
     bool first_execution,
     bool will_logout) const {
   // Mirror only uses the primary account, and it is never empty.
@@ -49,10 +49,10 @@ std::string MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   return primary_account;
 }
 
-std::vector<std::string>
+std::vector<CoreAccountId>
 MirrorAccountReconcilorDelegate::GetChromeAccountsForReconcile(
-    const std::vector<std::string>& chrome_accounts,
-    const std::string& primary_account,
+    const std::vector<CoreAccountId>& chrome_accounts,
+    const CoreAccountId& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     const gaia::MultiloginMode mode) const {
   DCHECK_EQ(mode,

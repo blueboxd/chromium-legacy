@@ -191,6 +191,10 @@ class CORE_EXPORT NGPhysicalFragment
   bool HasOverflowClip() const;
   bool ShouldClipOverflow() const;
 
+  // This fragment is hidden for paint purpose, but exists for querying layout
+  // information. Used for `text-overflow: ellipsis`.
+  bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
+
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
   //
@@ -288,6 +292,7 @@ class CORE_EXPORT NGPhysicalFragment
   const unsigned type_ : 2;      // NGFragmentType
   const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
+  const unsigned is_hidden_for_paint_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).

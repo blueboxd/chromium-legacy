@@ -282,6 +282,7 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
       {"application/x-gzip", MimeType::kNeverSniffed},
       {"application/x-www-form-urlencoded", MimeType::kNeverSniffed},
       {"application/zip", MimeType::kNeverSniffed},
+      {"multipart/byteranges", MimeType::kNeverSniffed},
       {"text/event-stream", MimeType::kNeverSniffed},
       // TODO(lukasza): https://crbug.com/944162: Add application/pdf and
       // text/csv to the list of content types tested here (after

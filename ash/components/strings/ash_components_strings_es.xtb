@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Ir a la pestaña anterior</translation>
 <translation id="2194790690264064655">Pulsa <ph name="CTRL" /> y haz clic en un enlace</translation>
 <translation id="2246352309084894470">Abrir o cerrar el menú de aplicaciones a pantalla completa</translation>
+<translation id="2354531887393764880">punto</translation>
 <translation id="2382644247745281995">No compatible con el diseño de teclado actual</translation>
 <translation id="2397416548179033562">Mostrar menú de Chrome</translation>
 <translation id="2424073332829844142">Activar y desactivar la función de bloqueo de mayúsculas</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Abrir el elemento destacado de la estantería</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> una tecla del 1 al 8</translation>
 <translation id="3837047332182291558">Aumentar la iluminación del teclado (solo para teclados retroiluminados)</translation>
+<translation id="3949671998904569433">coma</translation>
 <translation id="3976863468609830880">Hacer clic en el último icono de la estantería</translation>
 <translation id="3994783594793697310">Restablecer el nivel de zoom de la pantalla</translation>
 <translation id="4026843240379844265">Mover ventana activa de una pantalla a otra</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Cambiar al siguiente método de introducción disponible</translation>
 <translation id="743754632698445141">No fijar una aplicación</translation>
 <translation id="7439718573248533901">Eliminar la letra siguiente (eliminar hacia delante)</translation>
+<translation id="7500368597227394048">guion</translation>
 <translation id="7611271430932669992">Mover el enfoque a ventanas emergentes y cuadros de diálogo</translation>
 <translation id="766326951329901120">Pegar el contenido del portapapeles como texto sin formato</translation>
+<translation id="7703010453515335249">corchete izquierdo</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="SPACE" /> o <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Abrir un archivo en el navegador</translation>
-<translation id="7917881398263220094">Interrumpir la carga de la página actual</translation>
 <translation id="7952165122793773711">Ir a una pestaña de la 1 a la 8</translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
 <translation id="8130528849632411619">Ir al principio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8232835244134740473">Alternar el elemento seleccionado entre la barra de estado (donde aparece la imagen de la cuenta), el menú de aplicaciones, la barra de direcciones, la barra de marcadores (si está visible), la página web que está abierta y la barra de descargas (si está visible).</translation>
 <translation id="8234414138295101081">Girar la pantalla 90 grados</translation>
+<translation id="8241665785394195545">corchete derecho</translation>
 <translation id="8264941229485248811">Mostrar u ocultar el inspector de herramientas para desarrolladores</translation>
 <translation id="836869401750819675">Abrir la página Descargas</translation>
 <translation id="8388247778047144397">Arrastra el enlace a un área en blanco de la barra de pestañas</translation>

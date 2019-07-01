@@ -22,7 +22,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareParams;
@@ -42,7 +41,6 @@ import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -314,38 +312,6 @@ public class OfflinePageUtils {
     public static void showReloadSnackbar(Context context, SnackbarManager snackbarManager,
             final SnackbarController snackbarController, int tabId) {
         getInstance().showReloadSnackbar(context, snackbarManager, snackbarController, tabId);
-    }
-
-    /**
-     * Records UMA data when the Offline Pages Background Load service awakens.
-     * @param context android context
-     */
-    public static void recordWakeupUMA(Context context, long taskScheduledTimeMillis) {
-        DeviceConditions deviceConditions = DeviceConditions.getCurrent(context);
-        if (deviceConditions == null) return;
-
-        // Report charging state.
-        RecordHistogram.recordBooleanHistogram(
-                "OfflinePages.Wakeup.ConnectedToPower", deviceConditions.isPowerConnected());
-
-        // Report battery percentage.
-        RecordHistogram.recordPercentageHistogram(
-                "OfflinePages.Wakeup.BatteryPercentage", deviceConditions.getBatteryPercentage());
-
-        // Report the default network found (or none, if we aren't connected).
-        int connectionType = deviceConditions.getNetConnectionType();
-        Log.d(TAG, "Found default network of type " + connectionType);
-        RecordHistogram.recordEnumeratedHistogram("OfflinePages.Wakeup.NetworkAvailable",
-                connectionType, ConnectionType.CONNECTION_LAST + 1);
-
-        // Collect UMA on the time since the request started.
-        long nowMillis = System.currentTimeMillis();
-        long delayInMilliseconds = nowMillis - taskScheduledTimeMillis;
-        if (delayInMilliseconds <= 0) {
-            return;
-        }
-        RecordHistogram.recordLongTimesHistogram(
-                "OfflinePages.Wakeup.DelayTime", delayInMilliseconds);
     }
 
     /**

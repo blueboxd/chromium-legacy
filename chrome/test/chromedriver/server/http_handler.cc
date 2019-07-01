@@ -849,10 +849,6 @@ HttpHandler::HttpHandler(
           WrapToCommand("HoverElement",
                         base::BindRepeating(&ExecuteHoverOverElement))),
       CommandMapping(
-          kDelete, "session/:sessionId/orientation",
-          WrapToCommand("DeleteScreenOrientation",
-                        base::BindRepeating(&ExecuteDeleteScreenOrientation))),
-      CommandMapping(
           kGet, kShutdownPath,
           base::BindRepeating(
               &ExecuteQuitAll,

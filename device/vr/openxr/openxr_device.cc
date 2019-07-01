@@ -18,34 +18,34 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
 
   display_info->id = id;
-  display_info->displayName = std::string("OpenXR");
+  display_info->display_name = std::string("OpenXR");
 
   display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->hasPosition = true;
-  display_info->capabilities->hasExternalDisplay = true;
-  display_info->capabilities->canPresent = true;
+  display_info->capabilities->has_position = true;
+  display_info->capabilities->has_external_display = true;
+  display_info->capabilities->can_present = true;
 
   display_info->webvr_default_framebuffer_scale = 1.0f;
   display_info->webxr_default_framebuffer_scale = 1.0f;
 
-  display_info->leftEye = mojom::VREyeParameters::New();
-  display_info->rightEye = mojom::VREyeParameters::New();
+  display_info->left_eye = mojom::VREyeParameters::New();
+  display_info->right_eye = mojom::VREyeParameters::New();
 
   constexpr float kFov = 45.0f;
-  display_info->leftEye->fieldOfView =
+  display_info->left_eye->field_of_view =
       mojom::VRFieldOfView::New(kFov, kFov, kFov, kFov);
-  display_info->rightEye->fieldOfView =
-      display_info->leftEye->fieldOfView->Clone();
+  display_info->right_eye->field_of_view =
+      display_info->left_eye->field_of_view->Clone();
 
   constexpr uint32_t kDimension = 1024;
-  display_info->leftEye->renderWidth = kDimension;
-  display_info->leftEye->renderHeight = kDimension;
-  display_info->rightEye->renderWidth = kDimension;
-  display_info->rightEye->renderWidth = kDimension;
+  display_info->left_eye->render_width = kDimension;
+  display_info->left_eye->render_height = kDimension;
+  display_info->right_eye->render_width = kDimension;
+  display_info->right_eye->render_width = kDimension;
 
   constexpr float kInterpupillaryDistance = 0.1f;  // 10cm
-  display_info->leftEye->offset = {-kInterpupillaryDistance * 0.5, 0, 0};
-  display_info->rightEye->offset = {kInterpupillaryDistance * 0.5, 0, 0};
+  display_info->left_eye->offset = {-kInterpupillaryDistance * 0.5, 0, 0};
+  display_info->right_eye->offset = {kInterpupillaryDistance * 0.5, 0, 0};
 
   return display_info;
 }

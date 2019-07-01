@@ -556,6 +556,7 @@
 <translation id="3946209740501886391">이 사이트에서 항상 물어보기</translation>
 <translation id="3949571496842715403">보안 인증서에 주체 대체 이름(SAN)이 지정되어 있지 않아 이 서버가 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 공격자가 연결을 가로채고 있기 때문일 수도 있습니다.</translation>
 <translation id="3949601375789751990">인터넷 사용 기록이 여기에 표시됩니다.</translation>
+<translation id="3949870428812919180">저장된 결제 수단이 없습니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
 <translation id="3962859241508114581">이전 트랙</translation>
 <translation id="3963837677003247395">직접 계속하시겠어요?</translation>

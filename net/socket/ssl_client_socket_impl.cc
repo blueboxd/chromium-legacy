@@ -795,8 +795,18 @@ int SSLClientSocketImpl::Init() {
   }
 
   if (IsCachingEnabled()) {
-    bssl::UniquePtr<SSL_SESSION> session =
-        ssl_client_session_cache_->Lookup(GetSessionCacheKey());
+    bssl::UniquePtr<SSL_SESSION> session = ssl_client_session_cache_->Lookup(
+        GetSessionCacheKey(/*dest_ip_addr=*/base::nullopt));
+    if (!session) {
+      // If a previous session negotiated an RSA cipher suite then it may have
+      // been inserted into the cache keyed by both hostname and resolved IP
+      // address. See https://crbug.com/969684.
+      IPEndPoint peer_address;
+      if (stream_socket_->GetPeerAddress(&peer_address) == OK) {
+        session = ssl_client_session_cache_->Lookup(
+            GetSessionCacheKey(peer_address.address()));
+      }
+    }
     if (session)
       SSL_set_session(ssl_.get(), session.get());
   }
@@ -1626,9 +1636,22 @@ int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
   if (!IsCachingEnabled())
     return 0;
 
+  base::Optional<IPAddress> ip_addr;
+  if (SSL_CIPHER_get_kx_nid(SSL_SESSION_get0_cipher(session)) == NID_kx_rsa) {
+    // If RSA key exchange was used, additionally key the cache with the
+    // destination IP address. Of course, if a proxy is being used, the
+    // semantics of this are a little complex, but we're doing our best. See
+    // https://crbug.com/969684
+    IPEndPoint ip_endpoint;
+    if (stream_socket_->GetPeerAddress(&ip_endpoint) != OK) {
+      return 0;
+    }
+    ip_addr = ip_endpoint.address();
+  }
+
   // OpenSSL optionally passes ownership of |session|. Returning one signals
   // that this function has claimed it.
-  ssl_client_session_cache_->Insert(GetSessionCacheKey(),
+  ssl_client_session_cache_->Insert(GetSessionCacheKey(ip_addr),
                                     bssl::UniquePtr<SSL_SESSION>(session));
   return 1;
 }
@@ -1637,13 +1660,19 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->UpdateCertificateTransparencyInfo(ct_verify_result_);
 }
 
-std::string SSLClientSocketImpl::GetSessionCacheKey() const {
+std::string SSLClientSocketImpl::GetSessionCacheKey(
+    base::Optional<IPAddress> dest_ip_addr) const {
+  std::string ret;
+  if (dest_ip_addr) {
+    ret += dest_ip_addr->ToString();
+  }
+  ret.push_back('/');
+  ret += host_and_port_.ToString();
   if (base::FeatureList::IsEnabled(
           features::kPartitionSSLSessionsByNetworkIsolationKey)) {
-    return host_and_port_.ToString() + '/' +
-           ssl_config_.network_isolation_key.ToString();
+    ret += '/' + ssl_config_.network_isolation_key.ToString();
   }
-  return host_and_port_.ToString();
+  return ret;
 }
 
 bool SSLClientSocketImpl::IsRenegotiationAllowed() const {

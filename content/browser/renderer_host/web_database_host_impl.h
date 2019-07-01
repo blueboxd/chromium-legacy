@@ -12,8 +12,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/database/database_tracker.h"
 #include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 
@@ -31,10 +29,9 @@ class CONTENT_EXPORT WebDatabaseHostImpl
                       scoped_refptr<storage::DatabaseTracker> db_tracker);
   ~WebDatabaseHostImpl() override;
 
-  static void Create(
-      int process_id,
-      scoped_refptr<storage::DatabaseTracker> db_tracker,
-      mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);
+  static void Create(int process_id,
+                     scoped_refptr<storage::DatabaseTracker> db_tracker,
+                     blink::mojom::WebDatabaseHostRequest request);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseHostImplTest, BadMessagesUnauthorized);
@@ -151,7 +148,7 @@ class CONTENT_EXPORT WebDatabaseHostImpl
   storage::DatabaseConnections database_connections_;
 
   // Interface to the render process WebDatabase.
-  mojo::Remote<blink::mojom::WebDatabase> database_provider_;
+  blink::mojom::WebDatabasePtr database_provider_;
 
   // The database tracker for the current browser context.
   const scoped_refptr<storage::DatabaseTracker> db_tracker_;

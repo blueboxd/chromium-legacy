@@ -349,6 +349,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis denne regelen er slått av eller ikke er angitt, er Kerberos-kontoinnstillingene slått av. Ingen Kerberos-kontoer kan legges til, og Kerberos-autentisering kan ikke brukes. Alle eksisterende Kerberos-kontoer og alle lagrede passord slettes.</translation>
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
 <translation id="1561967320164410511">U2F samt utvidelser for individuell attestering</translation>
+<translation id="1566329065312331399">
+      Når denne regelen er satt til «False» (usann), kan ikke enheten utløse powerwash.
+      Når den er satt til «True» (sann), kan enheten utløse powerwash.
+      Hvis den ikke er angitt, er standardverdien False, som betyr at enheten ikke kan utløse powerwash.
+      </translation>
 <translation id="1574554504290354326">Denne innstillingen er avviklet. Bruk SafeBrowsingExtendedReportingEnabled i stedet. Å aktivere eller deaktivere SafeBrowsingExtendedReportingEnabled tilsvarer å angi SafeBrowsingExtendedReportingOptInAllowed som «false» (usann).
 
       Hvis denne regelen angis som «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Googles tjenere. Hvis denne innstillingen er «true» (sann) eller ikke er konfigurert, kan brukerne sende enkelte typer systeminformasjon og sideinnhold til Safe Browsing for å bidra til å oppdage farlige apper og nettsteder.
@@ -390,6 +395,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Advarsel: Det er ikke anbefalt å delegere kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen til en kioskapp, siden dette kan hindre enheten i å motta programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen delegeres, kan brukerne bli utsatt for risiko.</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
+<translation id="1700811900332333712">Tillat enheten å spørre om powerwash</translation>
 <translation id="1704516734140344991">Konfigurerer tilgjengeligheten og funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
 
       Enkeltinnstillinger kan angis i JSON-egenskaper:
@@ -2035,6 +2041,14 @@ Verdiene for denne regelen og WebUsbAllowDevicesForUrls-regelen slås sammen.</t
       I denne tidsperioden blir brukerne gjentatte ganger informert om behovet for oppdatering. På <ph name="PRODUCT_OS_NAME" />-enheter vises et varsel om omstart i systemfeltet i samsvar med <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-regelen. I <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å indikere at det er nødvendig med en omstart, når en tredjedel av varselperioden er gått. Varselet endrer farge når to tredjedeler av varselperioden er gått, og en gang til når hele varselperioden er omme. Tilleggsvarslene som slås på av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen, følger den samme tidsplanen.
 
       Hvis regelen ikke er angitt, brukes standardperioden på 345 600 000 millisekunder (fire dager) for <ph name="PRODUCT_OS_NAME" />-enheter og 604 800 000 millisekunder (én uke) for <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Denne innstillingen (SitePerProcess) kan brukes til å nekte brukere å velge bort standardatferden, som er å isolere alle nettsteder. Merk at regelen IsolateOrigins også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
+      Hvis regelen er slått på, kan ikke brukerne velge bort standardfunksjonaliteten der alle nettsteder kjører i sine egne prosesser.
+      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).  Nettstedsisolering slås ikke av selv om du slår av regelen og/eller ikke konfigurerer den.
+      På <ph name="PRODUCT_OS_NAME" /> versjon 76 og eldre anbefales det også å sette enhetsregelen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />til samme verdi. Hvis disse to reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
+
+      MERK: Denne regelen gjelder ikke på Android. For å slå på SitePerProcess på Android, bruk regelinnstillingen SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Slår på autofyllfunksjonen i <ph name="PRODUCT_NAME" /> og gjør det mulig for brukere å fylle ut informasjon om kredittkort i nettskjemaer automatisk ved å bruke tidligere lagret informasjon.
 
 
@@ -2177,6 +2191,7 @@ Verdiene for denne regelen og WebUsbAllowDevicesForUrls-regelen slås sammen.</t
 <translation id="5148753489738115745">Lar deg spesifisere ytterligere parametere som brukes når <ph name="PRODUCT_FRAME_NAME" /> kjører <ph name="PRODUCT_NAME" />.
 
           Hvis denne tillatelsen ikke er angitt, blir standardkommandolinjen brukt.</translation>
+<translation id="5152787786897382519">Både Chromium og Google Chrome har enkelte regelgrupper som avhenger av hverandre for å gi kontroll over funksjoner. Disse settene representeres av de følgende regelgruppene. Siden regler kan ha flere kilder, brukes kun verdier fra kilden som har høyest prioritet. Verdier fra kilder med lavere prioritet i samme gruppe ignoreres. Prioritetsrekkefølgen er definert i <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Hvor ofte (i millisekunder) nettverkspakker for overvåking sendes.
 
       Hvis denne regelen ikke er spesifisert, er standardintervallet 3 minutter.
@@ -2715,6 +2730,7 @@ Verdiene for denne regelen og DeviceWebUsbAllowDevicesForUrls-regelen slås samm
 <translation id="5983708779415553259">Standard atferd for nettsteder som ikke inngår i noen innholdspakker.</translation>
 <translation id="5997543603646547632">Bruk 24-timersklokken som standard</translation>
 <translation id="5997846976342452720">Angi om programtilleggssøket skal deaktiveres (avviklet)</translation>
+<translation id="5998198091336830580">Denne regelen er en del av den følgende atomiske gruppen (kun regler fra kilden med høyest prioritet i gruppen brukes):</translation>
 <translation id="6017568866726630990">Vis utskriftsdialogen for systemet i stedet for utskriftsforhåndsvisning.
 
       Når denne innstillingen aktiveres, åpner <ph name="PRODUCT_NAME" /> utskriftsdialogen for systemet i stedet for den innebygde utskriftsforhåndsvisningen når en bruker ber om å skrive ut en side.
@@ -3455,6 +3471,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne regelen er angitt som «false» (usant), innhentes ikke informasjon som kan brukes til å identifisere maskiner. 
 
       Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Denne regelen gjelder påloggingsskjermen. Se også regelen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gjelder brukerøkten. Det anbefales å sette begge reglene til samme verdi. Hvis reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
+      </translation>
 <translation id="737655323154569539">Begrenser sidestørrelse på utskrift. Regler som ikke er konfigurert, regnes for å være uten begrensninger.</translation>
 <translation id="7389872682701720082">Hvis du slår på denne innstillingen, kjøres alltid programtillegg som ikke er utdatert.
 
@@ -3785,6 +3804,7 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 
           Se også reglene CookiesBlockedForUrls og CookiesSessionOnlyForUrls. Merk at det ikke må være motstridende nettadressemønstre mellom disse tre reglene. Det er ikke spesifisert hvilken regel som prioriteres.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse når enheten kjører på batteristrøm</translation>
+<translation id="8101381354936029836">Atomisk gruppe for regelen:</translation>
 <translation id="8102913158860568230">Standard innstilling for direkteavspilling av medieinnhold</translation>
 <translation id="8104186956182795918">Lar deg angi om nettsteder kan vise bilder. Bildevisning kan enten tillates for alle nettsteder eller nektes for alle nettsteder.
 
@@ -3992,6 +4012,15 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>
 <translation id="8499172469244085141">Standardinnstillinger (kan overstyres av brukere)</translation>
+<translation id="849962487677588458">Denne regelen er avviklet og planlagt fjernet uten erstatning i Chrome 78.
+
+      Denne regelen slår på HTTP/0.9 på andre porter enn 80 for HTTP og 443 for HTTPS.
+
+      Denne regelen er slått av som standard. Hvis den er slått på, er brukerne utsatt for sikkerhetsproblemet https://crbug.com/600352.
+
+      Denne regelen er ment å gi bedrifter mulighet til å migrere eksisterende servere bort fra HTTP/0.9 og kommer til å bli fjernet på et fremtidig tidspunkt.
+
+      Hvis denne regelen ikke er angitt, blir HTTP/0.9 slått av på ikke-standardporter.</translation>
 <translation id="8507835864888987300">Angir en målversjon for automatiske oppdateringer.
 
       Spesifiserer prefikset for en målversjon <ph name="PRODUCT_OS_NAME" /> skal oppdateres til. Hvis enheten kjører en versjon som er eldre enn det angitte prefikset, oppdateres den til den nyeste versjonen med det angitte prefikset. Hvis enheten allerede har en nyere versjon, avhenger effekten av verdien i <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Prefiksformatet fungerer på komponentnivå, som vi har demonstrert i dette eksemplet:

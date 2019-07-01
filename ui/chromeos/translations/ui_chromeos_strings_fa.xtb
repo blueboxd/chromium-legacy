@@ -90,9 +90,9 @@
 <translation id="197560921582345123">می‌تواند ویرایش کند</translation>
 <translation id="1984603991036629094">صفحه‌کلید آوایی ارمنی</translation>
 <translation id="2001796770603320721">مدیریت در درایو</translation>
+<translation id="2009067268969781306">با قالب‌بندی درایو همه داده‌های ذخیره‌شده در آن حذف خواهد شد. این کنش واگردشدنی نیست.</translation>
 <translation id="2028997212275086731">‏بایگانی RAR</translation>
 <translation id="2046702855113914483">رامن</translation>
-<translation id="204914487372604757">ایجاد میان‌بر</translation>
 <translation id="2070909990982335904">نام‌هایی که با نقطه شروع می‌شوند برای سیستم رزرو شده‌ند. لطفاً" نام دیگری انتخاب کنید.</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2080010875307505892">صفحه‌کلید صربی</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">صفحه‌کلید عربی</translation>
 <translation id="4261901459838235729">‏ارائه Google </translation>
 <translation id="4290535918735525311">‏۱ پوشه با Linux هم‌رسانی شد</translation>
+<translation id="42981349822642051">بزرگ کردن</translation>
 <translation id="4298972503445160211">صفحه‌کلید دانمارکی</translation>
 <translation id="4299729908419173967">برزیلی</translation>
 <translation id="4309915981827077375">اطلاعات عمومی</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">مشاهده موارد بیشتر...</translation>
 <translation id="5061708541166515394">کنتراست</translation>
 <translation id="5068919226082848014">پیتزا</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> فایل حذف خواهد شد</translation>
 <translation id="509429900233858213">خطایی روی داد.</translation>
 <translation id="5098629044894065541">عبری</translation>
 <translation id="5123433949759960244">بسکتبال</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">‏نسخه پشتیبان Chrome OS Cloud</translation>
 <translation id="5756666464756035725">‏QWERTY مجارستانی</translation>
 <translation id="5771585441665576801">‏نویسه‌گردانی (geia ← ‏γεια)</translation>
+<translation id="5776325638577448643">پاک کردن و قالب‌بندی</translation>
 <translation id="57838592816432529">بی‌صدا کردن</translation>
 <translation id="5788127256798019331">‏فایل‌های Play</translation>
 <translation id="5790193330357274855">قزاقی</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">‏به برنامه‌های Linux اجازه دهید فایل‌های پوشه <ph name="FOLDER_NAME" /> را تغییر دهند</translation>
 <translation id="5892290200158927959">‏صفحه‌کلید BÉPO فرانسوی</translation>
 <translation id="5911887972742538906">‏هنگام نصب برنامه Linux خطایی روی داد.</translation>
+<translation id="5912396950572065471">قالب</translation>
 <translation id="5913638992615760742">عملیات کپی انجام نشد، خطای غیرمنتظره: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">‏به برنامه‌های Linux اجازه دهید فایل‌های موجود در Google Drive را تغییر دهند. تغییرات در سایر دستگاه‌هایتان همگام‌سازی خواهد شد.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">بازکردن با <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">منتظر اطلاعات فضا...</translation>
 <translation id="6205710420833115353">برخی از کارکردها بیشتر از انتظار طول می‌کشند. می‌خواهید از آنها صرف‌نظر کنید؟</translation>
+<translation id="6224253798271602650">قالب‌بندی <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">این فایل اجرا نمی‌شود.</translation>
 <translation id="6248400709929739064">فعال کردن زیرنویس</translation>
 <translation id="6264347891387618177">‏نویسه‌گردانی (selam ← ‏ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">استفاده از دووراک آمریکایی برنامه‌نویس‌ها</translation>
 <translation id="7191454237977785534">ذخیره فایل به‌عنوان</translation>
 <translation id="7222624196722476520">صفحه‌کلید آوایی بلغاری</translation>
+<translation id="7238097264433196391">نام درایو</translation>
 <translation id="7248671827512403053">برنامه کاربردی</translation>
 <translation id="7268659760406822741">خدمات موجود</translation>
 <translation id="7283041136720745563">‏سهمیه Google Drive شما به اندازه کافی بزرگ نیست.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">اسلوونیایی</translation>
 <translation id="7982283708762922719">ارتفاع</translation>
 <translation id="7987485481246785146">صفحه‌کلید کردی مبتنی بر عربی</translation>
-<translation id="799547531016638432">حذف میان‌بر</translation>
 <translation id="799923393800005025">می‌تواند مشاهده کند</translation>
 <translation id="8008366997883261463">جک راسل تریر</translation>
 <translation id="8028993641010258682">اندازه</translation>

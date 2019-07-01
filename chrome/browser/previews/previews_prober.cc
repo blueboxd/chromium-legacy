@@ -55,6 +55,7 @@ PreviewsProber::TimeoutPolicy::TimeoutPolicy(
     PreviewsProber::TimeoutPolicy const&) = default;
 
 PreviewsProber::PreviewsProber(
+    Delegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& name,
     const GURL& url,
@@ -62,7 +63,8 @@ PreviewsProber::PreviewsProber(
     const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy)
-    : PreviewsProber(url_loader_factory,
+    : PreviewsProber(delegate,
+                     url_loader_factory,
                      name,
                      url,
                      http_method,
@@ -72,6 +74,7 @@ PreviewsProber::PreviewsProber(
                      base::DefaultTickClock::GetInstance()) {}
 
 PreviewsProber::PreviewsProber(
+    Delegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& name,
     const GURL& url,
@@ -80,7 +83,8 @@ PreviewsProber::PreviewsProber(
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy,
     const base::TickClock* tick_clock)
-    : name_(name),
+    : delegate_(delegate),
+      name_(name),
       url_(url),
       http_method_(http_method),
       headers_(headers),
@@ -94,6 +98,8 @@ PreviewsProber::PreviewsProber(
       network_connection_tracker_(nullptr),
       url_loader_factory_(url_loader_factory),
       weak_factory_(this) {
+  DCHECK(delegate_);
+
   // The NetworkConnectionTracker can only be used directly on the UI thread.
   // Otherwise we use the cross-thread call.
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) &&
@@ -151,6 +157,11 @@ void PreviewsProber::CreateAndStartURLLoader() {
   DCHECK(!is_active_ || successive_retry_count_ > 0);
   DCHECK(!retry_timer_ || !retry_timer_->IsRunning());
   DCHECK(!url_loader_);
+
+  if (!delegate_->ShouldSendNextProbe()) {
+    ResetState();
+    return;
+  }
 
   is_active_ = true;
 
@@ -222,9 +233,9 @@ void PreviewsProber::OnURLLoadComplete(
     response_code = url_loader_->ResponseInfo()->headers->response_code();
   }
 
-  // TODO(crbug/977603): Replace with delegate check.
-  bool was_successful =
-      url_loader_->NetError() == net::OK && response_code == net::HTTP_OK;
+  bool was_successful = delegate_->IsResponseSuccess(
+      static_cast<net::Error>(url_loader_->NetError()),
+      *url_loader_->ResponseInfo(), std::move(response_body));
 
   timeout_timer_.reset();
   url_loader_.reset();

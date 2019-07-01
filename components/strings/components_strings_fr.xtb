@@ -548,6 +548,7 @@
 <translation id="3946209740501886391">Toujours demander sur ce site</translation>
 <translation id="3949571496842715403">Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité ne contient pas l'extension "Subject Alternative Names" (Autres noms de l'objet). Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="3949601375789751990">Votre historique de navigation s'affiche ici</translation>
+<translation id="3949870428812919180">Aucun mode de paiement enregistré</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="3962859241508114581">Titre précédent</translation>
 <translation id="3963837677003247395">Continuer manuellement ?</translation>

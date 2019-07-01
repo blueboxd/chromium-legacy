@@ -164,7 +164,7 @@ class XRSession final
   // TODO(crbug.com/969131): Update the mojom to deliver this per-frame.
   bool EmulatedPosition() const {
     if (display_info_) {
-      return !display_info_->capabilities->hasPosition;
+      return !display_info_->capabilities->has_position;
     }
 
     // If we don't have display info then we should be using the identity
@@ -175,7 +175,7 @@ class XRSession final
   // Immersive sessions currently use two views for VR, and only a single view
   // for smartphone immersive AR mode. Convention is that we use the left eye
   // if there's only a single view.
-  bool StereoscopicViews() { return display_info_ && display_info_->rightEye; }
+  bool StereoscopicViews() { return display_info_ && display_info_->right_eye; }
 
   void UpdateEyeParameters(
       const device::mojom::blink::VREyeParametersPtr& left_eye,

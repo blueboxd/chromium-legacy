@@ -82,8 +82,6 @@ _COMMANDS = {
     "DeleteCookie": (Method.DELETE, "/session/:sessionId/cookie/:name"),
     "DeleteNetworkConditions":
     (Method.DELETE, "/session/:sessionId/chromium/network_conditions"),
-    "DeleteScreenOrientation":
-    (Method.DELETE, "/session/:sessionId/orientation"),
     "DismissAlert": (Method.POST, "/session/:sessionId/dismiss_alert"),
     "DoubleClick": (Method.POST, "/session/:sessionId/doubleclick"),
     "ElementScreenshot":

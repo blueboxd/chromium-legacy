@@ -29,7 +29,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
@@ -92,32 +91,19 @@ TestShimClient::TestShimClient()
   base::FilePath user_data_dir;
   CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
 
-  mojo::PlatformChannelEndpoint endpoint;
+  std::string name_fragment =
+      base::StringPrintf("%s.%s.%s", base::mac::BaseBundleID(),
+                         app_mode::kAppShimBootstrapNameFragment,
+                         base::MD5String(user_data_dir.value()).c_str());
+  mojo::PlatformChannelEndpoint endpoint = ConnectToBrowser(name_fragment);
 
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    std::string name_fragment =
-        base::StringPrintf("%s.%s.%s", base::mac::BaseBundleID(),
-                           app_mode::kAppShimBootstrapNameFragment,
-                           base::MD5String(user_data_dir.value()).c_str());
-    endpoint = ConnectToBrowser(name_fragment);
-  } else {
-    base::FilePath symlink_path =
-        user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
-
-    base::FilePath socket_path;
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
-    app_mode::VerifySocketPermissions(socket_path);
-    endpoint = mojo::NamedPlatformChannel::ConnectToServer(socket_path.value());
-  }
   mojo::ScopedMessagePipeHandle message_pipe =
       mojo_connection_.Connect(std::move(endpoint));
   host_bootstrap_ = chrome::mojom::AppShimHostBootstrapPtr(
       chrome::mojom::AppShimHostBootstrapPtrInfo(std::move(message_pipe), 0));
 }
 
-// Browser Test for AppShimHostManager to test IPC interactions across the
-// UNIX domain socket.
+// Browser Test for AppShimHostManager to test IPC interactions.
 class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
                                       public apps::AppShimHandler,
                                       public chrome::mojom::AppShimHost {
@@ -233,58 +219,43 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchRegisterOnly) {
   EXPECT_TRUE(last_launch_files_.empty());
 }
 
-// Ensure the domain socket can be created in a fresh user data dir.
+// Ensure bootstrap name registers.
 IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        PRE_ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    EXPECT_TRUE(test_api.mach_acceptor());
-  } else {
-    EXPECT_TRUE(test_api.acceptor());
-  }
+  EXPECT_TRUE(test_api.mach_acceptor());
 }
 
-// Ensure the domain socket can be re-created after a prior browser process has
+// Ensure the bootstrap name can be re-created after a prior browser process has
 // quit.
 IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    EXPECT_TRUE(test_api.mach_acceptor());
-  } else {
-    EXPECT_TRUE(test_api.acceptor());
-  }
+  EXPECT_TRUE(test_api.mach_acceptor());
 }
 
 // Tests for the files created by AppShimHostManager.
-class AppShimHostManagerBrowserTestSocketFiles
+class AppShimHostManagerBrowserTestSymlink
     : public AppShimHostManagerBrowserTest {
  public:
-  AppShimHostManagerBrowserTestSocketFiles() {}
+  AppShimHostManagerBrowserTestSymlink() {}
 
  protected:
-  base::FilePath directory_in_tmp_;
-  base::FilePath symlink_path_;
   base::FilePath version_path_;
 
  private:
   bool SetUpUserDataDirectory() override;
   void TearDownInProcessBrowserTestFixture() override;
 
-  DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTestSocketFiles);
+  DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTestSymlink);
 };
 
-bool AppShimHostManagerBrowserTestSocketFiles::SetUpUserDataDirectory() {
+bool AppShimHostManagerBrowserTestSymlink::SetUpUserDataDirectory() {
   // Create an existing symlink. It should be replaced by AppShimHostManager.
   base::FilePath user_data_dir;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  symlink_path_ = user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
-  base::FilePath temp_dir;
-  base::PathService::Get(base::DIR_TEMP, &temp_dir);
-  EXPECT_TRUE(base::CreateSymbolicLink(temp_dir.Append("chrome-XXXXXX"),
-                                       symlink_path_));
 
   // Create an invalid RunningChromeVersion file.
   version_path_ =
@@ -294,34 +265,14 @@ bool AppShimHostManagerBrowserTestSocketFiles::SetUpUserDataDirectory() {
   return AppShimHostManagerBrowserTest::SetUpUserDataDirectory();
 }
 
-void AppShimHostManagerBrowserTestSocketFiles::
+void AppShimHostManagerBrowserTestSymlink::
     TearDownInProcessBrowserTestFixture() {
   // Check that created files have been deleted.
-  EXPECT_FALSE(base::PathExists(directory_in_tmp_));
-  EXPECT_FALSE(base::PathExists(symlink_path_));
   EXPECT_FALSE(base::PathExists(version_path_));
 }
 
-IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
-                       ReplacesSymlinkAndCleansUpFiles) {
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac))
-    return;
-
-  // Get the directory created by AppShimHostManager.
-  test::AppShimHostManagerTestApi test_api(
-      g_browser_process->platform_part()->app_shim_host_manager());
-  directory_in_tmp_ = test_api.directory_in_tmp();
-
-  // Check that socket files have been created.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_TRUE(base::PathExists(directory_in_tmp_));
-  EXPECT_TRUE(base::PathExists(symlink_path_));
-
-  // Check that the symlink has been replaced.
-  base::FilePath socket_path;
-  ASSERT_TRUE(base::ReadSymbolicLink(symlink_path_, &socket_path));
-  EXPECT_EQ(app_mode::kAppShimSocketShortName, socket_path.BaseName().value());
-
+IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSymlink,
+                       RunningChromeVersionCorrectlyWritten) {
   // Check that the RunningChromeVersion file is correctly written.
   base::FilePath version;
   EXPECT_TRUE(base::ReadSymbolicLink(version_path_, &version));

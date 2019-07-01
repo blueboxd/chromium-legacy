@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Saab muuta</translation>
 <translation id="1984603991036629094">Armeenia foneetiline klaviatuur</translation>
 <translation id="2001796770603320721">Halda Drive'is</translation>
+<translation id="2009067268969781306">Ketta vormindamisel kustutatakse kõik sellel olevad andmed. Seda toimingut ei saa tagasi võtta.</translation>
 <translation id="2028997212275086731">RAR-arhiiv</translation>
 <translation id="2046702855113914483">Rāmen</translation>
-<translation id="204914487372604757">Loo otsetee</translation>
 <translation id="2070909990982335904">Punktiga algavad nimed on reserveeritud süsteemile. Valige teine nimi.</translation>
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="2080010875307505892">Serbia klaviatuur</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Araabia klaviatuur</translation>
 <translation id="4261901459838235729">Google'i esitlus</translation>
 <translation id="4290535918735525311">1 kausta jagatakse Linuxiga</translation>
+<translation id="42981349822642051">Laienda</translation>
 <translation id="4298972503445160211">Taani klaviatuur</translation>
 <translation id="4299729908419173967">Brasiilia</translation>
 <translation id="4309915981827077375">Üldine teave</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Vaadake rohkem ...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pitsa</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> jagu faile kustutatakse</translation>
 <translation id="509429900233858213">Tekkis viga.</translation>
 <translation id="5098629044894065541">heebrea keel</translation>
 <translation id="5123433949759960244">Korvpall</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS-i pilvepõhine varundus</translation>
 <translation id="5756666464756035725">Ungari QWERTY-klaviatuur</translation>
 <translation id="5771585441665576801">Transliteratsioon (geia → γεια)</translation>
+<translation id="5776325638577448643">Kustuta ja vorminda</translation>
 <translation id="57838592816432529">Vaigista</translation>
 <translation id="5788127256798019331">Play failid</translation>
 <translation id="5790193330357274855">kasahhi</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Andke Linuxi rakendustele õigus kaustas <ph name="FOLDER_NAME" /> olevaid faile muuta</translation>
 <translation id="5892290200158927959">Prantsuse BÉPO-klaviatuur</translation>
 <translation id="5911887972742538906">Linuxi rakenduse installimisel ilmnes viga.</translation>
+<translation id="5912396950572065471">Vorming</translation>
 <translation id="5913638992615760742">Kopeerimine ebaõnnestus, ootamatu viga: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Andke Linuxi rakendustele luba muuta teie Google Drive'is olevaid faile. Muudatused sünkroonitakse muude seadmetega.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Ava laiendusega <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Talletusruumi teabe ootamine ...</translation>
 <translation id="6205710420833115353">Mõned toimingud võtavad oodatust kauem aega. Kas soovite need katkestada?</translation>
+<translation id="6224253798271602650">Ketta <ph name="DRIVE_NAME" /> vormindamine</translation>
 <translation id="6227235786875481728">Faili ei saanud esitada.</translation>
 <translation id="6248400709929739064">Luba subtiitrid</translation>
 <translation id="6264347891387618177">Transliteratsioon (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">USA programmeerija Dvoraki klaviatuur</translation>
 <translation id="7191454237977785534">Salvesta fail nimega</translation>
 <translation id="7222624196722476520">Bulgaaria foneetiline klaviatuur</translation>
+<translation id="7238097264433196391">Ketta nimi</translation>
 <translation id="7248671827512403053">Rakendus</translation>
 <translation id="7268659760406822741">Saadaolevad teenused</translation>
 <translation id="7283041136720745563">Teie Google Drive'i kvoot pole piisavalt suur.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">sloveeni keel</translation>
 <translation id="7982283708762922719">Kõrgus</translation>
 <translation id="7987485481246785146">Sorani kurdi araabia keele põhine klaviatuur</translation>
-<translation id="799547531016638432">Eemalda otsetee</translation>
 <translation id="799923393800005025">Saab vaadata</translation>
 <translation id="8008366997883261463">Jack Russelli terjer</translation>
 <translation id="8028993641010258682">Suurus</translation>

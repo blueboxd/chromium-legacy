@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Passa alla scheda precedente</translation>
 <translation id="2194790690264064655">Premi <ph name="CTRL" /> e fai clic su un link</translation>
 <translation id="2246352309084894470">Apri/chiudi Avvio app a schermo intero</translation>
+<translation id="2354531887393764880">punto</translation>
 <translation id="2382644247745281995">Non supportato dal layout di tastiera attuale</translation>
 <translation id="2397416548179033562">Mostra il menu Chrome</translation>
 <translation id="2424073332829844142">Attiva e disattiva BLOC MAIUSC</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Consente di aprire l'elemento evidenziato sulla shelf</translation>
 <translation id="379295446891231126">Da <ph name="CTRL" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="3837047332182291558">Aumenta la luminosità della tastiera (soltanto per tastiere retroilluminate)</translation>
+<translation id="3949671998904569433">virgola</translation>
 <translation id="3976863468609830880">Seleziona l'ultima icona nella shelf</translation>
 <translation id="3994783594793697310">Reimposta il livello di zoom dello schermo</translation>
 <translation id="4026843240379844265">Sposta la finestra attiva tra gli schermi</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Passa al successivo metodo di immissione disponibile</translation>
 <translation id="743754632698445141">Consente di sbloccare un'app</translation>
 <translation id="7439718573248533901">Elimina la lettera successiva (eliminazione in avanti)</translation>
+<translation id="7500368597227394048">trattino</translation>
 <translation id="7611271430932669992">Consente di spostare lo stato attivo su finestre di dialogo e popup</translation>
 <translation id="766326951329901120">Incolla i contenuti dagli appunti come testo normale</translation>
+<translation id="7703010453515335249">parentesi quadra aperta</translation>
 <translation id="7724603315864178912">Taglia</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="SPACE" /> o <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Apre un file nel browser</translation>
-<translation id="7917881398263220094">Interrompe il caricamento della pagina corrente</translation>
 <translation id="7952165122793773711">Consente di accedere alle schede da 1 a 8</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8130528849632411619">Passa all'inizio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8232835244134740473">Consente di spostare lo stato attivo tra: l'area di stato (dove è visualizzata l'immagine del tuo account), Avvio applicazioni, la barra degli indirizzi, la barra dei Preferiti (se visibile), la pagina web aperta e la barra dei download (se visibile).</translation>
 <translation id="8234414138295101081">Ruota lo schermo di 90 gradi</translation>
+<translation id="8241665785394195545">parentesi quadra chiusa</translation>
 <translation id="8264941229485248811">Consente di mostrare o nascondere il controllo Strumenti per sviluppatori</translation>
 <translation id="836869401750819675">Apre la pagina Download</translation>
 <translation id="8388247778047144397">Trascina il link in un'area vuota della tabstrip</translation>

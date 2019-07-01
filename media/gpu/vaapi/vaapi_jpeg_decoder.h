@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "ui/gfx/geometry/size.h"
@@ -45,7 +46,12 @@ class VaapiJpegDecoder : public VaapiImageDecoder {
   std::unique_ptr<ScopedVAImage> GetImage(uint32_t preferred_image_fourcc,
                                           VaapiImageDecodeStatus* status);
 
+ protected:
+  scoped_refptr<VASurface> ReleaseVASurface() override;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(VaapiJpegDecoderTest, ReleaseVASurface);
+
   // The current VA surface for decoding.
   VASurfaceID va_surface_id_;
   // The coded size associated with |va_surface_id_|.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/rsu/lookup_key_uploader.h"
 
+#include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
@@ -42,19 +43,28 @@ LookupKeyUploader::~LookupKeyUploader() {
 }
 
 void LookupKeyUploader::OnStoreLoaded(CloudPolicyStore* store) {
-  if (!needs_upload_ || clock_->Now() - last_upload_time_ < kRetryFrequency)
+  const enterprise_management::PolicyData* policy_data = store->policy();
+  if (clock_->Now() - last_upload_time_ < kRetryFrequency)
+    return;
+  if (policy_data && policy_data->has_client_action_required() &&
+      policy_data->client_action_required().enrollment_certificate_needed()) {
+    // We clear it in the case when this lookup key was uploaded earlier.
+    prefs_->SetString(prefs::kLastRsuDeviceIdUploaded, std::string());
+    needs_upload_ = true;
+  }
+  if (!needs_upload_)
     return;
   needs_upload_ = false;
+
   cryptohome_client_->WaitForServiceToBeAvailable(base::BindOnce(
-      &LookupKeyUploader::OnCryptohomeReady, weak_factory_.GetWeakPtr()));
+      &LookupKeyUploader::GetDataFromCryptohome, weak_factory_.GetWeakPtr()));
 }
 
-void LookupKeyUploader::OnCryptohomeReady(bool available) {
+void LookupKeyUploader::GetDataFromCryptohome(bool available) {
   if (!available) {
     needs_upload_ = true;
     return;
   }
-
   cryptohome_client_->GetRsuDeviceId(base::BindOnce(
       &LookupKeyUploader::OnRsuDeviceIdReceived, weak_factory_.GetWeakPtr()));
 }

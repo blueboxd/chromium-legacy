@@ -16,15 +16,15 @@ FakeVRDevice::~FakeVRDevice() {}
 mojom::VRDisplayInfoPtr FakeVRDevice::InitBasicDevice() {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = GetId();
-  display_info->displayName = "FakeVRDevice";
+  display_info->display_name = "FakeVRDevice";
 
   display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->hasPosition = false;
-  display_info->capabilities->hasExternalDisplay = false;
-  display_info->capabilities->canPresent = false;
+  display_info->capabilities->has_position = false;
+  display_info->capabilities->has_external_display = false;
+  display_info->capabilities->can_present = false;
 
-  display_info->leftEye = InitEye(45, -0.03f, 1024);
-  display_info->rightEye = InitEye(45, 0.03f, 1024);
+  display_info->left_eye = InitEye(45, -0.03f, 1024);
+  display_info->right_eye = InitEye(45, 0.03f, 1024);
   return display_info;
 }
 
@@ -33,16 +33,16 @@ mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
                                                 uint32_t size) {
   mojom::VREyeParametersPtr eye = mojom::VREyeParameters::New();
 
-  eye->fieldOfView = mojom::VRFieldOfView::New();
-  eye->fieldOfView->upDegrees = fov;
-  eye->fieldOfView->downDegrees = fov;
-  eye->fieldOfView->leftDegrees = fov;
-  eye->fieldOfView->rightDegrees = fov;
+  eye->field_of_view = mojom::VRFieldOfView::New();
+  eye->field_of_view->up_degrees = fov;
+  eye->field_of_view->down_degrees = fov;
+  eye->field_of_view->left_degrees = fov;
+  eye->field_of_view->right_degrees = fov;
 
   eye->offset = gfx::Vector3dF(offset, 0.0f, 0.0f);
 
-  eye->renderWidth = size;
-  eye->renderHeight = size;
+  eye->render_width = size;
+  eye->render_height = size;
 
   return eye;
 }

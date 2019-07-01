@@ -25,6 +25,8 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_ukm_recorder_factory.h"
+#include "cc/trees/clip_node.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
@@ -1205,24 +1207,17 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
-
-    ScrollTree& scroll_tree =
-        impl->active_tree()->property_trees()->scroll_tree;
-    ScrollNode* scroll_node =
-        scroll_tree.Node(scroll_layer->scroll_tree_index());
-
     // Verify that the scroll layer's scroll offset is taken into account when
     // checking whether the screen space point is inside the non-fast
     // scrollable region.
-
-    InputHandler::ScrollStatus status =
-        impl->TryScroll(gfx::PointF(1.f, 1.f), scroll_tree, scroll_node);
+    InputHandler::ScrollStatus status = impl->ScrollBegin(
+        BeginState(gfx::Point(0, 0)).get(), InputHandler::TOUCHSCREEN);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               status.main_thread_scrolling_reasons);
 
-    status = impl->TryScroll(gfx::PointF(21.f, 21.f), scroll_tree, scroll_node);
+    status = impl->ScrollBegin(BeginState(gfx::Point(21, 21)).get(),
+                               InputHandler::TOUCHSCREEN);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);
@@ -2228,6 +2223,190 @@ class LayerTreeHostScrollTestImplSideInvalidation
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplSideInvalidation);
+
+// Version of LayerTreeHostScrollTest that uses layer lists which means the
+// property trees and layer list are explicitly specified instead of running
+// the cc property tree builder.
+class LayerListLayerTreeHostScrollTest : public LayerTreeHostScrollTest {
+ public:
+  // The id of the root property tree nodes.
+  static constexpr int kRootNodeId = 1;
+
+  LayerListLayerTreeHostScrollTest() { SetUseLayerList(); }
+
+  void SetupTree() override {
+    // Setup the root transform, effect, clip, and scroll property tree nodes.
+    auto& transform_tree = layer_tree_host()->property_trees()->transform_tree;
+    auto& root_transform_node = *transform_tree.Node(
+        transform_tree.Insert(TransformNode(), kRealRootNodeId));
+    DCHECK_EQ(root_transform_node.id, kRootNodeId);
+    root_transform_node.source_node_id = root_transform_node.parent_id;
+    transform_tree.set_needs_update(true);
+
+    auto& effect_tree = layer_tree_host()->property_trees()->effect_tree;
+    auto& root_effect_node =
+        *effect_tree.Node(effect_tree.Insert(EffectNode(), kRealRootNodeId));
+    DCHECK_EQ(root_effect_node.id, kRootNodeId);
+    root_effect_node.stable_id = 1;
+    root_effect_node.transform_id = kRealRootNodeId;
+    root_effect_node.clip_id = kRealRootNodeId;
+    root_effect_node.render_surface_reason = RenderSurfaceReason::kRoot;
+    effect_tree.set_needs_update(true);
+
+    auto& clip_tree = layer_tree_host()->property_trees()->clip_tree;
+    auto& root_clip_node =
+        *clip_tree.Node(clip_tree.Insert(ClipNode(), kRealRootNodeId));
+    DCHECK_EQ(root_clip_node.id, kRootNodeId);
+    root_clip_node.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
+    root_clip_node.clip = gfx::RectF(gfx::SizeF(800, 600));
+    root_clip_node.transform_id = kRealRootNodeId;
+    clip_tree.set_needs_update(true);
+
+    auto& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
+    auto& root_scroll_node =
+        *scroll_tree.Node(scroll_tree.Insert(ScrollNode(), kRealRootNodeId));
+    DCHECK_EQ(root_scroll_node.id, kRootNodeId);
+    root_scroll_node.transform_id = kRealRootNodeId;
+    scroll_tree.set_needs_update(true);
+
+    // Setup the root Layer which should be used to attach the layer list.
+    root_ = Layer::Create();
+    root_->SetBounds(gfx::Size(800, 600));
+    root_->SetIsDrawable(true);
+    root_->SetHitTestable(true);
+    root_->SetTransformTreeIndex(root_transform_node.id);
+    root_->SetEffectTreeIndex(root_effect_node.id);
+    root_->SetScrollTreeIndex(root_scroll_node.id);
+    root_->SetClipTreeIndex(root_clip_node.id);
+    layer_tree_host()->SetRootLayer(root_);
+
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(800, 600), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
+
+    layer_tree_host()->property_trees()->sequence_number =
+        root_->property_tree_sequence_number();
+
+    root_->SetNeedsCommit();
+  }
+
+  Layer* root() const { return root_.get(); }
+
+ private:
+  // The compositor is hard-coded to use 0 for the root nodes (always non-null).
+  static constexpr int kRealRootNodeId = 0;
+
+  scoped_refptr<Layer> root_;
+};
+
+class NonScrollingNonFastScrollableRegion
+    : public LayerListLayerTreeHostScrollTest {
+ public:
+  // Setup 3 Layers:
+  // 1) bottom_ which has a non-fast region in the bottom-right.
+  // 2) middle_scrollable_ which is scrollable.
+  // 3) top_ which has a non-fast region in the top-left and is offset by
+  //    |middle_scrollable_|'s scroll offset.
+  void SetupTree() override {
+    LayerListLayerTreeHostScrollTest::SetupTree();
+
+    fake_content_layer_client_.set_bounds(root()->bounds());
+
+    std::vector<scoped_refptr<Layer>> layer_list;
+
+    bottom_ = FakePictureLayer::Create(&fake_content_layer_client_);
+    bottom_->SetElementId(LayerIdToElementIdForTesting(bottom_->id()));
+    bottom_->SetBounds(gfx::Size(100, 100));
+    bottom_->SetNonFastScrollableRegion(Region(gfx::Rect(50, 50, 50, 50)));
+    bottom_->SetHitTestable(true);
+    bottom_->SetTransformTreeIndex(kRootNodeId);
+    bottom_->SetEffectTreeIndex(kRootNodeId);
+    bottom_->SetScrollTreeIndex(kRootNodeId);
+    bottom_->SetClipTreeIndex(kRootNodeId);
+    bottom_->set_property_tree_sequence_number(
+        root()->property_tree_sequence_number());
+    layer_list.push_back(bottom_);
+
+    auto& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
+    auto& scroll_node =
+        *scroll_tree.Node(scroll_tree.Insert(ScrollNode(), kRootNodeId));
+    scroll_node.transform_id = kRootNodeId;
+    middle_scrollable_ = FakePictureLayer::Create(&fake_content_layer_client_);
+    middle_scrollable_->SetElementId(
+        LayerIdToElementIdForTesting(middle_scrollable_->id()));
+    scroll_node.element_id = middle_scrollable_->element_id();
+    scroll_node.scrollable = true;
+    scroll_node.bounds = gfx::Size(100, 200);
+    scroll_node.container_bounds = gfx::Size(100, 100);
+    middle_scrollable_->SetBounds(gfx::Size(100, 100));
+    middle_scrollable_->SetIsDrawable(true);
+    middle_scrollable_->SetScrollable(gfx::Size(100, 200));
+    middle_scrollable_->SetHitTestable(true);
+    middle_scrollable_->SetTransformTreeIndex(kRootNodeId);
+    middle_scrollable_->SetEffectTreeIndex(kRootNodeId);
+    middle_scrollable_->SetScrollTreeIndex(scroll_node.id);
+    middle_scrollable_->SetClipTreeIndex(kRootNodeId);
+    middle_scrollable_->set_property_tree_sequence_number(
+        root()->property_tree_sequence_number());
+    layer_list.push_back(middle_scrollable_);
+
+    top_ = FakePictureLayer::Create(&fake_content_layer_client_);
+    top_->SetElementId(LayerIdToElementIdForTesting(top_->id()));
+    top_->SetBounds(gfx::Size(100, 100));
+    top_->SetNonFastScrollableRegion(Region(gfx::Rect(0, 0, 50, 50)));
+    top_->SetHitTestable(true);
+    top_->SetTransformTreeIndex(kRootNodeId);
+    top_->SetEffectTreeIndex(kRootNodeId);
+    top_->SetScrollTreeIndex(scroll_node.id);
+    top_->SetClipTreeIndex(kRootNodeId);
+    top_->set_property_tree_sequence_number(
+        root()->property_tree_sequence_number());
+
+    layer_list.push_back(top_);
+    root()->SetChildLayerList(std::move(layer_list));
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    // The top-left hit should immediately hit the top layer's non-fast region
+    // which forces main-thread scrolling.
+    auto top_left_status = impl->ScrollBegin(
+        BeginState(gfx::Point(20, 20)).get(), InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, top_left_status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+              top_left_status.main_thread_scrolling_reasons);
+
+    // The top-right hit should hit the top layer but not the non-fast region so
+    // the scroll should continue to scroll on the impl.
+    InputHandler::ScrollStatus top_right_status = impl->ScrollBegin(
+        BeginState(gfx::Point(80, 20)).get(), InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, top_right_status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+              top_right_status.main_thread_scrolling_reasons);
+
+    // The bottom-right should hit the bottom layer's non-fast region. Though
+    // the middle layer is a composited scroller and is hit first, we cannot do
+    // a fast scroll because an ancestor on the scroll chain has hit a non-fast
+    // region.
+    InputHandler::ScrollStatus bottom_right_status = impl->ScrollBegin(
+        BeginState(gfx::Point(80, 80)).get(), InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, bottom_right_status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+              bottom_right_status.main_thread_scrolling_reasons);
+
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient fake_content_layer_client_;
+  scoped_refptr<Layer> bottom_;
+  scoped_refptr<Layer> middle_scrollable_;
+  scoped_refptr<Layer> top_;
+};
+
+SINGLE_THREAD_TEST_F(NonScrollingNonFastScrollableRegion);
 
 }  // namespace
 }  // namespace cc

@@ -119,9 +119,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, GenerateEllipsis) {
       To<NGPhysicalLineBoxFragment>(*block->Children()[0].get());
 
   // The ellipsis is in its own NGPhysicalTextFragment.
-  EXPECT_EQ(2u, line1.Children().size());
-  EXPECT_EQ(NGPhysicalFragment::kFragmentText, line1.Children()[1]->Type());
-  const auto& ellipsis = To<NGPhysicalTextFragment>(*line1.Children()[1].get());
+  EXPECT_EQ(3u, line1.Children().size());
+  const auto& ellipsis = To<NGPhysicalTextFragment>(*line1.Children().back());
   EXPECT_EQ(String(u"\u2026"), ellipsis.Text().ToString());
   // It should have the same LayoutObject as the clipped word.
   EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), ellipsis.GetLayoutObject());

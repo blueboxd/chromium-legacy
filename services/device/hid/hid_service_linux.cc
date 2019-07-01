@@ -180,6 +180,8 @@ class HidServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
     }
   }
 
+  void OnDeviceChanged(ScopedUdevDevicePtr) override { NOTIMPLEMENTED(); }
+
   SEQUENCE_CHECKER(sequence_checker_);
   std::unique_ptr<UdevWatcher> watcher_;
 

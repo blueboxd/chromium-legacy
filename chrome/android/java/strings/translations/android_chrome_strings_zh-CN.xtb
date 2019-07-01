@@ -61,7 +61,6 @@
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1384959399684842514">已暂停下载</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> 天前曾有活动</translation>
-<translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 进行搜索</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
@@ -186,6 +185,7 @@
 <translation id="2259659629660284697">导出密码…</translation>
 <translation id="2268044343513325586">优化</translation>
 <translation id="2286841657746966508">帐单邮寄地址</translation>
+<translation id="2289270750774289114">在网站想发现附近的蓝牙设备时询问您（推荐）</translation>
 <translation id="230115972905494466">未找到任何兼容设备</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2321086116217818302">正在准备密码…</translation>
@@ -270,6 +270,7 @@
 <translation id="2900528713135656174">创建活动</translation>
 <translation id="2902702728133930130">由于出现意外错误，Chrome 启动失败。</translation>
 <translation id="290376772003165898">网页的源语言不是<ph name="LANGUAGE" />？</translation>
+<translation id="2904414404539560095">要与之分享标签页的设备的列表已全屏打开。</translation>
 <translation id="2910701580606108292">网站需先询问并得到许可才能播放受保护内容</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2923908459366352541">名称无效</translation>
@@ -328,6 +329,7 @@
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
 <translation id="3353615205017136254">由 Google 提供的精简版网页。点按“加载原始网页”按钮即可加载原始网页。</translation>
 <translation id="3367813778245106622">重新登录以开始同步</translation>
+<translation id="3374023511497244703">您的书签、历史记录、密码和其他 Chrome 数据将不再同步到您的 Google 帐号中</translation>
 <translation id="3384347053049321195">分享图片</translation>
 <translation id="3386292677130313581">网站需要先询问并得到您的许可才能获取您的位置信息（推荐）</translation>
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
@@ -358,7 +360,6 @@
 <translation id="3632295766818638029">显示密码</translation>
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，您每次都要通过验证才能登录网站。</translation>
 <translation id="3658159451045945436">这项重置操作会清空流量节省情况历史记录，包括曾访问过的网站的列表。</translation>
-<translation id="3662546969139119822">此处没有任何历史记录</translation>
 <translation id="3663367437272849150">将 <ph name="NUM_SELECTED" /> 个标签页合为一组。</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
 <translation id="3692944402865947621">未能成功下载“<ph name="FILE_NAME" />”，因为无法访问它的存储位置。</translation>
@@ -418,6 +419,7 @@
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
+<translation id="4135200667068010335">要与之分享标签页的设备的列表已关闭。</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4169535189173047238">不允许</translation>
@@ -439,7 +441,6 @@
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
-<translation id="4262028915562328938">同步时出现错误，点按可了解详情。</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许</translation>
@@ -766,6 +767,7 @@
 <translation id="6538442820324228105">已下载 <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="6545017243486555795">清除所有数据</translation>
+<translation id="6545864417968258051">蓝牙扫描</translation>
 <translation id="6560414384669816528">改用搜狗搜索</translation>
 <translation id="6566259936974865419">Chrome 已为您保存的数据量：<ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">一律允许</translation>
@@ -795,8 +797,10 @@
 <translation id="671481426037969117">您的 <ph name="FQDN" /> 计时器已结束计时。它将于明天重新开始。</translation>
 <translation id="6738867403308150051">正在下载…</translation>
 <translation id="6746124502594467657">下移</translation>
+<translation id="6751888224264752704">也从此设备中清除这些 Chrome 数据</translation>
 <translation id="6766622839693428701">向下滑动即可关闭。</translation>
 <translation id="6766758767654711248">点按即可转到网站</translation>
+<translation id="6767294960381293877">要与之分享标签页的设备的列表已半屏打开。</translation>
 <translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">获取您在所有设备上保存的书签、历史记录、密码和其他设置</translation>
@@ -812,7 +816,6 @@
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
-<translation id="6868088497967843822">登录后可将您的书签、历史记录、密码和其他设置同步到所有设备上</translation>
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">需解锁才能复制您的密码</translation>
 <translation id="6896758677409633944">复制</translation>
@@ -829,7 +832,6 @@
 <translation id="6979737339423435258">时间不限</translation>
 <translation id="6980462514016882061">Google 可能会利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务</translation>
 <translation id="6981982820502123353">无障碍</translation>
-<translation id="6985347914332179298">此处没有任何下载内容</translation>
 <translation id="6989267951144302301">无法下载</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
@@ -887,7 +889,6 @@
 <translation id="7403691278183511381">Chrome 首次运行体验</translation>
 <translation id="741204030948306876">立即启用</translation>
 <translation id="7413229368719586778">开始日期：<ph name="DATE" /></translation>
-<translation id="7418565925463285788">将标签页分组…</translation>
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7423538860840206698">已阻止读取剪贴板中的内容</translation>
 <translation id="7431991332293347422">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索和其他 Google 服务</translation>
@@ -1026,6 +1027,7 @@
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
 <translation id="8364299278605033898">查看热门网站</translation>
 <translation id="8364603787714420828">取消选择<ph name="TAB_TITLE" />标签页。</translation>
+<translation id="8368027906805972958">未知或不支持的设备 (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8378714024927312812">由贵单位管理</translation>
@@ -1122,6 +1124,7 @@
 <translation id="9099018167121903954">下载内容已占用的空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">询问是否使用简化版视图显示支持这一功能的文章</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
+<translation id="9104217018994036254">要与之分享标签页的设备的列表。</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9139068048179869749">网站发送通知前需先询问并获得许可（推荐）</translation>

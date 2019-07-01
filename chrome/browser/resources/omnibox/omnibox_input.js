@@ -23,6 +23,7 @@ let QueryInputs;
  *   showDetails: boolean,
  *   showAllProviders: boolean,
  *   elideCells: boolean,
+ *   thinRows: boolean,
  * }}
  */
 let DisplayInputs;
@@ -68,6 +69,7 @@ class OmniboxInput extends OmniboxElement {
      '#show-details',
      '#show-all-providers',
      '#elide-cells',
+     '#thin-rows',
     ].forEach(query => {
       this.$$(query).addEventListener(
           'input', this.onDisplayInputsChanged_.bind(this));
@@ -218,6 +220,7 @@ class OmniboxInput extends OmniboxElement {
       showDetails: this.$$('#show-details').checked,
       showAllProviders: this.$$('#show-all-providers').checked,
       elideCells: this.$$('#elide-cells').checked,
+      thinRows: this.$$('#thin-rows').checked,
     };
   }
 
@@ -228,6 +231,7 @@ class OmniboxInput extends OmniboxElement {
     this.$$('#show-details').checked = displayInputs.showDetails;
     this.$$('#show-all-providers').checked = displayInputs.showAllProviders;
     this.$$('#elide-cells').checked = displayInputs.elideCells;
+    this.$$('#thin-rows').checked = displayInputs.thinRows;
   }
 
   /** @private */
@@ -336,6 +340,7 @@ class OmniboxInput extends OmniboxElement {
       showDetails: false,
       showAllProviders: true,
       elideCells: true,
+      thinRows: false,
     };
   }
 }

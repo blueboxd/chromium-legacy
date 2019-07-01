@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Go to previous tab</translation>
 <translation id="2194790690264064655">Press <ph name="CTRL" /> and click a link</translation>
 <translation id="2246352309084894470">Open/close the full-screen launcher</translation>
+<translation id="2354531887393764880">full-stop</translation>
 <translation id="2382644247745281995">Not supported with current keyboard layout</translation>
 <translation id="2397416548179033562">Show Chrome menu</translation>
 <translation id="2424073332829844142">Turn Caps Lock on and off</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Open the highlighted item on your shelf</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 to 8</translation>
 <translation id="3837047332182291558">Make keyboard brighter (for backlit keyboards only)</translation>
+<translation id="3949671998904569433">comma</translation>
 <translation id="3976863468609830880">Click the last icon on your shelf</translation>
 <translation id="3994783594793697310">Reset display zoom level</translation>
 <translation id="4026843240379844265">Move active window between displays</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Switch to the next available input method</translation>
 <translation id="743754632698445141">Unpin an app</translation>
 <translation id="7439718573248533901">Delete the next letter (forward delete)</translation>
+<translation id="7500368597227394048">hyphen</translation>
 <translation id="7611271430932669992">Move focus to pop-ups and dialogues</translation>
 <translation id="766326951329901120">Paste content from the clipboard as plain text</translation>
+<translation id="7703010453515335249">bracket left</translation>
 <translation id="7724603315864178912">Cut</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, then <ph name="SPACE" /> or <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Open a file in the browser</translation>
-<translation id="7917881398263220094">Stop the loading of your current page</translation>
 <translation id="7952165122793773711">Go to tabs one to eight</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8130528849632411619">Go to beginning of document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> or <ph name="E" /></translation>
 <translation id="8232835244134740473">Switch focus between: Status area (where your account picture appears), Launcher, Address bar, Bookmarks bar (if visible), the web page that's open and Downloads bar (if visible).</translation>
 <translation id="8234414138295101081">Rotate screen 90 degrees</translation>
+<translation id="8241665785394195545">bracket right</translation>
 <translation id="8264941229485248811">Show or hide the Developer Tools inspector</translation>
 <translation id="836869401750819675">Open the Downloads page</translation>
 <translation id="8388247778047144397">Drag the link to a blank area on the tab strip</translation>

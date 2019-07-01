@@ -20,30 +20,20 @@
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/vr_device_provider.h"
 
+#if BUILDFLAG(ENABLE_OPENVR)
+#include "device/vr/openvr/openvr_device.h"
+#endif
+
 #if defined(OS_ANDROID)
+#include "device/vr/android/gvr/gvr_device_provider.h"
 
 #if BUILDFLAG(ENABLE_ARCORE)
 #include "device/vr/android/arcore/arcore_device_provider_factory.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_ARCORE)
 
-#include "device/vr/android/gvr/gvr_device_provider.h"
-#endif
-
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
-// We are hosting Oculus and OpenVR in a separate process
+#else  // !defined(OS_ANDROID)
 #include "chrome/browser/vr/service/isolated_device_provider.h"
-#else
-// We are hosting Oculus and OpenVR in the browser process if enabled.
-
-#if BUILDFLAG(ENABLE_OPENVR)
-#include "device/vr/openvr/openvr_device_provider.h"
-#endif
-
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-#include "device/vr/oculus/oculus_device_provider.h"
-#endif
-
-#endif  // BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#endif  // defined(OS_ANDROID)
 
 namespace vr {
 
@@ -79,25 +69,9 @@ scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
 
 #if defined(OS_ANDROID)
   providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
-#endif  // defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#else   // !defined(OS_ANDROID)
   providers.emplace_back(std::make_unique<vr::IsolatedVRDeviceProvider>());
-#else
-#if BUILDFLAG(ENABLE_OPENVR)
-  if (base::FeatureList::IsEnabled(features::kOpenVR))
-    providers.emplace_back(std::make_unique<device::OpenVRDeviceProvider>());
-#endif
-
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-  // For now, only use the Oculus when OpenVR is not enabled.
-  // TODO(billorr): Add more complicated logic to avoid routing Oculus devices
-  // through OpenVR.
-  if (base::FeatureList::IsEnabled(features::kOculusVR) &&
-      providers.size() == 0)
-    providers.emplace_back(std::make_unique<device::OculusVRDeviceProvider>());
-#endif
-#endif  // ENABLE_ISOLATED_XR_SERVICE
+#endif  // defined(OS_ANDROID)
 
   auto* connector = content::GetSystemConnector();
   if (connector) {
@@ -117,8 +91,8 @@ XRRuntimeManager* XRRuntimeManager::GetInstanceIfCreated() {
 }
 
 void XRRuntimeManager::RecordVrStartupHistograms() {
-#if BUILDFLAG(ENABLE_OPENVR) && !BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
-  device::OpenVRDeviceProvider::RecordRuntimeAvailability();
+#if BUILDFLAG(ENABLE_OPENVR)
+  device::OpenVRDevice::RecordRuntimeAvailability();
 #endif
 }
 

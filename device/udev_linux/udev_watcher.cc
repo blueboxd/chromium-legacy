@@ -131,6 +131,10 @@ void UdevWatcher::OnMonitorReadable() {
     observer_->OnDeviceAdded(std::move(device));
   else if (action == "remove")
     observer_->OnDeviceRemoved(std::move(device));
+  else if (action == "change")
+    observer_->OnDeviceChanged(std::move(device));
+  else
+    DVLOG(1) << "Unknown udev action: " << action;
 }
 
 }  // namespace device

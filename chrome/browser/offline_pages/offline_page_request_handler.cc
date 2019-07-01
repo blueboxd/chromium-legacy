@@ -209,25 +209,6 @@ RequestResultToAggregatedRequestResult(
       AGGREGATED_REQUEST_RESULT_MAX;
 }
 
-void ReportOpenResult(int result) {
-  base::UmaHistogramSparse("OfflinePages.RequestJob.OpenFileErrorCode",
-                           -result);
-}
-
-void ReportSeekResult(int result) {
-  if (result < 0) {
-    base::UmaHistogramSparse("OfflinePages.RequestJob.SeekFileErrorCode",
-                             static_cast<int>(-result));
-  }
-}
-
-void ReportReadResult(int result) {
-  if (result < 0) {
-    base::UmaHistogramSparse("OfflinePages.RequestJob.ReadFileErrorCode",
-                             -result);
-  }
-}
-
 void ReportRequestResult(
     RequestResult request_result,
     OfflinePageRequestHandler::NetworkState network_state) {
@@ -270,16 +251,6 @@ void ReportAccessEntryPoint(
   base::UmaHistogramEnumeration(
       "OfflinePages.AccessEntryPoint." + name_space, entry_point,
       OfflinePageRequestHandler::AccessEntryPoint::COUNT);
-}
-
-void ReportExistenceOfRangeHeader(bool has_range_header) {
-  base::UmaHistogramBoolean("OfflinePages.RequestJob.RangeHeader",
-                            has_range_header);
-}
-
-void ReportIntentDataChangedAfterValidation(bool changed) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "OfflinePages.RequestJob.IntentDataChangedAfterValidation", changed);
 }
 
 OfflinePageModel* GetOfflinePageModel(
@@ -517,7 +488,6 @@ OfflinePageRequestHandler::OfflinePageRequestHandler(
       delegate_(delegate),
       network_state_(NetworkState::CONNECTED_NETWORK),
       candidate_index_(0),
-      has_range_header_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(GetJobThreadID());
   std::string offline_header_value;
@@ -525,9 +495,6 @@ OfflinePageRequestHandler::OfflinePageRequestHandler(
   // Note that |offline_header| will be empty if parsing from the header value
   // fails.
   offline_header_ = OfflinePageHeader(offline_header_value);
-
-  if (extra_request_headers.HasHeader(net::HttpRequestHeaders::kRange))
-    has_range_header_ = true;
 }
 
 OfflinePageRequestHandler::~OfflinePageRequestHandler() {}
@@ -688,7 +655,6 @@ void OfflinePageRequestHandler::VisitTrustedOfflinePage() {
   ReportAccessEntryPoint(GetCurrentOfflinePage().client_id.name_space,
                          GetAccessEntryPoint());
   ReportOfflinePageSize(network_state_, GetCurrentOfflinePage());
-  ReportExistenceOfRangeHeader(has_range_header_);
 
   delegate_->SetOfflinePageNavigationUIData(true /*is_offline_page*/);
 
@@ -894,8 +860,6 @@ void OfflinePageRequestHandler::DidGetFileSizeForValidation(
 }
 
 void OfflinePageRequestHandler::DidOpenForValidation(int result) {
-  ReportOpenResult(result);
-
   if (result != net::OK) {
     OnFileValidationDone(FileValidationResult::FILE_VALIDATION_FAILED);
     return;
@@ -917,8 +881,6 @@ void OfflinePageRequestHandler::ReadForValidation() {
 }
 
 void OfflinePageRequestHandler::DidReadForValidation(int result) {
-  ReportReadResult(result);
-
   if (result < 0) {
     OnFileValidationDone(FileValidationResult::FILE_VALIDATION_FAILED);
     return;
@@ -975,8 +937,6 @@ void OfflinePageRequestHandler::OnFileValidationDone(
 }
 
 void OfflinePageRequestHandler::DidOpenForServing(int result) {
-  ReportOpenResult(result);
-
   // Handle the file opening failure.
   if (result != net::OK) {
     ReportRequestResult(RequestResult::FILE_NOT_FOUND, network_state_);
@@ -1006,8 +966,6 @@ void OfflinePageRequestHandler::DidOpenForServing(int result) {
 void OfflinePageRequestHandler::DidSeekForServing(int64_t result) {
   DCHECK_LE(result, 0);
 
-  ReportSeekResult(result);
-
   if (result < 0) {
     delegate_->NotifyStartError(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
@@ -1019,8 +977,6 @@ void OfflinePageRequestHandler::DidSeekForServing(int64_t result) {
 void OfflinePageRequestHandler::DidReadForServing(
     scoped_refptr<net::IOBuffer> buf,
     int result) {
-  ReportReadResult(result);
-
   if (result < 0 || !IsProcessingFileOrContentUrlIntent()) {
     buf = nullptr;
     NotifyReadRawDataComplete(result);
@@ -1058,7 +1014,6 @@ void OfflinePageRequestHandler::DidComputeActualDigestForServing(
     const std::string& actual_digest) {
   // If the actual digest does not match, fail the request job.
   bool mismatch = actual_digest != GetCurrentOfflinePage().digest;
-  ReportIntentDataChangedAfterValidation(mismatch);
   if (mismatch) {
     // Note: Do not call delegate_->SetOfflinePageNavigationUIData to clear
     // the offline bit since SetOfflinePageNavigationUIData is supposed to

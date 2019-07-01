@@ -346,6 +346,11 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
           Se questo criterio è disattivato o non impostato, le impostazioni Account Kerberos sono disattivate. Nessun account Kerberos può essere aggiunto e l'autenticazione Kerberos non può essere utilizzata. Tutti gli account Kerberos esistenti vengono eliminati, tutte le password memorizzate vengono eliminate.</translation>
 <translation id="1561424797596341174">La norma sostituisce le build di debug dell'host di accesso remoto</translation>
 <translation id="1561967320164410511">U2F più estensioni per singola attestazione</translation>
+<translation id="1566329065312331399">
+      Se viene impostato su False, questo criterio non consente di attivare il powerwash sul dispositivo.
+      Se viene impostato su True, consente di attivare il powerwash sul dispositivo.
+      Se non viene impostato, viene usato il valore predefinito False, che indica che non è possibile eseguire il powerwash sul dispositivo.
+      </translation>
 <translation id="1574554504290354326">Questa impostazione è obsoleta. Utilizza invece SafeBrowsingExtendedReportingEnabled. L'attivazione o la disattivazione di SafeBrowsingExtendedReportingEnabled equivale a impostare SafeBrowsingExtendedReportingOptInAllowed su False.
 
       L'impostazione di questa norma su False impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni di sistema e i contenuti della pagina. Se questa impostazione viene configurata su True o non viene configurata, gli utenti potranno inviare alcune informazioni di sistema e i contenuti della pagina a Navigazione sicura per contribuire a rilevare app e siti pericolosi.
@@ -383,6 +388,7 @@ Se la norma non viene configurata o viene impostata su false, la chiave manifest
 
 Avviso. Non è consigliato delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> a un'app kiosk, poiché potrebbe impedire al dispositivo di ricevere aggiornamenti software e correzioni di sicurezza fondamentali. Delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> potrebbe mettere a rischio gli utenti.</translation>
 <translation id="1675002386741412210">Supportato su:</translation>
+<translation id="1700811900332333712">Consenti al dispositivo di richiedere il powerwash</translation>
 <translation id="1704516734140344991">Consente di configurare disponibilità e comportamento della funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Le impostazioni individuali possono essere specificate nelle proprietà JSON:
@@ -1983,6 +1989,14 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
 
       Se il criterio non viene impostato, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Questa impostazione, SitePerProcess, può essere utilizzata per non consentire più agli utenti di disattivare il comportamento predefinito di isolamento di tutti i siti. Tieni presente che il criterio IsolateOrigins può essere utile anche per isolare origini aggiuntive più specifiche.
+      Se il criterio viene attivato, gli utenti non potranno disattivare il comportamento predefinito nei casi in cui ciascun sito viene eseguito nel proprio processo.
+      Se il criterio non viene configurato o viene disattivato, l'utente potrà disattivare l'isolamento dei siti (ad esempio, utilizzando la voce "Disattiva isolamento dei siti" in chrome://flags).  Se il criterio viene disattivato e/o non viene configurato, non viene disattivato l'isolamento dei siti.
+      Nella versione 76 e versioni precedenti di <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare lo stesso valore anche per il criterio relativo ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Se i valori specificati dai due criteri non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente, mentre viene applicato il valore specificato dai criteri relativi agli utenti.
+
+      NOTA: questo criterio non viene applicato su Android. Per attivare SitePerProcess su Android, utilizza l'impostazione del criterio SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e permette agli utenti di eseguire il completamento automatico dei dati della carta di credito nei moduli web utilizzando informazioni memorizzate in precedenza.
 
       Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non salverà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
@@ -2127,6 +2141,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5148753489738115745">Consente di specificare dei parametri aggiuntivi da utilizzare quando <ph name="PRODUCT_FRAME_NAME" /> avvia <ph name="PRODUCT_NAME" />.
 
 Se questa norma non viene impostata viene utilizzata la riga di comando predefinita.</translation>
+<translation id="5152787786897382519">Chromium e Google Chrome hanno alcuni gruppi di criteri che dipendono gli uni dagli altri per fornire il controllo di una funzionalità. Questi insiemi sono rappresentati dai seguenti gruppi di criteri. Dato che i criteri possono avere diverse origini, vengono applicati soltanto i valori provenienti dall'origine con la priorità massima. I valori dello stesso gruppo provenienti da un'origine con priorità inferiore vengono ignorati. L'ordine di priorità è definito in <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Consente di stabilire la frequenza di invio, in millisecondi, dei pacchetti di rete di monitoraggio.
 
       Se la norma non viene impostata, l'intervallo predefinito è pari a tre minuti. L'intervallo minimo è pari a 30 secondi, il massimo a 24 ore. I valori che non rientrano in questo intervallo verranno fatti rientrare.</translation>
@@ -2642,6 +2657,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="5983708779415553259">Comportamento predefinito per i siti non presenti in pacchetti di contenuti</translation>
 <translation id="5997543603646547632">Utilizza orologio di 24 ore per impostazione predefinita</translation>
 <translation id="5997846976342452720">Specifica se disattivare o meno la ricerca dei plug-in (ritirata)</translation>
+<translation id="5998198091336830580">Questo criterio fa parte del seguente gruppo atomico (vengono applicati soltanto i criteri dell'origine con la priorità massima presenti nel gruppo):</translation>
 <translation id="6017568866726630990">Mostra la finestra di dialogo di stampa del sistema invece dell'anteprima di stampa.
 
       Se l'impostazione è attivata, <ph name="PRODUCT_NAME" /> aprirà la finestra di dialogo di stampa del sistema invece dell'anteprima di stampa integrata quando un utente richiede la stampa di una pagina.
@@ -3363,6 +3379,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma viene impostata su False, non vengono raccolte le informazioni che possono essere usate per identificare i computer.
 
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicato alla sessione utente. È consigliabile impostare lo stesso valore per entrambi i criteri. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dai criteri relativi agli utenti.
+      </translation>
 <translation id="737655323154569539">Consente di limitare le dimensioni delle pagine di stampa. Se la norma non viene impostata o viene lasciata vuota non vengono applicate limitazioni.</translation>
 <translation id="7389872682701720082">Se attivi questa impostazione, i plug-in non obsoleti verranno sempre eseguiti.
 
@@ -3688,6 +3707,7 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 
           Vedi anche le norme "CookiesAllowedForUrls" e "CookiesSessionOnlyForUrls". Tieni presente che non ci deve essere conflitto di pattern URL tra queste tre norme. Non viene specificato quale norma debba avere la precedenza.</translation>
 <translation id="8099880303030573137">Ritardo inattività in caso di utilizzo della batteria</translation>
+<translation id="8101381354936029836">Gruppo atomico di criteri:</translation>
 <translation id="8102913158860568230">Impostazione stream multimediale predefinito</translation>
 <translation id="8104186956182795918">Questa norma consente di specificare se consentire o meno la visualizzazione delle immagini sui siti web. La visualizzazione delle immagini può essere consentita o negata a tutti i siti web.
 
@@ -3886,6 +3906,15 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>
+<translation id="849962487677588458">Questo criterio è obsoleto ed è prevista la rimozione in Chrome 78. Non verrà sostituito da altri criteri.
+
+      Questo criterio consente HTTP/0.9 su porte diverse dalla porta 80 per HTTP e 443 per HTTPS.
+
+      Questo criterio è disattivato per impostazione predefinita e, se attivato, rende gli utenti vulnerabili al problema di sicurezza https://crbug.com/600352.
+
+      Questo criterio è pensato per offrire alle aziende la possibilità di migrare i server esistenti da HTTP/0.9 e verrà rimosso in futuro.
+
+      Se questo criterio non viene impostato, HTTP/0.9 verrà disattivato per le porte non predefinite.</translation>
 <translation id="8507835864888987300">Consente di impostare una versione target per gli Aggiornamenti automatici.
 
       Consente di specificare il prefisso della versione target a cui <ph name="PRODUCT_OS_NAME" /> deve aggiornarsi. Se sul dispositivo viene eseguita una versione precedente a quella del prefisso specificato, il dispositivo si aggiornerà all'ultima versione con il prefisso dato. Se il dispositivo ha già l'ultima versione, gli effetti dipendono dal valore di <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Il formato del prefisso funziona in relazione al componente, come mostrato nell'esempio seguente:

@@ -355,6 +355,11 @@
           Ja šī politika ir atspējota vai nav iestatīta, Kerberos kontu iestatījumi ir atspējoti. Kerberos kontus nevar pievienot, un Kerberos autentifikāciju nevar izmantot. Visi esošie Kerberos konti, kā arī visas saglabātās paroles tiek dzēstas.</translation>
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1561967320164410511">Universālā divfaktoru autentificēšana (U2F) un paplašinājumi atsevišķai apstiprināšanai</translation>
+<translation id="1566329065312331399">
+      Ja šai politikai ir iestatīta vērtība “False”, tā neļauj ierīcei aktivizēt funkciju Powerwash.
+      Ja šai politikai ir iestatīta vērtība “True”, tā ļauj ierīcei aktivizēt funkciju Powerwash.
+      Ja vērtība netiek iestatīta, tās noklusējums ir “False”, un politika neļauj ierīcei aktivizēt funkciju Powerwash.
+      </translation>
 <translation id="1574554504290354326">Šis iestatījums vairs netiek izmantots, tā vietā izmantojiet “SafeBrowsingExtendedReportingEnabled”. “SafeBrowsingExtendedReportingEnabled” iespējošana vai atspējošana ir ekvivalenta “SafeBrowsingExtendedReportingOptInAllowed” vērtības “False” iestatīšanai.
 
       Iestatot šai politikai vērtību “False”, lietotājiem tiek liegta iespēja Google serveriem nosūtīt noteiktu sistēmas informāciju un lapas saturu. Ja šī vērtība ir “True” vai nav konfigurēta, lietotāji varēs nosūtīt noteiktu sistēmas informāciju un lapas saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.
@@ -396,6 +401,7 @@
 
       Brīdinājums: nav ieteicams piešķirt kioska lietotnei <ph name="PRODUCT_OS_NAME" /> versijas kontroli, jo ierīcē var netikt saņemti programmatūras atjauninājumi un kritiski drošības labojumi. <ph name="PRODUCT_OS_NAME" /> versijas kontroles deleģēšana var apdraudēt lietotājus.</translation>
 <translation id="1675002386741412210">Saderīga ar:</translation>
+<translation id="1700811900332333712">Atļaut ierīcei pieprasīt funkciju Powerwash</translation>
 <translation id="1704516734140344991">Tiek konfigurēta <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitātes pieejamība un darbība.
 
       Atsevišķus iestatījumus var norādīt JSON rekvizītos.
@@ -2056,6 +2062,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Šajā periodā lietotājs tiks atkārtoti informēts par atjaunināšanu. <ph name="PRODUCT_OS_NAME" /> ierīcēs paziņojums par restartēšanu tiek rādīts sistēmas teknē atbilstoši politikai <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. <ph name="PRODUCT_NAME" /> pārlūkprogrammās: kad ir pagājusi trešdaļa no perioda, lietotnes izvēlne tiek mainīta, lai norādītu, ka nepieciešama atkārtota lietotnes palaišana. Kad ir pagājusi puse no perioda, šī paziņojuma krāsa tiek mainīta. Kad ir pagājis viss periods, paziņojuma krāsa tiek mainīta vēl vienu reizi. Tādā pašā veidā tiek rādīti arī pārlūkprogrammas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikas papildu iespējotie paziņojumi.
 
       Ja šī politika nav iestatīta, <ph name="PRODUCT_OS_NAME" /> ierīcēs tiek izmantots noklusējuma periods 345 600 000 milisekundes (četras dienas), savukārt pārlūkprogrammā <ph name="PRODUCT_NAME" /> — 604 800 000 milisekundes (viena nedēļa).</translation>
+<translation id="4777805166623621364">
+      Šis politikas SitePerProcess iestatījums var tikt izmantots, lai neatļautu lietotājiem atteikties no noklusējuma rīcības — visu vietņu izolēšanas. Ņemiet vērā, ka politika IsolateOrigins var būt noderīga arī papildu detalizētāku vietņu izolēšanai.
+      Ja politika ir iespējota, lietotāji nevarēs atteikties no noklusējuma rīcības, kad katrai vietnei tiek izpildīts atsevišķs process.
+      Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs atteikties no vietnes izolācijas
+      (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).  Atspējojot politiku un/vai nekonfigurējot politiku, vietnes izolācija netiek izslēgta.
+      Operētājsistēmas <ph name="PRODUCT_OS_NAME" /> 76. versijai un vecākām versijām šādu vērtību ieteicams iestatīt arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abām politikām iestatītās vērtības nav vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+
+      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai politiku SitePerProcess iespējotu operētājsistēmā Android, izmantojiet politikas SitePerProcessAndroid iestatījumu.
+      </translation>
 <translation id="4788252609789586009">Iespējo pārlūka <ph name="PRODUCT_NAME" /> funkciju Automātiskā aizpilde un ļauj lietotājiem automātiski aizpildīt kredītkaršu informāciju tīmekļa veidlapās, izmantojot iepriekš saglabāto informāciju.
 
       Ja šis iestatījums ir atspējots, funkcija Automātiskā aizpilde nekad nerādīs kredītkaršu informācijas ieteikumus un neaizpildīs šo informāciju, kā arī nesaglabās papildu kredītkaršu informāciju, ko lietotājs var norādīt, pārlūkojot tīmekli.
@@ -2204,6 +2219,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5148753489738115745">Ļauj noteikt papildu parametrus, kas tiek lietoti, kad spraudnis <ph name="PRODUCT_FRAME_NAME" /> palaiž pārlūkprogrammu <ph name="PRODUCT_NAME" />.
 
           Ja šī politika nav iestatīta, tiks izmantota noklusējuma komandrinda.</translation>
+<translation id="5152787786897382519">Gan pārlūkam Chromium, gan pārlūkam Google Chrome ir dažas politiku grupas, kuras ir atkarīgas viena no otras, lai nodrošinātu kādas funkcijas kontroli. Šīs kopas ir tālāk norādītās politiku grupas. Ņemot vērā, ka politikām var būt vairāki avoti, tiek lietotas tikai vērtības no avota, kam ir visaugstākā prioritāte. Vērtības no zemākas prioritātes avota tajā pašā grupā tiks ignorētas. Prioritāšu secība pieejama vietnē <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Pārraudzības tīkla pakešu sūtīšanas biežums (milisekundēs).
 
       Ja šī politika netiek iestatīta, noklusējuma intervāls ir 3 minūtes. Minimālais
@@ -2755,6 +2771,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5983708779415553259">Noklusējuma darbība vietnēm, kas nav iekļautas nevienā satura pakotnē</translation>
 <translation id="5997543603646547632">Pēc noklusējuma izmantot 24 stundu pulksteni</translation>
 <translation id="5997846976342452720">Norāda, vai ir jāatspējo spraudņu meklētājs (novecojis)</translation>
+<translation id="5998198091336830580">Šī politika ir daļa no tālāk norādītās atomiskās grupas (tiek piemērotas politikas tikai no avota ar augstāko prioritāti).</translation>
 <translation id="6017568866726630990">Drukas priekšskatījuma vietā tiek rādīts sistēmas drukāšanas dialoglodziņš.
 
       Ja šis iestatījums ir iespējots, pieprasot lapas drukāšanu, pārlūkā <ph name="PRODUCT_NAME" /> tiks atvērts sistēmas drukāšanas dialoglodziņš, nevis iebūvētais drukas priekšskatījums.
@@ -3492,6 +3509,9 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šai politikai ir iestatīta vērtība “False”, informācija, kas var tikt izmantota iekārtu identificēšanai, netiek apkopota.
 
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības nebūs vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+      </translation>
 <translation id="737655323154569539">Ierobežo drukāšanas lapas izmēru. Ja politika nav iestatīta, tiek uzskatīts, ka ierobežojuma nav.</translation>
 <translation id="7389872682701720082">Ja šis iestatījums tiek iespējots, vienmēr tiek palaisti spraudņi, kas nav novecojuši.
 
@@ -3828,6 +3848,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Skatiet arī politikas CookiesAllowedForUrls un CookiesSessionOnlyForUrls. Ņemiet vērā, ka šo trīs politiku URL rakstiem ir savstarpēji jāatbilst, jo politiku prioritāte nav norādīta.</translation>
 <translation id="8099880303030573137">Aizkave līdz dīkstāvei, ja ierīce darbojas ar akumulatora jaudu</translation>
+<translation id="8101381354936029836">Politikas atomiskā grupa:</translation>
 <translation id="8102913158860568230">Noklusējuma Mediastream iestatījums</translation>
 <translation id="8104186956182795918">Ļauj iestatīt, vai vietnēm ir atļauts attēlot attēlus. Attēlu attēlošana var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
@@ -4036,6 +4057,15 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Atspējo pārlūkošanas vēstures saglabāšanu</translation>
 <translation id="8499172469244085141">Noklusējuma iestatījumi (lietotāji var ignorēt)</translation>
+<translation id="849962487677588458">Šī politika ir novecojusi, un to ir paredzēts noņemt no pārlūka Chrome 78 bez aizvietošanas.
+
+      Šī politika iespējo protokolu HTTP/0.9 portos, kas nav 80 (HTTP) un 443 (HTTPS).
+
+      Pēc noklusējuma šī politika ir atspējota. Ja tā tiek iespējota, lietotājiem var rasties drošības problēma: https://crbug.com/600352.
+
+      Šī politika ir paredzēta, lai uzņēmumi varētu migrēt esošos serverus no protokola HTTP/0.9. Vēlāk tā tiks noņemta.
+
+      Ja šī politika nav iestatīta, protokols HTTP/0.9 tiks atspējots portos, kas nav noklusējuma porti.</translation>
 <translation id="8507835864888987300">Iestata automātisko atjauninājumu mērķa versiju.
 
       Norāda mērķa versijas prefiksu, uz kuru jāatjaunina <ph name="PRODUCT_OS_NAME" />. Ja ierīcē darbojas versija, kura ir vecāka par norādīto prefiksu, tiks veikta atjaunināšana uz jaunāko versiju ar norādīto prefiksu. Ja ierīcē jau darbojas jaunāka versija, rezultāts būs atkarīgs no politikas “<ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />” vērtības. Prefiksa formāta komponentu nozīme ir paskaidrota tālāk minētajā piemērā.

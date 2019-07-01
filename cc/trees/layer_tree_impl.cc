@@ -2217,6 +2217,28 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInWheelEventHandlerRegion(
                                                        func);
 }
 
+std::vector<const LayerImpl*>
+LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
+    const gfx::PointF& screen_space_point) {
+  std::vector<const LayerImpl*> layers;
+  if (layer_list_.empty())
+    return layers;
+  if (!UpdateDrawProperties())
+    return layers;
+  for (const auto* layer : *this) {
+    if (layer->non_fast_scrollable_region().IsEmpty())
+      continue;
+    if (!PointHitsLayer(layer, screen_space_point, nullptr))
+      continue;
+    if (PointHitsRegion(screen_space_point, layer->ScreenSpaceTransform(),
+                        layer->non_fast_scrollable_region(), layer)) {
+      layers.push_back(layer);
+    }
+  }
+
+  return layers;
+}
+
 void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
   if (selection_ == selection)
     return;

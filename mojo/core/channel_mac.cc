@@ -703,9 +703,8 @@ class ChannelMac : public Channel,
 
 }  // namespace
 
-// TODO(crbug.com/932175): This will be renamed Channel::Create.
 MOJO_SYSTEM_IMPL_EXPORT
-scoped_refptr<Channel> ChannelMacCreate(
+scoped_refptr<Channel> Channel::Create(
     Channel::Delegate* delegate,
     ConnectionParams connection_params,
     Channel::HandlePolicy handle_policy,

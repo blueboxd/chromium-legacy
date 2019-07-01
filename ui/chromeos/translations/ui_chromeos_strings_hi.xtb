@@ -90,9 +90,9 @@
 <translation id="197560921582345123">बदलाव कर सकते हैं</translation>
 <translation id="1984603991036629094">आर्मेनियाई फ़ोनेटिक कीबोर्ड</translation>
 <translation id="2001796770603320721">डिस्क में प्रबंधित करें</translation>
+<translation id="2009067268969781306">किसी डिस्क को फ़ॉर्मैट करने से उस पर सेव किया गया पूरा डेटा मिट जाएगा. यह कार्रवाई वापस नहीं ली जा सकती.</translation>
 <translation id="2028997212275086731">RAR संग्रह</translation>
 <translation id="2046702855113914483">रेमन</translation>
-<translation id="204914487372604757">शॉर्टकट बनाएं</translation>
 <translation id="2070909990982335904">डॉट से प्रारंभ हो रहे नाम सिस्‍टम के लिए आरक्षित हैं. कृपया कोई अन्‍य नाम चुनें.</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="2080010875307505892">सर्बियाई कीबोर्ड</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">अरबी कीबोर्ड</translation>
 <translation id="4261901459838235729">Google प्रस्‍तुतिकरण</translation>
 <translation id="4290535918735525311">Linux के साथ एक फ़ोल्डर शेयर किया गया</translation>
+<translation id="42981349822642051">विस्तृत करें</translation>
 <translation id="4298972503445160211">डेनिश कीबोर्ड</translation>
 <translation id="4299729908419173967">ब्राज़ीलियाई</translation>
 <translation id="4309915981827077375">सामान्य जानकारी</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">और देखें...</translation>
 <translation id="5061708541166515394">कंट्रास्ट</translation>
 <translation id="5068919226082848014">पिज़्ज़ा</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> फ़ाइलें मिटा दी जाएंगी</translation>
 <translation id="509429900233858213">कोई गड़बड़ी हुई.</translation>
 <translation id="5098629044894065541">हिब्रू</translation>
 <translation id="5123433949759960244">बास्केटबॉल</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS क्‍लाउड बैकअप</translation>
 <translation id="5756666464756035725">हंगेरियाई QWERTY</translation>
 <translation id="5771585441665576801">लिप्यंतरण (geia → γεια)</translation>
+<translation id="5776325638577448643">हमेशा के लिए मिटाएं और फॉर्मैट करें</translation>
 <translation id="57838592816432529">म्यूट करें</translation>
 <translation id="5788127256798019331">Play की फ़ाइलें</translation>
 <translation id="5790193330357274855">कज़ाक</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Linux ऐप्लिकेशन को <ph name="FOLDER_NAME" /> फ़ोल्डर की फ़ाइलों में बदलाव करने दें</translation>
 <translation id="5892290200158927959">फ़्रेंच बेपो कीबोर्ड</translation>
 <translation id="5911887972742538906">आपका Linux ऐप्लिकेशन इंस्टॉल करते समय कोई गड़बड़ी हुई.</translation>
+<translation id="5912396950572065471">फ़ॉर्मैट</translation>
 <translation id="5913638992615760742">कॉपी बनाने में अनचाही गड़बड़ी : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux ऐप्लिकेशन को अपनी 'Google डिस्क' में रखी फ़ाइलों में बदलाव करने की अनुमति दें. बदलावों को आपके दूसरे डिवाइस में सिंक किया जाएगा.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> से खोलें</translation>
 <translation id="6199801702437275229">स्थान जानकारी की प्रतीक्षा कर रहा है...</translation>
 <translation id="6205710420833115353">कुछ काम करने में उम्मीद से ज़्यादा समय लग रहा है. क्या आप उन्हें रद्द करना चाहते हैं?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" /> फ़ॉर्मैट करें</translation>
 <translation id="6227235786875481728">यह फ़ाइल चलाई नहीं जा सकती.</translation>
 <translation id="6248400709929739064">सबटाइटल चालू करें</translation>
 <translation id="6264347891387618177">लिप्यंतरण (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">US प्रोग्रामर ड्वोरक कीबोर्ड</translation>
 <translation id="7191454237977785534">फ़ाइल को इस रूप में सेव करें</translation>
 <translation id="7222624196722476520">बुल्गारियाई फ़ोनेटिक कीबोर्ड</translation>
+<translation id="7238097264433196391">डिस्क का नाम</translation>
 <translation id="7248671827512403053">ऐप्स </translation>
 <translation id="7268659760406822741">उपलब्ध सेवाएं</translation>
 <translation id="7283041136720745563">आपका Google डिस्क कोटा उतना बड़ा नहीं है.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">स्लोवेनियाई</translation>
 <translation id="7982283708762922719">ऊंचाई</translation>
 <translation id="7987485481246785146">सोरानी कुर्दिश अरबी-आधारित कीबोर्ड</translation>
-<translation id="799547531016638432">शॉर्टकट निकालें</translation>
 <translation id="799923393800005025">देख सकते हैं</translation>
 <translation id="8008366997883261463">श्वान</translation>
 <translation id="8028993641010258682">आकार</translation>

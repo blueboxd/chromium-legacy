@@ -983,7 +983,7 @@ bool OverviewGrid::ShouldAnimateWallpaper() const {
   // Never animate when doing app dragging or when immediately exiting.
   const auto enter_exit_type = overview_session_->enter_exit_overview_type();
   if (enter_exit_type ==
-          OverviewSession::EnterExitOverviewType::kWindowDragged ||
+          OverviewSession::EnterExitOverviewType::kImmediateEnter ||
       enter_exit_type ==
           OverviewSession::EnterExitOverviewType::kImmediateExit) {
     return false;

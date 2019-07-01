@@ -12,6 +12,7 @@
 
 #include <va/va.h>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -352,6 +353,7 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
     return nullptr;
   }
 
+  DCHECK(vaapi_wrapper_);
   uint32_t image_fourcc;
   if (!VaapiWrapper::GetJpegDecodeSuitableImageFourCC(
           va_rt_format_, preferred_image_fourcc, &image_fourcc)) {
@@ -371,6 +373,30 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
 
   *status = VaapiImageDecodeStatus::kSuccess;
   return scoped_image;
+}
+
+scoped_refptr<VASurface> VaapiJpegDecoder::ReleaseVASurface() {
+  if (va_surface_id_ == VA_INVALID_ID)
+    return nullptr;
+
+  DCHECK(vaapi_wrapper_);
+
+  // Prepare a new VASurface object. Note this VASurface will self-destruct.
+  auto va_surface = base::MakeRefCounted<VASurface>(
+      va_surface_id_, coded_size_, va_rt_format_,
+      base::BindOnce(&VaapiWrapper::DestroySurface, vaapi_wrapper_));
+
+  // Destroy the context. It is no longer needed since the only surface is going
+  // to be given away. A new surface and context will be created the next time
+  // Decode() is called
+  vaapi_wrapper_->DestroyContext();
+
+  // Invalidate the decoder's internal state.
+  va_surface_id_ = VA_INVALID_ID;
+  coded_size_.SetSize(0, 0);
+  va_rt_format_ = kInvalidVaRtFormat;
+
+  return va_surface;
 }
 
 }  // namespace media

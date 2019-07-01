@@ -556,6 +556,7 @@
 <translation id="3946209740501886391">Luôn hỏi trên trang web này</translation>
 <translation id="3949571496842715403">Máy chủ này không thể chứng minh được đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ không chỉ định Tên thay thế đối tượng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="3949601375789751990">Lịch sử duyệt web của bạn xuất hiện ở đây</translation>
+<translation id="3949870428812919180">Bạn chưa lưu phương thức thanh toán nào</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3962859241508114581">Bản nhạc trước</translation>
 <translation id="3963837677003247395">Bạn muốn tiếp tục theo cách thủ công?</translation>
@@ -1365,7 +1366,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8349305172487531364">Thanh dấu trang</translation>
 <translation id="836241887727198552">Lưu thẻ vào Tài khoản Google?</translation>
 <translation id="8363502534493474904">Tắt chế độ trên máy bay</translation>
-<translation id="8364627913115013041">Chưa được đặt.</translation>
+<translation id="8364627913115013041">Chưa đặt.</translation>
 <translation id="8368476060205742148">Dịch vụ của Google Play</translation>
 <translation id="8371889962595521444">Chứng chỉ gốc tùy chỉnh</translation>
 <translation id="8380941800586852976">Nguy hiểm</translation>

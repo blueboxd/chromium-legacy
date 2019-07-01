@@ -2016,6 +2016,12 @@ id<GREYMatcher> SearchIconButton() {
 
 // Verify Copy URL functionality on single URL selection.
 - (void)testCopyFunctionalityOnSingleURL {
+  // TODO(crbug.com/979402): Disabled on iOS13 since copy/paste is not working
+  // in the Simulator.
+  if (@available(iOS 13.0, *)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 13");
+  }
+
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];

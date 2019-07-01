@@ -1846,18 +1846,14 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
   request_headers_.GetHeader(HttpRequestHeaders::kAcceptEncoding,
                              &accept_encoding);
   std::set<std::string> allowed_encodings;
-  if (!HttpUtil::ParseAcceptEncoding(accept_encoding, &allowed_encodings)) {
-    FilterSourceStream::ReportContentDecodingFailed(SourceStream::TYPE_INVALID);
+  if (!HttpUtil::ParseAcceptEncoding(accept_encoding, &allowed_encodings))
     return false;
-  }
 
   std::string content_encoding;
   headers->GetNormalizedHeader("Content-Encoding", &content_encoding);
   std::set<std::string> used_encodings;
-  if (!HttpUtil::ParseContentEncoding(content_encoding, &used_encodings)) {
-    FilterSourceStream::ReportContentDecodingFailed(SourceStream::TYPE_INVALID);
+  if (!HttpUtil::ParseContentEncoding(content_encoding, &used_encodings))
     return false;
-  }
 
   // When "Accept-Encoding" is not specified, it is parsed as "*".
   // If "*" encoding is advertised, then any encoding should be "accepted".
@@ -1873,8 +1869,6 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
     if (source_type == SourceStream::TYPE_UNKNOWN)
       continue;
     if (allowed_encodings.find(encoding) == allowed_encodings.end()) {
-      FilterSourceStream::ReportContentDecodingFailed(
-          SourceStream::TYPE_REJECTED);
       result = false;
       break;
     }

@@ -5,7 +5,6 @@
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 import unittest
@@ -226,7 +225,7 @@ class MergeProfilesTest(unittest.TestCase):
     self.assertIn('missing_shards', written)
     self.assertEqual(written['missing_shards'], [0])
 
-  def test_move_java_exec_files(self):
+  def test_merge_java_exec_files(self):
     mock_input_dir_walk = [
         ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
         ('/b/some/path/0', [],
@@ -237,19 +236,36 @@ class MergeProfilesTest(unittest.TestCase):
 
     with mock.patch.object(os, 'walk') as mock_walk:
       mock_walk.return_value = mock_input_dir_walk
-      with mock.patch.object(shutil, 'move') as mock_exec_cmd:
-        merger.move_java_exec_files('/b/some/path', 'output/dir')
-        self.assertEqual(4, mock_exec_cmd.call_count)
+      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        merger.merge_java_exec_files(
+            '/b/some/path', 'output/path', 'path/to/jacococli.jar')
+        self.assertEqual(
+            mock.call(
+                [
+                    'java',
+                    '-jar',
+                    'path/to/jacococli.jar',
+                    'merge',
+                    '/b/some/path/0/default-1.exec',
+                    '/b/some/path/0/default-2.exec',
+                    '/b/some/path/1/default-3.exec',
+                    '/b/some/path/1/default-4.exec',
+                    '--destfile',
+                    'output/path',
+                ],
+                stderr=-2,
+            ), mock_exec_cmd.call_args)
 
-  def test_move_java_exec_files_if_there_is_no_file(self):
+  def test_merge_java_exec_files_if_there_is_no_file(self):
     mock_input_dir_walk = [
         ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
     ]
 
     with mock.patch.object(os, 'walk') as mock_walk:
       mock_walk.return_value = mock_input_dir_walk
-      with mock.patch.object(shutil, 'move') as mock_exec_cmd:
-        merger.move_java_exec_files('/b/some/path', 'output/dir')
+      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        merger.merge_java_exec_files(
+            '/b/some/path', 'output/path', 'path/to/jacococli.jar')
         self.assertFalse(mock_exec_cmd.called)
 
 if __name__ == '__main__':

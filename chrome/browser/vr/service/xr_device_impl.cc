@@ -94,7 +94,9 @@ void XRDeviceImpl::OnInlineSessionCreated(
     device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr controller) {
   if (!session) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
     return;
   }
 
@@ -135,7 +137,9 @@ void XRDeviceImpl::OnSessionCreated(
     device::mojom::XRDevice::RequestSessionCallback callback,
     device::mojom::XRSessionPtr session) {
   if (!session) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
     return;
   }
 
@@ -146,7 +150,8 @@ void XRDeviceImpl::OnSessionCreated(
 
   session_clients_.AddPtr(std::move(client));
 
-  std::move(callback).Run(std::move(session));
+  std::move(callback).Run(
+      device::mojom::RequestSessionResult::NewSession(std::move(session)));
 }
 
 XRDeviceImpl::~XRDeviceImpl() {
@@ -160,19 +165,26 @@ void XRDeviceImpl::RequestSession(
 
   // Check that the request satisifies secure context requirements.
   if (!IsSecureContextRequirementSatisfied()) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::ORIGIN_NOT_SECURE));
     return;
   }
 
   // Check that the request is coming from a focused page if required.
   if (!in_focused_frame_ && options->immersive) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::
+                IMMERSIVE_SESSION_REQUEST_FROM_OFF_FOCUS_PAGE));
     return;
   }
 
   if (runtime_manager_->IsOtherDevicePresenting(this)) {
     // Can't create sessions while an immersive session exists.
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::EXISTING_IMMERSIVE_SESSION));
     return;
   }
 
@@ -199,7 +211,9 @@ void XRDeviceImpl::RequestSession(
     // GVR.
     if (!render_frame_host_) {
       // Reject promise.
-      std::move(callback).Run(nullptr);
+      std::move(callback).Run(
+          device::mojom::RequestSessionResult::NewFailureReason(
+              device::mojom::RequestSessionError::INVALID_CLIENT));
     } else {
       if (IsXrDeviceConsentPromptDisabledForTesting()) {
         DoRequestSession(std::move(options), std::move(callback));
@@ -241,7 +255,9 @@ void XRDeviceImpl::OnConsentResult(
     device::mojom::XRDevice::RequestSessionCallback callback,
     bool is_consent_granted) {
   if (!is_consent_granted) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::USER_DENIED_CONSENT));
     return;
   }
 
@@ -249,7 +265,9 @@ void XRDeviceImpl::OnConsentResult(
   // TODO(crbug.com/967513): prevent such races.
   if (runtime_manager_->IsOtherDevicePresenting(this)) {
     // Can't create sessions while an immersive session exists.
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::EXISTING_IMMERSIVE_SESSION));
     return;
   }
 
@@ -263,7 +281,9 @@ void XRDeviceImpl::DoRequestSession(
   BrowserXRRuntime* runtime =
       runtime_manager_->GetRuntimeForOptions(options.get());
   if (!runtime) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::NO_RUNTIME_FOUND));
     return;
   }
 

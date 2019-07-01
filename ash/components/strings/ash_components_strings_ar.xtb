@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">الانتقال إلى علامة التبويب السابقة</translation>
 <translation id="2194790690264064655">اضغط على <ph name="CTRL" /> وانقر على رابط</translation>
 <translation id="2246352309084894470">فتح مشغّل التطبيقات بملء الشاشة أو إغلاقه</translation>
+<translation id="2354531887393764880">نقطة</translation>
 <translation id="2382644247745281995">غير متاح مع التنسيق الحالي للوحة المفاتيح</translation>
 <translation id="2397416548179033562">‏لإظهار قائمة Chrome</translation>
 <translation id="2424073332829844142">‏تفعيل مفتاح Caps Lock وإيقافه</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">فتح العنصر المُحدَّد على الرف</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 إلى 8</translation>
 <translation id="3837047332182291558">زيادة سطوع لوحة المفاتيح (للوحات المفاتيح المزودة بإضاءة خلفية فقط)</translation>
+<translation id="3949671998904569433">فاصلة</translation>
 <translation id="3976863468609830880">النقر على الرمز الأخير على الرف</translation>
 <translation id="3994783594793697310">إعادة ضبط مستوى تكبير/تصغير العرض</translation>
 <translation id="4026843240379844265">نقل نافذة نشطة بين شاشات العرض</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">التبديل إلى أسلوب الإدخال المتاح التالي</translation>
 <translation id="743754632698445141">إلغاء حالة التثبيت عن تطبيق</translation>
 <translation id="7439718573248533901">حذف الحرف التالي (حذف باتجاه الأمام)</translation>
+<translation id="7500368597227394048">واصلة</translation>
 <translation id="7611271430932669992">نقل التركيز إلى النوافذ المنبثقة ومربعات الحوار</translation>
 <translation id="766326951329901120">لصق المحتوى من الحافظة كنص عادي</translation>
+<translation id="7703010453515335249">القوس الأيسر</translation>
 <translation id="7724603315864178912">قص</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="SPACE" /> أو <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">فتح ملف في المتصفح</translation>
-<translation id="7917881398263220094">إيقاف تحميل الصفحة الحالية</translation>
 <translation id="7952165122793773711">الانتقال من علامة التبويب الأولى إلى الثامنة</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8130528849632411619">الانتقال إلى بداية المستند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> أو <ph name="E" /></translation>
 <translation id="8232835244134740473">يمكنك تبديل التركيز بين: منطقة الحالة (في مكان ظهور صورة حسابك) ومشغِّل التطبيقات وشريط العناوين وشريط الإشارات (إن كان ظاهرًا) وصفحة الويب المفتوحة وشريط التنزيلات (إن كان ظاهرًا).</translation>
 <translation id="8234414138295101081">تدوير الشاشة بزاوية 90 درجة</translation>
+<translation id="8241665785394195545">القوس الأيمن</translation>
 <translation id="8264941229485248811">إظهار مراقب "أدوات المطوِّرين" أو إخفاؤه</translation>
 <translation id="836869401750819675">فتح صفحة "التنزيلات"</translation>
 <translation id="8388247778047144397">اسحب الرابط إلى منطقة فارغة على شريط علامات التبويب</translation>

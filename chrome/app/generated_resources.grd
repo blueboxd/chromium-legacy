@@ -8707,38 +8707,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </if>
       </if>
 
-      <!-- Identity internals strings -->
-      <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">
-        Identity API Token Cache
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_ACCESS_TOKEN" desc="Label of the row containing the access token.">
-        Access Token
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_EXTENSION_NAME" desc="Label of the row containing a name of an extension related to the identity token.">
-        Extension Name
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_EXTENSION_ID" desc="Label of the row containing an id of an extension related to the identity token.">
-        Extension Id
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_TOKEN_STATUS" desc="Label of the row containing a status of identity token.">
-        Token Status
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_TOKEN_NOT_FOUND" desc="Label of the token status when token is not found.">
-        Not Found
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_TOKEN_PRESENT" desc="Label of the token status when token is present and valid for use.">
-        Token Present
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_EXPIRATION_TIME" desc="Label of the row containing expiration time of identity token.">
-        Expiration Time
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_SCOPES" desc="Label of the row listing scopes of identity token.">
-        Scopes
-      </message>
-      <message name="IDS_IDENTITY_INTERNALS_REVOKE" desc="Label on a revoke token button.">
-        Revoke
-      </message>
-
       <!-- Translated apps strings -->
       <message name="IDS_CHROME_SHORTCUT_DESCRIPTION" desc="Description for the Chrome app shortcut in the app launcher.">
         A fast, simple, and secure web browser, built for the modern web.
@@ -9501,6 +9469,24 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_CONFIRM_FILE_UPLOAD_OK_BUTTON" desc="Button title confirming to upload multiple files to the site.">
       Upload
     </message>
+
+    <!-- Native File System permission dialog -->
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TITLE" desc="Title of dialog for confirming write access to a file using the Native File System API">
+      Save changes to original file?
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TITLE" desc="Title of dialog for confirming write access to a directory and the files it contains using the Native File System API">
+      Save changes to original files?
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT" desc="Text of the dialog for confirming write access to files using the Native File System API">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to the following file. This site can save changes only while this tab is open.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT" desc="Text of the dialog for confirming write access to a directory using the Native File System API">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to the files in the following folder. This site can save changes only while this tab is open.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming write access to files or directories using the Native File System API">
+      Save to original file
+    </message>
+
     <!-- Relaunch notification bubble and dialog. -->
     <if expr="not is_android">
       <if expr="not chromeos">

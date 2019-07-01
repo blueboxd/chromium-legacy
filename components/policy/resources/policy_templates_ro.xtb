@@ -352,6 +352,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă politica este dezactivată sau nu este setată, setările contului Kerberos sunt dezactivate. Nu poate fi adăugat niciun cont Kerberos, iar autentificarea Kerberos nu poate fi folosită. Toate conturile Kerberos existente și toate parolele stocate sunt șterse.</translation>
 <translation id="1561424797596341174">Suprascrieri de politici pentru versiunile de depanare ale gazdei de acces la distanță</translation>
 <translation id="1561967320164410511">U2F și extensii pentru atestarea individuală</translation>
+<translation id="1566329065312331399">
+      Dacă politica este dezactivată, dispozitivul nu poate declanșa funcția Powerwash.
+      Când este activată, dispozitivul poate să declanșeze funcția Powerwash.
+      Dacă nu este configurată, politica este setată în mod prestabilit ca dezactivată, dispozitivul neputând folosi funcția Powerwash.
+      </translation>
 <translation id="1574554504290354326">Această setare este învechită; folosește SafeBrowsingExtendedReportingEnabled. Activarea sau dezactivarea SafeBrowsingExtendedReportingEnabled este echivalentă cu dezactivarea SafeBrowsingExtendedReportingOptInAllowed.
 
       Dacă dezactivezi această politică, utilizatorii nu vor mai putea trimite unele informații de sistem și conținutul paginii la serverele Google. Dacă această setare este activată sau nu este configurată, utilizatorii au permisiunea să trimită unele informații de sistem și conținutul paginii la Navigarea sigură pentru detectarea aplicațiilor și a site-urilor periculoase.
@@ -393,6 +398,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Avertisment: nu se recomandă să delegi controlul asupra versiunii <ph name="PRODUCT_OS_NAME" /> unei aplicații chioșc, deoarece dispozitivul poate fi împiedicat să primească actualizări de software și remedieri importante de securitate. Dacă delegi controlul asupra versiunii <ph name="PRODUCT_OS_NAME" />, este posibil să pui în pericol utilizatorii.</translation>
 <translation id="1675002386741412210">Acceptat de:</translation>
+<translation id="1700811900332333712">Permite dispozitivului să solicite funcția Powerwash</translation>
 <translation id="1704516734140344991">Configurează disponibilitatea și comportamentul funcției de actualizare a firmware-ului <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Setările individuale pot fi specificate în proprietățile JSON:
@@ -2021,6 +2027,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele cu <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem, conform politicii <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
 
       Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (patru zile) pentru dispozitivele cu <ph name="PRODUCT_OS_NAME" /> și 604.800.000 de milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Această setare, SitePerProcess, poate fi folosită pentru a nu permite utilizatorilor să renunțe la comportamentul prestabilit de a izola toate site-urile. Reține că politica IsolateOrigins poate fi utilă și pentru a izola origini suplimentare, mai exacte.
+      Dacă politica este activată, utilizatorii nu vor putea să renunțe la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
+      Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să renunțe la izolarea site-ului
+      (de exemplu, să folosească intrarea „Dezactivează izolarea site-ului” în in chrome://flags).  Dacă dezactivezi și/sau nu configurezi politica, izolarea site-ului nu va fi dezactivată.
+      În <ph name="PRODUCT_OS_NAME" /> versiunea 76 și versiunile anterioare, se recomandă să setezi și politica privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate de cele două politici nu se potrivesc, poate avea loc o întârziere când intri într-o sesiune de utilizator în timp ce se aplică valoarea specificată de politica privind utilizatorii.
+
+      NOTĂ: această politică nu se aplică în Android. Pentru a activa SitePerProcess în Android, folosește setarea politicii SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit în formularele web folosind informațiile stocate anterior.
 
       Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre carduri de credit, nici nu va salva informații suplimentare despre carduri de credit pe care utilizatorul le-ar putea trimite când navighează pe web.
@@ -2165,6 +2180,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5148753489738115745">Vă permite să specificați parametri suplimentari, care vor fi utilizați atunci când <ph name="PRODUCT_FRAME_NAME" /> lansează <ph name="PRODUCT_NAME" />.
 
           Dacă această politică nu este setată, va fi utilizată linia de comandă prestabilită.</translation>
+<translation id="5152787786897382519">Chromium și Google Chrome au câteva grupuri de politici care depind una de cealaltă pentru a asigura controlul asupra unei funcții. Aceste seturi sunt reprezentate de grupurile de politici de mai jos. Întrucât politicile pot avea mai multe surse, se vor aplica numai valorile din sursa cu prioritatea cea mai mare. Valorile din același grup care provin din surse cu prioritate mai mică vor fi ignorate. Ordinea priorităților este definită în <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Frecvența de trimitere a pachetelor de monitorizare din rețea, în milisecunde.
 
       Dacă această politică nu este configurată, intervalul prestabilit este de 3 minute.
@@ -2692,6 +2708,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5983708779415553259">Comportamentul prestabilit pentru site-urile care nu sunt incluse în niciun pachet de conținut</translation>
 <translation id="5997543603646547632">Utilizați în mod prestabilit formatul de 24 de ore</translation>
 <translation id="5997846976342452720">Specifică dacă instrumentul de găsire de pluginuri trebuie dezactivat (învechit)</translation>
+<translation id="5998198091336830580">Această politică face parte din următorul grup atomic (se aplică numai politicile din surse cu prioritatea cea mai mare din grup):</translation>
 <translation id="6017568866726630990">Afișați caseta de dialog de printare din sistem, în loc de previzualizarea înainte de printare.
 
       Dacă această setare este activată, <ph name="PRODUCT_NAME" /> va deschide caseta de dialog de printare din sistem, în loc de previzualizarea înainte de printare integrată, atunci când un utilizator solicită printarea unei pagini.
@@ -3423,6 +3440,9 @@ nu poate fi stabilit de utilizator din setările browserului.
       Când politica este dezactivată, nu se colectează informații care se pot folosi pentru a identifica dispozitivele.
 
       Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Această politică este valabilă pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care este valabilă pentru sesiunea de utilizator. Se recomandă să setezi ambele politici la aceeași valoare. Dacă valorile nu se potrivesc, poate apărea o întârziere când intri într-o sesiune de utilizator în timp ce este aplicată valoarea indicată de politica de utilizator.
+      </translation>
 <translation id="737655323154569539">Restricționează dimensiunea paginii de printare. Politica nesetată și setul gol sunt tratate ca lipsa oricărei restricții.</translation>
 <translation id="7389872682701720082">Dacă activezi setarea, pluginurile care nu sunt învechite rulează întotdeauna.
 
@@ -3748,6 +3768,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Consultă și politicile „CookiesBlockedForUrls” și „CookiesSessionOnlyForUrls”. Reține că nu trebuie să existe șabloane de adrese URL conflictuale între aceste trei politici, deoarece nu se specifică politica pentru care se va acorda prioritate.</translation>
 <translation id="8099880303030573137">Interval de inactivitate la funcționarea pe baterie</translation>
+<translation id="8101381354936029836">Grup atomic de politici:</translation>
 <translation id="8102913158860568230">Setarea implicită pentru mediastream</translation>
 <translation id="8104186956182795918">Îți permite să setezi dacă site-urile au permisiunea de a afișa imagini. Afișarea imaginilor poate fi permisă sau refuzată pentru toate site-urile.
 
@@ -3955,6 +3976,15 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Dezactivează salvarea istoricului browserului</translation>
 <translation id="8499172469244085141">Setări prestabilite (utilizatorii le pot ignora)</translation>
+<translation id="849962487677588458">Această politică este învechită și este planificată pentru eliminarea din Chrome 78, fără a fi înlocuită.
+
+      Politica activează HTTP/0.9 pentru alte porturi decât 80 pentru HTTP și 443 pentru HTTPS.
+
+      Această politică este dezactivată în mod prestabilit, iar dacă este activată, utilizatorii vor fi vulnerabili în fața problemei de securitate de la https://crbug.com/600352.
+
+      Politica este concepută pentru a oferi companiilor ocazia de a migra serverele existente de la HTTP/0.9 și va fi eliminată în viitor.
+
+      Dacă politica nu este configurată, HTTP/0.9 va fi dezactivat pentru porturile care nu sunt prestabilite.</translation>
 <translation id="8507835864888987300">Setează o versiune țintă pentru actualizările automate.
 
       Specifică prefixul unei versiuni țintă la care <ph name="PRODUCT_OS_NAME" /> trebuie să se actualizeze. Dacă dispozitivul rulează o versiune care este inferioară prefixului specificat, actualizarea se va face la cea mai recentă versiune care are prefixul dat. Dacă pe dispozitiv este instalată deja o versiune superioară, efectele depind de valoarea <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Formatul prefixului reflectă structura componentelor, precum în următorul exemplu:

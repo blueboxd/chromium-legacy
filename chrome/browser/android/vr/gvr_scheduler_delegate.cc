@@ -174,9 +174,9 @@ void GvrSchedulerDelegate::ConnectPresentingService(
   device::mojom::XRFrameDataProviderPtr frame_data_provider;
   frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider));
 
-  gfx::Size webxr_size(
-      display_info->leftEye->renderWidth + display_info->rightEye->renderWidth,
-      display_info->leftEye->renderHeight);
+  gfx::Size webxr_size(display_info->left_eye->render_width +
+                           display_info->right_eye->render_width,
+                       display_info->left_eye->render_height);
   DVLOG(1) << __func__ << ": resize initial to " << webxr_size.width() << "x"
            << webxr_size.height();
 

@@ -71,13 +71,17 @@ class AppShimController : public chrome::mojom::AppShim {
   // Terminates the app shim process.
   void Close();
 
+  // Returns the connection to the AppShimHostManager in the browser. Returns
+  // an invalid endpoint if it is not available yet.
+  mojo::PlatformChannelEndpoint GetBrowserEndpoint();
+
   // Sets up a connection to the AppShimHostManager at the given Mach
   // endpoint name.
   static mojo::PlatformChannelEndpoint ConnectToBrowser(
       const mojo::NamedPlatformChannel::ServerName& server_name);
 
   // Connects to Chrome and sends a LaunchApp message.
-  void InitBootstrapPipe();
+  void InitBootstrapPipe(mojo::PlatformChannelEndpoint endpoint);
 
   // Find a running instance of Chrome and set |chrome_running_app_| to it. If
   // none exists, launch Chrome, and set |chrome_running_app_|.

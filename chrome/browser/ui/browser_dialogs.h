@@ -24,6 +24,7 @@ class Browser;
 class LoginHandler;
 class Profile;
 struct WebApplicationInfo;
+enum class PermissionAction;
 
 namespace base {
 class FilePath;
@@ -62,6 +63,10 @@ namespace ui {
 class WebDialogDelegate;
 struct SelectedFileInfo;
 }  // namespace ui
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace chrome {
 
@@ -299,6 +304,15 @@ void ShowFolderUploadConfirmationDialog(
     const base::FilePath& path,
     base::OnceCallback<void(const std::vector<ui::SelectedFileInfo>&)> callback,
     std::vector<ui::SelectedFileInfo> selected_files,
+    content::WebContents* web_contents);
+
+// Displays a dialog to ask for write access to the given file or directory for
+// the native file system API.
+void ShowNativeFileSystemPermissionDialog(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    bool is_directory,
+    base::OnceCallback<void(PermissionAction result)> callback,
     content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

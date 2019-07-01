@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Przejdź do poprzedniej karty</translation>
 <translation id="2194790690264064655">Naciśnij <ph name="CTRL" /> i kliknij link</translation>
 <translation id="2246352309084894470">Otwórz/zamknij pełnoekranowe menu z aplikacjami</translation>
+<translation id="2354531887393764880">kropka</translation>
 <translation id="2382644247745281995">Nieobsługiwany w bieżącym układzie klawiatury</translation>
 <translation id="2397416548179033562">Pokaż menu Chrome</translation>
 <translation id="2424073332829844142">Włącz lub wyłącz Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Otwórz zaznaczony element na półce</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> od 1 do 8</translation>
 <translation id="3837047332182291558">Rozjaśnij klawiaturę (dotyczy tylko klawiatur podświetlanych)</translation>
+<translation id="3949671998904569433">przecinek</translation>
 <translation id="3976863468609830880">Kliknij ostatnią ikonę na półce</translation>
 <translation id="3994783594793697310">Zresetuj poziom powiększenia ekranu</translation>
 <translation id="4026843240379844265">Przenieś aktywne okno na inny ekran</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Przełącz na następną dostępną metodę wprowadzania tekstu</translation>
 <translation id="743754632698445141">Odepnij aplikację</translation>
 <translation id="7439718573248533901">Usuń następny znak (usuwanie do przodu)</translation>
+<translation id="7500368597227394048">łącznik</translation>
 <translation id="7611271430932669992">Przenieś sterowanie na wyskakujące okienka i okna dialogowe</translation>
 <translation id="766326951329901120">Wklej zawartość schowka jako zwykły tekst</translation>
+<translation id="7703010453515335249">lewy nawias</translation>
 <translation id="7724603315864178912">Wytnij</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="SPACE" /> lub <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Otwórz plik w przeglądarce</translation>
-<translation id="7917881398263220094">Zatrzymaj wczytywanie bieżącej strony</translation>
 <translation id="7952165122793773711">Przejdź do karty 1–8</translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
 <translation id="8130528849632411619">Przejdź na początek dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> lub <ph name="E" /></translation>
 <translation id="8232835244134740473">Przełączaj zaznaczenie między: paskiem stanu (tam, gdzie widać obraz konta), Menu z aplikacjami, paskiem adresu, paskiem zakładek (jeśli jest widoczny), otwartą aktualnie stroną, paskiem pobranych plików (jeśli jest widoczny).</translation>
 <translation id="8234414138295101081">Obróć ekran o 90 stopni</translation>
+<translation id="8241665785394195545">prawy nawias</translation>
 <translation id="8264941229485248811">Pokaż lub ukryj inspektora z Narzędzi dla deweloperów</translation>
 <translation id="836869401750819675">Otwórz stronę Pobrane pliki</translation>
 <translation id="8388247778047144397">Przeciągnij link na pusty obszar na pasku kart</translation>

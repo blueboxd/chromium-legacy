@@ -1117,9 +1117,24 @@ void BaseRenderingContext2D::DrawImageInternal(cc::PaintCanvas* c,
     image_flags.setImageFilter(nullptr);
   }
 
-  image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
-  image->Draw(c, image_flags, dst_rect, src_rect, kDoNotRespectImageOrientation,
-              Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
+  if (!image_source->IsVideoElement()) {
+    image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
+    image->Draw(c, image_flags, dst_rect, src_rect,
+                kDoNotRespectImageOrientation,
+                Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
+  } else {
+    c->save();
+    c->clipRect(dst_rect);
+    c->translate(dst_rect.X(), dst_rect.Y());
+    c->scale(dst_rect.Width() / src_rect.Width(),
+             dst_rect.Height() / src_rect.Height());
+    c->translate(-src_rect.X(), -src_rect.Y());
+    HTMLVideoElement* video = static_cast<HTMLVideoElement*>(image_source);
+    video->PaintCurrentFrame(
+        c,
+        IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())),
+        &image_flags);
+  };
 
   c->restoreToCount(initial_save_count);
 }
@@ -1150,17 +1165,22 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   scoped_refptr<Image> image;
   FloatSize default_object_size(Width(), Height());
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
-  AccelerationHint hint =
-      IsAccelerated() ? kPreferAcceleration : kPreferNoAcceleration;
-  image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
-                                                default_object_size);
-  if (source_image_status == kUndecodableSourceImageStatus) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "The HTMLImageElement provided is in the 'broken' state.");
+  if (!image_source->IsVideoElement()) {
+    AccelerationHint hint =
+        IsAccelerated() ? kPreferAcceleration : kPreferNoAcceleration;
+    image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
+                                                  default_object_size);
+    if (source_image_status == kUndecodableSourceImageStatus) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidStateError,
+          "The HTMLImageElement provided is in the 'broken' state.");
+    }
+    if (!image || !image->width() || !image->height())
+      return;
+  } else {
+    if (!static_cast<HTMLVideoElement*>(image_source)->HasAvailableVideoFrame())
+      return;
   }
-  if (!image || !image->width() || !image->height())
-    return;
 
   if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dw) ||
       !std::isfinite(dh) || !std::isfinite(sx) || !std::isfinite(sy) ||

@@ -716,6 +716,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                        const ScrollTree& scroll_tree,
                                        ScrollNode* scroll_node) const;
 
+  // Return all ScrollNode indices that have an associated layer with a non-fast
+  // region that intersects the point.
+  base::flat_set<int> NonFastScrollableNodes(
+      const gfx::PointF& device_viewport_point) const;
+
   // Returns true if a scroll offset animation is created and false if we scroll
   // by the desired amount without an animation.
   bool ScrollAnimationCreate(ScrollNode* scroll_node,

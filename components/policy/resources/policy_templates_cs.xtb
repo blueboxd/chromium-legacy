@@ -339,6 +339,11 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
           Pokud je tato zásada deaktivovaná nebo není nastavená, je nastavení účtů Kerberos zakázáno. Nelze přidat žádné účty Kerberos a ověření pomocí protokolu Kerberos nelze použít. Všechny existující účty Kerberos a všechna uložená hesla jsou smazány.</translation>
 <translation id="1561424797596341174">Přepsání zásad pro ladicí sestavení hostitele vzdáleného přístupu</translation>
 <translation id="1561967320164410511">U2F plus rozšíření pro individuální atestaci</translation>
+<translation id="1566329065312331399">
+      Když je tato zásada nastavená na hodnotu False, zakazuje zařízení spouštět funkci Powerwash.
+      Když je nastavená na hodnotu True, spouštění funkce Powerwash zařízení povoluje.
+      Pokud je ponechána nenastavená, použije se výchozí nastavení False, které zařízení spuštění funkce Powerwash zakazuje.
+      </translation>
 <translation id="1574554504290354326">Podpora tohoto nastavení byla ukončena, použijte namísto něj zásadu SafeBrowsingExtendedReportingEnabled. Povolení nebo zakázání zásady SafeBrowsingExtendedReportingEnabled je ekvivalentní k nastavení zásady SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
 
       Pokud tuto zásadu nastavíte na hodnotu false, uživatelé nebudou moci zvolit, že se mají některé informace o systému a obsahu stránek odesílat na servery Google. Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatelé budou moci odesílat část informací o systému a obsahu stránek do Bezpečného prohlížení a pomoci tak rozpoznávat nebezpečné aplikace a weby.
@@ -376,6 +381,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 
       Upozornění: Delegovat řízení verze systému <ph name="PRODUCT_OS_NAME" /> na terminálovou aplikaci se nedoporučuje, neboť to zařízení může zabránit v přijímání aktualizací softwaru a kritických oprav zabezpečení. Delegování řízení verze systému <ph name="PRODUCT_OS_NAME" /> by uživatele mohlo vystavit riziku.</translation>
 <translation id="1675002386741412210">Podpora:</translation>
+<translation id="1700811900332333712">Povolit zařízení žádat o Powerwash</translation>
 <translation id="1704516734140344991">Slouží ke konfiguraci dostupnosti a chování funkce aktualizace firmwaru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Jednotlivá nastavení lze zadat ve vlastnostech objektu JSON:
@@ -2012,6 +2018,14 @@ Pokud zásadu nenastavíte, <ph name="PRODUCT_NAME" /> nebude delegovat přihla�
       Během této doby bude uživatel opakovaně informován, že je potřeba nainstalovat aktualizaci. Na zařízeních se systémem <ph name="PRODUCT_OS_NAME" /> se oznámení o restartu zobrazuje na hlavním panelu systému podle zásady <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. V prohlížečích <ph name="PRODUCT_NAME" /> se po uplynutí jedné třetiny lhůty pro oznámení změní nabídka aplikace na znamení, že je prohlížeč potřeba aktualizovat. Barva tohoto oznámení se změní po uplynutí dvou třetin lhůty a poté znovu po uplynutí celé lhůty. Další oznámení aktivovaná pomocí zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> se řídí stejným časovým plánem.
 
       Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro prohlížeč <ph name="PRODUCT_NAME" /> 604 800 000 milisekund (jeden týden).</translation>
+<translation id="4777805166623621364">
+      Pomocí tohoto nastavení (SitePerProcess) lze uživatelům zakázat změnu výchozího chování, při kterém jsou všechny weby izolovány. K izolaci dalších (podrobněji určených) zdrojů může být užitečná také zásada IsolateOrigins.
+      Pokud je tato zásada aktivovaná, uživatelé nebudou moci změnit výchozí chování, kdy je každý web spuštěn v samostatném procesu.
+      Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, budou uživatelé moci izolaci webů zakázat (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).  Tím, že tuto zásadu deaktivujete nebo že ji nenakonfigurujete, izolaci webů nevypnete.
+      V systému <ph name="PRODUCT_OS_NAME" /> verze 76 a dřívějších doporučujeme nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Pokud se hodnoty těchto dvou zásad neshodují, při vstupu do uživatelské relace může dojít k prodlevě způsobené používáním hodnoty zadané v zásadě pro uživatele.
+
+      POZNÁMKA: Tato zásada se nevztahuje na systém Android. K aktivaci zásady SitePerProcess v systému Android použijte zásadu SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat informace o platebních kartách pomocí dříve uložených údajů.
 
       Pokud je toto nastavení vypnuto, nebude automatické vyplňování navrhovat ani vyplňovat informace o platebních kartách a nebude ani ukládat další informace o platebních kartách, které uživatel při prohlížení webu odešle.
@@ -2156,6 +2170,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 <translation id="5148753489738115745">Umožňuje nastavit dodatečné parametry, které plugin <ph name="PRODUCT_FRAME_NAME" /> při spouštění aplikace <ph name="PRODUCT_NAME" /> použije.
 
           Když tato zásada není nastavena, bude použit výchozí příkazový řádek.</translation>
+<translation id="5152787786897382519">Prohlížeče Chromium a Google Chrome mají několik skupin zásad, které na sobě při ovládání určité funkce vzájemně závisejí. Tyto sady jsou reprezentovány následujícími skupinami zásad. Protože zásady mohou mít několik zdrojů, použijí se pouze hodnoty pocházející ze zdroje s nejvyšší prioritou. Hodnoty pocházející ze zdroje s nižší prioritou ve stejné skupině budou ignorovány. Pořadí priority je popsáno v článku <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Udává, jak často se odesílají sledovací síťové pakety (v milisekundách).
 
       Je-li tato zásada ponechána nenastavená, použije se výchozí interval tři minuty. Minimální interval je 30 sekund a maximální 24 hodin – hodnoty mimo tento rozsah budou přizpůsobeny příslušné hranici.</translation>
@@ -2690,6 +2705,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>
 <translation id="5997846976342452720">Určuje, zda má být deaktivován nástroj pro vyhledávání pluginů (podpora ukončena)</translation>
+<translation id="5998198091336830580">Tato zásada je součástí následující atomické skupiny (používají se pouze zásady ze zdroje s nejvyšší prioritou ve skupině):</translation>
 <translation id="6017568866726630990">Zobrazí místo náhledu tisku systémové dialogové okno tisku.
 
       Pokud je toto nastavení aktivované, prohlížeč <ph name="PRODUCT_NAME" /> zobrazí při požadavku uživatele na tisk stránky systémové dialogové okno tisku (namísto integrovaného náhledu tisku).
@@ -3418,6 +3434,9 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu True, informace 
 Pokud je tato zásada nastavena na hodnotu False, informace umožňující identifikaci počítačů se neshromažďují.
 
 Tato zásada platí, pouze pokud je povoleno rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="SITE_PER_PROCESS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské návštěvy dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
+      </translation>
 <translation id="737655323154569539">Pokud zásada nebude nastavena nebo bude nastavena jako prázdná, bude to považováno za žádné omezení.</translation>
 <translation id="7389872682701720082">Pokud toto nastavení povolíte, pluginy, které nejsou zastaralé, se vždy spustí.
 
@@ -3750,6 +3769,7 @@ Tyto záložky budou umístěny do složky, kterou uživatel nemůže upravovat.
 
           Podívejte se také na zásady CookiesAllowedForUrls a CookiesSessionOnlyForUrls. Vzory adres URL v těchto třech zásadách navzájem nesmějí být v konfliktu – není dáno, která zásada má přednost.</translation>
 <translation id="8099880303030573137">Prodleva nečinnosti při napájení z baterie</translation>
+<translation id="8101381354936029836">Atomická skupina zásad:</translation>
 <translation id="8102913158860568230">Výchozí nastavení mediálního přenosu</translation>
 <translation id="8104186956182795918">Umožňuje nastavit, zda mají weby povoleno zobrazovat obrázky. Zobrazování obrázků je možné všem webům buď povolit, nebo zakázat.
 
@@ -3949,6 +3969,15 @@ Ve verzi M75 bude tato zásada odstraněna.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktivovat ukládání historie prohlížeče</translation>
 <translation id="8499172469244085141">Výchozí nastavení (uživatelé mohou zásady přepsat)</translation>
+<translation id="849962487677588458">Podpora této zásady byla ukončena a ve verzi Chrome 78 bude bez náhrady odstraněna.
+
+      Tato zásada povolí protokol HTTP/0.9 na portech jiných než 80 pro HTTP a 443 pro HTTPS.
+
+      Tato zásada je ve výchozím nastavení vypnutá. Pokud ji zapnete, vystavíte tím uživatele bezpečnostnímu riziku popsanému na stránce https://crbug.com/600352.
+
+      Účelem této zásady je poskytnout organizacím čas k migraci existujících serverů na jiný protokol než HTTP/0.9 a v budoucnu bude odstraněna.
+
+      Pokud tato zásada není nastavená, protokol HTTP/0.9 bude na jiných než výchozích portech zakázán.</translation>
 <translation id="8507835864888987300">Nastavuje cílovou verzi pro automatické aktualizace.
 
       Určuje předponu cílové verze, na kterou by se měl systém <ph name="PRODUCT_OS_NAME" /> aktualizovat. Pokud je v zařízení spuštěna verze, která zadané předponě předchází, aktualizuje se na nejnovější verzi s danou předponou. Je-li v zařízení již nainstalována novější verze, závisí účinek na hodnotě zásady <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Formát předpony funguje po částech, jak ukazuje následující příklad:

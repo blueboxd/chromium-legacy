@@ -45,7 +45,7 @@ import java.util.Locale;
  * A {@link Layout} that shows all tabs in one grid view.
  */
 public class GridTabSwitcherLayout
-        extends Layout implements GridTabSwitcher.GridVisibilityObserver {
+        extends Layout implements GridTabSwitcher.GridOverviewModeObserver {
     private static final String TAG = "GTSLayout";
 
     // Duration of the transition animation
@@ -91,6 +91,31 @@ public class GridTabSwitcherLayout
         mGridController.addOverviewModeObserver(this);
     }
 
+    // GridTabSwitcher.GridOverviewModeObserver implementation.
+    @Override
+    public void startedShowing() {}
+
+    @Override
+    public void finishedShowing() {
+        doneShowing();
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
+    }
+
+    @Override
+    public void startedHiding() {
+        startHiding(mTabModelSelector.getCurrentTabId(), false);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+            mGridTabSwitcher.postHiding();
+            return;
+        }
+        expandTab(mGridTabSwitcher.getThumbnailLocationOfCurrentTab(true));
+    }
+
+    @Override
+    public void finishedHiding() {}
+
+    // Layout implementation.
     @Override
     public LayoutTab getLayoutTab(int id) {
         return mDummyLayoutTab;
@@ -173,30 +198,6 @@ public class GridTabSwitcherLayout
     public boolean handlesCloseAll() {
         return false;
     }
-
-    // GridTabSwitcher.GridVisibilityObserver implementation.
-    @Override
-    public void onOverviewModeStartedShowing(boolean showToolbar) {}
-
-    @Override
-    public void onOverviewModeFinishedShowing() {
-        doneShowing();
-        Tab currentTab = mTabModelSelector.getCurrentTab();
-        if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
-    }
-
-    @Override
-    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-        startHiding(mTabModelSelector.getCurrentTabId(), false);
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
-            mGridTabSwitcher.postHiding();
-            return;
-        }
-        expandTab(mGridTabSwitcher.getThumbnailLocationOfCurrentTab(true));
-    }
-
-    @Override
-    public void onOverviewModeFinishedHiding() {}
 
     @Override
     protected void forceAnimationToFinish() {

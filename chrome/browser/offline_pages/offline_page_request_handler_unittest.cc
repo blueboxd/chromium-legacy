@@ -90,10 +90,6 @@ const int kTabId = 1;
 
 const char kAggregatedRequestResultHistogram[] =
     "OfflinePages.AggregatedRequestResult2";
-const char kOpenFileErrorCodeHistogram[] =
-    "OfflinePages.RequestJob.OpenFileErrorCode";
-const char kSeekFileErrorCodeHistogram[] =
-    "OfflinePages.RequestJob.SeekFileErrorCode";
 const char kAccessEntryPointHistogram[] = "OfflinePages.AccessEntryPoint.";
 const char kPageSizeAccessOfflineHistogramBase[] =
     "OfflinePages.PageSizeOnAccess.Offline.";
@@ -351,9 +347,6 @@ class OfflinePageRequestHandlerTest : public testing::Test {
   // Expect no samples to have been reported to the aggregated results
   // histogram.
   void ExpectNoSamplesInAggregatedRequestResult();
-
-  void ExpectOpenFileErrorCode(int result);
-  void ExpectSeekFileErrorCode(int result);
 
   void ExpectAccessEntryPoint(
       OfflinePageRequestHandler::AccessEntryPoint entry_point);
@@ -636,16 +629,6 @@ void OfflinePageRequestHandlerTest::
 
 void OfflinePageRequestHandlerTest::ExpectNoSamplesInAggregatedRequestResult() {
   histogram_tester_->ExpectTotalCount(kAggregatedRequestResultHistogram, 0);
-}
-
-void OfflinePageRequestHandlerTest::ExpectOpenFileErrorCode(int result) {
-  histogram_tester_->ExpectUniqueSample(kOpenFileErrorCodeHistogram, -result,
-                                        1);
-}
-
-void OfflinePageRequestHandlerTest::ExpectSeekFileErrorCode(int result) {
-  histogram_tester_->ExpectUniqueSample(kSeekFileErrorCodeHistogram, -result,
-                                        1);
 }
 
 void OfflinePageRequestHandlerTest::ExpectAccessEntryPoint(
@@ -1905,7 +1888,6 @@ TEST_F(OfflinePageRequestHandlerTest, IntentFileNotFound) {
       net::FilePathToFileURL(nonexistent_file_path)));
   this->LoadPageWithHeaders(kUrl, extra_headers);
 
-  this->ExpectOpenFileErrorCode(net::ERR_FILE_NOT_FOUND);
   EXPECT_EQ(net::ERR_FAILED, this->request_status());
   EXPECT_NE("multipart/related", this->mime_type());
   EXPECT_EQ(0, this->bytes_read());

@@ -7,12 +7,7 @@
 #import <Foundation/Foundation.h>
 #include <type_traits>
 
-#include "base/files/file_util.h"
-
 namespace app_mode {
-
-const char kAppShimSocketShortName[] = "Socket";
-const char kAppShimSocketSymlinkName[] = "App Shim Socket";
 
 const char kAppShimBootstrapNameFragment[] = "apps";
 const char kMojoChannelMacSignalFile[] = "apps_use_mojo_channel_mac";
@@ -77,13 +72,5 @@ static_assert(
         offsetof(ChromeAppModeInfo, profile_dir) == 0x48,
     "ChromeAppModeInfo layout has changed; bump the APP_SHIM_VERSION_NUMBER "
     "in chrome/common/mac/app_mode_common.h. (And fix this static_assert.)");
-
-void VerifySocketPermissions(const base::FilePath& socket_path) {
-  CHECK(base::PathIsWritable(socket_path));
-  base::FilePath socket_dir = socket_path.DirName();
-  int socket_dir_mode = 0;
-  CHECK(base::GetPosixFilePermissions(socket_dir, &socket_dir_mode));
-  CHECK_EQ(0700, socket_dir_mode);
-}
 
 }  // namespace app_mode

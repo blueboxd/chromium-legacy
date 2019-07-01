@@ -9,8 +9,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
@@ -22,11 +20,6 @@
 namespace offline_pages {
 
 namespace {
-
-const char* kMoveFileFailureReason =
-    "OfflinePages.PublishArchive.MoveFileFailureReason";
-const int kSourceMissing = 0;
-const int kDestinationMissing = 1;
 
 using offline_pages::SavePageResult;
 
@@ -45,11 +38,7 @@ PublishArchiveResult MoveAndRegisterArchive(
   // Create the destination directory if it does not already exist.
   if (!publish_directory.empty() && !base::DirectoryExists(publish_directory)) {
     base::File::Error file_error;
-    if (!base::CreateDirectoryAndGetError(publish_directory, &file_error)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "OfflinePages.PublishArchive.CreateDirectoryError", -file_error,
-          -base::File::Error::FILE_ERROR_MAX);
-    }
+    base::CreateDirectoryAndGetError(publish_directory, &file_error);
   }
 
   // Move the file.
@@ -57,18 +46,14 @@ PublishArchiveResult MoveAndRegisterArchive(
   if (!moved) {
     archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
     DVPLOG(0) << "OfflinePage publishing file move failure " << __func__;
-    base::UmaHistogramSparse("OfflinePages.PublishArchive.MoveFileError",
-                             errno);
 
     if (!base::PathExists(offline_page.file_path)) {
       DVLOG(0) << "Can't copy from non-existent path, from "
                << offline_page.file_path << " " << __func__;
-      base::UmaHistogramBoolean(kMoveFileFailureReason, kSourceMissing);
     }
     if (!base::PathExists(publish_directory)) {
       DVLOG(0) << "Target directory does not exist, " << publish_directory
                << " " << __func__;
-      base::UmaHistogramBoolean(kMoveFileFailureReason, kDestinationMissing);
     }
     return archive_result;
   }

@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Kan redigere</translation>
 <translation id="1984603991036629094">Armensk fonetisk tastatur</translation>
 <translation id="2001796770603320721">Administrer i Drev</translation>
+<translation id="2009067268969781306">Formatering af et drev sletter alle de data, der er gemt på det. Denne handling kan ikke fortrydes.</translation>
 <translation id="2028997212275086731">RAR-arkiv</translation>
 <translation id="2046702855113914483">Ramen</translation>
-<translation id="204914487372604757">Opret genvej</translation>
 <translation id="2070909990982335904">Navne, der begynder med punktum, må kun bruges af systemet. Vælg et andet navn.</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2080010875307505892">Serbisk tastatur</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Arabisk tastatur</translation>
 <translation id="4261901459838235729">Google-præsentation</translation>
 <translation id="4290535918735525311">1 mappe er delt med Linux</translation>
+<translation id="42981349822642051">Udvid</translation>
 <translation id="4298972503445160211">Dansk tastatur</translation>
 <translation id="4299729908419173967">Brasiliansk</translation>
 <translation id="4309915981827077375">Generelle oplysninger</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Få flere oplysninger...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> af filerne slettes</translation>
 <translation id="509429900233858213">Der opstod en fejl.</translation>
 <translation id="5098629044894065541">Hebræisk</translation>
 <translation id="5123433949759960244">Basketball</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Sikkerhedskopiering i skyen for Chrome OS</translation>
 <translation id="5756666464756035725">Ungarsk QWERTY-tastatur</translation>
 <translation id="5771585441665576801">Translitteration (geia → γεια)</translation>
+<translation id="5776325638577448643">Ryd og formatér</translation>
 <translation id="57838592816432529">Slå lyden fra</translation>
 <translation id="5788127256798019331">Play-filer</translation>
 <translation id="5790193330357274855">Kasakhisk</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Giv Linux-apps tilladelse til at redigere filer i mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Fransk BÉPO-tastatur</translation>
 <translation id="5911887972742538906">Der opstod en fejl ved installationen af Linux-appen.</translation>
+<translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Kopiering mislykkedes, uventet fejl: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Giv Linux-apps tilladelse til at ændre filer i Google Drev. Ændringer synkroniseres med dine andre enheder.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Åbn med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Venter på oplysninger om ledig plads...</translation>
 <translation id="6205710420833115353">Nogle handlinger tager længere tid end forventet. Vil du afbryde dem?</translation>
+<translation id="6224253798271602650">Formatér <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Denne fil kunne ikke afspilles.</translation>
 <translation id="6248400709929739064">Aktivér undertekster</translation>
 <translation id="6264347891387618177">Translitteration (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Amerikansk (Programmer Dvorak) tastatur</translation>
 <translation id="7191454237977785534">Gem fil som</translation>
 <translation id="7222624196722476520">Bulgarsk tastatur (fonetisk)</translation>
+<translation id="7238097264433196391">Navn på drev</translation>
 <translation id="7248671827512403053">Applikation</translation>
 <translation id="7268659760406822741">Tilgængelige tjenester</translation>
 <translation id="7283041136720745563">Dine Google Drev-kvote er ikke stor nok.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Slovensk</translation>
 <translation id="7982283708762922719">Højde</translation>
 <translation id="7987485481246785146">Sorani-kurdisk tastatur (arabiskbaseret)</translation>
-<translation id="799547531016638432">Fjern genvej</translation>
 <translation id="799923393800005025">Kan se</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
 <translation id="8028993641010258682">Størrelse</translation>

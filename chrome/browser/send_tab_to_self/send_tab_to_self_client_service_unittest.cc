@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,6 +54,15 @@ class TestSendTabToSelfClientService : public SendTabToSelfClientService {
     TestReceivingUiHandler* handler_ptr = handler.get();
     test_handlers_.push_back(std::move(handler));
     return handler_ptr;
+  }
+
+  // This copies the SendTabToSelfClientService implementation without a cast to
+  // DesktopNotificationHandler on desktop platforms. See notes in that file.
+  void EntriesAddedRemotely(
+      const std::vector<const SendTabToSelfEntry*>& new_entries) override {
+    for (const std::unique_ptr<ReceivingUiHandler>& handler : GetHandlers()) {
+      handler->DisplayNewEntries(new_entries);
+    }
   }
 
   const std::vector<std::unique_ptr<ReceivingUiHandler>>& GetHandlers()

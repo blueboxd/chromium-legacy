@@ -193,8 +193,6 @@ used when committed.
 *   [Tips for Debugging on Linux](linux_debugging.md)
 *   [Linux GTK Theme Integration](linux_gtk_theme_integration.md) - Having
     Chrome match the GTK+ theme.
-*   [Gtk vs ViewsGtk](gtk_vs_views_gtk.md) - Notes on when to use Gtk vs
-    ViewsGtk
 *   [Browser Plugins on Linux](linux_plugins.md) - A collection of links to
     information on how browser plugins work on Linux
 *   [Linux Crash Dumping](linux_crash_dumping.md) - How Breakpad uploads crash

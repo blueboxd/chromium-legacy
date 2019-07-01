@@ -364,6 +364,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si cette règle est désactivée ou si elle n'est pas définie, les paramètres de comptes Kerberos sont désactivés. Aucun compte Kerberos ne peut être ajouté et l'authentification Kerberos ne peut pas être utilisée. Les comptes Kerberos déjà créés et les mots de passe enregistrés sont tous supprimés.</translation>
 <translation id="1561424797596341174">Remplacements de règle pour les versions de débogage de l'hôte distant</translation>
 <translation id="1561967320164410511">U2F plus extensions pour chaque attestation</translation>
+<translation id="1566329065312331399">
+      Lorsque cette règle est définie sur "False", l'appareil ne peut pas lancer Powerwash.
+      Lorsque cette règle est définie sur "True", l'appareil peut lancer Powerwash.
+      Si cette règle n'est pas configurée, elle est définie par défaut sur "False" : l'appareil ne peut pas lancer Powerwash.
+      </translation>
 <translation id="1574554504290354326">Cette règle est obsolète. (Utilisez à la place celle intitulée "SafeBrowsingExtendedReportingEnabled". L'activation ou la désactivation de cette dernière équivaut à définir "SafeBrowsingExtendedReportingOptInAllowed" sur "False".)
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas envoyer d'informations système ni de contenu de pages aux serveurs Google. En revanche, si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs sont autorisés à envoyer des informations système et le contenu de pages au service de navigation sécurisée afin de contribuer à la détection des applications et des sites dangereux.
@@ -406,6 +411,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Avertissement : Il est recommandé de ne pas déléguer le contrôle de la version de <ph name="PRODUCT_OS_NAME" /> à une application kiosque, car l'appareil risque de ne pas recevoir les mises à jour logicielles et les correctifs de sécurité essentiels. La délégation du contrôle de la version de <ph name="PRODUCT_OS_NAME" /> pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
+<translation id="1700811900332333712">Autoriser l'appareil à lancer Powerwash</translation>
 <translation id="1704516734140344991">Configure la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Les paramètres individuels peuvent être spécifiés dans les propriétés JSON :
@@ -2071,6 +2077,15 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
 
       Si ce paramètre n'est pas défini, la période par défaut est fixée à 345 600 000 millisecondes (quatre jours) pour les appareils <ph name="PRODUCT_OS_NAME" /> et à 604 800 000 millisecondes (une semaine) pour <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      La règle SitePerProcess peut être employée pour empêcher les utilisateurs de désactiver le paramètre par défaut qui isole tous les sites. Notez que la règle IsolateOrigins peut également servir à isoler d'autres origines plus précises.
+      Si la présente règle est activée, les utilisateurs ne peuvent pas désactiver le paramètre par défaut où chaque site exécute son propre processus.
+      Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent désactiver l'isolation de sites
+      (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).  Si cette règle est désactivée et/ou si elle n'est pas configurée, l'isolation de sites n'est pas désactivée.
+      Pour <ph name="PRODUCT_OS_NAME" /> 76 ou version antérieure, nous vous recommandons d'attribuer la même valeur à la règle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> relative aux appareils. Si les valeurs sont différentes, il peut y avoir un certain délai lors de l'ouverture d'une session utilisateur dû à l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+
+      REMARQUE : Cette règle ne s'applique pas à Android. Pour l'activer sur Android, utilisez le paramètre de la règle SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Active la fonctionnalité de saisie automatique de <ph name="PRODUCT_NAME" />, qui permet à l'utilisateur de remplir automatiquement des formulaires Web à partir de données stockées précédemment, telles que des informations relatives à sa carte de crédit.
 
       Si ce paramètre est désactivé, ces informations ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires de carte de crédit que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.
@@ -2216,6 +2231,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5148753489738115745">Permet de spécifier les paramètres supplémentaires utilisés lorsque <ph name="PRODUCT_FRAME_NAME" /> lance <ph name="PRODUCT_NAME" />.
 
           Si cette règle n'est pas configurée, la ligne de commande par défaut est utilisée.</translation>
+<translation id="5152787786897382519">Chromium et Google Chrome possèdent tous les deux des groupes de règles interdépendantes pour contrôler une fonctionnalité. Ces ensembles sont représentés par les groupes de règles suivants. Les règles pouvant avoir plusieurs sources, seules les valeurs issues de la source avec la priorité la plus haute sont appliquées. Les valeurs provenant d'une source avec une priorité inférieure dans le même groupe sont ignorées. L'ordre de priorité est défini dans le document <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Indiquer la fréquence d'envoi de paquets réseau de contrôle, en millisecondes.
 
       Si cette règle n'est pas définie, l'intervalle par défaut est de 3 minutes.
@@ -2765,6 +2781,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="5983708779415553259">Comportement par défaut des sites ne figurant dans aucun pack de contenu</translation>
 <translation id="5997543603646547632">Utiliser le format d'horloge 24 h par défaut</translation>
 <translation id="5997846976342452720">Indiquer si l'outil de recherche de plug-ins doit être désactivé (obsolète)</translation>
+<translation id="5998198091336830580">Cette règle fait partie du groupe atomique suivant (seules les règles issues de la source avec la plus haute priorité, figurant dans le groupe sont appliquées) :</translation>
 <translation id="6017568866726630990">Affiche la boîte de dialogue d'impression du système au lieu de l'aperçu avant impression.
 
       Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> ouvre la boîte de dialogue d'impression du système au lieu de l'aperçu avant impression intégré lorsqu'un utilisateur souhaite imprimer une page.
@@ -3510,6 +3527,9 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Lorsque cette règle est définie sur False, les informations pouvant être utilisées pour identifier les ordinateurs ne sont pas collectées.
 
       Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Cette règle s'applique à l'écran de connexion. Veuillez également consulter celle applicable à la session utilisateur (<ph name="SITE_PER_PROCESS_POLICY_NAME" />). Nous vous recommandons d'attribuer la même valeur à ces deux règles. Si les valeurs sont différentes, il peut y avoir un certain délai lors de l'ouverture d'une session utilisateur dû à l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+      </translation>
 <translation id="737655323154569539">Limite le format de la page d'impression. Si la règle n'est pas définie ou qu'elle est vide, on considère qu'il n'y a aucune restriction.</translation>
 <translation id="7389872682701720082">Si vous activez ce paramètre, les plug-ins non obsolètes sont toujours exécutés.
 
@@ -3848,6 +3868,7 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
 
           Reportez-vous également aux règles "CookiesAllowedForUrls" et "CookiesSessionOnlyForUrls". Remarque : les formats d'URL ne doivent pas être en conflit entre ces trois règles. En outre, il n'est pas spécifié quelle règle prévaut.</translation>
 <translation id="8099880303030573137">Délai d'inactivité (batterie)</translation>
+<translation id="8101381354936029836">Groupe atomique de la règle :</translation>
 <translation id="8102913158860568230">Paramètre MediaStream par défaut</translation>
 <translation id="8104186956182795918">Permet de définir si les sites Web sont autorisés ou non à afficher des images. Cet affichage peut être soit autorisé, soit refusé pour tous les sites.
 
@@ -4049,6 +4070,15 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
+<translation id="849962487677588458">Cette règle est obsolète (elle va être supprimée dans Chrome 78, sans être remplacée).
+
+      Elle active le protocole HTTP/0.9 sur les ports autres que 80 pour HTTP et 443 pour HTTPS.
+
+      Elle est désactivée par défaut. Si elle est activée, elle expose les utilisateurs à la faille de sécurité décrite sur la page https://crbug.com/600352.
+
+      Elle vise à donner la possibilité aux entreprises de migrer les serveurs actuels pour qu'ils n'utilisent plus HTTP/0.9. Elle va être supprimée prochainement.
+
+      Si cette règle n'est pas configurée, le protocole HTTP/0.9 est désactivé sur les ports non définis par défaut.</translation>
 <translation id="8507835864888987300">Définit une version cible pour les mises à jour automatiques.
 
       Cette règle spécifie le préfixe de la version cible que <ph name="PRODUCT_OS_NAME" /> doit installer. Si la version installée sur l'appareil est antérieure au préfixe défini, la dernière version associée à ce préfixe est installée. Si l'appareil exécute déjà une version ultérieure, les effets varient en fonction de la valeur de la règle <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Comme l'illustre l'exemple suivant, le format du préfixe tient compte des composants :

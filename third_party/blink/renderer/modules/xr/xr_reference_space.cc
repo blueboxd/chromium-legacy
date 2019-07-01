@@ -66,10 +66,10 @@ void XRReferenceSpace::UpdateFloorLevelTransform() {
   const device::mojom::blink::VRDisplayInfoPtr& display_info =
       session()->GetVRDisplayInfo();
 
-  if (display_info && display_info->stageParameters) {
-    // Use the transform given by xrDisplayInfo's stageParameters if available.
+  if (display_info && display_info->stage_parameters) {
+    // Use the transform given by xrDisplayInfo's stage_parameters if available.
     floor_level_transform_ = std::make_unique<TransformationMatrix>(
-        display_info->stageParameters->standingTransform.matrix());
+        display_info->stage_parameters->standing_transform.matrix());
   } else {
     // Otherwise, create a transform based on the default emulated height.
     floor_level_transform_ = std::make_unique<TransformationMatrix>();

@@ -140,12 +140,9 @@ bool BeginFrameSource::RequestCallbackOnGpuAvailable() {
 
   switch (gpu_busy_response_state_) {
     case GpuBusyThrottlingState::kIdle:
-      if (allow_one_begin_frame_after_gpu_busy_) {
         gpu_busy_response_state_ =
             GpuBusyThrottlingState::kOneBeginFrameAfterBusySent;
         return false;
-      }
-      FALLTHROUGH;
     case GpuBusyThrottlingState::kOneBeginFrameAfterBusySent:
       gpu_busy_response_state_ = GpuBusyThrottlingState::kThrottled;
       return true;

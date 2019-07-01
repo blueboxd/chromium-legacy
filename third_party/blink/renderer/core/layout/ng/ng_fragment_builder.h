@@ -47,6 +47,8 @@ class CORE_EXPORT NGFragmentBuilder {
   const LogicalSize& Size() const { return size_; }
   void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
 
+  void SetIsHiddenForPaint(bool value) { is_hidden_for_paint_ = value; }
+
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
 
  protected:
@@ -62,6 +64,15 @@ class CORE_EXPORT NGFragmentBuilder {
   NGFragmentBuilder(WritingMode writing_mode, TextDirection direction)
       : writing_mode_(writing_mode), direction_(direction) {}
 
+  NGFragmentBuilder(const NGPhysicalFragment& fragment)
+      : style_(&fragment.Style()),
+        writing_mode_(style_->GetWritingMode()),
+        direction_(style_->Direction()),
+        style_variant_(fragment.StyleVariant()),
+        size_(fragment.Size().ConvertToLogical(writing_mode_)),
+        layout_object_(fragment.GetMutableLayoutObject()),
+        is_hidden_for_paint_(fragment.IsHiddenForPaint()) {}
+
  protected:
   scoped_refptr<const ComputedStyle> style_;
   WritingMode writing_mode_;
@@ -70,6 +81,7 @@ class CORE_EXPORT NGFragmentBuilder {
   LogicalSize size_;
   LayoutObject* layout_object_ = nullptr;
   scoped_refptr<NGBreakToken> break_token_;
+  bool is_hidden_for_paint_ = false;
 
   friend class NGPhysicalFragment;
 };

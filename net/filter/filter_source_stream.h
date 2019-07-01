@@ -40,8 +40,6 @@ class NET_EXPORT_PRIVATE FilterSourceStream : public SourceStream {
 
   static SourceType ParseEncodingType(const std::string& encoding);
 
-  static void ReportContentDecodingFailed(SourceType type);
-
  private:
   enum State {
     STATE_NONE,

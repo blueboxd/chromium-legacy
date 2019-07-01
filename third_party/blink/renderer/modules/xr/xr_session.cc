@@ -75,11 +75,11 @@ void UpdateViewFromEyeParameters(
     const device::mojom::blink::VREyeParametersPtr& eye,
     double depth_near,
     double depth_far) {
-  const device::mojom::blink::VRFieldOfViewPtr& fov = eye->fieldOfView;
+  const device::mojom::blink::VRFieldOfViewPtr& fov = eye->field_of_view;
 
   view.UpdateProjectionMatrixFromFoV(
-      fov->upDegrees * kDegToRad, fov->downDegrees * kDegToRad,
-      fov->leftDegrees * kDegToRad, fov->rightDegrees * kDegToRad, depth_near,
+      fov->up_degrees * kDegToRad, fov->down_degrees * kDegToRad,
+      fov->left_degrees * kDegToRad, fov->right_degrees * kDegToRad, depth_near,
       depth_far);
 
   view.UpdateOffset(eye->offset.x(), eye->offset.y(), eye->offset.z());
@@ -236,15 +236,15 @@ void XRSession::UpdateEyeParameters(
     const device::mojom::blink::VREyeParametersPtr& left_eye,
     const device::mojom::blink::VREyeParametersPtr& right_eye) {
   auto display_info = display_info_.Clone();
-  display_info->leftEye = left_eye.Clone();
-  display_info->rightEye = right_eye.Clone();
+  display_info->left_eye = left_eye.Clone();
+  display_info->right_eye = right_eye.Clone();
   SetXRDisplayInfo(std::move(display_info));
 }
 
 void XRSession::UpdateStageParameters(
     const device::mojom::blink::VRStageParametersPtr& stage_parameters) {
   auto display_info = display_info_.Clone();
-  display_info->stageParameters = stage_parameters.Clone();
+  display_info->stage_parameters = stage_parameters.Clone();
   SetXRDisplayInfo(std::move(display_info));
 }
 
@@ -280,11 +280,11 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
       break;
     case XRReferenceSpace::Type::kTypeBoundedFloor: {
       bool supports_bounded = false;
-      if (immersive() && display_info_->stageParameters) {
-        if (display_info_->stageParameters->bounds) {
+      if (immersive() && display_info_->stage_parameters) {
+        if (display_info_->stage_parameters->bounds) {
           supports_bounded = true;
-        } else if (display_info_->stageParameters->sizeX > 0 &&
-                   display_info_->stageParameters->sizeZ > 0) {
+        } else if (display_info_->stage_parameters->size_x > 0 &&
+                   display_info_->stage_parameters->size_z > 0) {
           supports_bounded = true;
         }
       }
@@ -512,13 +512,13 @@ DoubleSize XRSession::DefaultFramebufferSize() const {
   }
 
   double scale = display_info_->webxr_default_framebuffer_scale;
-  double width = display_info_->leftEye->renderWidth;
-  double height = display_info_->leftEye->renderHeight;
+  double width = display_info_->left_eye->render_width;
+  double height = display_info_->left_eye->render_height;
 
-  if (display_info_->rightEye) {
-    width += display_info_->rightEye->renderWidth;
-    height = std::max(display_info_->leftEye->renderHeight,
-                      display_info_->rightEye->renderHeight);
+  if (display_info_->right_eye) {
+    width += display_info_->right_eye->render_width;
+    height = std::max(display_info_->left_eye->render_height,
+                      display_info_->right_eye->render_height);
   }
 
   return DoubleSize(width * scale, height * scale);
@@ -993,15 +993,15 @@ void XRSession::SetXRDisplayInfo(
     if (display_info_->Equals(*display_info))
       return;
 
-    if (display_info_->stageParameters && display_info->stageParameters &&
-        !display_info_->stageParameters->Equals(
-            *(display_info->stageParameters)))
+    if (display_info_->stage_parameters && display_info->stage_parameters &&
+        !display_info_->stage_parameters->Equals(
+            *(display_info->stage_parameters)))
       stage_parameters_id_++;
   }
 
   display_info_id_++;
   display_info_ = std::move(display_info);
-  is_external_ = display_info_->capabilities->hasExternalDisplay;
+  is_external_ = display_info_->capabilities->has_external_display;
 }
 
 WTF::Vector<XRViewData>& XRSession::views() {
@@ -1014,18 +1014,18 @@ WTF::Vector<XRViewData>& XRSession::views() {
       // If we don't already have the views allocated, do so now.
       if (views_.IsEmpty()) {
         views_.emplace_back(XRView::kEyeLeft);
-        if (display_info_->rightEye) {
+        if (display_info_->right_eye) {
           views_.emplace_back(XRView::kEyeRight);
         }
       }
       // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
       UpdateViewFromEyeParameters(
-          views_[kMonoOrStereoLeftView], display_info_->leftEye,
+          views_[kMonoOrStereoLeftView], display_info_->left_eye,
           render_state_->depthNear(), render_state_->depthFar());
-      if (display_info_->rightEye) {
+      if (display_info_->right_eye) {
         UpdateViewFromEyeParameters(
-            views_[kStereoRightView], display_info_->rightEye,
+            views_[kStereoRightView], display_info_->right_eye,
             render_state_->depthNear(), render_state_->depthFar());
       }
     } else {

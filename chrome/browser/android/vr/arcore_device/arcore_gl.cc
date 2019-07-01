@@ -319,16 +319,16 @@ void ArCoreGl::GetFrameData(
 
     // VRFieldOfView wants positive angles.
     mojom::VRFieldOfViewPtr field_of_view = mojom::VRFieldOfView::New();
-    field_of_view->leftDegrees = gfx::RadToDeg(atanf(-left / depth_near));
-    field_of_view->rightDegrees = gfx::RadToDeg(atanf(right / depth_near));
-    field_of_view->downDegrees = gfx::RadToDeg(atanf(-bottom / depth_near));
-    field_of_view->upDegrees = gfx::RadToDeg(atanf(top / depth_near));
-    DVLOG(3) << " fov degrees up=" << field_of_view->upDegrees
-             << " down=" << field_of_view->downDegrees
-             << " left=" << field_of_view->leftDegrees
-             << " right=" << field_of_view->rightDegrees;
+    field_of_view->left_degrees = gfx::RadToDeg(atanf(-left / depth_near));
+    field_of_view->right_degrees = gfx::RadToDeg(atanf(right / depth_near));
+    field_of_view->down_degrees = gfx::RadToDeg(atanf(-bottom / depth_near));
+    field_of_view->up_degrees = gfx::RadToDeg(atanf(top / depth_near));
+    DVLOG(3) << " fov degrees up=" << field_of_view->up_degrees
+             << " down=" << field_of_view->down_degrees
+             << " left=" << field_of_view->left_degrees
+             << " right=" << field_of_view->right_degrees;
 
-    display_info_->leftEye->fieldOfView = std::move(field_of_view);
+    display_info_->left_eye->field_of_view = std::move(field_of_view);
     display_info_changed_ = true;
 
     should_recalculate_uvs_ = false;
@@ -377,7 +377,7 @@ void ArCoreGl::GetFrameData(
   DVLOG(2) << __func__ << " frame=" << frame_data->frame_id;
 
   if (display_info_changed_) {
-    frame_data->left_eye = display_info_->leftEye.Clone();
+    frame_data->left_eye = display_info_->left_eye.Clone();
     display_info_changed_ = false;
   }
   // Set up a shared buffer for the renderer to draw into, it'll be sent

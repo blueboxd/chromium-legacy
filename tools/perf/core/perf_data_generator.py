@@ -183,6 +183,8 @@ FYI_BUILDERS = {
         'num_shards': 4,
         'extra_args': [
             '--test-shard-map-filename=chromeos-kevin-perf-fyi_map.json',
+            # The magic hostname that resolves to a CrOS device in the test lab
+            '--remote=variable_chromeos_device_hostname',
         ],
       },
     ],

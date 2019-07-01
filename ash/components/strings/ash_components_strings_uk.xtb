@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Перейти на попередню вкладку</translation>
 <translation id="2194790690264064655">Натисніть <ph name="CTRL" /> і посилання</translation>
 <translation id="2246352309084894470">Відкрити або закрити повноекранну панель запуску</translation>
+<translation id="2354531887393764880">період</translation>
 <translation id="2382644247745281995">Не підтримується поточною розкладкою клавіатури</translation>
 <translation id="2397416548179033562">Показати меню Chrome</translation>
 <translation id="2424073332829844142">Увімкнути або вимкнути Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Відкрити виділений елемент на полиці</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> від 1 до 8</translation>
 <translation id="3837047332182291558">Збільшити яскравість клавіатури (лише для клавіатур із підсвічуванням)</translation>
+<translation id="3949671998904569433">кома</translation>
 <translation id="3976863468609830880">Натиснути останній значок на полиці</translation>
 <translation id="3994783594793697310">Скидає рівень масштабування екрана</translation>
 <translation id="4026843240379844265">Перемістити активне вікно між дисплеями.</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Вибрати наступний доступний метод введення</translation>
 <translation id="743754632698445141">Відкріпити додаток</translation>
 <translation id="7439718573248533901">Видалити наступну літеру (видалення вперед)</translation>
+<translation id="7500368597227394048">дефіс</translation>
 <translation id="7611271430932669992">Виділити спливаючі або діалогові вікна</translation>
 <translation id="766326951329901120">Вставити вміст із буфера обміну як простий текст</translation>
+<translation id="7703010453515335249">ліва квадратна дужка</translation>
 <translation id="7724603315864178912">Вирізати</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, а тоді <ph name="SPACE" /> або <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Відкрити файл у веб-переглядачі</translation>
-<translation id="7917881398263220094">Припинити завантаження поточної сторінки</translation>
 <translation id="7952165122793773711">Перейти на вкладки 1–8</translation>
 <translation id="8026334261755873520">Очистити історію</translation>
 <translation id="8130528849632411619">Перейти на початок документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> або <ph name="E" /></translation>
 <translation id="8232835244134740473">Перейти між панеллю стану (де розташоване зображення облікового запису), панеллю запуску, адресним рядком, панеллю закладок (якщо її видно), відкритою сторінкою та панеллю завантажень (якщо її видно).</translation>
 <translation id="8234414138295101081">Обернути екран на 90 градусів</translation>
+<translation id="8241665785394195545">права квадратна дужка</translation>
 <translation id="8264941229485248811">Показати чи сховати інспектор Інструментів розробника</translation>
 <translation id="836869401750819675">Відкрити сторінку завантажень</translation>
 <translation id="8388247778047144397">Перетягніть посилання на порожнє місце на панелі вкладок</translation>

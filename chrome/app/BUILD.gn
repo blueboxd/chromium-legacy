@@ -598,7 +598,7 @@ source_set("builtin_service_manifests") {
     deps += [ "//chrome/services/printing/public/cpp:manifest" ]
   }
 
-  if (enable_isolated_xr_service) {
+  if (enable_vr && !is_android) {
     deps += [ "//chrome/services/isolated_xr_device:manifest" ]
   }
 

@@ -79,25 +79,44 @@ public final class ReturnToChromeExperimentsUtil {
      */
     public static boolean willHandleLoadUrlFromLocationBar(
             String url, @PageTransition int transition) {
-        if (!shouldShowOmniboxOnTabSwitcher()) return false;
-
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (!(activity instanceof ChromeActivity)) return false;
-
-        ChromeActivity chromeActivity = (ChromeActivity) activity;
-        if (!chromeActivity.isInOverviewMode()) return false;
+        ChromeActivity chromeActivity = getActivityPresentingOverviewWithOmnibox();
+        if (chromeActivity == null) return false;
 
         // Create a new unparented tab.
-        TabModel model = ((ChromeActivity) activity).getCurrentTabModel();
+        TabModel model = chromeActivity.getCurrentTabModel();
         LoadUrlParams params = new LoadUrlParams(url);
         params.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
         chromeActivity.getTabCreator(model.isIncognito())
                 .createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
+
+        RecordUserAction.record("MobileOmniboxUse.GridTabSwitcher");
 
         // These are duplicated here but would have been recorded by LocationBarLayout#loadUrl.
         RecordUserAction.record("MobileOmniboxUse");
         LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);
 
         return true;
+    }
+
+    /**
+     * @return Whether the Tab Switcher is showing the omnibox.
+     */
+    public static boolean isInOverviewWithOmnibox() {
+        return getActivityPresentingOverviewWithOmnibox() != null;
+    }
+
+    /**
+     * @return The ChromeActivity if it is presenting the omnibox on the tab switcher, else null.
+     */
+    private static ChromeActivity getActivityPresentingOverviewWithOmnibox() {
+        if (!shouldShowOmniboxOnTabSwitcher()) return null;
+
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(activity instanceof ChromeActivity)) return null;
+
+        ChromeActivity chromeActivity = (ChromeActivity) activity;
+        if (!chromeActivity.isInOverviewMode()) return null;
+
+        return chromeActivity;
     }
 }

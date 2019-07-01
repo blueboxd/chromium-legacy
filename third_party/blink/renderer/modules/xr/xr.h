@@ -29,11 +29,13 @@ class XR final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(XR);
 
  public:
+  // TODO(crbug.com/976796): Fix lint errors.
   static XR* Create(LocalFrame& frame, int64_t source_id) {
     return MakeGarbageCollected<XR>(frame, source_id);
   }
 
-  explicit XR(LocalFrame& frame, int64_t ukm_source_id_);
+  // TODO(crbug.com/976796): Fix lint errors.
+  XR(LocalFrame& frame, int64_t ukm_source_id);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
@@ -91,8 +93,6 @@ class XR final : public EventTargetWithInlineData,
   // things related to promise's life cycle happen.
   class PendingRequestSessionQuery final
       : public GarbageCollected<PendingRequestSessionQuery> {
-    DISALLOW_COPY_AND_ASSIGN(PendingRequestSessionQuery);
-
    public:
     PendingRequestSessionQuery(int64_t ukm_source_id,
                                ScriptPromiseResolver* resolver,
@@ -121,6 +121,8 @@ class XR final : public EventTargetWithInlineData,
     const XRSession::SessionMode mode_;
 
     const int64_t ukm_source_id_;
+
+    DISALLOW_COPY_AND_ASSIGN(PendingRequestSessionQuery);
   };
 
   // Encapsulates blink-side `XR::supportsSession()` call.  It is a wrapper
@@ -128,8 +130,6 @@ class XR final : public EventTargetWithInlineData,
   // certain things related to promise's life cycle happen.
   class PendingSupportsSessionQuery final
       : public GarbageCollected<PendingSupportsSessionQuery> {
-    DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
-
    public:
     PendingSupportsSessionQuery(ScriptPromiseResolver*, XRSession::SessionMode);
     virtual ~PendingSupportsSessionQuery() = default;
@@ -149,14 +149,17 @@ class XR final : public EventTargetWithInlineData,
    private:
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;
+
+    DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
   };
 
   void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device);
   void DispatchPendingSessionCalls();
 
   void DispatchRequestSession(PendingRequestSessionQuery*);
-  void OnRequestSessionReturned(PendingRequestSessionQuery*,
-                                device::mojom::blink::XRSessionPtr);
+  void OnRequestSessionReturned(
+      PendingRequestSessionQuery*,
+      device::mojom::blink::RequestSessionResultPtr result);
 
   void DispatchSupportsSession(PendingSupportsSessionQuery*);
   void OnSupportsSessionReturned(PendingSupportsSessionQuery*,

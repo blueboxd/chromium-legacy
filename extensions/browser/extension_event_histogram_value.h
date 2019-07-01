@@ -458,6 +458,7 @@ enum HistogramValue {
   RUNTIME_ON_CONNECT_NATIVE = 437,
   ACTION_ON_CLICKED = 438,
   ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND = 439,
+  ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT = 440,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

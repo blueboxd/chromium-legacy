@@ -50,8 +50,7 @@ cr.define('omnibox_output', function() {
     /** @param {!DisplayInputs} displayInputs */
     updateDisplayInputs(displayInputs) {
       this.displayInputs_ = displayInputs;
-      this.updateVisibility_();
-      this.updateEliding_();
+      this.updateDisplay_();
     }
 
     /** @param {string} filterText */
@@ -112,8 +111,7 @@ cr.define('omnibox_output', function() {
       this.resultsGroups_.push(resultsGroup);
       this.$$('#contents').appendChild(resultsGroup);
 
-      this.updateVisibility_();
-      this.updateEliding_();
+      this.updateDisplay_();
       this.updateFilterHighlights_();
     }
 
@@ -124,6 +122,13 @@ cr.define('omnibox_output', function() {
     updateAnswerImage(url, data) {
       this.autocompleteMatches.forEach(
           match => match.updateAnswerImage(url, data));
+    }
+
+    /** @private */
+    updateDisplay_() {
+      this.updateVisibility_();
+      this.updateEliding_();
+      this.updateRowHeights_();
     }
 
     /**
@@ -155,6 +160,13 @@ cr.define('omnibox_output', function() {
       this.resultsGroups_.forEach(
           resultsGroup =>
               resultsGroup.updateEliding(this.displayInputs_.elideCells));
+    }
+
+    /** @private */
+    updateRowHeights_() {
+      this.resultsGroups_.forEach(
+          resultsGroup =>
+              resultsGroup.updateRowHeights(this.displayInputs_.thinRows));
     }
 
     /** @private */
@@ -308,6 +320,12 @@ cr.define('omnibox_output', function() {
     updateEliding(elideCells) {
       this.autocompleteMatches.forEach(
           match => match.updateEliding(elideCells));
+    }
+
+    /** @param {boolean} thinRows */
+    updateRowHeights(thinRows) {
+      this.autocompleteMatches.forEach(
+          match => match.classList.toggle('thin', thinRows));
     }
 
     /**

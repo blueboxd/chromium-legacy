@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Може редагувати</translation>
 <translation id="1984603991036629094">Вірменська клавіатура (фонетична)</translation>
 <translation id="2001796770603320721">Керувати на Диску</translation>
+<translation id="2009067268969781306">Якщо відформатувати диск, усі збережені на ньому дані буде видалено. Цю дію не можна відмінити.</translation>
 <translation id="2028997212275086731">Архів у форматі RAR</translation>
 <translation id="2046702855113914483">Рамен</translation>
-<translation id="204914487372604757">Створити ярлик</translation>
 <translation id="2070909990982335904">Імена, які починаються з крапки, зарезервовані для системи. Виберіть інше ім’я.</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2080010875307505892">Сербська розкладка</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Арабська клавіатура</translation>
 <translation id="4261901459838235729">Презентація Google</translation>
 <translation id="4290535918735525311">Linux має доступ до 1 папки</translation>
+<translation id="42981349822642051">Розгорнути</translation>
 <translation id="4298972503445160211">Данська розкладка</translation>
 <translation id="4299729908419173967">бразильська</translation>
 <translation id="4309915981827077375">Загальна інформація</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Більше…</translation>
 <translation id="5061708541166515394">Контраст</translation>
 <translation id="5068919226082848014">Піца</translation>
+<translation id="5081517858322016911">Буде видалено файли розміром <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Сталася помилка.</translation>
 <translation id="5098629044894065541">Іврит</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Резервне копіювання ОС Chrome в Інтернеті</translation>
 <translation id="5756666464756035725">Угорська клавіатура QWERTY</translation>
 <translation id="5771585441665576801">Транслітерація (geia → γεια)</translation>
+<translation id="5776325638577448643">Очистити й відформатувати</translation>
 <translation id="57838592816432529">Вимкнути звук</translation>
 <translation id="5788127256798019331">Файли Play</translation>
 <translation id="5790193330357274855">Казахська</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Надайте додаткам Linux дозвіл змінювати файли в папці "<ph name="FOLDER_NAME" />"</translation>
 <translation id="5892290200158927959">Французька клавіатура BÉPO</translation>
 <translation id="5911887972742538906">Сталася помилка під час встановлення додатка Linux.</translation>
+<translation id="5912396950572065471">Формат</translation>
 <translation id="5913638992615760742">Не вдалося скопіювати. Неочікувана помилка: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Надайте додаткам Linux дозвіл змінювати файли на Google Диску. Зміни буде синхронізовано на інших ваших пристроях.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Відкрити за допомогою розширення "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="6199801702437275229">Очікування даних про вільне місце...</translation>
 <translation id="6205710420833115353">Деякі операції тривають довше, ніж очікувалось. Скасувати їх?</translation>
+<translation id="6224253798271602650">Форматувати (<ph name="DRIVE_NAME" />)</translation>
 <translation id="6227235786875481728">Неможливо відтворити цей файл.</translation>
 <translation id="6248400709929739064">Увімкнути субтитри</translation>
 <translation id="6264347891387618177">Транслітерація (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Розкладка Дворака для програмістів (США)</translation>
 <translation id="7191454237977785534">Зберегти файл як</translation>
 <translation id="7222624196722476520">Болгарська клавіатура (фонетична)</translation>
+<translation id="7238097264433196391">Назва диска</translation>
 <translation id="7248671827512403053">Додаток</translation>
 <translation id="7268659760406822741">Доступні сервіси</translation>
 <translation id="7283041136720745563">Квота Google Диска замала.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Словенська</translation>
 <translation id="7982283708762922719">Висота</translation>
 <translation id="7987485481246785146">Курдська клавіатура сорані на основі арабської мови</translation>
-<translation id="799547531016638432">Видалити ярлик</translation>
 <translation id="799923393800005025">Може переглядати</translation>
 <translation id="8008366997883261463">Собака</translation>
 <translation id="8028993641010258682">Розмір</translation>

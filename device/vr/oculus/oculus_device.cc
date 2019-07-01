@@ -28,14 +28,14 @@ mojom::VREyeParametersPtr GetEyeDetails(ovrSession session,
   auto eye_parameters = mojom::VREyeParameters::New();
   auto render_desc =
       ovr_GetRenderDesc(session, eye, hmd_desc.DefaultEyeFov[eye]);
-  eye_parameters->fieldOfView = mojom::VRFieldOfView::New();
-  eye_parameters->fieldOfView->upDegrees =
+  eye_parameters->field_of_view = mojom::VRFieldOfView::New();
+  eye_parameters->field_of_view->up_degrees =
       gfx::RadToDeg(atanf(render_desc.Fov.UpTan));
-  eye_parameters->fieldOfView->downDegrees =
+  eye_parameters->field_of_view->down_degrees =
       gfx::RadToDeg(atanf(render_desc.Fov.DownTan));
-  eye_parameters->fieldOfView->leftDegrees =
+  eye_parameters->field_of_view->left_degrees =
       gfx::RadToDeg(atanf(render_desc.Fov.LeftTan));
-  eye_parameters->fieldOfView->rightDegrees =
+  eye_parameters->field_of_view->right_degrees =
       gfx::RadToDeg(atanf(render_desc.Fov.RightTan));
 
   auto offset = render_desc.HmdToEyeOffset;
@@ -43,8 +43,8 @@ mojom::VREyeParametersPtr GetEyeDetails(ovrSession session,
 
   auto texture_size =
       ovr_GetFovTextureSize(session, eye, render_desc.Fov, 1.0f);
-  eye_parameters->renderWidth = texture_size.w;
-  eye_parameters->renderHeight = texture_size.h;
+  eye_parameters->render_width = texture_size.w;
+  eye_parameters->render_height = texture_size.h;
 
   return eye_parameters;
 }
@@ -53,19 +53,19 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
                                             ovrSession session) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = id;
-  display_info->displayName = std::string("Oculus");
+  display_info->display_name = std::string("Oculus");
   display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->hasPosition = true;
-  display_info->capabilities->hasExternalDisplay = true;
-  display_info->capabilities->canPresent = true;
+  display_info->capabilities->has_position = true;
+  display_info->capabilities->has_external_display = true;
+  display_info->capabilities->can_present = true;
   display_info->webvr_default_framebuffer_scale = 1.0;
   display_info->webxr_default_framebuffer_scale = 1.0;
 
   ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session);
-  display_info->leftEye = GetEyeDetails(session, hmdDesc, ovrEye_Left);
-  display_info->rightEye = GetEyeDetails(session, hmdDesc, ovrEye_Right);
+  display_info->left_eye = GetEyeDetails(session, hmdDesc, ovrEye_Left);
+  display_info->right_eye = GetEyeDetails(session, hmdDesc, ovrEye_Right);
 
-  display_info->stageParameters = mojom::VRStageParameters::New();
+  display_info->stage_parameters = mojom::VRStageParameters::New();
   ovr_SetTrackingOriginType(session, ovrTrackingOrigin_FloorLevel);
   ovrTrackingState ovr_state = ovr_GetTrackingState(session, 0, true);
   float floor_height = ovr_state.HeadPose.ThePose.Position.y;
@@ -73,12 +73,12 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
 
   gfx::Transform standing_transform;
   standing_transform.Translate3d(0, floor_height, 0);
-  display_info->stageParameters->standingTransform = standing_transform;
+  display_info->stage_parameters->standing_transform = standing_transform;
 
   ovrVector3f boundary_size;
   ovr_GetBoundaryDimensions(session, ovrBoundary_PlayArea, &boundary_size);
-  display_info->stageParameters->sizeX = boundary_size.x;
-  display_info->stageParameters->sizeZ = boundary_size.z;
+  display_info->stage_parameters->size_x = boundary_size.x;
+  display_info->stage_parameters->size_z = boundary_size.z;
 
   return display_info;
 }

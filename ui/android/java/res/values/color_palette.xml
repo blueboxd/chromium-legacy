@@ -62,10 +62,8 @@
     <color name="default_text_color_light">@android:color/white</color>
     <color name="default_text_color_dark_secondary" tools:ignore="UnusedResources">@color/modern_grey_700</color>
 
-    <!-- TODO(https://crbug.com/953917): Update the highlight colors to meet accessibility
-         contrast ratio. -->
-    <color name="highlight_color_on_light_text" tools:ignore="UnusedResources">#CC5595FE</color>
-    <color name="highlight_color_on_dark_text" tools:ignore="UnusedResources">#C6DAFC</color>
+    <color name="highlight_color_on_light_text" tools:ignore="UnusedResources">#5A7198</color>
+    <color name="highlight_color_on_dark_text" tools:ignore="UnusedResources">#6AA4F0</color>
 
     <color name="default_red_light" tools:ignore="UnusedResources">@color/google_red_300</color>
     <color name="default_red_dark" tools:ignore="UnusedResources">@color/google_red_600</color>

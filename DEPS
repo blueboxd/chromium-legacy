@@ -142,11 +142,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '30e265153cfa00bc6754387a90244ddd27b97636',
+  'skia_revision': '9c9af8ebc7ac365cf795689ee61b8c38afffc91d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7008cccc45709b5c6351ed48af0af79e59d4aece',
+  'v8_revision': 'b6dda94d79dd9d7e5fe7b07b3a9b2b83c655896d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -154,7 +154,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '7d6923de4ffa67efbadec7aa8d9ca79a4703c643',
+  'angle_revision': '5faff91af49995bb63a5d89ff4df7b81a03c128e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -162,7 +162,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '2b04768b92e540bf28cd9e120be87fb60d3f91cc',
+  'pdfium_revision': 'c2cdb2edb607b9907d8f2360cce5825cfef2828b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -205,7 +205,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '9cef1b0df8700e2d65c1ddda061d791d01bb8469',
+  'catapult_revision': '0384e1a460f71631c2660348c7a4f29ef28d8baa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -440,7 +440,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
   'src/ios/third_party/earl_grey/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '406ab37f2f0ec06a9c6c40218b19cba6c77ce548',
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '498c7945364ed83c9edd46a81b64ebcb06a2fdb9',
       'condition': 'checkout_ios',
   },
 
@@ -768,7 +768,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '9cafb376ebdf0d00a2fc2323e3eef26ccb27fa1d',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'c46151db0ffd1a8dae914e45f1212ef427f61ed3',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -806,7 +806,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '0bd9fbee61bb07481a972d4a7ec5379cee901123',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e355c1c23c8ac209d91885ef31a6dcc38fbc3cfd',
       'condition': 'checkout_linux',
   },
 
@@ -1191,7 +1191,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' +  '3c7ad5ecf41118329a65223b177f4e8784bcc2c4',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' +  '181e4db475b31107b062a00fcecc06ded8c0ccfc',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1359,7 +1359,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a6cb1507cc42b38a2f8f95d4945c6ed74ef5b9f6',
+    Var('webrtc_git') + '/src.git' + '@' + '5985a0481e5350f39dbc9c3ec92f13739a9a05ba',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1387,7 +1387,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/${{platform}}',
-          'version': 'git_revision:c5ecc324a08216bb365e058acceaf070ce0501c7',
+          'version': 'git_revision:e530eb1cd5bcdff466afda0d6434d1e73f590e82',
         },
       ],
       'dep_type': 'cipd',
@@ -1400,7 +1400,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d237b61038e1623b848811378d8e271cd5020d9c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5799362c2d2b7f598eb225c9dd1abeb2f3a47cc8',
     'condition': 'checkout_src_internal',
   },
 

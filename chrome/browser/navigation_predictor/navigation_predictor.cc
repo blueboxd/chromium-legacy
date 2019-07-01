@@ -185,7 +185,11 @@ NavigationPredictor::NavigationPredictor(
       prefetch_after_preconnect_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "prefetch_after_preconnect",
-          false)) {
+          false)),
+      normalize_navigation_scores_(base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kNavigationPredictor,
+          "normalize_scores",
+          true)){
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
@@ -733,11 +737,13 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
         metric->target_url, area_rank, score, metric->contains_image));
   }
 
-  // Normalize |score| to a total sum of 100.0 across all anchor elements
-  // received.
-  if (total_score > 0.0) {
-    for (auto& navigation_score : navigation_scores) {
-      navigation_score->score = navigation_score->score / total_score * 100.0;
+  if (normalize_navigation_scores_) {
+    // Normalize |score| to a total sum of 100.0 across all anchor elements
+    // received.
+    if (total_score > 0.0) {
+      for (auto& navigation_score : navigation_scores) {
+        navigation_score->score = navigation_score->score / total_score * 100.0;
+      }
     }
   }
 
@@ -822,13 +828,10 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
                  target_engagement_score_scale_ * target_engagement_score +
                  area_rank_scale_ * (area_rank_score);
 
-  // Normalize to 100.
-  // TODO(sofiyase): https://crbug.com/979050/. Determine if it is necessary to
-  // divide the navigation score by the sum of all the scales, if this sum and
-  // the threshold are constant.
-  score = score / sum_link_scales_ * 100.0;
-  DCHECK_LE(0.0, score);
-  DCHECK_GE(100.0, score);
+  if (normalize_navigation_scores_) {
+    score = score / sum_link_scales_ * 100.0;
+    DCHECK_LE(0.0, score);
+  }
 
   return score;
 }

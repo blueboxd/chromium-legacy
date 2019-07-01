@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Eiti į ankstesnį skirtuką</translation>
 <translation id="2194790690264064655">Paspauskite <ph name="CTRL" /> ir spustelėkite nuorodą</translation>
 <translation id="2246352309084894470">Atidaryti / uždaryti paleidimo viso ekrano režimu priemonę</translation>
+<translation id="2354531887393764880">taškas</translation>
 <translation id="2382644247745281995">Nepalaikoma naudojant dabartinį klaviatūros išdėstymą</translation>
 <translation id="2397416548179033562">Rodyti „Chrome“ meniu</translation>
 <translation id="2424073332829844142">Įjungti ir išjungti didžiųjų raidžių klavišą</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Atidaryti paryškintą elementą lentynoje</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> nuo 1 iki 8</translation>
 <translation id="3837047332182291558">Pašviesinti klaviatūrą (skirta tik klaviatūroms su foniniu apšvietimu)</translation>
+<translation id="3949671998904569433">kablelis</translation>
 <translation id="3976863468609830880">Spustelėti paskutinę piktogramą lentynoje</translation>
 <translation id="3994783594793697310">Iš naujo nustatyti ekrano mastelio keitimo lygį</translation>
 <translation id="4026843240379844265">Aktyvaus lango perkėlimas iš vieno ekrano į kitą</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Perjungti į kitą pasiekiamą įvesties metodą</translation>
 <translation id="743754632698445141">Atsegti programą</translation>
 <translation id="7439718573248533901">Ištrinti kitą raidę (ištrinti į priekį)</translation>
+<translation id="7500368597227394048">brūkšnelis</translation>
 <translation id="7611271430932669992">Paryškinti iššokančiuosius ir dialogo langus</translation>
 <translation id="766326951329901120">Įklijuoti turinį iš iškarpinės kaip grynąjį tekstą</translation>
+<translation id="7703010453515335249">atidaromasis laužtinis skliaustas</translation>
 <translation id="7724603315864178912">Iškirpti</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, tada <ph name="SPACE" /> arba <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Atidaryti failą naršyklėje</translation>
-<translation id="7917881398263220094">Sustabdyti dabartinio puslapio įkėlimą</translation>
 <translation id="7952165122793773711">Eiti į 1–8 skirtukus</translation>
 <translation id="8026334261755873520">Išvalyti naršymo duomenis</translation>
 <translation id="8130528849632411619">Eiti į dokumento pradžią</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> arba <ph name="E" /></translation>
 <translation id="8232835244134740473">Suaktyvinti šiuos elementus: būsenos sritį (kur rodoma paskyros nuotrauka), Paleidimo priemonės adreso juostą, žymių juostą (jei rodoma), atidarytą tinklalapį ir atsisiuntimų juostą (jei rodoma).</translation>
 <translation id="8234414138295101081">Pasukti ekraną 90 laipsnių kampu</translation>
+<translation id="8241665785394195545">uždaromasis laužtinis skliaustas</translation>
 <translation id="8264941229485248811">Rodyti arba slėpti kūrėjo įrankių tikrinimo priemonę</translation>
 <translation id="836869401750819675">Atidaryti atsisiuntimų puslapį</translation>
 <translation id="8388247778047144397">Nuvilkite nuorodą į tuščią sritį skirtuko juostelėje</translation>

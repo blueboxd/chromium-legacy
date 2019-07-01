@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Може да мења</translation>
 <translation id="1984603991036629094">Јерменска фонетска тастатура</translation>
 <translation id="2001796770603320721">Управљајте на Диску</translation>
+<translation id="2009067268969781306">Форматирањем диска избрисаће се сви подаци сачувани на њему. Ова радња не може да се опозове.</translation>
 <translation id="2028997212275086731">RAR архива</translation>
 <translation id="2046702855113914483">Рамен</translation>
-<translation id="204914487372604757">Направи пречицу</translation>
 <translation id="2070909990982335904">Називи који почињу тачком резервисани су за систем. Изаберите други назив.</translation>
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="2080010875307505892">Језик тастатуре: српски</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Арапска тастатура</translation>
 <translation id="4261901459838235729">Google презентација</translation>
 <translation id="4290535918735525311">1 директоријум се дели са Linux-ом</translation>
+<translation id="42981349822642051">Проширите</translation>
 <translation id="4298972503445160211">Језик тастатуре: дански</translation>
 <translation id="4299729908419173967">португалски (Бразил)</translation>
 <translation id="4309915981827077375">Опште информације</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Прикажи више...</translation>
 <translation id="5061708541166515394">Контраст</translation>
 <translation id="5068919226082848014">Пица</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> датотека ће се избрисати</translation>
 <translation id="509429900233858213">Дошло је до грешке.</translation>
 <translation id="5098629044894065541">хебрејски</translation>
 <translation id="5123433949759960244">Кошаркашка лопта</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Резервне копије у клауду за Chrome ОС</translation>
 <translation id="5756666464756035725">Мађарска QWERTY</translation>
 <translation id="5771585441665576801">Транслитерација (geia → γεια)</translation>
+<translation id="5776325638577448643">Избриши и форматирај</translation>
 <translation id="57838592816432529">Искључи звук</translation>
 <translation id="5788127256798019331">Play датотеке</translation>
 <translation id="5790193330357274855">казашка</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Дозволите да Linux апликације мењају датотеке у директоријуму <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Француска BÉPO тастатура</translation>
 <translation id="5911887972742538906">Дошло је до грешке током инсталирања Linux апликације.</translation>
+<translation id="5912396950572065471">Формат</translation>
 <translation id="5913638992615760742">Операција копирања није успела, неочекивана грешка: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Дозволите да Linux апликације мењају датотеке на Google диску. Промене ће се синхронизовати са другим уређајима.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Отвори помоћу додатка <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Чекају се информације о простору...</translation>
 <translation id="6205710420833115353">Неке радње трају дуже од очекиваног. Желите ли да их прекинете?</translation>
+<translation id="6224253798271602650">Форматирај: <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Ову датотеку није могуће пустити.</translation>
 <translation id="6248400709929739064">Омогући титлове</translation>
 <translation id="6264347891387618177">Транслитерација (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Америчка Дворак тастатура за програмере</translation>
 <translation id="7191454237977785534">Сачувај датотеку као</translation>
 <translation id="7222624196722476520">Бугарска фонетска тастатура</translation>
+<translation id="7238097264433196391">Назив диска</translation>
 <translation id="7248671827512403053">Апликација</translation>
 <translation id="7268659760406822741">Доступне услуге</translation>
 <translation id="7283041136720745563">Квота за Google диск није довољно велика.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">словеначки</translation>
 <translation id="7982283708762922719">Висина</translation>
 <translation id="7987485481246785146">Сорани курдска тастатура заснована на арапском</translation>
-<translation id="799547531016638432">Уклони пречицу</translation>
 <translation id="799923393800005025">Може да прегледа</translation>
 <translation id="8008366997883261463">Пас</translation>
 <translation id="8028993641010258682">Величина</translation>

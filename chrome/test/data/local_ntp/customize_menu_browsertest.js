@@ -18,13 +18,14 @@ test.customizeMenu = {};
  */
 test.customizeMenu.IDS = {
   BACKGROUNDS_MENU: 'backgrounds-menu',
-  CANCEL: 'bg-sel-footer-cancel',
+  BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   COLORS_BUTTON: 'colors-button',
   COLORS_DEFAULT: 'colors-default',
   COLORS_MENU: 'colors-menu',
   CUSTOMIZATION_MENU: 'customization-menu',
-  DONE: 'bg-sel-footer-done',
+  DONE: 'menu-done',
   EDIT_BG: 'edit-bg',
+  MENU_BACK: 'menu-back',
   MENU_CANCEL: 'menu-cancel',
   MENU_DONE: 'menu-done',
   SHORTCUTS_BUTTON: 'shortcuts-button',
@@ -78,6 +79,13 @@ test.customizeMenu.toggleMostVisitedOrCustomLinksCount = 0;
 test.customizeMenu.toggleShortcutsVisibilityCount = 0;
 
 /**
+ * The number of times
+ * chrome.embeddedSearch.newTabPage.SetCustomBackground* is called.
+ * @type {number}
+ */
+test.customizeMenu.timesCustomBackgroundWasSet = 0;
+
+/**
  * Sets up the page for each individual test.
  */
 test.customizeMenu.setUp = function() {
@@ -88,6 +96,7 @@ test.customizeMenu.setUp = function() {
   configData.richerPicker = true;
   configData.chromeColors = true;
   customize.colorMenuLoaded = false;
+  customize.builtTiles = false;
 
   // Reset variable values.
   test.customizeMenu.stubs.reset();
@@ -95,6 +104,7 @@ test.customizeMenu.setUp = function() {
   test.customizeMenu.areShortcutsVisible = true;
   test.customizeMenu.toggleMostVisitedOrCustomLinksCount = 0;
   test.customizeMenu.toggleShortcutsVisibilityCount = 0;
+  test.customizeMenu.timesCustomBackgroundWasSet = 0;
 };
 
 // ******************************* SIMPLE TESTS *******************************
@@ -373,6 +383,166 @@ test.customizeMenu.testColors_ColorTilesLoaded = function() {
   assertTrue(!!$('color_0').style.backgroundImage);
 };
 
+/*
+ * Tests that a custom background can be set through the menu.
+ */
+test.customizeMenu.testBackgrounds_SetCustomBackground = function() {
+  init();
+
+  setupFakeAsyncCollectionLoad();
+
+  // Open the Shortcuts submenu.
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+
+  const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundImageSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU);
+  assertTrue(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+
+  // 5 total tiles: upload, default, and the 3 collection tiles.
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 5);
+
+  setupFakeAsyncImageLoad('coll_tile_0');
+  $('coll_tile_0').click();
+
+  // The open menu is now the images menu with 4 tiles.
+  assertFalse(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(backgroundImageSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+
+  $('img_tile_0').click();
+  $(test.customizeMenu.IDS.MENU_DONE).click();
+
+  // No menu should be open, and setCustomBackground should have been called.
+  assertFalse(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertFalse(backgroundImageSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertEquals(1, test.customizeMenu.timesCustomBackgroundWasSet);
+};
+
+/**
+ * Tests that canceling after selecting an image doesn't set
+ * a custom background.
+ */
+test.customizeMenu.testBackgrounds_CancelCustomBackground = function() {
+  init();
+
+  assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
+  setupFakeAsyncCollectionLoad();
+
+  // Open the Shortcuts submenu.
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+
+  const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundImageSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU);
+  assertTrue(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+
+  // 5 total tiles: upload, default, and the 3 collection tiles.
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 5);
+
+  setupFakeAsyncImageLoad('coll_tile_0');
+  $('coll_tile_0').click();
+
+  // The open menu is now the images menu with 4 tiles.
+  assertFalse(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(backgroundImageSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+
+  $('img_tile_0').click();
+  $(test.customizeMenu.IDS.MENU_CANCEL).click();
+
+  // No menu should be open, and setCustomBackground should NOT have been
+  // called.
+  assertFalse(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertFalse(backgroundImageSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
+};
+
+/**
+ * Tests the back arrow for custom backgrounds.
+ */
+test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
+  init();
+
+  setupFakeAsyncCollectionLoad();
+
+  // Open the Shortcuts submenu.
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+
+  const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundImageSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU);
+  assertTrue(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+
+  // 5 total tiles: upload, default, and the 3 collection tiles.
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 5);
+
+  setupFakeAsyncImageLoad('coll_tile_0');
+  $('coll_tile_0').click();
+
+  // The open menu is now the images menu with 4 tiles.
+  assertFalse(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(backgroundImageSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+
+  $('img_tile_0').click();
+  $(test.customizeMenu.IDS.MENU_BACK).click();
+
+  // The main backgrounds menu should be open, and no custom background set.
+  assertTrue(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertFalse(backgroundImageSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
+
+  // Reopen the images menu, the selection should be cleared.
+  $('coll_tile_0').click();
+
+  assertFalse(backgroundSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(backgroundImageSubmenu.classList.contains(
+      test.customizeMenu.CLASSES.MENU_SHOWN));
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')
+          .length === 0);
+};
+
 // ******************************* HELPERS *******************************
 
 /**
@@ -387,6 +557,9 @@ init = function() {
   const toggleShortcutsVisibility = () => {
     test.customizeMenu.toggleShortcutsVisibilityCount++
   };
+  const timesCustomBackgroundWasSet = () => {
+    test.customizeMenu.timesCustomBackgroundWasSet++;
+  };
   // We want to keep some EmbeddedSearchAPI functions, so save and add them to
   // our mock API.
   const getColorsInfo = chrome.embeddedSearch.newTabPage.getColorsInfo;
@@ -398,10 +571,10 @@ init = function() {
     toggleShortcutsVisibility: toggleShortcutsVisibility,
     isUsingMostVisited: test.customizeMenu.isUsingMostVisited,
     areShortcutsVisible: test.customizeMenu.areShortcutsVisible,
-    setBackgroundURLWithAttributions: (a, b, c, d) => {},
+    setBackgroundURLWithAttributions: timesCustomBackgroundWasSet,
     resetCustomLinks: () => {},
     selectLocalBackgroundImage: () => {},
-    setBackgroundURL: (a) => {},
+    setBackgroundURL: timesCustomBackgroundWasSet,
     logEvent: (a) => {},
     getColorsInfo: getColorsInfo,
     themeBackgroundInfo: themeBackgroundInfo,
@@ -429,4 +602,80 @@ assertShortcutOptionsSelected = function(clSelected, mvSelected, isHidden) {
       mvOption.parentElement.classList.contains(
           test.customizeMenu.CLASSES.SELECTED));
   assertEquals(isHidden, hiddenToggle.checked);
+};
+
+/**
+ * Fake the loading of the Chrome Backgrounds collections so it happens
+ * synchronously.
+ */
+setupFakeAsyncCollectionLoad = function() {
+  // Override the collection loading script.
+  customize.loadChromeBackgrounds = function() {
+    const collScript = document.createElement('script');
+    collScript.id = 'ntp-collection-loader';
+    document.body.appendChild(collScript);
+    coll = [
+      {
+        collectionId: 'collection1',
+        collectionName: 'Collection 1',
+        previewImageUrl: 'chrome-search://local-ntp/background.jpg'
+      },
+      {
+        collectionId: 'collection2',
+        collectionName: 'Collection 2',
+        previewImageUrl: 'chrome-search://local-ntp/background.jpg'
+      },
+      {
+        collectionId: 'collection3',
+        collectionName: 'Collection 3',
+        previewImageUrl: 'chrome-search://local-ntp/background.jpg'
+      }
+    ];
+    collErrors = {};
+    customize.showCollectionSelectionDialog();
+  };
+};
+
+/**
+ * Fake the loading of the a collection's images so it happens synchronously.
+ */
+setupFakeAsyncImageLoad = function(tile_id) {
+  // Append the creation of the image data and a call to onload to the
+  // end of the click handler.
+  const oldImageLoader = $(tile_id).onclick;
+  $(tile_id).onclick = function(event) {
+    oldImageLoader(event);
+    collImg = [
+      {
+        attributionActionUrl: 'https://www.google.com',
+        attributions: ['test1', 'attribution1'],
+        collectionId: 'collection1',
+        imageUrl: 'chrome-search://local-ntp/background1.jpg',
+        thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg1'
+      },
+      {
+        attributionActionUrl: 'https://www.google.com',
+        attributions: ['test2', 'attribution2'],
+        collectionId: 'collection1',
+        imageUrl: 'chrome-search://local-ntp/background2.jpg',
+        thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg2'
+      },
+      {
+        attributionActionUrl: 'https://www.google.com',
+        attributions: ['test3', 'attribution3'],
+        collectionId: 'collection1',
+        imageUrl: 'chrome-search://local-ntp/background3.jpg',
+        thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg3'
+      },
+      {
+        attributionActionUrl: 'https://www.google.com',
+        attributions: ['test4', 'attribution4'],
+        collectionId: 'collection1',
+        imageUrl: 'chrome-search://local-ntp/background4.jpg',
+        thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg4'
+      },
+    ];
+    collImgErrors = {};
+    $('ntp-images-loader').onload();
+  }
 };

@@ -146,11 +146,6 @@ PlatformChannelServerEndpoint NamedPlatformChannel::CreateServerEndpoint(
 // static
 PlatformChannelEndpoint NamedPlatformChannel::CreateClientEndpoint(
     const ServerName& server_name) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
-    return NamedPlatformChannelMac::CreateClientEndpoint(server_name);
-  }
-#endif
   DCHECK(!server_name.empty());
 
   struct sockaddr_un unix_addr;

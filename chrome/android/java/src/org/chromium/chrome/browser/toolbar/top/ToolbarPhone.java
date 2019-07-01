@@ -559,14 +559,24 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    private void updateUnfocusedLocationBarLayoutParams() {
+    /**
+     * @return True if layout bar's unfocused width has changed, potentially causing updates to
+     *         visual elements. If this happens during measurement pass, then toolbar's layout needs
+     *         to be remeasured.
+     */
+    private boolean updateUnfocusedLocationBarLayoutParams() {
         int leftViewBounds = getViewBoundsLeftOfLocationBar(mVisualState);
         int rightViewBounds = getViewBoundsRightOfLocationBar(mVisualState);
 
-        mUnfocusedLocationBarLayoutWidth = rightViewBounds - leftViewBounds;
         mUnfocusedLocationBarLayoutLeft = leftViewBounds;
         mUnfocusedLocationBarLayoutRight = rightViewBounds;
-        mLocationBar.setUnfocusedWidth(mUnfocusedLocationBarLayoutWidth);
+        int unfocusedLocationBarLayoutWidth = rightViewBounds - leftViewBounds;
+        if (mUnfocusedLocationBarLayoutWidth != unfocusedLocationBarLayoutWidth) {
+            mUnfocusedLocationBarLayoutWidth = unfocusedLocationBarLayoutWidth;
+            mLocationBar.setUnfocusedWidth(mUnfocusedLocationBarLayoutWidth);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -591,9 +601,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         int width = 0;
         int leftMargin = 0;
 
+        boolean changed = false;
+
         // Always update the unfocused layout params regardless of whether we are using
         // those in this current layout pass as they are needed for animations.
-        updateUnfocusedLocationBarLayoutParams();
+        changed |= updateUnfocusedLocationBarLayoutParams();
 
         if (mLayoutLocationBarInFocusedMode
                 || (mVisualState == VisualState.NEW_TAB_NORMAL
@@ -619,7 +631,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             width += (int) offset;
         }
 
-        boolean changed = false;
         changed |= (width != locationBarLayoutParams.width);
         locationBarLayoutParams.width = width;
 

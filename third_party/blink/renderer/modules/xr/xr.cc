@@ -84,6 +84,30 @@ bool AreArRuntimeFeaturesEnabled(const FeatureContext* context) {
          RuntimeEnabledFeatures::WebXRPlaneDetectionEnabled(context);
 }
 
+// Map device::mojom::blink::RequestSessionError to a DOMException.
+blink::DOMException* MapToDOMException(
+    device::mojom::blink::RequestSessionError error) {
+  // TODO(http://crbug.com/961960): Report appropriate exception when the user
+  // denies XR session request on consent dialog
+  // TODO(https://crbug.com/872316): Improve the error messaging to indicate
+  // the reason for a request failure.
+  switch (error) {
+    case device::mojom::blink::RequestSessionError::ORIGIN_NOT_SECURE:
+    case device::mojom::blink::RequestSessionError::
+        IMMERSIVE_SESSION_REQUEST_FROM_OFF_FOCUS_PAGE:
+    case device::mojom::blink::RequestSessionError::EXISTING_IMMERSIVE_SESSION:
+    case device::mojom::blink::RequestSessionError::INVALID_CLIENT:
+    case device::mojom::blink::RequestSessionError::NO_RUNTIME_FOUND:
+    case device::mojom::blink::RequestSessionError::UNKNOWN_RUNTIME_ERROR:
+    case device::mojom::blink::RequestSessionError::USER_DENIED_CONSENT:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace
 
 XR::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
@@ -506,11 +530,14 @@ void XR::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
 
 void XR::OnRequestSessionReturned(
     PendingRequestSessionQuery* query,
-    device::mojom::blink::XRSessionPtr session_ptr) {
+    device::mojom::blink::RequestSessionResultPtr result) {
   // The session query has returned and we're about to resolve or reject the
   // promise, so remove it from our outstanding list.
   DCHECK(outstanding_request_queries_.Contains(query));
   outstanding_request_queries_.erase(query);
+
+  device::mojom::blink::XRSessionPtr session_ptr =
+      result->is_session() ? std::move(result->get_session()) : nullptr;
 
   // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
   // a request failed.
@@ -526,9 +553,7 @@ void XR::OnRequestSessionReturned(
       return;
     }
 
-    auto* exception = MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
-    query->Reject(exception);
+    query->Reject(MapToDOMException(result->get_failure_reason()));
     return;
   }
 
@@ -539,12 +564,12 @@ void XR::OnRequestSessionReturned(
   // If the session supports environment integration, ensure the device does
   // as well.
   DCHECK(!environment_integration || session_ptr->display_info->capabilities
-                                         ->canProvideEnvironmentIntegration);
+                                         ->can_provide_environment_integration);
   DVLOG(2) << __func__
            << ": environment_integration=" << environment_integration
-           << "canProvideEnvironmentIntegration="
+           << "can_provide_environment_integration="
            << session_ptr->display_info->capabilities
-                  ->canProvideEnvironmentIntegration;
+                  ->can_provide_environment_integration;
 
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
@@ -686,10 +711,13 @@ void XR::OnDeviceDisconnect() {
   HeapHashSet<Member<PendingRequestSessionQuery>> request_queries =
       outstanding_request_queries_;
   for (const auto& query : request_queries) {
-    // We had a device, so rejecting the session request as though the mode
-    // isn't supported. TODO(https://crbug.com/962991): The spec should specify
+    // We had a device, so rejecting the session request.
+    // TODO(https://crbug.com/962991): The spec should specify
     // what is returned here.
-    OnRequestSessionReturned(query, nullptr);
+    OnRequestSessionReturned(
+        query,
+        device::mojom::blink::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::EXISTING_IMMERSIVE_SESSION));
   }
   DCHECK(outstanding_support_queries_.IsEmpty());
 }

@@ -61,7 +61,6 @@
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1384959399684842514">Скачивание приостановлено.</translation>
 <translation id="1386674309198842382">Последние действия: <ph name="LAST_UPDATED" /> дн. назад</translation>
-<translation id="1389974829397082527">Закладок пока нет.</translation>
 <translation id="1397811292916898096">Поиск в <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Запрет отслеживания</translation>
@@ -186,6 +185,7 @@
 <translation id="2259659629660284697">Экспорт паролей…</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2286841657746966508">Платежный адрес</translation>
+<translation id="2289270750774289114">Запрашивать для сайтов разрешение на поиск Bluetooth-устройств поблизости (рекомендуется)</translation>
 <translation id="230115972905494466">Совместимые устройства не найдены.</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
 <translation id="2321086116217818302">Подготовка паролей…</translation>
@@ -270,6 +270,7 @@
 <translation id="2900528713135656174">Создать мероприятие</translation>
 <translation id="2902702728133930130">При запуске Chrome произошла непредвиденная ошибка.</translation>
 <translation id="290376772003165898">Язык страницы не <ph name="LANGUAGE" />?</translation>
+<translation id="2904414404539560095">Список устройств для отправки вкладки развернут на весь экран.</translation>
 <translation id="2910701580606108292">Запрашивать разрешение на воспроизведение защищенного контента</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="2923908459366352541">Имя недействительно</translation>
@@ -328,6 +329,7 @@
 <translation id="3350687908700087792">Закрыть все вкладки инкогнито</translation>
 <translation id="3353615205017136254">Lite-версия страницы получена с помощью Google. Нажмите кнопку "Полная версия", чтобы загрузить оригинал.</translation>
 <translation id="3367813778245106622">Чтобы начать синхронизацию, снова войдите в аккаунт</translation>
+<translation id="3374023511497244703">Ваши закладки, пароли, история и другие данные Chrome больше не будут синхронизироваться с аккаунтом Google.</translation>
 <translation id="3384347053049321195">Поделиться изображением</translation>
 <translation id="3386292677130313581">Запрашивать разрешение на доступ к данным о местоположении (рекомендуется)</translation>
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
@@ -358,7 +360,6 @@
 <translation id="3632295766818638029">Показать пароль</translation>
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3658159451045945436">Будет удалена вся информация о сэкономленных данных, в том числе список просмотренных сайтов.</translation>
-<translation id="3662546969139119822">Нет записей</translation>
 <translation id="3663367437272849150">Сгруппировать вкладки (всего <ph name="NUM_SELECTED" />).</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
 <translation id="3692944402865947621">Не удалось скачать файл <ph name="FILE_NAME" />, так как хранилище недоступно.</translation>
@@ -418,6 +419,7 @@
 <translation id="4099578267706723511">Отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="410351446219883937">Автовоспроизведение</translation>
 <translation id="4116038641877404294">Скачивайте страницы и открывайте их без подключения к Интернету</translation>
+<translation id="4135200667068010335">Список устройств для отправки вкладки закрыт.</translation>
 <translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
 <translation id="4165986682804962316">Настройки сайтов</translation>
 <translation id="4169535189173047238">Запретить</translation>
@@ -439,7 +441,6 @@
 <translation id="424864128008805179">Выйти из Chrome?</translation>
 <translation id="4256782883801055595">Лицензии на ПО с открытым кодом</translation>
 <translation id="4259722352634471385">Навигация заблокирована: <ph name="URL" /></translation>
-<translation id="4262028915562328938">Ошибка синхронизации. Нажмите, чтобы получить подробную информацию.</translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
 <translation id="4275663329226226506">Камера и микрофон </translation>
 <translation id="4278390842282768270">Разрешено</translation>
@@ -766,6 +767,7 @@
 <translation id="6538442820324228105">Скачано <ph name="GBS" /> ГБ</translation>
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="6545017243486555795">Удалить все данные</translation>
+<translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
 <translation id="6560414384669816528">Поиск в Sogou</translation>
 <translation id="6566259936974865419">Благодаря Chrome вы сэкономили <ph name="GIGABYTES" /> ГБ свободного места</translation>
 <translation id="6573096386450695060">Разрешать всегда</translation>
@@ -795,8 +797,10 @@
 <translation id="671481426037969117">Время на таймере <ph name="FQDN" /> истекло. Завтра сайт снова станет доступен.</translation>
 <translation id="6738867403308150051">Скачивание…</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
+<translation id="6751888224264752704">Удалить эти данные Chrome с устройства</translation>
 <translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
 <translation id="6766758767654711248">Нажмите, чтобы перейти на сайт</translation>
+<translation id="6767294960381293877">Список устройств для отправки вкладки развернут на половину экрана.</translation>
 <translation id="6782111308708962316">Запретить сторонним веб-сайтам сохранять и просматривать файлы cookie</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="679325081238418596">Вы сможете работать с одними и теми же закладками, историей, паролями и другими настройками на любом устройстве</translation>
@@ -812,7 +816,6 @@
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
-<translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
 <translation id="688738109438487280">Объединить сохраненные данные с данными пользователя <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Чтобы скопировать пароль, разблокируйте экран</translation>
 <translation id="6896758677409633944">Копировать</translation>
@@ -829,7 +832,6 @@
 <translation id="6979737339423435258">Все время</translation>
 <translation id="6980462514016882061">Google может использовать историю браузера для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
-<translation id="6985347914332179298">Нет скачанных объектов</translation>
 <translation id="6989267951144302301">Не удалось скачать</translation>
 <translation id="6990079615885386641">Приложение в Google Play Маркете: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Запрашивать разрешение на доступ к микрофону (рекомендуется)</translation>
@@ -887,7 +889,6 @@
 <translation id="7403691278183511381">Первый запуск Chrome</translation>
 <translation id="741204030948306876">ОК</translation>
 <translation id="7413229368719586778">Дата начала: <ph name="DATE" /></translation>
-<translation id="7418565925463285788">Сгруппировать вкладки…</translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7423538860840206698">Доступ к данным в буфере обмена заблокирован</translation>
 <translation id="7431991332293347422">Укажите, как Google может использовать историю браузера для персонализации Поиска и других сервисов.</translation>
@@ -1026,6 +1027,7 @@
 <translation id="8349013245300336738">Сортировать по объему использованного трафика</translation>
 <translation id="8364299278605033898">Показать популярные сайты</translation>
 <translation id="8364603787714420828">Отменить выбор вкладки "<ph name="TAB_TITLE" />".</translation>
+<translation id="8368027906805972958">Неизвестное или неподдерживаемое устройство (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8378714024927312812">Управляется вашей организацией</translation>
@@ -1122,6 +1124,7 @@
 <translation id="9099018167121903954">Скачанные файлы: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="9100505651305367705">Предлагать упрощенный просмотр статей, если он поддерживается</translation>
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
+<translation id="9104217018994036254">Список устройств для отправки вкладки.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="9139068048179869749">Запрашивать разрешение на отправку уведомлений (рекомендуется)</translation>

@@ -20,8 +20,6 @@ source_set("app_shim") {
     "extension_app_shim_handler_mac.h",
     "mach_bootstrap_acceptor.cc",
     "mach_bootstrap_acceptor.h",
-    "unix_domain_socket_acceptor.cc",
-    "unix_domain_socket_acceptor.h",
   ]
 
   deps = [

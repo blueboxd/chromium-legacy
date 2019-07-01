@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Var rediģēt</translation>
 <translation id="1984603991036629094">Armēņu fonētiskā tastatūra</translation>
 <translation id="2001796770603320721">Pārvaldīt Diskā</translation>
+<translation id="2009067268969781306">Formatējot disku, tiks dzēsti visi tajā uzglabātie dati. Šo darbību nevar atsaukt.</translation>
 <translation id="2028997212275086731">RAR arhīvs</translation>
 <translation id="2046702855113914483">Nūdeļu zupa</translation>
-<translation id="204914487372604757">Izveidot saīsni</translation>
 <translation id="2070909990982335904">Nosaukumi, kas sākas ar punktu, tiek rezervēti sistēmai. Izvēlieties citu nosaukumu.</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2080010875307505892">Serbu valodas tastatūra</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Arābu tastatūra</translation>
 <translation id="4261901459838235729">Google prezentācija</translation>
 <translation id="4290535918735525311">1 mape kopīgota ar Linux</translation>
+<translation id="42981349822642051">Izvērst</translation>
 <translation id="4298972503445160211">Dāņu valodas tastatūra</translation>
 <translation id="4299729908419173967">Brazīliešu</translation>
 <translation id="4309915981827077375">Vispārīga informācija</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Skatīt vairāk...</translation>
 <translation id="5061708541166515394">Kontrasts</translation>
 <translation id="5068919226082848014">Pica</translation>
+<translation id="5081517858322016911">Tiks dzēsti <ph name="TOTAL_FILE_SIZE" /> failu.</translation>
 <translation id="509429900233858213">Radās kļūda.</translation>
 <translation id="5098629044894065541">Ebreju valoda</translation>
 <translation id="5123433949759960244">Basketbols</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS dublēšana mākonī</translation>
 <translation id="5756666464756035725">Ungāru valodas QWERTY tastatūra</translation>
 <translation id="5771585441665576801">Transliterācija (geia → γεια)</translation>
+<translation id="5776325638577448643">Dzēst un formatēt</translation>
 <translation id="57838592816432529">Izslēgt skaņu</translation>
 <translation id="5788127256798019331">Play faili</translation>
 <translation id="5790193330357274855">Kazahu</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Piešķiriet Linux lietotnēm atļauju pārveidot failus mapē <ph name="FOLDER_NAME" />.</translation>
 <translation id="5892290200158927959">Franču valodas BÉPO tastatūra</translation>
 <translation id="5911887972742538906">Linux lietojumprogrammas instalēšanas laikā radās kļūda.</translation>
+<translation id="5912396950572065471">Formāts</translation>
 <translation id="5913638992615760742">Kopēšana neizdevās; radās neparedzēta kļūda: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Piešķiriet Linux lietotnēm atļauju pārveidot failus jūsu Google diskā. Izmaiņas tiks sinhronizētas ar citām jūsu ierīcēm.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Atvērt ar paplašinājumu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Gaida informāciju par brīvo vietu...</translation>
 <translation id="6205710420833115353">Dažas darbības aizņem vairāk laika, nekā paredzēts. Vai vēlaties tās priekšlaikus pārtraukt?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" /> formatēšana</translation>
 <translation id="6227235786875481728">Šo failu nevarēja demonstrēt.</translation>
 <translation id="6248400709929739064">Iespējot subtitrus</translation>
 <translation id="6264347891387618177">Transliterācija (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">US Programmer Dvorak tastatūra</translation>
 <translation id="7191454237977785534">Saglabāt failu kā</translation>
 <translation id="7222624196722476520">Bulgāru fonētiskā tastatūra</translation>
+<translation id="7238097264433196391">Diska nosaukums</translation>
 <translation id="7248671827512403053">Lietojumprogramma</translation>
 <translation id="7268659760406822741">Pieejamie pakalpojumi</translation>
 <translation id="7283041136720745563">Jūsu Google diska kvota nav pietiekami liela.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Slovēņu valoda</translation>
 <translation id="7982283708762922719">Augstums</translation>
 <translation id="7987485481246785146">Uz arābu valodu balstīta kurdu (Sorani) tastatūra</translation>
-<translation id="799547531016638432">Noņemt saīsni</translation>
 <translation id="799923393800005025">Var skatīt</translation>
 <translation id="8008366997883261463">Džeka Rasela terjers</translation>
 <translation id="8028993641010258682">Izmērs</translation>

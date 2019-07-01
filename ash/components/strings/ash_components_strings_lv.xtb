@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Pāriet uz iepriekšējo cilni</translation>
 <translation id="2194790690264064655">Nospiediet <ph name="CTRL" /> un noklikšķiniet uz saites</translation>
 <translation id="2246352309084894470">Atvērt/aizvērt pilnekrāna režīma palaidēju</translation>
+<translation id="2354531887393764880">punkts</translation>
 <translation id="2382644247745281995">Netiek atbalstīts pašreizējā tastatūras izkārtojumā</translation>
 <translation id="2397416548179033562">Rādīt Chrome izvēlni</translation>
 <translation id="2424073332829844142">Ieslēgt un izslēgt taustiņu Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Atvērt plauktā izcelto vienumu</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> no 1 līdz 8</translation>
 <translation id="3837047332182291558">Paspilgtināt tastatūras apgaismojumu (tikai tastatūrām ar aizmugures apgaismojumu)</translation>
+<translation id="3949671998904569433">komats</translation>
 <translation id="3976863468609830880">Noklikšķināt uz pēdējās plaukta ikonas</translation>
 <translation id="3994783594793697310">Atiestatīt displeja tālummaiņas līmeni</translation>
 <translation id="4026843240379844265">Aktīvā loga pārvietošana starp attēlojumiem</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Pārslēgt uz nākamo pieejamo ievades metodi</translation>
 <translation id="743754632698445141">Atspraust lietotni</translation>
 <translation id="7439718573248533901">Dzēst nākamo burtu (turpvērstā dzēšana)</translation>
+<translation id="7500368597227394048">defise</translation>
 <translation id="7611271430932669992">Izcelt uznirstošos logus un dialoglodziņus</translation>
 <translation id="766326951329901120">Ielīmēt saturu no starpliktuves kā vienkāršu tekstu</translation>
+<translation id="7703010453515335249">kreisā iekava</translation>
 <translation id="7724603315864178912">Izgriezt</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pēc tam <ph name="SPACE" /> vai <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Atvērt failu pārlūkprogrammā</translation>
-<translation id="7917881398263220094">Pārtraukt pašreizējās lapas ielādi</translation>
 <translation id="7952165122793773711">Pāriet uz 1.–8. cilni</translation>
 <translation id="8026334261755873520">Notīrīt pārlūkošanas datus</translation>
 <translation id="8130528849632411619">Doties uz dokumenta sākumu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> vai <ph name="E" /></translation>
 <translation id="8232835244134740473">Pārslēgties starp statusa apgabalu (kurā redzams jūsu konta attēls), palaidēju, adreses joslu, grāmatzīmju joslu (ja tā tiek rādīta), atvērto tīmekļa lapu un lejupielāžu joslu (ja tā tiek rādīta).</translation>
 <translation id="8234414138295101081">Pagriezt ekrānu par 90 grādiem</translation>
+<translation id="8241665785394195545">labā iekava</translation>
 <translation id="8264941229485248811">Rādīt vai paslēpt izstrādātāja rīku kontrolieri</translation>
 <translation id="836869401750819675">Atvērt lapu Lejupielādes</translation>
 <translation id="8388247778047144397">Vilkt saiti uz tukšu apgabalu ciļņu joslā</translation>

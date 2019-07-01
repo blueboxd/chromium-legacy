@@ -7,8 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
@@ -16,22 +15,68 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  */
 public interface GridTabSwitcher {
     // TODO(960196): Remove the following interfaces when the associated bug is resolved.
+    /**
+     * An observer that is notified when the GridTabSwitcher view state changes.
+     */
+    interface GridOverviewModeObserver {
+        /**
+         * Called when overview mode starts showing.
+         */
+        void startedShowing();
+
+        /**
+         * Called when overview mode finishes showing.
+         */
+        void finishedShowing();
+
+        /**
+         * Called when overview mode starts hiding.
+         */
+        void startedHiding();
+
+        /**
+         * Called when overview mode finishes hiding.
+         */
+        void finishedHiding();
+    }
 
     /**
      * Interface to control the GridTabSwitcher.
      */
-    interface GridController extends OverviewModeController {
+    interface GridController {
+        /**
+         * @return Whether or not the overview {@link Layout} is visible.
+         */
+        boolean overviewVisible();
+
+        /**
+         * @param listener Registers {@code listener} for overview mode status changes.
+         */
+        void addOverviewModeObserver(GridOverviewModeObserver listener);
+
+        /**
+         * @param listener Unregisters {@code listener} for overview mode status changes.
+         */
+        void removeOverviewModeObserver(GridOverviewModeObserver listener);
+
+        /**
+         * Hide the overview.
+         * @param animate Whether we should animate while hiding.
+         */
+        void hideOverview(boolean animate);
+
+        /**
+         * Show the overview.
+         * @param animate Whether we should animate while showing.
+         */
+        void showOverview(boolean animate);
+
         /**
          * Called by the GridTabSwitcherLayout when the system back button is pressed.
          * @return Whether or not the GridTabSwitcher consumed the event.
          */
         boolean onBackPressed();
     }
-
-    /**
-     * An observer that is notified when the GridTabSwitcher view state changes.
-     */
-    interface GridVisibilityObserver extends OverviewModeBehavior.OverviewModeObserver {}
 
     /**
      * @return GridController implementation that can be used for controlling
@@ -51,7 +96,7 @@ public interface GridTabSwitcher {
     long getLastDirtyTimeForTesting();
 
     /**
-     * Before calling {@link OverviewModeController#showOverview} to start showing the
+     * Before calling {@link GridController#showOverview} to start showing the
      * GridTabSwitcher {@link TabListRecyclerView}, call this to populate it without making it
      * visible.
      * @return Whether the {@link TabListRecyclerView} can be shown quickly.
@@ -60,7 +105,7 @@ public interface GridTabSwitcher {
 
     /**
      * This is called after the compositor animation is done, for potential clean-up work.
-     * {@link OverviewModeBehavior.OverviewModeObserver#onOverviewModeFinishedHiding} happens after
+     * {@link GridOverviewModeObserver#finishedHiding} happens after
      * the Android View animation, but before the compositor animation.
      */
     void postHiding();

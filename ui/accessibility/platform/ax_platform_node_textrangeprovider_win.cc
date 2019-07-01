@@ -582,7 +582,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
                                         count, units_moved);
       break;
     case TextUnit_Paragraph:
-      return E_NOTIMPL;
+      new_position = MoveEndpointByParagraph(
+          position_to_move, is_start_endpoint, count, units_moved);
+      break;
     // Since web content is not paginated, TextUnit_Page is not supported.
     // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:
@@ -869,6 +871,48 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByFormat(
 
   return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
                                   count, units_moved);
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByParagraph(
+    const AXNodePosition::AXPositionInstance& endpoint,
+    const bool is_start_endpoint,
+    const int count,
+    int* count_moved) {
+  auto current_endpoint = endpoint->Clone();
+  const bool forwards = count > 0;
+  const int count_abs = std::abs(count);
+  const auto behavior = ui::AXBoundaryBehavior::CrossBoundary;
+  int iteration = 0;
+  for (iteration = 0; iteration < count_abs; ++iteration) {
+    AXPositionInstance next_endpoint;
+    if (forwards) {
+      next_endpoint =
+          is_start_endpoint
+              ? current_endpoint->CreateNextParagraphStartPosition(behavior)
+              : current_endpoint->CreateNextParagraphEndPosition(behavior);
+    } else {
+      next_endpoint =
+          is_start_endpoint
+              ? current_endpoint->CreatePreviousParagraphStartPosition(behavior)
+              : current_endpoint->CreatePreviousParagraphEndPosition(behavior);
+    }
+
+    // End of document
+    if (next_endpoint->IsNullPosition()) {
+      int document_moved;
+      next_endpoint = MoveEndpointByDocument(endpoint, count, &document_moved);
+      if (*endpoint != *next_endpoint && !next_endpoint->IsNullPosition()) {
+        ++iteration;
+        current_endpoint = std::move(next_endpoint);
+      }
+      break;
+    }
+    current_endpoint = std::move(next_endpoint);
+  }
+
+  *count_moved = (forwards) ? iteration : -iteration;
+  return current_endpoint;
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance

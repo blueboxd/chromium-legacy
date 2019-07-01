@@ -43,12 +43,7 @@ Polymer({
   /** @private */
   docLengthChanged_: function() {
     const numDigits = this.docLength.toString().length;
-    // Set both sides of the slash to the same width, so that the layout is
-    // exactly centered. We add 1px because the unit `ch` does not provide
-    // exact whole number pixels, and therefore seems to have 1px-off bugginess.
-    const width = `calc(${numDigits}ch + 1px)`;
-    this.pageSelector.style.width = width;
-    this.$['pagelength-spacer'].style.width = width;
+    this.style.setProperty('--page-length-digits', `${numDigits}`);
   },
 
   select: function() {

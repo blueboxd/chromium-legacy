@@ -28,13 +28,8 @@ std::string GetBootstrapName(const std::string& name) {
 
 }  // namespace
 
-// TODO(crbug.com/932175): This namespace will go away and these methods
-// will be defined direclty on NamedPlatformChannel.
-namespace NamedPlatformChannelMac {
-
 // static
-COMPONENT_EXPORT(MOJO_CPP_PLATFORM)
-PlatformChannelServerEndpoint CreateServerEndpoint(
+PlatformChannelServerEndpoint NamedPlatformChannel::CreateServerEndpoint(
     const NamedPlatformChannel::Options& options,
     NamedPlatformChannel::ServerName* server_name) {
   const std::string bootstrap_name = GetBootstrapName(options.server_name);
@@ -64,8 +59,7 @@ PlatformChannelServerEndpoint CreateServerEndpoint(
 }
 
 // static
-COMPONENT_EXPORT(MOJO_CPP_PLATFORM)
-PlatformChannelEndpoint CreateClientEndpoint(
+PlatformChannelEndpoint NamedPlatformChannel::CreateClientEndpoint(
     const NamedPlatformChannel::ServerName& server_name) {
   base::mac::ScopedMachSendRight send_right;
   kern_return_t kr = bootstrap_look_up(
@@ -79,5 +73,4 @@ PlatformChannelEndpoint CreateClientEndpoint(
   return PlatformChannelEndpoint(PlatformHandle(std::move(send_right)));
 }
 
-}  // namespace NamedPlatformChannelMac
 }  // namespace mojo

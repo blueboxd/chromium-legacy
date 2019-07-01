@@ -3,11 +3,35 @@
 // found in the LICENSE file.
 
 #include "chrome/services/isolated_xr_device/xr_service_test_hook.h"
+
 #include "base/bind.h"
 #include "base/process/process.h"
 #include "chrome/services/isolated_xr_device/xr_test_hook_wrapper.h"
+#include "device/vr/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_OPENVR)
 #include "device/vr/openvr/openvr_api_wrapper.h"
+#endif  // BUILDFLAG(ENABLE_OPENVR)
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
+#endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
+
+namespace {
+
+void UnsetTestHook(std::unique_ptr<device::XRTestHookWrapper> wrapper) {
+#if BUILDFLAG(ENABLE_OPENVR)
+  // Unset the testhook wrapper with OpenVR, so any
+  // future calls to OpenVR don't use it.
+  device::OpenVRWrapper::SetTestHook(nullptr);
+#endif  // BUILDFLAG(ENABLE_OPENVR)
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  device::MixedRealityDeviceStatics::SetTestHook(nullptr);
+#endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
+}
+
+}  // namespace
 
 namespace device {
 
@@ -20,8 +44,13 @@ void XRServiceTestHook::SetTestHook(
            : nullptr;
 
   // Register the wrapper testhook with OpenVR and WMR.
+#if BUILDFLAG(ENABLE_OPENVR)
   OpenVRWrapper::SetTestHook(wrapper.get());
+#endif  // BUILDFLAG(ENABLE_OPENVR)
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
   MixedRealityDeviceStatics::SetTestHook(wrapper.get());
+#endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
 
   // Store the new wrapper, so we keep it alive.
   wrapper_ = std::move(wrapper);
@@ -40,15 +69,7 @@ XRServiceTestHook::~XRServiceTestHook() {
   if (wrapper_) {
     auto runner = wrapper_->GetBoundTaskRunner();
     runner->PostTask(FROM_HERE,
-                     base::BindOnce(
-                         [](std::unique_ptr<XRTestHookWrapper> wrapper) {
-                           // Unset the testhook wrapper with OpenVR, so any
-                           // future calls to OpenVR don't use it.
-                           OpenVRWrapper::SetTestHook(nullptr);
-                           MixedRealityDeviceStatics::SetTestHook(nullptr);
-                           // Destroy the test hook wrapper on this thread.
-                         },
-                         std::move(wrapper_)));
+                     base::BindOnce(UnsetTestHook, std::move(wrapper_)));
   }
 }
 

@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">पिछले टैब पर जाएं</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
 <translation id="2246352309084894470">फ़ुलस्क्रीन लॉन्चर खोलें/बंद करें</translation>
+<translation id="2354531887393764880">पीरियड</translation>
 <translation id="2382644247745281995">मौजूदा कीबोर्ड लेआउट के साथ काम नहीं करता है</translation>
 <translation id="2397416548179033562">Chrome मेन्यू दिखाएं</translation>
 <translation id="2424073332829844142">Caps Lock को चालू और बंद करें</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">अपने शेल्फ़ पर हाइलाइट किया गया आइटम खोलें</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
 <translation id="3837047332182291558">कीबोर्ड की रोशनी बढ़ाएं (सिर्फ़ बैकलिट कीबोर्ड के लिए)</translation>
+<translation id="3949671998904569433">कॉमा</translation>
 <translation id="3976863468609830880">अपनी शेल्फ़ के आखिरी आइकॉन पर क्लिक करें</translation>
 <translation id="3994783594793697310">ज़ूम लेवल को रीसेट करें</translation>
 <translation id="4026843240379844265">कार्रवाई विंडो को डिसप्ले के बीच ले जाएं</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">इनपुट करने के अगले मौजूदा तरीके पर जाएं</translation>
 <translation id="743754632698445141">किसी ऐप्लिकेशन को अनपिन करें</translation>
 <translation id="7439718573248533901">अगला अक्षर मिटाएं (आगे से मिटाएं)</translation>
+<translation id="7500368597227394048">हाइफ़न</translation>
 <translation id="7611271430932669992">फ़ोकस को पॉपअप और संवाद पर ले जाएं</translation>
 <translation id="766326951329901120">क्लिपबोर्ड की सामग्री सादे पाठ की तरह चिपकाएं</translation>
+<translation id="7703010453515335249">दायां ब्रैकेट</translation>
 <translation id="7724603315864178912">काटें</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="SPACE" /> या <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">ब्राउज़र में फ़ाइल खोलें</translation>
-<translation id="7917881398263220094">अपने अभी वाले पेज को लोड होने से रोकें</translation>
 <translation id="7952165122793773711">टैब 1 से 8 तक जाएं</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8130528849632411619">दस्‍तावेज़ की शुरुआत में जाएं</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> या <ph name="E" /></translation>
 <translation id="8232835244134740473">फ़ोकस इनके बीच स्विच करें: स्टेटस बताने वाली जगह (जहां आपके खाते की तस्वीर दिखाई देती है), लॉन्चर, पता बार, बुकमार्क बार (अगर दिख रहा हो), वह वेबपेज जो खुला है और डाउनलोड बार (अगर दिख रहा हो).</translation>
 <translation id="8234414138295101081">स्‍क्रीन को 90 डिग्री पर घुमाएं</translation>
+<translation id="8241665785394195545">दायां ब्रैकेट</translation>
 <translation id="8264941229485248811">डेवलपर टूल इंस्पेक्टर दिखाएं या छिपाएं</translation>
 <translation id="836869401750819675">डाउनलोड पेज खोलें</translation>
 <translation id="8388247778047144397">लिंक को टैब स्‍ट्रिप पर खाली जगह में खींचें और छोड़ें</translation>

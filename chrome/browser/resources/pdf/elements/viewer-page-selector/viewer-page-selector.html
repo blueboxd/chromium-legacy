@@ -7,6 +7,7 @@
     <style>
       :host {
         color: #fff;
+        display: flex;
         font-size: 0.81rem;
       }
 
@@ -14,62 +15,39 @@
         background: rgba(255, 255, 255, 0.3);
       }
 
+      #pageselector-container,
+      #pagelength-spacer {
+        padding: 0 3px;
+        text-align: start;
+        /* --page-length-digits is set through JavaScript */
+        width: calc(var(--page-length-digits, 1) * 1ch);
+      }
+
+      #pageselector-container:focus-within,
+      #pageselector-container:hover {
+        background: rgba(0, 0, 0, 0.5);
+      }
+
       #pageselector {
         --cr-input-focus-color: transparent;
         --cr-input-error-display: none;
         --cr-input-background-color: transparent;
         --cr-input-color: white;
-        --cr-input-padding-end: 3px;
-        --cr-input-padding-start: 3px;
-        --cr-input-padding-bottom: 0;
-        --cr-input-padding-top: 0;
-        height: 100%;
-        margin-inline-start: -3px;
-        width: 1ch;
-      }
-
-      /* TODO(johntlee): Figure out a way to align the input without
-       * accessing all these parts. */
-      #pageselector::part(input-container) {
-        overflow: initial;
-      }
-
-      #pageselector::part(inner-input-container) {
-        margin-inline-end: -3px;
       }
 
       #pageselector::part(input) {
-        box-sizing: content-box;
-        caret-color: #fff;
-        margin-inline-start: -3px;
+        caret-color: var(--cr-input-color);
+        padding: 0;
         text-align: end;
       }
-
-      #pageselector[focused_],
-      #pageselector:hover {
-        --cr-input-background-color: rgba(0, 0, 0, 0.5);
-      }
-
-      #slash {
-        padding: 0 3px;
-      }
-
-      #pagelength-spacer {
-        margin-inline-start: -2px;
-        text-align: start;
-      }
-
-      #pageselector,
-      #slash,
-      #pagelength-spacer {
-        display: inline-block;
-      }
     </style>
-    <cr-input id="pageselector" value="[[pageNo]]" on-mouseup="select"
-        on-value-changed="onInputValueChange_" on-change="pageNoCommitted"
-        aria-label$="{{strings.labelPageNumber}}">
-    </cr-input>
-    <span id="slash"> / </span>
+    <div id="pageselector-container">
+      <cr-input id="pageselector" value="[[pageNo]]" on-mouseup="select"
+          on-value-changed="onInputValueChange_" on-change="pageNoCommitted"
+          aria-label$="{{strings.labelPageNumber}}">
+      </cr-input>
+    </div>
+    <span id="slash">/</span>
     <span id="pagelength-spacer">
       <span id="pagelength">{{docLength}}</span>
     </span>

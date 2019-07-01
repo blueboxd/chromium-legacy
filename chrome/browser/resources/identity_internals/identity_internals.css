@@ -19,6 +19,7 @@ tr:nth-child(odd) {
 td.label {
   font-weight: bold;
   vertical-align: top;
+  white-space: nowrap;
 }
 
 td.token-actions {

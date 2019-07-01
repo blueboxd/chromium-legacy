@@ -637,10 +637,6 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
     // If tab switch button is focused, unfocus it.
     if (MaybeUnfocusTabButton())
       return true;
-
-    // Otherwise, if at top of results, do nothing.
-    if (model()->popup_model()->selected_line() == 0)
-      return false;
   }
 
   // Translate tab and shift-tab into down and up respectively.

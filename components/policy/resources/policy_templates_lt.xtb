@@ -367,6 +367,11 @@
           Jei ši politika išjungta ar nenustatyta, „Kerberos“ paskyros nustatymai išjungiami. Nebus galima pridėti „Kerberos“ paskyrų ir naudoti „Kerberos“ autentifikavimo. Visos esamos „Kerberos“ paskyros ir saugomi slaptažodžiai bus ištrinti.</translation>
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1561967320164410511">Papildomi U2F asmeninės atestacijos plėtiniai</translation>
+<translation id="1566329065312331399">
+      Jei ši politika nustatyta kaip „False“ (netiesa), įrenginiui neleidžiama suaktyvinti funkcijos „Powerwash“.
+      Jei nustatyta kaip „True“ (tiesa), įrenginiui leidžiama suaktyvinti funkciją „Powerwash“.
+      Jei paliekama nenustatyta, numatytasis nustatymas yra „False“ (netiesa), vadinasi, įrenginiui neleidžiama suaktyvinti funkcijos „Powerwash“.
+      </translation>
 <translation id="1574554504290354326">Šis nustatymas nebenaudojamas. Vietoje jo naudokite „SafeBrowsingExtendedReportingEnabled“. „SafeBrowsingExtendedReportingEnabled“ įgalinimas arba išjungimas atitinka „SafeBrowsingExtendedReportingOptInAllowed“ nustatymą į „False“.
 
       Nustačius šią politiką į „False“ naudotojai nebegalės pasirinkti siųsti tam tikros sistemos informacijos ir puslapių turinio į „Google“ serverius. Jei šis nustatymas nustatytas į „True“ arba nesukonfigūruotas, naudotojai galės siųsti tam tikrą sistemos informaciją ir puslapių turinį į Saugaus naršymo sistemą, kad padėtų aptikti pavojingas programas ir svetaines.
@@ -408,6 +413,7 @@
 
       Įspėjimas: nerekomenduojama viešojo terminalo programai perduoti leidimo valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją, nes ji gali neleisti įrenginiui gauti naujinių ir svarbių saugos pataisų. Perdavus leidimą valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją gali kilti grėsmė naudotojų saugai.</translation>
 <translation id="1675002386741412210">Palaikoma naudojant:</translation>
+<translation id="1700811900332333712">Leisti įrenginiui prašyti įjungti funkciją „Powerwash“</translation>
 <translation id="1704516734140344991">Konfigūruojamas <ph name="TPM_FIRMWARE_UPDATE_TPM" /> aparatinės programinės įrangos atnaujinimo funkcijų pasiekiamumas ir elgsena.
 
       Atskirus nustatymus galima nurodyti JSON nuosavybėse.
@@ -2071,6 +2077,15 @@
       Per šį laikotarpį naudotojai bus pakartotinai pranešama apie būtinybę atnaujinti. „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose pranešimas apie paleidimą iš naujo rodomas sistemos juostelėje pagal politiką „<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />“. Praėjus trečdaliui pranešimo laikotarpio „<ph name="PRODUCT_NAME" />“ naršyklėse pakeičiamas programų meniu nurodant, kad reikia paleisti iš naujo. Šio pranešimo spalva pakeičiama praėjus dviem trečdaliams pranešimo laikotarpio ir dar kartą pakeičiama praėjus visam pranešimo laikotarpiui. Tas pats tvarkaraštis taikomas papildomiems pranešimams, įgalintiems taikant politiką „<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />“.
 
       Jei nenustatyta, „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose naudojamas numatytasis 345 600 000 milisekundžių (keturių dienų) laikotarpis, o „<ph name="PRODUCT_NAME" />“ – 604 800 000 milisekundžių (vienos savaitės) laikotarpis.</translation>
+<translation id="4777805166623621364">
+      Šis nustatymas („SitePerProcess“) gali būti naudojamas norint neleisti naudotojams atsisakyti numatytosios elgsenos – izoliuoti visas svetaines. Atminkite, kad politika „IsolateOrigins“ taip pat gali būti naudinga, jei reikia izoliuoti papildomus smulkesnius šaltinius.
+      Jei politika įgalinta, naudotojai negalės atsisakyti numatytosios elgsenos, kai vykdomi atskiri kiekvienos svetainės procesai.
+      Jei politika nesukonfigūruota ar išjungta, naudotojai galės atsisakyti svetainių izoliavimo
+      (pvz., įrašydami „Išjungti svetainių izoliavimą“ adresu chrome://flags).  Nustačius politiką kaip išjungtą ir (arba) jos nesukonfigūravus, svetainių izoliavimas neišjungiamas.
+      Sistemos „<ph name="PRODUCT_OS_NAME" />“ 76 ir ankstesnėse versijose rekomenduojama taip pat nustatyti tokią pačią „<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />“ įrenginio politikos vertę. Jei abiejų politikos nuostatų nurodytos vertės nesutampa, pradedant naudotojo seansą galima delsa, kol pritaikoma naudotojo politikos vertė.
+
+      PASTABA: ši politika netaikoma „Android“. Norėdami įgalinti „SitePerProcess“ sistemoje „Android“, naudokite politikos nustatymą „SitePerProcessAndroid“.
+      </translation>
 <translation id="4788252609789586009">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai užpildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., kredito kortelės informaciją.
 
       Jei šis nustatymas išjungtas, Automatinio pildymo funkcija niekada nesiūlys ir automatiškai nepildys kredito kortelės informacijos, taip pat neišsaugos papildomos kredito kortelės informacijos, kurią naudotojas gali pateikti naršydamas žiniatinklyje.
@@ -2218,6 +2233,7 @@
 <translation id="5148753489738115745">Leidžia nurodyti papildomus parametrus, naudojamus, kai „<ph name="PRODUCT_FRAME_NAME" />“ paleidžia „<ph name="PRODUCT_NAME" />“.
 
           Nenustačius šios politikos bus naudojama numatytoji komandinė eilutė.</translation>
+<translation id="5152787786897382519">Ir „Chromium“, ir „Google Chrome“ yra tokių politikų grupių, kurios valdo tam tikrą funkciją atsižvelgdama viena į kitą. Tokie rinkiniai – tai toliau nurodytos politikų grupės. Kadangi politikos gali turėti kelis šaltinius, bus taikomos tik didžiausio prioriteto šaltinio vertės. Tos pačios grupės žemesnio prioriteto šaltinio verčių bus nepaisoma. Prioriteto tvarka apibrėžta <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Stebėjimo tinklo paketų siuntimo dažnis milisekundėmis.
 
       Jei ši politika nenustatyta, numatytasis intervalas bus 3 minutės. Minimalus
@@ -2767,6 +2783,7 @@
 <translation id="5983708779415553259">Numatytoji elgsena, skirta svetainėms, neesančioms turinio paketuose</translation>
 <translation id="5997543603646547632">Naudoti 24 val. laikrodį pagal numatytuosius nustatymus</translation>
 <translation id="5997846976342452720">Nurodoma, ar reikia išjungti papildinių paieškos priemonę (nebenaudojama)</translation>
+<translation id="5998198091336830580">Ši politika yra šios atominės grupės dalis (taikomos tik grupėje esančio didžiausio prioriteto šaltinio politikos):</translation>
 <translation id="6017568866726630990">Rodyti sistemos spausdinimo dialogo langą, o ne spaudinio peržiūrą.
 
       Kai šis nustatymas įgalintas, „<ph name="PRODUCT_NAME" />“ atvers sistemos spausdinimo dialogo langą, o ne integruotą spaudinio peržiūrą, kai naudotojas pateikia puslapio spausdinimo užklausą.
@@ -3519,6 +3536,9 @@
       Kai ši politika nustatyta kaip „Netiesa“, informacija, kurią galima naudoti įrenginiams identifikuoti, nerenkama.
 
       Ši politika galioja, tik kai įgalintas „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ir įrenginyje užregistruota „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.</translation>
+<translation id="7359307926583593395">
+      Ši politika taikoma prisijungimo ekranui. Taip pat peržiūrėkite politiką „<ph name="SITE_PER_PROCESS_POLICY_NAME" />“, taikomą naudotojo seansui. Rekomenduojama nustatyti vienodas abiejų politikos nuostatų vertes. Jei vertės nesutaps, pradedant naudotojo seansą galima delsa, kol bus pritaikyta naudotojo politikos nurodyta vertė.
+      </translation>
 <translation id="737655323154569539">Apribojamas spausdinamo puslapio dydis. Jei politika nenustatyta ar nenurodyta vertė, netaikomas joks apribojimas.</translation>
 <translation id="7389872682701720082">Jei įgalinsite šį nustatymą, visada bus paleidžiami nepasenę papildiniai.
 
@@ -3856,6 +3876,7 @@
 
           Taip pat žiūrėkite politikas „CookiesAllowedForUrls“ ir „CookiesSessionOnlyForUrls“. Atminkite, kad negali būti nesuderinamų šių trijų politikų URL šablonų, nes nenurodyta, kuriai politikai teikiama pirmenybė.</translation>
 <translation id="8099880303030573137">Neveikos delsa, kai naudojama akumuliatoriaus energija</translation>
+<translation id="8101381354936029836">Politikos atominė grupė:</translation>
 <translation id="8102913158860568230">Numatytasis medijos srautinio perdavimo nustatymas</translation>
 <translation id="8104186956182795918">Leidžiama nustatyti, ar svetainėse galima pateikti vaizdų. Vaizdus pateikti gali būti leidžiama arba neleidžiama visose svetainėse.
 
@@ -4065,6 +4086,15 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
 <translation id="8499172469244085141">Numatytieji nustatymai (naudotojai gali nepaisyti)</translation>
+<translation id="849962487677588458">Ši politika nebenaudojama ir bus pašalinta iš „Chrome 78“, jos niekuo nepakeičiant.
+
+      Ši politika įgalina HTTP/0.9 visuose prievaduose, išskyrus 80 HTTP ir 443 HTTPS.
+
+      Ši politika išjungta pagal numatytuosius nustatymus, o ją įgalinus naudotojams gali iškilti saugos problema https://crbug.com/600352.
+
+      Ši politika skirta suteikti įmonėms galimybę iškelti turimus serverius iš HTTP/0.9. Ateityje ji bus pašalinta.
+
+      Jei ši politika nenustatyta, HTTP/0.9 bus išjungtas nenumatytiesiems prievadams.</translation>
 <translation id="8507835864888987300">Nustatoma tikslinė automatinių naujinių versija.
 
       Nurodomas tikslinės versijos, į kurią turėtų būti atnaujinta „<ph name="PRODUCT_OS_NAME" />“, priešdėlis. Jei įrenginyje vykdoma ankstesnė nei nurodyto priešdėlio versija, naudojant nurodytą priešdėlį atnaujinama į naujausią versiją. Jei įrenginyje jau veikia naujesnė versija, poveikis priklauso nuo „<ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />“ vertės. Priešdėlio formatas veikia pagal komponentus, kaip nurodyta šiame pavyzdyje:

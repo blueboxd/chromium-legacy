@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Quay về tab trước</translation>
 <translation id="2194790690264064655">Nhấn <ph name="CTRL" /> rồi nhấp vào một liên kết</translation>
 <translation id="2246352309084894470">Mở/đóng trình chạy toàn màn hình</translation>
+<translation id="2354531887393764880">dấu chấm</translation>
 <translation id="2382644247745281995">Bố cục bàn phím hiện tại chưa được hỗ trợ</translation>
 <translation id="2397416548179033562">Hiển thị menu Chrome</translation>
 <translation id="2424073332829844142">Bật và tắt Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Mở mục đã đánh dấu trên giá</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 đến 8</translation>
 <translation id="3837047332182291558">Tăng độ sáng của bàn phím (chỉ dành cho bàn phím có đèn nền)</translation>
+<translation id="3949671998904569433">dấu phẩy</translation>
 <translation id="3976863468609830880">Nhấp vào biểu tượng cuối cùng trên giá</translation>
 <translation id="3994783594793697310">Đặt lại mức thu phóng màn hình</translation>
 <translation id="4026843240379844265">Di chuyển cửa sổ đang hoạt động giữa các màn hình</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Chuyển sang phương thức nhập sẵn có tiếp theo</translation>
 <translation id="743754632698445141">Bỏ ghim ứng dụng</translation>
 <translation id="7439718573248533901">Xóa chữ cái tiếp theo (xóa tiến)</translation>
+<translation id="7500368597227394048">dấu gạch nối</translation>
 <translation id="7611271430932669992">Di chuyển tiêu điểm đến cửa sổ bật lên và hộp thoại</translation>
 <translation id="766326951329901120">Dán nội dung từ khay nhớ tạm dưới dạng văn bản thuần túy</translation>
+<translation id="7703010453515335249">dấu ngoặc vuông trái</translation>
 <translation id="7724603315864178912">Cắt</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="SPACE" /> hoặc <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Mở một tệp trong trình duyệt</translation>
-<translation id="7917881398263220094">Dừng tải trang hiện tại</translation>
 <translation id="7952165122793773711">Chuyển đến các tab từ 1 đến 8</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="8130528849632411619">Chuyển tới đầu tài liệu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> hoặc <ph name="E" /></translation>
 <translation id="8232835244134740473">Chuyển đổi tiêu điểm giữa: Khu vực trạng thái (nơi hiển thị ảnh tài khoản), Trình chạy, Thanh địa chỉ, Thanh dấu trang (nếu hiển thị), Trang web đang mở và Thanh tài nguyên đã tải xuống (nếu hiển thị).</translation>
 <translation id="8234414138295101081">Xoay màn hình 90 độ</translation>
+<translation id="8241665785394195545">dấu ngoặc vuông phải</translation>
 <translation id="8264941229485248811">Hiển thị hoặc ẩn trình kiểm tra Công cụ dành cho nhà phát triển</translation>
 <translation id="836869401750819675">Mở trang Tệp đã tải xuống</translation>
 <translation id="8388247778047144397">Kéo liên kết vào một vùng trống trên thanh tab</translation>

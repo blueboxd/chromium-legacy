@@ -110,6 +110,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // properties, in local coordinates.
   PhysicalRect SelfInkOverflow() const;
 
+  scoped_refptr<const NGPhysicalTextFragment> CloneAsHiddenForPaint() const;
+
   // Create a new fragment that has part of the text of this fragment.
   // All other properties are the same as this fragment.
   scoped_refptr<const NGPhysicalTextFragment> TrimText(
@@ -165,6 +167,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // overflow, to be cached as long as it is guaranteed to always recompute to
   // the same value.
   mutable PhysicalRect self_ink_overflow_;
+
+  friend class NGTextFragmentBuilder;
 };
 
 template <>

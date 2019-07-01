@@ -68,9 +68,9 @@ void GraphicsDelegateWin::ClearContext() {
 }
 
 gfx::Rect GraphicsDelegateWin::GetTextureSize() {
-  int width = info_->leftEye->renderWidth + info_->rightEye->renderWidth;
+  int width = info_->left_eye->render_width + info_->right_eye->render_width;
   int height =
-      std::max(info_->leftEye->renderHeight, info_->rightEye->renderWidth);
+      std::max(info_->left_eye->render_height, info_->right_eye->render_width);
   return gfx::Rect(width, height);
 }
 
@@ -132,16 +132,16 @@ mojo::ScopedHandle GraphicsDelegateWin::GetTexture() {
 gfx::RectF GraphicsDelegateWin::GetLeft() {
   gfx::Rect size = GetTextureSize();
   return gfx::RectF(
-      0, 0, static_cast<float>(info_->leftEye->renderWidth) / size.width(),
-      static_cast<float>(info_->leftEye->renderHeight) / size.height());
+      0, 0, static_cast<float>(info_->left_eye->render_width) / size.width(),
+      static_cast<float>(info_->left_eye->render_height) / size.height());
 }
 
 gfx::RectF GraphicsDelegateWin::GetRight() {
   gfx::Rect size = GetTextureSize();
   return gfx::RectF(
-      static_cast<float>(info_->leftEye->renderWidth) / size.width(), 0,
-      static_cast<float>(info_->rightEye->renderWidth) / size.width(),
-      static_cast<float>(info_->rightEye->renderHeight) / size.height());
+      static_cast<float>(info_->left_eye->render_width) / size.width(), 0,
+      static_cast<float>(info_->right_eye->render_width) / size.width(),
+      static_cast<float>(info_->right_eye->render_height) / size.height());
 }
 
 void GraphicsDelegateWin::Cleanup() {
@@ -190,17 +190,17 @@ void GraphicsDelegateWin::SetVRDisplayInfo(
 FovRectangles GraphicsDelegateWin::GetRecommendedFovs() {
   DCHECK(info_);
   FovRectangle left = {
-      info_->leftEye->fieldOfView->leftDegrees,
-      info_->leftEye->fieldOfView->rightDegrees,
-      info_->leftEye->fieldOfView->downDegrees,
-      info_->leftEye->fieldOfView->upDegrees,
+      info_->left_eye->field_of_view->left_degrees,
+      info_->left_eye->field_of_view->right_degrees,
+      info_->left_eye->field_of_view->down_degrees,
+      info_->left_eye->field_of_view->up_degrees,
   };
 
   FovRectangle right = {
-      info_->rightEye->fieldOfView->leftDegrees,
-      info_->rightEye->fieldOfView->rightDegrees,
-      info_->rightEye->fieldOfView->downDegrees,
-      info_->rightEye->fieldOfView->upDegrees,
+      info_->right_eye->field_of_view->left_degrees,
+      info_->right_eye->field_of_view->right_degrees,
+      info_->right_eye->field_of_view->down_degrees,
+      info_->right_eye->field_of_view->up_degrees,
   };
 
   return std::pair<FovRectangle, FovRectangle>(left, right);
@@ -225,13 +225,13 @@ CameraModel CameraModelViewProjFromVREyeParameters(
   model.view_matrix = eye_from_head * head_from_world;
 
   float up_tan =
-      tanf(eye_params->fieldOfView->upDegrees * base::kPiFloat / 180.0);
+      tanf(eye_params->field_of_view->up_degrees * base::kPiFloat / 180.0);
   float left_tan =
-      tanf(eye_params->fieldOfView->leftDegrees * base::kPiFloat / 180.0);
+      tanf(eye_params->field_of_view->left_degrees * base::kPiFloat / 180.0);
   float right_tan =
-      tanf(eye_params->fieldOfView->rightDegrees * base::kPiFloat / 180.0);
+      tanf(eye_params->field_of_view->right_degrees * base::kPiFloat / 180.0);
   float down_tan =
-      tanf(eye_params->fieldOfView->downDegrees * base::kPiFloat / 180.0);
+      tanf(eye_params->field_of_view->down_degrees * base::kPiFloat / 180.0);
   float x_scale = 2.0f / (left_tan + right_tan);
   float y_scale = 2.0f / (up_tan + down_tan);
   // clang-format off
@@ -254,18 +254,18 @@ RenderInfo GraphicsDelegateWin::GetRenderInfo(FrameType frame_type,
   info.head_pose = head_pose;
 
   CameraModel left =
-      CameraModelViewProjFromVREyeParameters(info_->leftEye, head_pose);
+      CameraModelViewProjFromVREyeParameters(info_->left_eye, head_pose);
   left.eye_type = kLeftEye;
-  left.viewport = gfx::Rect(0, 0, info_->leftEye->renderWidth,
-                            info_->leftEye->renderHeight);
+  left.viewport = gfx::Rect(0, 0, info_->left_eye->render_width,
+                            info_->left_eye->render_height);
   info.left_eye_model = left;
 
   CameraModel right =
-      CameraModelViewProjFromVREyeParameters(info_->rightEye, head_pose);
+      CameraModelViewProjFromVREyeParameters(info_->right_eye, head_pose);
   right.eye_type = kRightEye;
-  right.viewport =
-      gfx::Rect(info_->leftEye->renderWidth, 0, info_->rightEye->renderWidth,
-                info_->rightEye->renderHeight);
+  right.viewport = gfx::Rect(info_->left_eye->render_width, 0,
+                             info_->right_eye->render_width,
+                             info_->right_eye->render_height);
   info.right_eye_model = right;
   cached_info_ = info;
   return info;

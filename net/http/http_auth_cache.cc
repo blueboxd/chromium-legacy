@@ -27,12 +27,6 @@ std::string GetParentDirectory(const std::string& path) {
   return path.substr(0, last_slash + 1);
 }
 
-// Debug helper to check that |path| arguments are properly formed.
-// (should be absolute path, or empty string).
-void CheckPathIsValid(const std::string& path) {
-  DCHECK(path.empty() || path[0] == '/');
-}
-
 // Return true if |path| is a subpath of |container|. In other words, is
 // |container| an ancestor of |path|?
 bool IsEnclosingPath(const std::string& container, const std::string& path) {
@@ -42,12 +36,21 @@ bool IsEnclosingPath(const std::string& container, const std::string& path) {
            base::StartsWith(path, container, base::CompareCase::SENSITIVE)));
 }
 
+#if DCHECK_IS_ON()
 // Debug helper to check that |origin| arguments are properly formed.
+// TODO(asanka): Switch auth cache to use url::Origin.
 void CheckOriginIsValid(const GURL& origin) {
   DCHECK(origin.is_valid());
   DCHECK(origin.SchemeIsHTTPOrHTTPS() || origin.SchemeIsWSOrWSS());
   DCHECK(origin.GetOrigin() == origin);
 }
+
+// Debug helper to check that |path| arguments are properly formed.
+// (should be absolute path, or empty string).
+void CheckPathIsValid(const std::string& path) {
+  DCHECK(path.empty() || path[0] == '/');
+}
+#endif
 
 // Functor used by EraseIf.
 struct IsEnclosedBy {
@@ -83,8 +86,10 @@ HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
 // AddPath() only keeps the shallowest entry.
 HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
                                                   const std::string& path) {
+#if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
   CheckPathIsValid(path);
+#endif
 
   // RFC 2617 section 2:
   // A client SHOULD assume that all paths at or deeper than the depth of
@@ -120,8 +125,10 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
                                          const std::string& auth_challenge,
                                          const AuthCredentials& credentials,
                                          const std::string& path) {
+#if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
   CheckPathIsValid(path);
+#endif
 
   base::TimeTicks now_ticks = tick_clock_->NowTicks();
 
@@ -130,13 +137,16 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   if (!entry) {
     bool evicted = false;
     // Failsafe to prevent unbounded memory growth of the cache.
+    //
+    // Data collected in June of 2019 indicate that the eviction rate is at
+    // around 0.05%. I.e. 0.05% of the time the number of entries in the cache
+    // exceed kMaxNumRealmEntries. The evicted entry is roughly half an hour old
+    // (median), and it's been around 25 minutes since its last use (median).
     if (entries_.size() >= kMaxNumRealmEntries) {
-      LOG(WARNING) << "Num auth cache entries reached limit -- evicting";
+      DLOG(WARNING) << "Num auth cache entries reached limit -- evicting";
       EvictLeastRecentlyUsedEntry();
       evicted = true;
     }
-    UMA_HISTOGRAM_BOOLEAN("Net.HttpAuthCacheAddEvicted", evicted);
-
     entry = &(entries_.emplace(std::make_pair(origin, Entry()))->second);
     entry->origin_ = origin;
     entry->realm_ = realm;
@@ -198,13 +208,15 @@ void HttpAuthCache::Entry::AddPath(const std::string& path) {
 
     bool evicted = false;
     // Failsafe to prevent unbounded memory growth of the cache.
+    //
+    // Data collected on June of 2019 indicate that when we get here, the list
+    // of paths has reached the 10 entry maximum around 1% of the time.
     if (paths_.size() >= kMaxNumPathsPerRealmEntry) {
-      LOG(WARNING) << "Num path entries for " << origin()
-                   << " has grown too large -- evicting";
+      DLOG(WARNING) << "Num path entries for " << origin()
+                    << " has grown too large -- evicting";
       paths_.pop_back();
       evicted = true;
     }
-    UMA_HISTOGRAM_BOOLEAN("Net.HttpAuthCacheAddPathEvicted", evicted);
 
     // Add new path.
     paths_.push_front(parent_dir);
@@ -297,7 +309,9 @@ HttpAuthCache::EntryMap::iterator HttpAuthCache::LookupEntryIt(
     const GURL& origin,
     const std::string& realm,
     HttpAuth::Scheme scheme) {
+#if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
+#endif
 
   // Linear scan through the <scheme, realm> entries for the given origin.
   auto entry_range = entries_.equal_range(origin);
@@ -330,11 +344,6 @@ void HttpAuthCache::EvictLeastRecentlyUsedEntry() {
     }
   }
   DCHECK(oldest_entry_it != entries_.end());
-  Entry& oldest_entry = oldest_entry_it->second;
-  UMA_HISTOGRAM_LONG_TIMES("Net.HttpAuthCacheAddEvictedCreation",
-                           now_ticks - oldest_entry.creation_time_ticks_);
-  UMA_HISTOGRAM_LONG_TIMES("Net.HttpAuthCacheAddEvictedLastUse",
-                           now_ticks - oldest_entry.last_use_time_ticks_);
   entries_.erase(oldest_entry_it);
 }
 

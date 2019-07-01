@@ -111,17 +111,17 @@ mojom::VRPosePtr ConvertToVRPose(const GamepadPose& gamepad_pose) {
     pose->position = ConvertToPoint3F(gamepad_pose.position);
 
   if (gamepad_pose.angular_velocity.not_null)
-    pose->angularVelocity = ConvertToVector3dF(gamepad_pose.angular_velocity);
+    pose->angular_velocity = ConvertToVector3dF(gamepad_pose.angular_velocity);
 
   if (gamepad_pose.linear_velocity.not_null)
-    pose->linearVelocity = ConvertToVector3dF(gamepad_pose.linear_velocity);
+    pose->linear_velocity = ConvertToVector3dF(gamepad_pose.linear_velocity);
 
   if (gamepad_pose.angular_acceleration.not_null)
-    pose->angularAcceleration =
+    pose->angular_acceleration =
         ConvertToVector3dF(gamepad_pose.angular_acceleration);
 
   if (gamepad_pose.linear_acceleration.not_null)
-    pose->linearAcceleration =
+    pose->linear_acceleration =
         ConvertToVector3dF(gamepad_pose.linear_acceleration);
 
   return pose;

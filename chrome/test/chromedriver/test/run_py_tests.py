@@ -79,7 +79,6 @@ _NEGATIVE_FILTER = [
     # TODO: re-enable tests when DevTools supports ScreenOrientation commands.
     'ChromeDriverAndroidTest.testScreenOrientation',
     'ChromeDriverAndroidTest.testMultipleScreenOrientationChanges',
-    'ChromeDriverAndroidTest.testDeleteScreenOrientationManual',
     'ChromeDriverAndroidTest.testScreenOrientationAcrossMultipleTabs',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
@@ -2000,6 +1999,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/large_element.html'))
     self._driver.SetWindowRect(500, 500, 0, 0)
+    # Wait for page to stabilize. See https://crbug.com/chromedriver/2986
+    time.sleep(1)
     redElement = self._driver.FindElement('css selector', '#A')
     analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
@@ -2540,28 +2541,6 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
     self._driver.SetScreenOrientation('PORTRAIT')
     self.assertEqual(
       self._driver.GetScreenOrientation()['orientation'], 'PORTRAIT')
-
-    self._driver.DeleteScreenOrientation()
-    self._driver.DeleteScreenOrientation()
-
-  def testDeleteScreenOrientationManual(self):
-    self._driver = self.CreateDriver()
-
-    manual_test = False;
-
-    self._driver.SetScreenOrientation("LANDSCAPE")
-    screen_orientation = self._driver.GetScreenOrientation()
-    self.assertEqual(screen_orientation['orientation'], "LANDSCAPE")
-    if(manual_test):
-      time.sleep(10)
-      # While sleeping, test that the orientation cannot be changed.
-
-    print "Screen orientation lock deleted."
-    self._driver.DeleteScreenOrientation();
-    if(manual_test):
-      time.sleep(10)
-      # While sleeping, test that orientation can be changed by manually
-      # rotating the device.
 
   def testScreenOrientationAcrossMultipleTabs(self):
     self._driver = self.CreateDriver()

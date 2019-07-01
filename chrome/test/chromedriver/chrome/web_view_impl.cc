@@ -992,15 +992,6 @@ Status WebViewImpl::SetScreenOrientation(std::string orientation) {
   return Status(kOk);
 }
 
-Status WebViewImpl::DeleteScreenOrientation() {
-  base::DictionaryValue params;
-  Status status =
-    client_->SendCommand("Emulation.unlockScreenOrientation", params);
-  if (status.IsError())
-    return status;
-  return Status(kOk);
-}
-
 Status WebViewImpl::CallAsyncFunctionInternal(
     const std::string& frame,
     const std::string& function,

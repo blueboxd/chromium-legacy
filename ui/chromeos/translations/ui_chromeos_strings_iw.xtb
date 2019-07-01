@@ -90,9 +90,9 @@
 <translation id="197560921582345123">יכול לערוך</translation>
 <translation id="1984603991036629094">מקלדת פונטית ארמנית</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
+<translation id="2009067268969781306">פירמוט של התקן אחסון מוחק את כל הנתונים שמאוחסנים בו. לא ניתן לבטל את הפעולה הזו.</translation>
 <translation id="2028997212275086731">‏ארכיון RAR</translation>
 <translation id="2046702855113914483">ראמן</translation>
-<translation id="204914487372604757">צור קיצור דרך</translation>
 <translation id="2070909990982335904">שמות המתחילים בנקודה שמורים עבור המערכת. בחר שם אחר.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="2080010875307505892">מקלדת סרבית</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">מקלדת ערבית</translation>
 <translation id="4261901459838235729">‏מצגת Google</translation>
 <translation id="4290535918735525311">‏תיקייה אחת שותפה עם Linux</translation>
+<translation id="42981349822642051">הרחבה</translation>
 <translation id="4298972503445160211">מקלדת דנית</translation>
 <translation id="4299729908419173967">פורטוגזית (ברזיל)</translation>
 <translation id="4309915981827077375">מידע כללי</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">פרטים נוספים...</translation>
 <translation id="5061708541166515394">ניגודיות</translation>
 <translation id="5068919226082848014">פיצה</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> מהקבצים יימחקו</translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
 <translation id="5098629044894065541">עברית</translation>
 <translation id="5123433949759960244">כדורסל</translation>
@@ -413,6 +415,7 @@
 <translation id="5752453871435543420">‏גיבוי בענן של מערכת ההפעלה של Chrome</translation>
 <translation id="5756666464756035725">‏הונגרית - QWERTY</translation>
 <translation id="5771585441665576801">‏תעתוק (geia → γεια)</translation>
+<translation id="5776325638577448643">מחיקה ופירמוט</translation>
 <translation id="57838592816432529">השתקה</translation>
 <translation id="5788127256798019331">‏קובצי Play</translation>
 <translation id="5790193330357274855">קזחית</translation>
@@ -429,6 +432,7 @@
 <translation id="5857774240076772505">‏הענקת הרשאה לאפליקציות של Linux לשנות קבצים בתיקייה <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">‏מקלדת צרפתית בפריסת BÉPO</translation>
 <translation id="5911887972742538906">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
+<translation id="5912396950572065471">פורמט</translation>
 <translation id="5913638992615760742">פעולת ההעתקה נכשלה, שגיאה בלתי צפויה: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">‏הענקת הרשאה לאפליקציות Linux לשנות קבצים ב-Google Drive. השינויים יסתנכרנו עם המכשירים האחרים שלך.</translation>
@@ -453,6 +457,7 @@
 <translation id="6189412234224385711">פתח באמצעות <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">מחכה למידע שטח האחסון...</translation>
 <translation id="6205710420833115353">פעולות מסוימות נמשכות זמן רב מהצפוי. האם ברצונך לבטל אותן?</translation>
+<translation id="6224253798271602650">פירמוט של <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">לא ניתן להפעיל קובץ זה.</translation>
 <translation id="6248400709929739064">הפעל כתוביות</translation>
 <translation id="6264347891387618177">‏תעתוק (selam → ሰላም)</translation>
@@ -533,6 +538,7 @@
 <translation id="719009910964971313">‏מקלדת US Programmer Dvorak</translation>
 <translation id="7191454237977785534">שמירה בשם</translation>
 <translation id="7222624196722476520">מקלדת בולגרית פונטית</translation>
+<translation id="7238097264433196391">שם התקן האחסון</translation>
 <translation id="7248671827512403053">יישום</translation>
 <translation id="7268659760406822741">שירותים זמינים</translation>
 <translation id="7283041136720745563">‏המכסה שלך ב-Google Drive לא גדולה מספיק.</translation>
@@ -603,7 +609,6 @@
 <translation id="7969525169268594403">סלובנית</translation>
 <translation id="7982283708762922719">גובה</translation>
 <translation id="7987485481246785146">מקלדת כורדית סורנית המבוססת על ערבית</translation>
-<translation id="799547531016638432">הסר קיצור דרך</translation>
 <translation id="799923393800005025">יכול להציג</translation>
 <translation id="8008366997883261463">כלב</translation>
 <translation id="8028993641010258682">גודל</translation>

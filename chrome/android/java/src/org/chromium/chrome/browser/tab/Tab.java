@@ -297,12 +297,11 @@ public class Tab {
         if (parent == null) {
             mParentId = INVALID_TAB_ID;
             mSourceTabId = INVALID_TAB_ID;
-            mRootId = mId;
         } else {
             mParentId = parent.getId();
             mSourceTabId = parent.isIncognito() == incognito ? mParentId : INVALID_TAB_ID;
-            mRootId = parent.getRootId();
         }
+        mRootId = mId;
 
         // Override the configuration for night mode to always stay in light mode until all UIs in
         // Tab are inflated from activity context instead of application context. This is to avoid

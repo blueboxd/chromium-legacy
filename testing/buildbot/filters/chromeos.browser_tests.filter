@@ -20,9 +20,6 @@
 # TODO(crbug.com/977743): Enable this.
 -ManagementApiKioskTest.ManagementApi
 
-# TODO(crbug.com/979226): Enable this.
--MultiActionAPITest.DynamicSetIcon/*
-
 # TODO(crbug.com/977744): Enable this.
 -ProcessMemoryMetricsEmitterTest.RendererBuildId
 

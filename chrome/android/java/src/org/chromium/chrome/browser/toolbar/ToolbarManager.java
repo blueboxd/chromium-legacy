@@ -147,7 +147,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     /** A means of tracking which mechanism is being used to focus the omnibox. */
     @IntDef({OmniboxFocusReason.OMNIBOX_TAP, OmniboxFocusReason.OMNIBOX_LONG_PRESS,
             OmniboxFocusReason.FAKE_BOX_TAP, OmniboxFocusReason.FAKE_BOX_LONG_PRESS,
-            OmniboxFocusReason.ACCELERATOR_TAP})
+            OmniboxFocusReason.ACCELERATOR_TAP, OmniboxFocusReason.TAB_SWITCHER_OMNIBOX_TAP})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OmniboxFocusReason {
         int OMNIBOX_TAP = 0;
@@ -155,7 +155,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         int FAKE_BOX_TAP = 2;
         int FAKE_BOX_LONG_PRESS = 3;
         int ACCELERATOR_TAP = 4;
-        int NUM_ENTRIES = 5;
+        int TAB_SWITCHER_OMNIBOX_TAP = 5;
+        int NUM_ENTRIES = 6;
     }
     private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
             new EnumeratedHistogramSample(
@@ -757,6 +758,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param reason A {@link OmniboxFocusReason} that the omnibox was focused.
      */
     public static void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
+        if (OmniboxFocusReason.OMNIBOX_TAP == reason
+                && ReturnToChromeExperimentsUtil.isInOverviewWithOmnibox()) {
+            reason = OmniboxFocusReason.TAB_SWITCHER_OMNIBOX_TAP;
+        }
         ENUMERATED_FOCUS_REASON.record(reason);
     }
 

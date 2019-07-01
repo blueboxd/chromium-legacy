@@ -134,7 +134,7 @@
 <translation id="2800683595868705743">Leave Tab Switcher</translation>
 <translation id="2830972654601096923">Manage Addresses…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">Initial sync setup not finished</translation>
+<translation id="2840687315230832938">Initial Sync Setup Not Finished</translation>
 <translation id="2843803966603263712">Reset Translate Settings</translation>
 <translation id="2858204748079866344">To protect your privacy, Chrome will not auto-fill your password in this field.</translation>
 <translation id="285960592395650245">Retry Download</translation>
@@ -477,6 +477,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7961015016161918242">Never</translation>
 <translation id="7971521879845308059">Block Pop-ups</translation>
 <translation id="7982789257301363584">Network</translation>
+<translation id="8007420562015504427">Incognito Search</translation>
 <translation id="8019783059653722575">This lets you save and upload photos.</translation>
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8023878949384262191">Expands the section.</translation>
@@ -491,6 +492,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8225985093977202398">Cached Images and Files</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8281781826761538115">Default - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">New Search</translation>
 <translation id="8328777765163860529">Close All</translation>
 <translation id="8381750437846184350">Control how Google uses your browsing history to personalise Search, ads and other Google services</translation>
 <translation id="8407669440184693619">No passwords found for this site</translation>

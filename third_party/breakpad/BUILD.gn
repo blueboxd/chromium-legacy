@@ -904,6 +904,41 @@ if (is_win) {
       }
     }
 
+    executable("symupload") {
+      include_dirs = [
+        "$visual_studio_path/DIA SDK/include",
+        "breakpad/src",
+      ]
+
+      sources = [
+        "breakpad/src/tools/windows/symupload/symupload.cc",
+      ]
+
+      deps = [
+        "//third_party/breakpad:common_windows",
+      ]
+
+      ldflags = [ "/LARGEADDRESSAWARE" ]
+
+      lib_dirs = []
+      if (current_cpu == "x64") {
+        lib_dirs += [ "$visual_studio_path/DIA SDK/lib/amd64" ]
+      } else {
+        lib_dirs += [ "$visual_studio_path/DIA SDK/lib" ]
+      }
+
+      libs = [
+        "diaguids.lib",
+        "imagehlp.lib",
+      ]
+
+      if (is_clang) {
+        # clang complains about microsoft-specific goto extensions. Instead of
+        # rewriting decade-old, goto-ridden code, disable the warning.
+        cflags = [ "-Wno-microsoft-goto" ]
+      }
+    }
+
     executable("google_converter") {
       include_dirs = [
         "$visual_studio_path/DIA SDK/include",

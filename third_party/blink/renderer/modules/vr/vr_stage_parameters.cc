@@ -20,9 +20,9 @@ VRStageParameters::VRStageParameters() : size_x_(0.0f), size_z_(0.0f) {
 void VRStageParameters::Update(
     const device::mojom::blink::VRStageParametersPtr& stage) {
   standing_transform_ = transformationMatrixToDOMFloat32Array(
-      TransformationMatrix(stage->standingTransform.matrix()));
-  size_x_ = stage->sizeX;
-  size_z_ = stage->sizeZ;
+      TransformationMatrix(stage->standing_transform.matrix()));
+  size_x_ = stage->size_x;
+  size_z_ = stage->size_z;
 }
 
 void VRStageParameters::Trace(blink::Visitor* visitor) {

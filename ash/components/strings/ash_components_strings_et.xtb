@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Eelmisele vahelehele liikumine</translation>
 <translation id="2194790690264064655">Vajutage klahvi <ph name="CTRL" /> ja klõpsake lingil</translation>
 <translation id="2246352309084894470">Täisekraanil käivitaja avamine/sulgemine</translation>
+<translation id="2354531887393764880">punkt</translation>
 <translation id="2382644247745281995">Praeguse klaviatuuripaigutusega ei toetata</translation>
 <translation id="2397416548179033562">Kuva Chrome'i menüü</translation>
 <translation id="2424073332829844142">Suurtäheluku sisse- ja väljalülitamine</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Riiulil esiletõstetud üksuse avamine</translation>
 <translation id="379295446891231126"><ph name="CTRL" /> <ph name="SEPARATOR" /> 1–8</translation>
 <translation id="3837047332182291558">Klaviatuuri eredamaks muutmine (ainult taustvalgusega klaviatuuride puhul)</translation>
+<translation id="3949671998904569433">koma</translation>
 <translation id="3976863468609830880">Riiulis viimasel ikoonil klõpsamine</translation>
 <translation id="3994783594793697310">Ekraani suumitaseme lähtestamine</translation>
 <translation id="4026843240379844265">Aktiivse akna teisaldamine ekraanide vahel</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Aktiveerib järgmise saadaoleva sisestusmeetodi</translation>
 <translation id="743754632698445141">Vabastab rakenduse</translation>
 <translation id="7439718573248533901">Järgmise tähe kustutamine (edasisuunas kustutamine)</translation>
+<translation id="7500368597227394048">sidekriips</translation>
 <translation id="7611271430932669992">Teisaldab fookuse hüpik- ja dialoogiakendele</translation>
 <translation id="766326951329901120">Lõikelaua sisu lihttekstina kleepimine</translation>
+<translation id="7703010453515335249">vasak nurksulg</translation>
 <translation id="7724603315864178912">Lõika</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /> <ph name="SEPARATOR1" /> <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="L" />, seejärel <ph name="SPACE" /> või <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Faili avamine brauseris</translation>
-<translation id="7917881398263220094">Aktiivse lehe laadimise peatamine</translation>
 <translation id="7952165122793773711">Vahekaardi 1–8 avamine</translation>
 <translation id="8026334261755873520">Sirvimisandmete kustutamine</translation>
 <translation id="8130528849632411619">Dokumendi algusesse liikumine</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="K" /> või <ph name="E" /></translation>
 <translation id="8232835244134740473">Fookuse vahetamine järgmiste vahel: olekuala (kus on kuvatud teie kontopilt), käivitaja, aadressiriba, järjehoidjariba (kui see on nähtav), avatud veebileht, allalaadimiste riba (kui see on nähtav)</translation>
 <translation id="8234414138295101081">Ekraani pööramine 90 kraadi</translation>
+<translation id="8241665785394195545">Parem nurksulg</translation>
 <translation id="8264941229485248811">Kuvab või peidab arendajatööriistade inspektori</translation>
 <translation id="836869401750819675">Allalaadimiste lehe avamine</translation>
 <translation id="8388247778047144397">Lohistage link vahelehtede ribal tühjale alale</translation>

@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Voi muokata</translation>
 <translation id="1984603991036629094">Armenialainen foneettinen näppäimistö</translation>
 <translation id="2001796770603320721">Ylläpidä Drivessa</translation>
+<translation id="2009067268969781306">Driven alustaminen poistaa kaiken sille tallennetun datan. Tätä toimintoa ei voi kumota.</translation>
 <translation id="2028997212275086731">RAR-arkisto</translation>
 <translation id="2046702855113914483">Ramen</translation>
-<translation id="204914487372604757">Luo pikakuvake</translation>
 <translation id="2070909990982335904">Pisteellä alkavat nimet on varattu järjestelmän käyttöön. Valitse toinen nimi.</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="2080010875307505892">Näppäimistö: serbia</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Arabialainen näppäimistö</translation>
 <translation id="4261901459838235729">Google-esitys</translation>
 <translation id="4290535918735525311">1 kansio jaettu Linuxin kanssa</translation>
+<translation id="42981349822642051">Laajenna</translation>
 <translation id="4298972503445160211">Näppäimistö: tanska</translation>
 <translation id="4299729908419173967">brasilianportugali</translation>
 <translation id="4309915981827077375">Yleistiedot</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Lisätietoja…</translation>
 <translation id="5061708541166515394">Kontrasti</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> tiedostoja poistetaan</translation>
 <translation id="509429900233858213">Tapahtui virhe.</translation>
 <translation id="5098629044894065541">heprea</translation>
 <translation id="5123433949759960244">Koripallo</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome-käyttöjärjestelmän pilvivarmuuskopiointi</translation>
 <translation id="5756666464756035725">Unkarilainen QWERTY</translation>
 <translation id="5771585441665576801">Translitterointi (geia → γεια)</translation>
+<translation id="5776325638577448643">Poista ja alusta</translation>
 <translation id="57838592816432529">Mykistä</translation>
 <translation id="5788127256798019331">Play-tiedostot</translation>
 <translation id="5790193330357274855">kazakki</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Anna Linux-sovelluksille lupa muokata kansiossa <ph name="FOLDER_NAME" /> olevia tiedostoja</translation>
 <translation id="5892290200158927959">Ranskalainen BÉPO-näppäimistö</translation>
 <translation id="5911887972742538906">Linux-sovellusta asennettaessa tapahtui virhe.</translation>
+<translation id="5912396950572065471">Muoto</translation>
 <translation id="5913638992615760742">Kopiointi epäonnistui odottamattoman virheen vuoksi: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Anna Linux-sovelluksille lupa muokata Google Driveesi tallennettuja tiedostoja. Muutokset synkronoidaan muille laitteillesi.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Avaa laajennuksella <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Odotetaan tietoja tallennustilasta...</translation>
 <translation id="6205710420833115353">Jotkin toiminnot kestävät odotettua kauemmin. Haluatko keskeyttää ne?</translation>
+<translation id="6224253798271602650">Alusta <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Tätä tiedostoa ei voi toistaa.</translation>
 <translation id="6248400709929739064">Ota tekstitykset käyttöön</translation>
 <translation id="6264347891387618177">Translitterointi (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Näppäimistö: US, Dvorak ohjelmoijille</translation>
 <translation id="7191454237977785534">Tallenna tiedosto nimellä</translation>
 <translation id="7222624196722476520">Bulgarian foneettinen näppäimistö</translation>
+<translation id="7238097264433196391">Driven nimi</translation>
 <translation id="7248671827512403053">Sovellus</translation>
 <translation id="7268659760406822741">Käytettävissä olevat palvelut</translation>
 <translation id="7283041136720745563">Google Drive ‑kiintiösi ei riitä.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">sloveeni</translation>
 <translation id="7982283708762922719">Korkeus</translation>
 <translation id="7987485481246785146">Soranîn arabiaan perustuva näppäimistö</translation>
-<translation id="799547531016638432">Poista pikakuvake</translation>
 <translation id="799923393800005025">Voi tarkastella</translation>
 <translation id="8008366997883261463">Jackrussellinterrieri</translation>
 <translation id="8028993641010258682">Koko</translation>

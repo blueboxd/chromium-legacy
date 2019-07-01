@@ -773,6 +773,8 @@ base::Optional<PhysicalRect> NGPaintFragment::LocalVisualRectFor(
 
   PhysicalRect visual_rect;
   for (NGPaintFragment* fragment : fragments) {
+    if (fragment->PhysicalFragment().IsHiddenForPaint())
+      continue;
     PhysicalRect child_visual_rect = fragment->SelfInkOverflow();
     child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
     visual_rect.Unite(child_visual_rect);
@@ -909,9 +911,10 @@ bool NGPaintFragment::TryMarkLastLineBoxDirtyFor(
 }
 
 void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
-  if (LayoutObject* layout_object = GetMutableLayoutObject())
+  if (LayoutObject* layout_object = GetMutableLayoutObject()) {
+    layout_object->StyleRef().ClearCachedPseudoStyles();
     layout_object->SetShouldDoFullPaintInvalidation();
-
+  }
   for (NGPaintFragment* child : Children())
     child->SetShouldDoFullPaintInvalidationRecursively();
 }
@@ -922,6 +925,7 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() const {
 
   if (NGPaintFragment* line_box = FirstLineBox()) {
     line_box->SetShouldDoFullPaintInvalidationRecursively();
+    GetLayoutObject()->StyleRef().ClearCachedPseudoStyles();
     GetMutableLayoutObject()->SetShouldDoFullPaintInvalidation();
   }
 }

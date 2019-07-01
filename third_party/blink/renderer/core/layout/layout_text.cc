@@ -439,7 +439,11 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
     const auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children) {
-      // TODO(layout-dev): We should have NG version of |EllipsisRectForBox()|
+      if (UNLIKELY(option != ClippingOption::kNoClipping)) {
+        DCHECK_EQ(option, ClippingOption::kClipToEllipsis);
+        if (child.fragment->IsHiddenForPaint())
+          continue;
+      }
       yield(child.RectInContainerBox());
     }
     return;

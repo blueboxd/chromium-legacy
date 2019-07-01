@@ -54,11 +54,19 @@ LayoutRectOutsets BoxStrutToLayoutRectOutsets(
       LayoutUnit(box_strut.bottom), LayoutUnit(box_strut.left));
 }
 
-bool FragmentVisibleToHitTestRequest(const NGPaintFragment& fragment,
+inline bool IsVisibleToPaint(const NGPhysicalFragment& fragment,
+                             const ComputedStyle& style) {
+  return !fragment.IsHiddenForPaint() &&
+         style.Visibility() == EVisibility::kVisible;
+}
+
+bool FragmentVisibleToHitTestRequest(const NGPaintFragment& paint_fragment,
                                      const HitTestRequest& request) {
-  return fragment.Style().Visibility() == EVisibility::kVisible &&
+  const NGPhysicalFragment& fragment = paint_fragment.PhysicalFragment();
+  const ComputedStyle& style = fragment.Style();
+  return IsVisibleToPaint(fragment, style) &&
          (request.IgnorePointerEventsNone() ||
-          fragment.Style().PointerEvents() != EPointerEvents::kNone);
+          style.PointerEvents() != EPointerEvents::kNone);
 }
 
 // Hit tests inline ancestor elements of |fragment| who do not have their own
@@ -231,7 +239,7 @@ void NGBoxFragmentPainter::PaintObject(
   const PaintPhase paint_phase = paint_info.phase;
   const NGPhysicalBoxFragment& physical_box_fragment = PhysicalFragment();
   const ComputedStyle& style = box_fragment_.Style();
-  bool is_visible = style.Visibility() == EVisibility::kVisible;
+  bool is_visible = IsVisibleToPaint(physical_box_fragment, style);
 
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
     if (!suppress_box_decoration_background && is_visible)
@@ -408,8 +416,9 @@ void NGBoxFragmentPainter::PaintFloats(const PaintInfo& paint_info) {
 void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
                                      const PhysicalOffset& paint_offset) {
   DCHECK_EQ(PaintPhase::kMask, paint_info.phase);
-  const ComputedStyle& style = box_fragment_.Style();
-  if (!style.HasMask() || style.Visibility() != EVisibility::kVisible)
+  const NGPhysicalBoxFragment& physical_box_fragment = PhysicalFragment();
+  const ComputedStyle& style = physical_box_fragment.Style();
+  if (!style.HasMask() || !IsVisibleToPaint(physical_box_fragment, style))
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
@@ -790,6 +799,8 @@ void NGBoxFragmentPainter::PaintInlineChildren(
 
   for (const NGPaintFragment* child : inline_children) {
     const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
+    if (child_fragment.IsHiddenForPaint())
+      continue;
     if (child_fragment.IsFloating())
       continue;
 

@@ -123,6 +123,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   AnimationHost* animation_host() const { return animation_host_.get(); }
 
+  void SetUseLayerList() { settings_.use_layer_lists = true; }
+
  protected:
   LayerTreeTest();
 

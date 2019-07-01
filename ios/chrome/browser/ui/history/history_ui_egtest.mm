@@ -379,6 +379,12 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 // Tests display and selection of 'Copy URL' in a context menu on a history
 // entry.
 - (void)testContextMenuCopy {
+  // TODO(crbug.com/979728): Disabled on iOS13 since copy/paste is not working
+  // in the Simulator.
+  if (@available(iOS 13.0, *)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 13");
+  }
+
   ProceduralBlock clearPasteboard = ^{
     [[UIPasteboard generalPasteboard] setURLs:nil];
   };

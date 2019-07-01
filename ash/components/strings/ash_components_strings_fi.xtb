@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Siirry edelliselle välilehdelle</translation>
 <translation id="2194790690264064655">Paina <ph name="CTRL" /> ja klikkaa linkkiä.</translation>
 <translation id="2246352309084894470">Avaa/sulje koko näytön käynnistysohjelma</translation>
+<translation id="2354531887393764880">piste</translation>
 <translation id="2382644247745281995">Ei tueta nykyisellä näppäimistöasettelulla</translation>
 <translation id="2397416548179033562">Näytä Chrome-valikko</translation>
 <translation id="2424073332829844142">Ota Caps Lock käyttöön ja poista se käytöstä</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Avaa hyllyssä korostettuna oleva kohde</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1–8</translation>
 <translation id="3837047332182291558">Lisää näppäimistön kirkkautta (jos se on taustavalaistu)</translation>
+<translation id="3949671998904569433">pilkku</translation>
 <translation id="3976863468609830880">Klikkaa hyllyn viimeistä kuvaketta</translation>
 <translation id="3994783594793697310">Nollaa näytön zoomaustaso</translation>
 <translation id="4026843240379844265">Siirrä aktiivinen ikkuna näytöltä toiselle</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Vaihtaa seuraavaan käytettävissä olevaan syöttötapaan</translation>
 <translation id="743754632698445141">Irrottaa sovelluksen</translation>
 <translation id="7439718573248533901">Poista seuraava kirjain (eteenpäin poistaminen)</translation>
+<translation id="7500368597227394048">yhdysmerkki</translation>
 <translation id="7611271430932669992">Aktivoi ponnahdus- ja valintaikkunat</translation>
 <translation id="766326951329901120">Liitä leikepöydän sisältö vain teksti ‑muodossa</translation>
+<translation id="7703010453515335249">vasemmanpuoleinen hakasulje</translation>
 <translation id="7724603315864178912">Leikkaa</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, sitten <ph name="SPACE" /> tai <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Avaa tiedosto selaimessa</translation>
-<translation id="7917881398263220094">Pysäytä nykyisen sivun lataaminen</translation>
 <translation id="7952165122793773711">Vaihtele välilehtien 1–8 välillä</translation>
 <translation id="8026334261755873520">Poista selaustiedot</translation>
 <translation id="8130528849632411619">Siirry dokumentin alkuun</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> tai <ph name="E" /></translation>
 <translation id="8232835244134740473">Aktivoi vuorotellen: tila-alue (jossa tilikuvasi näkyy), Käynnistysohjelma, osoitepalkki, kirjanmerkkipalkki (jos näkyvissä), avoinna oleva verkkosivu ja latauspalkki (jos näkyvissä)</translation>
 <translation id="8234414138295101081">Kierrä näyttöä 90 astetta</translation>
+<translation id="8241665785394195545">oikeanpuoleinen hakasulje</translation>
 <translation id="8264941229485248811">Näyttää tai piilottaa Kehittäjien työkalut ‑tarkastajan</translation>
 <translation id="836869401750819675">Avaa Lataukset-sivu</translation>
 <translation id="8388247778047144397">Vedä linkki välilehtirivin tyhjään kohtaan.</translation>

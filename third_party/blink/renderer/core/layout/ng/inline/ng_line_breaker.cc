@@ -124,7 +124,7 @@ scoped_refptr<const NGPhysicalTextFragment> CreateHyphenFragment(
   HarfBuzzShaper shaper(hyphen_string);
   scoped_refptr<ShapeResult> hyphen_result =
       shaper.Shape(&style.GetFont(), direction);
-  NGTextFragmentBuilder builder(node, writing_mode);
+  NGTextFragmentBuilder builder(writing_mode);
   builder.SetText(item.GetLayoutObject(), hyphen_string, &style,
                   /* is_ellipsis_style */ false,
                   ShapeResultView::Create(hyphen_result.get()));

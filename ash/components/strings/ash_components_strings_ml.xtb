@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">മുമ്പത്തെ ടാബിലേക്ക് പോവുക</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> അമർത്തി ഒരു ലിങ്ക് ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2246352309084894470">പൂർണ്ണസ്ക്രീൻ ലോഞ്ചർ തുറക്കുക/അവസാനിപ്പിക്കുക</translation>
+<translation id="2354531887393764880">വിരാമം</translation>
 <translation id="2382644247745281995">നിലവിലെ കീബോഡ് ലേഔട്ടിൽ പിന്തുണയ്ക്കുന്നില്ല</translation>
 <translation id="2397416548179033562">Chrome മെനു കാണിക്കുക</translation>
 <translation id="2424073332829844142">ക്യാപ്‌സ് ലോക്ക് ഓണാക്കുക, ഓഫാക്കുക</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">നിങ്ങളുടെ ഷെൽഫിലെ ഹൈലൈറ്റ് ചെയ്ത ഇനം തുറക്കുക</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 മുതൽ 8 വരെ</translation>
 <translation id="3837047332182291558">കീബോഡ് കൂടുതൽ തെളിച്ചമുള്ളതാക്കുക (ബാക്ക്‌ലൈറ്റ് കീബോഡുകൾക്കായി മാത്രം)</translation>
+<translation id="3949671998904569433">കോമ</translation>
 <translation id="3976863468609830880">നിങ്ങളുടെ ഷെൽഫിലെ അവസാനത്തെ ചിഹ്നം ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="3994783594793697310">ഡിസ്‌പ്ലേ സൂം നില പുനഃസജ്ജീകരിക്കുക</translation>
 <translation id="4026843240379844265">ഡിസ്‌പ്ലേകൾക്ക് ഇടയിൽ സജീവ വിൻഡോകൾ നീക്കുക</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">ലഭ്യമായ അടുത്ത ഇൻപുട്ട് രീതിയിലേക്ക് മാറുക</translation>
 <translation id="743754632698445141">ഒരു ആപ്പ് അൺപിൻ ചെയ്യുക</translation>
 <translation id="7439718573248533901">അടുത്ത അക്ഷരം ഇല്ലാതാക്കുക (ഫോർവേഡ് ഡിലീറ്റ്)</translation>
+<translation id="7500368597227394048">ഹൈഫൺ</translation>
 <translation id="7611271430932669992">പോപ്-അപ്പുകളിലേക്കും ഡയലോഗുകളിലേക്കും ഫോക്കസ് നീക്കുക</translation>
 <translation id="766326951329901120">ക്ലിപ്‌ബോർഡിൽ നിന്നുള്ള ഉള്ളടക്കം സാധാരണ വാചകമായി ഒട്ടിക്കുക</translation>
+<translation id="7703010453515335249">ഇടത് ബ്രാക്കറ്റ്</translation>
 <translation id="7724603315864178912">മുറിക്കുക</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="SPACE" /> അല്ലെങ്കിൽ <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">ബ്രൗസറിൽ ഒരു ഫയൽ തുറക്കുക</translation>
-<translation id="7917881398263220094">നിങ്ങളുടെ നിലവിലെ പേജ് ലോഡ് ചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="7952165122793773711">1 മുതൽ 8 വരെയുള്ള ടാബുകളിൽ പോവുക</translation>
 <translation id="8026334261755873520">ബ്രൌസിംഗ് ഡാറ്റ മായ്‌ക്കുക</translation>
 <translation id="8130528849632411619">ഡോക്യുമെന്റിന്റെ തുടക്കത്തിലേക്ക് പോവുക</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> അല്ലെങ്കിൽ <ph name="E" /></translation>
 <translation id="8232835244134740473">ഇനിപ്പറയുന്നവയുടെ ഇടയിൽ ഫോക്കസ് മാറ്റുക: സ്‌റ്റാറ്റസ് ഏരിയ (നിങ്ങളുടെ അക്കൗണ്ട് ചിത്രം ദൃശ്യമാകുന്ന സ്ഥലം) ലോഞ്ചർ, വിലാസ ബാർ, ബുക്ക്‌മാർക്ക് ബാർ (ദൃശ്യമാണെങ്കിൽ), തുറന്നിരിക്കുന്ന വെബ്‌പേജ്, ഡൗണ്‍ലോഡ് വിവരങ്ങളുടെ ബാർ (ദൃശ്യമാണെങ്കിൽ).</translation>
 <translation id="8234414138295101081">സ്‌ക്രീൻ 90 ഡിഗ്രി തിരിക്കുക</translation>
+<translation id="8241665785394195545">വലത് ബ്രാക്കറ്റ്</translation>
 <translation id="8264941229485248811">ഡെവലപ്പര്‍ ടൂൾസ് ഇൻസ്‌പെക്‌ടർ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
 <translation id="836869401750819675">ഡൗൺലോഡുകളുടെ പേജ് തുറക്കുക</translation>
 <translation id="8388247778047144397">ടാബ് സ്‌ട്രിപ്പിലെ ശൂന്യമായ ഏരിയയിലേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>

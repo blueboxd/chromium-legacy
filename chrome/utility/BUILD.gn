@@ -210,7 +210,7 @@ static_library("utility") {
     deps += [ "//chrome/services/media_gallery_util:lib" ]
   }
 
-  if (enable_isolated_xr_service) {
+  if (enable_vr && !is_android) {
     deps += [
       "//chrome/services/isolated_xr_device:lib",
       "//device/vr/public/mojom",

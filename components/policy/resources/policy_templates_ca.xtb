@@ -311,6 +311,11 @@
           Si aquesta política es desactiva o no s'estableix, la configuració dels comptes de Kerberos es desactivarà. No es pot afegir cap compte de Kerberos i no es pot fer servir l'autenticació de Kerberos. Tots els comptes de Kerberos existents i totes les contrasenyes emmagatzemades se suprimiran.</translation>
 <translation id="1561424797596341174">La política substitueix les compilacions de depuració de l'amfitrió d'accés remot</translation>
 <translation id="1561967320164410511">U2F més extensions per al testimoni individual</translation>
+<translation id="1566329065312331399">
+      Si aquesta política s'estableix en "false", el dispositiu no podrà activar Powerwash.
+      Si s'estableix en "true", el dispositiu podrà activar Powerwash.
+      Si es deixa sense establir, el valor predeterminat és "false" i, per tant, el dispositiu no podrà activar Powerwash.
+      </translation>
 <translation id="1574554504290354326">Aquesta opció de configuració està obsoleta, però pots utilitzar SafeBrowsingExtendedReportingEnabled. Activar o desactivar aquesta política és el mateix que establir SafeBrowsingExtendedReportingOptInAllowed en "false".
 
       Si aquesta política s'estableix en "false", els usuaris no podran decidir si volen que s'enviï informació del sistema i contingut de les pàgines als servidors de Google. Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris podran enviar aquestes dades a Navegació segura per ajudar a detectar aplicacions i llocs web perillosos.
@@ -343,6 +348,7 @@
 
       Advertiment: no et recomanem delegar el control de la versió de <ph name="PRODUCT_OS_NAME" /> a una aplicació de quiosc, ja que podria impedir que el dispositiu rebi actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es delega el control de la versió de <ph name="PRODUCT_OS_NAME" />, es pot posar els usuaris en perill.</translation>
 <translation id="1675002386741412210">Compatible amb:</translation>
+<translation id="1700811900332333712">Permet que el dispositiu sol·liciti Powerwash</translation>
 <translation id="1704516734140344991">Configura la disponibilitat i el comportament de la funcionalitat d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Les opcions de configuració individuals es poden especificar a les propietats de JSON:
@@ -1847,6 +1853,14 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat de dur a terme una actualització. En dispositius amb <ph name="PRODUCT_OS_NAME" />, es mostra una notificació de reinici a la safata del sistema de conformitat amb la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadors <ph name="PRODUCT_NAME" />, el menú d'aplicacions canvia un cop transcorregut un terç del període de notificació per indicar que cal dur a terme un reinici. Aquesta notificació canvia de color quan han transcorregut dos terços del període de notificació i, de nou, quan ha transcorregut el període de notificació complet. Les altres notificacions activades per la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> segueixen aquest mateix patró.
 
       Si la política no s'estableix, s'utilitza el període predeterminat de 345.600.000 mil·lisegons (4 dies) per a dispositius amb <ph name="PRODUCT_OS_NAME" /> i 604.800.000 mil·lisegons (1 setmana) per a <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Aquesta configuració, SitePerProcess, es pot utilitzar per impedir que els usuaris desactivin el comportament predeterminat de l'aïllament de tots els llocs web. Tingues en compte que la política IsolateOrigins també pot ser útil per aïllar altres orígens amb més precisió.
+      Si la política s'activa, els usuaris no podran desactivar el comportament predeterminat quan cada lloc web s'executi en el seu propi procés.
+      Si la política no es configura o es desactiva, l'usuari podrà desactivar l'aïllament de lloc web (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).  Si la política es desactiva o no es configura, l'aïllament de lloc web no es desactivarà.
+      A <ph name="PRODUCT_OS_NAME" /> versió 76 i anteriors, també es recomana establir la política <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> del dispositiu en el mateix valor. Si els valors especificats per les dues polítiques no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
+
+      NOTA: aquesta política no s'aplica a Android. Per activar SitePerProcess a Android, fes servir la configuració de la política SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin la informació de targetes de crèdit automàticament als formularis web amb dades emmagatzemades anteriorment.
 
       Si es desactiva aquesta opció, Emplenament automàtic mai no suggerirà ni emplenarà la informació de targetes de crèdit, ni tampoc desarà la informació addicional de targetes de crèdit que l'usuari enviï mentre navega pel web.
@@ -1985,6 +1999,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5148753489738115745">Us permet especificar els paràmetres especials que s'utilitzen quan <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no definiu aquesta política, s'utilitzarà la línia d'ordres predeterminada.</translation>
+<translation id="5152787786897382519">Tant Chromium com Google Chrome tenen alguns grups de polítiques que depenen els uns dels altres per proporcionar control sobre una funció. Aquests conjunts es representen amb els grups de polítiques següents. Com que les polítiques poden tenir diverses fonts, només s'aplicaran els valors que procedeixin de la font amb més prioritat. Els valors que procedeixin d'una font amb menys prioritat del mateix grup s'ignoraran. L'ordre de prioritat està definit a <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">La freqüència, en mil·lisegons, amb què s'envien paquets de xarxa de supervisió.
 
       Si aquesta política no s'estableix, l'interval predeterminat és de 3 minuts. L'interval mínim és de 30 segons i l'interval màxim és de 24 hores. Tots els valors que no es trobin dins d'aquest interval es restringiran al límit respectiu.</translation>
@@ -2425,6 +2440,7 @@ Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca d
 <translation id="5983708779415553259">Comportament predeterminat per a llocs no inclosos en paquets de contingut</translation>
 <translation id="5997543603646547632">Ús del rellotge de 24 hores de manera predeterminada</translation>
 <translation id="5997846976342452720">Indica si s'ha de desactivar el cercador de connectors (política obsoleta)</translation>
+<translation id="5998198091336830580">Aquesta política forma part del grup atòmic següent (només s'apliquen les polítiques de la font de prioritat més alta present al grup):</translation>
 <translation id="6017568866726630990">Mostra el diàleg d'impressió del sistema en comptes de la previsualització d'impressió.
 
 Si s'activa aquest paràmetre, <ph name="PRODUCT_NAME" /> obrirà el diàleg d'impressió del sistema en comptes de la previsualització integrada quan un usuari sol·liciti la impressió d'una pàgina.
@@ -3111,6 +3127,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política s'estableix en "false", no es recull informació que es pugui utilitzar per identificar els ordinadors.
 
       Aquesta política només funciona quan l'extensió <ph name="CHROME_REPORTING_EXTENSION_NAME" /> està activada i l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que s'aplica a la sessió de l'usuari. Es recomana que les dues polítiques tinguin el mateix valor. Si els valors no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
+      </translation>
 <translation id="737655323154569539">Restringeix la mida de la pàgina d'impressió. Si la política no es defineix o es deixa buida, no s'aplica cap restricció.</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
@@ -3391,6 +3410,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Consulta també les polítiques CookiesAllowedForUrls i CookiesSessionOnlyForUrls. Tingues en compte que no pot haver-hi conflictes entre els patrons d'URL d'aquestes tres polítiques. No s'ha especificat quina té prioritat.</translation>
 <translation id="8099880303030573137">Retard d'inactivitat quan s'utilitza bateria</translation>
+<translation id="8101381354936029836">Grup atòmic de polítiques:</translation>
 <translation id="8102913158860568230">Configuració predeterminada de l'activitat multimèdia</translation>
 <translation id="8104186956182795918">Permet definir si els llocs web poden mostrar imatges. Pots permetre que tots els llocs web mostrin imatges o establir que cap no en mostri.
 
@@ -3586,6 +3606,15 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desactiva el desament de l'historial de navegació</translation>
 <translation id="8499172469244085141">Configuració predeterminada (els usuaris la poden sobreescriure)</translation>
+<translation id="849962487677588458">Aquesta política es considera obsoleta. Està previst que se suprimeixi a Chrome 78 i que no se substitueixi.
+
+      La política admet HTTP/0.9 en ports que no siguin 80 per a HTTP i 443 per a HTTPS.
+
+      Aquesta política està desactivada de manera predeterminada i, si s'activa, els usuaris es poden trobar amb el problema de seguretat https://crbug.com/600352.
+
+      Aquesta política està dissenyada perquè les empreses puguin migrar els servidors que ja tenen a HTTP/0.9. Se suprimirà en el futur.
+
+      Si aquesta política no s'estableix, HTTP/0.9 es desactivarà en tots els ports no predeterminats.</translation>
 <translation id="8507835864888987300">Defineix una versió de destinació per a les actualitzacions automàtiques.
 
       Especifica el prefix de la versió de destinació a la qual s'ha d'actualitzar <ph name="PRODUCT_OS_NAME" />. Si el dispositiu està executant una versió anterior al prefix especificat, s'actualitzarà a la darrera versió que tingui el prefix en qüestió. Si el dispositiu ja disposa d'una versió posterior, els efectes dependran del valor de la política <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. El format del prefix depèn del component, tal com es mostra a l'exemple següent:

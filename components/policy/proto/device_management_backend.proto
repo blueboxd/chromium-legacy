@@ -592,6 +592,18 @@ message PolicyData {
   // http://google3/ccc/hosted/policies/services/common/sso_settings.proto?l=48&rcl=241246111
   // This field is currently only set for User Policy response.
   optional string change_password_uri = 32;
+
+  // This field is used for asking client to perform some actions. For instance,
+  // server asks client to re-upload enrollment certificate. In long term, new
+  // added field which asks client to perform an acion in policy data should be
+  // put in ClientActionRequired message.
+  optional ClientActionRequired client_action_required = 33;
+}
+
+message ClientActionRequired {
+  // Whether device needs to upload an enterprise enrollment certificate to
+  // cloud.
+  optional bool enrollment_certificate_needed = 1;
 }
 
 message PolicyFetchResponse {

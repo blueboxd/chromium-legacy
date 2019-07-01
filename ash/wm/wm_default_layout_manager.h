@@ -12,18 +12,11 @@
 namespace ash {
 namespace wm {
 
-// A layout manager that places children's layer at the physical pixel
-// boundaries.
-// TODO(malaykeshav): This is essentially a skeleton class, so remove it
-// alltogether.
+// The default window layout manager used by ash.
 class ASH_EXPORT WmDefaultLayoutManager : public aura::LayoutManager {
  public:
   WmDefaultLayoutManager();
   ~WmDefaultLayoutManager() override;
-
-  // Sets WmDefaultLayoutManager as the LayoutManager on the appropriate
-  // descendants of |window|.
-  static void InstallOnContainers(aura::Window* window);
 
  protected:
   // Overridden from aura::LayoutManager:

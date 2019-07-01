@@ -87,7 +87,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   if (Shell::Get()->overview_controller()->InOverviewSession()) {
     // End overview mode.
     Shell::Get()->overview_controller()->EndOverview(
-        OverviewSession::EnterExitOverviewType::kWindowsMinimized);
+        OverviewSession::EnterExitOverviewType::kSlideOutExit);
     return true;
   }
 
@@ -124,7 +124,7 @@ void HomeScreenController::OnOverviewModeStarting() {
                      ->overview_controller()
                      ->overview_session()
                      ->enter_exit_overview_type() ==
-                 OverviewSession::EnterExitOverviewType::kWindowsMinimized;
+                 OverviewSession::EnterExitOverviewType::kSlideInEnter;
   home_screen_presenter_.ScheduleOverviewModeAnimation(true /* start */,
                                                        animate);
 }
@@ -138,7 +138,7 @@ void HomeScreenController::OnOverviewModeEnding(
   // here.
   use_slide_to_exit_overview_ =
       overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kWindowsMinimized;
+      OverviewSession::EnterExitOverviewType::kSlideOutExit;
 }
 
 void HomeScreenController::OnOverviewModeEndingAnimationComplete(

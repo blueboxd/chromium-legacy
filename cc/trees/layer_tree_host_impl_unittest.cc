@@ -13429,9 +13429,7 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
   CreateScrollAndContentsLayers(host_impl_->pending_tree(),
                                 gfx::Size(100, 100));
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
-  LOG(ERROR) << "ACTIVATE SYNC TREE";
   host_impl_->ActivateSyncTree();
-  LOG(ERROR) << "DONE ACTIVATE SYNC TREE";
   DrawFrame();
 
   CreatePendingTree();
@@ -13457,9 +13455,7 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
           page_scale_layer->transform_tree_index());
   EXPECT_EQ(pending_tree_node->post_local_scale_factor, 2.f);
 
-  LOG(ERROR) << "2 ACTIVATE SYNC TREE";
   host_impl_->ActivateSyncTree();
-  LOG(ERROR) << "DONE 2 ACTIVATE SYNC TREE";
   host_impl_->active_tree()->UpdateDrawProperties();
   active_tree_node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(

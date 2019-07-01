@@ -209,6 +209,11 @@ Polymer({
     settings.setGlobalScrollTarget(this.$.container);
 
     const scrollToTop = top => new Promise(resolve => {
+      if (this.$.container.scrollTop === top) {
+        resolve();
+        return;
+      }
+
       // When transitioning  back to main page from a subpage on ChromeOS, using
       // 'smooth' scroll here results in the scroll changing to whatever is last
       // value of |top|. This happens even after setting the scroll position the

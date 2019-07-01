@@ -244,6 +244,18 @@ void ExecuteSessionCommandOnSessionThread(
   if (session->w3c_compliant && !w3c_standard_command) {
     status = Status(kUnknownCommand,
                     "Cannot call non W3C standard command while in W3C mode");
+    if (IsVLogOn(0)) {
+      std::string result;
+      result = "ERROR " + status.message();
+      if (!session->driver_log ||
+          session->driver_log->min_level() != Log::Level::kOff) {
+        // Note: ChromeDriver log-replay depends on the format of this
+        // logging. see chromedriver/log_replay/client_replay.py
+        VLOG(0) << "[" << session->id << "] "
+                << "RESPONSE " << command_name
+                << (result.length() ? " " + result : "");
+      }
+    }
   } else {
     // Only run the command if we were able to notify all listeners
     // successfully.

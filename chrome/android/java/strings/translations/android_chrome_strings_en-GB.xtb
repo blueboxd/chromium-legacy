@@ -61,7 +61,6 @@
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
 <translation id="1386674309198842382">Active <ph name="LAST_UPDATED" /> days ago</translation>
-<translation id="1389974829397082527">No bookmarks here</translation>
 <translation id="1397811292916898096">Search with <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">‘Do Not Track’</translation>
@@ -186,6 +185,7 @@
 <translation id="2259659629660284697">Export passwords…</translation>
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2286841657746966508">Billing address</translation>
+<translation id="2289270750774289114">Ask when a site wants to discover nearby Bluetooth devices (recommended)</translation>
 <translation id="230115972905494466">No compatible devices found</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2321086116217818302">Preparing passwords…</translation>
@@ -270,6 +270,7 @@
 <translation id="2900528713135656174">Create event</translation>
 <translation id="2902702728133930130">Chrome failed during start-up with an unexpected error.</translation>
 <translation id="290376772003165898">Page is not in <ph name="LANGUAGE" />?</translation>
+<translation id="2904414404539560095">List of devices to share a tab with, opened at full height.</translation>
 <translation id="2910701580606108292">Ask before allowing sites to play protected content</translation>
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2923908459366352541">Name is invalid</translation>
@@ -328,6 +329,7 @@
 <translation id="3350687908700087792">Close all incognito tabs</translation>
 <translation id="3353615205017136254">Lite page provided by Google. Tap the load original button to load the original page.</translation>
 <translation id="3367813778245106622">Sign in again to start sync</translation>
+<translation id="3374023511497244703">Your bookmarks, history, passwords and other Chrome data will no longer be synced to your Google account</translation>
 <translation id="3384347053049321195">Share image</translation>
 <translation id="3386292677130313581">Ask before allowing sites to know your location (recommended)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> download failed due to file system errors.</translation>
@@ -358,7 +360,6 @@
 <translation id="3632295766818638029">Unmask password</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3658159451045945436">Resetting wipes your history of data savings, including the list of visited sites.</translation>
-<translation id="3662546969139119822">No history here</translation>
 <translation id="3663367437272849150">Group <ph name="NUM_SELECTED" /> tabs.</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
@@ -418,6 +419,7 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="410351446219883937">Auto-play</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
+<translation id="4135200667068010335">List of devices with which to share a tab is closed.</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4169535189173047238">Don't allow</translation>
@@ -439,7 +441,6 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
-<translation id="4262028915562328938">Sync error occurred, tap to get details.</translation>
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
@@ -766,6 +767,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6538442820324228105">Downloaded <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Select a tab to beam</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
+<translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6560414384669816528">Search with Sogou</translation>
 <translation id="6566259936974865419">Chrome has saved you <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Always allow</translation>
@@ -795,8 +797,10 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="671481426037969117">Your <ph name="FQDN" /> timer ran out. It will start again tomorrow.</translation>
 <translation id="6738867403308150051">Downloading…</translation>
 <translation id="6746124502594467657">Move down</translation>
+<translation id="6751888224264752704">Also clear this Chrome data from this device</translation>
 <translation id="6766622839693428701">Swipe down to close.</translation>
 <translation id="6766758767654711248">Tap to go to site</translation>
+<translation id="6767294960381293877">List of devices to share a tab with, opened at half height.</translation>
 <translation id="6782111308708962316">Prevent third-party websites from saving and reading cookie data</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="679325081238418596">Get your bookmarks, history, passwords and other settings on all your devices</translation>
@@ -812,7 +816,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tabs closed</translation>
 <translation id="6864459304226931083">Download image</translation>
 <translation id="6865313869410766144">Auto-fill form data</translation>
-<translation id="6868088497967843822">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Unlock to copy your password</translation>
 <translation id="6896758677409633944">Copy</translation>
@@ -829,7 +832,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6979737339423435258">All time</translation>
 <translation id="6980462514016882061">Google may use your browsing history to personalise Search, ads and other Google services</translation>
 <translation id="6981982820502123353">Accessibility</translation>
-<translation id="6985347914332179298">No downloads here</translation>
 <translation id="6989267951144302301">Couldn’t download</translation>
 <translation id="6990079615885386641">Get the app from the Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
@@ -887,7 +889,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7403691278183511381">Chrome First Run Experience</translation>
 <translation id="741204030948306876">Yes, I'm in</translation>
 <translation id="7413229368719586778">Start date <ph name="DATE" /></translation>
-<translation id="7418565925463285788">Group tabs...</translation>
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7423538860840206698">Blocked from reading clipboard</translation>
 <translation id="7431991332293347422">Control how your browsing history is used to personalise Search and more</translation>
@@ -1026,6 +1027,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8349013245300336738">Sort by amount of data used</translation>
 <translation id="8364299278605033898">See popular websites</translation>
 <translation id="8364603787714420828">Un-select <ph name="TAB_TITLE" /> tab.</translation>
+<translation id="8368027906805972958">Unknown or unsupported device (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8378714024927312812">Managed by your organisation</translation>
@@ -1122,6 +1124,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB downloaded</translation>
 <translation id="9100505651305367705">Offer to show articles in simplified view, when supported</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
+<translation id="9104217018994036254">List of devices to share a tab with.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>

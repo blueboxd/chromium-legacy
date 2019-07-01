@@ -3144,6 +3144,83 @@ TEST_F(SSLClientSocketTest, SessionResumption) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
 }
 
+namespace {
+
+// FakePeerAddressSocket wraps a |StreamSocket|, forwarding all calls except
+// that it provides a given answer for |GetPeerAddress|.
+class FakePeerAddressSocket : public WrappedStreamSocket {
+ public:
+  FakePeerAddressSocket(std::unique_ptr<StreamSocket> socket,
+                        const IPEndPoint& address)
+      : WrappedStreamSocket(std::move(socket)), address_(address) {}
+  ~FakePeerAddressSocket() override {}
+
+  int GetPeerAddress(IPEndPoint* address) const override {
+    *address = address_;
+    return OK;
+  }
+
+ private:
+  const IPEndPoint address_;
+};
+
+}  // namespace
+
+TEST_F(SSLClientSocketTest, SessionResumption_RSA) {
+  for (bool use_rsa : {false, true}) {
+    SCOPED_TRACE(use_rsa);
+
+    SpawnedTestServer::SSLOptions ssl_options;
+    ssl_options.key_exchanges =
+        use_rsa ? SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA
+                : SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+    ASSERT_TRUE(StartTestServer(ssl_options));
+    SSLConfig ssl_config;
+    context_.ssl_client_session_cache->Flush();
+
+    for (int i = 0; i < 3; i++) {
+      SCOPED_TRACE(i);
+
+      std::unique_ptr<StreamSocket> transport(
+          new TCPClientSocket(addr(), nullptr, &log_, NetLogSource()));
+      TestCompletionCallback callback;
+      ASSERT_THAT(callback.GetResult(transport->Connect(callback.callback())),
+                  IsOk());
+      // The third handshake sees a different destination IP address.
+      IPEndPoint fake_peer_address(IPAddress(1, 1, 1, i == 2 ? 2 : 1), 443);
+      auto socket = std::make_unique<FakePeerAddressSocket>(
+          std::move(transport), fake_peer_address);
+      std::unique_ptr<SSLClientSocket> sock = CreateSSLClientSocket(
+          std::move(socket), HostPortPair("example.com", 443), ssl_config);
+      ASSERT_THAT(callback.GetResult(sock->Connect(callback.callback())),
+                  IsOk());
+      SSLInfo ssl_info;
+      ASSERT_TRUE(sock->GetSSLInfo(&ssl_info));
+      sock.reset();
+
+      switch (i) {
+        case 0:
+          // Initial handshake should be a full handshake.
+          EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+          break;
+        case 1:
+          // Second handshake should resume.
+          EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+          break;
+        case 2:
+          // Third handshake gets a different IP address and, if the
+          // session used RSA key exchange, it should not resume.
+          EXPECT_EQ(
+              use_rsa ? SSLInfo::HANDSHAKE_FULL : SSLInfo::HANDSHAKE_RESUME,
+              ssl_info.handshake_type);
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
+  }
+}
+
 // Tests that ALPN works with session resumption.
 TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
   SpawnedTestServer::SSLOptions ssl_options;

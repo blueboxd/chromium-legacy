@@ -3518,29 +3518,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     return scroll_status;
   }
 
-  if (layer && !layer->non_fast_scrollable_region().IsEmpty()) {
-    bool clipped = false;
-    gfx::Transform inverse_screen_space_transform(
-        gfx::Transform::kSkipInitialization);
-    if (!screen_space_transform.GetInverse(&inverse_screen_space_transform)) {
-      // TODO(shawnsingh): We shouldn't be applying a projection if screen space
-      // transform is uninvertible here. Perhaps we should be returning
-      // SCROLL_ON_MAIN_THREAD in this case?
-    }
-
-    gfx::PointF hit_test_point_in_layer_space = MathUtil::ProjectPoint(
-        inverse_screen_space_transform, screen_space_point, &clipped);
-    if (!clipped && layer->non_fast_scrollable_region().Contains(
-                        gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
-      TRACE_EVENT0("cc",
-                   "LayerImpl::tryScroll: Failed NonFastScrollableRegion");
-      scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
-      scroll_status.main_thread_scrolling_reasons =
-          MainThreadScrollingReason::kNonFastScrollableRegion;
-      return scroll_status;
-    }
-  }
-
   if (!scroll_node->scrollable) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
     scroll_status.thread = InputHandler::SCROLL_IGNORED;
@@ -3580,6 +3557,19 @@ static bool IsMainThreadScrolling(const InputHandler::ScrollStatus& status,
   return false;
 }
 
+base::flat_set<int> LayerTreeHostImpl::NonFastScrollableNodes(
+    const gfx::PointF& device_viewport_point) const {
+  base::flat_set<int> non_fast_scrollable_nodes;
+
+  const auto& non_fast_layers =
+      active_tree_->FindLayersHitByPointInNonFastScrollableRegion(
+          device_viewport_point);
+  for (const auto* layer : non_fast_layers)
+    non_fast_scrollable_nodes.insert(layer->scroll_tree_index());
+
+  return non_fast_scrollable_nodes;
+}
+
 ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     const gfx::PointF& device_viewport_point,
     LayerImpl* layer_impl,
@@ -3589,6 +3579,9 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
   DCHECK(main_thread_scrolling_reasons);
   *main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
+
+  const auto& non_fast_scrollable_nodes =
+      NonFastScrollableNodes(device_viewport_point);
 
   // Walk up the hierarchy and look for a scrollable layer.
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
@@ -3619,6 +3612,13 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
         return scroll_node;
       }
 
+      if (non_fast_scrollable_nodes.contains(scroll_node->id)) {
+        *scroll_on_main_thread = true;
+        *main_thread_scrolling_reasons =
+            MainThreadScrollingReason::kNonFastScrollableRegion;
+        return scroll_node;
+      }
+
       if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
           !impl_scroll_node) {
         impl_scroll_node = scroll_node;
@@ -3643,6 +3643,10 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     if (IsMainThreadScrolling(status, impl_scroll_node)) {
       *scroll_on_main_thread = true;
       *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
+    } else if (non_fast_scrollable_nodes.contains(impl_scroll_node->id)) {
+      *scroll_on_main_thread = true;
+      *main_thread_scrolling_reasons =
+          MainThreadScrollingReason::kNonFastScrollableRegion;
     }
   }
 

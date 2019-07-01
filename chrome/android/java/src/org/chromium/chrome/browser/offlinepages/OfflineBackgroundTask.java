@@ -100,9 +100,6 @@ public class OfflineBackgroundTask extends NativeBackgroundTask {
             Bundle taskExtras, Callback<Boolean> callback) {
         // Gather UMA data to measure how often the user's machine is amenable to background
         // loading when we wake to do a task.
-        long taskScheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(taskExtras);
-        OfflinePageUtils.recordWakeupUMA(context, taskScheduledTimeMillis);
-
         DeviceConditions deviceConditions = DeviceConditions.getCurrent(context);
         return bridge.startScheduledProcessing(deviceConditions, callback);
     }

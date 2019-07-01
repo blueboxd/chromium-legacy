@@ -90,9 +90,9 @@
 <translation id="197560921582345123">संपादित होऊ शकते</translation>
 <translation id="1984603991036629094">अर्मेनियन Phonetic कीबोर्ड</translation>
 <translation id="2001796770603320721">ड्राइव्ह मध्ये व्यवस्थापित करा</translation>
+<translation id="2009067268969781306">ड्राइव्ह फॉरमॅट त्यावर स्टोअर केलेला डेटा हटवेल. ही क्रिया पहिल्यासारखी केली जाऊ शकत नाही.</translation>
 <translation id="2028997212275086731">RAR संग्रहण</translation>
 <translation id="2046702855113914483">रामेन</translation>
-<translation id="204914487372604757">शॉर्टकट तयार करा </translation>
 <translation id="2070909990982335904">डॉटने प्रारंभ होणारी नावे सिस्टमसाठी आरक्षित आहेत. कृपया दुसरे नाव निवडा.</translation>
 <translation id="2079545284768500474">पहिल्यासारखे करा</translation>
 <translation id="2080010875307505892">सर्बियन कीबोर्ड</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">अरेबिक कीबोर्ड</translation>
 <translation id="4261901459838235729">Google सादरीकरण</translation>
 <translation id="4290535918735525311">Linux सह एक फोल्डर शेअर केला</translation>
+<translation id="42981349822642051">विस्तृत करा</translation>
 <translation id="4298972503445160211">डॅनिश कीबोर्ड</translation>
 <translation id="4299729908419173967">ब्राझिलियन</translation>
 <translation id="4309915981827077375">सामान्य माहिती</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">अधिक पहा...</translation>
 <translation id="5061708541166515394">तीव्रता</translation>
 <translation id="5068919226082848014">पिझ्झा</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> फाइल हटवल्या जातील</translation>
 <translation id="509429900233858213">एक एरर आली आहे.</translation>
 <translation id="5098629044894065541">हिब्रू</translation>
 <translation id="5123433949759960244">बास्केटबॉल</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS क्लाउड बॅकअप</translation>
 <translation id="5756666464756035725">हंगेरियन क्वर्टी कीबोर्ड</translation>
 <translation id="5771585441665576801">लिप्यंतरण (geia → γεια)</translation>
+<translation id="5776325638577448643">मिटवा आणि फॉरमॅट करा</translation>
 <translation id="57838592816432529">म्यूट करा</translation>
 <translation id="5788127256798019331">Play फायली</translation>
 <translation id="5790193330357274855">कझाक</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Linux अ‍ॅप्सना <ph name="FOLDER_NAME" /> फोल्डरमधील फायलींमध्ये बदल करण्याची परवानगी द्या</translation>
 <translation id="5892290200158927959">फ्रेंच बेपो कीबोर्ड</translation>
 <translation id="5911887972742538906">तुमच्या Linux ॲप्लिकेशनच्या इंस्टॉलेशन दरम्यान एरर आली आहे.</translation>
+<translation id="5912396950572065471">फॉरमॅट</translation>
 <translation id="5913638992615760742">कॉपी ऑपरेशन करता आले नाही, अनपेक्षित एरर: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux अ‍ॅप्सना तुमच्या Google ड्राइव्ह मधील फायलींमध्ये बदल करण्याची परवानगी द्या. बदल तुमच्या दुसर्‍या डिव्हाइसवर सिंक होतील.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> मध्ये उघडा</translation>
 <translation id="6199801702437275229">स्थान माहितीसाठी प्रतीक्षा करत आहे...</translation>
 <translation id="6205710420833115353">काही ऑपरेशनला अपेक्षेपेक्षा जास्त वेळ लागत आहे. तुम्ही त्यांना रद्द करू इच्छिता?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" /> फॉरमॅट करा</translation>
 <translation id="6227235786875481728">ही फाइल प्ले केली जाणे शक्य झाले नाही.</translation>
 <translation id="6248400709929739064">उपशीर्षके सुरू करा</translation>
 <translation id="6264347891387618177">लिप्यंतरण (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">यूएस प्रोग्रामर द्वोराक कीबोर्ड</translation>
 <translation id="7191454237977785534">या फॉरमॅटमध्ये फाइल सेव्ह करा</translation>
 <translation id="7222624196722476520">बल्गेरियन Phonetic कीबोर्ड</translation>
+<translation id="7238097264433196391">ड्राइव्हचे नाव</translation>
 <translation id="7248671827512403053">ॲप्लिकेशन</translation>
 <translation id="7268659760406822741">उपलब्ध सेवा</translation>
 <translation id="7283041136720745563">तुमचा Google ड्राइव्ह कोटा पुरेसा मोठा नाही.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">स्लोव्हेनियन</translation>
 <translation id="7982283708762922719">उंची</translation>
 <translation id="7987485481246785146">सोरानी कुर्दिश अरेबिक-आधारित कीबोर्ड</translation>
-<translation id="799547531016638432">शॉर्टकट काढून टाका</translation>
 <translation id="799923393800005025">पाहू शकते</translation>
 <translation id="8008366997883261463">कुत्रा</translation>
 <translation id="8028993641010258682">आकार</translation>

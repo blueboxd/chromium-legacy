@@ -76,7 +76,8 @@ class GridTabSwitcherMediator
     private final TabModelSelector mTabModelSelector;
     private final TabModelObserver mTabModelObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private final ObserverList<OverviewModeObserver> mObservers = new ObserverList<>();
+    private final ObserverList<GridTabSwitcher.GridOverviewModeObserver> mObservers =
+            new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
     private final TabGridDialogMediator.ResetHandler mTabGridDialogResetHandler;
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener =
@@ -318,12 +319,12 @@ class GridTabSwitcherMediator
     }
 
     @Override
-    public void addOverviewModeObserver(OverviewModeObserver observer) {
+    public void addOverviewModeObserver(GridTabSwitcher.GridOverviewModeObserver observer) {
         mObservers.addObserver(observer);
     }
 
     @Override
-    public void removeOverviewModeObserver(OverviewModeObserver observer) {
+    public void removeOverviewModeObserver(GridTabSwitcher.GridOverviewModeObserver observer) {
         mObservers.removeObserver(observer);
     }
 
@@ -365,15 +366,15 @@ class GridTabSwitcherMediator
 
     @Override
     public void startedShowing(boolean isAnimating) {
-        for (OverviewModeObserver observer : mObservers) {
-            observer.onOverviewModeStartedShowing(true);
+        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+            observer.startedShowing();
         }
     }
 
     @Override
     public void finishedShowing() {
-        for (OverviewModeObserver observer : mObservers) {
-            observer.onOverviewModeFinishedShowing();
+        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+            observer.finishedShowing();
         }
         setContentOverlayVisibility(false);
     }
@@ -381,15 +382,15 @@ class GridTabSwitcherMediator
     @Override
     public void startedHiding(boolean isAnimating) {
         setContentOverlayVisibility(true);
-        for (OverviewModeObserver observer : mObservers) {
-            observer.onOverviewModeStartedHiding(true, false);
+        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+            observer.startedHiding();
         }
     }
 
     @Override
     public void finishedHiding() {
-        for (OverviewModeObserver observer : mObservers) {
-            observer.onOverviewModeFinishedHiding();
+        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+            observer.finishedHiding();
         }
     }
 

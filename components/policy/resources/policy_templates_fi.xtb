@@ -364,6 +364,11 @@
           Jos käytäntö on poistettu käytöstä tai sitä ei ole määritetty, tiliasetukset eivät ole käytössä. Kerberos-tilejä ei voi lisätä eikä Kerberos-todennusta käyttää. Kaikki aiemmin lisätyt Kerberos-tilit ja tallennetut salasanat poistetaan.</translation>
 <translation id="1561424797596341174">Käytäntöjen ohitus etäkäytön isännän vianetsintäversioissa</translation>
 <translation id="1561967320164410511">U2F ja laajennukset, yksilöllinen todennus mahdollista</translation>
+<translation id="1566329065312331399">
+      Kun tämän käytännön arvoksi asetetaan epätosi, se ei salli laitteiden käynnistää Powerwashia.
+      Kun arvo on tosi, laitteet voivat käynnistää Powerwashin.
+      Jos käytäntöä ei ole määritetty, oletusarvo on epätosi, jolloin Powerwashin käynnistystä ei sallita.
+      </translation>
 <translation id="1574554504290354326">Tämä asetus on vanhentunut. Käytä tämän sijaan SafeBrowsingExtendedReportingEnabled-asetusta. SafeBrowsingExtendedReportingEnabled-asetuksen ottaminen käyttöön tai poistaminen käytöstä vastaa sitä, että SafeBrowsingExtendedReportingOptInAllowed-asetuksen arvoksi määritetään epätosi.
 
       Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi lähettää Googlen palvelimille tietoja järjestelmästä ja sivujen sisällöstä. Jos tämän asetuksen arvo on tosi tai sitä ei ole määritetty, käyttäjät voivat lähettää Selaussuojalle tietoja järjestelmästä ja sivujen sisällöstä vaarallisten sovellusten ja sivustojen tunnistamiseksi.
@@ -405,6 +410,7 @@
 
       Varoitus: emme suosittele <ph name="PRODUCT_OS_NAME" /> ‑version hallinnan antamista kioskisovellukselle, sillä tämä voi estää laitetta saamasta ohjelmistopäivityksiä ja kriittisiä tietoturvapäivityksiä. Jos <ph name="PRODUCT_OS_NAME" /> ‑version hallinta annetaan sovellukselle, käyttäjät voivat vaarantua.</translation>
 <translation id="1675002386741412210">Tuettu kohteissa:</translation>
+<translation id="1700811900332333712">Anna laitteen pyytää Powerwashia</translation>
 <translation id="1704516734140344991">Määrittää <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivitystoiminnon saatavuuden ja toiminnan.
 
       Yksittäisiä asetuksia voi määrittää JSON-ominaisuuksissa:
@@ -2033,6 +2039,15 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
       Tänä aikana käyttäjä saa toistuvia muistutuksia päivittämisestä. <ph name="PRODUCT_OS_NAME" /> ‑laitteilla uudelleenkäynnistysilmoitus näkyy ilmaisinalueella <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-käytännön mukaan. <ph name="PRODUCT_NAME" /> ‑selaimissa sovellusvalikon muutos kertoo uudelleenkäynnistyksen tarpeesta, kun kolmannes ilmoitusajasta on kulunut. Ilmoituksen väri muuttuu, kun kaksi kolmannesta ilmoitusajasta on kulunut, ja uudelleen, kun koko ilmoitusaika on kulunut. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-käytännön sallimat lisäilmoitukset noudattavat samaa aikataulua.
 
       Jos käytäntöä ei ole määritetty, <ph name="PRODUCT_OS_NAME" /> ‑laitteiden oletusajanjakso on 345 600 000 millisekuntia (neljä päivää) ja <ph name="PRODUCT_NAME" /> ‑selainten 604 800 000 millisekuntia (yksi viikko).</translation>
+<translation id="4777805166623621364">
+      Tällä asetuksella (SitePerProcess) voidaan estää käyttäjiä lopettamasta oletuskäytös, kaikkien sivustojen erilläänpito. Huomaa, että IsolateOrigins voi myös olla hyödyllinen eristettäessä muita, tarkemmin määritettyjä alkuperiä.
+      Jos käytäntö on käytössä, käyttäjä voi lopettaa oletuskäyttäytymisen eli oman prosessin suorittamisen joka sivustolla.
+      Jos käytäntöä ei määritetä tai se poistetaan käytöstä, käyttäjä voi poistaa sivustojen erilläänpidon käytöstä
+      (esimerkiksi chrome://flags-valinnalla Älä pidä sivustoja erillään).  Sivustojen erilläänpito ei poistu käytöstä, vaikka käytäntö poistetaan käytöstä tai sitä ei määritetä.
+      Suositus (<ph name="PRODUCT_OS_NAME" />, versio 76 ja sitä vanhemmat): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon hakemisen vuoksi.
+
+      HUOM. Tämä käytäntö ei koske Androidia. Jos haluat ottaa SitePerProcess-asetuksen käyttöön Androidilla, käytä SitePerProcessAndroid-käytännön asetusta.
+      </translation>
 <translation id="4788252609789586009">Kun tämä on käytössä, <ph name="PRODUCT_NAME" /> voi täyttää kenttiä automaattisesti. Käyttäjät voivat täyttää verkkolomakkeita aiemmin tallennetuilla luottokorttitiedoilla.
 
       Jos asetus poistetaan käytöstä, automaattinen täyttö ei ehdota luottokorttitietoja, täytä niitä tai tallenna uusia luottokorttitietoja myöhempää käyttöä varten selailun yhteydessä.
@@ -2177,6 +2192,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="5148753489738115745">Voit määrittää muita parametreja, joita käytetään, kun <ph name="PRODUCT_FRAME_NAME" /> käynnistää tuotteen <ph name="PRODUCT_NAME" />.
 
           Jos käytäntöä ei ole määritetty, käytetään oletuskomentoriviä.</translation>
+<translation id="5152787786897382519">Sekä Chromiumilla että Google Chromella on joitain käytäntöryhmiä, jotka tarvitsevat toisiaan voidakseen antaa käyttäjän hallita ominaisuutta. Seuraavat käytäntöryhmät edustavat näitä joukkoja. Koska käytännöillä voi olla useita lähteitä, vain korkeimman prioriteetin lähteestä tulevia arvoja käytetään. Saman ryhmän matalamman prioriteetin ryhmästä tulevat arvot jätetään huomiotta. Prioriteettijärjestys on määritelty täällä: <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Valvontapakettien lähetystiheys millisekunteina.
 
       Jos tätä käytäntöä ei ole määritetty, oletusaikaväli on 3 minuuttia. Pienin
@@ -2700,6 +2716,7 @@ Jos tämä asetus ei ole käytössä tai jos sitä ei määritetä, SafeSearchia
 <translation id="5983708779415553259">Mihinkään sisältöpakettiin kuulumattomien sivustojen oletustoiminta</translation>
 <translation id="5997543603646547632">Käytä oletuksena 24 tunnin kelloa</translation>
 <translation id="5997846976342452720">Valitse, onko laajennushaku käytössä (poistettu käytöstä)</translation>
+<translation id="5998198091336830580">Tämä käytäntö on osa seuraavaa ydinryhmää (vain ryhmän korkeimman prioriteetin lähteestä tulevia käytäntöjä sovelletaan):</translation>
 <translation id="6017568866726630990">Näytä järjestelmän tulostusikkuna tulostuksen esikatselun sijaan.
 
 Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> avaa järjestelmän tulostusikkunan sisäänrakennetun tulostuksen esikatselun sijaan käyttäjän pyytäessä sivun tulostamista.
@@ -3426,6 +3443,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytännön arvo on epätosi, laitteiden tunnistetietoja ei kerätä.
 
       Käytäntö on voimassa vain, kun <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on käytössä ja koneella on käytössä <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Tämä käytäntö koskee kirjautumisnäyttöä. Tutustu myös <ph name="SITE_PER_PROCESS_POLICY_NAME" /> -käytäntöön, joka koskee käyttökertaa. On suositeltavaa asettaa molemmille käytännöille sama arvo. Jos arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon hakemisen vuoksi.
+      </translation>
 <translation id="737655323154569539">Rajoittaa tulostuksen paperikokoa. Määrittämätön käytäntö ja tyhjä asetus tulkitaan rajoituksen puuttumiseksi.</translation>
 <translation id="7389872682701720082">Jos tämä asetus on käytössä, laajennukset suoritetaan aina, jos ne eivät ole vanhentuneita.
 
@@ -3752,6 +3772,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Katso myös CookiesAllowedForUrls- ja CookiesSessionOnlyForUrls-käytännöt. Huomaa, että näiden kolmen käytännön välillä ei saa olla ristiriitaisia URL-malleja – ensisijaista käytäntöä ei ole määritetty.</translation>
 <translation id="8099880303030573137">Käyttämättömyysaika käytettäessä laitetta akkuvirralla</translation>
+<translation id="8101381354936029836">Käytännön ydinryhmä:</translation>
 <translation id="8102913158860568230">Mediastreamin oletusasetus</translation>
 <translation id="8104186956182795918">Voit määrittää, saavatko verkkosivustot näyttää kuvia. Kuvien näyttäminen voidaan joko sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
 
@@ -3960,6 +3981,15 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Poista selainhistorian tallentaminen käytöstä</translation>
 <translation id="8499172469244085141">Oletusasetukset (käyttäjät voivat ohittaa)</translation>
+<translation id="849962487677588458">Tämä käytäntö on poistettu käytöstä. Se poistetaan Chromen versiosta 78 eikä sitä korvata millään.
+
+      Tämä käytäntö sallii HTTP/0.9:n myös muille porteille kuin 80 (HTTP) ja 443 (HTTPS).
+
+      Käytäntö on oletuksena poissa käytöstä. Jos se otetaan käyttöön, käyttäjät altistuvat tälle tietoturvaongelmalle: https://crbug.com/600352.
+
+      Käytännön tarkoitus on antaa yrityksille tilaisuus jättää HTTP/0.9 pois käytöstä olemassa olevilla palvelimilla, ja se poistetaan tulevaisuudessa.
+
+      Jos käytäntöä ei ole määritetty, HTTP/0.9 ei ole käytössä muilla kuin oletusarvoisilla porteilla.</translation>
 <translation id="8507835864888987300">Määrittää kohdeversion automaattisille päivityksille.
 
       Määrittää etuliitteen versiolle, johon <ph name="PRODUCT_OS_NAME" /> päivitetään. Jos laitteella on versio, jonka numero on määritettyä etuliitettä vanhempi, versioksi päivitetään uusin annettua etuliitettä käyttävä versio. Jos laite käyttää jo uudempaa versiota, vaikutukset riippuvat käytännön <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> arvosta. Etuliitteen osilla on seuraavat vaikutukset:

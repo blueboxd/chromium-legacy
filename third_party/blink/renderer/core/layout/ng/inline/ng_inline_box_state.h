@@ -136,6 +136,9 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   bool HasBoxFragments() const { return !box_data_list_.IsEmpty(); }
 
+  // Notify when child is inserted at |index| to adjust child indexes.
+  void ChildInserted(unsigned index);
+
   // This class keeps indexes to fragments in the line box, and that only
   // appending is allowed. Call this function to move all such data to the line
   // box, so that outside of this class can reorder fragments in the line box.

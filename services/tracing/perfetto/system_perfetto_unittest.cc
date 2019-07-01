@@ -122,7 +122,8 @@ class SystemPerfettoTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
+// https://crbug.com/980247, crash on Android M.
+TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEnd) {
   auto system_service = CreateMockSystemService();
 
   // Set up the producer to talk to the system.
@@ -152,7 +153,8 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
+// https://crbug.com/980247, crash on Android M.
+TEST_F(SystemPerfettoTest, DISABLED_OneSystemSourceWithMultipleLocalSources) {
   auto system_service = CreateMockSystemService();
 
   // Start a trace using the system Perfetto service.
@@ -240,7 +242,9 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
+// https://crbug.com/980247, crash on Android M.
+TEST_F(SystemPerfettoTest,
+       DISABLED_MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   auto system_service = CreateMockSystemService();
 
   base::RunLoop local_no_more_packets_runloop;
@@ -335,7 +339,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
+// https://crbug.com/980247, crash on Android M.
+TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSources) {
   auto system_service = CreateMockSystemService();
 
   // Start a trace using the system Perfetto service.
@@ -426,7 +431,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
+// https://crbug.com/980247, crash on Android M.
+TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSourcesLocalFirst) {
   auto system_service = CreateMockSystemService();
 
   // We construct it up front so it connects to the service before the local
@@ -513,7 +519,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
+// https://crbug.com/980247, crash on Android M.
+TEST_F(SystemPerfettoTest, DISABLED_SystemToLowAPILevel) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {
     LOG(INFO) << "Skipping SystemToLowAPILevel test, this phone supports the "

@@ -66,7 +66,6 @@
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
-#include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_ANDROID)
@@ -76,10 +75,6 @@
 namespace base {
 class CommandLine;
 class PersistentMemoryAllocator;
-}
-
-namespace storage {
-class DatabaseTracker;
 }
 
 namespace viz {
@@ -570,9 +565,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       blink::mojom::BroadcastChannelProviderRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
   void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
-  void BindWebDatabaseHostImpl(
-      scoped_refptr<storage::DatabaseTracker> db_tracker,
-      blink::mojom::WebDatabaseHostRequest request);
 
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);

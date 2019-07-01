@@ -912,6 +912,24 @@ const FeatureEntry::FeatureParam kExploreSitesExperimental = {
 const FeatureEntry::FeatureParam kExploreSitesPersonalized = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
     chrome::android::explore_sites::kExploreSitesVariationPersonalized};
+const FeatureEntry::FeatureParam kExploreSitesDenseTitleBottom[] = {
+    {chrome::android::explore_sites::kExploreSitesVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
+    {chrome::android::explore_sites::kExploreSitesDenseVariationParameterName,
+     chrome::android::explore_sites::
+         kExploreSitesDenseVariationDenseTitleBottom},
+    {chrome::android::explore_sites::
+         kExploreSitesMostLikelyVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesMostLikelyVariationIconDots}};
+const FeatureEntry::FeatureParam kExploreSitesDenseTitleRight[] = {
+    {chrome::android::explore_sites::kExploreSitesVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
+    {chrome::android::explore_sites::kExploreSitesDenseVariationParameterName,
+     chrome::android::explore_sites::
+         kExploreSitesDenseVariationDenseTitleRight},
+    {chrome::android::explore_sites::
+         kExploreSitesMostLikelyVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesMostLikelyVariationIconDots}};
 const FeatureEntry::FeatureParam kExploreSitesIconArrow[] = {
     {chrome::android::explore_sites::kExploreSitesVariationParameterName,
      chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
@@ -940,7 +958,11 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
     {"Dots Icon", kExploreSitesIconDots, base::size(kExploreSitesIconDots),
      nullptr},
     {"Grouped Icon", kExploreSitesIconGrouped,
-     base::size(kExploreSitesIconGrouped), nullptr}};
+     base::size(kExploreSitesIconGrouped), nullptr},
+    {"Dense Title Bottom", kExploreSitesDenseTitleBottom,
+     base::size(kExploreSitesDenseTitleBottom), nullptr},
+    {"Dense Title Right", kExploreSitesDenseTitleRight,
+     base::size(kExploreSitesDenseTitleRight), nullptr}};
 
 const FeatureEntry::FeatureParam kSimplifiedServerAllCocaCards = {
     contextual_search::kContextualCardsVersionParamName,
@@ -1873,6 +1895,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMacViewsTaskManagerDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
 #endif  // OS_MACOSX
+#if BUILDFLAG(ENABLE_VR)
     {"enable-webvr", flag_descriptions::kWebvrName,
      flag_descriptions::kWebvrDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
@@ -1885,7 +1908,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-plane-detection", flag_descriptions::kWebXrPlaneDetectionName,
      flag_descriptions::kWebXrPlaneDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrPlaneDetection)},
-#if BUILDFLAG(ENABLE_VR)
     {"webxr-orientation-sensor-device",
      flag_descriptions::kWebXrOrientationSensorDeviceName,
      flag_descriptions::kWebXrOrientationSensorDeviceDescription, kOsDesktop,
@@ -1910,11 +1932,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOpenXRDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kOpenXR)},
 #endif  // ENABLE_OPENXR
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if !defined(OS_ANDROID)
     {"xr-sandbox", flag_descriptions::kXRSandboxName,
      flag_descriptions::kXRSandboxDescription, kOsWin,
      FEATURE_VALUE_TYPE(service_manager::features::kXRSandbox)},
-#endif  // ENABLE_ISOLATED_XR_SERVICE
+#endif  // !defined(OS_ANDROID)
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)
     {"disable-accelerated-mjpeg-decode",
@@ -4032,6 +4054,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,
      flag_descriptions::kEnableSyncUSSNigoriDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSNigori)},
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"global-media-controls", flag_descriptions::kGlobalMediaControlsName,
+     flag_descriptions::kGlobalMediaControlsDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(media::kGlobalMediaControls)},
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

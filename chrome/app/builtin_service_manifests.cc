@@ -62,7 +62,7 @@
 #include "chrome/services/printing/public/cpp/manifest.h"
 #endif
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "chrome/services/isolated_xr_device/manifest.h"
 #endif
 
@@ -126,7 +126,7 @@ GetChromeBuiltinServiceManifests() {
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
       GetChromePrintingManifest(),
 #endif
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
       GetXrDeviceServiceManifest(),
 #endif
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)

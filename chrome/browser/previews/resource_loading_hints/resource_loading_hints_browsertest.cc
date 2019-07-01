@@ -296,14 +296,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     subresource_expected_["/baz.woff2"] = expect_woff_requested;
   }
 
-  bool resource_loading_hint_intervention_header_seen() const {
-    return resource_loading_hint_intervention_header_seen_;
-  }
-
-  void ResetResourceLoadingHintInterventionHeaderSeen() {
-    resource_loading_hint_intervention_header_seen_ = false;
-  }
-
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -319,13 +311,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    auto it = request.headers.find("Intervention");
-    // Chrome status entry for resource loading hints is hosted at
-    // https://www.chromestatus.com/features/4775088607985664.
-    if (it != request.headers.end() &&
-        it->second.find("4510564810227712") != std::string::npos) {
-      resource_loading_hint_intervention_header_seen_ = true;
-    }
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
@@ -376,8 +361,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   GURL http_url_;
   GURL redirect_url_;
   GURL http_hint_setup_url_;
-
-  bool resource_loading_hint_intervention_header_seen_ = false;
 
   // Mapping from a subresource path to whether the resource is expected to be
   // fetched. Once a subresource present in this map is fetched, the
@@ -458,7 +441,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -479,13 +461,11 @@ IN_PROC_BROWSER_TEST_P(
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 
   // Load the same webpage to ensure that the resource loading hints are sent
   // again.
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -504,7 +484,6 @@ IN_PROC_BROWSER_TEST_P(
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 2);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
 // The test loads https_url_iframe() which is whitelisted for resource blocking.
@@ -529,7 +508,6 @@ IN_PROC_BROWSER_TEST_P(
   // Woff2 subresource is loaded by the https_url_iframe() and its loading
   // should be blocked.
   SetExpectedBazWoff2Request(false);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -542,7 +520,6 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.PreviewShown.ResourceLoadingHints", 1);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
 // The test loads https_url_iframe() which is NOT whitelisted for resource
@@ -565,7 +542,6 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
   // resources are loaded by the webpage inside the iframe. None of these
   // resources should be blocked from loading.
   SetExpectedBazWoff2Request(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -578,7 +554,6 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets only the experimental hints, but does not enable the matching
@@ -594,7 +569,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -607,7 +581,6 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets only the experimental hints, and enables the matching experiment.
@@ -633,7 +606,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -654,7 +626,6 @@ IN_PROC_BROWSER_TEST_P(
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets both the experimental and default hints, and enables the matching
@@ -681,7 +652,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -702,7 +672,6 @@ IN_PROC_BROWSER_TEST_P(
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets the default hints with a non-wildcard page pattern. Loads a webpage from
@@ -721,7 +690,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
   InitializeOptimizationHints();
 
   base::HistogramTester histogram_tester;
@@ -739,7 +707,6 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets the default hints with a non-wildcard page pattern. First loads a
@@ -760,7 +727,6 @@ IN_PROC_BROWSER_TEST_P(
   // Hints should be used when loading https_url().
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester_1;
 
@@ -781,13 +747,11 @@ IN_PROC_BROWSER_TEST_P(
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester_1.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 
   // Load a different webpage on the same origin to ensure that the resource
   // loading hints are not reused.
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
   base::HistogramTester histogram_tester_2;
 
   // https_second_url() is hosted on the same host as https_url(), but the path
@@ -807,7 +771,6 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester_2.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets both the experimental and default hints, but does not enable the
@@ -833,7 +796,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(false);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -849,7 +811,6 @@ IN_PROC_BROWSER_TEST_P(
   // loading hints available, even though none of them matched.
   RetryForHistogramUntilCountReached(
       &histogram_tester, "Previews.PreviewShown.ResourceLoadingHints", 1);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -867,7 +828,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -889,7 +849,6 @@ IN_PROC_BROWSER_TEST_P(
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
-  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -899,7 +858,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
   InitializeOptimizationHints();
 
   base::HistogramTester histogram_tester;
@@ -917,7 +875,6 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
@@ -929,7 +886,6 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -943,7 +899,6 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
@@ -956,7 +911,6 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -970,7 +924,6 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -994,7 +947,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  ResetResourceLoadingHintInterventionHeaderSeen();
 
   base::HistogramTester histogram_tester;
 
@@ -1007,7 +959,6 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
-  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
   // Make sure we did not record a PreviewsResourceLoadingHints UKM for it.
   auto rlh_ukm_entries = test_ukm_recorder.GetEntriesByName(
       ukm::builders::PreviewsResourceLoadingHints::kEntryName);

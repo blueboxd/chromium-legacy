@@ -46,6 +46,18 @@ std::string GetOSVersion() {
   return std::to_string(final_os_version);
 }
 
+// Retrieves the users shared cache and adds it to the profile.
+void AddDarwinUserCache(sandbox::SeatbeltExecClient* client) {
+  char dir_path[PATH_MAX + 1];
+
+  size_t rv = confstr(_CS_DARWIN_USER_CACHE_DIR, dir_path, sizeof(dir_path));
+  PCHECK(rv != 0);
+  CHECK(client->SetParameter(
+      "DARWIN_USER_CACHE_DIR",
+      service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
+          .value()));
+}
+
 // All of the below functions populate the |client| with the parameters that the
 // sandbox needs to resolve information that cannot be known at build time, such
 // as the user's home directory.
@@ -102,17 +114,10 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
 void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
   SetupCommonSandboxParameters(client);
 
-  char dir_path[PATH_MAX + 1];
-
-  size_t rv = confstr(_CS_DARWIN_USER_CACHE_DIR, dir_path, sizeof(dir_path));
-  PCHECK(rv != 0);
-  CHECK(client->SetParameter(
-      "DARWIN_USER_CACHE_DIR",
-      service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
-          .value()));
-
   std::vector<base::FilePath> storage_paths =
       GetContentClient()->browser()->GetNetworkContextsParentDirectory();
+
+  AddDarwinUserCache(client);
 
   CHECK(client->SetParameter("NETWORK_SERVICE_STORAGE_PATHS_COUNT",
                              base::NumberToString(storage_paths.size())));
@@ -174,11 +179,14 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
                             sandbox::SeatbeltExecClient* client) {
   switch (sandbox_type) {
     case service_manager::SANDBOX_TYPE_AUDIO:
-    case service_manager::SANDBOX_TYPE_GPU:
     case service_manager::SANDBOX_TYPE_NACL_LOADER:
     case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
     case service_manager::SANDBOX_TYPE_RENDERER:
       SetupCommonSandboxParameters(client);
+      break;
+    case service_manager::SANDBOX_TYPE_GPU:
+      SetupCommonSandboxParameters(client);
+      AddDarwinUserCache(client);
       break;
     case service_manager::SANDBOX_TYPE_CDM:
       SetupCDMSandboxParameters(client);

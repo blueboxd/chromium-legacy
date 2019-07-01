@@ -46,10 +46,10 @@ gaia::GaiaSource DiceAccountReconcilorDelegate::GetGaiaApiSource() const {
 //   2. The primary account
 //   3. The last known first Gaia account
 //   4. The first account in the token service
-std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
-    const std::vector<std::string>& chrome_accounts,
+CoreAccountId DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
+    const std::vector<CoreAccountId>& chrome_accounts,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
-    const std::string& primary_account,
+    const CoreAccountId& primary_account,
     bool first_execution,
     bool will_logout) const {
   bool primary_account_has_token =
@@ -66,10 +66,10 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
       return last_known_first_account_;
 
     // As a last resort, use the first Chrome account.
-    return chrome_accounts.empty() ? std::string() : chrome_accounts[0];
+    return chrome_accounts.empty() ? CoreAccountId() : chrome_accounts[0];
   }
 
-  const std::string& first_gaia_account = gaia_accounts[0].id;
+  const CoreAccountId& first_gaia_account = gaia_accounts[0].id;
   bool first_gaia_account_has_token =
       base::Contains(chrome_accounts, first_gaia_account);
 
@@ -77,7 +77,7 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
       (primary_account == first_gaia_account) && gaia_accounts[0].valid) {
     // The primary account is also the first Gaia account, and has no token.
     // Logout everything.
-    return std::string();
+    return CoreAccountId();
   }
 
   // If the primary Chrome account and the default Gaia account are both in
@@ -96,7 +96,7 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
     if (first_gaia_account_has_token)
       return first_gaia_account;
     // As a last resort, use the first Chrome account.
-    return chrome_accounts.empty() ? std::string() : chrome_accounts[0];
+    return chrome_accounts.empty() ? CoreAccountId() : chrome_accounts[0];
   }
 
   // While Chrome is running, try the first Gaia account, and then the
@@ -108,12 +108,12 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
 
   // Changing the first Gaia account while Chrome is running would be
   // confusing for the user. Logout everything.
-  return std::string();
+  return CoreAccountId();
 }
 
 gaia::MultiloginMode DiceAccountReconcilorDelegate::CalculateModeForReconcile(
     const std::vector<gaia::ListedAccount>& gaia_accounts,
-    const std::string primary_account,
+    const CoreAccountId& primary_account,
     bool first_execution,
     bool primary_has_error) const {
   const bool sync_enabled = !primary_account.empty();
@@ -125,10 +125,10 @@ gaia::MultiloginMode DiceAccountReconcilorDelegate::CalculateModeForReconcile(
              : gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER;
 }
 
-std::vector<std::string>
+std::vector<CoreAccountId>
 DiceAccountReconcilorDelegate::GetChromeAccountsForReconcile(
-    const std::vector<std::string>& chrome_accounts,
-    const std::string& primary_account,
+    const std::vector<CoreAccountId>& chrome_accounts,
+    const CoreAccountId& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     const gaia::MultiloginMode mode) const {
   if (mode == gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
@@ -166,7 +166,7 @@ bool DiceAccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {
 }
 
 void DiceAccountReconcilorDelegate::OnReconcileFinished(
-    const std::string& first_account,
+    const CoreAccountId& first_account,
     bool reconcile_is_noop) {
   last_known_first_account_ = first_account;
 

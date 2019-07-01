@@ -165,7 +165,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   void AddCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
   // Returns a unique key string for the SSL session cache for this socket.
-  std::string GetSessionCacheKey() const;
+  std::string GetSessionCacheKey(base::Optional<IPAddress> dest_ip_addr) const;
 
   // Returns true if renegotiations are allowed.
   bool IsRenegotiationAllowed() const;

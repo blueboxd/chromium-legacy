@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">转到上一个标签页</translation>
 <translation id="2194790690264064655">在按住 <ph name="CTRL" /> 键的同时点击链接</translation>
 <translation id="2246352309084894470">打开/关闭全屏启动器</translation>
+<translation id="2354531887393764880">句点</translation>
 <translation id="2382644247745281995">当前键盘布局不支持使用此键</translation>
 <translation id="2397416548179033562">显示 Chrome 菜单</translation>
 <translation id="2424073332829844142">开启/关闭大写锁定</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">打开任务栏中突出显示的内容</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 至 8</translation>
 <translation id="3837047332182291558">调亮键盘（仅适用于背光键盘）</translation>
+<translation id="3949671998904569433">英文逗号</translation>
 <translation id="3976863468609830880">点击任务栏中的最后一个图标</translation>
 <translation id="3994783594793697310">重置显示内容的缩放级别</translation>
 <translation id="4026843240379844265">在各个显示屏之间移动活动窗口</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">切换到下一种可用的输入法</translation>
 <translation id="743754632698445141">取消固定应用</translation>
 <translation id="7439718573248533901">删除下一个字母（前向删除）</translation>
+<translation id="7500368597227394048">连字符</translation>
 <translation id="7611271430932669992">将焦点移至弹出式窗口和对话框</translation>
 <translation id="766326951329901120">以纯文本形式粘贴剪贴板中的内容</translation>
+<translation id="7703010453515335249">左方括号</translation>
 <translation id="7724603315864178912">剪切</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按<ph name="SPACE" />或 <ph name="ENTER" /> 键</translation>
 <translation id="7787242579016742662">在浏览器中打开文件</translation>
-<translation id="7917881398263220094">停止加载当前网页</translation>
 <translation id="7952165122793773711">前往第 1 至 8 个标签页</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8130528849632411619">转到文档开头处</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 或 <ph name="E" /> 键</translation>
 <translation id="8232835244134740473">在以下窗格之间切换焦点：状态区（其中显示了您的帐号头像）、启动器、地址栏、书签栏（若显示）、打开的网页、下载内容栏（若显示）。</translation>
 <translation id="8234414138295101081">将屏幕旋转 90 度</translation>
+<translation id="8241665785394195545">右中括号</translation>
 <translation id="8264941229485248811">显示或隐藏开发者工具检查器</translation>
 <translation id="836869401750819675">打开“下载内容”页面</translation>
 <translation id="8388247778047144397">将链接拖到标签栏的空白区域中</translation>

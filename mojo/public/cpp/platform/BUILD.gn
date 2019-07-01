@@ -24,7 +24,7 @@ component("platform") {
     "platform_handle.cc",
   ]
 
-  if (is_posix && (!is_nacl || is_nacl_nonsfi)) {
+  if (is_posix && !is_mac && (!is_nacl || is_nacl_nonsfi)) {
     public += [ "socket_utils_posix.h" ]
     sources += [ "socket_utils_posix.cc" ]
   }
@@ -34,7 +34,7 @@ component("platform") {
     "//mojo/public/c/system:headers",
   ]
 
-  if (is_posix && !is_nacl) {
+  if (is_posix && !is_nacl && !is_mac) {
     sources += [ "named_platform_channel_posix.cc" ]
   }
 

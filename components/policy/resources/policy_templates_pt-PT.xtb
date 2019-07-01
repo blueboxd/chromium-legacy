@@ -366,6 +366,11 @@
           Se esta política estiver desativada ou não for definida, as definições de Contas Kerberos estarão desativadas. Não é possível adicionar contas Kerberos e a autenticação Kerberos não pode ser utilizada. Todas as contas Kerberos existentes e palavras-passe guardadas serão eliminadas.</translation>
 <translation id="1561424797596341174">Substituições da política para compilações de Depuração do anfitrião de acesso remoto</translation>
 <translation id="1561967320164410511">U2F mais extensões para comprovação individual</translation>
+<translation id="1566329065312331399">
+      Quando definida como Falsa, esta política não permite ao dispositivo acionar o Powerwash.
+      Quando definida como Verdadeira, permite que o dispositivo acione o Powerwash.
+      Se não for configurada, a política é predefinida como Falsa, o que significa que não permite ao dispositivo acionar o Powerwash.
+      </translation>
 <translation id="1574554504290354326">Esta definição foi descontinuada. Em alternativa, utilize SafeBrowsingExtendedReportingEnabled. Ativar ou desativar SafeBrowsingExtendedReportingEnabled é equivalente a definir SafeBrowsingExtendedReportingOptInAllowed como falsa.
 
       Definir esta política como falsa impede os utilizadores de optarem por enviar algumas informações do sistema e conteúdo de páginas para os servidores da Google. Caso esta definição seja verdadeira ou não esteja configurada, os utilizadores podem enviar algumas informações do sistema e conteúdo de páginas para a Navegação segura, de modo a ajudar a detetar aplicações e sites perigosos.
@@ -407,6 +412,7 @@
 
       Aviso: não é recomendado delegar o controlo da versão do <ph name="PRODUCT_OS_NAME" /> a uma aplicação de quiosque, pois tal pode impedir o dispositivo de receber atualizações de software e correções de segurança críticas. Delegar o controlo da versão do <ph name="PRODUCT_OS_NAME" /> pode colocar os utilizadores em risco.</translation>
 <translation id="1675002386741412210">Suportado em:</translation>
+<translation id="1700811900332333712">Permitir que o dispositivo solicite o Powerwash</translation>
 <translation id="1704516734140344991">Configura a disponibilidade e o comportamento da funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       É possível especificar definições individuais nas propriedades de JSON:
@@ -2034,6 +2040,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Ao longo deste período de tempo, o utilizador é informado, repetidamente, de que é necessária uma atualização. Relativamente aos dispositivos <ph name="PRODUCT_OS_NAME" />, é apresentada uma notificação de reinício no tabuleiro do sistema de acordo com a política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Quanto aos navegadores <ph name="PRODUCT_NAME" />, o menu da aplicação muda e passa a indicar que é necessário reiniciar assim que for ultrapassado um terço do período de notificação. A cor da notificação muda quando forem ultrapassados dois terços do período de notificação e volta a mudar quando o período terminar. As outras notificações que a política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ativa seguem este mesmo horário.
 
       Se não for definida, é utilizado o período predefinido de 345 600 000 milissegundos (quatro dias) para os dispositivos <ph name="PRODUCT_OS_NAME" /> e de 604 800 000 milissegundos (uma semana) para o <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Esta definição, SitePerProcess, pode ser utilizada para não permitir que os utilizadores recusem o comportamento predefinido de isolamento de todos os sites. Tenha em atenção que a política IsolateOrigins também pode ser útil para isolar origens adicionais mais detalhadas.
+      Se a política estiver ativada, os utilizadores não poderão recusar o comportamento predefinido, que prevê que cada site seja executado no seu próprio processo.
+      Se a política não for configurada ou estiver desativada, o utilizador poderá recusar o isolamento de sites
+      (por exemplo, ao utilizar a entrada "Desativar isolamento de sites" em chrome://flags).  Definir a política como desativada e/ou não configurar a política não desativa o Isolamento de sites.
+      Na versão 76 e anteriores do <ph name="PRODUCT_OS_NAME" />, recomenda-se também a definição da política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, poderá ocorrer um atraso ao iniciar uma sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+
+      NOTA: esta política não se aplica ao Android. Para ativar a política SitePerProcess no Android, utilize a definição da política SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Ativa a funcionalidade de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente as informações de cartões de crédito em formulários Web ao utilizar informações armazenadas anteriormente.
 
       Se esta definição estiver desativada, o Preenchimento automático nunca sugere nem preenche formulários com informações de cartões de crédito e também não guarda informações adicionais de cartões de crédito que o utilizador possa enviar enquanto navega na Web.
@@ -2178,6 +2193,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5148753489738115745">Permite especificar parâmetros adicionais utilizados quando o <ph name="PRODUCT_FRAME_NAME" /> iniciar o <ph name="PRODUCT_NAME" />.
 
           Se esta política não estiver definida, será utilizada a linha de comandos predefinida.</translation>
+<translation id="5152787786897382519">Tanto o Chromium como o Google Chrome têm alguns grupos de políticas que dependem umas das outras para assegurar o controlo de uma funcionalidade. Estes conjuntos são representados pelos seguintes grupos de políticas. Uma vez que as políticas podem ter várias origens, apenas são aplicados os valores provenientes da origem de prioridade mais elevada. Os valores provenientes de uma origem de prioridade mais baixa no mesmo grupo serão ignorados. A ordem de prioridade está definida em <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Frequência, em milissegundos, com que são enviados os pacotes de monitorização de rede.
 
       Se esta política não for definida, o intervalo predefinido é de 3 minutos. O
@@ -2697,6 +2713,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5983708779415553259">Comportamento predefinido para sites que não estejam num pacote de conteúdo</translation>
 <translation id="5997543603646547632">Utilizar o relógio de 24 horas por predefinição</translation>
 <translation id="5997846976342452720">Especificar se o localizador de plug-ins deve ser desativado (descontinuado)</translation>
+<translation id="5998198091336830580">Esta política pertence ao seguinte grupo atómico (apenas são aplicadas as políticas provenientes da origem de prioridade mais elevada presente no grupo):</translation>
 <translation id="6017568866726630990">Mostrar a caixa de diálogo de impressão do sistema em vez da pré-visualização da impressão.
 
       Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> abrirá a caixa de diálogo de impressão do sistema em vez da pré-visualização da impressão incorporada quando um utilizador solicita a impressão de uma página.
@@ -3424,6 +3441,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Quando esta política está definida para Falso, não são recolhidas informações que podem ser utilizadas para identificar máquinas.
 
       Esta política apenas entra em vigor quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e a máquina está associada à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> aplicável à sessão do utilizador. Recomenda-se que as duas políticas sejam definidas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      </translation>
 <translation id="737655323154569539">Restringe o tamanho da página de impressão. Uma política não definida ou uma definição vazia são consideradas uma não restrição.</translation>
 <translation id="7389872682701720082">Se ativar esta definição, os plug-ins que não estão desatualizados são sempre executados.
 
@@ -3749,6 +3769,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Consulte também as políticas "CookiesAllowedForUrls" e "CookiesSessionOnlyForUrls". Tenha em atenção que não podem existir padrões de URL em conflito entre estas três políticas. Não está especificado que política tem prioridade.</translation>
 <translation id="8099880303030573137">Atraso de inatividade quando o dispositivo está a utilizar a energia da bateria</translation>
+<translation id="8101381354936029836">Grupo atómico de políticas:</translation>
 <translation id="8102913158860568230">Predefinição da transmissão em sequência de multimédia</translation>
 <translation id="8104186956182795918">Permite definir se os Websites têm autorização para apresentar imagens. A apresentação de imagens pode ser autorizada ou negada para todos os Websites.
 
@@ -3956,6 +3977,15 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desativar armazenamento do histórico de navegação</translation>
 <translation id="8499172469244085141">Predefinições (os utilizadores podem substituir)</translation>
+<translation id="849962487677588458">Esta política foi descontinuada e está prevista a sua remoção no Chrome 78, sem substituição.
+
+      Esta política ativa o HTTP/0.9 noutras portas que não a 80 para HTTP e a 443 para HTTPS.
+
+      Esta política está desativada por predefinição e, se for ativada, deixa os utilizadores sujeitos ao problema de segurança https://crbug.com/600352.
+
+      O objetivo desta política é dar às empresas a possibilidade de efetuarem a migração dos servidores existentes que ainda utilizem o HTTP/0.9, uma vez que este será removido no futuro.
+
+      Se esta política não for definida, o HTTP/0.9 será desativado nas portas não predefinidas.</translation>
 <translation id="8507835864888987300">Define uma versão de destino para as Atualizações automáticas.
 
       Especifica o prefixo de uma versão de destino para o qual o <ph name="PRODUCT_OS_NAME" /> deve ser atualizado. Se o dispositivo estiver a executar uma versão anterior ao prefixo especificado, será atualizado para a versão mais recente com o prefixo fornecido. Se o dispositivo já executar uma versão posterior, os efeitos dependem do valor de <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. O formato do prefixo funciona ao nível do componente, como é demonstrado no exemplo seguinte:

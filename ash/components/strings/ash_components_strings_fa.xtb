@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">رفتن به برگه قبلی</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> را فشار دهید و روی پیوند کلیک کنید</translation>
 <translation id="2246352309084894470">باز کردن/بستن راه‌انداز تمام‌صفحه</translation>
+<translation id="2354531887393764880">نقطه</translation>
 <translation id="2382644247745281995">با طرح‌بندی صفحه‌کلید کنونی پشتیبانی نمی‌شود</translation>
 <translation id="2397416548179033562">‏نمایش منوی Chrome</translation>
 <translation id="2424073332829844142">‏روشن و خاموش کردن Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">باز کردن مورد برجسته شده روی قفسه</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ۱ تا ۸</translation>
 <translation id="3837047332182291558">روشن‌تر کردن صفحه‌کلید (فقط برای صفحه‌کلیدهایی که نور پس‌زمینه دارند)</translation>
+<translation id="3949671998904569433">کاما</translation>
 <translation id="3976863468609830880">کلیک کردن آخرین نماد در قفسه</translation>
 <translation id="3994783594793697310">بازنشانی میزان بزرگ‌نمایی صفحه‌نمایش</translation>
 <translation id="4026843240379844265">جابه‌جایی پنجره فعال بین نمایشگرها</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">تغییر به روش ورودی بعدی</translation>
 <translation id="743754632698445141">برداشتن پین برنامه</translation>
 <translation id="7439718573248533901">حذف حرف بعدی (حذف بعدی)</translation>
+<translation id="7500368597227394048">خط تیره</translation>
 <translation id="7611271430932669992">انتقال تمرکز به پنجره‌های بازشو و کادرهای گفتگو</translation>
 <translation id="766326951329901120">جای‌گذاری محتوا از بریده‌دان به عنوان نوشتار ساده</translation>
+<translation id="7703010453515335249">کمانک چپ</translation>
 <translation id="7724603315864178912">برش</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="SPACE" /> یا <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">باز کردن فایل در مرورگر</translation>
-<translation id="7917881398263220094">توقف بارگیری صفحه کنونی</translation>
 <translation id="7952165122793773711">رفتن به برگه‌های ۱ تا ۸</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8130528849632411619">رفتن به ابتدای سند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> یا <ph name="E" /></translation>
 <translation id="8232835244134740473">جابه‌جایی تمرکز بین: ناحیه نشانگر وضعیت (جایی‌که تصویر حساب نمایان می‌شود)، راه‌انداز، نوار نشانی، نوار نشانک‌ها (اگر قابل مشاهده باشد)، صفحه وبی که باز است و نوار بارگیری‌ها (اگر قابل مشاهده باشد).</translation>
 <translation id="8234414138295101081">چرخاندن ۹۰ درجه‌ای صفحه</translation>
+<translation id="8241665785394195545">کمانک راست</translation>
 <translation id="8264941229485248811">نمایش یا پنهان کردن بازرس «ابزارهای برنامه‌نویس»</translation>
 <translation id="836869401750819675">باز کردن صفحه بارگیری</translation>
 <translation id="8388247778047144397">کشیدن پیوند به قسمتی خالی در نوار برگه</translation>

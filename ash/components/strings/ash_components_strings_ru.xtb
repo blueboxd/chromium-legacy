@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Перейти на предыдущую вкладку</translation>
 <translation id="2194790690264064655">Нажать <ph name="CTRL" /> и перейти по ссылке</translation>
 <translation id="2246352309084894470">Открыть/закрыть полноэкранную панель запуска</translation>
+<translation id="2354531887393764880">точка</translation>
 <translation id="2382644247745281995">Не поддерживается в текущей раскладке клавиатуры</translation>
 <translation id="2397416548179033562">Отображение меню Chrome</translation>
 <translation id="2424073332829844142">Включить или отключить режим Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Открыть выделенный объект на панели запуска.</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> клавиши от 1 до 8</translation>
 <translation id="3837047332182291558">Увеличить яркость клавиатуры (для клавиатур с подсветкой)</translation>
+<translation id="3949671998904569433">запятая</translation>
 <translation id="3976863468609830880">Открыть последний значок на панели запуска</translation>
 <translation id="3994783594793697310">Восстановить исходный масштаб экрана</translation>
 <translation id="4026843240379844265">Переместить активное окно между экранами</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Переключиться на следующий доступный способ ввода</translation>
 <translation id="743754632698445141">Открепить приложение</translation>
 <translation id="7439718573248533901">Удалить следующую букву (удаление вперед)</translation>
+<translation id="7500368597227394048">дефис</translation>
 <translation id="7611271430932669992">Перейти к всплывающим и диалоговым окнам.</translation>
 <translation id="766326951329901120">Вставить содержимое из буфера обмена в виде обычного текста</translation>
+<translation id="7703010453515335249">левая скобка</translation>
 <translation id="7724603315864178912">Вырезать</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="SPACE" /> или <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Открыть файл в браузере</translation>
-<translation id="7917881398263220094">Прервать загрузку страницы</translation>
 <translation id="7952165122793773711">Перейти на вкладку 1–8.</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8130528849632411619">Перейти к началу документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
 <translation id="8232835244134740473">Переключаться между панелью состояния (расположенной рядом с изображением профиля), панелью запуска, адресной строкой, панелью закладок (если видна), открытой веб-страницей и панелью загрузок (если видна).</translation>
 <translation id="8234414138295101081">Повернуть экран на 90 градусов</translation>
+<translation id="8241665785394195545">правая скобка</translation>
 <translation id="8264941229485248811">Показать или скрыть инспектор инструментов разработчика</translation>
 <translation id="836869401750819675">Открыть страницу "Скачанные файлы"</translation>
 <translation id="8388247778047144397">Перетащить ссылку в пустую область на панели вкладок</translation>

@@ -8,7 +8,7 @@
 <translation id="1014370462248694370">Fes lliscar dos dits cap a la dreta</translation>
 <translation id="1022586497894531524">És el primer cop que fas servir els avisos de veu de l'extensió ChromeVox? En aquest tutorial ràpid s'expliquen els aspectes bàsics per començar a utilitzar-la.</translation>
 <translation id="1023866615269196768">Amb abast.</translation>
-<translation id="1025074108959230262">S'ha desactivat el mode persistent.</translation>
+<translation id="1025074108959230262">S'ha desactivat el mode permanent.</translation>
 <translation id="1031961866430398710">i, a continuació,</translation>
 <translation id="1038643060055067718">Línies:</translation>
 <translation id="1038795173450935438">Per avançar pels elements d'una pàgina, prem Cerca+fletxa dreta i per tornar enrere, Cerca+fletxa esquerra. Per anar a la línia següent, prem Cerca+fletxa avall i, per anar a la línia anterior, fes servir Cerca+fletxa amunt. Si vols fer clic a l'element en el qual et trobes, prem Cerca+espai.</translation>
@@ -69,6 +69,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1385214448885562192">Premeu Retorn per acceptar o Esc per cancel·lar; fletxa avall per passar al següent i fletxa amunt per tornar a l'anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Anuncia atributs de text enriquit</translation>
 <translation id="1405567553485452995">Verd clar</translation>
 <translation id="1417889266572670458">Blau marí</translation>
 <translation id="1431911867058218151">Pruna</translation>
@@ -611,7 +612,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5304943142864553931"><ph name="TITLE" />, pestanya</translation>
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="5310788376443009632">s'ha suprimit:</translation>
-<translation id="5320727453979144100">S'ha activat el mode persistent.</translation>
+<translation id="5320727453979144100">S'ha activat el mode permanent</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comes}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, quadre de text</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, enllaç</translation>
@@ -1216,7 +1217,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="958854023026327378">Fes lliscar un dit cap avall</translation>
 <translation id="962913030769097253">Capçalera del nivell 1 següent</translation>
 <translation id="966588271015727539">Selecciona una pantalla braille amb connexió Bluetooth</translation>
-<translation id="973955474346881951">Activa o desactiva el mode persistent</translation>
+<translation id="973955474346881951">Activa o desactiva el mode permanent</translation>
 <translation id="976849232629612000">No hi ha elements.</translation>
 <translation id="992256792861109788">Rosa</translation>
 </translationbundle>

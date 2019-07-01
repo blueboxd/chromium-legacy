@@ -165,9 +165,9 @@ bool IsValidInfo(device::mojom::VRDisplayInfoPtr& info) {
   // Numeric properties are validated elsewhere, but we expect a stereo headset.
   if (!info)
     return false;
-  if (!info->leftEye)
+  if (!info->left_eye)
     return false;
-  if (!info->rightEye)
+  if (!info->right_eye)
     return false;
   return true;
 }

@@ -366,6 +366,11 @@
           Jika dasar ini dilumpuhkan atau tidak ditetapkan, tetapan Akaun Kerberos akan dilumpuhkan. Tiada akaun Kerberos boleh ditambahkan dan pengesahan Kerberos tidak boleh digunakan. Semua akaun Kerberos yang sedia ada akan dipadamkan dan semua kata laluan yang disimpan akan dipadamkan.</translation>
 <translation id="1561424797596341174">Pembatalan dasar untuk binaan Nyahpepijat bagi hos akses jauh</translation>
 <translation id="1561967320164410511">Sambungan U2F tambah untuk pembuktian individu</translation>
+<translation id="1566329065312331399">
+      Dasar ini apabila ditetapkan kepada Palsu, tidak membenarkan peranti mencetuskan powerwash.
+      Apabila ditetapkan kepada Benar, dasar ini membenarkan peranti mencetuskan powerwash.
+      Jika dibiarkan tidak ditetapkan, dasar ini akan ditetapkan kepada Palsu secara lalai, yang bermakna dasar ini tidak membenarkan peranti mencetuskan powerwash.
+      </translation>
 <translation id="1574554504290354326">Tetapan ini sudah ditamatkan, gunakan SafeBrowsingExtendedReportingEnabled sebagai ganti. Tindakan mendayakan atau melumpuhkan SafeBrowsingExtendedReportingEnabled adalah sama seperti menetapkan SafeBrowsingExtendedReportingOptInAllowed kepada Palsu.
 
       Tindakan menetapkan dasar ini kepada palsu akan menghalang pengguna daripada memilih untuk menghantar sesetengah maklumat sistem dan kandungan halaman ke pelayan Google. Jika tetapan ini benar atau tidak dikonfigurasi, maka pengguna akan dibenarkan menghantar sesetengah maklumat sistem dan kandungan halaman kepada Penyemakan Imbas Selamat untuk mengesan apl dan tapak berbahaya.
@@ -407,6 +412,7 @@
 
       Amaran: Anda tidak disyorkan supaya menugaskan kawalan versi <ph name="PRODUCT_OS_NAME" /> kepada apl kios kerana tindakan ini boleh menghalang peranti daripada menerima kemas kini perisian dan pembetulan keselamatan kritikal. Tindakan menugaskan kawalan versi <ph name="PRODUCT_OS_NAME" /> boleh menyebabkan pengguna terdedah kepada risiko.</translation>
 <translation id="1675002386741412210">Disokong pada:</translation>
+<translation id="1700811900332333712">Benarkan peranti meminta powerwash</translation>
 <translation id="1704516734140344991">Mengkonfigurasikan ketersediaan dan gelagat kefungsian kemas kini perisian tegar <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Tetapan individu boleh ditentukan dalam sifat JSON:
@@ -2069,6 +2075,15 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem menurut dasar <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
 
       Jika tidak ditetapkan, tempoh lalai selama 345,600,000 milisaat (empat hari) digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604,800,000 milisaat (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Tetapan ini, SitePerProcess, boleh digunakan untuk melarang pengguna menarik diri daripada gelagat lalai yang mengasingkan semua tapak Sila ambil perhatian bahawa dasar IsolateOrigins juga mungkin berguna untuk mengasingkan asalan tambahan yang lebih terperinci.
+      Jika dasar ini didayakan, pengguna tidak akan dapat menarik diri daripada gelagat lalai, iaitu setiap tapak berjalan dalam prosesnya sendiri.
+      Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menarik diri daripada pengasingan tapak
+      (mis. menggunakan masukan "Lumpuhkan pengasingan tapak" dalam chrome://flags).  Tindakan menetapkan dasar ini kepada dilumpuhkan dan/atau tidak mengkonfigurasikan dasar ini tidak akan mematikan Pengasingan Tapak.
+      Pada <ph name="PRODUCT_OS_NAME" /> versi 76 ke bawah, anda disyorkan supaya turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh dua dasar tersebut tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang ditentukan oleh dasar pengguna sedang digunakan.
+
+      NOTA: Dasar ini tidak terpakai kepada Android. Untuk mendayakan SitePerProcess pada Android, gunakan tetapan dasar SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Mendayakan ciri Autolengkap <ph name="PRODUCT_NAME" /> dan membolehkan pengguna mengisikan maklumat kad kredit dalam borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum itu.
 
       Jika tetapan ini dilumpuhkan, Autolengkap tidak akan mencadangkan atau mengisikan maklumat kad kredit atau menyimpan maklumat kad kredit tambahan yang mungkin diserahkan oleh pengguna semasa menyemak imbas web.
@@ -2217,6 +2232,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="5148753489738115745">Membolehkan anda menentukan parameter tambahan yang digunakan apabila  <ph name="PRODUCT_FRAME_NAME" /> melancarkan <ph name="PRODUCT_NAME" />.
 
           Jika dasar ini tidak ditetapkan, baris perintah lalai akan digunakan.</translation>
+<translation id="5152787786897382519">Kedua-dua Chromium dan Google Chrome mempunyai beberapa kumpulan dasar yang bergantung pada satu sama lain untuk memberikan kawalan terhadap ciri. Set ini diwakili oleh kumpulan dasar berikut. Memandangkan dasar boleh mempunyai pelbagai sumber, hanya nilai yang berasal daripada sumber berkeutamaan tertinggi akan digunakan. Nilai yang berasal daripada sumber berkeutamaan lebih rendah dalam kumpulan yang sama akan diabaikan. Urutan keutamaan ditakrifkan dalam <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Kekerapan bingkisan rangkaian pemantauan dihantar dalam milisaat.
 
       Jika dasar ini tidak ditetapkan, selang masa lalai ialah 3 minit.. Selang masa      minimum ialah 30 saat dan selang masa maksimum ialah 24 jam - nilai
@@ -2763,6 +2779,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="5983708779415553259">Gelagat lalai untuk tapak yang tidak didapati dalam mana-mana pek kandungan</translation>
 <translation id="5997543603646547632">Gunakan jam 24 jam secara lalai</translation>
 <translation id="5997846976342452720">Tentukan sama ada pencari pemalam harus dilumpuhkan (ditamatkan)</translation>
+<translation id="5998198091336830580">Dasar ini merupakan sebahagian daripada kumpulan atom berikut (hanya dasar daripada sumber berkeutamaan tertinggi yang ada dalam kumpulan digunakan):</translation>
 <translation id="6017568866726630990">Paparkan dialog cetakan sistem dan bukannya pratonton cetakan.
 
       Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> akan membuka dialog cetakan sistem dan bukannya pratonton cetakan terbina dalam apabila pengguna meminta untuk mencetak halaman.
@@ -3515,6 +3532,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Apabila dasar ini ditetapkan kepada Palsu, maklumat yang boleh digunakan untuk mengenal pasti peranti tidak akan dikumpulkan.
 
       Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Dasar ini terpakai kepada skrin log masuk. Sila lihat juga dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang terpakai kepada sesi pengguna. Anda disyorkan agar menetapkan kedua-dua dasar kepada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang ditentukan oleh dasar pengguna sedang digunakan.
+      </translation>
 <translation id="737655323154569539">Mengehadkan saiz halaman pencetakan. Dasar yang tidak ditetapkan dan set kosong dianggap sebagai tiada sekatan.</translation>
 <translation id="7389872682701720082">Jika anda mendayakan tetapan ini, pemalam yang belum lapuk akan sentiasa dijalankan.
 
@@ -3852,6 +3872,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Lihat dasar 'CookiesAllowedForUrls' dan 'CookiesSessionOnlyForUrls' juga. Harap maklum bahawa pola URL tidak boleh bercanggah antara ketiga-tiga dasar ini - dasar yang diberi keutamaan tidak dinyatakan.</translation>
 <translation id="8099880303030573137">Kelewatan melahu apabila dijalankan dengan kuasa bateri</translation>
+<translation id="8101381354936029836">Kumpulan atom dasar:</translation>
 <translation id="8102913158860568230">Tetapan mediastream lalai</translation>
 <translation id="8104186956182795918">Membolehkan anda menetapkan sama ada tapak web dibenarkan memaparkan imej. Pemaparan imej boleh dibenarkan untuk semua tapak web atau ditolak untuk semua tapak web.
 
@@ -4060,6 +4081,15 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Lumpuhkan penyimpanan sejarah penyemakan imbas</translation>
 <translation id="8499172469244085141">Tetapan lalai (pengguna boleh mengatasi)</translation>
+<translation id="849962487677588458">Dasar ini ditamatkan dan dirancang untuk dialih keluar dalam Chrome 78, tanpa pengganti.
+
+      Dasar ini mendayakan HTTP/0.9 pada port selain 80 untuk HTTP dan 443 untuk HTTPS.
+
+      Dasar ini dilumpuhkan secara lalai dan jika didayakan akan menyebabkan pengguna terdedah kepada isu keselamatan https://crbug.com/600352.
+
+      Dasar ini bertujuan untuk memberi pihak syarikat peluang menghijrahkan pelayan sedia ada yang menggunakan HTTP/0.9 dan akan dialih keluar pada masa hadapan.
+
+      Jika dasar ini tidak ditetapkan, HTTP/0.9 akan dilumpuhkan pada port bukan lalai.</translation>
 <translation id="8507835864888987300">Menetapkan versi sasaran untuk Autokemas Kini.
 
       Menentukan awalan versi sasaran <ph name="PRODUCT_OS_NAME" /> yang akan dikemas kini. Jika peranti menjalankan versi sebelum awalan yang dinyatakan, peranti akan dikemas kini kepada versi terkini dengan awalan yang diberikan. Jika peranti sudah menggunakan versi lebih baharu, kesannya bergantung pada nilai <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Format awalan berfungsi mengikut komponen seperti yang ditunjukkan dalam contoh berikut:

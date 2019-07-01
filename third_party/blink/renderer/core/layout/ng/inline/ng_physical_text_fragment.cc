@@ -62,7 +62,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
       text_(source.text_),
       start_offset_(start_offset),
       end_offset_(end_offset),
-      shape_result_(shape_result) {
+      shape_result_(std::move(shape_result)) {
   DCHECK_GE(start_offset_, source.StartOffset());
   DCHECK_LE(end_offset_, source.EndOffset());
   DCHECK(shape_result_ || IsFlowControl()) << *this;
@@ -242,6 +242,13 @@ void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
   local_ink_overflow.Unite(local_rect);
   local_ink_overflow.ExpandEdgesToPixelBoundaries();
   self_ink_overflow_ = local_ink_overflow;
+}
+
+scoped_refptr<const NGPhysicalTextFragment>
+NGPhysicalTextFragment::CloneAsHiddenForPaint() const {
+  NGTextFragmentBuilder builder(*this);
+  builder.SetIsHiddenForPaint(true);
+  return builder.ToTextFragment();
 }
 
 scoped_refptr<const NGPhysicalTextFragment> NGPhysicalTextFragment::TrimText(

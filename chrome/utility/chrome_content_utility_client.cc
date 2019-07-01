@@ -50,7 +50,7 @@
 #include "components/services/quarantine/quarantine_service.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "chrome/services/isolated_xr_device/xr_device_service.h"
 #endif
 
@@ -253,7 +253,7 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
     return printing::CreatePdfCompositorService(std::move(request));
 #endif
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
   if (service_name == device::mojom::kVrIsolatedServiceName)
     return std::make_unique<device::XrDeviceService>(std::move(request));
 #endif

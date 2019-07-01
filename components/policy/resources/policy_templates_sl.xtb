@@ -367,6 +367,11 @@
           Če je ta pravilnik onemogočen ali ni nastavljen, so nastavitve računov za Kerberos onemogočene. Računov za Kerberos ni mogoče dodati in preverjanja pristnosti Kerberos ni mogoče uporabljati. Vsi obstoječi računi za Kerberos so izbrisani in enako velja za vsa shranjena gesla.</translation>
 <translation id="1561424797596341174">Preglasitve pravilnika za delovne različice gostitelja za oddaljeni dostop, namenjene odpravljanju napak</translation>
 <translation id="1561967320164410511">U2F in razširitve za posamezno potrditev</translation>
+<translation id="1566329065312331399">
+      Če je ta pravilnik onemogočen, ne dovoljuje, da bi naprava sprožila Powerwash.
+      Če je omogočen, dovoljuje, da naprava sproži Powerwash.
+      Če ni nastavljen, je privzeto onemogočen, kar pomeni, da ne dovoljuje, da bi naprava sprožila Powerwash.
+      </translation>
 <translation id="1574554504290354326">Ta nastavitev je zastarela, uporabite SafeBrowsingExtendedReportingEnabled. Če omogočite ali onemogočite SafeBrowsingExtendedReportingEnabled, je to enakovredno, kot če nastavite SafeBrowsingExtendedReportingOptInAllowed na »false«.
 
       Če ta pravilnik nastavite na »false«, uporabnikom preprečite, da bi pošiljali nekatere informacije o sistemu in vsebino strani v Googlove strežnike. Če je ta nastavitev nastavljena na »true« ali ni nastavljena, je uporabnikom dovoljeno pošiljati nekatere informacije o sistemu in vsebino strani Varnemu brskanju zaradi zaznavanja nevarnih aplikacij in spletnih mest.
@@ -408,6 +413,7 @@
 
       Opozorilo: ni priporočljivo, da nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /> dodelite aplikaciji za kiosk, saj tako naprava morda ne bo prejemala posodobitev programske opreme in nujnih varnostnih popravkov. Če dodelite nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" />, so uporabniki morda ogroženi.</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
+<translation id="1700811900332333712">Omogočanje, da naprava zahteva Powerwash</translation>
 <translation id="1704516734140344991">Konfigurira razpoložljivost in delovanje funkcije posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Posamezne nastavitve je mogoče določiti v lastnostih datoteke JSON:
@@ -2074,6 +2080,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       V tem časovnem obdobju je uporabnik večkrat obveščen glede potrebe po posodobitvi. V skladu s pravilnikom <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> se za naprave <ph name="PRODUCT_OS_NAME" /> v sistemski vrstici pojavi obvestilo o vnovičnem zagonu. Za brskalnike <ph name="PRODUCT_NAME" /> se meni aplikacije spremeni, da ponazori, da je potreben vnovični zagon, ko mine ena tretjina obdobja za obveščanje. Barva tega obvestila se spremeni, ko mineta dve tretjini obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za dodatna obvestila, ki jih je omogočil pravilnik <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, prav tako velja ta pravilnik.
 
       Če pravilnik ni nastavljen, se za naprave <ph name="PRODUCT_OS_NAME" /> kot privzeto časovno obdobje uporabi 345.600.000 milisekund (štirje dnevi), za brskalnike <ph name="PRODUCT_NAME" /> pa 604.800.000 milisekund (en teden).</translation>
+<translation id="4777805166623621364">
+      To nastavitev, SitePerProcess, je mogoče uporabljati, da se uporabnikom ne dovoli onemogočanja privzetega delovanja osamitve vseh spletnih mest. Upoštevajte, da je lahko pravilnik IsolateOrigins uporaben tudi za osamitev dodatnih, podrobnejših izvorov.
+      Če je pravilnik omogočen, uporabniki ne bodo mogli onemogočiti privzetega delovanja, pri katerem se vsako spletno mesto izvaja v svojem procesu.
+      Če pravilnik ni konfiguriran ali je onemogočen, bo uporabnik lahko onemogočil osamitev spletnih mest
+      (lahko bo na primer uporabil vnos »Disable site isolation« (onemogoči osamitev spletnih mest) v chrome://flags).  Če nastavite, da je pravilnik onemogočen, in/ali ga ne konfigurirate, osamitve spletnih mest ne izklopite.
+      V sistemu <ph name="PRODUCT_OS_NAME" /> različice 76 in starejših različicah je priporočljivo, da tudi pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> nastavite na enako vrednost. Če se vrednosti, navedene v teh dveh pravilnikih, ne ujemajo, lahko pri vstopu v uporabniško sejo pride do zakasnitve, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
+
+      OPOMBA: ta pravilnik se ne uporablja v sistemu Android. Če želite omogočiti pravilnik SitePerProcess v Androidu, uporabite nastavitev pravilnika SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje podatkov o kreditni kartici v spletnih obrazcih s predhodno shranjenimi podatki.
 
       Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o kreditni kartici in prav tako ne bo shranilo dodatnih podatkov o kreditni kartici, ki jih uporabnik lahko pošlje med brskanjem v spletu.
@@ -2222,6 +2237,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5148753489738115745">Določite lahko dodatne parametre, ki so uporabljeni, ko <ph name="PRODUCT_FRAME_NAME" /> zažene <ph name="PRODUCT_NAME" />.
 
           Če ta pravilnik ni nastavljen, je uporabljena privzeta ukazna vrstica.</translation>
+<translation id="5152787786897382519">Chromium in Google Chrome imata nekatere skupine pravilnikov, ki skupaj nadzirajo funkcijo. Te nabore predstavljajo naslednje skupine pravilnikov. Ker imajo pravilniki lahko več virov, se uporabijo samo vrednosti iz vira z največjo prednostjo. Vrednosti iz vira z manjšo prednostjo v isti skupini so prezrte. Vrstni red prednosti je določen na <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Kako pogosto se pošiljajo omrežni paketi za spremljanje (v milisekundah).
 
       Če ta pravilnik ni nastavljen, je privzeti interval 3 minute.
@@ -2770,6 +2786,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5983708779415553259">Privzeto delovanje za spletna mesta, ki niso v nobenem paketu vsebine</translation>
 <translation id="5997543603646547632">Privzeto uporabi 24-urni čas</translation>
 <translation id="5997846976342452720">Določanje, ali naj bo iskalnik vtičnikov onemogočen (zastarelo)</translation>
+<translation id="5998198091336830580">Ta pravilnik je del naslednje atomske skupine (uporabljamo se samo pravilniki iz vira z največjo prednostjo, prisotni v skupini):</translation>
 <translation id="6017568866726630990">Namesto predogleda tiskanja prikaže sistemsko pogovorno okno za tiskanje.
 
       Če je ta nastavitev omogočena, <ph name="PRODUCT_NAME" /> pri uporabnikovi zahtevi za tiskanje strani namesto vgrajenega predogleda tiskanja odpre sistemsko pogovorno okno za tiskanje.
@@ -3523,6 +3540,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik onemogočen, se podatki, s katerimi je mogoče prepoznati naprave, ne zbirajo.
 
       Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
+      </translation>
 <translation id="737655323154569539">Omeji velikost tiskanih strani. Če pravilnik ni nastavljen ali je nabor prazen, ni omejitve.</translation>
 <translation id="7389872682701720082">Če omogočite to nastavitev, se vtičniki, ki niso zastareli, vedno izvedejo.
 
@@ -3859,6 +3879,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Glejte tudi pravilnika »CookiesAllowedForUrls« in »CookiesSessionOnlyForUrls«. V teh treh pravilnikih ne sme biti vzorcev URL v sporu – ni določeno, kateri pravilnik ima prednost.</translation>
 <translation id="8099880303030573137">Časovni zamik ob napajanju iz akumulatorja</translation>
+<translation id="8101381354936029836">Atomska skupina pravilnika:</translation>
 <translation id="8102913158860568230">Privzeta nastavitev »mediastream«</translation>
 <translation id="8104186956182795918">Omogoča, da nastavite, ali je spletnim mestom dovoljeno prikazovanje slik. Prikaz slik lahko dovolite za vsa mesta ali preprečite za vsa mesta.
 
@@ -4067,6 +4088,15 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Onemogoči shranjevanje zgodovine brskalnika</translation>
 <translation id="8499172469244085141">Privzete nastavitve (uporabniki jih lahko preglasijo)</translation>
+<translation id="849962487677588458">Ta pravilnik je zastarel in je načrtovan za odstranitev v Chromu 78. Zanj ne bo zamenjave.
+
+      Ta pravilnik omogoča HTTP/0.9 za vrata, ki niso 80, za HTTP in za 443 za HTTPS.
+
+      Ta pravilnik je privzeto onemogočen, če pa je omogočen, so uporabniki izpostavljeni varnostni težavi https://crbug.com/600352.
+
+      Namen tega pravilnika je omogočiti podjetjem, da v obstoječih strežnikih prenehajo uporabljati protokol HTTP/0.9. Pravilnik bo v prihodnosti odstranjen.
+
+      Če ta pravilnik ni nastavljen, bo protokol HTTP/0.9 za vrata, ki niso privzeta, onemogočen.</translation>
 <translation id="8507835864888987300">Določi ciljno različico za samodejne posodobitve.
 
       Določa predpono ciljne različice, na katero naj se posodobi sistem <ph name="PRODUCT_OS_NAME" />. Če se v napravi izvaja različica, ki je starejša od navedene predpone, se posodobi na najnovejšo različico z dano predpono. Če je v napravi že novejša različica, je učinek odvisen od vrednosti pravilnika <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Oblika zapisa predpone temelji na komponenti, kot je prikazano v tem primeru:

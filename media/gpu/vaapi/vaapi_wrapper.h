@@ -268,6 +268,10 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
 
+  // vaDestroySurfaces() a vector or a single VASurfaceID.
+  void DestroySurfaces(std::vector<VASurfaceID> va_surfaces);
+  void DestroySurface(VASurfaceID va_surface_id);
+
  protected:
   VaapiWrapper();
   virtual ~VaapiWrapper();
@@ -289,9 +293,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                       const gfx::Size& size,
                       size_t num_surfaces,
                       std::vector<VASurfaceID>* va_surfaces);
-  // vaDestroySurfaces() a vector or a single VASurfaceID.
-  void DestroySurfaces(std::vector<VASurfaceID> va_surfaces);
-  void DestroySurface(VASurfaceID va_surface_id);
 
   // Execute pending job in hardware and destroy pending buffers. Return false
   // if vaapi driver refuses to accept parameter or slice buffers submitted

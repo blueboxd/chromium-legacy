@@ -15,8 +15,10 @@
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -33,6 +35,22 @@ class SharedURLLoaderFactory;
 class PreviewsProber
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
+  class Delegate {
+   public:
+    // This check is called before each probe is sent on the network. This can
+    // be used to check for permitting feature state or other runtime checks. If
+    // the delegate returns false, no more probes would be attempted until there
+    // is a change in the network or |SendNowIfInactive| is called.
+    virtual bool ShouldSendNextProbe() = 0;
+
+    // Allows the delegate to decide what responses mean success. If the
+    // delegate returns true, no more probes would be attempted until there is a
+    // change in the network or |SendNowIfInactive| is called.
+    virtual bool IsResponseSuccess(net::Error net_error,
+                                   const network::ResourceResponseHead& head,
+                                   std::unique_ptr<std::string> body) = 0;
+  };
+
   // This enum describes the different algorithms that can be used to calculate
   // a time delta between probe events like retries or timeout ttl.
   enum class Backoff {
@@ -88,6 +106,7 @@ class PreviewsProber
   };
 
   PreviewsProber(
+      Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& name,
       const GURL& url,
@@ -113,6 +132,7 @@ class PreviewsProber
  protected:
   // Exposes |tick_clock| for testing.
   PreviewsProber(
+      Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& name,
       const GURL& url,
@@ -132,8 +152,11 @@ class PreviewsProber
   void AddSelfAsNetworkConnectionObserver(
       network::NetworkConnectionTracker* network_connection_tracker);
 
-  // The name given to this prober instance, used in metrics, prefs, and traffic
-  // annotations.
+  // Must outlive |this|.
+  Delegate* delegate_;
+
+  // The name given to this prober instance, used in metrics, prefs, and
+  // traffic annotations.
   const std::string name_;
 
   // The URL that will be probed.

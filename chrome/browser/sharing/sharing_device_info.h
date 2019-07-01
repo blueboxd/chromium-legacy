@@ -32,7 +32,7 @@ class SharingDeviceInfo {
   // Returns the time at which this device was last online.
   base::Time last_online_timestamp() const;
 
-  // Gets a bitmask of available capaiblities of the device, defined in
+  // Gets a bitmask of available capabilities of the device, defined in
   // SharingDeviceCapability enum.
   int capabilities() const;
 

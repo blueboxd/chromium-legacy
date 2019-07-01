@@ -119,32 +119,32 @@ GamepadPose GamepadPoseFromXRPose(device::mojom::VRPose* pose) {
     ret.orientation.w = pose->orientation->w();
   }
 
-  if (pose->angularVelocity) {
+  if (pose->angular_velocity) {
     ret.angular_velocity.not_null = true;
-    ret.angular_velocity.x = pose->angularVelocity->x();
-    ret.angular_velocity.y = pose->angularVelocity->y();
-    ret.angular_velocity.z = pose->angularVelocity->z();
+    ret.angular_velocity.x = pose->angular_velocity->x();
+    ret.angular_velocity.y = pose->angular_velocity->y();
+    ret.angular_velocity.z = pose->angular_velocity->z();
   }
 
-  if (pose->linearVelocity) {
+  if (pose->linear_velocity) {
     ret.linear_velocity.not_null = true;
-    ret.linear_velocity.x = pose->linearVelocity->x();
-    ret.linear_velocity.y = pose->linearVelocity->y();
-    ret.linear_velocity.z = pose->linearVelocity->z();
+    ret.linear_velocity.x = pose->linear_velocity->x();
+    ret.linear_velocity.y = pose->linear_velocity->y();
+    ret.linear_velocity.z = pose->linear_velocity->z();
   }
 
-  if (pose->angularAcceleration) {
+  if (pose->angular_acceleration) {
     ret.angular_acceleration.not_null = true;
-    ret.angular_acceleration.x = pose->angularAcceleration->x();
-    ret.angular_acceleration.y = pose->angularAcceleration->y();
-    ret.angular_acceleration.z = pose->angularAcceleration->z();
+    ret.angular_acceleration.x = pose->angular_acceleration->x();
+    ret.angular_acceleration.y = pose->angular_acceleration->y();
+    ret.angular_acceleration.z = pose->angular_acceleration->z();
   }
 
-  if (pose->linearAcceleration) {
+  if (pose->linear_acceleration) {
     ret.linear_acceleration.not_null = true;
-    ret.linear_acceleration.x = pose->linearAcceleration->x();
-    ret.linear_acceleration.y = pose->linearAcceleration->y();
-    ret.linear_acceleration.z = pose->linearAcceleration->z();
+    ret.linear_acceleration.x = pose->linear_acceleration->x();
+    ret.linear_acceleration.y = pose->linear_acceleration->y();
+    ret.linear_acceleration.z = pose->linear_acceleration->z();
   }
 
   return ret;

@@ -207,6 +207,8 @@ cr.define('downloads', function() {
      */
     onCommand_: function(e) {
       if (e.command.id == 'clear-all-command') {
+        cr.toastManager.getInstance().show(
+            loadTimeData.getString('toastClearedAll'), true);
         this.mojoHandler_.clearAll();
       } else if (e.command.id == 'undo-command') {
         cr.toastManager.getInstance().hide();

@@ -697,12 +697,11 @@ TEST_F(VisibleUnitsLineTest, TextOverflowEllipsis) {
   SetBodyContent("<div>foo foo</div>");
   Element* div = GetDocument().QuerySelector("div");
   Node* text = div->firstChild();
-  // TODO(crbug.com/947593): Support Start/EndOfLine with ellipsis on LayoutNG
   EXPECT_EQ(
-      LayoutNGEnabled() ? Position() : Position(text, 0),
+      Position(text, 0),
       StartOfLine(CreateVisiblePositionInDOMTree(*text, 6)).DeepEquivalent());
   EXPECT_EQ(
-      LayoutNGEnabled() ? Position() : Position(text, 7),
+      Position(text, 7),
       EndOfLine(CreateVisiblePositionInDOMTree(*text, 6)).DeepEquivalent());
 }
 

@@ -207,7 +207,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
-#include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -866,6 +865,27 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
       else
         background_processes->insert(host);
     }
+  }
+
+  // Check whether |host| is associated with at least one URL for which
+  // SiteInstance does not assign site URLs.  This is used to disqualify |host|
+  // from being reused if it has pending navigations to such URLs.
+  bool ContainsNonReusableSiteForHost(RenderProcessHost* host) {
+    for (auto iter : map_) {
+      // If SiteInstance doesn't assign a site URL for the current entry (and it
+      // isn't about:blank, which is allowed anywhere), check whether |host| is
+      // on the list of processes the entry is associated with.
+      //
+      // TODO(alexmos): ShouldAssignSiteForURL() expects a full URL, whereas we
+      // only have a site URL here.  For now, this mismatch is ok since
+      // ShouldAssignSiteForURL() only cares about schemes in practice, but
+      // this should be cleaned up.
+      if (!SiteInstanceImpl::ShouldAssignSiteForURL(iter.first) &&
+          !iter.first.IsAboutBlank() &&
+          base::Contains(iter.second, host->GetID()))
+        return true;
+    }
+    return false;
   }
 
  private:
@@ -2103,8 +2123,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::BindRepeating(
-          &RenderProcessHostImpl::BindWebDatabaseHostImpl,
-          base::Unretained(this),
+          &WebDatabaseHostImpl::Create, GetID(),
           base::WrapRefCounted(storage_partition_impl_->GetDatabaseTracker())),
       storage_partition_impl_->GetDatabaseTracker()->task_runner());
 
@@ -2303,13 +2322,6 @@ void RenderProcessHostImpl::BindVideoDecoderService(
   if (!video_decoder_proxy_)
     video_decoder_proxy_.reset(new VideoDecoderProxy());
   video_decoder_proxy_->Add(std::move(request));
-}
-
-void RenderProcessHostImpl::BindWebDatabaseHostImpl(
-    scoped_refptr<storage::DatabaseTracker> db_tracker,
-    blink::mojom::WebDatabaseHostRequest request) {
-  WebDatabaseHostImpl::Create(GetID(), std::move(db_tracker),
-                              std::move(request));
 }
 
 void RenderProcessHostImpl::CreateRendererHost(
@@ -3672,7 +3684,33 @@ bool RenderProcessHostImpl::IsSuitableHost(
     }
   }
 
-  return GetContentClient()->browser()->IsSuitableHost(host, site_url);
+  if (!GetContentClient()->browser()->IsSuitableHost(host, site_url))
+    return false;
+
+  // If this site_url is going to require a dedicated process, then check
+  // whether this process has a pending navigation to a URL for which
+  // SiteInstance does not assign site URLs.  If this is the case, it is not
+  // safe to reuse this process for a navigation which itself assigns site URLs,
+  // since in that case the latter navigation could lock this process before
+  // the commit for the siteless URL arrives, resulting in a renderer kill.
+  // See https://crbug.com/970046.
+  if (SiteInstanceImpl::ShouldAssignSiteForURL(site_url) &&
+      SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context,
+                                                        site_url)) {
+    SiteProcessCountTracker* pending_tracker =
+        static_cast<SiteProcessCountTracker*>(
+            browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
+    bool has_disqualifying_pending_navigation =
+        pending_tracker &&
+        pending_tracker->ContainsNonReusableSiteForHost(host);
+    UMA_HISTOGRAM_BOOLEAN(
+        "SiteIsolation.PendingSitelessNavigationDisallowsProcessReuse",
+        has_disqualifying_pending_navigation);
+    if (has_disqualifying_pending_navigation)
+      return false;
+  }
+
+  return true;
 }
 
 // static

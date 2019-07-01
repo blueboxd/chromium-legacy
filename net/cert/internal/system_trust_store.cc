@@ -15,6 +15,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -31,7 +32,6 @@
 #include "net/cert/scoped_nss_types.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "net/cert/internal/trust_store_mac.h"
-#include "net/cert/known_roots_mac.h"
 #include "net/cert/x509_util_mac.h"
 #elif defined(OS_FUCHSIA)
 #include "third_party/boringssl/src/include/openssl/pool.h"
@@ -125,9 +125,8 @@ std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
 
 class SystemTrustStoreMac : public BaseSystemTrustStore {
  public:
-  explicit SystemTrustStoreMac() : trust_store_mac_(kSecPolicyAppleSSL) {
-    InitializeKnownRoots();
-    trust_store_.AddTrustStore(&trust_store_mac_);
+  SystemTrustStoreMac() {
+    trust_store_.AddTrustStore(GetGlobalTrustStoreMac());
 
     // When running in test mode, also layer in the test-only root certificates.
     //
@@ -145,18 +144,15 @@ class SystemTrustStoreMac : public BaseSystemTrustStore {
   // IsKnownRoot returns true if the given trust anchor is a standard one (as
   // opposed to a user-installed root)
   bool IsKnownRoot(const ParsedCertificate* trust_anchor) const override {
-    der::Input bytes = trust_anchor->der_cert();
-    base::ScopedCFTypeRef<SecCertificateRef> cert_ref =
-        x509_util::CreateSecCertificateFromBytes(bytes.UnsafeData(),
-                                                 bytes.Length());
-    if (!cert_ref)
-      return false;
-
-    return net::IsKnownRoot(cert_ref);
+    return GetGlobalTrustStoreMac()->IsKnownRoot(trust_anchor);
   }
 
  private:
-  TrustStoreMac trust_store_mac_;
+  TrustStoreMac* GetGlobalTrustStoreMac() const {
+    static base::NoDestructor<TrustStoreMac> static_trust_store_mac(
+        kSecPolicyAppleSSL);
+    return static_trust_store_mac.get();
+  }
 };
 
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {

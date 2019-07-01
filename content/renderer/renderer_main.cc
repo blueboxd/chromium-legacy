@@ -82,6 +82,9 @@ std::unique_ptr<base::MessagePump> CreateMainThreadMessagePump() {
   // needs to be backed by a Foundation-level loop to process NSTimers. See
   // http://crbug.com/306348#c24 for details.
   return base::MessagePump::Create(base::MessagePump::Type::NS_RUNLOOP);
+#elif defined(OS_FUCHSIA)
+  // Allow FIDL APIs on renderer main thread.
+  return base::MessagePump::Create(base::MessagePump::Type::IO);
 #else
   return base::MessagePump::Create(base::MessagePump::Type::DEFAULT);
 #endif

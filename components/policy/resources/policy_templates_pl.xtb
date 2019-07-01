@@ -358,6 +358,11 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
           Jeśli ta zasada jest wyłączona lub nieskonfigurowana, sekcja ustawień Konta Kerberos jest wyłączona. Nie można dodawać kont Kerberos ani korzystać z uwierzytelniania Kerberos. Istniejące konta Kerberos oraz wszystkie zapisane hasła zostają usunięte.</translation>
 <translation id="1561424797596341174">Zasada zastępuje kompilacje hosta dostępu zdalnego w trybie debugowania</translation>
 <translation id="1561967320164410511">U2F i rozszerzenia do indywidualnego poświadczania</translation>
+<translation id="1566329065312331399">
+      Gdy ta zasada ma ustawienie Fałsz, urządzenie nie może uruchomić funkcji Powerwash.
+      Gdy ma ustawienie Prawda, urządzenie może uruchomić Powerwash.
+      Jeśli zasada jest nieskonfigurowana, stosowana jest domyślna wartość Fałsz (czyli urządzenie może uruchomić Powerwash).
+      </translation>
 <translation id="1574554504290354326">To ustawienie zostało wycofane. Zamiast niego użyj ustawienia SafeBrowsingExtendedReportingEnabled. Włączenie lub wyłączenie zasady SafeBrowsingExtendedReportingEnabled działa tak samo jak ustawienie wartości false w zasadzie SafeBrowsingExtendedReportingOptInAllowed.
 
       Ustawienie tej zasady na false uniemożliwi użytkownikom wysyłanie niektórych informacji o systemie i zawartości stron na serwery Google. Jeśli zasada ma wartość true lub nie zostanie skonfigurowana, użytkownicy będą mogli wysyłać niektóre informacje o systemie i zawartości stron do usługi Bezpieczne przeglądanie, która może wykryć niebezpieczne aplikacje i strony.
@@ -399,6 +404,7 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
 
       Ostrzeżenie: delegowanie kontroli nad tym, w jakiej wersji ma być używany system <ph name="PRODUCT_OS_NAME" />, do aplikacji kiosku nie jest zalecane, ponieważ w rezultacie urządzenie może nie otrzymywać aktualizacji oprogramowania ani bardzo ważnych poprawek zabezpieczeń. Delegowanie kontroli nad tym, w jakiej wersji ma być używany system <ph name="PRODUCT_OS_NAME" />, może narazić użytkowników na niebezpieczeństwo.</translation>
 <translation id="1675002386741412210">Obsługiwana przez:</translation>
+<translation id="1700811900332333712">Zezwól urządzeniu na uruchamianie funkcji Powerwash</translation>
 <translation id="1704516734140344991">Konfiguruje dostępność i zachowanie funkcji aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Poszczególne ustawienia można określić we właściwościach JSON:
@@ -2016,6 +2022,14 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Przez ten czas użytkownik będzie wciąż informowany o konieczności aktualizacji. Na urządzeniach z <ph name="PRODUCT_OS_NAME" /> powiadomienie o konieczności ponownego uruchomienia będzie wyświetlane w obszarze powiadomień zgodnie z zasadą <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. W przeglądarkach <ph name="PRODUCT_NAME" /> po upływie jednej trzeciej okresu powiadamiania zmieni się menu aplikacji. Powiadomienie zmieni kolor po upływie dwóch trzecich okresu powiadamiania i ponownie po upływie całego tego okresu. Dodatkowe powiadomienia, które włącza zasada <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, mają ten sam harmonogram.
 
       Jeśli zasada nie jest skonfigurowana, na urządzeniach z <ph name="PRODUCT_OS_NAME" /> stosowany jest domyślny czas 345 600 000 milisekund (cztery dni), a w <ph name="PRODUCT_NAME" /> – 604 800 000 milisekund (tydzień).</translation>
+<translation id="4777805166623621364">
+      Ustawienie SitePerProcess pozwala uniemożliwić użytkownikowi wyłączenie domyślnego zachowania, czyli izolowania wszystkich witryn. Możesz jednocześnie użyć zasady IsolateOrigins, by dodatkowo izolować źródła według bardziej szczegółowych kryteriów.
+      Jeśli ta zasada jest włączona, użytkownik nie może wyłączyć domyślnego zachowania, przy którym każda witryna działa w obrębie własnego procesu.
+      Jeśli zasada jest wyłączona lub nie jest skonfigurowana, użytkownik może wyłączyć izolację witryn (np. przez zmianę ustawienia „Wyłącz izolację witryn” na stronie chrome://flags).  Wyłączenie lub nieskonfigurowanie tej zasady nie wyłącza ustawienia Izolacja witryn.
+      W <ph name="PRODUCT_OS_NAME" /> 76 i wcześniejszych wersjach zaleca się ustawienie zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości tych dwóch zasad są niezgodne, możliwe są opóźnienia przy uruchamianiu sesji użytkownika spowodowane stosowaniem wartości określonej w zasadach dotyczących użytkowników.
+
+      UWAGA: ta zasada nie działa na Androidzie. Aby włączyć zasadę SitePerProcess na Androidzie, użyj ustawienia zasady SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME" />, umożliwiając użytkownikom automatyczne wprowadzanie wcześniej zapisanych danych karty kredytowej w formularzach na stronach internetowych.
 
       Jeśli to ustawienie jest wyłączone, autouzupełnianie nie będzie podpowiadać ani wypełniać danych karty kredytowej, nie będzie też zapisywać dodatkowych danych karty kredytowej, które użytkownik może podawać na stronach internetowych.
@@ -2157,6 +2171,7 @@ Jeśli włączysz tę zasadę, wartości z zasad platformy komputera, zasad chm
 <translation id="5148753489738115745">Pozwala określić dodatkowe parametry używane, gdy <ph name="PRODUCT_FRAME_NAME" /> uruchamia <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada nie jest ustawiona, używany jest domyślny wiersz polecenia.</translation>
+<translation id="5152787786897382519">Chromium i Google Chrome mają grupy zależnych od siebie zasad, które umożliwiają sterowanie funkcjami. Te zestawy są reprezentowane przez następujące grupy zasad. Ponieważ zasady mogą mieć wiele źródeł, stosowane są tylko wartości ze źródła o najwyższym priorytecie. Wartości ze źródła o niższych priorytetach są ignorowane. Priorytety są zdefiniowane tutaj: <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Częstotliwość wysyłania pakietów sieciowych monitorowania (w milisekundach).
 
       Jeśli ta zasada nie jest skonfigurowana, domyślny odstęp czasu wynosi trzy minuty.
@@ -2676,6 +2691,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 <translation id="5983708779415553259">Domyślne zachowanie dla witryn nie jest zawarte w żadnym pakiecie treści</translation>
 <translation id="5997543603646547632">Domyślnie używaj zegara 24-godzinnego</translation>
 <translation id="5997846976342452720">Określ, czy ma być wyłączone znajdowanie wtyczek (wycofane)</translation>
+<translation id="5998198091336830580">Ta zasada należy do następującej grupy atomowej (stosowane są tylko zasady ze źródła o najwyższym priorytecie w grupie):</translation>
 <translation id="6017568866726630990">Pokaż systemowo okno wydruku zamiast podglądu wydruku.
 
       W przypadku włączenia tej opcji <ph name="PRODUCT_NAME" /> będzie otwierać systemowe okno drukowania zamiast wbudowanego podglądu wydruku, gdy użytkownik będzie chciał wydrukować stronę.
@@ -3395,6 +3411,9 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
       Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować urządzenia, nie są zbierane.
 
       Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Ta zasada dotyczy ekranu logowania. Zobacz też zasadę <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która dotyczy sesji użytkownika. Zalecane jest, by obie zasady miały tę samą wartość. Jeśli wartości są niezgodne, możliwe są opóźnienia przy uruchamianiu sesji użytkownika spowodowane stosowaniem wartości określonej w zasadach dotyczących użytkowników.
+      </translation>
 <translation id="737655323154569539">Ogranicza rozmiar drukowanych stron. Zasada nieskonfigurowana i pusty zbiór są traktowane jako brak ograniczeń.</translation>
 <translation id="7389872682701720082">Po włączeniu tego ustawienia wtyczki, które nie są nieaktualne, są zawsze uruchamiane.
 
@@ -3721,6 +3740,7 @@ Zakładki są umieszczane w folderze, którego użytkownik nie może modyfikowa
 
           Zobacz także zasady „CookiesAllowedForUrls” i „CookiesSessionOnlyForUrls”. Pamiętaj, że żadne wzorce URL używane w tych trzech zasadach nie mogą pozostawać w konflikcie – nie jest określona zasada, która będzie mieć pierwszeństwo.</translation>
 <translation id="8099880303030573137">Opóźnienie bezczynności przy zasilaniu z baterii</translation>
+<translation id="8101381354936029836">Grupa atomowa zasad:</translation>
 <translation id="8102913158860568230">Domyślne ustawienia strumienia multimediów</translation>
 <translation id="8104186956182795918">Pozwala określić, czy witryny mogą wyświetlać obrazy. Wyświetlanie obrazów może być włączone lub wyłączone dla wszystkich witryn.
 
@@ -3930,6 +3950,15 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
 <translation id="8499172469244085141">Ustawienia domyślne (użytkownicy mogą zmienić)</translation>
+<translation id="849962487677588458">Ta zasada jest wycofana i zostanie usunięta w Chrome 78. Nie ma dla niej zamiennika.
+
+      Ta zasada umożliwia włączenie HTTP/0.9 na portach innych niż 80 (HTTP) i 443 (HTTPS).
+
+      Domyślnie jest wyłączona. Jej włączenie naraża bezpieczeństwo użytkowników: https://crbug.com/600352
+
+      Ta zasada ma dać firmom czas na migrację istniejących serwerów z HTTP/0.9 i w przyszłości zostanie usunięta.
+
+      Jeśli jest nieskonfigurowana, protokół HTTP/0.9 będzie wyłączony na niestandardowych portach.</translation>
 <translation id="8507835864888987300">Ustawia wersję docelową dla automatycznych aktualizacji.
 
       Określa przedrostek docelowej wersji, do której powinien zaktualizować się system <ph name="PRODUCT_OS_NAME" />. Jeśli na urządzeniu jest wersja starsza niż określona przez podany przedrostek, zostanie wykonana aktualizacja do najnowszej wersji z tym przedrostkiem. Jeśli na urządzeniu jest już nowsza wersja, efekt zależy od wartości <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Format przedrostka umożliwia rozróżnianie składników, np.:

@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Darf bearbeiten</translation>
 <translation id="1984603991036629094">Armenische phonetische Tastatur</translation>
 <translation id="2001796770603320721">In Drive verwalten</translation>
+<translation id="2009067268969781306">Durch die Formatierung eines Laufwerks werden alle darauf gespeicherten Daten gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
 <translation id="2028997212275086731">RAR-Archiv</translation>
 <translation id="2046702855113914483">Ramen</translation>
-<translation id="204914487372604757">Verknüpfung erstellen</translation>
 <translation id="2070909990982335904">Namen, die mit einem Punkt beginnen, sind für das System reserviert. Wählen Sie einen anderen Namen aus.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2080010875307505892">Serbische Tastatur</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Arabische Tastatur</translation>
 <translation id="4261901459838235729">Google-Präsentation</translation>
 <translation id="4290535918735525311">1 Ordner für Linux freigegeben</translation>
+<translation id="42981349822642051">Maximieren</translation>
 <translation id="4298972503445160211">Dänische Tastatur</translation>
 <translation id="4299729908419173967">Portugiesisch (Brasilien)</translation>
 <translation id="4309915981827077375">Allgemeine Informationen</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Mehr...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> an Dateien werden gelöscht</translation>
 <translation id="509429900233858213">Ein Fehler ist aufgetreten.</translation>
 <translation id="5098629044894065541">Hebräisch</translation>
 <translation id="5123433949759960244">Basketball</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS-Cloud-Sicherung</translation>
 <translation id="5756666464756035725">Ungarisch – QWERTY</translation>
 <translation id="5771585441665576801">Transliteration (geia → γεια)</translation>
+<translation id="5776325638577448643">Löschen und formatieren</translation>
 <translation id="57838592816432529">Stummschalten</translation>
 <translation id="5788127256798019331">Google Play-Dateien</translation>
 <translation id="5790193330357274855">Kasachisch</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Sie geben Linux-Apps die Berechtigung, Dateien im Ordner "<ph name="FOLDER_NAME" />" zu ändern</translation>
 <translation id="5892290200158927959">Französische Bépo-Tastatur</translation>
 <translation id="5911887972742538906">Bei der Installation Ihrer Linux-Anwendung ist ein Fehler aufgetreten.</translation>
+<translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Unerwarteter Fehler beim Kopieren: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Sie geben Linux-Apps die Berechtigung, Dateien in Google Drive zu ändern. Änderungen werden mit Ihren anderen Geräten synchronisiert.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Öffnen mit <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Speicherplatzangaben werden abgerufen...</translation>
 <translation id="6205710420833115353">Einige Vorgänge dauern länger als erwartet. Möchten Sie sie abbrechen?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" /> formatieren</translation>
 <translation id="6227235786875481728">Diese Datei kann nicht wiedergegeben werden.</translation>
 <translation id="6248400709929739064">Untertitel aktivieren</translation>
 <translation id="6264347891387618177">Transliteration (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">US-amerikanische "Programmer Dvorak"-Tastatur</translation>
 <translation id="7191454237977785534">Datei speichern unter</translation>
 <translation id="7222624196722476520">Bulgarische Tastatur (phonetisch)</translation>
+<translation id="7238097264433196391">Name des Laufwerks</translation>
 <translation id="7248671827512403053">App</translation>
 <translation id="7268659760406822741">Verfügbare Dienste</translation>
 <translation id="7283041136720745563">Ihr Google Drive-Kontingent ist zu klein.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Slowenisch</translation>
 <translation id="7982283708762922719">Größe</translation>
 <translation id="7987485481246785146">Sorani-Tastatur nach arabischem Layout</translation>
-<translation id="799547531016638432">Verknüpfung entfernen</translation>
 <translation id="799923393800005025">Darf ansehen</translation>
 <translation id="8008366997883261463">Jack Russell</translation>
 <translation id="8028993641010258682">Größe</translation>

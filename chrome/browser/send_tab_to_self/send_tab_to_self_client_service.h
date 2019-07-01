@@ -54,6 +54,8 @@ class SendTabToSelfClientService : public KeyedService,
   SendTabToSelfModel* model_;
   // Singleton instance not owned by this class
   ReceivingUiHandlerRegistry* registry_;
+  // Profile for which this service is associated.
+  Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfClientService);
 };
 

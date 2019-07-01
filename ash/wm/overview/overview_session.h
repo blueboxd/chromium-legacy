@@ -67,22 +67,23 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // bounds. Window(s) that are not visible to the user do not get animated.
     // This should always be the type when in clamshell mode.
     kNormal,
-    // When going to or from a state which all window(s) are minimized, slides
-    // the windows in or out. This will minimize windows on exit if needed, so
-    // that we do not need to add a delayed observer to handle minimizing the
-    // windows after overview exit animations are finished.
-    kWindowsMinimized,
+    // Slide all windows in to enter overview. This can happen when going from
+    // a state which all window(s) are minimized.
+    kSlideInEnter,
+    // Slide all windows out to exit overview. This can happen when going to
+    // a state which all window(s) are minimized. This will minimize windows on
+    // exit if needed, so that we do not need to add a delayed observer to
+    // handle minimizing the windows after overview exit animations are
+    // finished.
+    kSlideOutExit,
     // Overview can be closed by swiping up from the shelf. In this mode, the
     // call site will handle shifting the bounds of the windows, so overview
     // code does not need to handle any animations. This is an exit only type.
     kSwipeFromShelf,
-    // Overview can be opened by start dragging a window from top or be closed
-    // if the dragged window restores back to maximized/full-screened. On enter
-    // this mode is same as kNormal, except when all windows are minimized, the
-    // launcher does not animate in. On exit this mode is used to avoid the
-    // update bounds animation of the windows in overview grid on overview mode
-    // ended.
-    kWindowDragged,
+    // Used only when it's desired to enter overview mode immediately without
+    // animations. It's used when entering overview by dragging a window from
+    // from the top of the screen.
+    kImmediateEnter,
     // Used only when it's desired to exit overview mode immediately without
     // animations. This is used when performing the desk switch animation when
     // the source desk is in overview mode, while the target desk is not.

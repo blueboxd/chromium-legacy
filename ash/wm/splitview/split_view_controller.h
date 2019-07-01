@@ -369,10 +369,6 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // nothing if overview mode is inactive at the moment.
   void InsertWindowToOverview(aura::Window* window, bool animate = true);
 
-  // Starts/Ends overview mode if the overview mode is inactive/active.
-  void StartOverview(bool window_drag = false);
-  void EndOverview();
-
   // Finalizes and cleans up after stopping dragging the divider bar to resize
   // snapped windows.
   void FinishWindowResizing(aura::Window* window);

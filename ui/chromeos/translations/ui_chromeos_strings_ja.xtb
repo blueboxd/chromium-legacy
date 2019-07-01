@@ -90,9 +90,9 @@
 <translation id="197560921582345123">共同編集者</translation>
 <translation id="1984603991036629094">アルメニア語表音キーボード</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
+<translation id="2009067268969781306">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが削除されます。この操作は元に戻せません。</translation>
 <translation id="2028997212275086731">RAR アーカイブ</translation>
 <translation id="2046702855113914483">ラーメン</translation>
-<translation id="204914487372604757">ショートカットを作成</translation>
 <translation id="2070909990982335904">ドットで始まる名前はシステム専用です。別の名前を指定してください。</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2080010875307505892">セルビア語のキーボード</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">アラビア語キーボード</translation>
 <translation id="4261901459838235729">Google プレゼンテーション</translation>
 <translation id="4290535918735525311">1 個のフォルダを Linux と共有しました</translation>
+<translation id="42981349822642051">展開</translation>
 <translation id="4298972503445160211">デンマーク語のキーボード</translation>
 <translation id="4299729908419173967">ポルトガル語（ブラジル）</translation>
 <translation id="4309915981827077375">一般情報</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">もっと見る...</translation>
 <translation id="5061708541166515394">コントラスト</translation>
 <translation id="5068919226082848014">ピザ</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> 分のファイルが削除されます</translation>
 <translation id="509429900233858213">エラーが発生しました。</translation>
 <translation id="5098629044894065541">ヘブライ語</translation>
 <translation id="5123433949759960244">バスケットボール</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS のクラウド バックアップ</translation>
 <translation id="5756666464756035725">ハンガリー語 QWERTY</translation>
 <translation id="5771585441665576801">文字変換（geia → γεια）</translation>
+<translation id="5776325638577448643">消去してフォーマット</translation>
 <translation id="57838592816432529">ミュート</translation>
 <translation id="5788127256798019331">Play ファイル</translation>
 <translation id="5790193330357274855">カザフ語</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Linux アプリに対して、<ph name="FOLDER_NAME" /> フォルダのファイルの編集を許可します</translation>
 <translation id="5892290200158927959">フランス語 BÉPO キーボード</translation>
 <translation id="5911887972742538906">Linux アプリケーションのインストール中にエラーが発生しました。</translation>
+<translation id="5912396950572065471">形式</translation>
 <translation id="5913638992615760742">コピーできませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux アプリに対して、Google ドライブのファイルの編集を許可します。変更が加えられた場合は他のデバイスに同期されます。</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> で開く</translation>
 <translation id="6199801702437275229">空き容量情報を待機中...</translation>
 <translation id="6205710420833115353">一部の操作に予想より時間がかかっています。中止しますか？</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" />をフォーマット</translation>
 <translation id="6227235786875481728">このファイルは再生できませんでした。</translation>
 <translation id="6248400709929739064">字幕を有効にする</translation>
 <translation id="6264347891387618177">文字変換（selam → ሰላም）</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">US Programmer Dvorak キーボード</translation>
 <translation id="7191454237977785534">名前を付けて保存</translation>
 <translation id="7222624196722476520">ブルガリア語（表音）キーボード</translation>
+<translation id="7238097264433196391">ドライブ名</translation>
 <translation id="7248671827512403053">アプリケーション</translation>
 <translation id="7268659760406822741">利用可能なサービス</translation>
 <translation id="7283041136720745563">Google ドライブの割り当て容量が十分にありません。</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">スロベニア語</translation>
 <translation id="7982283708762922719">高さ</translation>
 <translation id="7987485481246785146">ソラニークルド語キーボード（アラビア語ベース）</translation>
-<translation id="799547531016638432">ショートカットを削除</translation>
 <translation id="799923393800005025">閲覧者</translation>
 <translation id="8008366997883261463">犬</translation>
 <translation id="8028993641010258682">サイズ</translation>

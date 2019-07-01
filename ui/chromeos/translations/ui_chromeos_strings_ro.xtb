@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Poate edita</translation>
 <translation id="1984603991036629094">Tastatură fonetică armeană</translation>
 <translation id="2001796770603320721">Gestionează în Drive</translation>
+<translation id="2009067268969781306">Formatarea unității va șterge toate datele stocate pe unitate. Această acțiune nu poate fi anulată.</translation>
 <translation id="2028997212275086731">Arhivă RAR</translation>
 <translation id="2046702855113914483">Supă ramen</translation>
-<translation id="204914487372604757">Creează o comandă rapidă</translation>
 <translation id="2070909990982335904">Numele care încep cu punct sunt rezervate pentru sistem. Alege alt nume.</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2080010875307505892">Tastatură sârbă</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Tastatură arabă</translation>
 <translation id="4261901459838235729">Prezentare Google</translation>
 <translation id="4290535918735525311">Un dosar cu accesul permis pentru Linux</translation>
+<translation id="42981349822642051">Extinde</translation>
 <translation id="4298972503445160211">Tastatură daneză</translation>
 <translation id="4299729908419173967">Braziliană</translation>
 <translation id="4309915981827077375">Informații generale</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Mai multe detalii...</translation>
 <translation id="5061708541166515394">Contrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> fișiere vor fi șterse</translation>
 <translation id="509429900233858213">A apărut o eroare.</translation>
 <translation id="5098629044894065541">Ebraică</translation>
 <translation id="5123433949759960244">Baschet</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Backup în cloud pentru sistemul de operare Chrome</translation>
 <translation id="5756666464756035725">Maghiară QWERTY</translation>
 <translation id="5771585441665576801">Transliterație (geia → γεια)</translation>
+<translation id="5776325638577448643">Șterge și formatează</translation>
 <translation id="57838592816432529">Dezactivează sunetul</translation>
 <translation id="5788127256798019331">Fișiere Play</translation>
 <translation id="5790193330357274855">Kazahă</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Acordă aplicațiilor Linux permisiunea să modifice fișiere în dosarul <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Tastatură franceză BÉPO</translation>
 <translation id="5911887972742538906">A apărut o eroare în timpul instalării aplicației Linux.</translation>
+<translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Nu s-a putut copia, eroare neprevăzută: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Acordă aplicațiilor Linux permisiunea de a modifica fișiere în Google Drive. Modificările se vor sincroniza cu celelalte dispozitive care îți aparțin.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Deschide cu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Se așteaptă informațiile despre spațiu...</translation>
 <translation id="6205710420833115353">Unele operațiuni durează mai mult decât ar trebui. Dorești să le anulezi?</translation>
+<translation id="6224253798271602650">Formatați <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Acest fișier nu a putut fi redat.</translation>
 <translation id="6248400709929739064">Activează subtitrările</translation>
 <translation id="6264347891387618177">Transliterație (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Tastatura pentru programatori S.U.A Dvorak</translation>
 <translation id="7191454237977785534">Salvează fișierul ca</translation>
 <translation id="7222624196722476520">Tastatură bulgară fonetică</translation>
+<translation id="7238097264433196391">Numele unității</translation>
 <translation id="7248671827512403053">Aplicație</translation>
 <translation id="7268659760406822741">Servicii disponibile</translation>
 <translation id="7283041136720745563">Cota Google Drive nu este suficient de mare.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Slovenă</translation>
 <translation id="7982283708762922719">Înălțime</translation>
 <translation id="7987485481246785146">Tastatură kurdă sorani bazată pe arabă</translation>
-<translation id="799547531016638432">Eliminați comanda rapidă</translation>
 <translation id="799923393800005025">Poate vedea</translation>
 <translation id="8008366997883261463">Terier</translation>
 <translation id="8028993641010258682">Dimensiune</translation>

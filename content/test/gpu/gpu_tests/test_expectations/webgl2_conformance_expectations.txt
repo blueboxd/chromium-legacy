@@ -4,6 +4,7 @@
 # tags: [ intel amd-0x699f nvidia-0x1cb3 amd-0x6613 amd
 #         qualcomm nvidia-0xfe9 nvidia nvidia-0xf02 intel-0xa2e ]
 # tags: [ debug ]
+# tags: [ intel_lt_25.20.100.6444 mesa_lt_17.3.9 mesa_lt_17.1.6 ]
 
 
 # ===================================
@@ -197,8 +198,8 @@ crbug.com/614418 [ d3d11 win intel ] deqp/functional/gles3/textureformat/unsized
 # Case no-over-optimization-on-uniform-array-08 always fail if run
 # case gl-min-uniforms first.
 # Temporarily skip these two cases now.
-crbug.com/953243 [ opengl win passthrough intel ] conformance/limits/gl-min-uniforms.html [ Skip ]
-crbug.com/953243 [ opengl win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-08.html [ Skip ]
+crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/limits/gl-min-uniforms.html [ Skip ]
+crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-08.html [ Skip ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.
@@ -206,8 +207,8 @@ crbug.com/953243 [ opengl win passthrough intel ] conformance/uniforms/no-over-o
 # case biuDepthRange_001_to_002 first.
 # Temporarily skip these two cases now because this issue blocks
 # WEBGL_video_texture implementation.
-crbug.com/907195 [ opengl win passthrough intel ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
-crbug.com/907195 [ opengl win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
+crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
 
 # It's unfortunate that these suppressions need to be so broad, but it
 # looks like the D3D11 device can be lost spontaneously on this
@@ -571,13 +572,13 @@ crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] deqp/functional/gles3/fbocomplet
 crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
-# Already fixed with Mesa 17.2.3
-crbug.com/905011 [ linux intel ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
-crbug.com/666384 [ linux intel ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
-crbug.com/666384 [ linux intel ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
-
-# Already fixed with Mesa 17.1.6
-crbug.com/680675 [ linux intel ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/680675 [ linux intel mesa_lt_17.1.6 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/905011 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
+crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
+crbug.com/905011 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
+crbug.com/666384 [ linux intel opengl passthrough ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/666384 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
 
 # Linux AMD only.
 # It looks like AMD shader compiler rejects many valid ES3 semantics.

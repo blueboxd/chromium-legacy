@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/public/c/system/invitation.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -80,18 +79,8 @@ void PrepareToPassRemoteEndpoint(PlatformChannel* channel,
 #if defined(OS_FUCHSIA)
   channel->PrepareToPassRemoteEndpoint(&options->handles_to_transfer, &value);
 #elif defined(OS_MACOSX)
-  PlatformChannel::HandlePassingInfo info;
-  if (base::FeatureList::IsEnabled(features::kMojoChannelMac))
-    info = options->mach_ports_for_rendezvous;
-  else
-    info = options->fds_to_remap;
-
-  channel->PrepareToPassRemoteEndpoint(&info, &value);
-
-  if (base::FeatureList::IsEnabled(features::kMojoChannelMac))
-    options->mach_ports_for_rendezvous = info;
-  else
-    options->fds_to_remap = info;
+  channel->PrepareToPassRemoteEndpoint(&options->mach_ports_for_rendezvous,
+                                       &value);
 #elif defined(OS_POSIX)
   channel->PrepareToPassRemoteEndpoint(&options->fds_to_remap, &value);
 #elif defined(OS_WIN)

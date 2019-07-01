@@ -90,9 +90,9 @@
 <translation id="197560921582345123">সম্পাদনা করতে পারবেন</translation>
 <translation id="1984603991036629094">আর্মেনিয় ফোনেটিক কীবোর্ড</translation>
 <translation id="2001796770603320721">ড্রাইভে পরিচালনা করুন</translation>
+<translation id="2009067268969781306">ড্রাইভ ফর্ম্যাট করা হলে, সেটিতে সেভ করা সব ডেটা মুছে যাবে। সেটিকে আর আগের অবস্থায় ফেরানো যাবে না।</translation>
 <translation id="2028997212275086731">RAR আর্কাইভ</translation>
 <translation id="2046702855113914483">রামেন</translation>
-<translation id="204914487372604757">শর্টকাট তৈরি করুন</translation>
 <translation id="2070909990982335904">ডট দিয়ে শুরু নমাগুলি সিস্টেমের জন্য সংরক্ষিত৷ দয়া করে অন্য নাম চয়ন করুন৷</translation>
 <translation id="2079545284768500474">আগের অবস্থায় ফিরুন</translation>
 <translation id="2080010875307505892">সার্বিয় কীবোর্ড</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">আরবি কীবোর্ড</translation>
 <translation id="4261901459838235729">Google উপস্থাপনা</translation>
 <translation id="4290535918735525311">Linux ব্যবহার করে ১টি ফোল্ডার শেয়ার করা হয়েছে</translation>
+<translation id="42981349822642051">প্রসারিত করুন</translation>
 <translation id="4298972503445160211">ডেনিশ কীবোর্ড</translation>
 <translation id="4299729908419173967">ব্রাজিলীয়</translation>
 <translation id="4309915981827077375">সাধারণ তথ্য</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">আরও দেখুন...</translation>
 <translation id="5061708541166515394">তুলনা</translation>
 <translation id="5068919226082848014">পিৎজা</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ফাইল মুছে ফেলা হবে</translation>
 <translation id="509429900233858213">একটি ত্রুটি ঘটেছে৷</translation>
 <translation id="5098629044894065541">হিব্রু</translation>
 <translation id="5123433949759960244">বাস্কেটবল</translation>
@@ -411,6 +413,7 @@
 <translation id="5752453871435543420">Chrome OS ক্লাউড ব্যাকআপ</translation>
 <translation id="5756666464756035725">হাঙ্গেরিয়ান কোয়ের্টি</translation>
 <translation id="5771585441665576801">লিপ্যন্তরকরণ (geia → γεια)</translation>
+<translation id="5776325638577448643">মুছে ফেলুন ও ফর্ম্যাট করুন</translation>
 <translation id="57838592816432529">মিউট করুন</translation>
 <translation id="5788127256798019331">Play ফাইল</translation>
 <translation id="5790193330357274855">কাজাখ</translation>
@@ -427,6 +430,7 @@
 <translation id="5857774240076772505">Linux অ্যাপকে <ph name="FOLDER_NAME" /> ফোল্ডারের ফাইলগুলি পরিবর্তন করার অনুমতি দিন</translation>
 <translation id="5892290200158927959">ফরাসি BÉPO কীবোর্ড</translation>
 <translation id="5911887972742538906">Linux অ্যাপ্লিকেশন ইনস্টল করার সময়ে সমস্যা হয়েছে।</translation>
+<translation id="5912396950572065471">ফর্ম্যাট</translation>
 <translation id="5913638992615760742">কপি করা যায়নি, অপ্রত্যাশিত সমস্যা হয়েছে: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux অ্যাপকে আপনার Google ড্রাইভ-এর ফাইলগুলি পরিবর্তন করার অনুমতি দিন। পরিবর্তনগুলি আপনার অন্যান্য ডিভাইসের সাথে সিঙ্ক হয়ে যাবে।</translation>
@@ -451,6 +455,7 @@
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> এর মাধ্যমে খুলুন</translation>
 <translation id="6199801702437275229">স্থান তথ্যের জন্য অপেক্ষারত...</translation>
 <translation id="6205710420833115353">কিছু অ্যাক্টিভিটি প্রত্যাশিত সময়ের থেকে বেশি সময় নিচ্ছে। আপনি কি সেগুলি থামাতে চান?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" /> ফর্ম্যাট করা</translation>
 <translation id="6227235786875481728">এই ফাইলটি চালানো যাবেনা৷</translation>
 <translation id="6248400709929739064">সাবটাইটেল সক্ষম করুন</translation>
 <translation id="6264347891387618177">লিপ্যন্তরকরণ (selam → ሰላም)</translation>
@@ -531,6 +536,7 @@
 <translation id="719009910964971313">মার্কিন যুক্তরাষ্ট্র প্রোগ্রামার ডিভোরাক কীবোর্ড</translation>
 <translation id="7191454237977785534">ফাইল এই রূপে সেভ করুন</translation>
 <translation id="7222624196722476520">বুলগেরিয় ফোনেটিক কীবোর্ড</translation>
+<translation id="7238097264433196391">ড্রাইভের নাম</translation>
 <translation id="7248671827512403053">অ্যাপ্লিকেশান</translation>
 <translation id="7268659760406822741">উপলব্ধ পরিষেবাসমূহ</translation>
 <translation id="7283041136720745563">আপনার Google ড্রাইভের কোটা যথেষ্ট নয়।</translation>
@@ -601,7 +607,6 @@
 <translation id="7969525169268594403">স্লোভেনিয়ান</translation>
 <translation id="7982283708762922719">উচ্চতা</translation>
 <translation id="7987485481246785146">সোরানি কুর্দিশ আরবী-নির্ভর কীবোর্ড</translation>
-<translation id="799547531016638432">ডেস্কটপ সরান</translation>
 <translation id="799923393800005025">দেখতে পারবেন</translation>
 <translation id="8008366997883261463">জ্যাক রাসেল ক্ষুদ্রকায় কুকুর</translation>
 <translation id="8028993641010258682">সাইজ</translation>

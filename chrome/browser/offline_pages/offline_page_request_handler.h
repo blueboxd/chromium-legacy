@@ -297,7 +297,6 @@ class OfflinePageRequestHandler {
   // For the purpose of serving from the archive file.
   base::FilePath file_path_;
   std::unique_ptr<net::FileStream> stream_;
-  bool has_range_header_;
 
   base::WeakPtrFactory<OfflinePageRequestHandler> weak_ptr_factory_;
 

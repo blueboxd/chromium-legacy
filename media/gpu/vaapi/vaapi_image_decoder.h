@@ -39,8 +39,6 @@ enum class VaapiImageDecodeStatus : uint32_t {
 // particular format (e.g. JPEG or WebP). Objects of this class are not
 // thread-safe, but they are also not thread-affine, i.e., the caller is free to
 // call the methods on any thread, but calls must be synchronized externally.
-// TODO(gildekel): move more common image decoding functions to this class as
-// more implementing classes are added (e.g. VaapiWebPDecoder).
 class VaapiImageDecoder {
  public:
   virtual ~VaapiImageDecoder();
@@ -67,6 +65,11 @@ class VaapiImageDecoder {
 
  protected:
   explicit VaapiImageDecoder(VAProfile va_profile);
+
+  // Transfers ownership of the VASurface that contains the result of the last
+  // decode to the caller. The returned VASurface is self-cleaning.
+  // Returns a nullptr on failure.
+  virtual scoped_refptr<VASurface> ReleaseVASurface() = 0;
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 

@@ -95,7 +95,7 @@ OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
   // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
   // Fade out the minimized window without animation if switch from tablet mode
   // to clamshell mode.
-  if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
+  if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit) {
     return Shell::Get()->tablet_mode_controller()->InTabletMode()
                ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
                : OVERVIEW_ANIMATION_NONE;

@@ -117,13 +117,13 @@ mojom::VRFieldOfViewPtr ParseProjection(const Matrix4x4& projection) {
   float far_plane = left_top_far.z();
 
   mojom::VRFieldOfViewPtr field_of_view = mojom::VRFieldOfView::New();
-  field_of_view->upDegrees =
+  field_of_view->up_degrees =
       gfx::RadToDeg(atanf(-top_on_far_plane / far_plane));
-  field_of_view->downDegrees =
+  field_of_view->down_degrees =
       gfx::RadToDeg(atanf(bottom_on_far_plane / far_plane));
-  field_of_view->leftDegrees =
+  field_of_view->left_degrees =
       gfx::RadToDeg(atanf(left_on_far_plane / far_plane));
-  field_of_view->rightDegrees =
+  field_of_view->right_degrees =
       gfx::RadToDeg(atanf(-right_on_far_plane / far_plane));
 
   // TODO(billorr): Expand the mojo interface to support just sending the
@@ -620,11 +620,12 @@ bool MixedRealityRenderLoop::UpdateDisplayInfo() {
     current_display_info_ = mojom::VRDisplayInfo::New();
     current_display_info_->id =
         device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID;
-    current_display_info_->displayName =
+    current_display_info_->display_name =
         "Windows Mixed Reality";  // TODO(billorr): share this string.
     current_display_info_->capabilities = mojom::VRDisplayCapabilities::New(
-        true /* hasPosition */, true /* hasExternalDisplay */,
-        true /* canPresent */, false /* canProvideEnvironmentIntegration */);
+        true /* has_position */, true /* has_external_display */,
+        true /* can_present */,
+        false /* can_provide_environment_integration */);
 
     // TODO(billorr): consider scaling framebuffers after rendering support is
     // added.
@@ -634,47 +635,47 @@ bool MixedRealityRenderLoop::UpdateDisplayInfo() {
     changed = true;
   }
 
-  if (!stereo && current_display_info_->rightEye) {
+  if (!stereo && current_display_info_->right_eye) {
     changed = true;
-    current_display_info_->rightEye = nullptr;
+    current_display_info_->right_eye = nullptr;
   }
 
-  if (!current_display_info_->leftEye) {
-    current_display_info_->leftEye = mojom::VREyeParameters::New();
+  if (!current_display_info_->left_eye) {
+    current_display_info_->left_eye = mojom::VREyeParameters::New();
     changed = true;
   }
 
-  if (current_display_info_->leftEye->renderWidth != size.Width ||
-      current_display_info_->leftEye->renderHeight != size.Height) {
+  if (current_display_info_->left_eye->render_width != size.Width ||
+      current_display_info_->left_eye->render_height != size.Height) {
     changed = true;
-    current_display_info_->leftEye->renderWidth = size.Width;
-    current_display_info_->leftEye->renderHeight = size.Height;
+    current_display_info_->left_eye->render_width = size.Width;
+    current_display_info_->left_eye->render_height = size.Height;
   }
 
   auto left_fov = ParseProjection(projection.Left);
-  if (!current_display_info_->leftEye->fieldOfView ||
-      !left_fov->Equals(*current_display_info_->leftEye->fieldOfView)) {
-    current_display_info_->leftEye->fieldOfView = std::move(left_fov);
+  if (!current_display_info_->left_eye->field_of_view ||
+      !left_fov->Equals(*current_display_info_->left_eye->field_of_view)) {
+    current_display_info_->left_eye->field_of_view = std::move(left_fov);
     changed = true;
   }
 
   if (stereo) {
-    if (!current_display_info_->rightEye) {
-      current_display_info_->rightEye = mojom::VREyeParameters::New();
+    if (!current_display_info_->right_eye) {
+      current_display_info_->right_eye = mojom::VREyeParameters::New();
       changed = true;
     }
 
-    if (current_display_info_->rightEye->renderWidth != size.Width ||
-        current_display_info_->rightEye->renderHeight != size.Height) {
+    if (current_display_info_->right_eye->render_width != size.Width ||
+        current_display_info_->right_eye->render_height != size.Height) {
       changed = true;
-      current_display_info_->rightEye->renderWidth = size.Width;
-      current_display_info_->rightEye->renderHeight = size.Height;
+      current_display_info_->right_eye->render_width = size.Width;
+      current_display_info_->right_eye->render_height = size.Height;
     }
 
     auto right_fov = ParseProjection(projection.Right);
-    if (!current_display_info_->rightEye->fieldOfView ||
-        !right_fov->Equals(*current_display_info_->rightEye->fieldOfView)) {
-      current_display_info_->rightEye->fieldOfView = std::move(right_fov);
+    if (!current_display_info_->right_eye->field_of_view ||
+        !right_fov->Equals(*current_display_info_->right_eye->field_of_view)) {
+      current_display_info_->right_eye->field_of_view = std::move(right_fov);
       changed = true;
     }
   }
@@ -688,12 +689,12 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
   bool changed = false;
   if (stage_transform_needs_updating_) {
     if (!(stage_origin_ && anchor_origin_) &&
-        current_display_info_->stageParameters) {
+        current_display_info_->stage_parameters) {
       changed = true;
-      current_display_info_->stageParameters = nullptr;
+      current_display_info_->stage_parameters = nullptr;
     } else if (stage_origin_ && anchor_origin_) {
       changed = true;
-      current_display_info_->stageParameters = nullptr;
+      current_display_info_->stage_parameters = nullptr;
 
       mojom::VRStageParametersPtr stage_parameters =
           mojom::VRStageParameters::New();
@@ -702,23 +703,24 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
       if (!anchor_origin_->TryGetTransformTo(stage_origin_.get(),
                                              &origin_to_stage)) {
         // We failed to get a transform between the two, so force a
-        // recalculation of the stage origin and leave the stageParameters null.
+        // recalculation of the stage origin and leave the stage_parameters
+        // null.
         ClearStageOrigin();
         return changed;
       }
 
-      stage_parameters->standingTransform =
+      stage_parameters->standing_transform =
           ConvertToGfxTransform(origin_to_stage);
 
-      current_display_info_->stageParameters = std::move(stage_parameters);
+      current_display_info_->stage_parameters = std::move(stage_parameters);
     }
 
     stage_transform_needs_updating_ = false;
   }
 
   EnsureStageBounds();
-  if (bounds_updated_ && current_display_info_->stageParameters) {
-    current_display_info_->stageParameters->bounds = bounds_;
+  if (bounds_updated_ && current_display_info_->stage_parameters) {
+    current_display_info_->stage_parameters->bounds = bounds_;
     changed = true;
     bounds_updated_ = false;
   }
@@ -784,26 +786,26 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     return ret;
   }
 
-  if (current_display_info_->rightEye) {
+  if (current_display_info_->right_eye) {
     // If we have a right eye, we are stereo.
     PoseAndEyeTransform pose_and_eye_transform = GetStereoViewData(view);
     ret->pose = std::move(pose_and_eye_transform.pose);
 
-    if (current_display_info_->leftEye->offset !=
+    if (current_display_info_->left_eye->offset !=
             pose_and_eye_transform.left_offset ||
-        current_display_info_->rightEye->offset !=
+        current_display_info_->right_eye->offset !=
             pose_and_eye_transform.right_offset) {
-      current_display_info_->leftEye->offset =
+      current_display_info_->left_eye->offset =
           std::move(pose_and_eye_transform.left_offset);
-      current_display_info_->rightEye->offset =
+      current_display_info_->right_eye->offset =
           std::move(pose_and_eye_transform.right_offset);
       send_new_display_info = true;
     }
   } else {
     ret->pose = GetMonoViewData(view);
     gfx::Vector3dF offset;
-    if (current_display_info_->leftEye->offset != offset) {
-      current_display_info_->leftEye->offset = offset;
+    if (current_display_info_->left_eye->offset != offset) {
+      current_display_info_->left_eye->offset = offset;
       send_new_display_info = true;
     }
   }
@@ -811,14 +813,14 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   // The only display info we've updated so far is the eye info.
   if (send_new_display_info) {
     // Update the eye info for this frame.
-    ret->left_eye = current_display_info_->leftEye.Clone();
-    ret->right_eye = current_display_info_->rightEye.Clone();
+    ret->left_eye = current_display_info_->left_eye.Clone();
+    ret->right_eye = current_display_info_->right_eye.Clone();
   }
 
   bool stage_parameters_updated = UpdateStageParameters();
   if (stage_parameters_updated) {
     ret->stage_parameters_updated = true;
-    ret->stage_parameters = current_display_info_->stageParameters.Clone();
+    ret->stage_parameters = current_display_info_->stage_parameters.Clone();
   }
 
   if (send_new_display_info || stage_parameters_updated) {

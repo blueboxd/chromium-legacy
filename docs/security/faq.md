@@ -657,6 +657,18 @@ vulnerability in the relevant feature, not Safe Browsing itself.
 See our dedicated [Service Worker Security
 FAQ](https://chromium.googlesource.com/chromium/src/+/master/docs/security/service-worker-security-faq.md).
 
+<a name="TOC-What-about-URL-spoofs-using-Internationalized-Domain-Names-IDN-"></a>
+## What about URL spoofs using Internationalized Domain Names (IDN)?
+
+We try to balance the needs of our international userbase while protecting users
+against confusable homograph attacks. Despite this, there are a list of known
+IDN display issues we are still working on.
+
+*    Please see [this document](https://docs.google.com/document/d/1_xJz3J9kkAPwk3pma6K3X12SyPTyyaJDSCxTfF8Y5sU)
+for a list of known issues and how we handle them.
+*    [This document](https://www.chromium.org/developers/design-documents/idn-in-google-chrome)
+describes Chrome's IDN policy in detail.
+
 ## TODO
 
 *    https://dev.chromium.org/Home/chromium-security/client-identification-mechanisms

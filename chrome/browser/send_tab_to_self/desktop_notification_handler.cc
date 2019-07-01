@@ -144,4 +144,8 @@ void DesktopNotificationHandler::DisplayFailureMessage(const GURL& url) {
       /*metadata=*/nullptr);
 }
 
+const Profile* DesktopNotificationHandler::GetProfile() const {
+  return profile_;
+}
+
 }  // namespace send_tab_to_self

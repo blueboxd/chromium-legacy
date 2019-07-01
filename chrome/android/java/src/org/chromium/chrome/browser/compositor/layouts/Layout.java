@@ -59,7 +59,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     public @interface ViewportMode {
         /** The viewport is assumed to be always fullscreen. */
         int ALWAYS_FULLSCREEN = 0;
-        /** The viewport is assuming that browser controls are permenantly shown. */
+        /** The viewport is assuming that browser controls are permanently shown. */
         int ALWAYS_SHOWING_BROWSER_CONTROLS = 1;
         /** The viewport will account for animating browser controls (both shown and hidden). */
         int DYNAMIC_BROWSER_CONTROLS = 2;

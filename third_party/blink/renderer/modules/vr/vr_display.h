@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_H_
 
+#include <memory>
+#include <utility>
+
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -169,9 +172,9 @@ class VRDisplay final : public EventTargetWithInlineData,
 
  private:
   void OnRequestImmersiveSessionReturned(
-      device::mojom::blink::XRSessionPtr session);
+      device::mojom::blink::RequestSessionResultPtr result);
   void OnNonImmersiveSessionRequestReturned(
-      device::mojom::blink::XRSessionPtr session);
+      device::mojom::blink::RequestSessionResultPtr result);
 
   void OnConnected();
   void OnDisconnected();
@@ -230,7 +233,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   double depth_far_ = 10000.0;
 
   // Current dimensions of the WebVR source canvas. May be different from
-  // the recommended renderWidth/Height if the client overrides dimensions.
+  // the recommended render width/height if the client overrides dimensions.
   int source_width_ = 0;
   int source_height_ = 0;
 

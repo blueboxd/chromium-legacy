@@ -648,7 +648,7 @@
 #include "services/content/simple_browser/public/mojom/constants.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #endif
 

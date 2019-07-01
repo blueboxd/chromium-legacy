@@ -102,4 +102,16 @@ TEST_F(CSSComputedStyleDeclarationTest, NeedsAdjacentStyleRecalc) {
   EXPECT_TRUE(container->NeedsAdjacentStyleRecalc());
 }
 
+TEST_F(CSSComputedStyleDeclarationTest,
+       NoCrashWhenCallingGetPropertyCSSValueWithVariable) {
+  UpdateAllLifecyclePhasesForTest();
+  Element* target = GetDocument().body();
+  auto* computed = MakeGarbageCollected<CSSComputedStyleDeclaration>(target);
+  ASSERT_TRUE(computed);
+  const CSSValue* result =
+      computed->GetPropertyCSSValue(CSSPropertyID::kVariable);
+  EXPECT_FALSE(result);
+  // Don't crash.
+}
+
 }  // namespace blink

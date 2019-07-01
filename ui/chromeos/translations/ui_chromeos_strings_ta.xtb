@@ -90,9 +90,9 @@
 <translation id="197560921582345123">திருத்தலாம்</translation>
 <translation id="1984603991036629094">ஆர்மேனியன் ஒலிப்புமுறை விசைப்பலகை</translation>
 <translation id="2001796770603320721">இயக்ககத்தில் நிர்வகி</translation>
+<translation id="2009067268969781306">இயக்ககத்தை ஃபார்மேட் செய்தால் அதில் சேமிக்கப்பட்டுள்ள தரவு அனைத்தும் நீக்கப்படும். அவற்றைத் திரும்பப் பெற முடியாது.</translation>
 <translation id="2028997212275086731">RAR archive</translation>
 <translation id="2046702855113914483">ரேமன்</translation>
-<translation id="204914487372604757">ஷார்ட்கட்டை உருவாக்குக</translation>
 <translation id="2070909990982335904">புள்ளியுடன் தொடங்கும் பெயர்களை கணினி முன்பதிவு செய்துள்ளதால், வேறொரு பெயரைத் தேர்வுசெய்க.</translation>
 <translation id="2079545284768500474">செயல்தவிர்</translation>
 <translation id="2080010875307505892">செர்பியன் விசைப்பலகை</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">அரபிக் விசைப்பலகை</translation>
 <translation id="4261901459838235729">Google விளக்கக்காட்சி</translation>
 <translation id="4290535918735525311">Linuxஸுடன் 1 கோப்புறை பகிரப்பட்டது</translation>
+<translation id="42981349822642051">விரி</translation>
 <translation id="4298972503445160211">டேனிஷ் விசைப்பலகை</translation>
 <translation id="4299729908419173967">பிரேசிலியன்</translation>
 <translation id="4309915981827077375">பொதுவான தகவல்</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">மேலும் காட்டு...</translation>
 <translation id="5061708541166515394">ஒளி மாறுபாடு</translation>
 <translation id="5068919226082848014">பீட்சா</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> அளவுள்ள கோப்புகள் நீக்கப்படும்</translation>
 <translation id="509429900233858213">பிழை ஏற்பட்டது.</translation>
 <translation id="5098629044894065541">ஹீப்ரு</translation>
 <translation id="5123433949759960244">கூடைப்பந்து</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS கிளவுடு காப்புப் பிரதி</translation>
 <translation id="5756666464756035725">ஹங்கேரியன் QWERTY</translation>
 <translation id="5771585441665576801">ஒலிபெயர்ப்பு (geia → γεια)</translation>
+<translation id="5776325638577448643">அழித்து ஃபார்மேட் செய்</translation>
 <translation id="57838592816432529">ஒலியடக்கு</translation>
 <translation id="5788127256798019331">Play கோப்புகள்</translation>
 <translation id="5790193330357274855">கஸக்</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505"><ph name="FOLDER_NAME" /> கோப்புறையிலுள்ள கோப்புகளைத் திருத்துவதற்கு Linux ஆப்ஸுக்கு அனுமதி வழங்கவும்</translation>
 <translation id="5892290200158927959">ஃபிரஞ்சு பீபோ விசைப்பலகை</translation>
 <translation id="5911887972742538906">உங்கள் Linux ஆப்ஸை நிறுவும்போது பிழை நேர்ந்தது.</translation>
+<translation id="5912396950572065471">ஃபார்மேட்</translation>
 <translation id="5913638992615760742">நகலெடுக்க முடியவில்லை, எதிர்பாராத பிழை: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">உங்கள் Google இயக்ககத்தில் உள்ள கோப்புகளைத் திருத்த Linux ஆப்ஸுக்கு அனுமதி வழங்கவும். மாற்றங்கள் உங்கள் பிற சாதனங்களுடன் ஒத்திசைக்கப்படும்.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> மூலம் திற</translation>
 <translation id="6199801702437275229">இடத் தகவலுக்காக காத்திருக்கிறது...</translation>
 <translation id="6205710420833115353">சில செயல்பாடுகள் எதிர்பார்த்ததை விட அதிக நேரம் எடுக்கிறது. அவற்றை நிறுத்த விரும்புகிறீர்களா?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" /> சாதனத்தை ஃபார்மேட் செய்</translation>
 <translation id="6227235786875481728">இந்தக் கோப்பை இயக்க முடியாது.</translation>
 <translation id="6248400709929739064">வசனங்களை இயக்கு</translation>
 <translation id="6264347891387618177">ஒலிபெயர்ப்பு (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">US புரோகிராமர் டிவோரக் விசைப்பலகை</translation>
 <translation id="7191454237977785534">கோப்பை இவ்வாறு சேமி </translation>
 <translation id="7222624196722476520">பல்கேரியன் ஒலிப்புமுறை விசைப்பலகை</translation>
+<translation id="7238097264433196391">இயக்ககத்தின் பெயர்</translation>
 <translation id="7248671827512403053">ஆப்ஸ்</translation>
 <translation id="7268659760406822741">கிடைக்கும் சேவைகள்</translation>
 <translation id="7283041136720745563">உங்கள் Google இயக்கக ஒதுக்கீடு போதுமானதாக இல்லை.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">ஸ்லோவேனியன்</translation>
 <translation id="7982283708762922719">உயரம்</translation>
 <translation id="7987485481246785146">சொரானி குர்டிஷ் அரபிக் விசைப்பலகை</translation>
-<translation id="799547531016638432">ஷார்ட்கட்டை அகற்று</translation>
 <translation id="799923393800005025">பார்க்கலாம்</translation>
 <translation id="8008366997883261463">ஜாக் ரஸ்ஸல் டெர்ரியர்</translation>
 <translation id="8028993641010258682">அளவு</translation>

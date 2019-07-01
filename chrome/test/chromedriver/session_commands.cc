@@ -1192,19 +1192,6 @@ Status ExecuteSetScreenOrientation(Session* session,
   return Status(kOk);
 }
 
-Status ExecuteDeleteScreenOrientation(Session* session,
-                                      const base::DictionaryValue& params,
-                                      std::unique_ptr<base::Value>* value) {
-  WebView* web_view = nullptr;
-  Status status = session->GetTargetWindow(&web_view);
-  if (status.IsError())
-    return status;
-  status = web_view->DeleteScreenOrientation();
-  if (status.IsError())
-    return status;
-  return Status(kOk);
-}
-
 Status ExecuteGenerateTestReport(Session* session,
                                  const base::DictionaryValue& params,
                                  std::unique_ptr<base::Value>* value) {

@@ -42,8 +42,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
-#include <array>
-
 namespace blink {
 
 namespace {
@@ -169,14 +167,14 @@ VRController* VRDisplay::Controller() {
 }
 
 void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
-  display_name_ = display->displayName;
+  display_name_ = display->display_name;
   is_connected_ = true;
 
-  capabilities_->SetHasPosition(display->capabilities->hasPosition);
+  capabilities_->SetHasPosition(display->capabilities->has_position);
   capabilities_->SetHasExternalDisplay(
-      display->capabilities->hasExternalDisplay);
-  capabilities_->SetCanPresent(display->capabilities->canPresent);
-  capabilities_->SetMaxLayers(display->capabilities->canPresent ? 1 : 0);
+      display->capabilities->has_external_display);
+  capabilities_->SetCanPresent(display->capabilities->can_present);
+  capabilities_->SetMaxLayers(display->capabilities->can_present ? 1 : 0);
 
   // Clear eye parameters to prevent them from getting stale.
   eye_parameters_left_.Clear();
@@ -184,13 +182,13 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
 
   bool is_valid = false;
   if (capabilities_->canPresent()) {
-    DCHECK_GT(display->leftEye->renderWidth, 0u);
+    DCHECK_GT(display->left_eye->render_width, 0u);
     is_valid = true;
 
     eye_parameters_left_ = MakeGarbageCollected<VREyeParameters>(
-        display->leftEye, display->webvr_default_framebuffer_scale);
+        display->left_eye, display->webvr_default_framebuffer_scale);
     eye_parameters_right_ = MakeGarbageCollected<VREyeParameters>(
-        display->rightEye, display->webvr_default_framebuffer_scale);
+        display->right_eye, display->webvr_default_framebuffer_scale);
   }
 
   bool need_on_present_change = false;
@@ -199,10 +197,10 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
   }
   is_valid_device_for_presenting_ = is_valid;
 
-  if (!display->stageParameters.is_null()) {
+  if (!display->stage_parameters.is_null()) {
     if (!stage_parameters_)
       stage_parameters_ = MakeGarbageCollected<VRStageParameters>();
-    stage_parameters_->Update(display->stageParameters);
+    stage_parameters_->Update(display->stage_parameters);
   } else {
     stage_parameters_ = nullptr;
   }
@@ -564,7 +562,9 @@ ScriptPromise VRDisplay::requestPresent(
 }
 
 void VRDisplay::OnRequestImmersiveSessionReturned(
-    device::mojom::blink::XRSessionPtr session) {
+    device::mojom::blink::RequestSessionResultPtr result) {
+  device::mojom::blink::XRSessionPtr session =
+      result->is_session() ? std::move(result->get_session()) : nullptr;
   pending_present_request_ = false;
   if (session) {
     DCHECK(session->submit_frame_sink);
@@ -610,7 +610,9 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 }
 
 void VRDisplay::OnNonImmersiveSessionRequestReturned(
-    device::mojom::blink::XRSessionPtr session) {
+    device::mojom::blink::RequestSessionResultPtr result) {
+  device::mojom::blink::XRSessionPtr session =
+      result->is_session() ? std::move(result->get_session()) : nullptr;
   non_immersive_session_initialized_ = true;
 
   // Only create the non immersive provider if we actually got a session.

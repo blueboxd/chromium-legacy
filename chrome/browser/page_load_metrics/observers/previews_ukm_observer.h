@@ -62,7 +62,7 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   void RecordOptimizationGuideInfo(
       const page_load_metrics::PageLoadExtraInfo& info);
 
-  // The preview type that was most recently committed.
+  // The preview type that was actually committed and seen by the user.
   PreviewsType committed_preview_;
 
   bool lite_page_seen_ = false;

@@ -168,15 +168,25 @@ TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
       <p id="sample">abcdef</p>
   )HTML");
   auto text_fragments = CollectTextFragmentsInContainer("sample");
-  ASSERT_EQ(2u, text_fragments.size());
+  ASSERT_EQ(3u, text_fragments.size());
 
-  const NGPhysicalTextFragment& abcdef = *text_fragments[0];
-  const NGPhysicalTextFragment& ellipsis = *text_fragments[1];
-  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abcdef.TextType());
-  EXPECT_FALSE(abcdef.IsGeneratedText());
-  EXPECT_EQ(u8"abc", GetText(abcdef));
+  const NGPhysicalTextFragment& hidden = *text_fragments[0];
+  const NGPhysicalTextFragment& truncated = *text_fragments[1];
+  const NGPhysicalTextFragment& ellipsis = *text_fragments[2];
+
+  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, hidden.TextType());
+  EXPECT_FALSE(hidden.IsGeneratedText());
+  EXPECT_TRUE(hidden.IsHiddenForPaint());
+  EXPECT_EQ(u8"abcdef", GetText(hidden));
+
+  EXPECT_EQ(NGPhysicalTextFragment::kNormalText, truncated.TextType());
+  EXPECT_FALSE(truncated.IsGeneratedText());
+  EXPECT_FALSE(truncated.IsHiddenForPaint());
+  EXPECT_EQ(u8"abc", GetText(truncated));
+
   EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, ellipsis.TextType());
   EXPECT_TRUE(ellipsis.IsGeneratedText());
+  EXPECT_FALSE(ellipsis.IsHiddenForPaint());
   EXPECT_EQ(u8"\u2026", GetText(ellipsis));
 }
 

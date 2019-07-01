@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Auf den vorherigen Tab klicken</translation>
 <translation id="2194790690264064655">"<ph name="CTRL" />" gedrückt halten und auf einen Link klicken</translation>
 <translation id="2246352309084894470">Vollbild-Launcher öffnen/schließen</translation>
+<translation id="2354531887393764880">Punkt</translation>
 <translation id="2382644247745281995">Wird nicht vom aktuellen Tastaturlayout unterstützt</translation>
 <translation id="2397416548179033562">Chrome-Menü anzeigen</translation>
 <translation id="2424073332829844142">Feststelltaste aktivieren und deaktivieren</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Markiertes Element in der Ablage öffnen</translation>
 <translation id="379295446891231126">"<ph name="CTRL" />" <ph name="SEPARATOR" /> 1 bis 8</translation>
 <translation id="3837047332182291558">Helligkeit der Tastaturbeleuchtung erhöhen (nur für beleuchtete Tastaturen)</translation>
+<translation id="3949671998904569433">Komma</translation>
 <translation id="3976863468609830880">Auf das letzte Symbol in der Ablage klicken</translation>
 <translation id="3994783594793697310">Display-Zoomstufe zurücksetzen</translation>
 <translation id="4026843240379844265">Aktive Fenster zwischen den Bildschirmen verschieben</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Zur nächsten verfügbaren Eingabemethode wechseln</translation>
 <translation id="743754632698445141">App loslösen</translation>
 <translation id="7439718573248533901">Nächsten Buchstaben löschen (vorwärts löschen)</translation>
+<translation id="7500368597227394048">Bindestrich</translation>
 <translation id="7611271430932669992">Fokus auf Pop-up-Fenster und Dialogfelder verschieben</translation>
 <translation id="766326951329901120">Inhalt aus der Zwischenablage als unformatierten Text einfügen</translation>
+<translation id="7703010453515335249">öffnende eckige Klammer</translation>
 <translation id="7724603315864178912">Ausschneiden</translation>
 <translation id="7730490981846175479">"<ph name="SHIFT" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="SPACE" />" oder "<ph name="ENTER" />"</translation>
 <translation id="7787242579016742662">Datei im Browser öffnen</translation>
-<translation id="7917881398263220094">Laden der aktuellen Seite beenden</translation>
 <translation id="7952165122793773711">Zu den Tabs 1 bis 8 wechseln</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8130528849632411619">Zum Anfang des Dokuments springen</translation>
 <translation id="8147954207400281792">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="K" />" oder "<ph name="E" />"</translation>
 <translation id="8232835244134740473">Fokus wechseln zwischen vorherigen und nächsten Wörtern: Statusbereich (Bereich mit Kontobild), Launcher, Adressleiste, Lesezeichenleiste (falls sichtbar), offene Webseite und Downloadleiste (falls sichtbar).</translation>
 <translation id="8234414138295101081">Bildschirm um 90 Grad drehen</translation>
+<translation id="8241665785394195545">schließende eckige Klammer</translation>
 <translation id="8264941229485248811">Entwicklertools-Inspector ein- oder ausblenden</translation>
 <translation id="836869401750819675">Seite "Downloads" öffnen</translation>
 <translation id="8388247778047144397">Link in einen leeren Bereich auf der Tableiste ziehen</translation>

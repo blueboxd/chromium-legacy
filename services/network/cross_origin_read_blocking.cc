@@ -241,6 +241,13 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       "application/x-protobuf",
       "application/x-www-form-urlencoded",
       "application/zip",
+      // Block multipart responses because a protected type (e.g. JSON) can
+      // become multipart if returned in a range request with multiple parts.
+      // This is compatible with the web because the renderer can only see into
+      // the result of a fetch for a multipart file when the request is made
+      // with CORS. Media tags only make single-range requests which will not
+      // have the multipart type.
+      "multipart/byteranges",
       "text/event-stream",
   }};
 
@@ -1114,6 +1121,14 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
         UMA_HISTOGRAM_ENUMERATION(
             "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType",
             protection_decision);
+        if (protection_decision == CrossOriginProtectionDecision::kBlock) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType."
+              "BlockedWithRangeSupport",
+              SupportsRangeRequests(response));
+        }
+        // TODO(krstnmnlsn): Once the CORB protection logging includes sniffing,
+        // add a histogram here and below for the |kBlockedAfterSniffing| case.
         break;
       case kPublic:
         UMA_HISTOGRAM_ENUMERATION(
@@ -1132,6 +1147,12 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
         UMA_HISTOGRAM_ENUMERATION(
             "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType",
             protection_decision);
+        if (protection_decision == CrossOriginProtectionDecision::kBlock) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType."
+              "BlockedWithRangeSupport",
+              SupportsRangeRequests(response));
+        }
         break;
       case kPublic:
         UMA_HISTOGRAM_ENUMERATION(

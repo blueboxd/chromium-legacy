@@ -1109,10 +1109,8 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
         return upstream;
       case SourceStream::TYPE_UNKNOWN:
         // Unknown encoding type. Pass through raw response body.
-        // Despite of reporting to UMA, request will not be canceled; though
+        // Request will not be canceled; though
         // it is expected that user will see malformed / garbage response.
-        FilterSourceStream::ReportContentDecodingFailed(
-            FilterSourceStream::TYPE_UNKNOWN);
         return upstream;
       case SourceStream::TYPE_GZIP_FALLBACK_DEPRECATED:
       case SourceStream::TYPE_SDCH_DEPRECATED:

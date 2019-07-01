@@ -25,6 +25,7 @@ class UdevWatcher {
    public:
     virtual void OnDeviceAdded(ScopedUdevDevicePtr device) = 0;
     virtual void OnDeviceRemoved(ScopedUdevDevicePtr device) = 0;
+    virtual void OnDeviceChanged(ScopedUdevDevicePtr device) = 0;
 
    protected:
     virtual ~Observer();

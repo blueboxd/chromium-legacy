@@ -202,6 +202,11 @@ Polymer({
     settings.setGlobalScrollTarget(this.$.container);
 
     const scrollToTop = top => new Promise(resolve => {
+      if (this.$.container.scrollTop === top) {
+        resolve();
+        return;
+      }
+
       this.$.container.scrollTo({top: top, behavior: 'auto'});
       const onScroll = () => {
         this.debounce('scrollEnd', () => {

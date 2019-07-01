@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">પાછલી ટૅબ પર જાઓ</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ને દબાવો અને લિંકને ક્લિક કરો</translation>
 <translation id="2246352309084894470">પૂર્ણ-સ્ક્રીન લૉન્ચર ખોલો/બંધ કરો</translation>
+<translation id="2354531887393764880">અવધિ</translation>
 <translation id="2382644247745281995">વર્તમાન કીબોર્ડ લેઆઉટ સાથે સમર્થિત નથી</translation>
 <translation id="2397416548179033562">Chrome મેનૂ દર્શાવો</translation>
 <translation id="2424073332829844142">Caps Lock ચાલુ અને બંધ કરો</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">તમારા શેલ્ફ પરની હાઇલાઇટ કરેલી આઇટમ ખોલો</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 થી 8</translation>
 <translation id="3837047332182291558">કીબોર્ડને બ્રાઇટ બનાવો (માત્ર બૅકલિટ કીબોર્ડ માટે)</translation>
+<translation id="3949671998904569433">અલ્પવિરામ</translation>
 <translation id="3976863468609830880">તમારા શેલ્ફ પરના છેલ્લા આઇકન પર ક્લિક કરો</translation>
 <translation id="3994783594793697310">ડિસ્પ્લે ઝૂમ લેવલ રીસેટ કરો</translation>
 <translation id="4026843240379844265">સક્રિય વિંડોને ડિસ્પ્લેની વચ્ચે ખસેડો</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">ભાષાની આગલી ઇનપુટ પદ્ધતિ પર સ્વિચ કરો</translation>
 <translation id="743754632698445141">ઍપને અનપિન કરો</translation>
 <translation id="7439718573248533901">આગલો અક્ષર ડિલીટ કરો (ફૉર્વર્ડ ડિલીટ કરો)</translation>
+<translation id="7500368597227394048">હાયફન</translation>
 <translation id="7611271430932669992">પૉપઅપ અને સંવાદો પર ફોકસ લઈ જાઓ</translation>
 <translation id="766326951329901120">ક્લિપબોર્ડમાંના કન્ટેન્ટને સાદી ટેક્સ્ટ તરીકે પેસ્ટ કરો</translation>
+<translation id="7703010453515335249">ડાબો કૌંસ</translation>
 <translation id="7724603315864178912">કાપો</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="SPACE" /> અથવા <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">બ્રાઉઝરમાં ફાઇલ ખોલો</translation>
-<translation id="7917881398263220094">તમારા વર્તમાન પેજને લોડ કરવાનું રોકો</translation>
 <translation id="7952165122793773711">ટૅબ 1 થી 8માં જાઓ</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="8130528849632411619">દસ્તાવેજની શરૂઆત પર જાઓ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> અથવા <ph name="E" /></translation>
 <translation id="8232835244134740473">આની વચ્ચે ફોકસ સ્વિચ કરો: સ્ટેટસ એરિયા (જ્યાં તમારા એકાઉન્ટનો ફોટો દેખાય છે), લૉન્ચર, ઍડ્રેસ બાર, બુકમાર્ક બાર (જો દેખાતી હોય, તો), ખુલ્લું છે તે વેબપેજ અને ડાઉનલોડ બાર (જો દેખાતી હોય, તો).</translation>
 <translation id="8234414138295101081">સ્ક્રીનને 90 ડિગ્રીએ ફેરવો</translation>
+<translation id="8241665785394195545">જમણો કૌંસ</translation>
 <translation id="8264941229485248811">ડેવલપર સાધનો ઇન્સ્પેક્ટર બતાવો અથવા છુપાવો</translation>
 <translation id="836869401750819675">ડાઉનલોડ પેજ ખોલો</translation>
 <translation id="8388247778047144397">લિંકને ટૅબ સ્ટ્રિપ પરના ખાલી વિસ્તારમાં ખેંચો</translation>

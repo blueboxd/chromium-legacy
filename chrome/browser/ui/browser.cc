@@ -239,6 +239,10 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_browser_window_helper.h"
+#endif
+
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/browser/print_composite_client.h"
 #endif
@@ -302,18 +306,6 @@ std::unique_ptr<web_app::AppBrowserController> MaybeCreateWebAppController(
   if (browser->is_focus_mode())
     return std::make_unique<ManifestWebAppBrowserController>(browser);
   return nullptr;
-}
-
-void UnmuteIfMutedByExtension(content::WebContents* contents,
-                              const std::string& extension_id) {
-  LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
-  LastMuteMetadata* const metadata =
-      LastMuteMetadata::FromWebContents(contents);
-  if (metadata->reason == TabMutedReason::EXTENSION &&
-      metadata->extension_id == extension_id) {
-    chrome::SetTabAudioMuted(contents, false, TabMutedReason::EXTENSION,
-                             extension_id);
-  }
 }
 
 // Returns whether a browser window can be created for the specified profile.
@@ -406,8 +398,7 @@ Browser* Browser::Create(const CreateParams& params) {
 }
 
 Browser::Browser(const CreateParams& params)
-    : extension_registry_observer_(this),
-      type_(params.type),
+    : type_(params.type),
       profile_(params.profile),
       window_(nullptr),
       tab_strip_model_delegate_(
@@ -434,6 +425,10 @@ Browser::Browser(const CreateParams& params)
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
       window_has_shown_(false),
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+      extension_browser_window_helper_(
+          std::make_unique<extensions::ExtensionBrowserWindowHelper>(this)),
+#endif
       chrome_updater_factory_(this),
       weak_factory_(this) {
   // If this causes a crash then a window is being opened using a profile type
@@ -450,8 +445,6 @@ Browser::Browser(const CreateParams& params)
   location_bar_model_.reset(new LocationBarModelImpl(
       location_bar_model_delegate_.get(), content::kMaxURLDisplayChars));
 
-  extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile_)));
@@ -519,11 +512,11 @@ Browser::Browser(const CreateParams& params)
 }
 
 Browser::~Browser() {
-  // Stop observing notifications before continuing with destruction. Profile
-  // destruction will unload extensions and reentrant calls to Browser:: should
-  // be avoided while it is being torn down.
+  // Stop observing notifications and destroy the tab monitor before continuing
+  // with destruction. Profile destruction will unload extensions and reentrant
+  // calls to Browser:: should be avoided while it is being torn down.
   registrar_.RemoveAll();
-  extension_registry_observer_.RemoveAll();
+  extension_browser_window_helper_.reset();
 
   // The tab strip should not have any tabs at this point.
   DCHECK(tab_strip_model_->empty());
@@ -2027,72 +2020,6 @@ void Browser::Observe(int type,
       NOTREACHED() << "Got a notification we didn't register for.";
   }
 }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-///////////////////////////////////////////////////////////////////////////////
-// Browser, extensions::ExtensionRegistryObserver implementation:
-
-void Browser::OnExtensionLoaded(content::BrowserContext* browser_context,
-                                const extensions::Extension* extension) {
-  command_controller_->ExtensionStateChanged();
-}
-
-void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                  const extensions::Extension* extension,
-                                  extensions::UnloadedExtensionReason reason) {
-  command_controller_->ExtensionStateChanged();
-
-  // Close any tabs from the unloaded extension, unless it's terminated,
-  // in which case let the sad tabs remain.
-  // Also, if tab is muted and the cause is the unloaded extension, unmute it.
-  if (reason != extensions::UnloadedExtensionReason::TERMINATE) {
-    auto should_close_tab = [](const extensions::ExtensionId& extension_id,
-                               content::WebContents* web_contents) {
-      // Case 1: A "regular" extension page, e.g.
-      // chrome-extension://<id>/page.html.
-      // Note: we check the tuple or precursor tuple in order to close any
-      // windows with opaque origins that were opened by extensions, and may
-      // still be running code.
-      const url::SchemeHostPort& tuple_or_precursor_tuple =
-          web_contents->GetMainFrame()
-              ->GetLastCommittedOrigin()
-              .GetTupleOrPrecursorTupleIfOpaque();
-      if (tuple_or_precursor_tuple.scheme() == extensions::kExtensionScheme &&
-          tuple_or_precursor_tuple.host() == extension_id) {
-        // Edge-case: Chrome URL overrides (such as NTP overrides) are handled
-        // differently (reloaded), and managed by ExtensionWebUI. Ignore them.
-        if (!web_contents->GetLastCommittedURL().SchemeIs(
-                content::kChromeUIScheme)) {
-          return true;
-        }
-      }
-
-      // Case 2: Check if the page is a page associated with a hosted app, which
-      // can have non-extension schemes. For example, the Gmail hosted app would
-      // have a URL of https://mail.google.com.
-      if (extensions::TabHelper::FromWebContents(web_contents)->GetAppId() ==
-          extension_id) {
-        return true;
-      }
-
-      return false;
-    };
-
-    // Iterate backwards as we may remove items while iterating.
-    for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
-      WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
-      if (should_close_tab(extension->id(), web_contents))
-        tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
-      else
-        UnmuteIfMutedByExtension(web_contents, extension->id());
-    }
-  }
-
-  // If an extension page was active, the toolbar may need to be updated to hide
-  // the extension name in the location icon.
-  UpdateToolbar(/*should_restore_state=*/false);
-}
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, translate::ContentTranslateDriver::Observer implementation:

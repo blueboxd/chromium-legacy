@@ -80,6 +80,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   // UdevWatcher::Observer overrides
   void OnDeviceAdded(ScopedUdevDevicePtr device) override;
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override;
+  void OnDeviceChanged(ScopedUdevDevicePtr device) override;
 
   std::unordered_set<std::unique_ptr<GamepadDeviceLinux>> devices_;
 

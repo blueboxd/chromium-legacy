@@ -64,6 +64,22 @@ def GetGpuDeviceId(gpu_info):
   return 0
 
 
+def GetGpuDriverVendor(gpu_info):
+  if gpu_info:
+    primary_gpu = gpu_info.devices[0]
+    if primary_gpu:
+      return primary_gpu.driver_vendor
+  return None
+
+
+def GetGpuDriverVersion(gpu_info):
+  if gpu_info:
+    primary_gpu = gpu_info.devices[0]
+    if primary_gpu:
+      return primary_gpu.driver_version
+  return None
+
+
 def GetANGLERenderer(gpu_info):
   if gpu_info and gpu_info.aux_attributes:
     gl_renderer = gpu_info.aux_attributes.get('gl_renderer')

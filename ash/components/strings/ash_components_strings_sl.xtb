@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Premik na prejšnji zavihek</translation>
 <translation id="2194790690264064655">Pritisnite <ph name="CTRL" /> in kliknite povezavo.</translation>
 <translation id="2246352309084894470">Odpiranje/zapiranje celozaslonskega zaganjalnika</translation>
+<translation id="2354531887393764880">pika</translation>
 <translation id="2382644247745281995">Ni podprto s trenutno postavitvijo tipkovnice</translation>
 <translation id="2397416548179033562">Prikaz Chromovega menija</translation>
 <translation id="2424073332829844142">Vklop in izklop tipke Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Odpiranje označenega elementa na polici</translation>
 <translation id="379295446891231126"><ph name="CTRL" /> <ph name="SEPARATOR" /> od 1 do 8</translation>
 <translation id="3837047332182291558">Povečanje osvetlitve tipkovnice (samo za osvetljene tipkovnice)</translation>
+<translation id="3949671998904569433">vejica</translation>
 <translation id="3976863468609830880">Klik zadnje ikone na polici</translation>
 <translation id="3994783594793697310">Ponastavitev stopnje povečave prikaza</translation>
 <translation id="4026843240379844265">Premikanje aktivnega okna med zasloni</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Preklop na naslednji razpoložljivi način vnosa</translation>
 <translation id="743754632698445141">Odpenjanje aplikacije</translation>
 <translation id="7439718573248533901">Brisanje naslednje črke (brisanje naprej)</translation>
+<translation id="7500368597227394048">vezaj</translation>
 <translation id="7611271430932669992">Preklop na pojavna okna in pogovorna okna</translation>
 <translation id="766326951329901120">Lepljenje vsebine iz odložišča kot navadno besedilo</translation>
+<translation id="7703010453515335249">oklepaj</translation>
 <translation id="7724603315864178912">Izreži</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /> <ph name="SEPARATOR1" /> <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="L" />, nato <ph name="SPACE" /> ali <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Odpiranje datoteke v brskalniku</translation>
-<translation id="7917881398263220094">Ustavitev nalaganja trenutne strani</translation>
 <translation id="7952165122793773711">Premik na zavihke od 1 do 8</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
 <translation id="8130528849632411619">Premik na začetek dokumenta</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="K" /> ali <ph name="E" /></translation>
 <translation id="8232835244134740473">Preklop fokusa med: območjem stanja (na katerem je prikazana slika računa), zaganjalnikom, naslovno vrstico, vrstico z zaznamki (če je vidna), odprto spletno stranjo in vrstico za prenose (če je vidna)</translation>
 <translation id="8234414138295101081">Sukanje zaslona za 90 stopinj</translation>
+<translation id="8241665785394195545">zaklepaj</translation>
 <translation id="8264941229485248811">Prikaz ali skrivanje nadzornika orodij za razvijalce</translation>
 <translation id="836869401750819675">Odpiranje strani s prenosi</translation>
 <translation id="8388247778047144397">Povlecite povezavo na prazno območje na traku z zavihki</translation>

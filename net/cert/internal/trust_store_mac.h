@@ -16,7 +16,12 @@
 namespace net {
 
 // TrustStoreMac is an implementation of TrustStore which uses macOS keychain
-// to find trust anchors for path building.
+// to find trust anchors for path building. Trust state is cached, so a single
+// TrustStoreMac instance should be created and used for all verifications of a
+// given policy.
+// TrustStoreMac objects are threadsafe and methods may be called from multiple
+// threads simultaneously. It is the owner's responsibility to ensure the
+// TrustStoreMac object outlives any threads accessing it.
 class NET_EXPORT TrustStoreMac : public TrustStore {
  public:
   // Creates a TrustStoreMac which will find anchors that are trusted for
@@ -29,6 +34,10 @@ class NET_EXPORT TrustStoreMac : public TrustStore {
   explicit TrustStoreMac(CFTypeRef policy_oid);
   ~TrustStoreMac() override;
 
+  // Returns true if the given certificate is present in the system trust
+  // domain.
+  bool IsKnownRoot(const ParsedCertificate* cert) const;
+
   // TrustStore implementation:
   void SyncGetIssuersOf(const ParsedCertificate* cert,
                         ParsedCertificateList* issuers) override;
@@ -38,6 +47,8 @@ class NET_EXPORT TrustStoreMac : public TrustStore {
  private:
   FRIEND_TEST_ALL_PREFIXES(TrustStoreMacTest, MultiRootNotTrusted);
   FRIEND_TEST_ALL_PREFIXES(TrustStoreMacTest, SystemCerts);
+
+  class TrustCache;
 
   // Finds certificates in the OS keychains whose Subject matches |name_data|.
   // The result is an array of SecCertificateRef.
@@ -51,7 +62,7 @@ class NET_EXPORT TrustStoreMac : public TrustStore {
   static base::ScopedCFTypeRef<CFDataRef> GetMacNormalizedIssuer(
       const ParsedCertificate* cert);
 
-  const CFStringRef policy_oid_;
+  std::unique_ptr<TrustCache> trust_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustStoreMac);
 };

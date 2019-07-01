@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">前のタブに移動する</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> キーを押しながらリンクをクリックする</translation>
 <translation id="2246352309084894470">全画面ランチャーを開く / 閉じる</translation>
+<translation id="2354531887393764880">ピリオド</translation>
 <translation id="2382644247745281995">現在のキーボード レイアウトではサポートされていません</translation>
 <translation id="2397416548179033562">Chrome メニューを表示</translation>
 <translation id="2424073332829844142">CapsLock 機能のオンとオフを切り替える</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">シェルフのハイライト表示されたアイテムを開きます</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" />1〜8 キーを押す</translation>
 <translation id="3837047332182291558">キーボードの明るさを上げる（バックライト付きキーボードのみ）</translation>
+<translation id="3949671998904569433">カンマ</translation>
 <translation id="3976863468609830880">シェルフの最後のアイコンをクリックする</translation>
 <translation id="3994783594793697310">ディスプレイのズームレベルをリセット</translation>
 <translation id="4026843240379844265">アクティブなウィンドウをディスプレイ間で移動します</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">次の入力方法に切り替えます</translation>
 <translation id="743754632698445141">アプリの固定を解除します</translation>
 <translation id="7439718573248533901">次の文字を削除する（カーソルの右側を削除する）</translation>
+<translation id="7500368597227394048">ハイフン</translation>
 <translation id="7611271430932669992">ポップアップとダイアログにフォーカスを移動します</translation>
 <translation id="766326951329901120">クリップボードの内容をプレーン テキストとして貼り付ける</translation>
+<translation id="7703010453515335249">左角かっこ</translation>
 <translation id="7724603315864178912">切り取り</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> キーを押した状態で <ph name="SPACE" /> キーまたは <ph name="ENTER" /> キーを押す</translation>
 <translation id="7787242579016742662">ブラウザ内でファイルを開く</translation>
-<translation id="7917881398263220094">現在のページの読み込みを停止する</translation>
 <translation id="7952165122793773711">1～8 番目のタブに移動します</translation>
 <translation id="8026334261755873520">閲覧履歴データの削除</translation>
 <translation id="8130528849632411619">ドキュメントの先頭に移動する</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> または <ph name="E" /> キーを押す</translation>
 <translation id="8232835244134740473">フォーカスを次の順に切り替えます: アカウント画像が表示されているステータス領域、ランチャー、アドレスバー、ブックマーク バー（表示されている場合）、開いているウェブページ、ダウンロード バー（表示されている場合）</translation>
 <translation id="8234414138295101081">画面を 90 度回転させる</translation>
+<translation id="8241665785394195545">右角かっこ</translation>
 <translation id="8264941229485248811">デベロッパー ツール インスペクタの表示と非表示を切り替えます</translation>
 <translation id="836869401750819675">ダウンロード ページを開く</translation>
 <translation id="8388247778047144397">リンクをドラッグしてタブストリップの空白領域に移動する</translation>

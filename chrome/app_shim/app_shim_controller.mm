@@ -30,7 +30,6 @@
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/remote_cocoa.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -129,21 +128,9 @@ void AppShimController::PollForChromeReady(
   if ([chrome_running_app_ isTerminated])
     LOG(FATAL) << "Running chrome instance terminated before connecting.";
 
-  // Check to see if the app shim socket symlink path exists. If it does, then
-  // we know that the AppShimHostManager is listening in the browser process,
-  // and we can connect.
-  CHECK(!params_.user_data_dir.empty());
-  base::FilePath symlink_path =
-      params_.user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
-
-  // If the MojoChannelMac signal file is present, the browser is running
-  // with Mach IPC instead of socket-based IPC, and the shim can connect
-  // via that.
-  base::FilePath mojo_channel_mac_signal_file =
-      params_.user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
-  if (base::PathExists(symlink_path) ||
-      base::PathExists(mojo_channel_mac_signal_file)) {
-    InitBootstrapPipe();
+  mojo::PlatformChannelEndpoint endpoint = GetBrowserEndpoint();
+  if (endpoint.is_valid()) {
+    InitBootstrapPipe(std::move(endpoint));
     return;
   }
 
@@ -158,6 +145,19 @@ void AppShimController::PollForChromeReady(
       kPollPeriodMsec);
 }
 
+mojo::PlatformChannelEndpoint AppShimController::GetBrowserEndpoint() {
+  NSString* browser_bundle_id =
+      base::mac::ObjCCast<NSString>([[NSBundle mainBundle]
+          objectForInfoDictionaryKey:app_mode::kBrowserBundleIDKey]);
+  CHECK(browser_bundle_id);
+
+  std::string name_fragment = base::StringPrintf(
+      "%s.%s.%s", base::SysNSStringToUTF8(browser_bundle_id).c_str(),
+      app_mode::kAppShimBootstrapNameFragment,
+      base::MD5String(params_.user_data_dir.value()).c_str());
+  return ConnectToBrowser(name_fragment);
+}
+
 // static
 mojo::PlatformChannelEndpoint AppShimController::ConnectToBrowser(
     const mojo::NamedPlatformChannel::ServerName& server_name) {
@@ -170,6 +170,11 @@ mojo::PlatformChannelEndpoint AppShimController::ConnectToBrowser(
   // remote (receive) end.
   mojo::PlatformChannelEndpoint server_endpoint =
       mojo::NamedPlatformChannel::ConnectToServer(server_name);
+  // The browser may still be in the process of launching, so the endpoint
+  // may not yet be available.
+  if (!server_endpoint.is_valid())
+    return mojo::PlatformChannelEndpoint();
+
   mojo::PlatformChannel channel;
   mach_msg_base_t message{};
   message.header.msgh_id = app_mode::kBootstrapMsgId;
@@ -188,49 +193,13 @@ mojo::PlatformChannelEndpoint AppShimController::ConnectToBrowser(
   return channel.TakeRemoteEndpoint();
 }
 
-void AppShimController::InitBootstrapPipe() {
+void AppShimController::InitBootstrapPipe(
+    mojo::PlatformChannelEndpoint endpoint) {
   SetUpMenu();
 
   // Chrome will relaunch shims when relaunching apps.
   [NSApp disableRelaunchOnLogin];
   CHECK(!params_.user_data_dir.empty());
-
-  mojo::PlatformChannelEndpoint endpoint;
-
-  // Check for the signal file. If this file is present, then Chrome is running
-  // with features::kMojoChannelMac and the app shim needs to connect over
-  // Mach IPC. The FeatureList also needs to be initialized with that on, so
-  // Mojo internals use the right transport mechanism.
-  base::FilePath mojo_channel_mac_signal_file =
-      params_.user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
-  if (base::PathExists(mojo_channel_mac_signal_file)) {
-    base::FeatureList::InitializeInstance(mojo::features::kMojoChannelMac.name,
-                                          std::string());
-
-    NSString* browser_bundle_id =
-        base::mac::ObjCCast<NSString>([[NSBundle mainBundle]
-            objectForInfoDictionaryKey:app_mode::kBrowserBundleIDKey]);
-    CHECK(browser_bundle_id);
-
-    std::string name_fragment = base::StringPrintf(
-        "%s.%s.%s", base::SysNSStringToUTF8(browser_bundle_id).c_str(),
-        app_mode::kAppShimBootstrapNameFragment,
-        base::MD5String(params_.user_data_dir.value()).c_str());
-
-    endpoint = ConnectToBrowser(name_fragment);
-  } else {
-    base::FilePath symlink_path =
-        params_.user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
-    base::FilePath socket_path;
-    if (base::ReadSymbolicLink(symlink_path, &socket_path)) {
-      app_mode::VerifySocketPermissions(socket_path);
-    } else {
-      // The path in the user data dir is not a symlink, try connecting
-      // directly.
-      socket_path = symlink_path;
-    }
-    endpoint = mojo::NamedPlatformChannel::ConnectToServer(socket_path.value());
-  }
 
   CreateChannelAndSendLaunchApp(std::move(endpoint));
 }

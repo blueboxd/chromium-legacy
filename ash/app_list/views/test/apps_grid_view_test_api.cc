@@ -9,11 +9,48 @@
 #include "ash/app_list/paged_view_structure.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "ui/events/event.h"
+#include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 
 namespace app_list {
 namespace test {
+
+namespace {
+
+class BoundsAnimatorWaiter : public views::BoundsAnimatorObserver {
+ public:
+  explicit BoundsAnimatorWaiter(views::BoundsAnimator* animator)
+      : animator_(animator) {
+    animator->AddObserver(this);
+  }
+  ~BoundsAnimatorWaiter() override { animator_->RemoveObserver(this); }
+
+  void Wait() {
+    if (!animator_->IsAnimating())
+      return;
+
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+ private:
+  // views::BoundsAnimatorObserver:
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override {}
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override {
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  views::BoundsAnimator* animator_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoundsAnimatorWaiter);
+};
+
+}  // namespace
 
 AppsGridViewTestApi::AppsGridViewTestApi(AppsGridView* view) : view_(view) {}
 
@@ -79,6 +116,11 @@ views::View* AppsGridViewTestApi::GetViewAtVisualIndex(int page,
 gfx::Rect AppsGridViewTestApi::GetItemTileRectAtVisualIndex(int page,
                                                             int slot) const {
   return view_->GetExpectedTileBounds(GridIndex(page, slot));
+}
+
+void AppsGridViewTestApi::WaitForItemMoveAnimationDone() {
+  BoundsAnimatorWaiter waiter(&view_->bounds_animator_);
+  waiter.Wait();
 }
 
 }  // namespace test

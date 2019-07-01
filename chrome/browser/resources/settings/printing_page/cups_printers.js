@@ -12,7 +12,10 @@
 Polymer({
   is: 'settings-cups-printers',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [
+      CrNetworkListenerBehavior,
+      WebUIListenerBehavior,
+  ],
 
   properties: {
     /** @type {!Array<!CupsPrinterInfo>} */
@@ -48,56 +51,46 @@ Polymer({
     'show-cups-printer-toast': 'openResultToast_',
   },
 
-  /**
-   * @type {function()}
-   * @private
-   */
-  networksChangedListener_: function() {},
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  networkConfigProxy_: null,
 
   /** @override */
-  ready: function() {
-    this.updateCupsPrintersList_();
-    this.refreshNetworks_();
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
   },
 
   /** @override */
   attached: function() {
     this.addWebUIListener(
         'on-printers-changed', this.printersChanged_.bind(this));
-    this.networksChangedListener_ = this.refreshNetworks_.bind(this);
-    chrome.networkingPrivate.onNetworksChanged.addListener(
-        this.networksChangedListener_);
+
+    this.networkConfigProxy_
+        .getNetworkStateList({
+          filter: chromeos.networkConfig.mojom.FilterType.kActive,
+          networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
+          limit: chromeos.networkConfig.mojom.kNoLimit,
+        })
+        .then((responseParams) => {
+          this.onActiveNetworksChanged(responseParams.result);
+        });
   },
 
   /** @override */
-  detached: function() {
-    chrome.networkingPrivate.onNetworksChanged.removeListener(
-        this.networksChangedListener_);
+  ready: function() {
+    this.updateCupsPrintersList_();
   },
 
   /**
-   * Callback function when networks change.
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
    * @private
    */
-  refreshNetworks_: function() {
-    chrome.networkingPrivate.getNetworks(
-        {
-          'networkType': chrome.networkingPrivate.NetworkType.ALL,
-          'configured': true
-        },
-        this.onNetworksReceived_.bind(this));
-  },
-
-  /**
-   * Callback function when configured networks are received.
-   * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>} states
-   *     A list of network state information for each network.
-   * @private
-   */
-  onNetworksReceived_: function(states) {
-    this.canAddPrinter_ = states.some(function(entry) {
-      return entry.hasOwnProperty('ConnectionState') &&
-          entry.ConnectionState == 'Connected';
+  onActiveNetworksChanged: function(networks) {
+    this.canAddPrinter_ = networks.some(function(network) {
+      return OncMojo.connectionStateIsConnected(network.connectionState);
     });
   },
 

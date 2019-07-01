@@ -2821,6 +2821,8 @@ jumbo_split_static_library("ui") {
       "views/media_router/presentation_receiver_window_view.h",
       "views/media_router/web_contents_display_observer_view.cc",
       "views/media_router/web_contents_display_observer_view.h",
+      "views/native_file_system/native_file_system_permission_view.cc",
+      "views/native_file_system/native_file_system_permission_view.h",
       "views/omnibox/omnibox_match_cell_view.cc",
       "views/omnibox/omnibox_match_cell_view.h",
       "views/omnibox/omnibox_popup_contents_view.cc",

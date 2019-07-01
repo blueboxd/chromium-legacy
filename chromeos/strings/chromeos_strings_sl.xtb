@@ -10,6 +10,9 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="3511655281162215899">Takoj izberite novo geslo</translation>
+<translation id="3838338534323494292">Novo geslo</translation>
+<translation id="445059817448385655">Staro geslo</translation>
+<translation id="467510802200863975">Gesli se ne ujemata</translation>
 <translation id="4731797938093519117">Starševski dostop</translation>
 <translation id="476166673298332917">Skrbnik naprave morda spremlja vašo dejavnost brskanja.</translation>
 <translation id="5212543919916444558">Na zaslonu ni ničesar uporabnega.
@@ -21,10 +24,14 @@ Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="5733345267661125295">Izberite novo geslo</translation>
 <translation id="5832805196449965646">Dodaj osebo</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
+<translation id="6058625436358447366">Za dokončanje vnesite staro in novo geslo</translation>
+<translation id="6106186594183574873">Za dokončanje vnesite staro geslo</translation>
+<translation id="6146993107019042706">Za dokončanje vnesite novo geslo</translation>
 <translation id="6574601967010742428">Upravitelj naprave lahko morda nadzira vašo dejavnost.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Trenutno geslo je poteklo.}=1{Trenutno geslo poteče čez manj kot en dan.}one{Trenutno geslo poteče čez manj kot # dan.}two{Trenutno geslo poteče čez manj kot # dneva.}few{Trenutno geslo poteče čez manj kot # dni.}other{Trenutno geslo poteče čez manj kot # dni.}}</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7690294790491645610">Potrdite novo geslo</translation>
 <translation id="808894953321890993">Sprememba gesla</translation>
+<translation id="8747900814994928677">Potrditev spremembe</translation>
 <translation id="9111102763498581341">Odkleni</translation>
 </translationbundle>

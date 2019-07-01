@@ -345,30 +345,6 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   if (save_data_enabled_)
     request.SetHttpHeaderField(http_names::kSaveData, "on");
-
-  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
-      WebURLRequest::kNoScriptOn) {
-    request.AddHttpHeaderField(
-        "Intervention",
-        "<https://www.chromestatus.com/features/4775088607985664>; "
-        "level=\"warning\"");
-  }
-
-  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
-      WebURLRequest::kResourceLoadingHintsOn) {
-    request.AddHttpHeaderField(
-        "Intervention",
-        "<https://www.chromestatus.com/features/4510564810227712>; "
-        "level=\"warning\"");
-  }
-
-  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
-      WebURLRequest::kClientLoFiOn) {
-    request.AddHttpHeaderField(
-        "Intervention",
-        "<https://www.chromestatus.com/features/6072546726248448>; "
-        "level=\"warning\"");
-  }
 }
 
 // TODO(toyoshim, arthursonzogni): PlzNavigate doesn't use this function to set

@@ -7,6 +7,7 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/common/chrome_features.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "device/vr/vr_device_base.h"
 
 #if BUILDFLAG(ENABLE_OPENVR)
 #include "device/vr/openvr/openvr_device.h"
@@ -49,8 +50,9 @@ std::unique_ptr<VrDeviceT> EnableRuntime(
   return device;
 }
 
+template <typename VrDeviceT>
 void DisableRuntime(device::mojom::IsolatedXRRuntimeProviderClientPtr& client,
-                    std::unique_ptr<device::VRDeviceBase> device) {
+                    std::unique_ptr<VrDeviceT> device) {
   TRACE_EVENT_INSTANT1("xr", "HardwareRemoved", TRACE_EVENT_SCOPE_THREAD, "id",
                        static_cast<int>(device->GetId()));
   // "Device" here refers to a runtime + hardware pair, not necessarily physical
@@ -79,6 +81,11 @@ void SetRuntimeStatus(device::mojom::IsolatedXRRuntimeProviderClientPtr& client,
 // available options.
 void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
   bool preferred_device_enabled = false;
+
+  // If none of the following runtimes are enabled,
+  // we'll get an error for 'preferred_device_enabled' being unused.
+  // Cast it to void (nop) here to mitigate that error.
+  (void)preferred_device_enabled;
 
 #if BUILDFLAG(ENABLE_OPENXR)
   if (!preferred_device_enabled && IsOpenXrHardwareAvailable()) {
@@ -223,5 +230,5 @@ IsolatedXRRuntimeProvider::~IsolatedXRRuntimeProvider() {
   // Explicitly null out wmr_device_ to clean up any COM objects that depend
   // on being RoInitialized
   wmr_device_ = nullptr;
-#endif
+#endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
 }

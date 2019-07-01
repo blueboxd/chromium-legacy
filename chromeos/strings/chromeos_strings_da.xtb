@@ -10,6 +10,9 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="3511655281162215899">Vælg straks en ny adgangskode</translation>
+<translation id="3838338534323494292">Ny adgangskode</translation>
+<translation id="445059817448385655">Gammel adgangskode</translation>
+<translation id="467510802200863975">Adgangskoderne stemmer ikke overens</translation>
 <translation id="4731797938093519117">Forældreadgang</translation>
 <translation id="476166673298332917">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="5212543919916444558">Jeg kan ikke finde noget på skærmen, jeg kan hjælpe med. Prøv at trykke på mikrofonen for at spørge mig om noget.</translation>
@@ -20,10 +23,14 @@
 <translation id="5733345267661125295">Vælg en ny adgangskode nu</translation>
 <translation id="5832805196449965646">Tilføj person</translation>
 <translation id="5895138241574237353">Genstart</translation>
+<translation id="6058625436358447366">Angiv din gamle og nye adgangskode for at afslutte</translation>
+<translation id="6106186594183574873">Angiv din gamle adgangskode for at afslutte</translation>
+<translation id="6146993107019042706">Angiv din nye adgangskode for at afslutte</translation>
 <translation id="6574601967010742428">Enhedsadministratoren kan muligvis overvåge din aktivitet.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Din nuværende adgangskode er udløbet.}=1{Der er mindre end én dag til din nuværende adgangskode udløber.}one{Der er mindre end # dag til din nuværende adgangskode udløber.}other{Der er mindre end # dage til din nuværende adgangskode udløber.}}</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>
 <translation id="808894953321890993">Skift adgangskode</translation>
+<translation id="8747900814994928677">Bekræft ændring</translation>
 <translation id="9111102763498581341">Lås op</translation>
 </translationbundle>

@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Puede editar</translation>
 <translation id="1984603991036629094">Teclado fonético armenio</translation>
 <translation id="2001796770603320721">Administrar en Drive</translation>
+<translation id="2009067268969781306">Al formatear una unidad, se eliminarán todos los datos almacenados. Esta acción no se puede deshacer.</translation>
 <translation id="2028997212275086731">Archivo RAR</translation>
 <translation id="2046702855113914483">Fideos</translation>
-<translation id="204914487372604757">Crear acceso directo</translation>
 <translation id="2070909990982335904">Los nombres que empiezan por punto están reservados para el sistema. Elige otro nombre.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2080010875307505892">Teclado serbio</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Teclado árabe</translation>
 <translation id="4261901459838235729">Presentación de Google</translation>
 <translation id="4290535918735525311">1 carpeta compartida con Linux</translation>
+<translation id="42981349822642051">Mostrar</translation>
 <translation id="4298972503445160211">Teclado danés</translation>
 <translation id="4299729908419173967">brasileño</translation>
 <translation id="4309915981827077375">Información general</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Ver más...</translation>
 <translation id="5061708541166515394">Contraste</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911">Se eliminarán <ph name="TOTAL_FILE_SIZE" /> de archivos</translation>
 <translation id="509429900233858213">Se ha producido un error.</translation>
 <translation id="5098629044894065541">Hebreo</translation>
 <translation id="5123433949759960244">Balón de baloncesto</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Copia de seguridad en la nube de Chrome OS</translation>
 <translation id="5756666464756035725">QWERTY húngaro</translation>
 <translation id="5771585441665576801">Transliteración (geia → γεια)</translation>
+<translation id="5776325638577448643">Borrar y formatear</translation>
 <translation id="57838592816432529">Silenciar</translation>
 <translation id="5788127256798019331">Archivos de Play</translation>
 <translation id="5790193330357274855">Kazajo</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Da permiso a las aplicaciones de Linux para modificar los archivos de la carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Teclado francés (BÉPO)</translation>
 <translation id="5911887972742538906">No se ha podido instalar la aplicación de Linux.</translation>
+<translation id="5912396950572065471">Formato</translation>
 <translation id="5913638992615760742">No se ha podido realizar la operación de copia porque se ha producido un error inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Da permiso a las aplicaciones de Linux para modificar archivos en tu cuenta de Google Drive. Los cambios realizados se sincronizarán con tus otros dispositivos.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Abrir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Esperando información sobre el espacio...</translation>
 <translation id="6205710420833115353">Algunas operaciones están tardando más de lo esperado. ¿Quieres cancelarlas?</translation>
+<translation id="6224253798271602650">Formatear <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Este archivo no se puede reproducir.</translation>
 <translation id="6248400709929739064">Habilitar subtítulos</translation>
 <translation id="6264347891387618177">Transliteración (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Teclado Programmer Dvorak de EE. UU.</translation>
 <translation id="7191454237977785534">Guardar archivo como</translation>
 <translation id="7222624196722476520">Teclado búlgaro fonético</translation>
+<translation id="7238097264433196391">Nombre de la unidad</translation>
 <translation id="7248671827512403053">Aplicación</translation>
 <translation id="7268659760406822741">Servicios disponibles</translation>
 <translation id="7283041136720745563">No hay espacio suficiente en tu cuota de Google Drive.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="7982283708762922719">Altura</translation>
 <translation id="7987485481246785146">Teclado kurdo sorani basado en el árabe</translation>
-<translation id="799547531016638432">Eliminar acceso directo</translation>
 <translation id="799923393800005025">Puede ver</translation>
 <translation id="8008366997883261463">Terrier Jack Russell</translation>
 <translation id="8028993641010258682">Tamaño</translation>

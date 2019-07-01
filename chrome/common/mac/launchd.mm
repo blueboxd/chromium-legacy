@@ -92,11 +92,6 @@ bool Launchd::GetJobInfo(const std::string& label,
   return mac::services::GetJobInfo(label, info);
 }
 
-bool Launchd::CheckIn(const std::string& socket_key,
-                      mac::services::JobCheckinInfo* info) {
-  return mac::services::CheckIn(socket_key, info);
-}
-
 bool Launchd::RemoveJob(const std::string& label) {
   return mac::services::RemoveJob(label);
 }

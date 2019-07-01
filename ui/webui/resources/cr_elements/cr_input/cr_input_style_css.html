@@ -9,10 +9,10 @@
     <style>
       :host {
         --cr-input-background-color: var(--google-grey-refresh-100);
-        --cr-input-color: var(--google-grey-900);
+        --cr-input-color: var(--cr-primary-text-color);
         --cr-input-error-color: var(--google-red-600);
         --cr-input-focus-color: var(--google-blue-600);
-        --cr-input-placeholder-color: var(--google-grey-refresh-700);
+        --cr-input-placeholder-color: var(--cr-secondary-text-color);
         display: block;
         /* Avoid showing outline when focus() programmatically called multiple
            times in a row. */
@@ -22,10 +22,8 @@
       @media (prefers-color-scheme: dark) {
         :host {
           --cr-input-background-color: rgba(0, 0, 0, .3);
-          --cr-input-color: var(--google-grey-refresh-500);
           --cr-input-error-color: var(--google-red-refresh-300);
           --cr-input-focus-color: var(--google-blue-refresh-300);
-          --cr-input-placeholder-color: var(--google-grey-refresh-500);
         }
       }
 

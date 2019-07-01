@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Galima redaguoti</translation>
 <translation id="1984603991036629094">Armėniška fonetinė klaviatūra</translation>
 <translation id="2001796770603320721">Tvarkyti Diske</translation>
+<translation id="2009067268969781306">Formatuojant atmintuką bus ištrinti visi jame saugomi duomenys. Šio veiksmo anuliuoti negalima.</translation>
 <translation id="2028997212275086731">RAR archyvas</translation>
 <translation id="2046702855113914483">Ramenai</translation>
-<translation id="204914487372604757">Kurti spartųjį klavišą</translation>
 <translation id="2070909990982335904">Tašku prasidedantys pavadinimai rezervuoti sistemai. Pasirinkite kitą pavadinimą.</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2080010875307505892">Serbiška klaviatūra</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Arabiška klaviatūra</translation>
 <translation id="4261901459838235729">„Google“ pristatymas</translation>
 <translation id="4290535918735525311">1 aplankas bendrinamas su „Linux“</translation>
+<translation id="42981349822642051">Išskleisti</translation>
 <translation id="4298972503445160211">Daniška klaviatūra</translation>
 <translation id="4299729908419173967">Brazilų k.</translation>
 <translation id="4309915981827077375">Bendroji informacija</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Žr. daugiau...</translation>
 <translation id="5061708541166515394">Kontrastas</translation>
 <translation id="5068919226082848014">Pica</translation>
+<translation id="5081517858322016911">Bus ištrinta <ph name="TOTAL_FILE_SIZE" /> failų</translation>
 <translation id="509429900233858213">Įvyko klaida.</translation>
 <translation id="5098629044894065541">Hebrajų</translation>
 <translation id="5123433949759960244">Krepšinis</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">„Chrome OS“ atsarginis kopijavimas debesyje</translation>
 <translation id="5756666464756035725">Vengriška QWERTY</translation>
 <translation id="5771585441665576801">Transliteracija (geia → γεια)</translation>
+<translation id="5776325638577448643">Ištrinti ir formatuoti</translation>
 <translation id="57838592816432529">Nutildyti</translation>
 <translation id="5788127256798019331">„Play“ failai</translation>
 <translation id="5790193330357274855">Kazachų</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Suteikite „Linux“ programoms leidimą keisti failus aplanke „<ph name="FOLDER_NAME" />“</translation>
 <translation id="5892290200158927959">Prancūziška BÉPO klaviatūra</translation>
 <translation id="5911887972742538906">Diegiant „Linux“ programą įvyko klaida.</translation>
+<translation id="5912396950572065471">Formatas</translation>
 <translation id="5913638992615760742">Nepavyko įvykdyti kopijavimo operacijos; nenumatyta klaida: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Suteikite „Linux“ programoms leidimą keisti failus „Google“ diske. Pakeitimai bus sinchronizuoti su kitais jūsų įrenginiais.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Atidaryti naudojant „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="6199801702437275229">Laukiama vietos informacijos...</translation>
 <translation id="6205710420833115353">Kai kurios operacijos trunka ilgiau nei tikėtasi. Ar norite jas nutraukti?</translation>
+<translation id="6224253798271602650">Formatuoti: <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Nepavyko paleisti šio failo.</translation>
 <translation id="6248400709929739064">Įgalinti subtitrus</translation>
 <translation id="6264347891387618177">Transliteracija (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Programuotojų JAV Dvorako klaviatūra</translation>
 <translation id="7191454237977785534">Išsaugoti failą kaip</translation>
 <translation id="7222624196722476520">Bulgarų fonetinė klaviatūra</translation>
+<translation id="7238097264433196391">Atmintuko pavadinimas</translation>
 <translation id="7248671827512403053">Programa</translation>
 <translation id="7268659760406822741">Prieinamos paslaugos</translation>
 <translation id="7283041136720745563">„Google“ disko kvota nepakankamai didelė.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Slovėnija</translation>
 <translation id="7982283708762922719">Aukštis</translation>
 <translation id="7987485481246785146">Soranių kurdų arabiška klaviatūra</translation>
-<translation id="799547531016638432">Pašalinti spartųjį klavišą</translation>
 <translation id="799923393800005025">Galima peržiūrėti</translation>
 <translation id="8008366997883261463">Džeko Raselo terjeras</translation>
 <translation id="8028993641010258682">Dydis</translation>

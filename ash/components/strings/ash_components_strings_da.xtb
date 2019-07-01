@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Gå til forrige fane</translation>
 <translation id="2194790690264064655">Tryk på <ph name="CTRL" />, og klik på et link</translation>
 <translation id="2246352309084894470">Åbn/luk visning af Appliste på fuld skærm</translation>
+<translation id="2354531887393764880">punktum</translation>
 <translation id="2382644247745281995">Understøttes ikke med det nuværende tastaturlayout</translation>
 <translation id="2397416548179033562">Vis Chrome-menuen</translation>
 <translation id="2424073332829844142">Slå Caps Lock til og fra</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Åbn det fremhævede element på din hylde</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 til 8</translation>
 <translation id="3837047332182291558">Skru op for tastaturets lys (gælder kun for tastaturer med bagbelyste taster)</translation>
+<translation id="3949671998904569433">komma</translation>
 <translation id="3976863468609830880">Klik på det sidste ikon på din hylde</translation>
 <translation id="3994783594793697310">Nulstil zoomniveauet på skærmen</translation>
 <translation id="4026843240379844265">Flyt det aktive vindue fra skærm til skærm</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Skift til næste tilgængelige indtastningsmetode</translation>
 <translation id="743754632698445141">Frigør en app</translation>
 <translation id="7439718573248533901">Slet det næste bogstav (slet fremad)</translation>
+<translation id="7500368597227394048">bindestreg</translation>
 <translation id="7611271430932669992">Flyt fokus til pop op-vinduer og dialogbokse</translation>
 <translation id="766326951329901120">Indsæt indholdet fra udklipsholderen som almindelig tekst</translation>
+<translation id="7703010453515335249">venstre vinkelparentes</translation>
 <translation id="7724603315864178912">Klip</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og derefter <ph name="SPACE" /> eller <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Åbn en fil i browseren</translation>
-<translation id="7917881398263220094">Stop indlæsningen af den aktuelle side</translation>
 <translation id="7952165122793773711">Gå til fane 1 til 8</translation>
 <translation id="8026334261755873520">Ryd browserdata</translation>
 <translation id="8130528849632411619">Gå til begyndelsen af dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8232835244134740473">Skift fokus mellem: Statusområdet (hvor dit kontobillede vises), applisten, adresselinjen, bogmærkelinjen (hvis den er synlig), den åbne webside og downloadlinjen (hvis den er synlig).</translation>
 <translation id="8234414138295101081">Roter skærmen 90 grader</translation>
+<translation id="8241665785394195545">højre vinkelparentes</translation>
 <translation id="8264941229485248811">Vis eller skjul kontrolløren i Udviklerværktøjer</translation>
 <translation id="836869401750819675">Åbn siden Downloads</translation>
 <translation id="8388247778047144397">Træk linket til et tomt område på fanelinjen</translation>

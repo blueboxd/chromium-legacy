@@ -90,9 +90,9 @@
 <translation id="197560921582345123">สามารถแก้ไขได้</translation>
 <translation id="1984603991036629094">แป้นพิมพ์แบบออกเสียงอาร์เมเนีย</translation>
 <translation id="2001796770603320721">จัดการใน Google ไดรฟ์</translation>
+<translation id="2009067268969781306">การฟอร์แมตไดรฟ์จะลบข้อมูลทั้งหมดที่เก็บไว้ในไดรฟ์ การดำเนินการนี้ยกเลิกไม่ได้</translation>
 <translation id="2028997212275086731">ไฟล์ RAR</translation>
 <translation id="2046702855113914483">ราเม็ง</translation>
-<translation id="204914487372604757">สร้างทางลัด</translation>
 <translation id="2070909990982335904">ชื่อที่ขึ้นต้นด้วยจุดสงวนไว้สำหรับระบบ โปรดเลือกชื่ออื่น</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2080010875307505892">แป้นพิมพ์ภาษาเซอร์เบียน</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">แป้นพิมพ์อาหรับ</translation>
 <translation id="4261901459838235729">งานนำเสนอของ Google</translation>
 <translation id="4290535918735525311">แชร์กับ Linux แล้ว 1 โฟลเดอร์</translation>
+<translation id="42981349822642051">ขยาย</translation>
 <translation id="4298972503445160211">แป้นพิมพ์ภาษาเดนมาร์ก</translation>
 <translation id="4299729908419173967">บราซิล</translation>
 <translation id="4309915981827077375">ข้อมูลทั่วไป</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">ดูเพิ่มเติม...</translation>
 <translation id="5061708541166515394">ความเปรียบต่าง</translation>
 <translation id="5068919226082848014">พิซซ่า</translation>
+<translation id="5081517858322016911">ระบบจะลบไฟล์ที่รวมแล้วมีขนาด <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="5098629044894065541">ฮิบรู</translation>
 <translation id="5123433949759960244">บาสเกตบอล</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">ข้อมูลสำรองในระบบคลาวด์ของ Chrome OS</translation>
 <translation id="5756666464756035725">QWERTY ภาษาฮังการี</translation>
 <translation id="5771585441665576801">การทับศัพท์ (geia → γεια)</translation>
+<translation id="5776325638577448643">ลบและฟอร์แมต</translation>
 <translation id="57838592816432529">ปิดเสียง</translation>
 <translation id="5788127256798019331">ไฟล์ Play</translation>
 <translation id="5790193330357274855">คาซัค</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">ให้สิทธิ์แอป Linux แก้ไขไฟล์ในโฟลเดอร์<ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">แป้นพิมพ์ภาษาฝรั่งเศสแบบ BÉPO</translation>
 <translation id="5911887972742538906">ข้อผิดพลาดเกิดขึ้นระหว่างการติดตั้งแอปพลิเคชัน Linux</translation>
+<translation id="5912396950572065471">รูปแบบ</translation>
 <translation id="5913638992615760742">การคัดลอกล้มเหลว ข้อผิดพลาดที่ไม่คาดคิด: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">ให้สิทธิ์แอป Linux แก้ไขไฟล์ใน Google ไดรฟ์ การเปลี่ยนแปลงจะซิงค์กับอุปกรณ์อื่นๆ ของคุณ</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">เปิดด้วย <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">กำลังรอข้อมูลพื้นที่...</translation>
 <translation id="6205710420833115353">การดำเนินการบางอย่างใช้เวลานานกว่าที่คาดไว้ คุณต้องการล้มเลิกไหม</translation>
+<translation id="6224253798271602650">ฟอร์แมต <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">ไม่สามารถเล่นไฟล์นี้</translation>
 <translation id="6248400709929739064">เปิดคำบรรยาย</translation>
 <translation id="6264347891387618177">การทับศัพท์ (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">แป้นพิมพ์ดีโวรักโปรแกรมเมอร์สหรัฐอเมริกา</translation>
 <translation id="7191454237977785534">บันทึกแฟ้มเป็น</translation>
 <translation id="7222624196722476520">แป้นพิมพ์แบบออกเสียงภาษาบัลแกเรีย</translation>
+<translation id="7238097264433196391">ชื่อไดรฟ์</translation>
 <translation id="7248671827512403053">แอปพลิเคชัน</translation>
 <translation id="7268659760406822741">บริการที่มี</translation>
 <translation id="7283041136720745563">โควต้าของ Google ไดรฟ์มีพื้นที่ไม่พอ</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">สโลวีเนีย</translation>
 <translation id="7982283708762922719">ความสูง</translation>
 <translation id="7987485481246785146">แป้นพิมพ์ภาษาเคิร์ดโซรานีแบบอารบิก</translation>
-<translation id="799547531016638432">ลบทางลัด</translation>
 <translation id="799923393800005025">สามารถดูได้</translation>
 <translation id="8008366997883261463">สุนัข</translation>
 <translation id="8028993641010258682">ขนาด</translation>

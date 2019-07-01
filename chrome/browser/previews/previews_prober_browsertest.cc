@@ -48,6 +48,28 @@ void SimulateNetworkChange(network::mojom::ConnectionType type) {
 
 }  // namespace
 
+class TestDelegate : public PreviewsProber::Delegate {
+ public:
+  TestDelegate() = default;
+  ~TestDelegate() = default;
+
+  bool ShouldSendNextProbe() override { return should_send_next_probe_; }
+
+  bool IsResponseSuccess(net::Error net_error,
+                         const network::ResourceResponseHead& head,
+                         std::unique_ptr<std::string> body) override {
+    return net_error == net::OK &&
+           head.headers->response_code() == net::HTTP_OK;
+  }
+
+  void set_should_send_next_probe(bool should_send_next_probe) {
+    should_send_next_probe_ = should_send_next_probe;
+  }
+
+ private:
+  bool should_send_next_probe_ = true;
+};
+
 class PreviewsProberBrowserTest : public InProcessBrowserTest {
  public:
   PreviewsProberBrowserTest() = default;
@@ -102,13 +124,14 @@ class PreviewsProberBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, OK) {
   GURL url = TestURLWithPath("/ok");
+  TestDelegate delegate;
   net::HttpRequestHeaders headers;
   PreviewsProber::RetryPolicy retry_policy;
   PreviewsProber::TimeoutPolicy timeout_policy;
 
-  PreviewsProber prober(browser()->profile()->GetURLLoaderFactory(), kName, url,
-                        PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy);
+  PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
+                        kName, url, PreviewsProber::HttpMethod::kGet, headers,
+                        retry_policy, timeout_policy);
   prober.SendNowIfInactive();
   WaitForCompletedProbe(&prober);
 
@@ -117,6 +140,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, OK) {
 
 IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
   GURL url = TestURLWithPath("/timeout");
+  TestDelegate delegate;
   net::HttpRequestHeaders headers;
 
   PreviewsProber::RetryPolicy retry_policy;
@@ -125,9 +149,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
   PreviewsProber::TimeoutPolicy timeout_policy;
   timeout_policy.base_timeout = base::TimeDelta::FromMilliseconds(1);
 
-  PreviewsProber prober(browser()->profile()->GetURLLoaderFactory(), kName, url,
-                        PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy);
+  PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
+                        kName, url, PreviewsProber::HttpMethod::kGet, headers,
+                        retry_policy, timeout_policy);
   prober.SendNowIfInactive();
   WaitForCompletedProbe(&prober);
 
@@ -136,13 +160,14 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
 
 IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, NetworkChange) {
   GURL url = TestURLWithPath("/ok");
+  TestDelegate delegate;
   net::HttpRequestHeaders headers;
   PreviewsProber::RetryPolicy retry_policy;
   PreviewsProber::TimeoutPolicy timeout_policy;
 
-  PreviewsProber prober(browser()->profile()->GetURLLoaderFactory(), kName, url,
-                        PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy);
+  PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
+                        kName, url, PreviewsProber::HttpMethod::kGet, headers,
+                        retry_policy, timeout_policy);
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_4G);
   WaitForCompletedProbe(&prober);
 

@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">ไปที่แท็บก่อนหน้า</translation>
 <translation id="2194790690264064655">กด <ph name="CTRL" /> แล้วคลิกลิงก์</translation>
 <translation id="2246352309084894470">เปิด/ปิด Launcher แบบเต็มหน้าจอ</translation>
+<translation id="2354531887393764880">มหัพภาค</translation>
 <translation id="2382644247745281995">ไม่รองรับการจัดวางแป้นพิมพ์ปัจจุบัน</translation>
 <translation id="2397416548179033562">แสดงเมนู Chrome</translation>
 <translation id="2424073332829844142">เปิดและปิดใช้งาน Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">เปิดรายการที่ไฮไลต์บนชั้นวาง</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 จนถึง 8</translation>
 <translation id="3837047332182291558">เพิ่มแสงแป้นพิมพ์ (เฉพาะแป้นพิมพ์เรืองแสง)</translation>
+<translation id="3949671998904569433">จุลภาค</translation>
 <translation id="3976863468609830880">คลิกไอคอนสุดท้ายบนชั้นวาง</translation>
 <translation id="3994783594793697310">รีเซ็ตระดับการซูมหน้าจอ</translation>
 <translation id="4026843240379844265">ย้ายหน้าต่างที่ใช้งานไปยังหน้าจอต่างๆ</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">เปลี่ยนไปใช้วิธีการป้อนข้อมูลถัดไปที่ใช้ได้</translation>
 <translation id="743754632698445141">เลิกตรึงแอป</translation>
 <translation id="7439718573248533901">ลบอักษรถัดไป (ลบไปข้างหน้า)</translation>
+<translation id="7500368597227394048">ขีดกลาง</translation>
 <translation id="7611271430932669992">ย้ายโฟกัสไปที่ป๊อปอัปและกล่องโต้ตอบ</translation>
 <translation id="766326951329901120">วางเนื้อหาจากคลิปบอร์ดเป็นข้อความธรรมดา</translation>
+<translation id="7703010453515335249">วงเล็บเปิด</translation>
 <translation id="7724603315864178912">ตัด</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="SPACE" /> หรือ <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">เปิดไฟล์ในเบราว์เซอร์</translation>
-<translation id="7917881398263220094">หยุดโหลดหน้าเว็บปัจจุบันของคุณ</translation>
 <translation id="7952165122793773711">ไปที่แท็บ 1 ถึง 8</translation>
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
 <translation id="8130528849632411619">ไปที่จุดเริ่มต้นเอกสาร</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> หรือ <ph name="E" /></translation>
 <translation id="8232835244134740473">สลับโฟกัสระหว่างพื้นที่แสดงสถานะ (ตำแหน่งที่รูปสำหรับบัญชีของคุณปรากฏ), Launcher, แถบที่อยู่, แถบบุ๊กมาร์ก (ถ้ามองเห็นได้), หน้าเว็บที่เปิด และแถบดาวน์โหลด (ถ้ามองเห็นได้)</translation>
 <translation id="8234414138295101081">หมุนหน้าจอ 90 องศา</translation>
+<translation id="8241665785394195545">วงเล็บปิด</translation>
 <translation id="8264941229485248811">แสดงหรือซ่อนตัวตรวจสอบเครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>
 <translation id="836869401750819675">เปิดหน้าดาวน์โหลด</translation>
 <translation id="8388247778047144397">ลากลิงก์ไปยังพื้นที่ว่างบนแนวแท็บ</translation>

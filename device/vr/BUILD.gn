@@ -12,15 +12,8 @@ if (enable_vr) {
   component("vr") {
     output_name = "device_vr"
 
-    sources = [
-      "vr_export.h",
-    ]
     defines = [ "DEVICE_VR_IMPLEMENTATION" ]
-    deps = [
-      "//device/vr/buildflags",
-      "//device/vr/public/mojom",
-    ]
-    sources += [
+    sources = [
       "orientation/orientation_device.cc",
       "orientation/orientation_device.h",
       "orientation/orientation_device_provider.cc",
@@ -39,12 +32,14 @@ if (enable_vr) {
       "vr_device_provider.h",
       "vr_display_impl.cc",
       "vr_display_impl.h",
+      "vr_export.h",
     ]
-
-    deps += [
+    deps = [
       "//base",
       "//components/ukm:ukm",
       "//device/base",
+      "//device/vr/buildflags",
+      "//device/vr/public/mojom",
       "//gpu/ipc/common:interfaces",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
@@ -94,19 +89,25 @@ if (enable_vr) {
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
-    if (enable_openvr) {
+    if (!is_android) {
+      sources += [
+        "isolated_gamepad_data_fetcher.cc",
+        "isolated_gamepad_data_fetcher.h",
+      ]
+
       deps += [
         "//device/gamepad",
         "//device/gamepad/public/cpp:shared_with_blink",
-        "//third_party/openvr:openvr",
       ]
+    }
+
+    if (enable_openvr) {
+      deps += [ "//third_party/openvr:openvr" ]
       sources += [
         "openvr/openvr_api_wrapper.cc",
         "openvr/openvr_api_wrapper.h",
         "openvr/openvr_device.cc",
         "openvr/openvr_device.h",
-        "openvr/openvr_device_provider.cc",
-        "openvr/openvr_device_provider.h",
         "openvr/openvr_gamepad_helper.cc",
         "openvr/openvr_gamepad_helper.h",
         "openvr/openvr_render_loop.cc",
@@ -133,8 +134,6 @@ if (enable_vr) {
       ]
 
       sources += [
-        "isolated_gamepad_data_fetcher.cc",
-        "isolated_gamepad_data_fetcher.h",
         "windows/d3d11_texture_helper.cc",
         "windows/d3d11_texture_helper.h",
         "windows/flip_pixel_shader.h",
@@ -214,17 +213,11 @@ if (enable_vr) {
     }
 
     if (enable_oculus_vr) {
-      deps += [
-        "//device/gamepad",
-        "//device/gamepad/public/cpp:shared_with_blink",
-        "//third_party/libovr",
-      ]
+      deps += [ "//third_party/libovr" ]
 
       sources += [
         "oculus/oculus_device.cc",
         "oculus/oculus_device.h",
-        "oculus/oculus_device_provider.cc",
-        "oculus/oculus_device_provider.h",
         "oculus/oculus_gamepad_helper.cc",
         "oculus/oculus_gamepad_helper.h",
         "oculus/oculus_render_loop.cc",

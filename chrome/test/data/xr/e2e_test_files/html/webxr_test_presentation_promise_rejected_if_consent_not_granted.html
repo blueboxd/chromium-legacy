@@ -16,7 +16,8 @@ the user denies permission on a consent dialog.
       function onImmersiveRequestWithConsent() {
         navigator.xr.requestSession('immersive-vr').then(() => {
           assert_unreached("requestPresent promise shouldn't resolve when consent not granted");
-        }).catch(() => {
+        }).catch((e) => {
+          assert_true(e instanceof DOMException && e.name == "NotSupportedError");
           done();
         });
       }

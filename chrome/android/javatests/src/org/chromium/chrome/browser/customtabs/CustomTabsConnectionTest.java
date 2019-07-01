@@ -463,9 +463,8 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/979855")
     public void testCanGetSchedulerGroup() {
-        Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
+        Assume.assumeTrue(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP);
         // self is always accessible.
         Assert.assertTrue(CustomTabsConnection.canGetSchedulerGroup(Process.myPid()));
         // PID 1 always exists, yet should never be accessible by regular apps.

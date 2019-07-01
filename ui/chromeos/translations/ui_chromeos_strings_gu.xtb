@@ -90,9 +90,9 @@
 <translation id="197560921582345123">ફેરફાર કરી શકે છે</translation>
 <translation id="1984603991036629094">આર્મેનિયન ધ્વન્યાત્મક કીબોર્ડ</translation>
 <translation id="2001796770603320721">ડ્રાઇવમાં મેનેજ કરો</translation>
+<translation id="2009067268969781306">ડ્રાઇવને ફોર્મેટ કરવાથી તેના પર સ્ટોર કરેલો બધો ડેટા ડિલીટ થઈ જશે. આ છેલ્લા ફેરફારને રદ કરી શકાતો નથી.</translation>
 <translation id="2028997212275086731">RAR આર્કાઇવ</translation>
 <translation id="2046702855113914483">રામેન - જાપાનના એક પ્રકારના નૂડલ</translation>
-<translation id="204914487372604757">શૉર્ટકટ બનાવો </translation>
 <translation id="2070909990982335904">ડૉટથી પ્રારંભ થતા નામો સિસ્ટમ માટે આરક્ષિત છે. કૃપા કરી બીજું નામ પસંદ કરો.</translation>
 <translation id="2079545284768500474">છેલ્લો ફેરફાર રદ કરો</translation>
 <translation id="2080010875307505892">સર્બિયન કીબોર્ડ</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">અરેબિક કીબોર્ડ</translation>
 <translation id="4261901459838235729">Google પ્રસ્તુતિ</translation>
 <translation id="4290535918735525311">Linux વડે શેર કરેલું 1 ફોલ્ડર</translation>
+<translation id="42981349822642051">વિસ્તૃત કરો</translation>
 <translation id="4298972503445160211">ડેનિશ કીબોર્ડ</translation>
 <translation id="4299729908419173967">બ્રાઝિલિયન</translation>
 <translation id="4309915981827077375">સામાન્ય માહિતી</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">વધુ જુઓ...</translation>
 <translation id="5061708541166515394">કોન્ટ્રાસ્ટ</translation>
 <translation id="5068919226082848014">પિઝા</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ફાઇલો ડિલીટ કરવામાં આવશે</translation>
 <translation id="509429900233858213">કોઈ ભૂલ આવી છે.</translation>
 <translation id="5098629044894065541">હીબ્રુ</translation>
 <translation id="5123433949759960244">બાસ્કેટબૉલ</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS ક્લાઉડ બેકઅપ</translation>
 <translation id="5756666464756035725">હંગેરિયન QWERTY</translation>
 <translation id="5771585441665576801">લિવ્યંતરણ (geia → γεια)</translation>
+<translation id="5776325638577448643">કાઢી નાખો અને ફોર્મેટ કરો</translation>
 <translation id="57838592816432529">અવાજ બંધ કરો</translation>
 <translation id="5788127256798019331">Play ફાઇલો</translation>
 <translation id="5790193330357274855">કઝાખ</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Linux ઍપને <ph name="FOLDER_NAME" /> ફોલ્ડરમાં ફાઇલોને સંશોધિત કરવાની પરવાનગીઓ આપો</translation>
 <translation id="5892290200158927959">ફ્રેંચ BÉPO કીબોર્ડ</translation>
 <translation id="5911887972742538906">તમારી Linux ઍપ્લિકેશનના ઇન્સ્ટૉલેશન દરમિયાન ભૂલ આવી.</translation>
+<translation id="5912396950572065471">ફોર્મેટ</translation>
 <translation id="5913638992615760742">કૉપિ ઑપરેશન નિષ્ફળ થયું, અનપેક્ષિત ભૂલ: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux ઍપને તમારી Google ડ્રાઇવમાં ફાઇલોને સંશોધિત કરવાની પરવાનગી આપો. ફેરફારો તમારા બીજા ડિવાઇસ સાથે સિંક થશે.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> સાથે ખોલો</translation>
 <translation id="6199801702437275229">સ્થાન માહિતી માટે રાહ જોઈ રહ્યું છે...</translation>
 <translation id="6205710420833115353">કેટલાક ઑપરેશન્સમાં અપેક્ષિત કરતાં વધુ સમય લાગી રહ્યો છે. શું તમે તેમને નિરસ્ત કરવા માગો છો?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" />ને ફોર્મેટ કરો</translation>
 <translation id="6227235786875481728">આ ફાઇલ ચલાવી શકાઈ નથી.</translation>
 <translation id="6248400709929739064">સબટાઇટલ ચાલુ કરો</translation>
 <translation id="6264347891387618177">લિવ્યંતરણ (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">યુએસ પ્રોગ્રામર ડ્વોરેક કીબોર્ડ</translation>
 <translation id="7191454237977785534">ફાઇલના રૂપમાં સાચવો</translation>
 <translation id="7222624196722476520">બલ્ગેરિયન ધ્વન્યાત્મક કીબોર્ડ</translation>
+<translation id="7238097264433196391">ડ્રાઇવનું નામ</translation>
 <translation id="7248671827512403053">ઍપ્લિકેશન</translation>
 <translation id="7268659760406822741">ઉપલબ્ધ સેવાઓ</translation>
 <translation id="7283041136720745563">તમારો Google ડ્રાઇવ ક્વોટા પૂરતો મોટો નથી.</translation>
@@ -600,7 +606,6 @@
 <translation id="7969525169268594403">સ્લોવેનિયન</translation>
 <translation id="7982283708762922719">ઊંચાઈ</translation>
 <translation id="7987485481246785146">સોરાની કુર્દિશ અરબી-આધારિત કીબોર્ડ</translation>
-<translation id="799547531016638432">શૉર્ટકટ દૂર કરો</translation>
 <translation id="799923393800005025">જોઈ શકે છે</translation>
 <translation id="8008366997883261463">કૂતરો</translation>
 <translation id="8028993641010258682">કદ</translation>

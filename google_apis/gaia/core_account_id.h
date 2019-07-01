@@ -7,6 +7,7 @@
 
 #include <ostream>
 #include <string>
+#include <vector>
 
 // Represent the id of an account for interaction with GAIA. It is
 // currently implicitly convertible to and from std::string to allow
@@ -44,6 +45,11 @@ bool operator==(const CoreAccountId& lhs, const CoreAccountId& rhs);
 bool operator!=(const CoreAccountId& lhs, const CoreAccountId& rhs);
 
 std::ostream& operator<<(std::ostream& out, const CoreAccountId& a);
+
+// Returns the values of the account ids in a vector. Useful especially for
+// logs.
+std::vector<std::string> ToStringList(
+    const std::vector<CoreAccountId>& account_ids);
 
 namespace std {
 template <>

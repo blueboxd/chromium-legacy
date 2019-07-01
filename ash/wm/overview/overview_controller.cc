@@ -557,14 +557,6 @@ bool OverviewController::ToggleOverview(
   // it as the transient root will handle showing the window.
   wm::RemoveTransientDescendants(&windows);
 
-  // We may want to slide the overview grid in or out in some cases, even if
-  // not explicitly stated.
-  OverviewSession::EnterExitOverviewType new_type = type;
-  if (type == OverviewSession::EnterExitOverviewType::kNormal &&
-      ShouldSlideInOutOverview(windows)) {
-    new_type = OverviewSession::EnterExitOverviewType::kWindowsMinimized;
-  }
-
   if (InOverviewSession()) {
     // Do not allow ending overview if we're in single split mode unless swiping
     // up from the shelf in tablet mode.
@@ -581,8 +573,15 @@ bool OverviewController::ToggleOverview(
     // Suspend occlusion tracker until the exit animation is complete.
     PauseOcclusionTracker();
 
+    // We may want to slide out the overview grid in some cases, even if not
+    // explicitly stated.
+    OverviewSession::EnterExitOverviewType new_type = type;
+    if (type == OverviewSession::EnterExitOverviewType::kNormal &&
+        ShouldSlideInOutOverview(windows)) {
+      new_type = OverviewSession::EnterExitOverviewType::kSlideOutExit;
+    }
     overview_session_->set_enter_exit_overview_type(new_type);
-    if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized ||
+    if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit ||
         type == OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
       // Minimize the windows without animations. When the home launcher button
       // is pressed, minimized widgets will get created in their place, and
@@ -649,6 +648,13 @@ bool OverviewController::ToggleOverview(
     PauseOcclusionTracker();
 
     overview_session_ = std::make_unique<OverviewSession>(this);
+    // We may want to slide in the overview grid in some cases, even if not
+    // explicitly stated.
+    OverviewSession::EnterExitOverviewType new_type = type;
+    if (type == OverviewSession::EnterExitOverviewType::kNormal &&
+        ShouldSlideInOutOverview(windows)) {
+      new_type = OverviewSession::EnterExitOverviewType::kSlideInEnter;
+    }
     overview_session_->set_enter_exit_overview_type(new_type);
     for (auto& observer : observers_)
       observer.OnOverviewModeStarting();
@@ -659,7 +665,7 @@ bool OverviewController::ToggleOverview(
     // For app dragging, there are no start animations so add a delay to delay
     // animations observing when the start animation ends, such as the shelf,
     // shadow and rounded corners.
-    if (new_type == OverviewSession::EnterExitOverviewType::kWindowDragged &&
+    if (new_type == OverviewSession::EnterExitOverviewType::kImmediateEnter &&
         !delayed_animation_task_delay_.is_zero()) {
       auto force_delay_observer =
           std::make_unique<ForceDelayObserver>(delayed_animation_task_delay_);

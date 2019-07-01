@@ -196,14 +196,14 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       prefs::kAuthServerWhitelist, user_pref_service,
       base::BindRepeating(&AwURLRequestContextGetter::UpdateServerWhitelist,
                           base::Unretained(this)));
-  auth_server_whitelist_.MoveToThread(io_thread_proxy);
+  auth_server_whitelist_.MoveToSequence(io_thread_proxy);
 
   auth_android_negotiate_account_type_.Init(
       prefs::kAuthAndroidNegotiateAccountType, user_pref_service,
       base::BindRepeating(
           &AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType,
           base::Unretained(this)));
-  auth_android_negotiate_account_type_.MoveToThread(io_thread_proxy);
+  auth_android_negotiate_account_type_.MoveToSequence(io_thread_proxy);
 
   // For net-log, use default capture mode and no channel information.
   // WebView can enable net-log only using commandline in userdebug

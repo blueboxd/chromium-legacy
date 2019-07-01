@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Boleh edit</translation>
 <translation id="1984603991036629094">Papan kekunci Fonetik bahasa Armenia</translation>
 <translation id="2001796770603320721">Urus dalam Drive</translation>
+<translation id="2009067268969781306">Memformatkan pemacu akan memadamkan semua data yang disimpan di dalamnya. Tindakan ini tidak boleh dibuat asal.</translation>
 <translation id="2028997212275086731">Arkib RAR</translation>
 <translation id="2046702855113914483">Ramen</translation>
-<translation id="204914487372604757">Cipta pintasan</translation>
 <translation id="2070909990982335904">Nama bermula dengan titik dikhaskan untuk sistem. Sila pilih nama lain.</translation>
 <translation id="2079545284768500474">Buat asal</translation>
 <translation id="2080010875307505892">Papan kekunci Serbia</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Papan kekunci bahasa Arab</translation>
 <translation id="4261901459838235729">Persembahan Google</translation>
 <translation id="4290535918735525311">1 folder dikongsi dengan Linux</translation>
+<translation id="42981349822642051">Kembangkan</translation>
 <translation id="4298972503445160211">Papan kekunci Denmark</translation>
 <translation id="4299729908419173967">Bahasa Brazil</translation>
 <translation id="4309915981827077375">Maklumat umum</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Lihat lagi...</translation>
 <translation id="5061708541166515394">Kontras</translation>
 <translation id="5068919226082848014">Piza</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> fail akan dipadamkan</translation>
 <translation id="509429900233858213">Ralat telah berlaku.</translation>
 <translation id="5098629044894065541">Bahasa Ibrani</translation>
 <translation id="5123433949759960244">Bola Keranjang</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Sandaran Awan OS Chrome</translation>
 <translation id="5756666464756035725">QWERTY Hungary</translation>
 <translation id="5771585441665576801">Pengalihan huruf (geia → γεια)</translation>
+<translation id="5776325638577448643">Padamkan dan Formatkan</translation>
 <translation id="57838592816432529">Redam</translation>
 <translation id="5788127256798019331">Fail Play</translation>
 <translation id="5790193330357274855">Kazakhstan</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505">Beri Linux kebenaran apl untuk mengubah fail dalam folder <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Papan kekunci BEPO Perancis</translation>
 <translation id="5911887972742538906">Ralat telah berlaku semasa pemasangan aplikasi Linux anda.</translation>
+<translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Operasi salin gagal, ralat tidak dijangka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Beri Linux kebenaran apl untuk mengubah fail dalam Google Drive anda. Perubahan akan disegerakkan ke peranti anda yang lain.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711">Buka dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Menunggu maklumat ruang...</translation>
 <translation id="6205710420833115353">Sesetengah operasi mengambil masa lebih lama daripada yang dijangkakan. Adakah anda ingin menghenti paksanya?</translation>
+<translation id="6224253798271602650">Formatkan <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Fail ini tidak dapat dimainkan.</translation>
 <translation id="6248400709929739064">Dayakan sari kata</translation>
 <translation id="6264347891387618177">Pengalihan huruf (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">Papan kekunci Dvorak Pengatur Cara AS</translation>
 <translation id="7191454237977785534">Simpan fail sebagai</translation>
 <translation id="7222624196722476520">Papan kekunci Fonetik Bulgaria</translation>
+<translation id="7238097264433196391">Nama pemacu</translation>
 <translation id="7248671827512403053">Aplikasi</translation>
 <translation id="7268659760406822741">Perkhidmatan yang tersedia</translation>
 <translation id="7283041136720745563">Kuota Google Drive anda tidak cukup besar.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">Bahasa Slovenia</translation>
 <translation id="7982283708762922719">Tinggi</translation>
 <translation id="7987485481246785146">Papan kekunci berdasarkan bahasa Arab Kurdish Sorani</translation>
-<translation id="799547531016638432">Alih keluar pintasan</translation>
 <translation id="799923393800005025">Boleh lihat</translation>
 <translation id="8008366997883261463">Anjing Jack Russel Terrier</translation>
 <translation id="8028993641010258682">Saiz</translation>

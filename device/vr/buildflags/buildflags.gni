@@ -47,12 +47,6 @@ declare_args() {
   enable_arcore = enable_vr && is_android && !is_chromecast &&
                   (current_cpu == "arm" || current_cpu == "arm64")
 
-  # When enabled, host Desktop VR devices (OpenVR and Oculus) in a separate
-  # process.  When disabled, and Oculus/OpenVR are enabled, they are hosted
-  # in the browser process.
-  enable_isolated_xr_service =
-      enable_oculus_vr || enable_openvr || enable_windows_mr || enable_openxr
-
   # When true, portions of VR's native code are included in the VR DFM.
   modularize_vr_native = false
 

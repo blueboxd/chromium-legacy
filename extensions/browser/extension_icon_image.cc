@@ -131,6 +131,7 @@ IconImage::IconImage(content::BrowserContext* context,
       icon_set_(icon_set),
       resource_size_in_dip_(resource_size_in_dip),
       keep_original_size_(keep_original_size),
+      did_complete_initial_load_(false),
       source_(NULL),
       default_icon_(gfx::ImageSkiaOperations::CreateResizedImage(
           default_icon,
@@ -238,6 +239,7 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
 
 void IconImage::OnImageRepLoaded(const gfx::ImageSkiaRep& rep) {
   DCHECK(!rep.is_null());
+  did_complete_initial_load_ = true;
 
   image_skia_.RemoveRepresentation(rep.scale());
   image_skia_.AddRepresentation(rep);

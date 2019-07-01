@@ -10,6 +10,9 @@
 <translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="3511655281162215899">Vui lòng chọn một mật khẩu mới ngay lập tức</translation>
+<translation id="3838338534323494292">Mật khẩu mới</translation>
+<translation id="445059817448385655">Mật khẩu cũ</translation>
+<translation id="467510802200863975">Mật khẩu không khớp</translation>
 <translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
 <translation id="476166673298332917">Quản trị viên thiết bị có thể theo dõi hoạt động duyệt web của bạn.</translation>
 <translation id="5212543919916444558">Tôi không tìm thấy nội dung nào trên màn hình để có thể trợ giúp cho bạn.
@@ -21,10 +24,14 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5733345267661125295">Vui lòng chọn một mật khẩu mới ngay bây giờ</translation>
 <translation id="5832805196449965646">Thêm người</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
+<translation id="6058625436358447366">Để hoàn tất, hãy nhập cả mật khẩu cũ và mật khẩu mới của bạn</translation>
+<translation id="6106186594183574873">Để hoàn tất, hãy nhập mật khẩu cũ của bạn</translation>
+<translation id="6146993107019042706">Để hoàn tất, hãy nhập mật khẩu mới của bạn</translation>
 <translation id="6574601967010742428">Quản trị viên thiết bị có thể theo dõi hoạt động của bạn.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Mật khẩu hiện tại của bạn đã hết hạn!}=1{Còn chưa đến 1 ngày nữa là mật khẩu hiện tại của bạn sẽ hết hạn!}other{Còn chưa đến # ngày nữa là mật khẩu hiện tại của bạn sẽ hết hạn!}}</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7690294790491645610">Xác nhận mật khẩu mới</translation>
 <translation id="808894953321890993">Đổi mật khẩu</translation>
+<translation id="8747900814994928677">Xác nhận thay đổi</translation>
 <translation id="9111102763498581341">Mở khóa</translation>
 </translationbundle>

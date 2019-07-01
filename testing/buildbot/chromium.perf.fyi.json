@@ -101,7 +101,8 @@
           "-v",
           "--browser=cros-chrome",
           "--upload-results",
-          "--test-shard-map-filename=chromeos-kevin-perf-fyi_map.json"
+          "--test-shard-map-filename=chromeos-kevin-perf-fyi_map.json",
+          "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {

@@ -20,6 +20,9 @@ ExceptionHandlerProtocol::ClientInformation::ClientInformation()
     : exception_information_address(0), sanitization_information_address(0) {}
 
 ExceptionHandlerProtocol::ClientToServerMessage::ClientToServerMessage()
-    : version(kVersion), type(kTypeCrashDumpRequest), client_info() {}
+    : version(kVersion),
+      type(kTypeCrashDumpRequest),
+      requesting_thread_stack_address(0),
+      client_info() {}
 
 }  // namespace crashpad

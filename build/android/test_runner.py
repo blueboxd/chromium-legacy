@@ -589,96 +589,6 @@ def AddMonkeyTestOptions(parser):
       help='Delay between events (ms) (default: %(default)s). ')
 
 
-def AddPerfTestOptions(parser):
-  """Adds perf test options to |parser|."""
-
-  parser = parser.add_argument_group('perf arguments')
-
-  class SingleStepAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-      if values and not namespace.single_step:
-        parser.error('single step command provided, '
-                     'but --single-step not specified.')
-      elif namespace.single_step and not values:
-        parser.error('--single-step specified, '
-                     'but no single step command provided.')
-      setattr(namespace, self.dest, values)
-
-  step_group = parser.add_mutually_exclusive_group(required=True)
-  # TODO(jbudorick): Revise --single-step to use argparse.REMAINDER.
-  # This requires removing "--" from client calls.
-  step_group.add_argument(
-      '--print-step',
-      help='The name of a previously executed perf step to print.')
-  step_group.add_argument(
-      '--single-step',
-      action='store_true',
-      help='Execute the given command with retries, but only print the result '
-           'for the "most successful" round.')
-  step_group.add_argument(
-      '--steps',
-      help='JSON file containing the list of commands to run.')
-
-  parser.add_argument(
-      '--collect-chartjson-data',
-      action='store_true',
-      help='Cache the telemetry chartjson output from each step for later use.')
-  parser.add_argument(
-      '--dry-run',
-      action='store_true',
-      help='Just print the steps without executing.')
-  # TODO(rnephew): Remove this when everything moves to new option in platform
-  # mode.
-  parser.add_argument(
-      '--get-output-dir-archive',
-      metavar='FILENAME', type=os.path.realpath,
-      help='Write the cached output directory archived by a step into the'
-      ' given ZIP file.')
-  parser.add_argument(
-      '--known-devices-file',
-      help='Path to known device list.')
-  # Uses 0.1 degrees C because that's what Android does.
-  parser.add_argument(
-      '--max-battery-temp',
-      type=int,
-      help='Only start tests when the battery is at or below the given '
-           'temperature (0.1 C)')
-  parser.add_argument(
-      '--min-battery-level',
-      type=int,
-      help='Only starts tests when the battery is charged above '
-           'given level.')
-  parser.add_argument(
-      '--no-timeout',
-      action='store_true',
-      help='Do not impose a timeout. Each perf step is responsible for '
-           'implementing the timeout logic.')
-  parser.add_argument(
-      '--output-chartjson-data',
-      type=os.path.realpath,
-      help='Writes telemetry chartjson formatted output into the given file.')
-  parser.add_argument(
-      '--output-dir-archive-path',
-      metavar='FILENAME', type=os.path.realpath,
-      help='Write the cached output directory archived by a step into the'
-      ' given ZIP file.')
-  parser.add_argument(
-      '--output-json-list',
-      type=os.path.realpath,
-      help='Writes a JSON list of information for each --steps into the given '
-           'file. Information includes runtime and device affinity for each '
-           '--steps.')
-  parser.add_argument(
-      '--write-buildbot-json',
-      action='store_true',
-      help='Whether to output buildbot json.')
-
-  parser.add_argument(
-      'single_step_command',
-      nargs='*', action=SingleStepAction,
-      help='If --single-step is specified, the command to run.')
-
-
 def AddPythonTestOptions(parser):
 
   parser = parser.add_argument_group('python arguments')
@@ -707,8 +617,9 @@ def _RunPythonTests(args):
     sys.path = sys.path[1:]
 
 
-_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation', 'junit',
-                                'linker', 'monkey', 'perf']
+_DEFAULT_PLATFORM_MODE_TESTS = [
+    'gtest', 'instrumentation', 'junit', 'linker', 'monkey'
+]
 
 
 def RunTestsCommand(args):
@@ -744,7 +655,6 @@ _SUPPORTED_IN_PLATFORM_MODE = [
   'junit',
   'linker',
   'monkey',
-  'perf',
 ]
 
 
@@ -852,8 +762,7 @@ def RunTestsInPlatformMode(args):
   env = environment_factory.CreateEnvironment(
       args, out_manager, infra_error)
   test_instance = test_instance_factory.CreateTestInstance(args, infra_error)
-  test_run = test_run_factory.CreateTestRun(
-      args, env, test_instance, infra_error)
+  test_run = test_run_factory.CreateTestRun(env, test_instance, infra_error)
 
   contexts_to_notify_on_sigterm.append(env)
   contexts_to_notify_on_sigterm.append(test_run)
@@ -947,9 +856,6 @@ def RunTestsInPlatformMode(args):
           ui_screenshot_file.write(ui_screenshots)
         logging.critical('UI Screenshots: %s', ui_screenshot_file.Link())
 
-  if args.command == 'perf' and (args.steps or args.single_step):
-    return 0
-
   return (0 if all(r.DidRunPass() for r in all_iteration_results)
           else constants.ERROR_EXIT_CODE)
 
@@ -1003,14 +909,6 @@ def main():
   AddCommonOptions(subp)
   AddDeviceOptions(subp)
   AddMonkeyTestOptions(subp)
-
-  subp = command_parsers.add_parser(
-      'perf',
-      help='performance tests')
-  AddCommonOptions(subp)
-  AddDeviceOptions(subp)
-  AddPerfTestOptions(subp)
-  AddTracingOptions(subp)
 
   subp = command_parsers.add_parser(
       'python',

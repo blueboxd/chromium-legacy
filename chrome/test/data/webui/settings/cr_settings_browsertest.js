@@ -807,14 +807,7 @@ CrSettingsResetPageTest.prototype = {
   ]),
 };
 
-// Disabling on Linux (desktop and Chrome OS) due to flakiness.
-// https://crbug.com/873884
-GEN('#if defined(OS_LINUX)');
-GEN('#define MAYBE_ResetPageAll DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_ResetPageAll All');
-GEN('#endif');
-TEST_F('CrSettingsResetPageTest', 'MAYBE_ResetPageAll', function() {
+TEST_F('CrSettingsResetPageTest', 'All', function() {
   mocha.run();
 });
 

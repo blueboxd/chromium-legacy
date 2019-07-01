@@ -207,7 +207,9 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
 
-  static const ContentSettingsTypeIdEntry kBlockedMessageIDs[] = {
+  // TODO(https://crbug.com/978882): Make the two arrays below static again once
+  // we no longer need to check base::FeatureList.
+  const ContentSettingsTypeIdEntry kBlockedMessageIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_MESSAGE},
       {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_MESSAGE},
       {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_MESSAGE},
@@ -222,7 +224,7 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
            : IDS_BLOCKED_MOTION_SENSORS_MESSAGE},
   };
   // Fields as for kBlockedMessageIDs, above.
-  static const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
+  const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
       {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
       {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_MESSAGE},

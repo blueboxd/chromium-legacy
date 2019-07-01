@@ -667,7 +667,8 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
   // a SkPicture filter that makes a picture safe for multiple CPU raster
   // threads. (skbug.com/4321).
   cc::PaintImage image = last_image_;
-  if (canvas->imageInfo().colorType() == kUnknown_SkColorType) {
+  if (canvas->imageInfo().colorType() == kUnknown_SkColorType &&
+      last_image_.IsTextureBacked()) {
     sk_sp<SkImage> non_texture_image =
         last_image_.GetSkImage()->makeNonTextureImage();
     image =

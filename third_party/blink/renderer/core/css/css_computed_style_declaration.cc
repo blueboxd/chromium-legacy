@@ -335,6 +335,11 @@ LayoutObject* CSSComputedStyleDeclaration::StyledLayoutObject() const {
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     CSSPropertyID property_id) const {
+  if (property_id == CSSPropertyID::kVariable) {
+    // TODO(https://crbug.com/980160): Disallow calling this function with
+    // kVariable.
+    return nullptr;
+  }
   return GetPropertyCSSValue(CSSPropertyName(property_id));
 }
 

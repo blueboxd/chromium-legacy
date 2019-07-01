@@ -548,6 +548,7 @@
 <translation id="3946209740501886391">このサイトでは常に確認</translation>
 <translation id="3949571496842715403">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書で SAN（サブジェクトの別名）が指定されていません。設定が不適切であるか、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="3949601375789751990">閲覧履歴がここに表示されます</translation>
+<translation id="3949870428812919180">保存済みのお支払い方法がありません</translation>
 <translation id="3950820424414687140">ログイン</translation>
 <translation id="3962859241508114581">前の曲</translation>
 <translation id="3963837677003247395">手動で続行しますか？</translation>

@@ -425,6 +425,48 @@ TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {
       1 /* Times kSuggestionChip Launched */);
 }
 
+// Tests that the item list changed without user operations; this happens on
+// active user switch. See https://crbug.com/980082.
+TEST_F(AppsGridViewTest, MoveItemAcrossRowDoesNotCauseCrash) {
+  const int cols = apps_grid_view_->cols();
+  ASSERT_LE(0, cols);
+  model_->PopulateApps(cols * 2);
+
+  AppListItemView* view0 = GetItemViewAt(0);
+  model_->top_level_item_list()->MoveItem(0, cols + 2);
+
+  // Make sure the logical location of the view.
+  EXPECT_NE(view0, GetItemViewAt(0));
+  EXPECT_EQ(view0, GetItemViewAt(cols + 2));
+
+  // |view0| should be animating with layer.
+  EXPECT_TRUE(view0->layer());
+
+  test_api_->WaitForItemMoveAnimationDone();
+  // |view0| layer should be cleared after the animation.
+  EXPECT_FALSE(view0->layer());
+  EXPECT_EQ(view0->bounds(), GetItemRectOnCurrentPageAt(1, 2));
+}
+
+TEST_F(AppsGridViewTest, MoveItemAcrossRowDoesNotCauseAnimation) {
+  const int cols = apps_grid_view_->cols();
+  ASSERT_LE(0, cols);
+  model_->PopulateApps(cols * 2);
+
+  apps_grid_view_->GetWidget()->Hide();
+
+  AppListItemView* view0 = GetItemViewAt(0);
+  model_->top_level_item_list()->MoveItem(0, cols + 2);
+
+  // Make sure the logical location of the view.
+  EXPECT_NE(view0, GetItemViewAt(0));
+  EXPECT_EQ(view0, GetItemViewAt(cols + 2));
+
+  // The item should be repositioned immediately when the widget is not visible.
+  EXPECT_FALSE(view0->layer());
+  EXPECT_EQ(view0->bounds(), GetItemRectOnCurrentPageAt(1, 2));
+}
+
 // Tests that control + arrow while a suggested chip is focused does not crash.
 TEST_F(AppsGridViewTest, ControlArrowOnSuggestedChip) {
   model_->PopulateApps(5);
@@ -741,6 +783,9 @@ TEST_F(AppsGridViewTest, AppIconSelectedWhenMenuIsShown) {
 TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {
   size_t kTotalItems = 3;
   model_->PopulateApps(kTotalItems);
+  // Normally individual item-view does not have a layer.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i)
+    EXPECT_FALSE(GetItemViewAt(i)->layer());
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2"), model_->GetModelContent());
 
@@ -749,7 +794,15 @@ TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {
 
   // Dragging item_1 over item_0 creates a folder.
   SimulateDrag(AppsGridView::MOUSE, from, to);
+  // Each item view has its own layer during the drag.
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i)
+    EXPECT_TRUE(GetItemViewAt(i)->layer());
   apps_grid_view_->EndDrag(false);
+
+  // The layer should be destroyed after the dragging.
+  test_api_->WaitForItemMoveAnimationDone();
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i)
+    EXPECT_FALSE(GetItemViewAt(i)->layer());
   EXPECT_EQ(kTotalItems - 1, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
             model_->top_level_item_list()->item_at(0)->GetItemType());

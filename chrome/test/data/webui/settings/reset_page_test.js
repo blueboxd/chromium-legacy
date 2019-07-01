@@ -38,6 +38,9 @@ cr.define('settings_reset_page', function() {
 
         PolymerTest.clearBody();
         resetPage = document.createElement('settings-reset-page');
+        if (cr.isChromeOS) {
+          resetPage.pageVisibility = {powerwash: true};
+        }
         document.body.appendChild(resetPage);
       });
 

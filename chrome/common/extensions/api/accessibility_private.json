@@ -357,6 +357,18 @@
         "platforms": ["chromeos"]
       },
       {
+        "name": "onScrollableBoundsForPointFound",
+        "type": "function",
+        "description": "Called by the Autoclick extension when findScrollableBoundsForPoint has found a scrolling container. |rect| will be the bounds of the nearest scrollable ancestor of the node at the point requested using findScrollableBoundsForPoint.",
+        "parameters": [
+          {
+            "name": "rect",
+            "$ref": "ScreenRect"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "toggleDictation",
         "type": "function",
         "description": "Toggles dictation between active and inactive states.",
@@ -434,6 +446,24 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "Text to be announced."
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "findScrollableBoundsForPoint",
+        "type": "function",
+        "description": "Called when an internal component within accessibility wants to find the nearest scrolling container at a given screen coordinate. Used in Automatic Clicks.",
+        "parameters": [
+          {
+            "name": "x",
+            "type": "number",
+            "description": "X screen coordinate of the point."
+          },
+          {
+            "name": "y",
+            "type": "number",
+            "description": "Y screen coordinate of the point."
           }
         ],
         "platforms": ["chromeos"]

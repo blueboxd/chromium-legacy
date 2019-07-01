@@ -4,14 +4,11 @@
 
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 
+#include "chrome/browser/sharing/fcm_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
-
-namespace {
-const char kSharingFCMAppID[] = "com.google.chrome.sharing.fcm";
-}  // namespace
 
 SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
                                      SharingFCMSender* sharing_fcm_sender)

@@ -182,8 +182,8 @@ void ContentHash::DidFetchVerifiedContents(
   // can be a login redirect html, xml file, etc. if you aren't logged in with
   // the right cookies).  TODO(asargent) - It would be a nice enhancement to
   // move to parsing this in a sandboxed helper (https://crbug.com/372878).
-  std::unique_ptr<base::Value> parsed =
-      base::JSONReader::ReadDeprecated(*fetched_contents);
+  base::Optional<base::Value> parsed =
+      base::JSONReader::Read(*fetched_contents);
   if (!parsed) {
     ContentHash::DispatchFetchFailure(key, std::move(created_callback),
                                       is_cancelled);

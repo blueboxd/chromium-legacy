@@ -61,7 +61,6 @@
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1384959399684842514">डाउनलोडला विराम दिला</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> दिवसांपूर्वी ॲक्टिव्ह होते</translation>
-<translation id="1389974829397082527">येथे कोणतेही बुकमार्क नाहीत</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> सह शोधा</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> मध्ये एम्बेड केले</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
@@ -186,6 +185,7 @@
 <translation id="2259659629660284697">पासवर्ड एक्सपोर्ट करा…</translation>
 <translation id="2268044343513325586">सुधारित करा</translation>
 <translation id="2286841657746966508">बिलिंग पत्ता</translation>
+<translation id="2289270750774289114">साइटला केव्हा जवळपासचे ब्लूटूथ डिव्हाइस शोधायचे आहे हे विचारा (शिफारस केलेले)</translation>
 <translation id="230115972905494466">कोणतीही कंपॅटिबल डिव्हाइस आढळली नाहीत</translation>
 <translation id="2315043854645842844">क्लायंट साइड प्रमाणपत्र निवडीला ऑपरेटिंग सिस्टमचा सपोर्ट नाही.</translation>
 <translation id="2321086116217818302">पासवर्ड तयार करत आहे…</translation>
@@ -270,6 +270,7 @@
 <translation id="2900528713135656174">इव्हेंट तयार करा</translation>
 <translation id="2902702728133930130">सुरू करताना अनपेक्षित एररमुळे Chrome अयशस्वी झाले.</translation>
 <translation id="290376772003165898">पेज <ph name="LANGUAGE" />मध्ये नाही?</translation>
+<translation id="2904414404539560095">पूर्ण उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="2910701580606108292">सायटींना संरक्षित आशय प्ले करू देण्याआधी विचारा</translation>
 <translation id="2913331724188855103">कुकी डेटा सेव्ह करणे आणि वाचण्यासाठी साइटना अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="2923908459366352541">नाव अवैध आहे</translation>
@@ -328,6 +329,7 @@
 <translation id="3350687908700087792">सर्व गुप्त टॅब बंद करा</translation>
 <translation id="3353615205017136254">Google द्वारे पुरवलेले लाइट पेज. मूळ पेज लोड करण्यासाठी मूळ लोड करा बटणावर टॅप करा.</translation>
 <translation id="3367813778245106622">संकालन प्रारंभ करण्‍यासाठी पुन्हा साइन इन करा</translation>
+<translation id="3374023511497244703">तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर Chrome डेटा आता तुमच्या Google खात्यामध्ये सिंक केला जाणार नाही</translation>
 <translation id="3384347053049321195">इमेज शेअर करा</translation>
 <translation id="3386292677130313581">साइटना तुमचे स्थान जाणून घेण्याची अनुमती देण्यापूर्वी विचारा (शिफारस केलेले)</translation>
 <translation id="3387650086002190359">फाइल सिस्टम एररमुळे <ph name="FILE_NAME" /> डाउनलोड अयशस्वी झाले.</translation>
@@ -358,7 +360,6 @@
 <translation id="3632295766818638029">पासवर्ड पहा</translation>
 <translation id="363596933471559332">स्टोअर क्रेडेंशियल वापरून वेबसाइटवर आपोआप साइन इन करा. वैशिष्ट्य बंद असते तेव्हा, वेबसाइटवर साइन इन करण्यापूर्वी दरवेळी तुम्हाला पडताळणीसाठी विचारले जाईल.</translation>
 <translation id="3658159451045945436">रीसेट केल्याने तुमचा डेटा सेव्हिंग इतिहास, भेट दिलेल्या साइटच्या सूचीसह, मिटवला जातो.</translation>
-<translation id="3662546969139119822">येथे कोणताही इतिहास नाही</translation>
 <translation id="3663367437272849150"><ph name="NUM_SELECTED" /> टॅबची गटामध्ये विभागणी करा.</translation>
 <translation id="3672452749423051839">नेव्हिगेशन एरर सूचना</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
@@ -418,6 +419,7 @@
 <translation id="4099578267706723511">वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chrome अधिक चांगले करण्यास मदत करा.</translation>
 <translation id="410351446219883937">ऑटोप्ले</translation>
 <translation id="4116038641877404294">पेज ऑफलाइन वापरण्यासाठी ती डाउनलोड करा</translation>
+<translation id="4135200667068010335">बंद केलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="4149994727733219643">वेब पेजसाठी सोपा केलेला व्ह्यू</translation>
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
 <translation id="4169535189173047238">अनुमती देऊ नका</translation>
@@ -439,7 +441,6 @@
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4256782883801055595">मुक्त स्रोत परवाने</translation>
 <translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
-<translation id="4262028915562328938">सिंक एरर आली, तपशील मिळविण्‍यासाठी टॅप करा.</translation>
 <translation id="4269820728363426813">दुव्याचा पत्ता कॉपी करा</translation>
 <translation id="4275663329226226506">माध्यम</translation>
 <translation id="4278390842282768270">अनुमत</translation>
@@ -766,6 +767,7 @@
 <translation id="6538442820324228105"><ph name="GBS" /> GB डाउलोड केले</translation>
 <translation id="654446541061731451">बीममध्ये एक टॅब निवडा</translation>
 <translation id="6545017243486555795">सर्व डेटा साफ करा</translation>
+<translation id="6545864417968258051">ब्लूटूथ स्कॅन करत आहे</translation>
 <translation id="6560414384669816528">Sogou सह शोध करा</translation>
 <translation id="6566259936974865419">Chrome ने तुमच्यासाठी <ph name="GIGABYTES" /> GB सेव्ह केले आहे</translation>
 <translation id="6573096386450695060">नेहमी अनुमती द्या</translation>
@@ -795,8 +797,10 @@
 <translation id="671481426037969117">तुमचा <ph name="FQDN" /> टायमर झाला आहे. तो उद्या पुन्हा सुरू होईल.</translation>
 <translation id="6738867403308150051">डाउनलोड करीत आहे…</translation>
 <translation id="6746124502594467657">खाली हलवा</translation>
+<translation id="6751888224264752704">या डिव्हाइसवरील हा Chrome डेटा देखील साफ करा</translation>
 <translation id="6766622839693428701">बंद करण्यासाठी खाली स्वाइप करा.</translation>
 <translation id="6766758767654711248">साइटवर जाण्यासाठी टॅप करा</translation>
+<translation id="6767294960381293877">अर्ध्या उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="6782111308708962316">तृतीय-पक्ष वेबसाइटना कुकी डेटा सेव्ह करण्यास आणि वाचण्यास प्रतिबंधित करा</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="679325081238418596">आपल्या सर्व डिव्हाइसेसवर तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळवा</translation>
@@ -812,7 +816,6 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टॅब बंद केले</translation>
 <translation id="6864459304226931083">इमेज डाउनलोड करा</translation>
 <translation id="6865313869410766144">अॉटोफिल फॉर्म डेटा</translation>
-<translation id="6868088497967843822">आपल्‍या सर्व डिव्‍हाइसेस वरील तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळविण्‍यासाठी साइन इन करा</translation>
 <translation id="688738109438487280">विद्यमान डेटा <ph name="TO_ACCOUNT" /> मध्ये जोडा.</translation>
 <translation id="6891726759199484455">तुमचा पासवर्ड कॉपी करण्यासाठी अनलॉक करा</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
@@ -829,7 +832,6 @@
 <translation id="6979737339423435258">पूर्णवेळ</translation>
 <translation id="6980462514016882061">शोध, जाहिरात आणि इतर Google सेवा पर्सनलाइझ करण्यासाठी Google तुमच्या ब्राउझिंग इतिहासाचा वापर करू शकते</translation>
 <translation id="6981982820502123353">अॅक्सेसिबिलिटी</translation>
-<translation id="6985347914332179298">येथे डाउनलोड नाहीत</translation>
 <translation id="6989267951144302301">डाउनलोड करता आले नाही</translation>
 <translation id="6990079615885386641">Google Play Store मधून ॲप मिळवा: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">साइटना तुमचा मायक्रोफोन वापरण्याची अनुमती देण्यापूर्वी प्रथम विचारा (शिफारस केलेले)</translation>
@@ -887,7 +889,6 @@
 <translation id="7403691278183511381">Chrome फर्स्ट रन अनुभव</translation>
 <translation id="741204030948306876">होय, मला मान्य आहे</translation>
 <translation id="7413229368719586778">सुरू होण्याची तारीख <ph name="DATE" /></translation>
-<translation id="7418565925463285788">गट टॅब...</translation>
 <translation id="7423098979219808738">प्रथम विचारा</translation>
 <translation id="7423538860840206698">क्लिपबोर्ड वाचणे ब्लॉक केले</translation>
 <translation id="7431991332293347422">शोध पर्सनलाइझ करण्यासाठी तुमचा ब्राउझिंग इतिहास कसा वापरला जातो ते आणि बरेच काही नियंत्रित करा</translation>
@@ -1026,6 +1027,7 @@
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="8364603787714420828"><ph name="TAB_TITLE" /> टॅबची निवड रद्द करा.</translation>
+<translation id="8368027906805972958">अज्ञात किंवा सपोर्ट नसलेले डिव्हाइस (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
 <translation id="8374821112118309944">तुम्हाला नवीनतम आवृत्तीवर TalkBack बदलण्याची आवश्यकता आहे.</translation>
 <translation id="8378714024927312812">तुमच्या संस्थेकडून व्यवस्थापित केलेले</translation>
@@ -1122,6 +1124,7 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB डाउनलोड केले</translation>
 <translation id="9100505651305367705">सपोर्ट असताना सोप्या पद्धतीने लेख दाखवण्याची ऑफर</translation>
 <translation id="9100610230175265781">सांकेतिक पासफ्रेझ आवश्यक</translation>
+<translation id="9104217018994036254">टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
 <translation id="9139068048179869749">साइटना सूचना पाठविण्याची अनुमती देण्यापूर्वी प्रथम विचारा (शिफारस केलेले)</translation>

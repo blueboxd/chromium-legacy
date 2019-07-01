@@ -239,8 +239,6 @@ class WebView {
 
   virtual Status SetScreenOrientation(std::string orientation) = 0;
 
-  virtual Status DeleteScreenOrientation() = 0;
-
   virtual bool IsOOPIF(const std::string& frame_id) = 0;
 
   virtual FrameTracker* GetFrameTracker() const = 0;

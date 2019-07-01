@@ -34,13 +34,6 @@ class NSString;
 
 namespace app_mode {
 
-// The IPC socket used to communicate between app shims and Chrome will be
-// created under a temporary directory with this name.
-extern const char kAppShimSocketShortName[];
-// A symlink to allow the app shim to find the socket will be created under the
-// user data dir with this name.
-extern const char kAppShimSocketSymlinkName[];
-
 // Mach message ID used by the shim to connect to Chrome.
 constexpr mach_msg_id_t kBootstrapMsgId = 'apps';
 
@@ -50,6 +43,7 @@ constexpr mach_msg_id_t kBootstrapMsgId = 'apps';
 // of the full profile directory path.
 extern const char kAppShimBootstrapNameFragment[];
 
+// TODO(rsesek): Delete this after ensuring the file has been cleaned up.
 // The name of a file placed in the profile directory to indicate that app
 // shims should connect over Mach IPC rather than a UNIX domain socket. If
 // a file named this does not exist, app shims will fall back to the UNIX
@@ -197,10 +191,6 @@ struct ChromeAppModeInfo {
   // Directory of the profile associated with the app, as UTF-8.
   const char* profile_dir;
 };
-
-// Check that the socket and its parent directory have the correct permissions
-// and are owned by the user.
-void VerifySocketPermissions(const base::FilePath& socket_path);
 
 }  // namespace app_mode
 

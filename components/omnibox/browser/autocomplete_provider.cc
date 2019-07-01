@@ -204,25 +204,23 @@ AutocompleteProvider::FixupReturn AutocompleteProvider::FixupUserInput(
   // harm in making sure.
   const size_t last_input_nonslash =
       input_text.find_last_not_of(base::ASCIIToUTF16("/\\"));
-  const size_t num_input_slashes =
-      (last_input_nonslash == base::string16::npos) ?
-      input_text.length() : (input_text.length() - 1 - last_input_nonslash);
+  size_t num_input_slashes =
+      (last_input_nonslash == base::string16::npos)
+          ? input_text.length()
+          : (input_text.length() - 1 - last_input_nonslash);
+  // If we appended text, user slashes are irrelevant.
+  if (output.length() > input_text.length() &&
+      base::StartsWith(output, input_text, base::CompareCase::SENSITIVE))
+    num_input_slashes = 0;
   const size_t last_output_nonslash =
       output.find_last_not_of(base::ASCIIToUTF16("/\\"));
   const size_t num_output_slashes =
       (last_output_nonslash == base::string16::npos) ?
       output.length() : (output.length() - 1 - last_output_nonslash);
-  if (num_output_slashes < num_input_slashes) {
+  if (num_output_slashes < num_input_slashes)
     output.append(num_input_slashes - num_output_slashes, '/');
-    // If we already have double-slash(//), do not append to double-slash.
-    // Restrict to case of "chrome://version" until we find other cases.
-    if (base::StartsWith(output, base::ASCIIToUTF16("chrome://version"),
-                         base::CompareCase::SENSITIVE) &&
-        output.substr(output.length() - 2) == base::ASCIIToUTF16("//"))
-      output.erase(output.length() - 1);
-  } else if (num_output_slashes > num_input_slashes) {
+  else if (num_output_slashes > num_input_slashes)
     output.erase(output.length() - num_output_slashes + num_input_slashes);
-  }
   if (output.empty())
     return failed;
 

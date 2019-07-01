@@ -66,6 +66,7 @@ class SensorDeviceManager : public UdevWatcher::Observer {
   // UdevWatcher::Observer overrides
   void OnDeviceAdded(ScopedUdevDevicePtr udev_device) override;
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override;
+  void OnDeviceChanged(ScopedUdevDevicePtr device) override;
 
   // Represents a map of sensors that are already known to this manager after
   // initial enumeration.

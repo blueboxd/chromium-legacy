@@ -4,12 +4,24 @@
 
 import logging
 import os
+import re
 import sys
 
 from gpu_tests import gpu_helper
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import webgl_test_util
+
+# This set must be the union of the driver tags used in WebGL and WebGL2
+# expectations files.
+EXPECTATIONS_DRIVER_TAGS = frozenset([
+    'intel_lt_25.20.100.6444',
+    'mesa_lt_17.3.9',
+    'mesa_lt_17.1.6'
+])
+
+# Driver tag format: VENDOR_OPERATION_VERSION
+DRIVER_TAG_MATCHER = re.compile(r'^([a-z\d]+)_(eq|ne|ge|gt|le|lt)_([a-z\d\.]+)$')
 
 conformance_harness_script = r"""
   var testHarness = {};
@@ -461,7 +473,78 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     tags.extend(
         [['no-asan', 'asan'][cls._is_asan],
          'webgl-version-%d' % cls._webgl_version])
+
+    if EXPECTATIONS_DRIVER_TAGS:
+      system_info = browser.GetSystemInfo()
+      if system_info:
+        gpu_info = system_info.gpu
+        driver_vendor = gpu_helper.GetGpuDriverVendor(gpu_info)
+        driver_version = gpu_helper.GetGpuDriverVersion(gpu_info)
+        if driver_vendor and driver_version:
+          driver_vendor = driver_vendor.lower()
+          driver_version = driver_version.lower()
+
+          # Extract the substring before first space/dash/underscore
+          matcher = re.compile(r'^([a-z\d]+)([\s\-_]+[a-z\d]+)+$')
+          match = matcher.match(driver_vendor)
+          if match:
+            driver_vendor = match.group(1)
+
+          for tag in EXPECTATIONS_DRIVER_TAGS:
+            match = cls.MatchDriverTag(tag)
+            assert match
+            if (driver_vendor == match.group(1) and
+                cls.EvaluateVersionComparison(
+                    driver_version, match.group(2), match.group(3))):
+              tags.append(tag)
+
     return tags
+
+  @classmethod
+  def MatchDriverTag(cls, tag):
+    return DRIVER_TAG_MATCHER.match(tag.lower())
+
+  @classmethod
+  def EvaluateVersionComparison(cls, version1, operation, version2):
+    def parse_version(ver):
+      if ver.isdigit():
+        return int(ver), ''
+      for i in range(0, len(ver)):
+        if not ver[i].isdigit():
+          return int(ver[:i]) if i > 0 else 0, ver[i:]
+
+    ver_list1 = version1.split('.')
+    ver_list2 = version2.split('.')
+    for i in range(0, max(len(ver_list1), len(ver_list2))):
+      ver1 = ver_list1[i] if i < len(ver_list1) else '0'
+      ver2 = ver_list2[i] if i < len(ver_list2) else '0'
+      num1, suffix1 = parse_version(ver1)
+      num2, suffix2 = parse_version(ver2)
+
+      if not num1 == num2:
+        diff = num1 - num2
+      elif suffix1 == suffix2:
+        continue
+      elif suffix1 > suffix2:
+        diff = 1
+      else:
+        diff = -1
+
+      if operation == 'eq':
+        return False
+      elif operation == 'ne':
+        return True
+      elif operation == 'ge' or operation == 'gt':
+        return diff > 0
+      elif operation == 'le' or operation == 'lt':
+        return diff < 0
+      raise Exception('Invalid operation: ' + operation)
+
+    return operation == 'eq' or operation == 'ge' or operation == 'le'
+
+  @classmethod
+  def ExpectationsDriverTags(cls):
+    return EXPECTATIONS_DRIVER_TAGS
 
   @classmethod
   def ExpectationsFiles(cls):

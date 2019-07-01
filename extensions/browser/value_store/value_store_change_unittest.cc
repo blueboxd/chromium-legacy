@@ -73,9 +73,8 @@ TEST(ValueStoreChangeTest, ToJson) {
       "key.with.dots", value->CreateDeepCopy(), value->CreateDeepCopy()));
 
   std::string json = ValueStoreChange::ToJson(change_list);
-  std::unique_ptr<base::Value> from_json(
-      base::JSONReader::ReadDeprecated(json));
-  ASSERT_TRUE(from_json.get());
+  base::Optional<base::Value> from_json = base::JSONReader::Read(json);
+  ASSERT_TRUE(from_json);
 
   DictionaryBuilder v1(*value);
   DictionaryBuilder v2(*value);

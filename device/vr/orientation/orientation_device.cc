@@ -30,11 +30,11 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id) {
 
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = id;
-  display_info->displayName = DEVICE_NAME;
+  display_info->display_name = DEVICE_NAME;
   display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->hasPosition = false;
-  display_info->capabilities->hasExternalDisplay = false;
-  display_info->capabilities->canPresent = false;
+  display_info->capabilities->has_position = false;
+  display_info->capabilities->has_external_display = false;
+  display_info->capabilities->can_present = false;
 
   return display_info;
 }

@@ -2126,7 +2126,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20190215",
+                    "name": "WithGrouped_20190620",
+                    "params": {
+                        "mostLikelyVariation": "groupedIcon",
+                        "variation": "mostLikelyTile"
+                    },
                     "enable_features": [
                         "ExploreSites"
                     ]

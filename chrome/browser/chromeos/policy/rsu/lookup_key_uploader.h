@@ -55,7 +55,7 @@ class LookupKeyUploader : public CloudPolicyStore::Observer {
   void OnStoreError(CloudPolicyStore* store) override;
 
   void Start();
-  void OnCryptohomeReady(bool available);
+  void GetDataFromCryptohome(bool available);
   void OnRsuDeviceIdReceived(base::Optional<cryptohome::BaseReply> result);
   void HandleRsuDeviceId(const std::string& rsu_device_id);
 

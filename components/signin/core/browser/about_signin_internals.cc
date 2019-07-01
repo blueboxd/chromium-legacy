@@ -418,7 +418,7 @@ void AboutSigninInternals::OnRefreshTokenRemovedForAccountFromSource(
 
 void AboutSigninInternals::OnRefreshTokensLoaded() {
   RefreshTokenEvent event;
-  event.account_id = "All accounts";
+  // event.account_id = CoreAccountId("All accounts");
   event.type = AboutSigninInternals::RefreshTokenEventType::kAllTokensLoaded;
   signin_status_.AddRefreshTokenEvent(event);
   NotifyObservers();
@@ -626,7 +626,7 @@ AboutSigninInternals::SigninStatus::ToValue(
     CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::ACCOUNT_ID),
-                    account_info.account_id);
+                    account_info.account_id.id);
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::GAIA_ID),
                     account_info.gaia);
@@ -634,7 +634,7 @@ AboutSigninInternals::SigninStatus::ToValue(
                     SigninStatusFieldToLabel(signin_internals_util::USERNAME),
                     account_info.email);
     if (signin_error_controller->HasError()) {
-      const std::string error_account_id =
+      const CoreAccountId error_account_id =
           signin_error_controller->error_account_id();
       const base::Optional<AccountInfo> error_account_info =
           identity_manager
@@ -642,7 +642,7 @@ AboutSigninInternals::SigninStatus::ToValue(
                   error_account_id);
       AddSectionEntry(basic_info, "Auth Error",
           signin_error_controller->auth_error().ToString());
-      AddSectionEntry(basic_info, "Auth Error Account Id", error_account_id);
+      AddSectionEntry(basic_info, "Auth Error Account Id", error_account_id.id);
 
       // The error_account_info optional should never be unset when we reach
       // this line (as we should have a refresh token, even if in an error
@@ -701,7 +701,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   // Token information for all services.
   auto token_info = std::make_unique<base::ListValue>();
   for (auto it = token_info_map.begin(); it != token_info_map.end(); ++it) {
-    base::ListValue* token_details = AddSection(token_info.get(), it->first);
+    base::ListValue* token_details = AddSection(token_info.get(), it->first.id);
     std::sort(it->second.begin(), it->second.end(), TokenInfo::LessThan);
     for (const std::unique_ptr<TokenInfo>& token : it->second)
       token_details->Append(token->ToValue());

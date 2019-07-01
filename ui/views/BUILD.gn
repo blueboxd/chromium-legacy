@@ -203,10 +203,6 @@ jumbo_component("views") {
     "layout/grid_layout.h",
     "layout/layout_manager.h",
     "layout/layout_provider.h",
-    "linux_ui/device_scale_factor_observer.h",
-    "linux_ui/linux_ui.h",
-    "linux_ui/status_icon_linux.h",
-    "linux_ui/window_button_order_observer.h",
     "masked_targeter_delegate.h",
     "metadata/metadata_cache.h",
     "metadata/metadata_header_macros.h",
@@ -411,9 +407,6 @@ jumbo_component("views") {
     "layout/grid_layout.cc",
     "layout/layout_manager.cc",
     "layout/layout_provider.cc",
-    "linux_ui/linux_ui.cc",
-    "linux_ui/status_icon_linux.cc",
-    "linux_ui/window_button_order_provider.cc",
     "masked_targeter_delegate.cc",
     "metadata/metadata_cache.cc",
     "metadata/metadata_types.cc",
@@ -543,23 +536,21 @@ jumbo_component("views") {
       "//ui/base/ime/linux",
       "//ui/shell_dialogs",
     ]
-  } else {
-    public -= [
+    public += [
+      "linux_ui/device_scale_factor_observer.h",
       "linux_ui/linux_ui.h",
+      "linux_ui/status_icon_linux.h",
       "linux_ui/window_button_order_observer.h",
     ]
-    sources -= [
+    sources += [
       "linux_ui/linux_ui.cc",
+      "linux_ui/status_icon_linux.cc",
       "linux_ui/window_button_order_provider.cc",
     ]
   }
 
   if (is_chromeos) {
-    public -= [ "linux_ui/status_icon_linux.h" ]
-    sources -= [
-      "controls/menu/menu_config_linux.cc",
-      "linux_ui/status_icon_linux.cc",
-    ]
+    sources -= [ "controls/menu/menu_config_linux.cc" ]
   }
 
   if (is_win) {

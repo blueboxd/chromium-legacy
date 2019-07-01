@@ -12411,6 +12411,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileOmniboxUse.GridTabSwitcher">
+  <owner>mattsimmons@chromium.org</owner>
+  <owner>memex-team@google.com</owner>
+  <description>
+    User used the omnibox while it is showing on top of the grid tab switcher.
+  </description>
+</action>
+
 <action name="MobileOmniboxVoiceSearch">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

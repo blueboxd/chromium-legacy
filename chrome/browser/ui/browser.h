@@ -61,10 +61,6 @@
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_registry_observer.h"
-#endif
-
 class BrowserContentSettingBubbleModelDelegate;
 class BrowserInstantController;
 class BrowserSyncedWindowDelegate;
@@ -88,9 +84,7 @@ class SessionStorageNamespace;
 
 namespace extensions {
 class BrowserExtensionWindowController;
-
-class Extension;
-class ExtensionRegistry;
+class ExtensionBrowserWindowHelper;
 }  // namespace extensions
 
 namespace gfx {
@@ -120,9 +114,6 @@ class Browser : public TabStripModelObserver,
                 public zoom::ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-                public extensions::ExtensionRegistryObserver,
-#endif
                 public translate::ContentTranslateDriver::Observer,
                 public ui::SelectFileDialog::Listener {
  public:
@@ -815,15 +806,6 @@ class Browser : public TabStripModelObserver,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Overridden from extensions::ExtensionRegistryObserver:
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const extensions::Extension* extension,
-                           extensions::UnloadedExtensionReason reason) override;
-#endif
-
   // Overridden from translate::ContentTranslateDriver::Observer:
   void OnIsPageTranslatedChanged(content::WebContents* source) override;
   void OnTranslateEnabledChanged(content::WebContents* source) override;
@@ -986,12 +968,6 @@ class Browser : public TabStripModelObserver,
 
   content::NotificationRegistrar registrar_;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
-#endif
-
   PrefChangeRegistrar profile_pref_registrar_;
 
   // This Browser's type.
@@ -1118,6 +1094,11 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   WarnBeforeClosingCallback warn_before_closing_callback_;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
+      extension_browser_window_helper_;
+#endif
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_;

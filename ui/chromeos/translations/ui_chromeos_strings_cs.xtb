@@ -90,9 +90,9 @@
 <translation id="197560921582345123">Může upravovat</translation>
 <translation id="1984603991036629094">Arménská fonetická klávesnice</translation>
 <translation id="2001796770603320721">Spravovat na Disku</translation>
+<translation id="2009067268969781306">Naformátováním jednotky smažete všechna na ní uložená data. Tuto akci nelze vrátit zpět.</translation>
 <translation id="2028997212275086731">Archiv ve formátu RAR</translation>
 <translation id="2046702855113914483">Polévka ramen</translation>
-<translation id="204914487372604757">Vytvořit zástupce</translation>
 <translation id="2070909990982335904">Názvy začínající tečkou jsou vyhrazeny pro systém. Zvolte prosím jiný název.</translation>
 <translation id="2079545284768500474">Vrátit zpět</translation>
 <translation id="2080010875307505892">Srbská klávesnice</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">Arabská klávesnice</translation>
 <translation id="4261901459838235729">Prezentace Google</translation>
 <translation id="4290535918735525311">1 složka je sdílena se systémem Linux</translation>
+<translation id="42981349822642051">Rozbalit</translation>
 <translation id="4298972503445160211">Dánská klávesnice</translation>
 <translation id="4299729908419173967">portugalština (Brazílie)</translation>
 <translation id="4309915981827077375">Obecné informace</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">Zobrazit více...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911">Budou vymazány soubory o celkové velikosti <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Došlo k chybě.</translation>
 <translation id="5098629044894065541">hebrejština</translation>
 <translation id="5123433949759960244">Basketbal</translation>
@@ -411,6 +413,7 @@
 <translation id="5752453871435543420">Zálohování Chrome OS do cloudu</translation>
 <translation id="5756666464756035725">Maďarská klávesnice QWERTY</translation>
 <translation id="5771585441665576801">Přepis (geia → γεια)</translation>
+<translation id="5776325638577448643">Vymazat a naformátovat</translation>
 <translation id="57838592816432529">Ztlumit</translation>
 <translation id="5788127256798019331">Soubory Play</translation>
 <translation id="5790193330357274855">Kazaština</translation>
@@ -427,6 +430,7 @@
 <translation id="5857774240076772505">Udělujete linuxovým aplikacím oprávnění upravovat soubory ve složce <ph name="FOLDER_NAME" />.</translation>
 <translation id="5892290200158927959">Francouzská klávesnice BÉPO</translation>
 <translation id="5911887972742538906">Při instalaci aplikace pro Linux došlo k chybě.</translation>
+<translation id="5912396950572065471">Formát</translation>
 <translation id="5913638992615760742">Kopírování se nezdařilo, neočekávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Udělujete linuxovým aplikacím oprávnění otevírat soubory ve vašem Disku Google. Změny se budou synchronizovat do vašich ostatních zařízení.</translation>
@@ -451,6 +455,7 @@
 <translation id="6189412234224385711">Otevřít pomocí rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Čeká se na informace o volném místě...</translation>
 <translation id="6205710420833115353">Některé operace trvají neočekávaně dlouho. Chcete je zrušit?</translation>
+<translation id="6224253798271602650">Formátovat jednotku <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Soubor nelze přehrát.</translation>
 <translation id="6248400709929739064">Zapnout titulky</translation>
 <translation id="6264347891387618177">Přepis (selam → ሰላም)</translation>
@@ -531,6 +536,7 @@
 <translation id="719009910964971313">Americká programátorská klávesnice Dvorak</translation>
 <translation id="7191454237977785534">Uložit soubor jako</translation>
 <translation id="7222624196722476520">Bulharská fonetická klávesnice</translation>
+<translation id="7238097264433196391">Název Disku</translation>
 <translation id="7248671827512403053">Aplikace</translation>
 <translation id="7268659760406822741">Dostupné služby</translation>
 <translation id="7283041136720745563">Vaše kvóta Disku Google není dostatečně velká.</translation>
@@ -601,7 +607,6 @@
 <translation id="7969525169268594403">slovinština</translation>
 <translation id="7982283708762922719">Výška</translation>
 <translation id="7987485481246785146">Kurdská klávesnice (sorání) s arabským rozložením</translation>
-<translation id="799547531016638432">Odebrat zástupce</translation>
 <translation id="799923393800005025">Může zobrazit</translation>
 <translation id="8008366997883261463">Jack Russell teriér</translation>
 <translation id="8028993641010258682">Velikost</translation>

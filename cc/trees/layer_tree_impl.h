@@ -557,6 +557,10 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindLayerThatIsHitByPointInWheelEventHandlerRegion(
       const gfx::PointF& screen_space_point);
 
+  // Return all layers with a hit non-fast scrollable region.
+  std::vector<const LayerImpl*> FindLayersHitByPointInNonFastScrollableRegion(
+      const gfx::PointF& screen_space_point);
+
   void RegisterSelection(const LayerSelection& selection);
 
   bool HandleVisibilityChanged() const { return handle_visibility_changed_; }

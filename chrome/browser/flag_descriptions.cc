@@ -1069,6 +1069,10 @@ const char kFormControlsRefreshName[] = "Web Platform Controls updated UI";
 const char kFormControlsRefreshDescription[] =
     "If enabled, HTML forms elements will be rendered using an updated style.";
 
+const char kGlobalMediaControlsName[] = "Global Media Controls";
+const char kGlobalMediaControlsDescription[] =
+    "Enables the Global Media Controls UI in the toolbar.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] =
     "Use GPU to rasterize web content. Requires impl-side painting.";
@@ -3466,11 +3470,11 @@ const char kOpenXRDescription[] =
     "If enabled, Chrome will use OpenXR Backend for VR.";
 #endif  // ENABLE_OPENXR
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if !defined(OS_ANDROID)
 const char kXRSandboxName[] = "XR device sandboxing";
 const char kXRSandboxDescription[] =
     "If enabled, Chrome will host VR APIs in a restricted process on desktop.";
-#endif  // ENABLE_ISOLATED_XR_SERVICE
+#endif  // !defined(OS_ANDROID)
 
 #endif  // ENABLE_VR
 
@@ -3524,7 +3528,7 @@ const char kEnableDbusAndX11StatusIconsName[] =
 const char kEnableDbusAndX11StatusIconsDescription[] =
     "If enabled, uses Chromium's StatusNotifierItem (DBus) and system tray "
     "(X11) implementations of status icons.  Otherwise, uses libappindicator's "
-    "and GTK's implementaitons.";
+    "and GTK's implementations.";
 
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 

@@ -76,6 +76,7 @@ class UsbServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
   // UdevWatcher::Observer
   void OnDeviceAdded(ScopedUdevDevicePtr device) override;
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override;
+  void OnDeviceChanged(ScopedUdevDevicePtr device) override;
 
   std::unique_ptr<UdevWatcher> watcher_;
 
@@ -200,6 +201,11 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
         FROM_HERE, base::BindOnce(&UsbServiceLinux::OnDeviceRemoved, service_,
                                   std::string(device_path)));
   }
+}
+
+void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceChanged(
+    ScopedUdevDevicePtr) {
+  NOTIMPLEMENTED();
 }
 
 UsbServiceLinux::UsbServiceLinux()

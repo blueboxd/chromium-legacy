@@ -6303,6 +6303,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Present"/>
 </enum>
 
+<enum name="BooleanProcessReuseDisallowed">
+  <int value="0" label="Process reuse allowed"/>
+  <int value="1" label="Process reuse disallowed"/>
+</enum>
+
 <enum name="BooleanProfileSignedIn">
   <int value="0" label="Profile was not Signed In"/>
   <int value="1" label="Profile was Signed In"/>
@@ -18423,6 +18428,8 @@ Called by update_net_error_codes.py.-->
   <int value="437" label="RUNTIME_ON_CONNECT_NATIVE"/>
   <int value="438" label="ACTION_ON_CLICKED"/>
   <int value="439" label="ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND"/>
+  <int value="440"
+      label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -19837,6 +19844,8 @@ Called by update_net_error_codes.py.-->
   <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
   <int value="1350" label="ACTION_SETICON"/>
   <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
+  <int value="1352"
+      label="ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34944,6 +34953,7 @@ from previous Chrome versions.
   <int value="-29877377" label="TabHoverCardImages:disabled"/>
   <int value="-29847483" label="MemoryAblation:enabled"/>
   <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
+  <int value="-27213807" label="GlobalMediaControls:enabled"/>
   <int value="-23804418"
       label="NTPArticleSuggestionsExpandableHeader:disabled"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
@@ -36106,6 +36116,7 @@ from previous Chrome versions.
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
+  <int value="1714922056" label="GlobalMediaControls:disabled"/>
   <int value="1715338237" label="ContextualSearchSecondTap:disabled"/>
   <int value="1716104463" label="enable-fullscreen-app-list"/>
   <int value="1717987538" label="NTPTilesLowerResolutionFavicons:enabled"/>

@@ -796,8 +796,6 @@ TEST_F(DisplaySchedulerTest, SetNeedsOneBeginFrame) {
 }
 
 TEST_F(DisplaySchedulerTest, GpuBusyNotifications) {
-  fake_begin_frame_source_.AllowOneBeginFrameAfterGpuBusy();
-
   SurfaceId root_surface_id(
       kArbitraryFrameSinkId,
       LocalSurfaceId(1, base::UnguessableToken::Create()));

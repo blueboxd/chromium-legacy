@@ -49,10 +49,6 @@ void RecordPageLoadHistogram(previews::PreviewsType previews_type,
 void RecordPageSizeHistograms(previews::PreviewsType previews_type,
                               int64_t num_network_resources,
                               int64_t network_bytes) {
-  // Match PAGE_RESOURCE_COUNT_HISTOGRAM params:
-  base::UmaHistogramCounts10000(GetHistogramNamePrefix(previews_type) +
-                                    "Experimental.CompletedResources.Network",
-                                num_network_resources);
   // Match PAGE_BYTES_HISTOGRAM params:
   base::UmaHistogramCustomCounts(
       GetHistogramNamePrefix(previews_type) +

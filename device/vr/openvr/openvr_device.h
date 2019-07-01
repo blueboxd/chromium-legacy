@@ -29,6 +29,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
 
   static bool IsHwAvailable();
   static bool IsApiAvailable();
+  static void RecordRuntimeAvailability();
 
   void Shutdown();
 

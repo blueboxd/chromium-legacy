@@ -48,6 +48,8 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   for (const auto& descendant :
        result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
+
+  UpdateMargins(constraint_space);
 }
 
 void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
@@ -164,6 +166,28 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   }
   DCHECK_EQ(fragment.Children()[0]->GetLayoutObject(), this);
   SetIsLegacyInitiatedOutOfFlowLayout(true);
+}
+
+void LayoutNGBlockFlow::UpdateMargins(const NGConstraintSpace& space) {
+  const LayoutBlock* containing_block = ContainingBlock();
+  if (!containing_block || !containing_block->IsLayoutBlockFlow())
+    return;
+
+  // In the legacy engine, for regular block container layout, children
+  // calculate and store margins on themselves, while in NG that's done by the
+  // container. Since this object is a LayoutNG entry-point, we'll have to do it
+  // on ourselves, since that's what the legacy container expects.
+  const ComputedStyle& style = StyleRef();
+  const ComputedStyle& cb_style = containing_block->StyleRef();
+  const auto writing_mode = cb_style.GetWritingMode();
+  const auto direction = cb_style.Direction();
+  LayoutUnit percentage_resolution_size =
+      space.PercentageResolutionInlineSizeForParentWritingMode();
+  NGBoxStrut margins = ComputePhysicalMargins(style, percentage_resolution_size)
+                           .ConvertToLogical(writing_mode, direction);
+  ResolveInlineMargins(style, cb_style, space.AvailableSize().inline_size,
+                       LogicalWidth(), &margins);
+  SetMargin(margins.ConvertToPhysical(writing_mode, direction));
 }
 
 }  // namespace blink

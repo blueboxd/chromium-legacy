@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Идите на претходну картицу</translation>
 <translation id="2194790690264064655">Притисните <ph name="CTRL" /> и кликните на линк</translation>
 <translation id="2246352309084894470">Отворите/затворите покретач режима целог екрана</translation>
+<translation id="2354531887393764880">тачка</translation>
 <translation id="2382644247745281995">Није подржано са актуелним распоредом тастатуре</translation>
 <translation id="2397416548179033562">Приказ Chrome менија</translation>
 <translation id="2424073332829844142">Укључите или искључите тастер Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Отворите истакнуту ставку на полици</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> од 1 до 8</translation>
 <translation id="3837047332182291558">Повећајте осветљеност тастатуре (само за тастатуре са позадинским осветљењем)</translation>
+<translation id="3949671998904569433">зарез</translation>
 <translation id="3976863468609830880">Кликните на последњу икону на полици</translation>
 <translation id="3994783594793697310">Ресетујте ниво зумирања приказа</translation>
 <translation id="4026843240379844265">Помера активан прозор на различите екране</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Пређите на следећи доступни метод уноса</translation>
 <translation id="743754632698445141">Откачите апликацију</translation>
 <translation id="7439718573248533901">Избришите следеће слово (брисање унапред)</translation>
+<translation id="7500368597227394048">цртица</translation>
 <translation id="7611271430932669992">Померите фокус на искачуће прозоре и дијалоге</translation>
 <translation id="766326951329901120">Налепите садржај из привремене меморије као обичан текст</translation>
+<translation id="7703010453515335249">лева заграда</translation>
 <translation id="7724603315864178912">Исеци</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="SPACE" /> или <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Отворите датотеку у прегледачу</translation>
-<translation id="7917881398263220094">Зауставите учитавање тренутне странице</translation>
 <translation id="7952165122793773711">Идите на картице од 1 до 8</translation>
 <translation id="8026334261755873520">Обришите податке прегледања</translation>
 <translation id="8130528849632411619">Идите на почетак документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
 <translation id="8232835244134740473">Пребацујте фокус између: области статуса (где се приказује слика налога), Покретача, траке за адресу, траке са обележивачима (ако је видљива), веб-странице која је отворена и траке са преузимањима (ако је видљива).</translation>
 <translation id="8234414138295101081">Ротирајте екран за 90 степени</translation>
+<translation id="8241665785394195545">десна заграда</translation>
 <translation id="8264941229485248811">Прикажите или сакријте инспектор Алатке за програмере</translation>
 <translation id="836869401750819675">Отворите страницу Преузимања</translation>
 <translation id="8388247778047144397">Превуците линк у празну област на траци са картицама</translation>

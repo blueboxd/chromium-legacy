@@ -344,6 +344,11 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
           Sera hii ikizimwa au isipowekwa, mipangilio ya Akaunti za Kerberos huzimwa. Hakuna akaunti za Kerberos zinazoweza kuongezwa na uthibitishaji wa Kerberos hauwezi kutumika. Akaunti zote zilizopo za Kerberos hufutwa. Pia, itafuta manenosiri yote yaliyohifadhiwa.</translation>
 <translation id="1561424797596341174">Ubatilishaji wa sera kwa miundo ya Hitilafu ya seva pangishi ya ufikiaji wa mbali</translation>
 <translation id="1561967320164410511">U2F pamoja na viendelezi vya uthibitishaji wa mtu binafsi</translation>
+<translation id="1566329065312331399">
+      Sera hii ikiwekwa kuwa Sivyo, hairuhusu kifaa kutumia Powerwash.
+      Sera hii ikiwekwa kuwa Ndivyo, inaruhusu kifaa kutumia Powerwash.
+      Sera hii isipowekwa, inarudi kwa chaguomsingi kuwa Sivyo. Hali hii inamaanisha hairuhusu kifaa kutumia Powerwash.
+      </translation>
 <translation id="1574554504290354326">Mipangilio hii haitumiki tena, tumia SafeBrowsingExtendedReportingEnabled badala yake. Kuwasha au kuzima SafeBrowsingExtendedReportingEnabled ni sawa na kuweka mipangilio ya SafeBrowsingExtendedReportingOptInAllowed kuwa Sivyo.
 
       Kuweka sera hii kuwa sivyo kunazuia watumiaji wasichague kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye seva za Google. Ikiwa mipangilio hii imewekwa kuwa ndivyo au haijawekwa, basi watumiaji wataruhusiwa kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye kipengele cha Kuvinjari Salama ili kusaidia kugundua programu na tovuti hatari. 
@@ -384,6 +389,7 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 
       Onyo: Unashauriwa kutohawilisha udhibiti wa toleo la <ph name="PRODUCT_OS_NAME" /> kwenye programu ya skrini nzima kwa sababu inaweza kuzuia kifaa kupokea masasisho ya programu na marekebisho muhimu ya usalama. Kuhawilisha udhibiti wa toleo la <ph name="PRODUCT_OS_NAME" /> kunaweza kuhatarisha hali ya watumiaji.</translation>
 <translation id="1675002386741412210">Imehimiliwa kwenye:</translation>
+<translation id="1700811900332333712">Ruhusu kifaa kiitishe Powerwash</translation>
 <translation id="1704516734140344991">Huweka mipangilio ya upatikanaji na utendaji wa kipengele cha kusasisha programu dhibiti ya <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Mipangilio mahususi inaweza kubainishwa katika sifa za JSON:
@@ -2045,6 +2051,15 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
       Katika kipindi hiki, mtumiaji ataarifiwa mara kwa mara kuhusu umuhimu wa kusasisha. Kwa vifaa vya <ph name="PRODUCT_OS_NAME" />, arifa itakayokutaka uzime kisha uwashe kifaa itaonekana katika ubao wa aikoni kulingana na sera ya <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Kwa vivinjari vya <ph name="PRODUCT_NAME" />, mabadiliko kwenye menyu ya programu ya kuashiria kuwa unahitaji kufungua programu upya yanahitajika baada ya thuluthi ya kipindi cha arifa kuisha. Rangi ya arifa hizi itabadilika baada ya thuluthi mbili za kipindi cha kutoa arifa kuisha na itabadilika tena kipindi kamili cha arifa kitakapokwisha. Arifa za ziada zitakazowashwa na sera ya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> zitafuata ratiba ii hii.
 
       Kama hujaweka kipindi, kipindi chaguomsingi cha milisekunde 345600000 (siku nne) kitatumika kwenye vifaa vya <ph name="PRODUCT_OS_NAME" /> na milisekunde 604800000 (wiki moja) kitatumika kwenye <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Mipangilio hii, SitePerProcess, inaweza kutumika kuwazuia watumiaji wasijiondoe kwenye utendaji chaguomsingi wa kutenga tovuti zote. Kumbuka kwamba sera ya IsolateOrigins huenda pia ikatumika kutenga vyanzo laini vya ziada.
+      Sera ikiwashwa, watumiaji wataweza kujiondoa kwenye utendaji chaguomsingi ambapo kila tovuti hutumia mchakato wake wenyewe.
+      Mipangilio ya sera hii isipowekwa au ikizimwa, mtumiaji ataweza kujiondoa kwenye utengaji wa tovuti
+      (kwa mfano, kwa kutumia maelezo ya "Zima utengaji wa tovuti" katika chrome://flags).  Hatua ya kuweka sera hii kuwa imezimwa na/au kukosa kuiweka, haizimi kipengele cha Utengaji wa Tovuti.
+      Kwenye <ph name="PRODUCT_OS_NAME" /> toleo la 76 na ya awali, inapendekezwa pia uweke sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kuwa thamani sawa. Ikiwa thamani zilizobainishwa na sera hizo mbili hazilingani, ucheleweshaji unaweza kutokea wakati wa kuingia katika kipindi cha mtumiaji wakati thamani inayobainishwa na sera ya mtumiaji inatumika.
+
+      KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye Android, tumia mipangilio ya sera ya SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Huwasha kipengele cha Kujaza Kiotomatiki cha <ph name="PRODUCT_NAME" /> na kuruhusu watumiaji wajaze kiotomatiki maelezo ya kadi ya mikopo katika fomu za wavuti wakitumia maelezo waliyohifadhi awali.
 
       Iwapo mipangilio hii imezimwa, kipengele cha Kujaza Kiotomatiki hakitawahi kupendekeza wala kujaza maelezo ya kadi ya mikopo. Pia hakitaweza kuhifadhi maelezo ya ziada ya kadi ya mikopo ambayo huenda mtumiaji atawasilisha atakapovinjari kwenye wavuti.
@@ -2189,6 +2204,7 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="5148753489738115745">Inakuruhusu kubainisha kigezo za ziada ambazo ziinatumika wakati <ph name="PRODUCT_FRAME_NAME" /> inazindua <ph name="PRODUCT_NAME" />.
 
           Ikiwa sera hii haijawekwa mpangilio wa amri chaguomsingi  utatumika.</translation>
+<translation id="5152787786897382519">Chromium na Google Chrome zina baadhi ya vikundi vya sera vinavyotegemeana ili kutoa udhibiti wa kipengele. Seti hizi zinawakilishwa na vikundi vifuatavyo vya sera. Ukizingatia kwamba sera zinaweza kuwa na vyanzo vingi, tutatumia tu thamani zinazotoka kwenye chanzo chenye kipaumbele cha juu. Hatutatumia thamani kutoka chanzo chenye kipaumbele cha chini katika kikundi sawa. Mpangilio wa kipaumbele umefafanuliwa katika <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Mara ambazo vifurushi vya mtandao vya ufuatiliaji hutumwa, katika milisekunde.
 
      Sera hii isipowekwa, muda chaguomsingi ni dakika 3. Muda wa chini
@@ -2728,6 +2744,7 @@ Kama sera hii haijawekwa, kiteuzi kikubwa huzimwa wakati skrini ya kuingia katik
 <translation id="5983708779415553259">Tabia chaguomsingi ya tovuti zisizo katika furushi lolote la maudhui</translation>
 <translation id="5997543603646547632">Tumia saa ya saa 24 kwa chaguomsingi</translation>
 <translation id="5997846976342452720">Bainisha ikiwa kipataji cha programu jalizi lazima kizimwe (kilichoacha kuendesha huduma)</translation>
+<translation id="5998198091336830580">Sera hii ni sehemu ya kikundi kifuatacho cha atomiki (tutatumia tu sera kutoka chanzo chenye kipaumbele cha juu zaidi, zilizo katika kikundi hicho) :</translation>
 <translation id="6017568866726630990">Onyesha mazungumzo ya kuchapisha ya mfumo badala ya uhakiki wa kuchapisha.
 
    Mpangilio huu unapowashwa, <ph name="PRODUCT_NAME" /> itafungua mazungumzo ya kuchapisha ya mfumo badala ya uhakiki wa kuchapisha wa kijenzi cha ndani mtumiaji anapoomba ukurasa kuchapishwa.
@@ -3476,6 +3493,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Sera hii ikiwekwa kuwa Sivyo, maelezo yanayoweza kutumika kutambulisha mashine hayakusanywi
 
       Sera hii inatumika tu wakati umewasha <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na mashine imejumuishwa katika <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Sera hii inatumika kwenye skrini ya kuingia katika akaunti. Tafadhali ona pia sera ya <ph name="SITE_PER_PROCESS_POLICY_NAME" /> inayotumika kwenye kipindi cha mtumiaji. Tunapendekeza uweke sera zote kuwa thamani sawa. Thamani zisipolingana, ucheleweshaji unaweza kutokea wakati wa kuweka kipindi cha mtumiaji wakati thamani inayobainishwa na sera ya mtumiaji inatumika.
+      </translation>
 <translation id="737655323154569539">Hudhibiti ukubwa wa ukurasa wa kuchapisha. Usipoweka mipangilio ya sera itachukuliwa kuwa hamna kudhibiti.</translation>
 <translation id="7389872682701720082">Ukiwasha mipangilio hii, programu jalizi ambazo hazijapitwa na wakati zitatumika kila wakati.
 
@@ -3806,6 +3826,7 @@ Ukiwasha sera hii, usawazishaji kwenye wingu utazimwa.
           Ikiwa sera hii itaachwa bila kuwekwa, thamani chaguomsingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultCookiesSetting' endapo itawekwa, au mtumiaji akiweka mipangilio mwenyewe.
           Angalia pia sera za 'CookiesAllowedForUrls' na 'CookiesSessionOnlyForUrls'. Kumbuka kuwa hakufai kuwa na ruwaza za URL zinazokinzana kati ya sera hizi tatu - haijabainishwa ni sera ipi inayopewa kipaumbele.</translation>
 <translation id="8099880303030573137">Kutokuwa na shughuli kunachelewesha wakati wa kuendesha kwa nishati ya betri</translation>
+<translation id="8101381354936029836">Kikundi cha atomiki cha sera:</translation>
 <translation id="8102913158860568230">Mpangilio chaguomsingi wa mkondomedia</translation>
 <translation id="8104186956182795918">Inakuruhusu kuweka iwapo tovuti zinaruhusiwa kuonyesha picha. Kuonyesha picha kunaweza kuwa kwa tovuti zote au kukataliwa kwa tovuti zote.
 
@@ -4002,6 +4023,15 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Lemaza kuhifadhi historia ya kivinjari</translation>
 <translation id="8499172469244085141">Mipangilio ya Chaguo-Msingi (watumiaji wanaweza kubadilisha)</translation>
+<translation id="849962487677588458">Tumeacha kutumia sera hii na tutaiondoa kwenye Chrome 78 na nafasi yake haitachukuliwa na sera nyingine.
+
+      Sera hii huwasha HTTP/0.9 kwenye milango isipokuwa ya 80 katika HTTP na ya 443 katika HTTPS.
+
+      Sera hii imezimwa kwa chaguomsingi na ikiwashwa, huwafanya watumiaji waweze kuathiriwa na tatizo la usalama https://crbug.com/600352.
+
+      Sera hii ina lengo la kuzipa biashara nafasi ya kuhamisha seva zilizopo kutoka HTTP/0.9 na itaondolewa baadaye.
+
+      Ikiwa sera hii haijawekwa, HTTP/0.9 itazimwa kwenye milango isiyo chaguomsingi.</translation>
 <translation id="8507835864888987300">Inawezesha toleo lengwa kupokea Masasisho ya Kiotomatiki.
 
       Inabainisha kiambishi awali ambako toleo lengwa la <ph name="PRODUCT_OS_NAME" /> linafaa kusasishwa. Ikiwa kifaa kinatumia toleo ambalo ni la kabla ya kiambishi awali kilichobainishwa, kitajisasisha kuwa toleo la sasa lenye kiambishi awali husika. Ikiwa kifaa tayari kipo katika toleo la sasa, athari zinategemea thamani ya <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Muundo wa kiambishi awali unafanya kazi kama kijenzi jinsi inavyoonyeshwa katika mifano ifuatayo:

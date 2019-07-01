@@ -335,6 +335,11 @@
           如果停用了或未设置此政策，则 Kerberos 帐号设置处于停用状态。此时无法添加任何 Kerberos 帐号，也无法使用 Kerberos 身份验证功能。系统会删除所有现有 Kerberos 帐号，以及所有已存储的密码。</translation>
 <translation id="1561424797596341174">覆盖与远程访问主机的调试版本号相关的政策</translation>
 <translation id="1561967320164410511">用于个人认证的 U2F 和扩展程序</translation>
+<translation id="1566329065312331399">
+      当设为 False 时，此政策不允许设备触发 Powerwash。
+      当设为 True 时，此政策允许设备触发 Powerwash。
+      如果未设置此政策，它将默认等同于已设为 False，这意味着它不允许设备触发 Powerwash。
+      </translation>
 <translation id="1574554504290354326">此设置已被弃用，请改用 SafeBrowsingExtendedReportingEnabled。启用或停用 SafeBrowsingExtendedReportingEnabled 均相当于将 SafeBrowsingExtendedReportingOptInAllowed 设为 false。
 
       如果此政策设为 false，用户将无法选择向 Google 服务器发送一些系统信息和网页内容。如果此设置设为 true 或未配置，用户将能够向安全浏览功能发送一些系统信息和网页内容，以协助检测危险应用和网站。
@@ -372,6 +377,7 @@
 
       警告：建议您不要委托自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本，因为这可能会阻止相应设备接收软件更新和重要的安全修补程序。委托 <ph name="PRODUCT_OS_NAME" />版本控制可能会将用户置于风险之中。</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
+<translation id="1700811900332333712">允许设备请求 Powerwash</translation>
 <translation id="1704516734140344991">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能的可用性和行为。
 
       各项具体设置可在 JSON 属性中进行指定：
@@ -1962,6 +1968,14 @@
       在该时间段内，如果需要更新，系统会反复通知用户。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时间段过去三分之一后立即发生变化，以指示需要重新启动浏览器。此通知会在通知时间段过去三分之二后立即改变颜色，并会在整个通知时间段过后再次立即改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策启用的其他通知也会遵循这一时间表。
 
       如果此政策未设置，对于 <ph name="PRODUCT_OS_NAME" />设备，系统会使用 345600000 毫秒（4 天）的默认通知时间段，对于 <ph name="PRODUCT_NAME" />，则会使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
+<translation id="4777805166623621364">
+      SitePerProcess 这项设置可用于禁止用户选择停用会隔离所有网站的默认行为。请注意，也可使用 IsolateOrigins 政策以更精细的方式隔离其他来源。
+      如果启用了此政策，用户将无法选择停用会让每个网站在自己的进程中运行的默认行为。
+      如果未配置或停用了此政策，用户将能够选择停用网站隔离功能（例如，使用 chrome://flags 中的“停用网站隔离”条目）。将此政策设为停用状态和/或不配置此政策均不会关闭网站隔离功能。
+      在 <ph name="PRODUCT_OS_NAME" />版本 76 及更低版本中，最好将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 也设为相同的值。如果这两项政策指定的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
+
+      注意：此政策不适用于 Android 设备。要在 Android 设备上启用 SitePerProcess，请改用 SitePerProcessAndroid 政策设置。
+      </translation>
 <translation id="4788252609789586009">启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用以前存储的信用卡信息在网络表单中自动填写相关信息。
 
       如果停用了此设置，“自动填充”功能将不会提供建议或填充信用卡信息，也不会保存用户可能会在浏览网页时提交的其他信用卡信息。
@@ -2103,6 +2117,7 @@
 <translation id="5148753489738115745">可让您指定在 <ph name="PRODUCT_FRAME_NAME" />启动 <ph name="PRODUCT_NAME" />时所使用的其他参数。
 
           如果未设置此政策，系统将会使用默认命令行。</translation>
+<translation id="5152787786897382519">Chromium 和 Google Chrome 均有一些政策组需要通过相互依赖来共同控制某项功能。这些集合由以下政策组表示。如果相关政策有多个来源，系统仅会应用来自最高优先级来源的值。同一组中来自较低优先级来源的值会被忽略。<ph name="POLICY_PRIORITY_DOC_URL" /> 中定义了优先级顺序。</translation>
 <translation id="5159469559091666409">发送监控网络数据包的频率（以毫秒为单位）。
 
       如果此政策未设置，则默认间隔为 3 分钟。系统所允许的最短间隔为 30 秒，最长间隔为 24 小时（低于 30 秒的值将被视为 30 秒，高于 24 小时的值将被视为 24 小时）。</translation>
@@ -2611,6 +2626,7 @@
 <translation id="5983708779415553259">非任何内容包内的网站的默认行为</translation>
 <translation id="5997543603646547632">默认情况下，使用24小时制</translation>
 <translation id="5997846976342452720">指定是否应停用插件查找器（已弃用）</translation>
+<translation id="5998198091336830580">此政策是下面这个原子政策组的一部分（系统仅会应用该组中来自最高优先级来源的政策）：</translation>
 <translation id="6017568866726630990">显示系统打印对话框而非打印预览。
 
       启用此设置后，当用户请求打印某个页面时，<ph name="PRODUCT_NAME" /> 将打开系统打印对话框而非内置打印预览。
@@ -3320,6 +3336,9 @@
       当此政策设为 False 时，系统不会收集可用于识别设备的信息。
 
       仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
+<translation id="7359307926583593395">
+      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。最好将这两项政策设为相同的值。如果这两项政策的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
+      </translation>
 <translation id="737655323154569539">限制打印页面大小。如果未设置此政策或将其留空，则会被视为无限制。</translation>
 <translation id="7389872682701720082">如果启用了此设置，则未过期的插件会一直运行。
 
@@ -3643,6 +3662,7 @@
 
           另请参阅“CookiesAllowedForUrls”和“CookiesSessionOnlyForUrls”政策。请注意，这三项政策中的网址格式不得存在冲突，因为无从指定应以哪项政策为准。</translation>
 <translation id="8099880303030573137">使用电池供电时的闲置延迟时间</translation>
+<translation id="8101381354936029836">政策原子组：</translation>
 <translation id="8102913158860568230">默认 mediastream 设置</translation>
 <translation id="8104186956182795918">可让您设置是否允许网站显示图片。您可以允许或禁止所有网站显示图片。
 
@@ -3841,6 +3861,15 @@
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
 <translation id="8499172469244085141">默认设置（用户可以覆盖）</translation>
+<translation id="849962487677588458">此政策已被弃用，预定会在 Chrome 78 中被移除，且无替代政策。
+
+      此政策用于在除 80 (HTTP) 和 443 (HTTPS) 以外的端口上启用 HTTP/0.9。
+
+      此政策默认处于停用状态；如果启用，则会使用户面临安全问题 https://crbug.com/600352。
+
+      此政策旨在让企业能够有机会使现有服务器弃用 HTTP/0.9，日后会被移除。
+
+      如果未设置此政策，非默认端口上将会停用 HTTP/0.9。</translation>
 <translation id="8507835864888987300">为自动更新设定目标版本。
 
       指定 <ph name="PRODUCT_OS_NAME" />应更新到的目标版本的前缀。如果相应设备所运行的版本早于指定的前缀，该设备便会更新到采用指定前缀的最新版本。如果相应设备所运行的版本已是较新版本，此政策的效果将会取决于 <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> 的值。前缀格式需按部分逐一指定，如下例所示： 

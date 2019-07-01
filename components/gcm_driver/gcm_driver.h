@@ -189,8 +189,8 @@ class GCMDriver {
   // |app_id|. If none have been associated with |app_id| yet, they will be
   // created. The |callback| will be invoked when it is available. Only use with
   // GCM registrations; use InstanceID::GetEncryptionInfo for InstanceID tokens.
-  void GetEncryptionInfo(const std::string& app_id,
-                         const GetEncryptionInfoCallback& callback);
+  virtual void GetEncryptionInfo(const std::string& app_id,
+                                 const GetEncryptionInfoCallback& callback);
 
   const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
 

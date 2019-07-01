@@ -17,18 +17,6 @@ WmDefaultLayoutManager::WmDefaultLayoutManager() = default;
 
 WmDefaultLayoutManager::~WmDefaultLayoutManager() = default;
 
-// static
-void WmDefaultLayoutManager::InstallOnContainers(aura::Window* window) {
-  for (aura::Window* child : window->children()) {
-    if (child->id() < kShellWindowId_MinContainer ||
-        child->id() > kShellWindowId_MaxContainer)  // not a container
-      continue;
-    if (!child->layout_manager())
-      child->SetLayoutManager(new WmDefaultLayoutManager());
-    InstallOnContainers(child);
-  }
-}
-
 void WmDefaultLayoutManager::OnWindowResized() {}
 
 void WmDefaultLayoutManager::OnWindowAddedToLayout(aura::Window* child) {}

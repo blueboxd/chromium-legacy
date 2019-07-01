@@ -21,9 +21,32 @@ const GURL kTestUrl("https://test.com");
 const char kName[] = "testing";
 }  // namespace
 
+class TestDelegate : public PreviewsProber::Delegate {
+ public:
+  TestDelegate() = default;
+  ~TestDelegate() = default;
+
+  bool ShouldSendNextProbe() override { return should_send_next_probe_; }
+
+  bool IsResponseSuccess(net::Error net_error,
+                         const network::ResourceResponseHead& head,
+                         std::unique_ptr<std::string> body) override {
+    return net_error == net::OK &&
+           head.headers->response_code() == net::HTTP_OK;
+  }
+
+  void set_should_send_next_probe(bool should_send_next_probe) {
+    should_send_next_probe_ = should_send_next_probe;
+  }
+
+ private:
+  bool should_send_next_probe_ = true;
+};
+
 class TestPreviewsProber : public PreviewsProber {
  public:
   TestPreviewsProber(
+      PreviewsProber::Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& name,
       const GURL& url,
@@ -32,7 +55,8 @@ class TestPreviewsProber : public PreviewsProber {
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
       const base::TickClock* tick_clock)
-      : PreviewsProber(url_loader_factory,
+      : PreviewsProber(delegate,
+                       url_loader_factory,
                        name,
                        url,
                        http_method,
@@ -49,7 +73,8 @@ class PreviewsProberTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+                &test_url_loader_factory_)),
+        test_delegate_() {}
 
   std::unique_ptr<PreviewsProber> NewProber() {
     return NewProberWithPolicies(PreviewsProber::RetryPolicy(),
@@ -64,10 +89,18 @@ class PreviewsProberTest : public testing::Test {
   std::unique_ptr<PreviewsProber> NewProberWithPolicies(
       const PreviewsProber::RetryPolicy& retry_policy,
       const PreviewsProber::TimeoutPolicy& timeout_policy) {
+    return NewProberWithPoliciesAndDelegate(&test_delegate_, retry_policy,
+                                            timeout_policy);
+  }
+
+  std::unique_ptr<PreviewsProber> NewProberWithPoliciesAndDelegate(
+      PreviewsProber::Delegate* delegate,
+      const PreviewsProber::RetryPolicy& retry_policy,
+      const PreviewsProber::TimeoutPolicy& timeout_policy) {
     net::HttpRequestHeaders headers;
     headers.SetHeader("X-Testing", "Hello world");
     return std::make_unique<TestPreviewsProber>(
-        test_shared_loader_factory_, kName, kTestUrl,
+        delegate, test_shared_loader_factory_, kName, kTestUrl,
         PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
         thread_bundle_.GetMockTickClock());
   }
@@ -132,6 +165,7 @@ class PreviewsProberTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  TestDelegate test_delegate_;
 };
 
 TEST_F(PreviewsProberTest, OK) {
@@ -351,4 +385,52 @@ TEST_F(PreviewsProberTest, TimeoutExponential) {
   VerifyNoRequests();
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+}
+
+TEST_F(PreviewsProberTest, DelegateStopsFirstProbe) {
+  TestDelegate delegate;
+  delegate.set_should_send_next_probe(false);
+
+  PreviewsProber::RetryPolicy retry_policy;
+  retry_policy.max_retries = 2;
+  retry_policy.backoff = PreviewsProber::Backoff::kLinear;
+  retry_policy.base_interval = base::TimeDelta::FromMilliseconds(1000);
+
+  std::unique_ptr<PreviewsProber> prober = NewProberWithPoliciesAndDelegate(
+      &delegate, retry_policy, PreviewsProber::TimeoutPolicy());
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+  VerifyNoRequests();
+}
+
+TEST_F(PreviewsProberTest, DelegateStopsRetries) {
+  TestDelegate delegate;
+
+  PreviewsProber::RetryPolicy retry_policy;
+  retry_policy.max_retries = 2;
+  retry_policy.backoff = PreviewsProber::Backoff::kLinear;
+  retry_policy.base_interval = base::TimeDelta::FromMilliseconds(1000);
+
+  std::unique_ptr<PreviewsProber> prober = NewProberWithPoliciesAndDelegate(
+      &delegate, retry_policy, PreviewsProber::TimeoutPolicy());
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive();
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+
+  // First retry.
+  FastForward(base::TimeDelta::FromMilliseconds(999));
+  VerifyNoRequests();
+  delegate.set_should_send_next_probe(false);
+  FastForward(base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+  VerifyNoRequests();
 }

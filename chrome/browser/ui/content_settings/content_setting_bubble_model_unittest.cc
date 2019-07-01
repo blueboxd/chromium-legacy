@@ -1002,8 +1002,7 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
 
 // Regression test for https://crbug.com/955408
 // See also: ContentSettingImageModelTest.SensorAccessPermissionsChanged
-// TODO(https://crbug.com/978882) Disabled due to flakiness.
-TEST_F(ContentSettingBubbleModelTest, DISABLED_SensorAccessPermissionsChanged) {
+TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
   // Enable all sensors just to avoid hardcoding the expected messages to the
   // motion sensor-specific ones.
   base::test::ScopedFeatureList feature_list;

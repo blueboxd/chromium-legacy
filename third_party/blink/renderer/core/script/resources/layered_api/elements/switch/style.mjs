@@ -166,7 +166,7 @@ export function markTransition(element) {
   const CLASS_NAME = 'transitioning';
   element.classList.add(CLASS_NAME);
   let durations = element.computedStyleMap().getAll('transition-duration');
-  if (!durations.some(duration => duration.value >= 0)) {
+  if (!durations.some(duration => duration.value > 0)) {
     // If the element will have no transitions, we remove CLASS_NAME
     // immediately.
     element.classList.remove(CLASS_NAME);
@@ -184,7 +184,10 @@ export function markTransition(element) {
     }
   });
   let handleEndOrCancel = e => {
-    if (e.target === element && --element.runningTransitions === 0) {
+    // Need to check runningTransitions>0 due to superfluous transitioncancel
+    // events; crbug.com/979556.
+    if (e.target === element && element.runningTransitions > 0 &&
+        --element.runningTransitions === 0) {
       element.classList.remove(CLASS_NAME);
     }
   };

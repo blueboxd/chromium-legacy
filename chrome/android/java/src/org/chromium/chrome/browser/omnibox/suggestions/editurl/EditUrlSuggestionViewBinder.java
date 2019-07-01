@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -43,7 +45,8 @@ public class EditUrlSuggestionViewBinder {
             view.findViewById(R.id.edit_url_favicon)
                     .setVisibility(showIcons ? View.VISIBLE : View.GONE);
             updateSiteFavicon(view.findViewById(R.id.edit_url_favicon), model);
-        } else if (EditUrlSuggestionProperties.SITE_FAVICON == propertyKey) {
+        } else if (EditUrlSuggestionProperties.SITE_FAVICON == propertyKey
+                || SuggestionCommonProperties.USE_DARK_COLORS == propertyKey) {
             updateSiteFavicon(view.findViewById(R.id.edit_url_favicon), model);
         }
         // TODO(mdjones): Support SuggestionCommonProperties.*
@@ -56,7 +59,13 @@ public class EditUrlSuggestionViewBinder {
         if (bitmap != null) {
             view.setImageBitmap(bitmap);
         } else {
-            view.setImageResource(R.drawable.ic_globe_24dp);
+            boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
+            Drawable icon = view.getContext().getResources().getDrawable(R.drawable.ic_globe_24dp);
+            int color = view.getContext().getResources().getColor(useDarkColors
+                            ? R.color.default_icon_color_secondary_list
+                            : R.color.white_mode_tint);
+            DrawableCompat.setTint(icon, color);
+            view.setImageDrawable(icon);
         }
     }
 }

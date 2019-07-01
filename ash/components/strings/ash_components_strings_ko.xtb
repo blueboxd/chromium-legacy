@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">이전 탭으로 이동</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />을 누른 상태에서 링크를 클릭</translation>
 <translation id="2246352309084894470">전체 화면 런처 열기/닫기</translation>
+<translation id="2354531887393764880">마침표</translation>
 <translation id="2382644247745281995">현재 키보드 레이아웃에서는 지원되지 않습니다.</translation>
 <translation id="2397416548179033562">Chrome 메뉴 표시</translation>
 <translation id="2424073332829844142">Caps Lock 켜고 끄기</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">실행기에서 강조표시된 항목을 엽니다.</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1부터 8</translation>
 <translation id="3837047332182291558">키보드 밝게(백라이트 키보드만 해당)</translation>
+<translation id="3949671998904569433">쉼표</translation>
 <translation id="3976863468609830880">실행기의 마지막 아이콘 클릭</translation>
 <translation id="3994783594793697310">확대/축소 레벨 재설정</translation>
 <translation id="4026843240379844265">디스플레이 간 활성 창 이동</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">사용 가능한 다음 입력 방법으로 전환</translation>
 <translation id="743754632698445141">앱 고정 해제</translation>
 <translation id="7439718573248533901">다음 글자를 삭제(앞으로 삭제)</translation>
+<translation id="7500368597227394048">하이픈</translation>
 <translation id="7611271430932669992">포커스를 팝업 및 대화상자로 이동</translation>
 <translation id="766326951329901120">클립보드의 콘텐츠를 일반 텍스트로 붙여넣기</translation>
+<translation id="7703010453515335249">왼쪽 대괄호</translation>
 <translation id="7724603315864178912">잘라내기</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />을 누르고 <ph name="SPACE" /> 또는 <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">브라우저에서 파일 열기</translation>
-<translation id="7917881398263220094">현재 페이지 로드를 중지</translation>
 <translation id="7952165122793773711">1~8번째 탭으로 이동합니다.</translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8130528849632411619">문서 처음으로 이동</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 또는 <ph name="E" /></translation>
 <translation id="8232835244134740473">상태 영역(계정 사진이 표시되는 곳), 런처, 검색주소창, 북마크바(표시된 경우), 열려 있는 웹페이지, 다운로드바(표시된 경우) 사이에 포커스를 전환합니다.</translation>
 <translation id="8234414138295101081">화면 90도 회전</translation>
+<translation id="8241665785394195545">오른쪽 대괄호</translation>
 <translation id="8264941229485248811">Developer Tools 검사기 표시 또는 숨기기</translation>
 <translation id="836869401750819675">다운로드 페이지 열기</translation>
 <translation id="8388247778047144397">링크를 탭 표시줄의 빈 영역으로 드래그</translation>

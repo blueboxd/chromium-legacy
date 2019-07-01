@@ -22,7 +22,6 @@
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 #if !defined(OS_NACL)
@@ -776,27 +775,12 @@ class ChannelPosix : public Channel,
 
 }  // namespace
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-// Forward declare from channel_mac.cc.
-scoped_refptr<Channel> ChannelMacCreate(
-    Channel::Delegate* delegate,
-    ConnectionParams connection_params,
-    Channel::HandlePolicy handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner);
-#endif
-
 // static
 scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
     HandlePolicy handle_policy,
     scoped_refptr<base::TaskRunner> io_task_runner) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
-    return ChannelMacCreate(delegate, std::move(connection_params),
-                            handle_policy, io_task_runner);
-  }
-#endif
   return new ChannelPosix(delegate, std::move(connection_params), handle_policy,
                           io_task_runner);
 }

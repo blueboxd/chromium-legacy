@@ -11,6 +11,7 @@ import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -38,6 +40,14 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
     private final Map<String, List<PropertyModel>> mPendingImageRequests;
     private final int mEntityImageSizePx;
     private ImageFetcher mImageFetcher;
+    // Threshold for low RAM devices. We won't be showing entity suggestion images
+    // on devices that have less RAM than this to avoid bloat and reduce user-visible
+    // slowdown while spinning up an image decompression process.
+    // We set the threshold to 1.5GB to reduce number of users affected by this restriction.
+    // TODO(crbug.com/979426): This threshold is set arbitrarily and should be revisited once
+    // we have more data about relation between system memory and performance.
+    private static final int LOW_MEMORY_THRESHOLD_KB =
+            (int) (1.5 * ConversionUtils.KILOBYTES_PER_GIGABYTE);
 
     /**
      * @param context An Android context.
@@ -145,8 +155,10 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
         SuggestionViewDelegate delegate =
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
-        applyImageDominantColor(suggestion.getImageDominantColor(), model);
-        fetchEntityImage(suggestion, model);
+        if (SysUtils.amountOfPhysicalMemoryKB() >= LOW_MEMORY_THRESHOLD_KB) {
+            applyImageDominantColor(suggestion.getImageDominantColor(), model);
+            fetchEntityImage(suggestion, model);
+        }
 
         model.set(EntitySuggestionViewProperties.SUBJECT_TEXT, suggestion.getDisplayText());
         model.set(EntitySuggestionViewProperties.DESCRIPTION_TEXT, suggestion.getDescription());

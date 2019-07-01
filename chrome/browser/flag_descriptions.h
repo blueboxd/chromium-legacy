@@ -637,6 +637,9 @@ extern const char kForceUiDirectionDescription[];
 extern const char kFormControlsRefreshName[];
 extern const char kFormControlsRefreshDescription[];
 
+extern const char kGlobalMediaControlsName[];
+extern const char kGlobalMediaControlsDescription[];
+
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 extern const char kForceGpuRasterization[];
@@ -2098,10 +2101,10 @@ extern const char kOpenXRName[];
 extern const char kOpenXRDescription[];
 #endif  // ENABLE_OPENXR
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if !defined(OS_ANDROID)
 extern const char kXRSandboxName[];
 extern const char kXRSandboxDescription[];
-#endif  // ENABLE_ISOLATED_XR_SERVICE
+#endif  // !defined(OS_ANDROID)
 
 #endif  // ENABLE_VR
 

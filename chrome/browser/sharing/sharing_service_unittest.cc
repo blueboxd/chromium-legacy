@@ -10,26 +10,52 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/vapid_key_manager.h"
+#include "components/gcm_driver/fake_gcm_driver.h"
+#include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::test::ScopedTaskEnvironment;
+using namespace instance_id;
+using namespace testing;
 
 namespace {
 
 constexpr int kNoCapabilities =
     static_cast<int>(SharingDeviceCapability::kNone);
 
+class MockInstanceIDDriver : public InstanceIDDriver {
+ public:
+  MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr) {}
+  ~MockInstanceIDDriver() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockInstanceIDDriver);
+};
+
 class SharingServiceTest : public testing::Test {
  public:
   SharingServiceTest() {
     sync_prefs_ = new SharingSyncPreference(&prefs_);
+    vapid_key_manager_ = new VapidKeyManager(sync_prefs_);
+    sharing_device_registration_ = new SharingDeviceRegistration(
+        sync_prefs_, &mock_instance_id_driver_, vapid_key_manager_,
+        &fake_gcm_driver_, &fake_local_device_info_provider_);
+
     sharing_service_ = std::make_unique<SharingService>(
-        base::WrapUnique(sync_prefs_), &device_info_tracker_);
+        base::WrapUnique(sync_prefs_),
+        base::WrapUnique(sharing_device_registration_),
+        base::WrapUnique(vapid_key_manager_), &device_info_tracker_,
+        &fake_sync_service_);
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
@@ -53,8 +79,16 @@ class SharingServiceTest : public testing::Test {
       ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
 
   syncer::FakeDeviceInfoTracker device_info_tracker_;
-  SharingSyncPreference* sync_prefs_ = nullptr;
-  std::unique_ptr<SharingService> sharing_service_;
+  gcm::FakeGCMDriver fake_gcm_driver_;
+  FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
+  syncer::FakeSyncService fake_sync_service_;
+
+  NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
+
+  SharingSyncPreference* sync_prefs_;
+  VapidKeyManager* vapid_key_manager_;
+  SharingDeviceRegistration* sharing_device_registration_;
+  std::unique_ptr<SharingService> sharing_service_ = nullptr;
 
  private:
   sync_preferences::TestingPrefServiceSyncable prefs_;
@@ -150,3 +184,5 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
   ASSERT_EQ(1u, candidates.size());
   EXPECT_EQ(id2, candidates[0].guid());
 }
+
+// TODO(himanshujaju) Add tests for RegisterDevice

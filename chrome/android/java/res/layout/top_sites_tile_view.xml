@@ -12,15 +12,6 @@
     android:paddingStart="@dimen/tile_view_padding"
     android:paddingEnd="@dimen/tile_view_padding" >
 
-    <!-- The icon background. -->
-    <View
-        android:id="@+id/tile_view_icon_background"
-        android:layout_width="@dimen/tile_view_icon_size"
-        android:layout_height="@dimen/tile_view_icon_size"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/tile_view_icon_background_margin_top_modern"
-        android:background="@drawable/tile_view_hairline_border_background" />
-
     <!-- The main icon. -->
     <ImageView
         android:id="@+id/tile_view_icon"
@@ -38,6 +29,14 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/tile_view_icon_background_margin_top_modern"
         android:background="@drawable/tile_view_highlight" />
+
+    <!-- Hairline border -->
+    <View
+        android:layout_width="@dimen/tile_view_icon_size"
+        android:layout_height="@dimen/tile_view_icon_size"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/tile_view_icon_background_margin_top_modern"
+        android:background="@drawable/tile_view_hairline_border_background" />
 
     <!-- The offline badge. -->
     <ImageView

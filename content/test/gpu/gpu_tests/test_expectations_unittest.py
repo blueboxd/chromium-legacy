@@ -74,6 +74,100 @@ def _IsCollision(s1, s2):
   return True
 
 
+def _IsDriverTagDuplicated(s1, s2, test_class):
+  if not test_class:
+    return False
+
+  def classify_tags(tags):
+    driver_tag = None
+    other_tags = []
+    for tag in tags:
+      if test_class.MatchDriverTag(tag):
+        assert not driver_tag
+        driver_tag = tag
+      else:
+        other_tags.append(tag)
+    return driver_tag, other_tags
+
+  driver_tag1, other_tags1 = classify_tags(s1)
+  driver_tag2, other_tags2 = classify_tags(s2)
+  if not driver_tag1 and not driver_tag2:
+    return False
+  if not _IsCollision(other_tags1, other_tags2):
+    return False
+  if driver_tag1 == driver_tag2 or (not driver_tag1 or not driver_tag2):
+    return True
+
+  match = test_class.MatchDriverTag(driver_tag1)
+  tag1 = (match.group(1), match.group(2), match.group(3))
+  match = test_class.MatchDriverTag(driver_tag2)
+  tag2 = (match.group(1), match.group(2), match.group(3))
+  if not tag1[0] == tag2[0]:
+    return False
+
+  operation1, version1 = tag1[1:]
+  operation2, version2 = tag2[1:]
+  if operation1 == 'ne':
+    return not (operation2 == 'eq' and version1 == version2)
+  elif operation2 == 'ne':
+    return not (operation1 == 'eq' and version1 == version2)
+  elif operation1 == 'eq':
+    return test_class.EvaluateVersionComparison(
+        version1, operation2, version2)
+  elif operation2 == 'eq':
+    return test_class.EvaluateVersionComparison(
+        version2, operation1, version1)
+
+  if operation1 == 'ge' or operation1 == 'gt':
+    if operation2 == 'ge' or operation2 == 'gt':
+      return True
+  elif operation1 == 'le' or operation1 == 'lt':
+    if operation2 == 'le' or operation2 == 'lt':
+      return True
+
+  if operation1 == 'ge':
+    if operation2 == 'le':
+      return not test_class.EvaluateVersionComparison(version1, 'gt', version2)
+    elif operation2 == 'lt':
+      return not test_class.EvaluateVersionComparison(version1, 'ge', version2)
+  elif operation1 == 'gt':
+    return not test_class.EvaluateVersionComparison(version1, 'ge', version2)
+  elif operation1 == 'le':
+    if operation2 == 'ge':
+      return not test_class.EvaluateVersionComparison(version1, 'lt', version2)
+    elif operation2 == 'gt':
+      return not test_class.EvaluateVersionComparison(version1, 'le', version2)
+  elif operation1 == 'lt':
+    return not test_class.EvaluateVersionComparison(version1, 'le', version2)
+  else:
+    assert False
+
+
+def _ExtractUnitTestTestExpectations(file_name):
+  file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+      '..', 'unittest_data', 'test_expectations', file_name)
+  test_expectations_list = []
+  with open(file_name, 'r') as test_data:
+    test_expectations = ''
+    reach_end = False
+    while not reach_end:
+      line = test_data.readline()
+      if line:
+        line = line.strip()
+        if line:
+          test_expectations += line + '\n'
+          continue
+      else:
+        reach_end = True
+
+      if test_expectations:
+        test_expectations_list.append(test_expectations)
+        test_expectations = ''
+
+  assert test_expectations_list
+  return test_expectations_list
+
+
 def _MapGpuDevicesToVendors(tag_sets):
   for tag_set in tag_sets:
     if any(gpu in tag_set for gpu in GPU_CONDITIONS):
@@ -115,7 +209,8 @@ def CheckTestExpectationsAreForExistingTests(
         "%s:%d: Pattern '%s' does not match with any tests in the %s test suite"
         % (expectations_file, exp.lineno, exp.test, test_class.Name()))
 
-def CheckTestExpectationGlobsForCollision(expectations, file_name):
+def CheckTestExpectationGlobsForCollision(
+    expectations, file_name, test_class=None):
   """This function looks for collisions between test expectations with patterns
   that match with test expectation patterns that are globs. A test expectation
   collides with another if its pattern matches with another's glob and if its
@@ -164,7 +259,9 @@ def CheckTestExpectationGlobsForCollision(expectations, file_name):
       for possible_collision in globs_to_match:
         reason = _ConflictLeaksRegression(possible_collision, match)
         if (reason and
-            _IsCollision(possible_collision.tags, match.tags)):
+            (_IsCollision(possible_collision.tags, match.tags)
+                or _IsDriverTagDuplicated(
+                    possible_collision.tags, match.tags, test_class))):
           if not conflicts_found:
             error_msg += ('\n\nFound conflicts for pattern %s in %s:\n' %
                           (glob, file_name))
@@ -174,7 +271,8 @@ def CheckTestExpectationGlobsForCollision(expectations, file_name):
   assert not master_conflicts_found, error_msg
 
 
-def CheckTestExpectationPatternsForCollision(expectations, file_name):
+def CheckTestExpectationPatternsForCollision(
+    expectations, file_name, test_class=None):
   """This function makes sure that any test expectations that have the same
   pattern do not collide with each other. They collide when one expectation's
   tags are a subset of the other expectation's tags. If the expectation with
@@ -196,7 +294,8 @@ def CheckTestExpectationPatternsForCollision(expectations, file_name):
   for pattern, exps in tests_to_exps.items():
     conflicts_found = False
     for e1, e2 in itertools.combinations(exps, 2):
-      if _IsCollision(e1.tags, e2.tags) or _IsCollision(e2.tags, e1.tags):
+      if (_IsCollision(e1.tags, e2.tags) or _IsCollision(e2.tags, e1.tags)
+          or _IsDriverTagDuplicated(e1.tags, e2.tags, test_class)):
         if not conflicts_found:
           error_msg += ('\n\nFound conflicts for test %s in %s:\n' %
                         (pattern, file_name))
@@ -298,8 +397,78 @@ class GpuTestExpectationsValidation(unittest.TestCase):
         pixel_integration_test.PixelIntegrationTest,
         gpu_helper.GetMockArgs(), pixel_test_names)
 
+  def testWebglTestExpectationsForDriverTags(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    expectations_driver_tags = set()
+    for i in range(1, 3):
+      _ = list(webgl_conformance_test_class.GenerateGpuTests(
+          gpu_helper.GetMockArgs(webgl_version=('%d.0.0' % i))))
+      with open(webgl_conformance_test_class.ExpectationsFiles()[0], 'r') as f:
+        parser = expectations_parser.TaggedTestListParser(f.read())
+        driver_tag_set = set()
+        for tag_set in parser.tag_sets:
+          if webgl_conformance_test_class.MatchDriverTag(list(tag_set)[0]):
+            for tag in tag_set:
+              assert webgl_conformance_test_class.MatchDriverTag(tag)
+            assert not driver_tag_set
+            driver_tag_set = tag_set
+          else:
+            for tag in tag_set:
+              assert not webgl_conformance_test_class.MatchDriverTag(tag)
+        expectations_driver_tags |= driver_tag_set
+
+    self.assertEqual(
+        webgl_conformance_test_class.ExpectationsDriverTags(),
+        expectations_driver_tags)
 
 class TestGpuTestExpectationsValidators(unittest.TestCase):
+  def testCollisionInTestExpectationsWithGpuDriverTags(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    failed_test_expectations = _ExtractUnitTestTestExpectations(
+        'failed_test_expectations_with_driver_tags.txt')
+    for test_expectations in failed_test_expectations:
+      with self.assertRaises(AssertionError):
+        CheckTestExpectationPatternsForCollision(
+            test_expectations, 'test.txt', webgl_conformance_test_class)
+
+  def testNoCollisionInTestExpectationsWithGpuDriverTags(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    passed_test_expectations = _ExtractUnitTestTestExpectations(
+        'passed_test_expectations_with_driver_tags.txt')
+    for test_expectations in passed_test_expectations:
+      CheckTestExpectationPatternsForCollision(
+          test_expectations, 'test.txt', webgl_conformance_test_class)
+
+  def testCollisionWithGlobsWithGpuDriverTags(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    failed_test_expectations = _ExtractUnitTestTestExpectations(
+        'failed_test_expectations_with_driver_tags.txt')
+    for test_expectations in failed_test_expectations:
+      test_expectations = test_expectations.replace(
+          'abc.html [ Failure ]', 'a/b/c/* [ Failure ]')
+      test_expectations = test_expectations.replace(
+          'abc.html [ RetryOnFailure ]', 'a/b/c/abc.html [ RetryOnFailure ]')
+      with self.assertRaises(AssertionError):
+        CheckTestExpectationGlobsForCollision(
+            test_expectations, 'test.txt', webgl_conformance_test_class)
+
+  def testNoCollisionWithGlobsWithGpuDriverTags(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    passed_test_expectations = _ExtractUnitTestTestExpectations(
+        'passed_test_expectations_with_driver_tags.txt')
+    for test_expectations in passed_test_expectations:
+      test_expectations = test_expectations.replace(
+          'abc.html [ Failure ]', 'a/b/c/* [ Failure ]')
+      test_expectations = test_expectations.replace(
+          'abc.html [ RetryOnFailure ]', 'a/b/c/abc.html [ RetryOnFailure ]')
+      CheckTestExpectationGlobsForCollision(
+          test_expectations, 'test.txt', webgl_conformance_test_class)
+
   def testCollisionInTestExpectationsWithSpecifcAndGenericOsTags(self):
     test_expectations = '''# tags: [ mac win linux xp ]
     # tags: [ intel amd nvidia ]

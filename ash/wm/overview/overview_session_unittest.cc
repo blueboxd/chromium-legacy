@@ -3017,7 +3017,7 @@ TEST_F(OverviewSessionTest, DraggingFromTopAnimation) {
   drag_controller->Drag(event.location(), event.flags());
 
   ASSERT_TRUE(InOverviewSession());
-  EXPECT_EQ(OverviewSession::EnterExitOverviewType::kWindowDragged,
+  EXPECT_EQ(OverviewSession::EnterExitOverviewType::kImmediateEnter,
             overview_session()->enter_exit_overview_type());
 }
 

@@ -84,6 +84,7 @@
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
@@ -755,6 +756,10 @@ void ProfileImpl::DoFinalInit() {
     TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
     delegate_->OnProfileCreated(this, true, IsNewProfile());
   }
+
+  // Ensure that the SharingService is initialized now that io_data_ is
+  // initialized.
+  SharingServiceFactory::GetForBrowserContext(this);
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Profile.NotifyProfileCreatedTime");

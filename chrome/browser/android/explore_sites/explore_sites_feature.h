@@ -20,13 +20,17 @@ extern const char kExploreSitesMostLikelyVariationIconArrow[];
 extern const char kExploreSitesMostLikelyVariationIconDots[];
 extern const char kExploreSitesMostLikelyVariationIconGrouped[];
 
+extern const char kExploreSitesDenseVariationParameterName[];
+extern const char kExploreSitesDenseVariationOriginal[];
+extern const char kExploreSitesDenseVariationDenseTitleBottom[];
+extern const char kExploreSitesDenseVariationDenseTitleRight[];
+
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.explore_sites
 enum class ExploreSitesVariation {
   ENABLED,
   EXPERIMENT,
   PERSONALIZED,
-  CONDENSED,
   MOST_LIKELY,
   DISABLED
 };
@@ -35,9 +39,15 @@ enum class ExploreSitesVariation {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.explore_sites
 enum class MostLikelyVariation { NONE, ICON_ARROW, ICON_DOTS, ICON_GROUPED };
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.explore_sites
+enum class DenseVariation { ORIGINAL, DENSE_TITLE_BOTTOM, DENSE_TITLE_RIGHT };
+
 ExploreSitesVariation GetExploreSitesVariation();
 
 MostLikelyVariation GetMostLikelyVariation();
+
+DenseVariation GetDenseVariation();
 
 }  // namespace explore_sites
 }  // namespace android

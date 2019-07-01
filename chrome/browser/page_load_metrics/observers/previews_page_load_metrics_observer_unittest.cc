@@ -142,17 +142,9 @@ class PreviewsPageLoadMetricsObserverTest
     if (network_resources > 0) {
       histogram_tester().ExpectUniqueSample(
           "PageLoad.Clients." + preview_type_name +
-              ".Experimental.CompletedResources.Network",
-          network_resources, 1);
-      histogram_tester().ExpectUniqueSample(
-          "PageLoad.Clients." + preview_type_name +
               ".Experimental.Bytes.NetworkIncludingHeaders",
           static_cast<int>(network_bytes / 1024), 1);
     } else {
-      histogram_tester().ExpectTotalCount(
-          "PageLoad.Clients." + preview_type_name +
-              ".Experimental.CompletedResources.Network",
-          0);
       histogram_tester().ExpectTotalCount(
           "PageLoad.Clients." + preview_type_name +
               ".Experimental.Bytes.NetworkIncludingHeaders",

@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Aceder ao separador anterior</translation>
 <translation id="2194790690264064655">Prima <ph name="CTRL" /> e clique num link.</translation>
 <translation id="2246352309084894470">Abrir/fechar o iniciador em ecrã inteiro</translation>
+<translation id="2354531887393764880">ponto final</translation>
 <translation id="2382644247745281995">Não suportado com o esquema de teclado atual.</translation>
 <translation id="2397416548179033562">Mostrar menu do Chrome</translation>
 <translation id="2424073332829844142">Ativar e desativar a tecla Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Abrir o item realçado na prateleira</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="3837047332182291558">Aumentar o brilho do teclado (apenas para teclados retroiluminados)</translation>
+<translation id="3949671998904569433">vírgula</translation>
 <translation id="3976863468609830880">Clicar no último ícone da prateleira</translation>
 <translation id="3994783594793697310">Repor o nível de zoom do ecrã</translation>
 <translation id="4026843240379844265">Mova a janela ativa entre ecrãs.</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Mudar para o método de introdução disponível seguinte</translation>
 <translation id="743754632698445141">Soltar uma aplicação</translation>
 <translation id="7439718573248533901">Eliminar a letra seguinte (eliminação para a frente)</translation>
+<translation id="7500368597227394048">hífen</translation>
 <translation id="7611271430932669992">Mover o foco para pop-ups e caixas de diálogo</translation>
 <translation id="766326951329901120">Colar o conteúdo da área de transferência como texto simples</translation>
+<translation id="7703010453515335249">parêntese reto esquerdo</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e, em seguida, <ph name="SPACE" /> ou <ph name="ENTER" />.</translation>
 <translation id="7787242579016742662">Abrir um ficheiro no navegador</translation>
-<translation id="7917881398263220094">Parar o carregamento da página atual</translation>
 <translation id="7952165122793773711">Ir para os separadores 1 a 8</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8232835244134740473">Mudar o foco entre: a área de estado (onde é apresentada a sua imagem da conta), o Iniciador, a barra de endereço, a barra de marcadores (se estiver visível), a página Web que está aberta e a barra de transferências (se visível).</translation>
 <translation id="8234414138295101081">Rodar o ecrã 90 graus</translation>
+<translation id="8241665785394195545">parêntese reto direito</translation>
 <translation id="8264941229485248811">Mostrar ou ocultar o inspetor das Ferramentas do programador</translation>
 <translation id="836869401750819675">Abrir a página Transferências</translation>
 <translation id="8388247778047144397">Arraste o link para uma área em branco na Faixa de separadores.</translation>

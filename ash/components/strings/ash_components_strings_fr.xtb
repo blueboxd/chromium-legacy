@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Accéder à l'onglet précédent</translation>
 <translation id="2194790690264064655">Appuyez sur <ph name="CTRL" /> et cliquez sur un lien</translation>
 <translation id="2246352309084894470">Ouvrir/Fermer le Lanceur d'applications en plein écran</translation>
+<translation id="2354531887393764880">point</translation>
 <translation id="2382644247745281995">Non compatible avec la disposition de clavier actuelle</translation>
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="2424073332829844142">Activer et désactiver le verrouillage des majuscules</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Ouvrir l'élément mis en surbrillance sur l'étagère</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" />1 à 8</translation>
 <translation id="3837047332182291558">Augmenter la luminosité du clavier (claviers rétroéclairés uniquement)</translation>
+<translation id="3949671998904569433">virgule</translation>
 <translation id="3976863468609830880">Cliquer sur la dernière icône de l'étagère</translation>
 <translation id="3994783594793697310">Réinitialiser le niveau de zoom de l'écran</translation>
 <translation id="4026843240379844265">Transférer la fenêtre active entre des écrans</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Passer au mode de saisie disponible suivant</translation>
 <translation id="743754632698445141">Annuler l'épinglage d'une application</translation>
 <translation id="7439718573248533901">Supprimer la lettre suivante (suppression avant)</translation>
+<translation id="7500368597227394048">trait d'union</translation>
 <translation id="7611271430932669992">Passer aux fenêtres pop-up et aux boîtes de dialogue</translation>
 <translation id="766326951329901120">Coller le contenu du Presse-papiers en texte brut</translation>
+<translation id="7703010453515335249">crochet gauche</translation>
 <translation id="7724603315864178912">Couper</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="SPACE" /> ou <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Ouvrir un fichier dans le navigateur</translation>
-<translation id="7917881398263220094">Arrêter le chargement de la page active</translation>
 <translation id="7952165122793773711">Accéder aux onglets 1 à 8</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8130528849632411619">Accéder au début du document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8232835244134740473">Alterner entre la zone d'état (là où se trouve la photo de votre compte), le lanceur d'applications, la barre d'adresse, la barre de favoris (si elle est visible), la page Web ouverte ou la barre de téléchargements (si elle est visible).</translation>
 <translation id="8234414138295101081">Faire pivoter l'écran de 90 degrés</translation>
+<translation id="8241665785394195545">crochet droit</translation>
 <translation id="8264941229485248811">Afficher ou masquer l'inspecteur des Outils pour les développeurs</translation>
 <translation id="836869401750819675">Ouvrir la page "Téléchargements"</translation>
 <translation id="8388247778047144397">Faites glisser le lien vers une zone vierge de la barre d'onglets</translation>

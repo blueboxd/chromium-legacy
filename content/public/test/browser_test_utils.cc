@@ -2765,7 +2765,7 @@ bool TestNavigationManager::WaitForDesiredState() {
   // Wait for the desired state if needed.
   if (current_state_ < desired_state_) {
     DCHECK(!quit_closure_);
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(message_loop_type_);
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
@@ -2795,6 +2795,10 @@ bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
   if (current_state_ != NavigationState::INITIAL)
     return false;
   return true;
+}
+
+void TestNavigationManager::AllowNestableTasks() {
+  message_loop_type_ = base::RunLoop::Type::kNestableTasksAllowed;
 }
 
 NavigationHandleCommitObserver::NavigationHandleCommitObserver(

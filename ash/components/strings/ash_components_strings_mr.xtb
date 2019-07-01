@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">आधीच्या टॅबवर जा</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> दाबा आणि एखाद्या लिंकवर क्लिक करा</translation>
 <translation id="2246352309084894470">फुलस्क्रीन लाँचर उघडा/बंद करा</translation>
+<translation id="2354531887393764880">पूर्णविरामचिन्‍ह</translation>
 <translation id="2382644247745281995">सद्य कीबोर्ड लेआउटने सपोर्ट करत नाही</translation>
 <translation id="2397416548179033562">Chrome मेनू दर्शवा</translation>
 <translation id="2424073332829844142">कॅप्स लॉक चालू करा आणि बंद करा</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">तुमच्या शेल्फवरील हायलाइट केलेला आयटम उघडा</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> एक ते आठ</translation>
 <translation id="3837047332182291558">कीबोर्ड उजळ करा (फक्त बॅकलिट कीबोर्डसाठी)</translation>
+<translation id="3949671998904569433">स्वल्पविराम</translation>
 <translation id="3976863468609830880">तुमच्या शेल्फवरील शेवटच्या आयकनवर क्लिक करा</translation>
 <translation id="3994783594793697310">डिस्प्ले झूम स्तर रीसेट करा</translation>
 <translation id="4026843240379844265">डिस्प्ले दरम्यान ॲक्टिव्ह विंडो हलवा</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">पुढील उपलब्ध इनपुट पद्धतीवर स्विच करा</translation>
 <translation id="743754632698445141">ॲप अनपिन करा</translation>
 <translation id="7439718573248533901">पुढील अक्षर हटवा (फॉरवर्ड करा हटवा)</translation>
+<translation id="7500368597227394048">हायफन</translation>
 <translation id="7611271430932669992">फोकस पॉपअप आणि संवाद वर हलवा</translation>
 <translation id="766326951329901120">आशय एक साधा मजकूर म्हणून क्लिपबोर्डवरून पेस्ट करा</translation>
+<translation id="7703010453515335249">डावा कंस</translation>
 <translation id="7724603315864178912">कट करा</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, त्यानंतर <ph name="SPACE" /> किंवा <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">ब्राउझरमध्ये एक फाइल उघडा</translation>
-<translation id="7917881398263220094">तुमचे हे पेज लोड करणे थांबवा</translation>
 <translation id="7952165122793773711">एक ते आठ टॅबवर जा</translation>
 <translation id="8026334261755873520">ब्राउझिंग डेटा साफ करा</translation>
 <translation id="8130528849632411619">दस्तऐवजाच्या सुरूवातीला जा</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> किंवा <ph name="E" /></translation>
 <translation id="8232835244134740473">फोकसला स्थिती भाग (जेथे तुमच्या खात्यावरील फोटो दिसतो), लॉंचर अ‍ॅड्रेस बार, बुकमार्क बार (दिसत असल्यास), उघडलेले वेबपेज, डाउनलोड बार (दिसत असल्यास) च्या दरम्यान स्विच करा</translation>
 <translation id="8234414138295101081">स्क्रीन ९० अंशात फिरवा</translation>
+<translation id="8241665785394195545">उजवा कंस</translation>
 <translation id="8264941229485248811">डेव्हलपर टूल परीक्षक दाखवा किंवा लपवा</translation>
 <translation id="836869401750819675">डाउनलोड पेज उघडा</translation>
 <translation id="8388247778047144397">टॅब स्ट्रिपवरील एका रिक्त भागावर एखादी लिंक ड्रॅग करा</translation>

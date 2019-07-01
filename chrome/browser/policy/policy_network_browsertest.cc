@@ -225,13 +225,7 @@ class QuicAllowedPolicyIsTrue: public QuicAllowedPolicyTestBase {
 // just crash the network service once, and then test all network contexts in
 // some particular order.
 
-// TODO(crbug.com/938139): Flaky on ChromeOS with Network Service
-#if defined(OS_CHROMEOS)
-#define MAYBE_QuicAllowedForSystem DISABLED_QuicAllowedForSystem
-#else
-#define MAYBE_QuicAllowedForSystem QuicAllowedForSystem
-#endif
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, MAYBE_QuicAllowedForSystem) {
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, QuicAllowedForSystem) {
   EXPECT_TRUE(IsQuicEnabledForSystem());
 
   // If using the network service, crash the service, and make sure QUIC is

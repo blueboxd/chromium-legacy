@@ -283,6 +283,8 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   // Validate consistency of passed arguments.
   if (ParsedCookie::ParseTokenString(name) != name ||
       ParsedCookie::ParseValueString(value) != value ||
+      !ParsedCookie::IsValidCookieAttributeValue(name) ||
+      !ParsedCookie::IsValidCookieAttributeValue(value) ||
       ParsedCookie::ParseValueString(domain) != domain ||
       ParsedCookie::ParseValueString(path) != path) {
     return nullptr;

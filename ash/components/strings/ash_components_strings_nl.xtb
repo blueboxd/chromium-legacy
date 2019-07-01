@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Naar het vorige tabblad gaan</translation>
 <translation id="2194790690264064655">Druk op <ph name="CTRL" /> en klik op een link</translation>
 <translation id="2246352309084894470">De Launcher op volledig scherm openen/sluiten</translation>
+<translation id="2354531887393764880">punt</translation>
 <translation id="2382644247745281995">Niet ondersteund met de huidige toetsenbordindeling</translation>
 <translation id="2397416548179033562">Chrome-menu weergeven</translation>
 <translation id="2424073332829844142">Caps Lock in- en uitschakelen</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Het gemarkeerde item op je plank openen</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 tot en met 8</translation>
 <translation id="3837047332182291558">Toetsenbord helderder maken (alleen voor toetsenborden met achtergrondverlichting)</translation>
+<translation id="3949671998904569433">komma</translation>
 <translation id="3976863468609830880">Klikken op het laatste pictogram op de plank</translation>
 <translation id="3994783594793697310">Displayzoomniveau resetten</translation>
 <translation id="4026843240379844265">Actief venster verplaatsen tussen schermen</translation>
@@ -92,7 +94,7 @@
 <translation id="4240486403425279990">Overzichtsmodus</translation>
 <translation id="4382340674111381977">Ga terug naar de vorige pagina</translation>
 <translation id="4472417192667361414">Systeem- en weergave-instellingen</translation>
-<translation id="4556221320735744018">Help voor sneltoetsen openen</translation>
+<translation id="4556221320735744018">Hulp voor sneltoetsen openen</translation>
 <translation id="4628718545549558538">Het statusgedeelte openen (waar je accountafbeelding wordt weergegeven)</translation>
 <translation id="4642092649622328492">Gedeeltelijk screenshot maken</translation>
 <translation id="4698850295812410683">Stylustools weergeven</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Overschakelen naar de volgende beschikbare invoermethode</translation>
 <translation id="743754632698445141">Een app losmaken</translation>
 <translation id="7439718573248533901">De volgende letter verwijderen (vooruit verwijderen)</translation>
+<translation id="7500368597227394048">koppelteken</translation>
 <translation id="7611271430932669992">De focus naar pop-ups en dialoogvensters verplaatsen</translation>
 <translation id="766326951329901120">Content vanaf het klembord plakken als platte tekst</translation>
+<translation id="7703010453515335249">rechte haak links</translation>
 <translation id="7724603315864178912">Knip</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="SPACE" /> of <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Een bestand openen in de browser</translation>
-<translation id="7917881398263220094">Het laden van de huidige pagina stoppen</translation>
 <translation id="7952165122793773711">Naar tabblad 1 tot en met 8 gaan</translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
 <translation id="8130528849632411619">Naar het begin van het document gaan</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> of <ph name="E" /></translation>
 <translation id="8232835244134740473">Focus schakelen tussen: statusgedeelte (waar je accountafbeelding wordt weergegeven), Launcher, adresbalk, bladwijzerbalk (indien zichtbaar), de geopende webpagina en de downloadbalk (indien zichtbaar).</translation>
 <translation id="8234414138295101081">Scherm 90 graden draaien</translation>
+<translation id="8241665785394195545">rechte haak rechts</translation>
 <translation id="8264941229485248811">De Developer Tools-inspector weergeven of verbergen</translation>
 <translation id="836869401750819675">De pagina Downloads openen</translation>
 <translation id="8388247778047144397">Sleep de link naar een blanco gedeelte van de tabbladstrook</translation>

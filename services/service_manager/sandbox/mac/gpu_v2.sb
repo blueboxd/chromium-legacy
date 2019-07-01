@@ -92,3 +92,8 @@
   (subpath "/Library/Video/Plug-Ins")
   (subpath "/System/Library/Video/Plug-Ins")
 )
+
+; crbug.com/980134
+(allow file-read* file-write*
+  (subpath (param darwin-user-cache-dir))
+)

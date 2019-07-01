@@ -436,7 +436,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
 <translation id="7285236536143823449">ÁNO, SÚHLASÍM</translation>
 <translation id="7291368939935408496">Pripravujú sa heslá...</translation>
-<translation id="7293171162284876153">Ak chcete spustiť synchronizáciu, zapnite možnosť Synchronizovať údaje Chromu.</translation>
+<translation id="7293171162284876153">Ak chcete spustiť synchronizáciu, zapnite možnosť „Synchronizovať údaje Chromu“.</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
 <translation id="7346909386216857016">Dobre</translation>
 <translation id="7348502496356775519">Uložiť ako záložku</translation>
@@ -477,6 +477,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokov. okien</translation>
 <translation id="7982789257301363584">Sieť</translation>
+<translation id="8007420562015504427">Anonymné vyhľadávanie</translation>
 <translation id="8019783059653722575">Umožňuje uložiť a nahrať fotky.</translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>
 <translation id="8023878949384262191">Rozbalí sekciu.</translation>
@@ -491,6 +492,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8225985093977202398">Obrázky a súbory vo vyrovnávacej pamäti</translation>
 <translation id="8261506727792406068">Odstrániť</translation>
 <translation id="8281781826761538115">Predvolené – <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Nové vyhľadávanie</translation>
 <translation id="8328777765163860529">Zavrieť všetky</translation>
 <translation id="8381750437846184350">Nastavte, ako má Google používať vašu históriu prehliadania na prispôsobenie Vyhľadávania, reklám a ďalších služieb Googlu</translation>
 <translation id="8407669440184693619">Nenašli sa žiadne heslá tohto webu</translation>

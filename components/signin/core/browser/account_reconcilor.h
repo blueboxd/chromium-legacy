@@ -254,7 +254,7 @@ class AccountReconcilor : public KeyedService,
 
   // All actions with side effects, only doing meaningful work if account
   // consistency is enabled. Virtual so that they can be overridden in tests.
-  virtual void PerformMergeAction(const std::string& account_id);
+  virtual void PerformMergeAction(const CoreAccountId& account_id);
   virtual void PerformLogoutAllAccountsAction();
   virtual void PerformSetCookiesAction(
       const signin::MultiloginParameters& parameters);
@@ -262,18 +262,18 @@ class AccountReconcilor : public KeyedService,
   // Used during periodic reconciliation.
   void StartReconcile();
   // |gaia_accounts| are the accounts in the Gaia cookie.
-  void FinishReconcile(const std::string& primary_account,
-                       const std::vector<std::string>& chrome_accounts,
+  void FinishReconcile(const CoreAccountId& primary_account,
+                       const std::vector<CoreAccountId>& chrome_accounts,
                        std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
 
   // Returns the list of valid accounts from the TokenService.
-  std::vector<std::string> LoadValidAccountsFromTokenService() const;
+  std::vector<CoreAccountId> LoadValidAccountsFromTokenService() const;
 
   // Note internally that this |account_id| is added to the cookie jar.
-  bool MarkAccountAsAddedToCookie(const std::string& account_id);
+  bool MarkAccountAsAddedToCookie(const CoreAccountId& account_id);
 
   // The reconcilor only starts when the token service is ready.
   bool IsIdentityManagerReady();
@@ -297,8 +297,8 @@ class AccountReconcilor : public KeyedService,
   void OnAccountsCookieDeletedByUserAction() override;
 
   void FinishReconcileWithMultiloginEndpoint(
-      const std::string& primary_account,
-      const std::vector<std::string>& chrome_accounts,
+      const CoreAccountId& primary_account,
+      const std::vector<CoreAccountId>& chrome_accounts,
       std::vector<gaia::ListedAccount>&& gaia_accounts);
 
   void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
@@ -361,8 +361,8 @@ class AccountReconcilor : public KeyedService,
   bool reconcile_is_noop_;
 
   // Used during reconcile action.
-  std::vector<std::string> add_to_cookie_;  // Progress of AddAccount calls.
-  bool set_accounts_in_progress_;           // Progress of SetAccounts calls.
+  std::vector<CoreAccountId> add_to_cookie_;  // Progress of AddAccount calls.
+  bool set_accounts_in_progress_;             // Progress of SetAccounts calls.
   bool chrome_accounts_changed_;
 
   // Used for the Lock.

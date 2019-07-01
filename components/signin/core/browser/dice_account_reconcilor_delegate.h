@@ -26,28 +26,28 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   bool IsReconcileEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
   gaia::GaiaSource GetGaiaApiSource() const override;
-  std::string GetFirstGaiaAccountForReconcile(
-      const std::vector<std::string>& chrome_accounts,
+  CoreAccountId GetFirstGaiaAccountForReconcile(
+      const std::vector<CoreAccountId>& chrome_accounts,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const std::string& primary_account,
+      const CoreAccountId& primary_account,
       bool first_execution,
       bool will_logout) const override;
   RevokeTokenOption ShouldRevokeSecondaryTokensBeforeReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts) override;
-  void OnReconcileFinished(const std::string& first_account,
+  void OnReconcileFinished(const CoreAccountId& first_account,
                            bool reconcile_is_noop) override;
   bool ShouldRevokeTokensOnCookieDeleted() override;
 
  private:
-  std::vector<std::string> GetChromeAccountsForReconcile(
-      const std::vector<std::string>& chrome_accounts,
-      const std::string& primary_account,
+  std::vector<CoreAccountId> GetChromeAccountsForReconcile(
+      const std::vector<CoreAccountId>& chrome_accounts,
+      const CoreAccountId& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       const gaia::MultiloginMode mode) const override;
 
   gaia::MultiloginMode CalculateModeForReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const std::string primary_account,
+      const CoreAccountId& primary_account,
       bool first_execution,
       bool primary_has_error) const override;
 
@@ -55,7 +55,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   AccountConsistencyMethod account_consistency_;
 
   // Last known "first account". Used when cookies are lost as a best guess.
-  std::string last_known_first_account_;
+  CoreAccountId last_known_first_account_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceAccountReconcilorDelegate);
 };

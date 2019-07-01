@@ -769,7 +769,7 @@ void SplitViewController::OnWindowPropertyChanged(aura::Window* window,
   // overview mode is active at the moment.
   if (key == aura::client::kResizeBehaviorKey && !CanSnapInSplitview(window)) {
     EndSplitView();
-    EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
     ShowAppCannotSnapToast();
   }
 }
@@ -791,7 +791,7 @@ void SplitViewController::OnWindowBoundsChanged(
                                    WindowResizer::kBoundsChange_Repositions;
   if (is_window_moved) {
     EndSplitView();
-    EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
     return;
   }
 
@@ -856,7 +856,7 @@ void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
 
   if (should_end_splitview) {
     EndSplitView();
-    EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
   }
 }
 
@@ -868,7 +868,7 @@ void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
   if (divider_position_ < GetDividerEndPosition() * kOneThirdPositionRatio ||
       divider_position_ > GetDividerEndPosition() * kTwoThirdPositionRatio) {
     EndSplitView();
-    EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
     wm::GetWindowState(window)->Maximize();
   }
 }
@@ -883,7 +883,7 @@ void SplitViewController::OnPostWindowStateTypeChange(
     // full-screened. Also end overview mode if overview mode is active at the
     // moment.
     EndSplitView();
-    EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
   } else if (window_state->IsMinimized()) {
     OnSnappedWindowDetached(window_state->window(), /*window_drag=*/false);
 
@@ -896,7 +896,7 @@ void SplitViewController::OnPostWindowStateTypeChange(
       if (split_view_type_ == SplitViewType::kTabletType)
         InsertWindowToOverview(window_state->window());
       else
-        EndOverview();
+        Shell::Get()->overview_controller()->EndOverview();
     }
   }
 }
@@ -1153,7 +1153,7 @@ void SplitViewController::OnTabletModeEnding() {
     // behavior: end splitview and overivew and all windows will return to its
     // old window state before entering tablet mode.
     EndSplitView();
-    EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
   }
 }
 
@@ -1463,7 +1463,7 @@ void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
     insert_overview_window = GetDefaultSnappedWindow();
   EndSplitView();
   if (active_window) {
-    EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
     wm::ActivateWindow(active_window);
   } else if (insert_overview_window) {
     // The dimensions of |window| will be very slim because of dragging the
@@ -1535,7 +1535,9 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
     // window, update its snap state and open overview window grid.
     default_snap_position_ = left_window_ ? LEFT : RIGHT;
     UpdateSplitViewStateAndNotifyObservers();
-    StartOverview(window_drag);
+    Shell::Get()->overview_controller()->StartOverview(
+        window_drag ? OverviewSession::EnterExitOverviewType::kImmediateEnter
+                    : OverviewSession::EnterExitOverviewType::kNormal);
   }
 }
 
@@ -1839,16 +1841,6 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window,
   GetOverviewSession()->AddItem(window, /*reposition=*/true, animate);
 }
 
-void SplitViewController::StartOverview(bool window_drag) {
-  Shell::Get()->overview_controller()->StartOverview(
-      window_drag ? OverviewSession::EnterExitOverviewType::kWindowDragged
-                  : OverviewSession::EnterExitOverviewType::kNormal);
-}
-
-void SplitViewController::EndOverview() {
-  Shell::Get()->overview_controller()->EndOverview();
-}
-
 void SplitViewController::FinishWindowResizing(aura::Window* window) {
   if (window != nullptr) {
     wm::WindowState* window_state = wm::GetWindowState(window);
@@ -1906,15 +1898,15 @@ void SplitViewController::EndWindowDragImpl(
       if (overview_session) {
         overview_session->SetWindowListNotAnimatedWhenExiting(
             window->GetRootWindow());
-        // Set the overview exit type to kWindowDragged to avoid update bounds
+        // Set the overview exit type to kImmediateExit to avoid update bounds
         // animation of the windows in overview grid.
         overview_session->set_enter_exit_overview_type(
-            OverviewSession::EnterExitOverviewType::kWindowDragged);
+            OverviewSession::EnterExitOverviewType::kImmediateExit);
       }
       // Activate the dragged window and end the overview. The dragged window
       // will be restored back to its previous state before dragging.
       wm::ActivateWindow(window);
-      EndOverview();
+      Shell::Get()->overview_controller()->EndOverview();
 
       // Update the dragged window's bounds. It's possible that the dragged
       // window's bounds was changed during dragging. Update its bounds after
@@ -1941,7 +1933,7 @@ void SplitViewController::EndWindowDragImpl(
                        : SplitViewController::LEFT);
       } else {
         // If overview is not active, open overview.
-        StartOverview();
+        Shell::Get()->overview_controller()->StartOverview();
       }
     }
   }

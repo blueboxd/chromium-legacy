@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Membuka tab sebelumnya</translation>
 <translation id="2194790690264064655">Tekan <ph name="CTRL" />, lalu klik link</translation>
 <translation id="2246352309084894470">Membuka/menutup peluncur layar penuh</translation>
+<translation id="2354531887393764880">titik</translation>
 <translation id="2382644247745281995">Tidak didukung dengan tata letak keyboard saat ini</translation>
 <translation id="2397416548179033562">Tampilkan Menu Chrome</translation>
 <translation id="2424073332829844142">Mengaktifkan dan menonaktifkan Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Membuka item yang ditandai di rak</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 sampai 8</translation>
 <translation id="3837047332182291558">Mencerahkan keyboard (khusus keyboard dengan lampu latar)</translation>
+<translation id="3949671998904569433">koma</translation>
 <translation id="3976863468609830880">Mengklik ikon terakhir di rak</translation>
 <translation id="3994783594793697310">Menyetel ulang tingkat perbesar/perkecil tampilan</translation>
 <translation id="4026843240379844265">Memindahkan jendela aktif dari satu layar ke layar lainnya</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Beralih ke metode masukan yang tersedia berikutnya</translation>
 <translation id="743754632698445141">Melepas pin aplikasi</translation>
 <translation id="7439718573248533901">Menghapus huruf berikutnya (hapus maju)</translation>
+<translation id="7500368597227394048">tanda hubung</translation>
 <translation id="7611271430932669992">Pindahkan fokus ke pop-up dan dialog</translation>
 <translation id="766326951329901120">Menempelkan konten dari papan klip dalam bentuk teks biasa</translation>
+<translation id="7703010453515335249">tanda kurung siku buka</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, lalu <ph name="SPACE" /> atau <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Membuka file di browser</translation>
-<translation id="7917881398263220094">Menghentikan pemuatan halaman aktif</translation>
 <translation id="7952165122793773711">Membuka tab 1 sampai 8</translation>
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8130528849632411619">Membuka bagian awal dokumen</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> atau <ph name="E" /></translation>
 <translation id="8232835244134740473">Beralih fokus antara: Area status (tempat gambar akun muncul), Peluncur, Kolom URL, Kolom bookmark (jika terlihat), Halaman yang terbuka, dan Kotak download (jika terlihat).</translation>
 <translation id="8234414138295101081">Memutar layar 90 derajat</translation>
+<translation id="8241665785394195545">tanda kurung siku tutup</translation>
 <translation id="8264941229485248811">Menampilkan atau menyembunyikan pemeriksa Developer Tools</translation>
 <translation id="836869401750819675">Membuka halaman Download</translation>
 <translation id="8388247778047144397">Tarik link ke area kosong di tab setrip</translation>

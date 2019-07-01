@@ -26,6 +26,7 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutNGMixin<LayoutBlockFlow> {
 
  private:
   void UpdateOutOfFlowBlockLayout();
+  void UpdateMargins(const NGConstraintSpace&);
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, IsLayoutNGBlockFlow());

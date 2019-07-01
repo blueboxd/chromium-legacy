@@ -556,6 +556,7 @@
 <translation id="3946209740501886391">Perguntar sempre neste site</translation>
 <translation id="3949571496842715403">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O respetivo certificado de segurança não especifica Nomes alternativos do requerente. Isto pode ser o resultado de uma configuração incorreta ou de um utilizador mal-intencionado que intercetou a sua ligação.</translation>
 <translation id="3949601375789751990">O histórico de navegação é apresentado aqui</translation>
+<translation id="3949870428812919180">Nenhum método de pagamento guardado.</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
 <translation id="3962859241508114581">Faixa anterior</translation>
 <translation id="3963837677003247395">Pretende continuar manualmente?</translation>

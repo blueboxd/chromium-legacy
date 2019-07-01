@@ -665,6 +665,8 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
         event->SetHandled();
       }
       break;
+    case ui::ET_GESTURE_TAP:
+      FALLTHROUGH;  // Ensure tapped items are not enlarged for drag.
     case ui::ET_GESTURE_END:
       drag_timer_.Stop();
       // If the button is being dragged, or there is an active context menu,

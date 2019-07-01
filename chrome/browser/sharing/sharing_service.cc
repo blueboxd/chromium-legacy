@@ -8,10 +8,16 @@
 #include <map>
 #include <unordered_set>
 
+#include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/vapid_key_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_tracker.h"
 
@@ -22,14 +28,30 @@ constexpr base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(2);
 
 SharingService::SharingService(
     std::unique_ptr<SharingSyncPreference> sync_prefs,
-    syncer::DeviceInfoTracker* device_info_tracker)
+    std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
+    std::unique_ptr<VapidKeyManager> vapid_key_manager,
+    syncer::DeviceInfoTracker* device_info_tracker,
+    syncer::SyncService* sync_service)
     : sync_prefs_(std::move(sync_prefs)),
-      device_info_tracker_(device_info_tracker) {
+      sharing_device_registration_(std::move(sharing_device_registration)),
+      vapid_key_manager_(std::move(vapid_key_manager)),
+      device_info_tracker_(device_info_tracker),
+      sync_service_(sync_service),
+      weak_ptr_factory_(this) {
   DCHECK(sync_prefs_);
+  DCHECK(sharing_device_registration_);
+  DCHECK(vapid_key_manager_);
   DCHECK(device_info_tracker_);
+  DCHECK(sync_service_);
+
+  if (!sync_service_->HasObserver(this))
+    sync_service_->AddObserver(this);
 }
 
-SharingService::~SharingService() = default;
+SharingService::~SharingService() {
+  if (sync_service_ && sync_service_->HasObserver(this))
+    sync_service_->RemoveObserver(this);
+}
 
 std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     int required_capabilities) const {
@@ -88,3 +110,33 @@ bool SharingService::SendMessageToDevice(
 void SharingService::RegisterHandler(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_type,
     SharingMessageHandler* handler) {}
+
+void SharingService::OnSyncShutdown(syncer::SyncService* sync) {
+  if (sync_service_ && sync_service_->HasObserver(this))
+    sync_service_->RemoveObserver(this);
+  sync_service_ = nullptr;
+}
+
+void SharingService::OnStateChanged(syncer::SyncService* sync) {
+  if (IsEnabled()) {
+    sharing_device_registration_->RegisterDevice(base::BindOnce(
+        &SharingService::OnDeviceRegistered, weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void SharingService::OnDeviceRegistered(
+    SharingDeviceRegistration::Result result) {
+  // TODO(himanshujaju) : Add retry logic and logging
+}
+
+bool SharingService::IsEnabled() const {
+  bool sync_enabled_and_active =
+      sync_service_ &&
+      sync_service_->GetTransportState() ==
+          syncer::SyncService::TransportState::ACTIVE &&
+      sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES);
+  bool device_registration_enabled =
+      base::FeatureList::IsEnabled(kSharingDeviceRegistration);
+
+  return sync_enabled_and_active && device_registration_enabled;
+}

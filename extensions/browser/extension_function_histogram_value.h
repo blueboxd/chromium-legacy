@@ -1412,6 +1412,7 @@ enum HistogramValue {
   LOGIN_FETCHDATAFORNEXTLOGINATTEMPT = 1349,
   ACTION_SETICON = 1350,
   AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES = 1351,
+  ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND = 1352,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

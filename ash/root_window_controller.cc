@@ -870,8 +870,6 @@ void RootWindowController::InitLayoutManagers() {
   always_on_top_controller_ = std::make_unique<AlwaysOnTopController>(
       always_on_top_container, pip_container);
 
-  wm::WmDefaultLayoutManager::InstallOnContainers(root);
-
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);

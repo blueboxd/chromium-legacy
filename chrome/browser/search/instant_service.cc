@@ -255,9 +255,6 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(
       profile_, std::make_unique<FaviconSource>(
                     profile_, chrome::FaviconUrlFormat::kFaviconLegacy));
-  content::URLDataSource::Add(
-      profile_, std::make_unique<FaviconSource>(
-                    profile_, chrome::FaviconUrlFormat::kFavicon2));
   content::URLDataSource::Add(profile_,
                               std::make_unique<MostVisitedIframeSource>());
 

@@ -370,6 +370,11 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           Kui reegel on keelatud või määramata, on Kerberose kontode seaded keelatud. Kerberose kontosid ei saa lisada ja Kerberose autentimist ei saa kasutada. Kõik olemasolevad Kerberose kontod ja salvestatud paroolid kustutatakse.</translation>
 <translation id="1561424797596341174">Kaugjuurdepääsu hosti silumisjärkude reeglite alistused</translation>
 <translation id="1561967320164410511">U2F koos laiendustega individuaalseks atesteerimiseks</translation>
+<translation id="1566329065312331399">
+      Kui selle reegli väärtuseks on määratud Väär, ei lubata seadmel funktsiooni Powerwash käivitada.
+      Kui reegli väärtuseks on määratud Tõene, tohib seade funktsiooni Powerwash käivitada.
+      Kui see jäetakse määramata, on vaikeseadeks Väär ja seadmel ei lubata funktsiooni Powerwash käivitada.
+      </translation>
 <translation id="1574554504290354326">Selle seade tugi on katkestatud. Kasutage selle asemel seadet SafeBrowsingExtendedReportingEnabled. Seade SafeBrowsingExtendedReportingEnabled lubamine või keelamine on võrdne seade SafeBrowsingExtendedReportingOptInAllowed määramisega väärtusele Väär.
 
       Kui reegli väärtuseks määratakse Väär, ei saa kasutajad Google'i serveritesse saata teatud süsteemiteavet ega lehe sisu. Kui selle seade väärtuseks määratakse Tõene või see jäetakse seadistamata, saavad kasutajad ohutu sirvimise teenusesse saata teatud süsteemiteavet ja lehe sisu, et aidata tuvastada ohtlikke rakendusi ning saite.
@@ -411,6 +416,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Hoiatus. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimist ei ole soovitatav üle anda kioskirakendusele, kuna see võib takistada seadmel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimise üleandmine võib kasutajad ohtu seada.</translation>
 <translation id="1675002386741412210">Toetatud:</translation>
+<translation id="1700811900332333712">Seadmel funktsiooni Powerwash käivitamise taotlemise lubamine</translation>
 <translation id="1704516734140344991">Seadistab rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse funktsiooni saadavaloleku ja käitumise.
 
       JSON-i atribuutides saab määrata üksikud seaded.
@@ -2071,6 +2077,15 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. Operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul kuvatakse taaskäivituse märguanne süsteemisalves reegli <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> alusel. Brauseri <ph name="PRODUCT_NAME" /> puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab esimest korda värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
 
       Kui reegel on määramata, kasutatakse vaikeperioodi, mis on operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul 345 600 000 millisekundit (neli päeva) ja brauseri <ph name="PRODUCT_NAME" /> puhul 604 800 000 millisekundit (üks nädal).</translation>
+<translation id="4777805166623621364">
+      Seadega SitePerProcess saab kasutajate jaoks keelata kõigi saitide isoleerimise vaikeseadest loobumise. Pange tähele, et reegel IsolateOrigins võimaldab isoleerida ka muid, täpsemini määratud lähtekohti.
+      Kui reegel on lubatud, ei saa kasutajad loobuda vaikekäitumisest, mille puhul käitatakse igat saiti eraldi protsessina.
+      Kui reegel on seadistamata või keelatud, saab kasutaja loobuda saidi isoleerimisest
+      (nt jaotises chrome://flags kirje „Keela saidi isoleerimine” kasutamisest).  Reegli keelamisel ja/või seadistamata jätmisel ei lülitata saidi isoleerimist välja.
+      Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versioonis 76 või vanemas on soovitatav määrata seadmereegli <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> jaoks sama väärtus. Kui nende kahe reegli jaoks määratud väärtused ei kattu, võib kasutajaseansi avamisel ilmneda viivitus kasutajareegli jaoks määratud väärtuse rakendamise tõttu.
+
+      MÄRKUS. See reegel ei kehti Androidi puhul. Androidis funktsiooni SitePerProcess lubamiseks kasutage reegli SitePerProcessAndroid seadet.
+      </translation>
 <translation id="4788252609789586009">Lubab rakenduse <ph name="PRODUCT_NAME" /> automaattäite funktsiooni ja võimaldab kasutajatel veebivormidel krediitkaardiandmeid automaatselt täita, kasutades selleks varem salvestatud teavet.
 
       Kui seade on keelatud, ei anna automaattäite funktsioon krediitkaardiandmete kohta soovitusi ega sisesta neid. Samuti ei salvesta see krediitkaardi lisateavet, mille kasutaja võib veebi sirvimisel esitada.
@@ -2220,6 +2235,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="5148753489738115745">Võimaldab teil määrata täiendavad parameetrid, mida kasutatakse siis, kui <ph name="PRODUCT_FRAME_NAME" /> käivitab rakenduse <ph name="PRODUCT_NAME" />.
 
           Kui jätate eeskirjad määramata, siis kasutatakse vaikekäsurida.</translation>
+<translation id="5152787786897382519">Nii Chromiumil kui ka Google Chrome'il on teatud reeglite grupid, mis funktsiooni üle kontrolli pakkumiseks üksteisest sõltuvad. Neid komplekte esindavad järgmised reeglite grupid. Arvestades, et reeglitel võib olla mitu allikat, rakendatakse ainult kõige kõrgema prioriteediga allikast pärinevad väärtused. Sama grupi madalama prioriteediga allikast pärinevaid väärtusi eiratakse. Prioriteetuse järjestuse leiate siit: <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Jälgitavate võrgupakettide saatmise sagedus (millisekundites).
 
       Kui see reegel on määramata, on vaikeintervall kolm minutit. Minimaalne
@@ -2765,6 +2781,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="5983708779415553259">Mitte ühessegi sisupaketti kuuluvate saitide vaikekäitumine</translation>
 <translation id="5997543603646547632">Vaikimisi 24-tunnise kella kasutamine</translation>
 <translation id="5997846976342452720">Määramine, kas pistikprogrammide leidja tuleks keelata (tugi on katkestatud)</translation>
+<translation id="5998198091336830580">See reegel on osa järgmisest tuumgrupist (rakendatakse ainult grupi kõrgeima prioriteediga allika reeglid).</translation>
 <translation id="6017568866726630990">Kuvab printimise eelvaate asemel süsteemi printimisdialoogi.
 
       Kui seade on lubatud ja kasutaja soovib lehte printida, avab <ph name="PRODUCT_NAME" /> süsteemi printimisdialoogi, mitte sisseehitatud printimise eelvaate.
@@ -3515,6 +3532,9 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
       Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab masinaid identifitseerida.
 
       Reegel kehtib ainult juhul, kui laiendus <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
+<translation id="7359307926583593395">
+      See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="SITE_PER_PROCESS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on seada mõlemad reeglid samale väärtusele. Kui väärtused ei kattu, võib kasutajaseansi avamisel ilmneda viivitus kasutajareeglitega määratud väärtuse rakendamise tõttu.
+      </translation>
 <translation id="737655323154569539">Piirab prinditava lehe suurust. Määramata reeglit ja tühja hulka käsitletakse piirangu puudumisena.</translation>
 <translation id="7389872682701720082">Kui lubate selle seade, töötavad pistikprogrammid, mis ei ole aegunud, alati.
 
@@ -3852,6 +3872,7 @@ Lubab rakenduse <ph name="PRODUCT_NAME" /> automaatse täitmise funktsiooni ja v
 
 Vaadake ka reegleid „CookiesAllowedForUrls” ja „CookiesSessionOnlyForUrls”. Pange tähele, et nende kolme reegli vahel ei tohi esineda URL-i mustrite konflikte, kuna eesõigusega reeglit ei ole määratud.</translation>
 <translation id="8099880303030573137">Jõudeoleku viiteaeg akutoite kasutamisel</translation>
+<translation id="8101381354936029836">Reeglite tuumgrupp:</translation>
 <translation id="8102913158860568230">Meediavoo vaikeseade</translation>
 <translation id="8104186956182795918">Võimaldab määrata, kas veebisaitidel on lubatud pilte kuvada. Piltide kuvamise võib kõikidel veebisaitidel lubada või keelata.
 
@@ -4061,6 +4082,15 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Keela brauseri ajaloo salvestamine</translation>
 <translation id="8499172469244085141">Vaikeseaded (kasutajad saavad alistada)</translation>
+<translation id="849962487677588458">Selle reegli tugi on katkestatud ja see eemaldatakse Chrome'i versioonis 78 (asendust ei pakuta).
+
+      See reegel lubab HTTP/0.9 portides, mis ei ole HTTP puhul 80 ja HTTPS-i puhul 443.
+
+      See reegel on vaikimisi keelatud. Kui see on lubatud, võivad kasutajad kokku puutuda turvaprobleemiga https://crbug.com/600352.
+
+      Selle reegli eesmärk on anda ettevõtetele võimalus eemaldada olemasolevad serverid üksusest HTTP/0.9. See reegel eemaldatakse tulevikus.
+
+      Kui see reegel on määramata, keelatakse HTTP/0.9 mittevaikeportides.</translation>
 <translation id="8507835864888987300">Määrab automaatsete värskenduste sihtversiooni.
 
       Määrab eesliite sihtversioonile, millele operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> peaks värskendama. Kui seadmes käitatakse versiooni, mis on määratud eesliitest varasem, värskendatakse see uusimale antud eesliitega versioonile. Kui seadmes käitatakse juba uusimat versiooni, olenevad mõjud üksuse <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> väärtusest. Eesliite vorming toimib komponendipõhiselt, nagu järgmises näites näha võib.

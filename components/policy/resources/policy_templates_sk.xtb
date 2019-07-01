@@ -345,6 +345,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto nastavenie zakážete alebo nenakonfigurujete, nastavenia účtov Kerberos budú zakázané. Nebudete môcť pridať účty Kerberos ani použiť overenie Kerberos. Všetky existujúce účty Kerberos sa odstránia, rovnako ako všetky uložené heslá.</translation>
 <translation id="1561424797596341174">Prepísania pravidiel pre zostavy ladenia používané hostiteľom vzdialeného prístupu</translation>
 <translation id="1561967320164410511">U2F a rozšírenia na individuálne preverovanie</translation>
+<translation id="1566329065312331399">
+      Keď toto pravidlo nastavíte na hodnotu False, zariadenie nebude môcť spustiť obnovenie Powerwash.
+      Keď ho nastavíte na hodnotu True, zariadenie bude môcť spustiť obnovenie Powerwash.
+      Ak ho ponecháte nenastavené, predvolene bude nastavená hodnota False. Zariadenie teda nebude môcť spustiť obnovenie Powerwash.
+      </translation>
 <translation id="1574554504290354326">Podpora tohto nastavenia bola ukončená, použite namiesto neho SafeBrowsingExtendedReportingEnabled. Povolenie alebo zakázanie parametra SafeBrowsingExtendedReportingEnabled je rovnaké ako nastavenie parametra SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
 
       Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať určité informácie o systéme a obsah stránok na servery Googlu. Ak toto pravidlo nastavíte na možnosť True alebo ak ho ponecháte nenastavené, používatelia budú môcť odosielať určité informácie o systéme a obsah stránok do funkcie Bezpečné prehliadanie, ktorá pomáha zisťovať nebezpečné aplikácie a weby.
@@ -382,6 +387,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Upozornenie: Neodporúča sa delegovať ovládanie verzie systému <ph name="PRODUCT_OS_NAME" /> verejnej aplikácii, pretože môže zariadeniu zabrániť získavať aktualizácie softvéru a kritické opravy chýb zabezpečenia. Delegovanie ovládania verzie systému <ph name="PRODUCT_OS_NAME" /> môže používateľov vystaviť riziku.</translation>
 <translation id="1675002386741412210">Podporované na:</translation>
+<translation id="1700811900332333712">Povoliť zariadeniu vyžiadať obnovenie Powerwash</translation>
 <translation id="1704516734140344991">Umožňuje konfigurovať dostupnosť a správanie funkcií aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Jednotlivé nastavenia môžete určiť vo vlastnostiach JSON:
@@ -2040,6 +2046,14 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie. V zariadeniach so systémom<ph name="PRODUCT_OS_NAME" /> sa zobrazí v oblasti oznámení upozornenie na reštartovanie v súlade s pravidlom <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. V prípade prehliadačov <ph name="PRODUCT_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie tak, aby oznamovala potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pre prehliadače dodržiavajú rovnaký rozpis.
 
       Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre prehliadače <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Pomocou tohto nastavenia SitePerProcess môžete zakázať používateľom deaktivovať predvolené správanie, ktorým je izolovanie všetkých webov. Na izolovanie ďalších, podrobnejších zdrojov môžete použiť aj pravidlo IsolateOrigins.
+      Ak toto pravidlo povolíte, používateľa nebudú môcť deaktivovať predvolené správanie, v rámci ktorého sa všetky weby spúšťajú vo vlastných procesoch.
+      Ak ho nenakonfigurujete alebo zakážete, používateľ bude môcť deaktivovať izolovanie webov (napr. pomocou vstupu Zakázať izolovanie webov na chrome://flags).  Ak ho zakážete alebo nenakonfigurujete, izolovanie webov sa nevypne.
+      V systéme <ph name="PRODUCT_OS_NAME" /> verzie 76 alebo skoršej odporúčame tiež nastaviť pravidlo pre zariadenie <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na rovnakú hodnotu. Ak sa hodnoty určené týmito dvoma pravidlami nezhodujú, môže dôjsť pri prechode do relácie používateľa k oneskoreniu spôsobenému uplatňovaním hodnoty určenej pravidlom pre používateľov.
+
+      UPOZORNENIE: Toto pravidlo neplatí v Androide. SitePerProcess povoľte v Androide pomocou nastavenia pravidla SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať údaje kreditných kariet do webových formulárov na základe predtým uložených informácií.
 
       Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať údaje kreditných kariet ani ukladať informácie o ďalších kartách, ktoré môže používateľ odoslať počas prehliadania webu.
@@ -2185,6 +2199,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="5148753489738115745">Umožňuje nastaviť dodatočné parametre, ktoré doplnok <ph name="PRODUCT_FRAME_NAME" /> pri spúšťaní aplikácie <ph name="PRODUCT_NAME" /> použije.
 
           Ak toto pravidlo nie je nastavené, použije sa predvolený príkazový riadok.</translation>
+<translation id="5152787786897382519">Chromium aj Google Chrome majú skupiny pravidiel, ktoré navzájom súvisia pri poskytovaní ovládania určitých funkcií. Tieto zoskupenia sú reprezentované nasledujúcimi skupinami pravidiel. Keďže pravidlá môžu mať viacero zdrojov, použijú sa iba hodnoty pochádzajúce zo zdroja s najvyššou prioritou. Hodnoty pochádzajúce zo zdroja s nižšou prioritou budú v rovnakej skupine ignorované. Poradie priority definuje stránka <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Ako často sa odosielajú sledovacie sieťové pakety (v milisekundách).
 
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia tri minúty. Minimálna
@@ -2719,6 +2734,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="5983708779415553259">Predvolené správanie pre webové stránky, ktoré sa nenachádzajú v žiadnom obsahovom balíku</translation>
 <translation id="5997543603646547632">Používať v predvolenom nastavení 24-hodinový formát hodín</translation>
 <translation id="5997846976342452720">Určiť, či má byť nástroj na vyhľadávanie doplnkov zakázaný (ukončená podpora)</translation>
+<translation id="5998198091336830580">Toto pravidlo je súčasťou nasledujúcej základnej skupiny (uplatňujú sa iba pravidlá zo zdroja s najvyššou prioritou prítomné v skupine):</translation>
 <translation id="6017568866726630990">Zobrazí systémové dialógové okno tlače namiesto ukážky tlače.
 
       Ak je toto nastavenie povolené a používateľ chce stránku vytlačiť, prehliadač <ph name="PRODUCT_NAME" /> otvorí systémové dialógové okno tlače namiesto vstavanej ukážky tlače.
@@ -3465,6 +3481,9 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu zariadení sa nezhromažďujú.
 
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Toto pravidlo platí pre prihlasovaciu obrazovku. Prečítajte si aj pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré upravuje reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. Ak sa hodnoty nezhodujú, môže dôjsť pri prechode do relácie používateľa k oneskoreniu spôsobenému uplatňovaním hodnoty určenej pravidlom pre používateľov.
+      </translation>
 <translation id="737655323154569539">Obmedzí veľkosť tlačenej strany. Ak pravidlo nenastavíte alebo obsahuje prázdnu hodnotu, znamená to, že sa nepoužijú žiadne obmedzenia.</translation>
 <translation id="7389872682701720082">Ak toto nastavenie povolíte, doplnky, ktoré nie sú zastarané, sa vždy spustia.
 
@@ -3802,6 +3821,7 @@ Ak toto pravidlo ponecháte nenastavené, bude táto možnosť povolená, ale po
 
           Pozrite si tiež pravidlá „CookiesAllowedForUrls“ a „CookiesSessionOnlyForUrls“. Upozorňujeme, že medzi týmito troma pravidlami nesmú byť žiadne konfliktné vzory webových adries. Nie je určené, ktoré pravidlo má prednosť.</translation>
 <translation id="8099880303030573137">Oneskorenie režimu nečinnosti pri napájaní z batérie</translation>
+<translation id="8101381354936029836">Základná skupina pravidla:</translation>
 <translation id="8102913158860568230">Predvolené nastavenie mediálneho streamu</translation>
 <translation id="8104186956182795918">Umožňuje vám nastaviť, či môžu weby zobrazovať obrázky. Zobrazovanie obrázkov môže byť buď pre všetky weby povolené, alebo zakázané.
 
@@ -4005,6 +4025,15 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Zakázať ukladanie histórie prehliadača</translation>
 <translation id="8499172469244085141">Predvolené nastavenia (používatelia ich môžu nahradiť)</translation>
+<translation id="849962487677588458">Toto pravidlo je zastarané a navrhnuté na odstránenie v Chrome 78 bez náhrady.
+
+      Toto pravidlo umožňuje používať protokol HTTP/0.9 pre iné porty než 80 pre HTTP a 443 pre HTTPS.
+
+      Toto pravidlo je predvolene zakázané. Ak ho povolíte, používatelia budú ohrození bezpečnostným problémom https://crbug.com/600352.
+
+      Cieľom tohto pravidla je poskytnúť podnikom možnosť migrovať existujúce servery z protokolu HTTP/0.9. V budúcnosti bude odstránené.
+
+      Ak toto pravidlo nenastavíte, protokol HTTP/0.9 bude zakázaný pre nepredvolené porty.</translation>
 <translation id="8507835864888987300">Umožňuje nastaviť cieľovú verziu automatických aktualizácií.
 
       Umožňuje určiť predponu cieľovej verzie, na ktorú by sa mal systém <ph name="PRODUCT_OS_NAME" /> aktualizovať. Ak zariadenie využíva verziu staršiu ako určená predpona, aktualizuje sa na najnovšiu verziu s danou predponou. Ak zariadenie už využíva novšiu verziu, dôsledky závisia od hodnoty parametra <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Formát predpony funguje na základe komponentov tak, ako je uvedené v nasledujúcom príklade:

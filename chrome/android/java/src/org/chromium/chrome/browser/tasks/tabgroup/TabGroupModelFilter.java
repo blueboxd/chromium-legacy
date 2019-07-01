@@ -416,6 +416,13 @@ public class TabGroupModelFilter extends TabModelFilter {
             throw new IllegalStateException("Attempting to open tab in the wrong model");
         }
 
+        if (tab.getLaunchType() != TabLaunchType.FROM_RESTORE) {
+            Tab parentTab = TabModelUtils.getTabById(getTabModel(), tab.getParentId());
+            if (parentTab != null) {
+                tab.setRootId(parentTab.getRootId());
+            }
+        }
+
         int groupId = tab.getRootId();
         if (mGroupIdToGroupMap.containsKey(groupId)) {
             if (mGroupIdToGroupMap.get(groupId).size() == 1) {

@@ -13,6 +13,15 @@
 
 namespace blink {
 
+NGTextFragmentBuilder::NGTextFragmentBuilder(
+    const NGPhysicalTextFragment& fragment)
+    : NGFragmentBuilder(fragment),
+      text_(fragment.text_),
+      start_offset_(fragment.StartOffset()),
+      end_offset_(fragment.EndOffset()),
+      shape_result_(fragment.TextShapeResult()),
+      text_type_(fragment.TextType()) {}
+
 void NGTextFragmentBuilder::SetItem(
     NGPhysicalTextFragment::NGTextType text_type,
     const NGInlineItemsData& items_data,
@@ -25,12 +34,10 @@ void NGTextFragmentBuilder::SetItem(
 
   text_type_ = text_type;
   text_ = items_data.text_content;
-  item_index_ = item_result->item_index;
   start_offset_ = item_result->start_offset;
   end_offset_ = item_result->end_offset;
   SetStyle(item_result->item->Style(), item_result->item->StyleVariant());
   size_ = {item_result->inline_size, line_height};
-  end_effect_ = item_result->text_end_effect;
   shape_result_ = std::move(item_result->shape_result);
   layout_object_ = item_result->item->GetLayoutObject();
 }
@@ -47,7 +54,6 @@ void NGTextFragmentBuilder::SetText(
 
   text_type_ = NGPhysicalTextFragment::kGeneratedText;
   text_ = text;
-  item_index_ = std::numeric_limits<unsigned>::max();
   start_offset_ = shape_result->StartIndex();
   end_offset_ = shape_result->EndIndex();
   SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
@@ -56,7 +62,6 @@ void NGTextFragmentBuilder::SetText(
            NGLineHeightMetrics(*style).LineHeight()};
   shape_result_ = std::move(shape_result);
   layout_object_ = layout_object;
-  end_effect_ = NGTextEndEffect::kNone;
 }
 
 bool NGTextFragmentBuilder::IsGeneratedText() const {

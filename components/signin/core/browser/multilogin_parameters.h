@@ -8,13 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
 namespace signin {
 
 struct MultiloginParameters {
   MultiloginParameters(gaia::MultiloginMode mode,
-                       const std::vector<std::string>& accounts_to_send);
+                       const std::vector<CoreAccountId>& accounts_to_send);
   MultiloginParameters(const MultiloginParameters& other);
   MultiloginParameters& operator=(const MultiloginParameters& other);
   ~MultiloginParameters();
@@ -25,7 +26,7 @@ struct MultiloginParameters {
   }
 
   gaia::MultiloginMode mode;
-  std::vector<std::string> accounts_to_send;
+  std::vector<CoreAccountId> accounts_to_send;
 };
 }  // namespace signin
 

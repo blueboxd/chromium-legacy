@@ -61,10 +61,10 @@ void VRPose::SetPose(const device::mojom::blink::VRPosePtr& state) {
 
   orientation_ = QuaternionToFloat32Array(state->orientation);
   position_ = WebPoint3DToFloat32Array(state->position);
-  angular_velocity_ = Vector3dFToFloat32Array(state->angularVelocity);
-  linear_velocity_ = Vector3dFToFloat32Array(state->linearVelocity);
-  angular_acceleration_ = Vector3dFToFloat32Array(state->angularAcceleration);
-  linear_acceleration_ = Vector3dFToFloat32Array(state->linearAcceleration);
+  angular_velocity_ = Vector3dFToFloat32Array(state->angular_velocity);
+  linear_velocity_ = Vector3dFToFloat32Array(state->linear_velocity);
+  angular_acceleration_ = Vector3dFToFloat32Array(state->angular_acceleration);
+  linear_acceleration_ = Vector3dFToFloat32Array(state->linear_acceleration);
 }
 
 void VRPose::Trace(blink::Visitor* visitor) {

@@ -61,7 +61,6 @@
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1384959399684842514">Muat turun dijeda</translation>
 <translation id="1386674309198842382">Aktif <ph name="LAST_UPDATED" /> hari lalu</translation>
-<translation id="1389974829397082527">Tiada penanda halaman di sini</translation>
 <translation id="1397811292916898096">Cari dengan <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Dibenamkan dalam <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Jangan Kesan”</translation>
@@ -186,6 +185,7 @@
 <translation id="2259659629660284697">Eksport kata laluan…</translation>
 <translation id="2268044343513325586">Perhalusi</translation>
 <translation id="2286841657746966508">Alamat pengebilan</translation>
+<translation id="2289270750774289114">Tanya apabila tapak mahu mencari peranti Bluetooth berdekatan (disyorkan)</translation>
 <translation id="230115972905494466">Tiada peranti yang serasi ditemui</translation>
 <translation id="2315043854645842844">Pemilihan sijil pihak pelanggan tidak disokong oleh sistem pengendalian ini.</translation>
 <translation id="2321086116217818302">Menyediakan kata laluan…</translation>
@@ -270,6 +270,7 @@
 <translation id="2900528713135656174">Buat acara</translation>
 <translation id="2902702728133930130">Chrome gagal semasa permulaan dengan ralat yang tidak dijangka.</translation>
 <translation id="290376772003165898">Halaman bukan dalam <ph name="LANGUAGE" />?</translation>
+<translation id="2904414404539560095">Senarai peranti untuk berkongsi tab dibuka pada ketinggian penuh.</translation>
 <translation id="2910701580606108292">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi</translation>
 <translation id="2913331724188855103">Benarkan tapak untuk menyimpan dan membaca data kuki (disyorkan)</translation>
 <translation id="2923908459366352541">Nama tidak sah</translation>
@@ -328,6 +329,7 @@
 <translation id="3350687908700087792">Tutup semua tab inkognito</translation>
 <translation id="3353615205017136254">Halaman Lite disediakan oleh Google. Ketik butang muatkan halaman asal untuk memuatkan halaman asal.</translation>
 <translation id="3367813778245106622">Log masuk semula untuk memulakan penyegerakan</translation>
+<translation id="3374023511497244703">Penanda halaman, sejarah, kata laluan dan data Chrome yang lain tidak akan disegerakkan ke Akaun Google anda lagi</translation>
 <translation id="3384347053049321195">Kongsi imej</translation>
 <translation id="3386292677130313581">Tanya sebelum membenarkan tapak mengetahui lokasi anda (disyorkan)</translation>
 <translation id="3387650086002190359">Muat turun <ph name="FILE_NAME" /> gagal disebabkan oleh ralat sistem fail.</translation>
@@ -358,7 +360,6 @@
 <translation id="3632295766818638029">Buka topeng kata laluan</translation>
 <translation id="363596933471559332">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Apabila ciri ini dimatikan, anda akan diminta memberikan pengesahan setiap kali sebelum log masuk ke tapak web.</translation>
 <translation id="3658159451045945436">Penetapan semula akan memadamkan sejarah penjimatan data anda, termasuk senarai tapak yang dilawati.</translation>
-<translation id="3662546969139119822">Tiada sejarah di sini</translation>
 <translation id="3663367437272849150">Himpunkan <ph name="NUM_SELECTED" /> tab.</translation>
 <translation id="3672452749423051839">Cadangan ralat navigasi</translation>
 <translation id="3692944402865947621">Muat turun <ph name="FILE_NAME" /> gagal kerana lokasi storan tidak dapat dicapai.</translation>
@@ -418,6 +419,7 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4099578267706723511">Bantu jadikan Chrome lebih baik dengan menghantar laporan perangkaan penggunaan dan ranap sistem kepada Google.</translation>
 <translation id="410351446219883937">Automain</translation>
 <translation id="4116038641877404294">Muat turun halaman untuk digunakan di luar talian</translation>
+<translation id="4135200667068010335">Senarai peranti untuk berkongsi tab ditutup.</translation>
 <translation id="4149994727733219643">Paparan ringkas bagi halaman web</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
 <translation id="4169535189173047238">Jangan benarkan</translation>
@@ -439,7 +441,6 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="424864128008805179">Log keluar daripada Chrome?</translation>
 <translation id="4256782883801055595">Lesen sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi disekat: <ph name="URL" /></translation>
-<translation id="4262028915562328938">Ralat segerak berlaku, ketik untuk mendapatkan butiran.</translation>
 <translation id="4269820728363426813">Salin alamat pautan</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Dibenarkan</translation>
@@ -766,6 +767,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6538442820324228105">Dimuat turun <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
 <translation id="6545017243486555795">Hapuskan Semua Data</translation>
+<translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
 <translation id="6560414384669816528">Cari dengan Sogou</translation>
 <translation id="6566259936974865419">Chrome telah menjimatkan data anda sebanyak <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Sentiasa benarkan</translation>
@@ -795,8 +797,10 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="671481426037969117">Pemasa <ph name="FQDN" /> anda sudah tamat. Pemasa akan bermula lagi esok.</translation>
 <translation id="6738867403308150051">Memuat turun…</translation>
 <translation id="6746124502594467657">Alihkan ke bawah</translation>
+<translation id="6751888224264752704">Selain itu, kosongkan data Chrome ini daripada peranti ini</translation>
 <translation id="6766622839693428701">Leret ke bawah untuk tutup.</translation>
 <translation id="6766758767654711248">Ketik untuk pergi ke tapak</translation>
+<translation id="6767294960381293877">Senarai peranti untuk berkongsi tab dibuka pada ketinggian separuh.</translation>
 <translation id="6782111308708962316">Halang tapak web pihak ketiga daripada menyimpan dan membaca data kuki</translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="679325081238418596">Dapatkan penanda halaman, sejarah, kata laluan dan tetapan anda yang lain pada semua peranti anda.</translation>
@@ -812,7 +816,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tab telah ditutup</translation>
 <translation id="6864459304226931083">Muat turun imej</translation>
 <translation id="6865313869410766144">Autolengkap data borang</translation>
-<translation id="6868088497967843822">Log masuk untuk mendapatkan penanda halaman, sejarah, kata laluan dan tetapan lain pada semua peranti anda</translation>
 <translation id="688738109438487280">Tambahkan data sedia ada pada <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Buka kunci untuk menyalin kata laluan anda</translation>
 <translation id="6896758677409633944">Salin</translation>
@@ -829,7 +832,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6979737339423435258">Sepanjang masa</translation>
 <translation id="6980462514016882061">Google boleh menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
 <translation id="6981982820502123353">Kebolehcapaian</translation>
-<translation id="6985347914332179298">Tiada muat turun di sini</translation>
 <translation id="6989267951144302301">Tidak dapat memuat turun</translation>
 <translation id="6990079615885386641">Dapatkan apl daripada Gedung Play Google: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Tanya dahulu sebelum membenarkan tapak menggunakan mikrofon anda (disyorkan)</translation>
@@ -887,7 +889,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="7403691278183511381">Pengalaman First Run Chrome</translation>
 <translation id="741204030948306876">Ya, saya setuju</translation>
 <translation id="7413229368719586778">Tarikh mula <ph name="DATE" /></translation>
-<translation id="7418565925463285788">Himpunkan tab...</translation>
 <translation id="7423098979219808738">Tanya dahulu</translation>
 <translation id="7423538860840206698">Disekat daripada membaca papan keratan</translation>
 <translation id="7431991332293347422">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian dan pelbagai lagi</translation>
@@ -1026,6 +1027,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8349013245300336738">Isih mengikut jumlah data yang digunakan</translation>
 <translation id="8364299278605033898">Lihat tapak web popular</translation>
 <translation id="8364603787714420828">Nyahpilih tab <ph name="TAB_TITLE" />.</translation>
+<translation id="8368027906805972958">Peranti tidak diketahui atau tidak disokong (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Benarkan Penyegerakan Latar Belakang untuk tapak tertentu</translation>
 <translation id="8374821112118309944">Anda perlu mengemas kini TalkBack kepada versi yang lebih baharu.</translation>
 <translation id="8378714024927312812">Diurus oleh organisasi anda</translation>
@@ -1122,6 +1124,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB dimuat turun</translation>
 <translation id="9100505651305367705">Tawarkan untuk memaparkan artikel dalam paparan mudah apabila disokong</translation>
 <translation id="9100610230175265781">Frasa laluan diperlukan</translation>
+<translation id="9104217018994036254">Senarai peranti untuk berkongsi tab.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
 <translation id="9139068048179869749">Tanya sebelum membenarkan tapak menghantar pemberitahuan (disyorkan)</translation>

@@ -171,6 +171,7 @@ static_library("test_support") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/views",
   ]
 }
 

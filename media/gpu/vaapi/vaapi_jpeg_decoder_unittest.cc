@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_types.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
@@ -423,6 +424,52 @@ TEST_F(VaapiJpegDecoderTest, MinimalImageFormatSupport) {
     yuyv_format.fourcc = VA_FOURCC('Y', 'U', 'Y', 'V');
     ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(yuyv_format));
   }
+}
+
+TEST_F(VaapiJpegDecoderTest, ReleaseVASurface) {
+  base::FilePath input_file = FindTestDataFilePath(kYuv420Filename);
+  std::string jpeg_data;
+  ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
+      << "failed to read input data from " << input_file.value();
+  const auto encoded_image = base::make_span<const uint8_t>(
+      reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
+
+  VAImageFormat i420_format{};
+  i420_format.fourcc = VA_FOURCC_I420;
+  EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
+
+  // Get the first VASurface and validate success.
+  VaapiImageDecodeStatus decode_status;
+  scoped_refptr<VASurface> pre_release_surface =
+      decoder_.Decode(encoded_image, &decode_status);
+  ASSERT_TRUE(pre_release_surface);
+  ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, decode_status);
+
+  // Take ownership of the |decoder_| surface.
+  scoped_refptr<VASurface> post_release_surface = decoder_.ReleaseVASurface();
+  ASSERT_TRUE(post_release_surface);
+
+  EXPECT_EQ(pre_release_surface->id(), post_release_surface->id());
+  EXPECT_EQ(pre_release_surface->size(), post_release_surface->size());
+  EXPECT_EQ(pre_release_surface->format(), post_release_surface->format());
+
+  // GetImage() should fail now because ReleaseVASurface() removed the internal
+  // |decoder_| surface.
+  VaapiImageDecodeStatus image_status;
+  ASSERT_FALSE(decoder_.GetImage(i420_format.fourcc, &image_status));
+  ASSERT_EQ(VaapiImageDecodeStatus::kInvalidState, image_status);
+
+  // Decode the same image again and get the new VASurface.
+  scoped_refptr<VASurface> new_surface =
+      decoder_.Decode(encoded_image, &decode_status);
+  ASSERT_TRUE(new_surface);
+  ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, decode_status);
+
+  // The new VASurface should have a different surface ID than that of the old
+  // one, but same size and format since the same exact image was decoded.
+  EXPECT_NE(new_surface->id(), post_release_surface->id());
+  EXPECT_EQ(new_surface->size(), post_release_surface->size());
+  EXPECT_EQ(new_surface->format(), post_release_surface->format());
 }
 
 TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {

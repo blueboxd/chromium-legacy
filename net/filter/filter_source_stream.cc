@@ -89,10 +89,6 @@ FilterSourceStream::SourceType FilterSourceStream::ParseEncodingType(
   }
 }
 
-void FilterSourceStream::ReportContentDecodingFailed(SourceType type) {
-  UMA_HISTOGRAM_ENUMERATION("Net.ContentDecodingFailed2", type, TYPE_MAX);
-}
-
 int FilterSourceStream::DoLoop(int result) {
   DCHECK_NE(STATE_NONE, next_state_);
 
@@ -161,9 +157,6 @@ int FilterSourceStream::DoFilterData() {
   DCHECK(bytes_output != 0 ||
          consumed_bytes == drainable_input_buffer_->BytesRemaining());
 
-  if (bytes_output == ERR_CONTENT_DECODING_FAILED) {
-    ReportContentDecodingFailed(type());
-  }
   // FilterData() is not allowed to return ERR_IO_PENDING.
   DCHECK_NE(ERR_IO_PENDING, bytes_output);
 

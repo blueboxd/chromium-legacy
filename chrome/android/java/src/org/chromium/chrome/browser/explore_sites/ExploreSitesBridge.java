@@ -94,6 +94,7 @@ public class ExploreSitesBridge {
     public static void getSiteImage(Profile profile, int siteID, Callback<Bitmap> callback) {
         if (sCatalogForTesting != null) {
             callback.onResult(null);
+            return;
         }
         nativeGetIcon(profile, siteID, callback);
     }
@@ -106,6 +107,7 @@ public class ExploreSitesBridge {
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback) {
         if (sCatalogForTesting != null) {
             callback.onResult(null);
+            return;
         }
         nativeGetCategoryImage(profile, categoryID, pixelSize, callback);
     }
@@ -116,6 +118,7 @@ public class ExploreSitesBridge {
     public static void getSummaryImage(Profile profile, int pixelSize, Callback<Bitmap> callback) {
         if (sCatalogForTesting != null) {
             callback.onResult(null);
+            return;
         }
         nativeGetSummaryImage(profile, pixelSize, callback);
     }
@@ -160,10 +163,17 @@ public class ExploreSitesBridge {
         return nativeGetIconVariation();
     }
 
+    /**
+     * Gets the current Finch variation for dense that is configured by flag or experiment.
+     * */
+    @DenseVariation
+    public static int getDenseVariation() {
+        return nativeGetDenseVariation();
+    }
+
     public static boolean isEnabled(@ExploreSitesVariation int variation) {
         return variation == ExploreSitesVariation.ENABLED
                 || variation == ExploreSitesVariation.PERSONALIZED
-                || variation == ExploreSitesVariation.CONDENSED
                 || variation == ExploreSitesVariation.MOST_LIKELY;
     }
 
@@ -171,8 +181,8 @@ public class ExploreSitesBridge {
         return variation == ExploreSitesVariation.EXPERIMENT;
     }
 
-    public static boolean isCondensed(@ExploreSitesVariation int variation) {
-        return variation == ExploreSitesVariation.CONDENSED;
+    public static boolean isDense(@DenseVariation int variation) {
+        return variation != DenseVariation.ORIGINAL;
     }
 
     public static boolean isIntegratedWithMostLikely(@ExploreSitesVariation int variation) {
@@ -209,6 +219,7 @@ public class ExploreSitesBridge {
 
     static native int nativeGetVariation();
     static native int nativeGetIconVariation();
+    static native int nativeGetDenseVariation();
     private static native void nativeGetEspCatalog(Profile profile,
             List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
 

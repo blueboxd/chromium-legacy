@@ -98,10 +98,10 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 
     // Switch to the second most recently used window (most recent is the
     // current window) if it exists, unless splitview mode is active. Do not
-    // switch we entered overview mode will all windows minimized.
+    // switch if we entered overview mode with all windows minimized.
     if (mru_window_list.size() > 1u &&
         overview_controller->overview_session()->enter_exit_overview_type() !=
-            OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
+            OverviewSession::EnterExitOverviewType::kSlideInEnter) {
       aura::Window* new_active_window = mru_window_list[1];
 
       // In splitview mode, quick switch will only affect the windows on the non

@@ -32,6 +32,10 @@ promise_test(async () => {
       thumb.addEventListener('transitionend', resolve, {once: true});
     });
   }
+  assert_equals(thumb.runningTransitions, 0);
+  // The track element doesn't animate by default.
+  let trackElement = internals.shadowRoot(switchElement).getElementById('track');
+  assert_equals(trackElement.runningTransitions, undefined);
 
   // Changing the state with an IDL attribute should not animate.
   transitionStartCounter = 0;

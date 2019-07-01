@@ -35,7 +35,13 @@ TEST(AcceleratorTest, TimeStamp) {
   EXPECT_EQ(event_time, accelerator_b.time_stamp());
 }
 
-TEST(AcceleratorTest, GetShortcutText) {
+// Crash on Android builders. https://crbug.com/980267
+#if defined(OS_ANDROID)
+#define MAYBE_GetShortcutText DISABLED_GetShortcutText
+#else
+#define MAYBE_GetShortcutText GetShortcutText
+#endif
+TEST(AcceleratorTest, MAYBE_GetShortcutText) {
   struct {
     KeyboardCode code;
     int modifiers;

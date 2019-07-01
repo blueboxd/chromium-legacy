@@ -349,6 +349,11 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
           Hvis denne politik er deaktiveret eller ikke er angivet, er indstillingerne for Kerberos-konti deaktiveret. Det er ikke muligt at tilføje Kerberos-konti, og Kerberos-godkendelse kan ikke anvendes. Alle eksisterende Kerberos-konti og alle gemte adgangskoder slettes.</translation>
 <translation id="1561424797596341174">Tilsidesættelser af politik for fejlretningsbuilds på hosten til fjernadgang</translation>
 <translation id="1561967320164410511">U2F samt udvidelser til individuel attestering</translation>
+<translation id="1566329065312331399">
+      Når denne politik er angivet som Falsk, tillader den ikke, at enheden aktiverer powerwash.
+      Når politikken er angivet som Sand, tillader den, at enheden aktiverer powerwash.
+      Hvis politikken ikke konfigureres, angives den som standard som Falsk, hvilket betyder, at den ikke tillader, at enheden aktiverer powerwash.
+      </translation>
 <translation id="1574554504290354326">Denne indstilling er forældet. Brug SafeBrowsingExtendedReportingEnabled i stedet. Aktivering eller deaktivering af SafeBrowsingExtendedReportingEnabled svarer til at angive SafeBrowsingExtendedReportingOptInAllowed som Falsk.
 
       Hvis politikken er angivet som Falsk, forhindres brugerne i at sende visse former for systemoplysninger og sideindhold til Googles servere. Hvis indstillingen er angivet som Sand eller ikke er angivet, kan brugerne sende visse former for systemoplysninger og sideindhold til Beskyttet browsing som en hjælp til at registrere skadelige apps og websites.
@@ -390,6 +395,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       Advarsel! Det frarådes at delegere kontrol over <ph name="PRODUCT_OS_NAME" />-versionen til en terminalapp, da det kan forhindre enheden i at modtage softwareopdateringer og kritiske sikkerhedsrettelser. Delegering af kontrol over <ph name="PRODUCT_OS_NAME" />-versionen kan udgøre en sikkerhedsrisiko for brugerne.</translation>
 <translation id="1675002386741412210">Understøttes på:</translation>
+<translation id="1700811900332333712">Tillad, at enheden kan anmode om powerwash</translation>
 <translation id="1704516734140344991">Konfigurerer tilgængeligheden og adfærden for funktionen til opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware.
 
       Individuelle indstillinger kan angives i JSON-egenskaber:
@@ -2012,6 +2018,15 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       I dette tidsrum vil brugeren gentagne gange få besked om, at der skal opdateres. På <ph name="PRODUCT_OS_NAME" />-enheder vises der en notifikation om genstart i systembakken i henhold til politikken <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at indikere, at der skal foretages en opdatering, når en tredjedel af notifikationsperioden er gået. Notifikationen skifter farve, når to tredjedele af notifikationsperioden er gået, og igen når hele notifikationsperioden er udløbet. De yderligere notifikationer, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
 
       Hvis den ikke er angivet, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" />-enheder og 604800000 millisekunder (en uge) for <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Denne indstilling, SitePerProcess, kan bruges til at forhindre brugerne i at fravælge standardadfærden, hvor alle websites isoleres. Bemærk, at politikken IsolateOrigins også kan bruges til mere finkornet isolering af websites.
+      Hvis politikken er aktiveret, kan brugerne ikke fravælge standardadfærden, hvor hvert website kører i sin egen proces.
+      Hvis politikken ikke er angivet eller er deaktiveret, kan brugerne fravælge isolering af website
+      (f.eks. ved at bruge posten "Deaktiver isolering af website" i chrome://flags).  Isolering af website slås ikke fra, hvis politikken angives som deaktiveret og/eller ikke angives.
+      I version 76 og ældre af <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
+
+      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere SitePerProcess på en Android-enhed, skal du bruge politikindstillingen SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Aktiverer funktionen AutoFyld for <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med betalingskortoplysninger, der er gemt tidligere.
 
       Hvis denne indstilling er deaktiveret, foreslår eller udfylder AutoFyld aldrig betalingskortoplysninger, og der gemmes heller ikke yderligere betalingskortoplysninger, som brugeren muligvis indsender, når vedkommende er på nettet.
@@ -2153,6 +2168,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="5148753489738115745">Giver dig mulighed for at angive yderligere parametre, som bruges, når <ph name="PRODUCT_FRAME_NAME" /> starter <ph name="PRODUCT_NAME" />.
 
           Hvis denne politik ikke er angivet, bruges standardkommandolinjen.</translation>
+<translation id="5152787786897382519">Både Chromium og Google Chrome har politikgrupper, som er afhængige af hinanden for at styre en funktion. Disse sæt er repræsenteret af følgende politikgrupper. Da politikker kan have flere kilder, er det kun værdierne fra kilden med højeste prioritet, der anvendes. Værdier fra kilder med lavere prioritet i samme gruppe ignoreres. Prioriteringsrækkefølgen er defineret i <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Hvor ofte der sendes netværkspakker til overvågning (angivet i millisekunder).
 
       Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer. Alle værdier uden for dette interval justeres automatisk, så de ligger inden for dette interval.</translation>
@@ -2671,6 +2687,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5983708779415553259">Standardadfærd for websites, der ikke findes i en indholdspakke</translation>
 <translation id="5997543603646547632">Brug 24-timers ur som standard</translation>
 <translation id="5997846976342452720">Angiv, om pluginsøgning skal deaktiveres (udfaset)</translation>
+<translation id="5998198091336830580">Denne politik er en del af følgende atomgruppe (det er kun politikker fra kilden med højeste prioritet i gruppen, der anvendes):</translation>
 <translation id="6017568866726630990">Vis systemets udskriftsdialog i stedet for udskriftseksempel.
 
       Når denne indstilling er aktiveret, åbnes <ph name="PRODUCT_NAME" /> systemets udskriftsdialog i stedet for det indbyggede udskriftseksempel, når en bruger anmoder om en side, der skal udskrives.
@@ -3403,6 +3420,9 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis denne politik er angivet som Falsk, indhentes der ikke oplysninger, der kan bruges til at identificere maskinerne.
 
       Denne politik gælder kun, hvis <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Denne politik gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, der gælder for brugersessionen. Det anbefales at angive samme værdi for begge politikker. Hvis værdierne ikke stemmer overens, kan der opstå en forsinkelse ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
+      </translation>
 <translation id="737655323154569539">Begrænser størrelsen på udskrivningssiden. En ikke-angivet politik og en tom indstilling behandles som ingen begrænsning.</translation>
 <translation id="7389872682701720082">Hvis du aktiverer denne indstilling, kører plugins, der ikke er forældede, altid.
 
@@ -3727,6 +3747,7 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
 
           Se også politikkerne "CookiesAllowedForUrls" og "CookiesSessionOnlyForUrls". Bemærk, at der ikke må være nogen modstridende webadressemønstre mellem disse tre politikker – det er ikke angivet, hvilken af politikkerne der har forrang.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse, når batteriet bruges</translation>
+<translation id="8101381354936029836">Atompolitikgruppe:</translation>
 <translation id="8102913158860568230">Standardindstilling for mediestrøm</translation>
 <translation id="8104186956182795918">Giver dig mulighed for at angive, om websites må vise billeder. Visning af billeder kan enten tillades for alle websites eller forbydes for alle websites.
 
@@ -3935,6 +3956,15 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktiver lagring af browserhistorik</translation>
 <translation id="8499172469244085141">Standardindstillinger (brugere kan tilsidesætte)</translation>
+<translation id="849962487677588458">Denne politik er udfaset og henstillet til fjernelse i Chrome 78 uden en erstatning.
+
+      Denne politik aktiverer HTTP/0.9 på andre porte end 80 for HTTP og 443 for HTTPS.
+
+      Denne politik er som standard deaktiveret. Hvis den aktiveres, kan brugerne blive udsat for sikkerhedsproblemet https://crbug.com/600352.
+
+      Denne politik har til formål at give virksomheder mulighed for at migrere eksisterende servere væk fra HTTP/0.9, og den fjernes inden for den nærmeste fremtid.
+
+      Hvis denne politik ikke konfigureres, deaktiveres HTTP/0.9 på porte, der ikke er angivet som standardporte.</translation>
 <translation id="8507835864888987300">Angiver en målversion for automatiske opdateringer.
 
       Angiver præfikset for en målversion, som <ph name="PRODUCT_OS_NAME" /> skal opdatere til. Hvis enheden kører en version, som er ældre end det angivne præfiks, opdateres den til den seneste udgave med det givne præfiks. Hvis enheden allerede kører en nyere udgave, er det værdien af <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />, som afgør effekten. Præfiksformatet fungerer som en komponent, som det fremgår af følgende eksempel:

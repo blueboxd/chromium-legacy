@@ -37,17 +37,17 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId device_id,
                                             const gfx::Size& frame_size) {
   mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
   device->id = device_id;
-  device->displayName = "ARCore VR Device";
+  device->display_name = "ARCore VR Device";
   device->webxr_default_framebuffer_scale = 1.0;
   device->capabilities = mojom::VRDisplayCapabilities::New();
-  device->capabilities->hasPosition = true;
-  device->capabilities->hasExternalDisplay = false;
-  device->capabilities->canPresent = false;
-  device->capabilities->canProvideEnvironmentIntegration = true;
-  device->leftEye = mojom::VREyeParameters::New();
-  device->rightEye = nullptr;
-  mojom::VREyeParametersPtr& left_eye = device->leftEye;
-  left_eye->fieldOfView = mojom::VRFieldOfView::New();
+  device->capabilities->has_position = true;
+  device->capabilities->has_external_display = false;
+  device->capabilities->can_present = false;
+  device->capabilities->can_provide_environment_integration = true;
+  device->left_eye = mojom::VREyeParameters::New();
+  device->right_eye = nullptr;
+  mojom::VREyeParametersPtr& left_eye = device->left_eye;
+  left_eye->field_of_view = mojom::VRFieldOfView::New();
   // TODO(lincolnfrog): get these values for real (see gvr device).
   double fov_x = 1437.387;
   double fov_y = 1438.074;
@@ -56,13 +56,13 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId device_id,
   int height = frame_size.height();
   float horizontal_degrees = atan(width / (2.0 * fov_x)) * kDegreesPerRadian;
   float vertical_degrees = atan(height / (2.0 * fov_y)) * kDegreesPerRadian;
-  left_eye->fieldOfView->leftDegrees = horizontal_degrees;
-  left_eye->fieldOfView->rightDegrees = horizontal_degrees;
-  left_eye->fieldOfView->upDegrees = vertical_degrees;
-  left_eye->fieldOfView->downDegrees = vertical_degrees;
+  left_eye->field_of_view->left_degrees = horizontal_degrees;
+  left_eye->field_of_view->right_degrees = horizontal_degrees;
+  left_eye->field_of_view->up_degrees = vertical_degrees;
+  left_eye->field_of_view->down_degrees = vertical_degrees;
   left_eye->offset = {0.0f, 0.0f, 0.0f};
-  left_eye->renderWidth = width;
-  left_eye->renderHeight = height;
+  left_eye->render_width = width;
+  left_eye->render_height = height;
   return device;
 }
 

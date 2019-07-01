@@ -144,12 +144,12 @@ class RowMoveAnimationDelegate : public gfx::AnimationDelegate {
     }
   }
   void AnimationEnded(const gfx::Animation* animation) override {
-    view_->layer()->SetOpacity(1.0f);
-    view_->SchedulePaint();
+    if (layer_)
+      view_->layer()->SetOpacity(1.0f);
   }
   void AnimationCanceled(const gfx::Animation* animation) override {
-    view_->layer()->SetOpacity(1.0f);
-    view_->SchedulePaint();
+    if (layer_)
+      view_->layer()->SetOpacity(1.0f);
   }
 
  private:
@@ -1449,12 +1449,16 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
                       : -1;
 
   std::unique_ptr<ui::Layer> layer;
-  if (animate_current) {
-    layer = view->RecreateLayer();
-    layer->SuppressPaint();
+  if (view->layer()) {
+    if (animate_current) {
+      layer = view->RecreateLayer();
+      layer->SuppressPaint();
 
-    view->layer()->SetFillsBoundsOpaquely(false);
-    view->layer()->SetOpacity(0.f);
+      view->layer()->SetFillsBoundsOpaquely(false);
+      view->layer()->SetOpacity(0.f);
+    }
+  } else {
+    view->EnsureLayer();
   }
 
   const gfx::Size total_tile_size = GetTotalTileSize();
@@ -2608,7 +2612,10 @@ void AppsGridView::OnListItemMoved(size_t from_index,
     view_structure_.LoadFromMetadata();
   UpdateColsAndRowsForFolder();
   UpdatePaging();
-  AnimateToIdealBounds(nullptr /* released_drag_view */);
+  if (GetWidget() && GetWidget()->IsVisible())
+    AnimateToIdealBounds(nullptr /* released_drag_view */);
+  else
+    Layout();
 }
 
 void AppsGridView::OnAppListItemHighlight(size_t index, bool highlight) {

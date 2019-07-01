@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">আগের ট্যাবে যান</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> প্রেস করুন এবং একটি লিঙ্কে ক্লিক করুন</translation>
 <translation id="2246352309084894470">ফুলস্ক্রিন লঞ্চার চালু/বন্ধ করুন</translation>
+<translation id="2354531887393764880">পূর্ণচ্ছেদ দেওয়ার বোতাম</translation>
 <translation id="2382644247745281995">বর্তমান কীবোর্ড লেআউট সমর্থিত নয়</translation>
 <translation id="2397416548179033562">Chrome মেনু দেখান</translation>
 <translation id="2424073332829844142">CapsLock চালু এবং বন্ধ করুন</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">আপনার শেল্ফে হাইলাইট করা আইটেমটি খুলুন</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ১ থেকে ৮ পর্যন্ত</translation>
 <translation id="3837047332182291558">কীবোর্ডের উজ্জ্বলতা বাড়ান (ব্যাকলিট কীবোর্ডের জন্য)</translation>
+<translation id="3949671998904569433">কমা চিহ্ন দেওয়ার বোতাম</translation>
 <translation id="3976863468609830880">আপনার শেল্ফে শেষ আইকনটি ক্লিক করুন</translation>
 <translation id="3994783594793697310">ডিসপ্লের জুম লেভেল রিসেট করুন</translation>
 <translation id="4026843240379844265">ডিসপ্লের মধ্যে সক্রিয় উইন্ডোটি সরান</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">পরবর্তী উপলভ্য ইনপুট পদ্ধতিতে পাল্টান</translation>
 <translation id="743754632698445141">অ্যাপটি আনপিন করুন</translation>
 <translation id="7439718573248533901">পরের অক্ষরটি মুছুন (সামনের দিকে মুছুন)</translation>
+<translation id="7500368597227394048">হাইফেন লেখার বোতাম</translation>
 <translation id="7611271430932669992">পপআপ এবং ডায়ালগগুলিতে ফোকাস সরান</translation>
 <translation id="766326951329901120">ক্লিপবোর্ড থেকে সাধারণ টেক্সট হিসেবে কন্টেন্ট পেস্ট করুন</translation>
+<translation id="7703010453515335249">বাঁদিকের ব্র্যাকেট দেওয়ার বোতাম</translation>
 <translation id="7724603315864178912">কাটুন</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="SPACE" /> অথবা <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">ব্রাউজারে একটি ফাইল খুলুন</translation>
-<translation id="7917881398263220094">আমার বর্তমান পৃষ্ঠা লোড হওয়া বন্ধ করুন</translation>
 <translation id="7952165122793773711">১ থেকে ৮ নম্বর পর্যন্ত ট্যাবগুলিতে যান</translation>
 <translation id="8026334261755873520">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="8130528849632411619">ডকুমেন্টের শুরুতে যান</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> অথবা <ph name="E" /></translation>
 <translation id="8232835244134740473">এগুলির মধ্যে ফোকাস পাল্টান: স্ট্যাটাস এলাকা (যেখানে আপনার অ্যাকাউন্টের ছবি দেখানো হয়), লঞ্চার, অ্যাড্রেস বার, বুকমার্ক বার (যদি দেখা যায়), খোলা ওয়েব পেজ এবং ডাউনলোড বার (যদি দেখা যায়)।</translation>
 <translation id="8234414138295101081">স্ক্রিনকে ৯০ ডিগ্রি ঘোরান</translation>
+<translation id="8241665785394195545">ডানদিকের ব্র্যাকেট দেওয়ার বোতাম</translation>
 <translation id="8264941229485248811">ডেভেলপার টুল পরিদর্শক দেখান বা লুকান</translation>
 <translation id="836869401750819675">ডাউনলোড হওয়া পৃষ্ঠাটি খুলুন</translation>
 <translation id="8388247778047144397">ট্যাব বারের ফাঁকা অঞ্চলে একটি লিঙ্ক টেনে আনুন</translation>

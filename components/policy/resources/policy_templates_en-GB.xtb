@@ -364,6 +364,11 @@
           If this policy is disabled or not set, the Kerberos accounts settings are disabled. No Kerberos accounts can be added and Kerberos authentication cannot be used. All existing Kerberos accounts are deleted, and all stored passwords are deleted.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
+<translation id="1566329065312331399">
+      This policy, when set to False, does not allow the device to trigger powerwash.
+      When set to True, it allows the device to trigger powerwash.
+      If left unset, it defaults to False, meaning it doesn't allow the device to powerwash.
+      </translation>
 <translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
 
       Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
@@ -405,6 +410,7 @@
 
       Warning: It is not recommended to delegate control of the <ph name="PRODUCT_OS_NAME" /> version to a kiosk app as it may prevent the device from receiving software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME" /> version might leave users at risk.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
+<translation id="1700811900332333712">Allow the device to request powerwash</translation>
 <translation id="1704516734140344991">Configures availability and behaviour of <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality.
 
       Individual settings can be specified in JSON properties:
@@ -2065,6 +2071,15 @@
       Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray according to the <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> policy. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy follow this same schedule.
 
       If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      This setting, SitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the IsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
+      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
+      If the policy is not configured or disabled, the user will be able to opt out of site isolation
+      (e.g. using 'Disable site isolation' entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
+      On <ph name="PRODUCT_OS_NAME" /> version 76 and earlier, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
+      </translation>
 <translation id="4788252609789586009">Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete credit card information in web forms using previously stored information.
 
       If this setting is disabled, Auto-fill will never suggest or fill in credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
@@ -2210,6 +2225,7 @@
 <translation id="5148753489738115745">Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME" /> launches <ph name="PRODUCT_NAME" />.
 
           If this policy is not set the default command line will be used.</translation>
+<translation id="5152787786897382519">Both Chromium and Google Chrome have some groups of policies that depend on each other to provide control over a feature. These sets are represented by the following policy groups. Given that policies can have multiple sources, only values coming from the highest priority source will be applied. Values coming from a lower priority source in the same group will be ignored. The order of priority is defined in <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">How frequently monitoring network packets are sent, in milliseconds.
 
       If this policy is unset, the default interval is 3 minutes. The minimum
@@ -2753,6 +2769,7 @@
 <translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
 <translation id="5997846976342452720">Specify whether the plug-in finder should be disabled (deprecated)</translation>
+<translation id="5998198091336830580">This policy is part of the following atomic group (only policies from the highest priority source present in the group are applied) :</translation>
 <translation id="6017568866726630990">Show the system print dialogue instead of print preview.
 
       When this setting is enabled, <ph name="PRODUCT_NAME" /> will open the system print dialogue instead of the built-in print preview when a user requests a page to be printed.
@@ -3500,6 +3517,9 @@
       When this policy is set to False, information that can be used to identify machines is not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="737655323154569539">Restricts printing page size. Unset policy and empty set are treated as no restriction.</translation>
 <translation id="7389872682701720082">If you enable this setting, plugins that are not outdated always run.
 
@@ -3837,6 +3857,7 @@
 
           Also see policies 'CookiesAllowedForUrls' and 'CookiesSessionOnlyForUrls'. Note: There must be no conflicting URL patterns between these three policies – it is not specified as to which policy takes precedence.</translation>
 <translation id="8099880303030573137">Idle delay when running on battery power</translation>
+<translation id="8101381354936029836">Policy atomic group:</translation>
 <translation id="8102913158860568230">Default mediastream setting</translation>
 <translation id="8104186956182795918">Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.
 
@@ -4045,6 +4066,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disable saving browser history</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
+<translation id="849962487677588458">This policy is deprecated, and slated for removal in Chrome 78, with no replacement.
+
+      This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
+
+      This policy is disabled by default, and if enabled, leaves users open to the security issue https://crbug.com/600352.
+
+      This policy is intended to give enterprises a chance to migrate existing servers away from HTTP/0.9, and will be removed in the future.
+
+      If this policy is not set, HTTP/0.9 will be disabled on non-default ports.</translation>
 <translation id="8507835864888987300">Sets a target version for Auto Updates.
 
       Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME" /> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, effects depend on the value of <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. The prefix format works component-wise as is demonstrated in the following example:

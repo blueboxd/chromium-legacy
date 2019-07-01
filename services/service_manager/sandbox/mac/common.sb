@@ -21,6 +21,7 @@
 (define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
 (define log-file-path "LOG_FILE_PATH")
 (define os-version (string->number (param "OS_VERSION")))
+(define darwin-user-cache-dir "DARWIN_USER_CACHE_DIR")
 
 ; Backwards compatibility for 10.10.
 (if (not (defined? 'path))

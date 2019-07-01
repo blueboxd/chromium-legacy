@@ -40,7 +40,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -104,7 +103,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @Mock
     PropertyObservable.PropertyObserver<PropertyKey> mPropertyObserver;
     @Mock
-    OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+    GridTabSwitcher.GridOverviewModeObserver mOverviewModeObserver;
     @Mock
     CompositorViewHolder mCompositorViewHolder;
 
@@ -261,28 +260,28 @@ public class GridTabSwitcherMediatorUnitTest {
     public void startedShowingPropagatesToObservers() {
         initAndAssertAllProperties();
         mModel.get(TabListContainerProperties.VISIBILITY_LISTENER).startedShowing(true);
-        verify(mOverviewModeObserver).onOverviewModeStartedShowing(eq(true));
+        verify(mOverviewModeObserver).startedShowing();
     }
 
     @Test
     public void finishedShowingPropagatesToObservers() {
         initAndAssertAllProperties();
         mModel.get(TabListContainerProperties.VISIBILITY_LISTENER).finishedShowing();
-        verify(mOverviewModeObserver).onOverviewModeFinishedShowing();
+        verify(mOverviewModeObserver).finishedShowing();
     }
 
     @Test
     public void startedHidingPropagatesToObservers() {
         initAndAssertAllProperties();
         mModel.get(TabListContainerProperties.VISIBILITY_LISTENER).startedHiding(true);
-        verify(mOverviewModeObserver).onOverviewModeStartedHiding(eq(true), eq(false));
+        verify(mOverviewModeObserver).startedHiding();
     }
 
     @Test
     public void finishedHidingPropagatesToObservers() {
         initAndAssertAllProperties();
         mModel.get(TabListContainerProperties.VISIBILITY_LISTENER).finishedHiding();
-        verify(mOverviewModeObserver).onOverviewModeFinishedHiding();
+        verify(mOverviewModeObserver).finishedHiding();
     }
 
     @Test

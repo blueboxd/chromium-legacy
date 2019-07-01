@@ -48,6 +48,8 @@ class AppsGridViewTestApi {
 
   gfx::Rect GetItemTileRectAtVisualIndex(int page, int slot) const;
 
+  void WaitForItemMoveAnimationDone();
+
  private:
   AppsGridView* view_;
 

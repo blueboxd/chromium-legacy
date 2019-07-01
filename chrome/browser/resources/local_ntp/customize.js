@@ -1256,7 +1256,9 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
       customize.richerPicker_openCustomizationMenu();
       customize.loadChromeBackgrounds();
       customize.loadColorTiles();
-      $(customize.IDS.CUSTOMIZATION_MENU).showModal();
+      if (!$(customize.IDS.CUSTOMIZATION_MENU).open) {
+        $(customize.IDS.CUSTOMIZATION_MENU).showModal();
+      }
     } else {
       editDialog.showModal();
     }

@@ -1172,6 +1172,43 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
   }
 }
 
+TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMACoinFlipHoldback) {
+  for (int i = static_cast<int>(PreviewsType::NONE);
+       i < static_cast<int>(PreviewsType::LAST); i++) {
+    PreviewsType type = static_cast<PreviewsType>(i);
+    if (type == PreviewsType::DEPRECATED_AMP_REDIRECTION)
+      continue;
+    if (type == PreviewsType::DEPRECATED_LOFI)
+      continue;
+
+    base::HistogramTester tester;
+    RunTest(content::OFFLINE_PAGE_ON /* allowed_state */, type,
+            false /* lite_page_received */,
+            false /* lite_page_redirect_received */, false /* noscript_on */,
+            false /* resource_loading_hints_on */, false /* origin_opt_out */,
+            false /* save_data_enabled */, false /* is_offline_preview */,
+            CoinFlipHoldbackResult::kHoldback, {} /* eligibility_reasons */,
+            base::nullopt /* navigation_restart_penalty */,
+            base::nullopt /* hint_version_string */);
+
+    NavigateToUntrackedUrl();
+
+    // The top level metric is not recorded on a non-preview.
+    tester.ExpectTotalCount("Previews.PageEndReason", 0);
+    // We do not expect the individual preview PageEndReason UMAs to get
+    // recorded when the preview was not actually shown.
+    if (type != PreviewsType::NONE) {
+      tester.ExpectTotalCount(
+          "Previews.PageEndReason." + GetStringNameForType(type), 0);
+    }
+    // Since the preview is not actually shown on the holdback, we expect the
+    // NONE-variant to be recorded.
+    tester.ExpectUniqueSample(
+        "Previews.PageEndReason.None",
+        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+  }
+}
+
 }  // namespace
 
 }  // namespace previews

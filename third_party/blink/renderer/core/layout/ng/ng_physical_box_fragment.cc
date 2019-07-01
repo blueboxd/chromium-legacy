@@ -93,6 +93,19 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       builder->layout_object_ && builder->layout_object_->ChildrenInline();
 }
 
+scoped_refptr<const NGLayoutResult>
+NGPhysicalBoxFragment::CloneAsHiddenForPaint() const {
+  const ComputedStyle& style = Style();
+  NGBoxFragmentBuilder builder(GetMutableLayoutObject(), &style,
+                               style.GetWritingMode(), style.Direction());
+  builder.SetBoxType(BoxType());
+  NGFragmentGeometry initial_fragment_geometry{
+      Size().ConvertToLogical(style.GetWritingMode())};
+  builder.SetInitialFragmentGeometry(initial_fragment_geometry);
+  builder.SetIsHiddenForPaint(true);
+  return builder.ToBoxFragment();
+}
+
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
   SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
   return (static_cast<const LayoutBoxModelObject*>(GetLayoutObject()))

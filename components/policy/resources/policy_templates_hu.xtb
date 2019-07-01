@@ -362,6 +362,11 @@
           Ha a házirend le van tiltva, vagy nincs beállítva, a Kerberos-fiókbeállítások le vannak tiltva. Ebben az esetben nem lehetséges a Kerberos-fiókok hozzáadása, és nem használható Kerberos-hitelesítés. A rendszer az összes meglévő Kerberos-fiókot törli, az összes tárolt jelszóval együtt.</translation>
 <translation id="1561424797596341174">A házirend felülírja a távoli elérésű gazdagép hibakeresés végzésére szolgáló buildjeit</translation>
 <translation id="1561967320164410511">U2F plusz bővítmények az egyéni hitelesítéshez</translation>
+<translation id="1566329065312331399">
+      A házirend hamis értékre állítása esetén az eszköz nem indíthat powerwash műveletet.
+      Ha a beállítása igaz, akkor az eszköz indíthat powerwash műveletet.
+      Ha nem állítják be, az alapértelmezett beállítás a hamis, azaz az eszköz nem végezhet powerwash műveletet.
+      </translation>
 <translation id="1574554504290354326">A beállítást megszüntettük; használja helyette a SafeBrowsingExtendedReportingEnabled házirendet. A SafeBrowsingExtendedReportingEnabled engedélyezése vagy letiltása a SafeBrowsingExtendedReportingOptInAllowed hamis értékre állításával egyezik meg.
 
       Ha ennek a házirendnek az értéke hamis, akkor a felhasználók nem dönthetnek úgy, hogy elküldenek bizonyos rendszer-információkat és oldaltartalmakat a Google szervereinek. Ha a beállítás értéke igaz, vagy ha nincs megadva, akkor a felhasználók elküldhetnek bizonyos rendszer-információkat és oldaltartalmakat a Biztonságos Böngészés szolgáltatásnak, hogy segítsék a veszélyes alkalmazások és webhelyek észlelését.
@@ -403,6 +408,7 @@
 
       Figyelem: Nem ajánlott átadni a <ph name="PRODUCT_OS_NAME" /> verziójának ellenőrzését semmilyen kioszkalkalmazásnak, ez ugyanis megakadályozhatja az eszközt abban, hogy fogadja a szoftverfrissítéseket és a kritikus biztonsági javításokat. A <ph name="PRODUCT_OS_NAME" />-verzió ellenőrzésének átadása kockázatot jelenthet a felhasználók számára.</translation>
 <translation id="1675002386741412210">Támogatott a következőkön:</translation>
+<translation id="1700811900332333712">Powerwash művelet eszköz általi kérésének engedélyezése</translation>
 <translation id="1704516734140344991">A <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-frissítési funkció rendelkezésre állását és viselkedését konfigurálja.
 
       Egyedi beállítások JSON-tulajdonságokban adhatók meg:
@@ -2026,6 +2032,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ez alatt az idő alatt a rendszer többször is tájékoztatja a felhasználót a frissítés szükségességéről. <ph name="PRODUCT_OS_NAME" />-eszközök esetében az újraindítási értesítés a tálcán jelenik meg a <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> házirendnek megfelelően. A <ph name="PRODUCT_NAME" /> böngésző esetében az értesítési időszak egyharmadának letelte után az alkalmazásmenü változása jelzi, hogy újraindításra van szükség. Az értesítési időszak kétharmadának elérésekor, valamint az értesítési időszak leteltekor az értesítés színe megváltozik. A <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> házirend által engedélyezett további értesítések is ezt a mintát követik.
 
       Ha nincs beállítva, akkor az alapértelmezett időszak 345 600 000 ezredmásodperc (négy nap) a <ph name="PRODUCT_OS_NAME" />-eszközök, és 604 800 000 ezredmásodperc (egy hét) a <ph name="PRODUCT_NAME" /> esetében.</translation>
+<translation id="4777805166623621364">
+      Ez a SitePerProcess beállítás használható annak letiltására, hogy a felhasználók kikapcsolhassák az összes webhelyet elszigetelő alapértelmezett viselkedést. Ne feledje, hogy az IsolateOrigins házirend is hasznos lehet további, pontosabb eredetek elszigetelésére.
+      Ha a házirend engedélyezett, a felhasználók nem tudják kikapcsolni az alapértelmezett viselkedést, amelynél minden webhely a saját folyamatában fut.
+      Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók kikapcsolhatják a webhely-elszigetelést
+      (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).  A házirend letiltása és/vagy beállításának mellőzése nem kapcsolja ki a webhely-elszigetelést.
+      A <ph name="PRODUCT_OS_NAME" /> 76-os és korábbi verzióiban ajánlatos a <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirend beállítása ugyanarra az értékre. Ha a két házirend által megadott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
+
+      MEGJEGYZÉS: Ez a házirend nem alkalmazható Android rendszeren. Ha engedélyezni szeretné a SitePerProcess házirendet Androidon, használja a SitePerProcessAndroid házirend-beállítást.
+      </translation>
 <translation id="4788252609789586009">Engedélyezi a <ph name="PRODUCT_NAME" /> automatikus kitöltés funkcióját, és lehetővé teszi a felhasználók számára az internetes űrlapok automatikus kitöltését korábban eltárolt hitelkártyaadatokkal.
 
       Ha le van tiltva ez a beállítás, az automatikus kitöltés funkció nem ajánlja fel és nem végzi el a hitelkártyaadatok kitöltését, és nem ment további hitelkártyaadatokat, amelyeket a felhasználó az interneten való böngészés közben ad meg.
@@ -2170,6 +2185,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5148753489738115745">Lehetővé teszi további paraméterek megadását, amelyeket a(z) <ph name="PRODUCT_FRAME_NAME" /> használ a(z) <ph name="PRODUCT_NAME" /> indításakor.
 
           Ha nincs beállítva ez a házirend, akkor a rendszer az alapértelmezett parancssort használja.</translation>
+<translation id="5152787786897382519">A Chromium és a Google Chrome is rendelkezik olyan házirendcsoportokkal, amelyek egymástól függve biztosítják valamelyik funkció vezérelhetőségét. Ezeket a kombinációkat az alábbi házirendcsoportok jelképezik. Mivel a házirendeknek többféle forrása is lehet, a rendszer csak a legmagasabb prioritású forrásból származó értékeket alkalmazza. Az ugyanabban a csoportban lévő, de alacsonyabb prioritású forrásból származó értékeket figyelmen kívül hagyja. A prioritási sorrendet a következő házirend határozza meg: <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Az ellenőrző hálózati csomagok küldésének gyakorisága (ezredmásodpercben).
 
       Ha nem állítja be a házirendet, az alapértelmezett időtartam három perc.
@@ -2693,6 +2709,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5983708779415553259">Alapértelmezett viselkedés a tartalomcsomagban nem lévő webhelyek esetében</translation>
 <translation id="5997543603646547632">24 órás formátum használata alapértelmezés szerint</translation>
 <translation id="5997846976342452720">Annak megadása, hogy le legyen-e tiltva a beépülőmodul-kereső (megszüntetve)</translation>
+<translation id="5998198091336830580">Ez a házirend a következő kis csoport része (a rendszer csak a csoportban lévő, legmagasabb prioritású forrásból származó házirendeket alkalmazza):</translation>
 <translation id="6017568866726630990">A rendszer nyomtatási párbeszédpaneljének megjelenítése a nyomtatási előnézet helyett.
 
       Amikor a beállítás engedélyezett, és a felhasználó egy oldal nyomtatását kéri, akkor a <ph name="PRODUCT_NAME" /> a rendszer nyomtatási párbeszédpaneljét nyitja meg a beépített nyomtatási előnézet helyett.
@@ -3425,6 +3442,9 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha a házirend értéke hamis, akkor nem történik meg az eszközök azonosítására alkalmas adatok begyűjtése.
 
       A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényes.</translation>
+<translation id="7359307926583593395">
+      Ez a házirend a bejelentkezési képernyőre vonatkozik. Lásd még a <ph name="SITE_PER_PROCESS_POLICY_NAME" /> házirendet is, amely a felhasználói munkamenetre vonatkozik. Javasolt mindkét házirendet ugyanarra az értékre állítani. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
+      </translation>
 <translation id="737655323154569539">Korlátozza a nyomtatás oldalméretét. Nem megadott vagy üresen hagyott beállítás esetén nincs korlátozás.</translation>
 <translation id="7389872682701720082">Ha engedélyezi ezt a beállítást, a nem elavult beépülő modulok mindig futhatnak.
 
@@ -3751,6 +3771,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
           Lásd még a „CookiesAllowedForUrls” és a „CookiesSessionOnlyForUrls” házirendeket. Fontos megjegyezni, hogy nem lehetnek ütköző URL-minták a három házirend között – nincs meghatározva, hogy melyik házirend élvez elsőbbséget.</translation>
 <translation id="8099880303030573137">Tétlenség késleltetése akkumulátorról való működés során</translation>
+<translation id="8101381354936029836">Kis házirendcsoport:</translation>
 <translation id="8102913158860568230">Alapértelmezett adatfolyam beállítás</translation>
 <translation id="8104186956182795918">Lehetővé teszi annak meghatározását, hogy engedélyezett-e a webhelyek számára a képek megjelenítése. A képek megjelenítését engedélyezheti vagy tilthatja minden webhely számára.
 
@@ -3960,6 +3981,15 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Böngészési előzmények mentésének tiltása</translation>
 <translation id="8499172469244085141">Alapértelmezett beállítások (a felhasználók felülbírálhatják)</translation>
+<translation id="849962487677588458">Ez a házirend megszűnt, és a Chrome 78-as verziójából pótlás nélkül eltávolítjuk.
+
+      Ez a házirend engedélyezi a HTTP/0.9 használatát a 80-astól (HTTP) és 443-astól (HTTPS) eltérő portokon.
+
+      Alapértelmezés szerint le van tiltva, engedélyezése esetén pedig a felhasználó sebezhető lesz a következő biztonsági problémával szemben: https://crbug.com/600352.
+
+      Ennek a házirendnek a célja az volt, hogy a nagyvállalatoknak lehetőséget adjon a meglévő szervereiknek a HTTP 0.9-es verziójáról való áttelepítésére. A későbbiekben eltávolítjuk ezt a házirendet.
+
+      Ha a házirend nincs beállítva, a HTTP/0.9 le van tiltva a nem alapértelmezett portokon.</translation>
 <translation id="8507835864888987300">Célverziót állít be az automatikus frissítésekhez.
 
       Megadja annak a célverziónak az előtagját, amelyre a <ph name="PRODUCT_OS_NAME" /> rendszert frissíteni kell. Ha az eszközön futó verzió a megadott előtagnál korábbi, akkor a megadott előtaggal rendelkező utolsó verzióra frissül. Ha az eszköz már újabb verzión található, a hatás a <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> házirend értékétől függ. Az előtag formátuma komponensfüggő, ahogy az a következő példából látható:

@@ -19,10 +19,6 @@ AppShimHostManagerTestApi::AppShimHostManagerTestApi(
   DCHECK(host_manager_);
 }
 
-apps::UnixDomainSocketAcceptor* AppShimHostManagerTestApi::acceptor() {
-  return host_manager_->acceptor_.get();
-}
-
 apps::MachBootstrapAcceptor* AppShimHostManagerTestApi::mach_acceptor() {
   return host_manager_->mach_acceptor_.get();
 }

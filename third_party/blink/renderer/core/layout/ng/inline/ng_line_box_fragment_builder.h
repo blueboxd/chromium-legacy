@@ -213,6 +213,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void AddChild(Args&&... args) {
       children_.emplace_back(std::forward<Args>(args)...);
     }
+    void InsertChild(unsigned index);
     void InsertChild(unsigned index,
                      scoped_refptr<const NGLayoutResult> layout_result,
                      const LogicalOffset& offset,

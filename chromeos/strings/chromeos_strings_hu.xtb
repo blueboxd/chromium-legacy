@@ -10,6 +10,9 @@
 <translation id="2805756323405976993">Alkalmazások</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="3511655281162215899">Válasszon új jelszót most rögtön</translation>
+<translation id="3838338534323494292">Új jelszó</translation>
+<translation id="445059817448385655">Régi jelszó</translation>
+<translation id="467510802200863975">A jelszavak nem egyeznek</translation>
 <translation id="4731797938093519117">Szülői hozzáférés</translation>
 <translation id="476166673298332917">Az eszköz rendszergazdája figyelheti a böngészési tevékenységét.</translation>
 <translation id="5212543919916444558">Nem találok semmi olyat a képernyőn, amellyel kapcsolatban segíthetnék.
@@ -21,10 +24,14 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5733345267661125295">Válasszon új jelszót most</translation>
 <translation id="5832805196449965646">Személy hozzáadása</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
+<translation id="6058625436358447366">A befejezéshez adja meg régi és új jelszavát</translation>
+<translation id="6106186594183574873">A befejezéshez adja meg régi jelszavát</translation>
+<translation id="6146993107019042706">A befejezéshez adja meg új jelszavát</translation>
 <translation id="6574601967010742428">Lehetséges, hogy tevékenységeit megfigyelheti az eszköz adminisztrátora.</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Jelenlegi jelszava lejárt!}=1{Jelenlegi jelszava 1 napon belül lejár!}other{Jelenlegi jelszava # napon belül lejár!}}</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7690294790491645610">Új jelszó megerősítése</translation>
 <translation id="808894953321890993">Jelszó módosítása</translation>
+<translation id="8747900814994928677">Módosítás megerősítése</translation>
 <translation id="9111102763498581341">Feloldás</translation>
 </translationbundle>

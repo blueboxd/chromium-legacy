@@ -163,16 +163,28 @@ def _validate_and_convert_profraw(profraw_file, output_profdata_files,
     invalid_profraw_files.append(profraw_file)
 
 
-def move_java_exec_files(input_dir, output_dir):
-  """Moves generated .exec files to output_dir.
+def merge_java_exec_files(input_dir, output_path, jacococli_path):
+  """Merges generated .exec files to output_path.
 
   Args:
     input_dir (str): The path to traverse to find input files.
-    output_dir (str): Where to move input files to.
+    output_path (str): Where to write the merged .exec file.
+    jacococli_path: The path to jacococli.jar.
+
+  Raises:
+    CalledProcessError: merge command failed.
   """
   exec_input_file_paths = _get_profile_paths(input_dir, '.exec')
-  for input_file in exec_input_file_paths:
-    shutil.move(input_file, output_dir)
+  if not exec_input_file_paths:
+    logging.info('No exec file found under %s', input_dir)
+    return
+
+  cmd = ['java', '-jar', jacococli_path, 'merge']
+  cmd.extend(exec_input_file_paths)
+  cmd.extend(['--destfile', output_path])
+  output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+  logging.info('Merge succeeded with output: %r', output)
+
 
 def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
   """Merges the profiles produced by the shards using llvm-profdata.

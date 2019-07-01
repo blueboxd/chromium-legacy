@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Prechod na predchádzajúcu kartu</translation>
 <translation id="2194790690264064655">Stlačenie klávesa <ph name="CTRL" /> a kliknutie na odkaz</translation>
 <translation id="2246352309084894470">Otvoriť alebo zavrieť spúšťač celej obrazovky</translation>
+<translation id="2354531887393764880">bodka</translation>
 <translation id="2382644247745281995">S týmto rozložením klávesnice nie je podporované</translation>
 <translation id="2397416548179033562">Zobraziť Ponuku Chrome</translation>
 <translation id="2424073332829844142">Zapnutie a vypnutie klávesa Caps Lock</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Otvorenie zvýraznenej položky na poličke</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 až 8</translation>
 <translation id="3837047332182291558">Zvýšenie jasu klávesnice (iba v prípade podsvietených klávesníc)</translation>
+<translation id="3949671998904569433">čiarka</translation>
 <translation id="3976863468609830880">Kliknutie na poslednú ikonu na poličke</translation>
 <translation id="3994783594793697310">Obnovenie úrovne priblíženia/oddialenia zobrazenia</translation>
 <translation id="4026843240379844265">Presun aktívneho okna medzi obrazovkami</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Prepnutie na ďalšiu dostupnú metódu vstupu</translation>
 <translation id="743754632698445141">Odopnutie aplikácie</translation>
 <translation id="7439718573248533901">Odstránenie nasledujúceho písmena (odstránenie nasledujúceho znaku)</translation>
+<translation id="7500368597227394048">spojovník</translation>
 <translation id="7611271430932669992">Presunutie zamerania na kontextové a dialógové okná</translation>
 <translation id="766326951329901120">Prilepenie obsahu zo schránky ako obyčajného textu</translation>
+<translation id="7703010453515335249">ľavá hranatá zátvorka</translation>
 <translation id="7724603315864178912">Vystrihnúť</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="SPACE" /> alebo <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Otvorenie súboru v prehliadači</translation>
-<translation id="7917881398263220094">Zastavenie načítavania aktuálnej stránky</translation>
 <translation id="7952165122793773711">Prechod na karty 1 až 8</translation>
 <translation id="8026334261755873520">Vymazať dáta prehliadania</translation>
 <translation id="8130528849632411619">Prechod na začiatok dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> alebo <ph name="E" /></translation>
 <translation id="8232835244134740473">Prepínanie zamerania medzi nasledujúcimi položkami: stavová oblasť (kde sa zobrazuje váš obrázok účtu), spúšťač, panel s adresou, panel so záložkami (ak je viditeľný), webová stránka, ktorá je otvorená, a panel sťahovania (ak je viditeľný).</translation>
 <translation id="8234414138295101081">Otočenie obrazovky o 90 stupňov</translation>
+<translation id="8241665785394195545">pravá hranatá zátvorka</translation>
 <translation id="8264941229485248811">Zobrazenie alebo skrytie kontroly s nástrojmi pre vývojárov</translation>
 <translation id="836869401750819675">Otvorenie stránky Stiahnuté súbory</translation>
 <translation id="8388247778047144397">Presunutie odkazu do prázdnej oblasti na paneli kariet</translation>

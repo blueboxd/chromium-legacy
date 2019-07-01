@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">Gå til forrige fane</translation>
 <translation id="2194790690264064655">Trykk på <ph name="CTRL" /> og klikk på en link</translation>
 <translation id="2246352309084894470">Åpne/lukk fullskjermvisningen av appoversikten</translation>
+<translation id="2354531887393764880">punktum</translation>
 <translation id="2382644247745281995">Støttes ikke med det gjeldende tastaturoppsettet</translation>
 <translation id="2397416548179033562">Vis Chrome-menyen</translation>
 <translation id="2424073332829844142">Slå Caps Lock av og på</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">Åpne elementet som er fremhevet på hyllen</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 til og med 8</translation>
 <translation id="3837047332182291558">Øk lysstyrken på tastaturlyset (bare for tastaturer med bakgrunnslys)</translation>
+<translation id="3949671998904569433">komma</translation>
 <translation id="3976863468609830880">Klikk på det siste ikonet på hyllen</translation>
 <translation id="3994783594793697310">Tilbakestill skjermens zoomnivå</translation>
 <translation id="4026843240379844265">Flytt det aktive vinduet mellom skjermer</translation>
@@ -159,18 +161,20 @@
 <translation id="7422707470576323858">Bytt til neste tilgjengelige inndatametode</translation>
 <translation id="743754632698445141">Løsne en app</translation>
 <translation id="7439718573248533901">Slett neste bokstav (slett fremover)</translation>
+<translation id="7500368597227394048">bindestrek</translation>
 <translation id="7611271430932669992">Flytt fokus til forgrunnsvinduer og dialogbokser</translation>
 <translation id="766326951329901120">Lim inn innholdet fra utklippstavlen som ren tekst</translation>
+<translation id="7703010453515335249">venstre hakeparentes</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="SPACE" /> eller <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Åpne en fil i nettleseren</translation>
-<translation id="7917881398263220094">Stopp innlastingen av den aktive siden</translation>
 <translation id="7952165122793773711">Gå til fane 1–8</translation>
 <translation id="8026334261755873520">Slett nettleserdata</translation>
 <translation id="8130528849632411619">Gå til begynnelsen av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8232835244134740473">Bytt fokus mellom statusområdet (hvor kontobildet ditt vises), appoversikten, adressefeltet, bokmerkeraden (hvis den er synlig), nettsiden som er åpen, og nedlastingsraden (hvis den er synlig).</translation>
 <translation id="8234414138295101081">Rotér skjermen 90 grader</translation>
+<translation id="8241665785394195545">høyre hakeparentes</translation>
 <translation id="8264941229485248811">Vis eller skjul inspektøren for utviklerverktøy</translation>
 <translation id="836869401750819675">Åpne nedlastingssiden</translation>
 <translation id="8388247778047144397">Dra linken til et tomt område på faneraden.</translation>

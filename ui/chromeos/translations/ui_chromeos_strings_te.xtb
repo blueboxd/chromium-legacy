@@ -90,9 +90,9 @@
 <translation id="197560921582345123">సవరించగలరు</translation>
 <translation id="1984603991036629094">అర్మేనియన్ ఫొనెటిక్ కీబోర్డ్</translation>
 <translation id="2001796770603320721">డిస్క్‌లో నిర్వహించు</translation>
+<translation id="2009067268969781306">డ్రైవ్‌ను ఫార్మాట్ చేయడం వలన దానిలో నిల్వ చేయబడిన మొత్తం డేటా తొలగించబడుతుంది. ఈ చర్యను చర్యరద్దు చేయలేరు.</translation>
 <translation id="2028997212275086731">RAR ఆర్కైవ్</translation>
 <translation id="2046702855113914483">రామెన్</translation>
-<translation id="204914487372604757">షార్ట్‌కట్‌ను సృష్టించు</translation>
 <translation id="2070909990982335904">డాట్‌తో ప్రారంభమయ్యే పేర్లు సిస్టమ్ కోసం ప్రత్యేకించబడినవి. దయచేసి మరొక పేరును ఎంచుకోండి.</translation>
 <translation id="2079545284768500474">చర్య రద్దు</translation>
 <translation id="2080010875307505892">సెర్బియన్ కీబోర్డ్</translation>
@@ -267,6 +267,7 @@
 <translation id="426015154560005552">అరబిక్ కీబోర్డ్</translation>
 <translation id="4261901459838235729">Google ప్రెజెంటేషన్</translation>
 <translation id="4290535918735525311">Linuxతో 1 ఫోల్డర్ షేర్ చేయబడింది</translation>
+<translation id="42981349822642051">విస్తరించు</translation>
 <translation id="4298972503445160211">డానిష్ కీబోర్డ్</translation>
 <translation id="4299729908419173967">బ్రెజిలియన్</translation>
 <translation id="4309915981827077375">సాధారణ సమాచారం</translation>
@@ -341,6 +342,7 @@
 <translation id="5038625366300922036">మరింత చూడండి...</translation>
 <translation id="5061708541166515394">వ్యత్యాసం</translation>
 <translation id="5068919226082848014">పిజ్జా</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> పరిమాణం వరకు ఫైల్‌లు తొలగించబడతాయి</translation>
 <translation id="509429900233858213">ఒక ఎర్రర్ ఏర్పడింది.</translation>
 <translation id="5098629044894065541">హిబ్రూ</translation>
 <translation id="5123433949759960244">బాస్కెట్‌బాల్</translation>
@@ -412,6 +414,7 @@
 <translation id="5752453871435543420">Chrome OS Cloud బ్యాకప్</translation>
 <translation id="5756666464756035725">హంగేరియన్ QWERTY</translation>
 <translation id="5771585441665576801">లిప్యంతరీకరణ (geia → γεια)</translation>
+<translation id="5776325638577448643">తొలగించి, ఫార్మాట్ చేయి</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
 <translation id="5788127256798019331">Play ఫైల్‌లు</translation>
 <translation id="5790193330357274855">కజఖ్</translation>
@@ -428,6 +431,7 @@
 <translation id="5857774240076772505"><ph name="FOLDER_NAME" />ఫోల్డర్‌లోని ఫైల్‌లను సవరించడానికి Linux యాప్‌లకు అనుమతి ఇవ్వండి</translation>
 <translation id="5892290200158927959">ఫ్రెంచ్ BÉPO కీబోర్డ్</translation>
 <translation id="5911887972742538906">మీ Linux అప్లికేషన్ యొక్క ఇన్‌స్టాలేషన్ సమయంలో ఎర్రర్ ఏర్పడింది.</translation>
+<translation id="5912396950572065471">ఫార్మాట్</translation>
 <translation id="5913638992615760742">కాపీ చర్య విఫలమైంది, ఊహించని ఎర్రర్: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">మీ Google డిస్క్‌లోని ఫైల్‌లను సవరించడానికి Linux యాప్‌లకు అనుమతి ఇవ్వండి. మార్పులు మీ ఇతర పరికరాలలో సమకాలీకరించబడతాయి.</translation>
@@ -452,6 +456,7 @@
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" />తో తెరవండి</translation>
 <translation id="6199801702437275229">ఖాళీ సమాచారం కోసం వేచి ఉంది...</translation>
 <translation id="6205710420833115353">కొన్ని చర్యలకు అనుకున్నదాని కంటే ఎక్కువ సమయం పడుతోంది. మీరు వాటిని రద్దు చేయాలనుకుంటున్నారా?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" />ను ఫార్మాట్ చేయండి</translation>
 <translation id="6227235786875481728">ఈ ఫైల్‌ని ప్లే చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="6248400709929739064">ఉపశీర్షికలను ప్రారంభించు</translation>
 <translation id="6264347891387618177">లిప్యంతరీకరణ (selam → ሰላም)</translation>
@@ -532,6 +537,7 @@
 <translation id="719009910964971313">US ప్రోగ్రామర్ డ్వోరక్ కీబోర్డ్</translation>
 <translation id="7191454237977785534">ఫైల్‌ను ఇలా సేవ్ చేయి</translation>
 <translation id="7222624196722476520">బల్గేరియన్ ఫొనెటిక్ కీబోర్డ్</translation>
+<translation id="7238097264433196391">డ్రైవ్ పేరు</translation>
 <translation id="7248671827512403053">అప్లికేషన్‌</translation>
 <translation id="7268659760406822741">అందుబాటులో ఉన్న సేవలు</translation>
 <translation id="7283041136720745563">Google డిస్క్ కోటా తగినంత పెద్దది కాదు.</translation>
@@ -602,7 +608,6 @@
 <translation id="7969525169268594403">స్లోవేనియన్</translation>
 <translation id="7982283708762922719">ఎత్తు</translation>
 <translation id="7987485481246785146">సొరానీ కుర్డిష్ అరబిక్-ఆధారిత కీబోర్డ్</translation>
-<translation id="799547531016638432">షార్ట్‌కట్‌ను తీసివేయి</translation>
 <translation id="799923393800005025">వీక్షించవచ్చు</translation>
 <translation id="8008366997883261463">జాక్ రస్సెల్ టెర్రియర్</translation>
 <translation id="8028993641010258682">పరిమాణం</translation>

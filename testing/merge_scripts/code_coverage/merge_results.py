@@ -45,6 +45,11 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--llvm-profdata', required=True, help='path to llvm-profdata executable')
   parser.add_argument(
       '--java-coverage-dir', help='directory for Java coverage data')
+  parser.add_argument(
+      '--jacococli-path', help='path to jacococli.jar.')
+  parser.add_argument(
+      '--merged-jacoco-filename',
+      help='filename used to uniquely name the merged exec file.')
   return parser
 
 
@@ -54,9 +59,17 @@ def main():
   params = parser.parse_args()
 
   if params.java_coverage_dir:
-    logging.info('Moving JaCoCo .exec files to %s', params.java_coverage_dir)
-    coverage_merger.move_java_exec_files(
-        params.task_output_dir, params.java_coverage_dir)
+    if not params.jacococli_path:
+      parser.error('--jacococli-path required when merging Java coverage')
+    if not params.merged_jacoco_filename:
+      parser.error(
+          '--merged-jacoco-filename required when merging Java coverage')
+
+    output_path = os.path.join(
+        params.java_coverage_dir, '%s.exec' % params.merged_jacoco_filename)
+    logging.info('Merging JaCoCo .exec files to %s', output_path)
+    coverage_merger.merge_java_exec_files(
+        params.task_output_dir, output_path, params.jacococli_path)
 
   # NOTE: The coverage data merge script must make sure that the profraw files
   # are deleted from the task output directory after merging, otherwise, other

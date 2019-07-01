@@ -195,8 +195,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // of items, which are needed to compute inline static positions.
   LayoutUnit line_offset_for_text_align = ApplyTextAlign(line_info);
 
-  NGTextFragmentBuilder text_builder(Node(),
-                                     ConstraintSpace().GetWritingMode());
+  NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
 
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
@@ -312,8 +311,8 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // Truncate the line if 'text-overflow: ellipsis' is set.
   if (UNLIKELY(inline_size > line_info->AvailableWidth() &&
                node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText())) {
-    inline_size = NGLineTruncator(node_, *line_info)
-                      .TruncateLine(inline_size, &line_box_);
+    inline_size = NGLineTruncator(*line_info)
+                      .TruncateLine(inline_size, &line_box_, box_states_);
   }
 
   // Negative margins can make the position negative, but the inline size is
@@ -421,8 +420,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   if (UNLIKELY(quirks_mode_ && !box->HasMetrics()))
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
 
-  NGTextFragmentBuilder text_builder(Node(),
-                                     ConstraintSpace().GetWritingMode());
+  NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
   text_builder.SetItem(type, line_info.ItemsData(), item_result,
                        box->text_height);
   line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,

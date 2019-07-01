@@ -115,6 +115,17 @@ class AccessibilityPrivateOnSelectToSpeakStateChangedFunction
                              ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED)
 };
 
+// API function that is called when the Autoclick extension finds scrollable
+// bounds.
+class AccessibilityPrivateOnScrollableBoundsForPointFoundFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateOnScrollableBoundsForPointFoundFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION(
+      "accessibilityPrivate.onScrollableBoundsForPointFound",
+      ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND)
+};
+
 // API function that is called when a user toggles Dictation from another
 // acessibility feature.
 class AccessibilityPrivateToggleDictationFunction

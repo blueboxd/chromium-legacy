@@ -54,6 +54,7 @@ class DeviceMonitorLinux::BlockingTaskRunnerHelper
   // device::UdevWatcher::Observer overrides
   void OnDeviceAdded(device::ScopedUdevDevicePtr device) override;
   void OnDeviceRemoved(device::ScopedUdevDevicePtr device) override;
+  void OnDeviceChanged(device::ScopedUdevDevicePtr device) override;
 
   std::unique_ptr<device::UdevWatcher> udev_watcher_;
 
@@ -83,6 +84,11 @@ void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDeviceAdded(
 }
 
 void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
+    device::ScopedUdevDevicePtr device) {
+  OnDevicesChanged(std::move(device));
+}
+
+void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDeviceChanged(
     device::ScopedUdevDevicePtr device) {
   OnDevicesChanged(std::move(device));
 }

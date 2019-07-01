@@ -16,6 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -27,13 +28,12 @@ namespace scheduler {
 namespace scheduler_helper_unittest {
 
 namespace {
-void AppendToVectorTestTask(std::vector<std::string>* vector,
-                            std::string value) {
+void AppendToVectorTestTask(Vector<std::string>* vector, std::string value) {
   vector->push_back(value);
 }
 
 void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
-                                 std::vector<int>* vector,
+                                 Vector<int>* vector,
                                  int* reentrant_count,
                                  int max_reentrant_count) {
   vector->push_back((*reentrant_count)++);
@@ -91,7 +91,7 @@ class SchedulerHelperTest : public testing::Test {
 };
 
 TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
-  std::vector<std::string> run_order;
+  Vector<std::string> run_order;
   default_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   default_task_runner_->PostTask(
@@ -109,7 +109,7 @@ TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
 
 TEST_F(SchedulerHelperTest, TestRentrantTask) {
   int count = 0;
-  std::vector<int> run_order;
+  Vector<int> run_order;
   default_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(AppendToVectorReentrantTask,
                                 base::RetainedRef(default_task_runner_),
@@ -127,7 +127,7 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 }
 
 TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
-  std::vector<std::string> run_order;
+  Vector<std::string> run_order;
   scheduler_helper_->DefaultTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   scheduler_helper_->DefaultTaskRunner()->PostTask(

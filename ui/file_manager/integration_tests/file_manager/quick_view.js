@@ -1068,4 +1068,46 @@
     chrome.test.assertEq(
         'file-list', element.attributes['id'], '#file-list should be focused');
   };
+
+  /**
+   * Test opening Quick View when Directory Tree is focused it should display if
+   * there is only 1 file/folder selected in the file list.
+   */
+  testcase.openQuickViewFromDirectoryTree = async () => {
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+    // Focus Directory Tree.
+    await remoteCall.focus(appId, ['#directory-tree']);
+
+    // Ctrl+A to select the only file.
+    const ctrlA = ['#directory-tree', 'a', true, false, false];
+    await remoteCall.fakeKeyDown(appId, ...ctrlA);
+
+    // Use selection menu button to open Quick View.
+    await simulateUiClick(appId, '#selection-menu-button:not([hidden])');
+
+    // Wait because WebUI Menu ignores the following click if it happens in
+    // <200ms from the previous click.
+    await wait(300);
+
+    // Click the Menu item to show the Quick View.
+    const getInfoMenuItem = '#file-context-menu:not([hidden]) ' +
+        ' [command="#get-info"]:not([hidden])';
+    await simulateUiClick(appId, getInfoMenuItem);
+
+    // Check: the Quick View dialog should be shown.
+    const caller = getCaller();
+    await repeatUntil(async () => {
+      const query = ['#quick-view', '#dialog[open]'];
+      const elements = await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [query, ['display']]);
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return true;
+    });
+  };
 })();

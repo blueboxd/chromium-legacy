@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 
 #include <memory>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -28,6 +27,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using base::sequence_manager::FakeTask;
 using base::sequence_manager::FakeTaskTiming;
@@ -395,11 +395,10 @@ TEST_F(PageSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
 
 namespace {
 
-void RunVirtualTimeRecorderTask(
-    const base::TickClock* clock,
-    MainThreadSchedulerImpl* scheduler,
-    std::vector<base::TimeTicks>* out_real_times,
-    std::vector<base::TimeTicks>* out_virtual_times) {
+void RunVirtualTimeRecorderTask(const base::TickClock* clock,
+                                MainThreadSchedulerImpl* scheduler,
+                                Vector<base::TimeTicks>* out_real_times,
+                                Vector<base::TimeTicks>* out_virtual_times) {
   out_real_times->push_back(clock->NowTicks());
   out_virtual_times->push_back(scheduler->GetVirtualTimeDomain()->Now());
 }
@@ -407,8 +406,8 @@ void RunVirtualTimeRecorderTask(
 base::OnceClosure MakeVirtualTimeRecorderTask(
     const base::TickClock* clock,
     MainThreadSchedulerImpl* scheduler,
-    std::vector<base::TimeTicks>* out_real_times,
-    std::vector<base::TimeTicks>* out_virtual_times) {
+    Vector<base::TimeTicks>* out_real_times,
+    Vector<base::TimeTicks>* out_virtual_times) {
   return base::BindOnce(&RunVirtualTimeRecorderTask, base::Unretained(clock),
                         base::Unretained(scheduler),
                         base::Unretained(out_real_times),
@@ -417,8 +416,8 @@ base::OnceClosure MakeVirtualTimeRecorderTask(
 }  // namespace
 
 TEST_F(PageSchedulerImplTest, VirtualTime_TimerFastForwarding) {
-  std::vector<base::TimeTicks> real_times;
-  std::vector<base::TimeTicks> virtual_times;
+  Vector<base::TimeTicks> real_times;
+  Vector<base::TimeTicks> virtual_times;
 
   page_scheduler_->EnableVirtualTime();
 
@@ -460,8 +459,8 @@ TEST_F(PageSchedulerImplTest, VirtualTime_TimerFastForwarding) {
 }
 
 TEST_F(PageSchedulerImplTest, VirtualTime_LoadingTaskFastForwarding) {
-  std::vector<base::TimeTicks> real_times;
-  std::vector<base::TimeTicks> virtual_times;
+  Vector<base::TimeTicks> real_times;
+  Vector<base::TimeTicks> virtual_times;
 
   page_scheduler_->EnableVirtualTime();
 
@@ -528,14 +527,14 @@ TEST_F(PageSchedulerImplTest,
 
 namespace {
 
-void RunOrderTask(int index, std::vector<int>* out_run_order) {
+void RunOrderTask(int index, Vector<int>* out_run_order) {
   out_run_order->push_back(index);
 }
 
 void DelayedRunOrderTask(
     int index,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::vector<int>* out_run_order) {
+    Vector<int>* out_run_order) {
   out_run_order->push_back(index);
   task_runner->PostTask(FROM_HERE,
                         base::BindOnce(&RunOrderTask, index + 1,
@@ -544,7 +543,7 @@ void DelayedRunOrderTask(
 }  // namespace
 
 TEST_F(PageSchedulerImplTest, VirtualTime_NotAllowedToAdvance) {
-  std::vector<int> run_order;
+  Vector<int> run_order;
 
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   page_scheduler_->EnableVirtualTime();
@@ -574,7 +573,7 @@ TEST_F(PageSchedulerImplTest, VirtualTime_NotAllowedToAdvance) {
 }
 
 TEST_F(PageSchedulerImplTest, VirtualTime_AllowedToAdvance) {
-  std::vector<int> run_order;
+  Vector<int> run_order;
 
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
   page_scheduler_->EnableVirtualTime();
@@ -618,7 +617,7 @@ TEST_F(PageSchedulerImplTest, RepeatingTimer_PageInBackground) {
 }
 
 TEST_F(PageSchedulerImplTest, VirtualTimeSettings_NewFrameScheduler) {
-  std::vector<int> run_order;
+  Vector<int> run_order;
 
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   page_scheduler_->EnableVirtualTime();
@@ -635,7 +634,7 @@ TEST_F(PageSchedulerImplTest, VirtualTimeSettings_NewFrameScheduler) {
           base::TimeDelta::FromMilliseconds(1));
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_TRUE(run_order.empty());
+  EXPECT_TRUE(run_order.IsEmpty());
 
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
   test_task_runner_->FastForwardUntilNoTasksRemain();
@@ -874,7 +873,7 @@ TEST_F(PageSchedulerImplTest, NestedMessageLoop_DETERMINISTIC_LOADING) {
 }
 
 TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
-  std::vector<int> run_order;
+  Vector<int> run_order;
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
       FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
@@ -888,7 +887,7 @@ TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
                                            base::Unretained(&run_order)));
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_TRUE(run_order.empty());
+  EXPECT_TRUE(run_order.IsEmpty());
 
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
   test_task_runner_->FastForwardUntilNoTasksRemain();
@@ -897,8 +896,8 @@ TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
 }
 
 TEST_F(PageSchedulerImplTest, VirtualTimeBudgetExhaustedCallback) {
-  std::vector<base::TimeTicks> real_times;
-  std::vector<base::TimeTicks> virtual_times;
+  Vector<base::TimeTicks> real_times;
+  Vector<base::TimeTicks> virtual_times;
 
   page_scheduler_->EnableVirtualTime();
 
@@ -1069,7 +1068,7 @@ TEST_F(PageSchedulerImplTest, MaxVirtualTimeTaskStarvationCountZero) {
 namespace {
 
 void ExpensiveTestTask(scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-                       std::vector<base::TimeTicks>* run_times) {
+                       Vector<base::TimeTicks>* run_times) {
   run_times->push_back(task_runner->GetMockTickClock()->NowTicks());
   task_runner->AdvanceMockTickClock(base::TimeDelta::FromMilliseconds(250));
 }
@@ -1099,7 +1098,7 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
   EXPECT_FALSE(page_scheduler_->IsThrottled());
 
-  std::vector<base::TimeTicks> run_times;
+  Vector<base::TimeTicks> run_times;
   frame_scheduler_ =
       FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
                                  FrameScheduler::FrameType::kSubframe);
@@ -1162,7 +1161,7 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
   std::unique_ptr<PageSchedulerImpl> page_scheduler(
       new PageSchedulerImpl(nullptr, scheduler_.get()));
 
-  std::vector<base::TimeTicks> run_times;
+  Vector<base::TimeTicks> run_times;
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler1 =
       FrameSchedulerImpl::Create(page_scheduler.get(), nullptr, nullptr,
@@ -1557,8 +1556,8 @@ class PageSchedulerImplPageTransitionTest : public PageSchedulerImplTest {
     transition_counts_[static_cast<int>(transition)] += 1;
   }
 
-  std::vector<Bucket> GetExpectedBuckets() {
-    std::vector<Bucket> buckets;
+  Vector<Bucket> GetExpectedBuckets() {
+    Vector<Bucket> buckets;
     for (int i = 0; i <= static_cast<int>(Transition::kMaxValue); i++) {
       if (transition_counts_[i] > 0)
         buckets.push_back(Bucket(i, transition_counts_[i]));
@@ -1578,7 +1577,7 @@ class PageSchedulerImplPageTransitionTest : public PageSchedulerImplTest {
   }
 
  protected:
-  std::vector<int> transition_counts_;
+  Vector<int> transition_counts_;
 };
 
 TEST_F(PageSchedulerImplPageTransitionTest,

@@ -74,6 +74,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -2190,6 +2191,22 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     ASSERT_TRUE(host);
     host->DispatchKeyEventPostIME(&key_event);
     *output = "tabKeyDispatched";
+    return;
+  }
+
+  if (name == "simulateClick") {
+    int click_x;
+    int click_y;
+    ASSERT_TRUE(value.GetInteger("clickX", &click_x));
+    ASSERT_TRUE(value.GetInteger("clickY", &click_y));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    auto* last_window = app_windows.front();
+
+    SimulateMouseClickAt(last_window->web_contents(), 0 /* modifiers */,
+                         blink::WebMouseEvent::Button::kLeft,
+                         gfx::Point(click_x, click_y));
     return;
   }
 

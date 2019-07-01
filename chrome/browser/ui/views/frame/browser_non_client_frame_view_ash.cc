@@ -183,7 +183,7 @@ void BrowserNonClientFrameViewAsh::Init() {
   browser_view()->immersive_mode_controller()->AddObserver(this);
   ash::SplitViewNotifier::Get()->AddObserver(this);
 
-  UpdateFrameColors();
+  UpdateFrameColor();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,6 +241,35 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
 
 int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
   return BrowserFrameHeaderAsh::GetThemeBackgroundXInset();
+}
+
+void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
+  aura::Window* window = frame()->GetNativeWindow();
+  base::Optional<SkColor> active_color, inactive_color;
+  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
+    active_color = GetFrameColor(kActive);
+    inactive_color = GetFrameColor(kInactive);
+  } else if (browser_view()->IsBrowserTypeHostedApp()) {
+    active_color = browser_view()->browser()->app_controller()->GetThemeColor();
+  } else if (!browser_view()->browser()->is_app()) {
+    // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
+    // the above Hosted App branch will render the theme color.
+    active_color =
+        base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
+            ? gfx::kGoogleGrey050
+            : SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
+  }
+
+  if (active_color) {
+    window->SetProperty(ash::kFrameActiveColorKey, *active_color);
+    window->SetProperty(ash::kFrameInactiveColorKey,
+                        inactive_color.value_or(*active_color));
+  } else {
+    window->ClearProperty(ash::kFrameActiveColorKey);
+    window->ClearProperty(ash::kFrameInactiveColorKey);
+  }
+
+  frame_header_->UpdateFrameColors();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
@@ -425,7 +454,7 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
 }
 
 void BrowserNonClientFrameViewAsh::OnThemeChanged() {
-  UpdateFrameColors();
+  UpdateFrameColor();
   BrowserNonClientFrameView::OnThemeChanged();
 }
 
@@ -697,35 +726,6 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
       frame(), browser_view(), GetCaptionColor(kActive),
       GetCaptionColor(kInactive)));
   AddChildView(hosted_app_button_container());
-}
-
-void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
-  aura::Window* window = frame()->GetNativeWindow();
-  base::Optional<SkColor> active_color, inactive_color;
-  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
-    active_color = GetFrameColor(kActive);
-    inactive_color = GetFrameColor(kInactive);
-  } else if (browser_view()->IsBrowserTypeHostedApp()) {
-    active_color = browser_view()->browser()->app_controller()->GetThemeColor();
-  } else if (!browser_view()->browser()->is_app()) {
-    // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
-    // the above Hosted App branch will render the theme color.
-    active_color =
-        base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-            ? gfx::kGoogleGrey050
-            : SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
-  }
-
-  if (active_color) {
-    window->SetProperty(ash::kFrameActiveColorKey, *active_color);
-    window->SetProperty(ash::kFrameInactiveColorKey,
-                        inactive_color.value_or(*active_color));
-  } else {
-    window->ClearProperty(ash::kFrameActiveColorKey);
-    window->ClearProperty(ash::kFrameInactiveColorKey);
-  }
-
-  frame_header_->UpdateFrameColors();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {

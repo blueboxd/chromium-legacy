@@ -476,7 +476,7 @@ TEST_F(MainThreadMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
   int total_duration = 0;
   struct TasksPerFrameStatus {
     FrameStatus frame_status;
-    std::vector<int> durations;
+    Vector<int> durations;
   };
   TasksPerFrameStatus test_data[] = {
       {FrameStatus::kSameOriginHidden,

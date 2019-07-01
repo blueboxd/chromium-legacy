@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_FUZZER_THREAD_POOL_MANAGER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 namespace sequence_manager {
@@ -62,7 +62,7 @@ class PLATFORM_EXPORT ThreadPoolManager {
   void WaitForAllThreads();
 
   // (Thread Safe)
-  std::vector<ThreadManager*> GetAllThreadManagers();
+  Vector<ThreadManager*> GetAllThreadManagers();
 
   // (Thread Safe) Used to return the thread manager of the |thread_id|'s entry
   // in |threads_| (modulo the number of entries).
@@ -141,14 +141,14 @@ class PLATFORM_EXPORT ThreadPoolManager {
   // Threads that are being managed/synchronized. For unit testing purposes,
   // make sure not to create threads at the same time (if the ordering matters)
   // since in this case the order will not be deterministic.
-  std::vector<std::unique_ptr<SimpleThread>> threads_;
+  Vector<std::unique_ptr<SimpleThread>> threads_;
 
   // ThreadManager instances associated to the managed threads. Values are not
   // stored in any particular order and there might not exist a manager for all
   // managed threads at any point in time (SimpleThread instances are created
   // before their corresponding ThreadManager, as this must happen on the actual
   // thread).
-  std::vector<ThreadManager*> thread_managers_;
+  Vector<ThreadManager*> thread_managers_;
 };
 
 }  // namespace sequence_manager

@@ -515,11 +515,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
-        TestCase("toolbarDeleteEntry").InGuestMode(),
-        TestCase("toolbarDeleteEntry"),
-        TestCase("toolbarRefreshButtonWithSelection").EnableArc()));
+    ::testing::Values(TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
+                      TestCase("toolbarDeleteEntry").InGuestMode(),
+                      TestCase("toolbarDeleteEntry"),
+                      TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
+                      TestCase("toolbarRefreshButtonHiddenInRecents")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     QuickView, /* quick_view.js */
@@ -557,7 +557,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewMtp"),
         TestCase("pressEnterOnInfoBoxToOpenClose"),
         TestCase("closeQuickView"),
-        TestCase("cantOpenQuickViewWithMultipleFiles")));
+        TestCase("cantOpenQuickViewWithMultipleFiles"),
+        TestCase("openQuickViewFromDirectoryTree")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */

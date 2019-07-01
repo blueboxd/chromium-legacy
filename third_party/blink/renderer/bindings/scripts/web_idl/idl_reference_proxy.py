@@ -7,29 +7,36 @@ from .common import WithIdentifier
 
 class Proxy(object):
     """
-    Proxies attributes of the target object.  The target object can be set
-    after the construction, but its attributes to proxy must be known in the
-    construction.
+    Proxies attribute access on this object to the target object.
     """
 
     def __init__(self, target_object=None, target_attributes=None):
+        """
+        Creates a new proxy to |target_object|.
+
+        Keyword arguments:
+        target_object -- The object to which attribute access is proxied.  This
+            can be set later by set_target_object.
+        target_attributes -- None or list of attribute names to be proxied.  If
+            None, all the attribute access is proxied.
+        """
+        if target_attributes is not None:
+            assert isinstance(target_attributes, (tuple, list))
+            assert all(isinstance(attr, str) for attr in target_attributes)
         self._target_object = target_object
         self._target_attributes = target_attributes
 
     def __getattr__(self, attribute):
         assert self._target_object
-        assert self._target_attributes
-        if attribute in self._target_attributes:
+        if (self._target_attributes is None
+                or attribute in self._target_attributes):
             return getattr(self._target_object, attribute)
         raise AttributeError
 
     def set_target_object(self, target_object):
         assert self._target_object is None
+        assert isinstance(target_object, object)
         self._target_object = target_object
-
-    def set_target_attributes(self, target_attributes):
-        assert self._target_attrributes is None
-        self._target_attributes = target_attributes
 
     @property
     def target_object(self):
@@ -37,43 +44,45 @@ class Proxy(object):
         return self._target_object
 
 
-class IdlReferenceFactory(object):
+class RefByIdFactory(object):
     """
-    Creates reference proxies to refer an IDL definition.
+    Creates a group of references that are later resolvable.
 
-    Because we cannot have direct references to IDL definitions until we
-    actually make the definitions, but we need the references to point to
-    definitions when compiling IDLs.
+    All the references created by this factory are grouped per factory, and you
+    can apply a function to all the references.  This allows you to resolve
+    all the references at very end of the compilation phases.
     """
 
-    class _IdlReference(Proxy, WithIdentifier):
+    class _RefById(Proxy, WithIdentifier):
         """
-        Proxies attributes of target object, that can be specified by an
-        identifier.
+        Represents a reference to an object specified with the given identifier,
+        which reference will be resolved later.
+
+        This reference is also a proxy to the object for convenience so that you
+        can treat this reference as if the object itself.
         """
 
-        def __init__(self, identifier):
-            Proxy.__init__(self)
+        def __init__(self, identifier, target_attributes=None):
+            Proxy.__init__(self, target_attributes=target_attributes)
             WithIdentifier.__init__(self, identifier)
 
-    def __init__(self):
-        self._idl_references = set()
-        self._resolved = False
+    def __init__(self, target_attributes):
+        self._references = set()
+        self._did_resolve = False
+        self._target_attributes = target_attributes
 
     def create(self, identifier):
-        assert not self._resolved
-        ref = IdlReferenceFactory._IdlReference(identifier)
-        self._idl_references.add(ref)
+        assert not self._did_resolve
+        ref = RefByIdFactory._RefById(identifier, self._target_attributes)
+        self._references.add(ref)
         return ref
 
     def resolve(self, resolver):
         """
-        Updates stored references' targets.
-
-        |resolver| is a callback function that takes a Proxy
-        instance and updates its target object.
+        Applies a callback function |resolver| to all the references created by
+        this factory.
         """
-        assert not self._resolved
-        self._resolved = True
-        for ref in self._idl_references:
+        assert not self._did_resolve
+        self._did_resolve = True
+        for ref in self._references:
             resolver(ref)

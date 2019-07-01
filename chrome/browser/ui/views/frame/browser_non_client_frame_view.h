@@ -104,7 +104,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Called by BrowserView to signal the frame color has changed and needs
   // to be repainted.
-  void UpdateFrameColor();
+  virtual void UpdateFrameColor();
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.

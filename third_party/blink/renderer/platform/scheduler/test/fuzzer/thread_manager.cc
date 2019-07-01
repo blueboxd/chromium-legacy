@@ -243,7 +243,7 @@ void ThreadManager::ExecuteSetQueueEnabledAction(
   TaskQueueWithVoters* chosen_task_queue =
       GetTaskQueueFor(action.task_queue_id());
 
-  if (chosen_task_queue->voters.empty()) {
+  if (chosen_task_queue->voters.IsEmpty()) {
     chosen_task_queue->voters.push_back(
         chosen_task_queue->queue.get()->CreateQueueEnabledVoter());
   }
@@ -305,7 +305,7 @@ void ThreadManager::ExecuteCancelTaskAction(
                                   NowTicks());
 
   AutoLock lock(lock_);
-  if (!pending_tasks_.empty()) {
+  if (!pending_tasks_.IsEmpty()) {
     size_t task_index = action.task_id() % pending_tasks_.size();
     pending_tasks_[task_index]->weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -393,16 +393,16 @@ void ThreadManager::DeleteTask(Task* task) {
 
 TaskQueueWithVoters* ThreadManager::GetTaskQueueFor(uint64_t task_queue_id) {
   AutoLock lock(lock_);
-  DCHECK(!task_queues_.empty());
+  DCHECK(!task_queues_.IsEmpty());
   return task_queues_[task_queue_id % task_queues_.size()].get();
 }
 
-const std::vector<SequenceManagerFuzzerProcessor::TaskForTest>&
+const Vector<SequenceManagerFuzzerProcessor::TaskForTest>&
 ThreadManager::ordered_tasks() const {
   return ordered_tasks_;
 }
 
-const std::vector<SequenceManagerFuzzerProcessor::ActionForTest>&
+const Vector<SequenceManagerFuzzerProcessor::ActionForTest>&
 ThreadManager::ordered_actions() const {
   return ordered_actions_;
 }

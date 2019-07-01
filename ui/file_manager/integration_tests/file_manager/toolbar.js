@@ -76,7 +76,6 @@ testcase.toolbarDeleteEntry = async () => {
 
 /**
  * Tests that refresh button hides in selection mode.
- *
  * Non-watchable volumes display refresh button so users can refresh the file
  * list content. However this button should be hidden when entering the
  * selection mode. crbug.com/978383
@@ -104,6 +103,23 @@ testcase.toolbarRefreshButtonWithSelection = async () => {
   // Ctrl+A to enter selection mode.
   const ctrlA = ['#file-list', 'a', true, false, false];
   await remoteCall.fakeKeyDown(appId, ...ctrlA);
+
+  // Check that the button should be hidden.
+  await remoteCall.waitForElement(appId, '#refresh-button[hidden]');
+};
+
+/**
+ * Tests that refresh button is not shown when Recent is selected.
+ */
+testcase.toolbarRefreshButtonHiddenInRecents = async () => {
+  // Open files app.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Navigate to Recent.
+  await remoteCall.waitAndClickElement(
+      appId, '#directory-tree [entry-label="Recent"]');
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Recent');
 
   // Check that the button should be hidden.
   await remoteCall.waitForElement(appId, '#refresh-button[hidden]');

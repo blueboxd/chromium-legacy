@@ -61,7 +61,6 @@ public final class TabHelpers {
         InfoBarContainer.from(tab);
 
         TabWebContentsObserver.from(tab);
-        TabGestureStateListener.from(tab);
         SwipeRefreshHandler.from(tab);
         TabFavicon.from(tab);
         TrustedCdn.from(tab);

@@ -594,7 +594,8 @@ class FileManager extends cr.EventTarget {
         assert(this.ui_.listContainer), assert(this.ui_.selectionMenuButton),
         assert(this.quickViewModel_), assert(this.taskController_),
         fileListSelectionModel, assert(this.quickViewUma_),
-        metadataBoxController, this.dialogType, assert(this.volumeManager_));
+        metadataBoxController, this.dialogType, assert(this.volumeManager_),
+        this.dialogDom_);
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       this.importController_ = new importer.ImportController(

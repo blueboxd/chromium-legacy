@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_FUZZER_THREAD_MANAGER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/sequence_manager_fuzzer_processor.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/task_queue_with_voters.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 namespace sequence_manager {
@@ -57,11 +57,11 @@ class PLATFORM_EXPORT ThreadManager {
       const google::protobuf::RepeatedPtrField<
           SequenceManagerTestDescription::Action>& initial_thread_actions);
 
-  const std::vector<SequenceManagerFuzzerProcessor::TaskForTest>&
-  ordered_tasks() const;
+  const Vector<SequenceManagerFuzzerProcessor::TaskForTest>& ordered_tasks()
+      const;
 
-  const std::vector<SequenceManagerFuzzerProcessor::ActionForTest>&
-  ordered_actions() const;
+  const Vector<SequenceManagerFuzzerProcessor::ActionForTest>& ordered_actions()
+      const;
 
  protected:
   class Task {
@@ -140,20 +140,20 @@ class PLATFORM_EXPORT ThreadManager {
 
   // For testing purposes, this should follow the order in which queues
   // were created on the thread in which |this| was instantiated.
-  std::vector<std::unique_ptr<TaskQueueWithVoters>> task_queues_;
+  Vector<std::unique_ptr<TaskQueueWithVoters>> task_queues_;
 
   // Used to be able to cancel pending tasks from the sequence manager. For
   // testing purposes, this should follow the order in which the tasks were
   // posted to the thread in which |this| was instantiated.
-  std::vector<std::unique_ptr<Task>> pending_tasks_;
+  Vector<std::unique_ptr<Task>> pending_tasks_;
 
   // For Testing. Used to log tasks in their order of execution on the
   // thread in which |this| was instantiated.
-  std::vector<SequenceManagerFuzzerProcessor::TaskForTest> ordered_tasks_;
+  Vector<SequenceManagerFuzzerProcessor::TaskForTest> ordered_tasks_;
 
   // For Testing. Used to log actions in their order of execution on the
   // thread in which |this| was instantiated.
-  std::vector<SequenceManagerFuzzerProcessor::ActionForTest> ordered_actions_;
+  Vector<SequenceManagerFuzzerProcessor::ActionForTest> ordered_actions_;
 
   // Outlives this class. |processor_| owns a thread pool manager that creates
   // threads.

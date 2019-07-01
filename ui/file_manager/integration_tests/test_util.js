@@ -1287,3 +1287,22 @@ async function getUserActionCount(name) {
     'userActionName': name,
   }));
 }
+
+/**
+ * Simulate Click in the UI in the middle of the element.
+ * @param{string} appId ID of the app that contains the element. NOTE: The click
+ *     is simulated on most recent window in the window system.
+ * @param {string|!Array<string>} query Query to the element to be clicked.
+ * @return {!Promise} A promise fulfilled after the click event.
+ */
+async function simulateUiClick(appId, query) {
+  const element =
+      await remoteCall.waitForElementStyles(appId, query, ['display']);
+  chrome.test.assertTrue(!!element, 'element for simulateUiClick not found');
+
+  // Find the middle of the element.
+  const x = Math.floor(element.renderedLeft + (element.renderedWidth / 2));
+  const y = Math.floor(element.renderedTop + (element.renderedHeight / 2));
+
+  return sendTestMessage({name: 'simulateClick', 'clickX': x, 'clickY': y});
+}

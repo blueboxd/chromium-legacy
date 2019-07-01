@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 namespace sequence_manager {
@@ -99,8 +99,7 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue();
 
   // Get the list of all task queue and voter pairs.
-  const std::vector<TaskQueueAndEnabledVoterPair>& GetAllTaskQueuesAndVoters()
-      const;
+  const Vector<TaskQueueAndEnabledVoterPair>& GetAllTaskQueuesAndVoters() const;
 
   // Gets the associated QueueEnabledVoter for the given task queue, or nullptr
   // if one doesn't exist.
@@ -177,7 +176,7 @@ class PLATFORM_EXPORT FrameTaskQueueController {
 
   // The list of all task queue and voter pairs for all QueueTypeInternal queue
   // types.
-  std::vector<TaskQueueAndEnabledVoterPair> all_task_queues_and_voters_;
+  Vector<TaskQueueAndEnabledVoterPair> all_task_queues_and_voters_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTaskQueueController);
 };

@@ -134,6 +134,18 @@ export function styleSheetFactory() {
   background: #77bbff;
 }
 
+:host(:disabled) {
+  opacity: 0.38;
+}
+
+/*
+ * display:inline-block in the :host ruleset overrides 'hidden' handling
+ * by the user agent.
+ */
+:host([hidden]) {
+  display: none;
+}
+
 `);
     }
     return styleSheet;

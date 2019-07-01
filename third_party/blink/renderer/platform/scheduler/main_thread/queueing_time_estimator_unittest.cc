@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/test/test_queueing_time_estimator_client.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace scheduler {
@@ -29,9 +29,9 @@ struct BucketExpectation {
 
 class QueueingTimeEstimatorTest : public testing::Test {
  protected:
-  static std::vector<BucketExpectation> GetFineGrained(
-      const std::vector<BucketExpectation>& expected) {
-    std::vector<BucketExpectation> fine_grained(expected.size());
+  static Vector<BucketExpectation> GetFineGrained(
+      const Vector<BucketExpectation>& expected) {
+    Vector<BucketExpectation> fine_grained(expected.size());
     for (size_t i = 0; i < expected.size(); ++i) {
       fine_grained[i].sample = expected[i].sample * 1000;
       fine_grained[i].count = expected[i].count;
@@ -41,7 +41,7 @@ class QueueingTimeEstimatorTest : public testing::Test {
 
   void TestHistogram(const std::string& name,
                      int total,
-                     const std::vector<BucketExpectation>& expectations) {
+                     const Vector<BucketExpectation>& expectations) {
     histogram_tester.ExpectTotalCount(name, total);
     int sum = 0;
     for (const auto& expected : expectations) {
@@ -79,9 +79,9 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
-  std::vector<BucketExpectation> expected = {{300, 1}};
+  Vector<BucketExpectation> expected = {{300, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 1, expected);
-  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  Vector<BucketExpectation> fine_grained = GetFineGrained(expected);
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration3", 1,
                 fine_grained);
 }
@@ -118,11 +118,11 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
                                    base::TimeDelta::FromMilliseconds(10500),
                                    base::TimeDelta::FromMilliseconds(5500),
                                    base::TimeDelta::FromMilliseconds(900)));
-  std::vector<BucketExpectation> expected = {
+  Vector<BucketExpectation> expected = {
       {900, 1}, {5500, 1}, {7600, 1}, {10500, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 5, expected);
   // Split here is different: only 7600 and 10500 get grouped up.
-  std::vector<BucketExpectation> fine_grained = {
+  Vector<BucketExpectation> fine_grained = {
       {900 * 1000, 1}, {5500 * 1000, 1}, {7600 * 1000, 2}, {15500 * 1000, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration3", 5,
                 fine_grained);
@@ -172,9 +172,9 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
                                    base::TimeDelta::FromMilliseconds(100)));
-  std::vector<BucketExpectation> expected = {{100, 2}};
+  Vector<BucketExpectation> expected = {{100, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
-  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  Vector<BucketExpectation> fine_grained = GetFineGrained(expected);
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration3", 2,
                 fine_grained);
 }
@@ -221,9 +221,9 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
                                    base::TimeDelta::FromMilliseconds(100)));
-  std::vector<BucketExpectation> expected = {{100, 2}};
+  Vector<BucketExpectation> expected = {{100, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
-  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  Vector<BucketExpectation> fine_grained = GetFineGrained(expected);
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration3", 2,
                 fine_grained);
 }
@@ -255,7 +255,7 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
   estimator.OnExecutionStarted(time);
   estimator.OnExecutionStopped(time);
 
-  std::vector<base::TimeDelta> expected_durations = {
+  Vector<base::TimeDelta> expected_durations = {
       base::TimeDelta::FromMilliseconds(900),
       base::TimeDelta::FromMilliseconds(1600),
       base::TimeDelta::FromMilliseconds(2100),
@@ -270,7 +270,7 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAreArray(expected_durations));
   // UMA reported only on disjoint windows.
-  std::vector<BucketExpectation> expected = {{0, 1}, {2500, 1}};
+  Vector<BucketExpectation> expected = {{0, 1}, {2500, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
 }
 
@@ -307,7 +307,7 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
   estimator.OnExecutionStarted(time);
   estimator.OnExecutionStopped(time);
 
-  std::vector<base::TimeDelta> expected_durations = {
+  Vector<base::TimeDelta> expected_durations = {
       base::TimeDelta::FromMilliseconds(400),
       base::TimeDelta::FromMilliseconds(600),
       base::TimeDelta::FromMilliseconds(625),
@@ -320,9 +320,9 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
       base::TimeDelta::FromMilliseconds(0)};
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAreArray(expected_durations));
-  std::vector<BucketExpectation> expected = {{0, 1}, {725, 1}};
+  Vector<BucketExpectation> expected = {{0, 1}, {725, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
-  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  Vector<BucketExpectation> fine_grained = GetFineGrained(expected);
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration3", 2,
                 fine_grained);
 }
@@ -363,7 +363,7 @@ TEST_F(QueueingTimeEstimatorTest,
   estimator.OnExecutionStarted(time);
   estimator.OnExecutionStopped(time);
 
-  std::vector<base::TimeDelta> expected_durations = {
+  Vector<base::TimeDelta> expected_durations = {
       base::TimeDelta::FromMilliseconds(0),
       base::TimeDelta::FromMilliseconds(0),
       base::TimeDelta::FromMilliseconds(0),
@@ -380,7 +380,7 @@ TEST_F(QueueingTimeEstimatorTest,
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAreArray(expected_durations));
-  std::vector<BucketExpectation> expected = {{325, 1}, {400, 1}};
+  Vector<BucketExpectation> expected = {{325, 1}, {400, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
   // The two values get grouped under the same bucket in the microsecond
   // version.
@@ -437,10 +437,9 @@ TEST_F(QueueingTimeEstimatorTest, DisabledEQTsWithSingleStepPerWindow) {
                                    base::TimeDelta::FromMilliseconds(1000),
                                    base::TimeDelta::FromMilliseconds(125),
                                    base::TimeDelta::FromMilliseconds(20)));
-  std::vector<BucketExpectation> expected = {
-      {0, 1}, {20, 1}, {125, 1}, {1000, 1}};
+  Vector<BucketExpectation> expected = {{0, 1}, {20, 1}, {125, 1}, {1000, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 4, expected);
-  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  Vector<BucketExpectation> fine_grained = GetFineGrained(expected);
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration3", 4,
                 fine_grained);
 }

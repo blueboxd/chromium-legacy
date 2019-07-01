@@ -165,10 +165,7 @@ class ToolbarController {
   /** @private */
   updateRefreshCommand_() {
     const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
-    this.refreshCommand_.disabled = !!volumeInfo && volumeInfo.watchable;
-    this.refreshCommand_.setHidden(
-        volumeInfo && volumeInfo.watchable ||
-        this.directoryModel_.getFileListSelection().getCheckSelectMode());
+    this.refreshCommand_.canExecuteChange(this.listContainer_.currentList);
   }
 
   /**

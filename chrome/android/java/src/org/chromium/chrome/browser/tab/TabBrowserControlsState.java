@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
@@ -176,19 +174,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
 
     private void updateEnabledState() {
         if (mTab.isFrozen()) return;
-
         update(BrowserControlsState.BOTH, getConstraints() != BrowserControlsState.HIDDEN);
-
-        WebContents webContents = mTab.getWebContents();
-        if (webContents != null) {
-            GestureListenerManager gestureManager =
-                    GestureListenerManager.fromWebContents(webContents);
-            FullscreenManager fullscreenManager = FullscreenManager.from(mTab);
-            if (gestureManager != null && fullscreenManager != null) {
-                gestureManager.updateMultiTouchZoomSupport(
-                        !fullscreenManager.getPersistentFullscreenMode());
-            }
-        }
     }
 
     /**

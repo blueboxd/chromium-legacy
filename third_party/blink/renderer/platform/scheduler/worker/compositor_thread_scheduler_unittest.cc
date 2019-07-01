@@ -71,14 +71,14 @@ class CompositorThreadInputPriorityTest : public CompositorThreadSchedulerTest {
 
 namespace {
 
-void RunTestTask(std::string name, std::vector<std::string>* log) {
+void RunTestTask(std::string name, Vector<std::string>* log) {
   log->push_back(name);
 }
 
 }  // namespace
 
 TEST_F(CompositorThreadInputPriorityTest, HighestPriorityInput) {
-  std::vector<std::string> run_order;
+  Vector<std::string> run_order;
 
   scheduler_->DefaultTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
@@ -104,7 +104,7 @@ class CompositorThreadNoInputPriorityTest
 };
 
 TEST_F(CompositorThreadNoInputPriorityTest, InputNotPrioritized) {
-  std::vector<std::string> run_order;
+  Vector<std::string> run_order;
 
   scheduler_->DefaultTaskQueue()->task_runner()->PostTask(
       FROM_HERE,

@@ -283,7 +283,7 @@ void IncrementCounter(int* counter) {
   ++*counter;
 }
 
-void RecordQueueName(std::string name, std::vector<std::string>* tasks) {
+void RecordQueueName(std::string name, Vector<std::string>* tasks) {
   tasks->push_back(std::move(name));
 }
 
@@ -579,7 +579,7 @@ TEST_F(FrameSchedulerImplTest, FramePostsCpuTasksThroughReloadRenavigate) {
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
-  std::vector<std::string> tasks;
+  Vector<std::string> tasks;
   LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RecordQueueName, LoadingTaskQueue()->GetName(), &tasks));

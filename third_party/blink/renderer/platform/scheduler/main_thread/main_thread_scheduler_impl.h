@@ -11,7 +11,6 @@
 #include <set>
 #include <stack>
 #include <string>
-#include <vector>
 
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"

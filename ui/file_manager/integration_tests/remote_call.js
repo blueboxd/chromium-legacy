@@ -344,6 +344,19 @@ RemoteCall.prototype.waitAndClickElement =
 };
 
 /**
+ * Shorthand for focusing an element.
+ * @param {AppWindow} appWindow Application window.
+ * @param {!Array<string>} query Query to specify the element to be focused.
+ * @param {Promise} Promise to be fulfilled with the focused element.
+ */
+RemoteCall.prototype.focus = async function(windowId, query) {
+  const element = await this.waitForElement(windowId, query);
+  const result = await this.callRemoteTestUtil('focus', windowId, query);
+  chrome.test.assertTrue(result, 'focus failed.');
+  return element;
+};
+
+/**
  * Class to manipulate the window in the remote extension.
  *
  * @param {string} extensionId ID of extension to be manipulated.

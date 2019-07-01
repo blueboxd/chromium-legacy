@@ -20,11 +20,12 @@ class QuickViewController {
    * @param {!MetadataBoxController} metadataBoxController
    * @param {DialogType} dialogType
    * @param {!VolumeManager} volumeManager
+   * @param {!HTMLElement} dialogDom
    */
   constructor(
       metadataModel, selectionHandler, listContainer, selectionMenuButton,
       quickViewModel, taskController, fileListSelectionModel, quickViewUma,
-      metadataBoxController, dialogType, volumeManager) {
+      metadataBoxController, dialogType, volumeManager, dialogDom) {
     /** @private {?FilesQuickView} */
     this.quickView_ = null;
 
@@ -69,6 +70,13 @@ class QuickViewController {
         this.onFileSelectionChanged_.bind(this));
     this.listContainer_.element.addEventListener(
         'keydown', this.onKeyDownToOpen_.bind(this));
+    dialogDom.addEventListener('command', event => {
+      // Selection menu command can be triggered with focus outside of file list
+      // or button e.g.: from the directory tree.
+      if (event.command.id === 'get-info') {
+        this.display_(QuickViewUma.WayToOpen.SELECTION_MENU);
+      }
+    });
     this.listContainer_.element.addEventListener('command', event => {
       if (event.command.id === 'get-info') {
         this.display_(QuickViewUma.WayToOpen.CONTEXT_MENU);

@@ -50,7 +50,7 @@ void SequenceManagerFuzzerProcessor::RunTest(
 }
 
 void SequenceManagerFuzzerProcessor::LogTaskForTesting(
-    std::vector<TaskForTest>* ordered_tasks,
+    Vector<TaskForTest>* ordered_tasks,
     uint64_t task_id,
     base::TimeTicks start_time,
     base::TimeTicks end_time) {
@@ -64,7 +64,7 @@ void SequenceManagerFuzzerProcessor::LogTaskForTesting(
 }
 
 void SequenceManagerFuzzerProcessor::LogActionForTesting(
-    std::vector<ActionForTest>* ordered_actions,
+    Vector<ActionForTest>* ordered_actions,
     uint64_t action_id,
     ActionForTest::ActionType type,
     base::TimeTicks start_time) {
@@ -75,12 +75,12 @@ void SequenceManagerFuzzerProcessor::LogActionForTesting(
                                 (start_time - initial_time_).InMilliseconds());
 }
 
-const std::vector<std::vector<SequenceManagerFuzzerProcessor::TaskForTest>>&
+const Vector<Vector<SequenceManagerFuzzerProcessor::TaskForTest>>&
 SequenceManagerFuzzerProcessor::ordered_tasks() const {
   return ordered_tasks_;
 }
 
-const std::vector<std::vector<SequenceManagerFuzzerProcessor::ActionForTest>>&
+const Vector<Vector<SequenceManagerFuzzerProcessor::ActionForTest>>&
 SequenceManagerFuzzerProcessor::ordered_actions() const {
   return ordered_actions_;
 }

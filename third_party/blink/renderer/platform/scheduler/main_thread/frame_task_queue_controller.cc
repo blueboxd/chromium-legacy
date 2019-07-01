@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace scheduler {
@@ -109,7 +109,7 @@ FrameTaskQueueController::NonLoadingTaskQueue(
   return it->value;
 }
 
-const std::vector<FrameTaskQueueController::TaskQueueAndEnabledVoterPair>&
+const Vector<FrameTaskQueueController::TaskQueueAndEnabledVoterPair>&
 FrameTaskQueueController::GetAllTaskQueuesAndVoters() const {
   return all_task_queues_and_voters_;
 }
@@ -246,7 +246,7 @@ bool FrameTaskQueueController::RemoveResourceLoadingTaskQueue(
   task_queue_enabled_voters_.erase(task_queue);
 
   bool found_task_queue = false;
-  for (auto it = all_task_queues_and_voters_.begin();
+  for (auto* it = all_task_queues_and_voters_.begin();
        it != all_task_queues_and_voters_.end(); ++it) {
     if (it->first == task_queue.get()) {
       found_task_queue = true;

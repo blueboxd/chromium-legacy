@@ -37,6 +37,7 @@ export class StdSwitchElement extends HTMLElement {
     this._initializeDOM();
 
     this.addEventListener('click', this._onClick);
+    this.addEventListener('keypress', this._onKeyPress);
   }
 
   attributeChangedCallback(attrName, oldValue, newValue) {
@@ -82,6 +83,15 @@ export class StdSwitchElement extends HTMLElement {
     this.on = !this.on;
     this.dispatchEvent(new Event('input', {bubbles: true}));
     this.dispatchEvent(new Event('change', {bubbles: true}));
+  }
+
+  // TODO(tkent): Make this private.
+  _onKeyPress(event) {
+    if (event.code == 'Space') {
+      // Do not scroll the page.
+      event.preventDefault();
+      this._onClick(event);
+    }
   }
 }
 

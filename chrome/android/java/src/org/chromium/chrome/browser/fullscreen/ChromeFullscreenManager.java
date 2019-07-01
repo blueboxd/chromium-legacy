@@ -341,10 +341,18 @@ public class ChromeFullscreenManager extends FullscreenManager
     public void setTab(@Nullable Tab tab) {
         Tab previousTab = getTab();
         super.setTab(tab);
-        if (tab != null && previousTab != getTab()) {
-            mBrowserVisibilityDelegate.showControlsTransient();
+        if (previousTab != tab) {
+            if (previousTab != null) {
+                TabGestureStateListener.from(previousTab).setFullscreenManager(null);
+            }
+            updateViewStateListener();
+            if (tab != null) {
+                mBrowserVisibilityDelegate.showControlsTransient();
+                updateMultiTouchZoomSupport(!getPersistentFullscreenMode());
+                TabGestureStateListener.from(tab).setFullscreenManager(this);
+            }
         }
-        if (previousTab != tab) updateViewStateListener();
+
         if (tab == null && !mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
             setPositionsForTabToNonFullscreen();
         }

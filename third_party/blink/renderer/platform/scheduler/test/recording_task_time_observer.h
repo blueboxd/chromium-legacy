@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_RECORDING_TASK_TIME_OBSERVER_H_
 
 #include <utility>
-#include <vector>
 
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "base/time/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace scheduler {
@@ -17,7 +17,7 @@ namespace scheduler {
 class RecordingTaskTimeObserver
     : public base::sequence_manager::TaskTimeObserver {
  public:
-  using Result = std::vector<std::pair<base::TimeTicks, base::TimeTicks>>;
+  using Result = Vector<std::pair<base::TimeTicks, base::TimeTicks>>;
 
   RecordingTaskTimeObserver();
   ~RecordingTaskTimeObserver() override;

@@ -4,7 +4,6 @@
 
 #include "components/safe_browsing/triggers/ad_sampler_trigger.h"
 
-#include "base/metrics/field_trial_params.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
@@ -231,24 +230,14 @@ TEST(AdSamplerTriggerTestFinch, FrequencyDenominatorFeature) {
             trigger_default.sampler_frequency_denominator_);
 
   const size_t kDenominatorInt = 12345;
-  base::FieldTrialList field_trial_list(nullptr);
 
-  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-      safe_browsing::kAdSamplerTriggerFeature.name, "Group");
-  std::map<std::string, std::string> feature_params;
+  base::FieldTrialParams feature_params;
   feature_params[std::string(
       safe_browsing::kAdSamplerFrequencyDenominatorParam)] =
       base::NumberToString(kDenominatorInt);
-  base::AssociateFieldTrialParams(safe_browsing::kAdSamplerTriggerFeature.name,
-                                  "Group", feature_params);
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      safe_browsing::kAdSamplerTriggerFeature.name, std::string());
-  feature_list->AssociateReportingFieldTrial(
-      safe_browsing::kAdSamplerTriggerFeature.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      safe_browsing::kAdSamplerTriggerFeature, feature_params);
 
   AdSamplerTrigger trigger_finch(nullptr, nullptr, nullptr, nullptr, nullptr);
   EXPECT_EQ(kDenominatorInt, trigger_finch.sampler_frequency_denominator_);

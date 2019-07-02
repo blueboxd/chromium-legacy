@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
@@ -61,6 +62,10 @@ class TestDataRetriever : public WebAppDataRetriever {
   void BuildDefaultDataToRetrieve(const GURL& url, const GURL& scope);
 
  private:
+  void ScheduleCompletionCallback();
+  void CallCompletionCallback();
+
+  base::OnceClosure completion_callback_;
   std::unique_ptr<WebApplicationInfo> web_app_info_;
 
   std::unique_ptr<blink::Manifest> manifest_;
@@ -70,6 +75,8 @@ class TestDataRetriever : public WebAppDataRetriever {
   GetIconsDelegate get_icons_delegate_;
 
   base::OnceClosure destruction_callback_;
+
+  base::WeakPtrFactory<TestDataRetriever> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);
 };

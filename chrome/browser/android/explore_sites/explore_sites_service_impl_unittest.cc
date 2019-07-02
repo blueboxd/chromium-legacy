@@ -5,9 +5,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
@@ -47,8 +45,6 @@ class ExploreSitesServiceImplTest : public testing::Test {
   ~ExploreSitesServiceImplTest() override = default;
 
   void SetUp() override {
-    field_trial_list_ = std::make_unique<base::FieldTrialList>(
-        std::make_unique<base::MockEntropyProvider>());
     std::unique_ptr<ExploreSitesStore> store =
         std::make_unique<ExploreSitesStore>(task_runner_);
     auto history_stats_reporter =
@@ -86,21 +82,9 @@ class ExploreSitesServiceImplTest : public testing::Test {
   void EnableFeatureWithNoOptions() { SetUpExperimentOption("", ""); }
 
   void SetUpExperimentOption(std::string option, std::string data) {
-    const std::string kTrialName = "trial_name";
-    const std::string kGroupName = "group_name";
-
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-    std::map<std::string, std::string> params = {{option, data}};
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(
-        chrome::android::kExploreSites.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    base::FieldTrialParams params = {{option, data}};
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        chrome::android::kExploreSites, params);
   }
 
   bool success() const { return success_; }
@@ -153,7 +137,6 @@ class ExploreSitesServiceImplTest : public testing::Test {
   };
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   std::unique_ptr<explore_sites::ExploreSitesServiceImpl> service_;
   bool success_;

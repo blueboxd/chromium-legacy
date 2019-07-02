@@ -9,13 +9,15 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -32,10 +34,10 @@ constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
 // static
 const char HomeButton::kViewClassName[] = "ash/HomeButton";
 
-HomeButton::HomeButton(ShelfView* shelf_view, Shelf* shelf)
-    : ShelfControlButton(shelf_view), controller_(this, shelf) {
-  DCHECK(shelf_view);
-  DCHECK(shelf);
+HomeButton::HomeButton(ShelfButtonDelegate* shelf_button_delegate)
+    : ShelfControlButton(shelf_button_delegate),
+      controller_(this, shelf_button_delegate) {
+  DCHECK(shelf_button_delegate);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   set_notify_action(Button::NOTIFY_ON_PRESS);
@@ -47,7 +49,7 @@ HomeButton::HomeButton(ShelfView* shelf_view, Shelf* shelf)
 HomeButton::~HomeButton() = default;
 
 void HomeButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (!controller_.MaybeHandleGestureEvent(event, shelf_view()))
+  if (!controller_.MaybeHandleGestureEvent(event))
     Button::OnGestureEvent(event);
 }
 
@@ -67,11 +69,16 @@ void HomeButton::OnPressed(app_list::AppListShowSource show_source,
                            base::TimeTicks time_stamp) {
   ShelfAction shelf_action =
       Shell::Get()->app_list_controller()->OnHomeButtonPressed(
-          shelf_view()->GetDisplayId(), show_source, time_stamp);
+          GetDisplayId(), show_source, time_stamp);
   if (shelf_action == SHELF_ACTION_APP_LIST_DISMISSED) {
     GetInkDrop()->SnapToActivated();
     GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
   }
+}
+
+int64_t HomeButton::GetDisplayId() const {
+  aura::Window* window = GetWidget()->GetNativeWindow();
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
 
 void HomeButton::PaintButtonContents(gfx::Canvas* canvas) {

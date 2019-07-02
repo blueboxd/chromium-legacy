@@ -8,9 +8,14 @@ option optimize_for = LITE_RUNTIME;
 
 package notifications.proto;
 
+// Custom key value pair associated with a notification.
+message CustomData {
+  optional string key = 1;
+  optional bytes value = 2;
+}
+
 // Stores data used to display a notification in the UI.
 // Next tag: 6
-// TODO(xingliu): Add other fields if necessary.
 message NotificationData {
   // Identifier of the notification.
   optional string id = 1;
@@ -21,11 +26,10 @@ message NotificationData {
   // Body text of the notification.
   optional string message = 3;
 
-  // The unique identifier of the icon of the notification. Each time we should
-  // only load one icon asynchronously into memory with the uuid.
-  optional string icon_uuid = 4;
+  // The unique identifiers of the icons on the notification. Each time we
+  // should only load icons asynchronously into memory.
+  repeated string icon_uuid = 4;
 
-  // URL of the web site responsible for showing the notification.
-  // TODO(xingliu): Replace this with custom client data.
-  optional string url = 5;
+  // Custom data associated with a notification.
+  repeated CustomData custom_data = 5;
 }

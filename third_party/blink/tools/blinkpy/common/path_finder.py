@@ -45,7 +45,7 @@ def add_bindings_scripts_dir_to_sys_path():
 
 
 def add_build_scripts_dir_to_sys_path():
-    path_to_build_scripts = os.path.join(get_source_dir(), 'build', 'scripts')
+    path_to_build_scripts = get_build_scripts_dir()
     if path_to_build_scripts not in sys.path:
         sys.path.insert(0, path_to_build_scripts)
 
@@ -93,6 +93,10 @@ def get_blinkpy_thirdparty_dir():
 
 def get_blink_tools_dir():
     return os.path.join(get_chromium_src_dir(), 'third_party', 'blink', 'tools')
+
+
+def get_build_scripts_dir():
+    return os.path.join(get_source_dir(), 'build', 'scripts')
 
 
 def add_blink_tools_dir_to_sys_path():

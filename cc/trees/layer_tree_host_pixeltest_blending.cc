@@ -132,7 +132,7 @@ class LayerTreeHostBlendingPixelTest
     gfx::Size bounds = layer->bounds();
     scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
     mask->SetIsDrawable(true);
-    mask->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    mask->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     mask->SetBounds(bounds);
 
     sk_sp<SkSurface> surface =

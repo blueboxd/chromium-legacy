@@ -134,6 +134,42 @@ struct TestCase {
   NetworkContextType network_context_type;
 };
 
+// Waits for the network connection type to be the specified value.
+class ConnectionTypeWaiter
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
+ public:
+  ConnectionTypeWaiter() : tracker_(content::GetNetworkConnectionTracker()) {
+    tracker_->AddNetworkConnectionObserver(this);
+  }
+
+  ~ConnectionTypeWaiter() override {
+    tracker_->RemoveNetworkConnectionObserver(this);
+  }
+
+  void Wait(network::mojom::ConnectionType expected_type) {
+    auto current_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+    network::NetworkConnectionTracker::ConnectionTypeCallback callback =
+        base::BindOnce(&ConnectionTypeWaiter::OnConnectionChanged,
+                       base::Unretained(this));
+    while (!tracker_->GetConnectionType(&current_type, std::move(callback)) ||
+           current_type != expected_type) {
+      run_loop_ = std::make_unique<base::RunLoop>(
+          base::RunLoop::Type::kNestableTasksAllowed);
+      run_loop_->Run();
+    }
+  }
+
+ private:
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  network::NetworkConnectionTracker* tracker_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
 // Tests the system, profile, and incognito profile NetworkContexts.
 class NetworkContextConfigurationBrowserTest
     : public InProcessBrowserTest,
@@ -194,6 +230,15 @@ class NetworkContextConfigurationBrowserTest
     if (is_incognito())
       incognito_ = CreateIncognitoBrowser();
     SimulateNetworkServiceCrashIfNecessary();
+
+#if defined(OS_CHROMEOS)
+    // On ChromeOS the connection type comes from a fake Shill service, which
+    // is configured with a fake ethernet connection asynchronously. Wait for
+    // the connection type to be available to avoid getting notified of the
+    // connection change halfway through the test.
+    ConnectionTypeWaiter().Wait(
+        network::mojom::ConnectionType::CONNECTION_ETHERNET);
+#endif
   }
 
   // Returns true if the NetworkContext being tested is associated with an
@@ -1500,14 +1545,8 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 
 // Test that when there's a proxy configuration at startup, the initial requests
 // use that configuration.
-// Flaky on CrOS only. http://crbug.com/922876
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestInitialProxyConfig DISABLED_TestInitialProxyConfig
-#else
-#define MAYBE_TestInitialProxyConfig TestInitialProxyConfig
-#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
-                       MAYBE_TestInitialProxyConfig) {
+                       TestInitialProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   TestProxyConfigured(/*expect_success=*/true);
@@ -1557,8 +1596,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpPacBrowserTest, HttpPac) {
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
 // file URLs.
 class NetworkContextConfigurationFilePacBrowserTest
-    : public NetworkContextConfigurationBrowserTest,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver {
+    : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationFilePacBrowserTest() {}
 
@@ -1580,37 +1618,8 @@ class NetworkContextConfigurationFilePacBrowserTest
         switches::kProxyPacUrl, net::FilePathToFileURL(pac_file_path).spec());
   }
 
-  void SetUpOnMainThread() override {
-    NetworkContextConfigurationBrowserTest::SetUpOnMainThread();
-
-    // The network service will have just been killed if network_service_state
-    // is kRestarted. Make sure it knows about the correct network state before
-    // continuing.
-    network::NetworkConnectionTracker* tracker =
-        content::GetNetworkConnectionTracker();
-    auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
-    run_loop_.reset(new base::RunLoop());
-    tracker->AddNetworkConnectionObserver(this);
-    while (!tracker->GetConnectionType(
-               &connection_type,
-               base::BindOnce(&NetworkContextConfigurationFilePacBrowserTest::
-                                  OnConnectionChanged,
-                              base::Unretained(this))) ||
-           connection_type == network::mojom::ConnectionType::CONNECTION_NONE) {
-      run_loop_->Run();
-      run_loop_.reset(new base::RunLoop());
-    }
-    tracker->RemoveNetworkConnectionObserver(this);
-  }
-
-  // network::NetworkConnectionTracker::NetworkConnectionObserver
-  void OnConnectionChanged(network::mojom::ConnectionType type) override {
-    run_loop_->Quit();
-  }
-
  private:
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationFilePacBrowserTest);
 };
@@ -1743,13 +1752,6 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
 // Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
-
-// There's an extra network change event on ChromeOS, likely from
-// NetworkChangeNotifierPosix that makes these tests flaky on ChromeOS when
-// there's an out of process network stack.
-//
-// TODO(https://crbug.com/927293): Fix that, and enable these tests on ChromeOS.
-#if !defined(OS_CHROMEOS)
 #define TEST_CASES(network_context_type)                               \
       TestCase({NetworkServiceState::kEnabled, network_context_type}), \
       TestCase({NetworkServiceState::kRestarted, network_context_type})
@@ -1805,7 +1807,5 @@ INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationFtpPacBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationHttpsStrippingPacBrowserTest);
-
-#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

@@ -10,28 +10,48 @@ class Proxy(object):
     Proxies attribute access on this object to the target object.
     """
 
-    def __init__(self, target_object=None, target_attributes=None):
+    def __init__(self,
+                 target_object=None,
+                 target_attrs=None,
+                 target_attrs_with_priority=None):
         """
         Creates a new proxy to |target_object|.
 
         Keyword arguments:
         target_object -- The object to which attribute access is proxied.  This
             can be set later by set_target_object.
-        target_attributes -- None or list of attribute names to be proxied.  If
-            None, all the attribute access is proxied.
+        target_attrs -- None or list of attribute names to be proxied.  If None,
+            all the attribute access is proxied.
+        target_attrs_with_priority -- None or list of attribute names to be
+            unconditionally proxied with priority over attributes defined on
+            |self|.  If None, no attribute has priority over own attributes.
         """
-        if target_attributes is not None:
-            assert isinstance(target_attributes, (tuple, list))
-            assert all(isinstance(attr, str) for attr in target_attributes)
+        if target_attrs is not None:
+            assert isinstance(target_attrs, (tuple, list))
+            assert all(isinstance(attr, str) for attr in target_attrs)
         self._target_object = target_object
-        self._target_attributes = target_attributes
+        self._target_attrs = target_attrs
+        self._target_attrs_with_priority = target_attrs_with_priority
 
     def __getattr__(self, attribute):
-        assert self._target_object
-        if (self._target_attributes is None
-                or attribute in self._target_attributes):
-            return getattr(self._target_object, attribute)
+        target_object = object.__getattribute__(self, '_target_object')
+        target_attrs = object.__getattribute__(self, '_target_attrs')
+        assert target_object
+        if target_attrs is None or attribute in target_attrs:
+            return getattr(target_object, attribute)
         raise AttributeError
+
+    def __getattribute__(self, attribute):
+        target_object = object.__getattribute__(self, '_target_object')
+        target_attrs = object.__getattribute__(self,
+                                               '_target_attrs_with_priority')
+        # It's okay to access own attributes, such as 'identifier', even when
+        # the target object is not yet resolved.
+        if target_object is None:
+            return object.__getattribute__(self, attribute)
+        if target_attrs is not None and attribute in target_attrs:
+            return getattr(target_object, attribute)
+        return object.__getattribute__(self, attribute)
 
     def set_target_object(self, target_object):
         assert self._target_object is None
@@ -49,8 +69,8 @@ class RefByIdFactory(object):
     Creates a group of references that are later resolvable.
 
     All the references created by this factory are grouped per factory, and you
-    can apply a function to all the references.  This allows you to resolve
-    all the references at very end of the compilation phases.
+    can apply a function to all the references.  This allows you to resolve all
+    the references at very end of the compilation phases.
     """
 
     class _RefById(Proxy, WithIdentifier):
@@ -62,18 +82,26 @@ class RefByIdFactory(object):
         can treat this reference as if the object itself.
         """
 
-        def __init__(self, identifier, target_attributes=None):
-            Proxy.__init__(self, target_attributes=target_attributes)
+        def __init__(self,
+                     identifier,
+                     target_attrs=None,
+                     target_attrs_with_priority=None):
+            Proxy.__init__(
+                self,
+                target_attrs=target_attrs,
+                target_attrs_with_priority=target_attrs_with_priority)
             WithIdentifier.__init__(self, identifier)
 
-    def __init__(self, target_attributes):
+    def __init__(self, target_attrs=None, target_attrs_with_priority=None):
         self._references = set()
         self._did_resolve = False
-        self._target_attributes = target_attributes
+        self._target_attrs = target_attrs
+        self._target_attrs_with_priority = target_attrs_with_priority
 
     def create(self, identifier):
         assert not self._did_resolve
-        ref = RefByIdFactory._RefById(identifier, self._target_attributes)
+        ref = RefByIdFactory._RefById(identifier, self._target_attrs,
+                                      self._target_attrs_with_priority)
         self._references.add(ref)
         return ref
 

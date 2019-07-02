@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 
-void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
+void AddHitTestRegion(FuzzedDataProvider* fuzz,
                       std::vector<viz::AggregatedHitTestRegion>* regions,
                       std::vector<viz::FrameSinkId>* frame_sink_ids,
                       const uint32_t depth = 0) {
@@ -40,7 +40,7 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
   gfx::Transform transform;
   if (fuzz->ConsumeBool() && fuzz->remaining_bytes() >= sizeof(transform)) {
     std::vector<uint8_t> matrix_bytes =
-        fuzz->ConsumeBytes(sizeof(gfx::Transform));
+        fuzz->ConsumeBytes<uint8_t>(sizeof(gfx::Transform));
     memcpy(&transform, matrix_bytes.data(), matrix_bytes.size());
   }
   regions->emplace_back(frame_sink_id, flags, rect, transform, child_count,
@@ -72,7 +72,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
   // Create the list of AggregatedHitTestRegion objects.
   std::vector<viz::AggregatedHitTestRegion> regions;
   std::vector<viz::FrameSinkId> frame_sink_ids;
-  base::FuzzedDataProvider fuzz(data, num_bytes);
+  FuzzedDataProvider fuzz(data, num_bytes);
   AddHitTestRegion(&fuzz, &regions, &frame_sink_ids);
 
   // Create the HitTestQuery and send hit-test data.

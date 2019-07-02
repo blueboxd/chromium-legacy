@@ -49,6 +49,7 @@ class InputConnectionImpl : public mojom::InputConnection {
       mojom::InputConnection::RequestTextInputStateCallback callback) override;
   void SetSelection(const gfx::Range& new_selection_range) override;
   void SendKeyEvent(mojom::KeyEventDataPtr data_ptr) override;
+  void SetCompositionRange(const gfx::Range& new_composition_range) override;
 
  private:
   // Starts the timer to send new TextInputState.

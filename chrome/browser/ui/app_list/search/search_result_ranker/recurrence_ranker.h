@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RECURRENCE_RANKER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RECURRENCE_RANKER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -57,7 +57,7 @@ class RecurrenceRanker {
   //  - Higher scores are better.
   //  - Score are guaranteed to be in the range [0,1].
   // The user-supplied |condition| can be ignored if it isn't needed.
-  base::flat_map<std::string, float> Rank(
+  std::map<std::string, float> Rank(
       const std::string& condition = std::string());
 
   // Returns a sorted vector of <target, score> pairs.
@@ -82,8 +82,8 @@ class RecurrenceRanker {
   // Return a pointer to the underlying storage of the FrecencyStore for targets
   // or conditions. These should not be used under normal use or ranking.
   // However, they are useful for custom cleanup logic.
-  base::flat_map<std::string, FrecencyStore::ValueData>* GetTargetData();
-  base::flat_map<std::string, FrecencyStore::ValueData>* GetConditionData();
+  FrecencyStore::ScoreTable* GetTargetData();
+  FrecencyStore::ScoreTable* GetConditionData();
 
   const char* GetPredictorNameForTesting() const;
 

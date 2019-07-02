@@ -51964,6 +51964,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Duplicate"/>
 </enum>
 
+<enum name="SendTabToSelfApplySyncChanges">
+  <int value="0" label="Total number of EntityChanges."/>
+  <int value="1" label="Number of EntityChanges that are deletions."/>
+  <int value="2" label="Number of EntityChanges that are invaled."/>
+  <int value="3" label="Number of EntityChanges that are expired."/>
+  <int value="4" label="Number of EntityChanges that are added."/>
+  <int value="5" label="Number of EntityChanges that are opened."/>
+  <int value="6" label="Number of EntityChanges that are removed."/>
+</enum>
+
 <enum name="SendTabToSelfClickResult">
   <int value="0" label="SendTabToSelf entry point is shown."/>
   <int value="1" label="SendTabToSelf target device is clicked."/>
@@ -51974,7 +51984,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Opened"/>
   <int value="1" label="Dismissed"/>
   <int value="2" label="Shown"/>
-  <int value="3" label="DismissedRemotely"/>
+  <int value="3" label="DismissedRemotely">
+    <obsolete>
+      Obsolete because it is useless after selfshare feature changed from
+      broadcasting to sending to one target device.
+    </obsolete>
+  </int>
+</enum>
+
+<enum name="SendTabToSelfNotifyLocalDevice">
+  <int value="0" label="Local"/>
+  <int value="1" label="Remote"/>
 </enum>
 
 <enum name="ServiceProcessEventType">
@@ -62301,6 +62321,60 @@ Full version information for the fingerprint enum values:
   <int value="999" label="SWAPERROR"/>
   <int value="1784" label="INVALID_USER_BUFFER"/>
   <int value="1816" label="NOT_ENOUGH_QUOTA"/>
+</enum>
+
+<enum name="WinIFileOperationError">
+  <int value="0" label="COPYENGINE_E_USER_CANCELLED"/>
+  <int value="1" label="COPYENGINE_E_CANCELLED"/>
+  <int value="2" label="COPYENGINE_E_REQUIRES_ELEVATION"/>
+  <int value="3" label="COPYENGINE_E_SAME_FILE"/>
+  <int value="4" label="COPYENGINE_E_DIFF_DIR"/>
+  <int value="5" label="COPYENGINE_E_MANY_SRC_1_DEST"/>
+  <int value="9" label="COPYENGINE_E_DEST_SUBTREE"/>
+  <int value="10" label="COPYENGINE_E_DEST_SAME_TREE"/>
+  <int value="11" label="COPYENGINE_E_FLD_IS_FILE_DEST"/>
+  <int value="12" label="COPYENGINE_E_FILE_IS_FLD_DEST"/>
+  <int value="13" label="COPYENGINE_E_FILE_TOO_LARGE"/>
+  <int value="14" label="COPYENGINE_E_REMOVABLE_FULL"/>
+  <int value="15" label="COPYENGINE_E_DEST_IS_RO_CD"/>
+  <int value="16" label="COPYENGINE_E_DEST_IS_RW_CD"/>
+  <int value="17" label="COPYENGINE_E_DEST_IS_R_CD"/>
+  <int value="18" label="COPYENGINE_E_DEST_IS_RO_DVD"/>
+  <int value="19" label="COPYENGINE_E_DEST_IS_RW_DVD"/>
+  <int value="20" label="COPYENGINE_E_DEST_IS_R_DVD"/>
+  <int value="21" label="COPYENGINE_E_SRC_IS_RO_CD"/>
+  <int value="22" label="COPYENGINE_E_SRC_IS_RW_CD"/>
+  <int value="23" label="COPYENGINE_E_SRC_IS_R_CD"/>
+  <int value="24" label="COPYENGINE_E_SRC_IS_RO_DVD"/>
+  <int value="25" label="COPYENGINE_E_SRC_IS_RW_DVD"/>
+  <int value="26" label="COPYENGINE_E_SRC_IS_R_DVD"/>
+  <int value="27" label="COPYENGINE_E_INVALID_FILES_SRC"/>
+  <int value="28" label="COPYENGINE_E_INVALID_FILES_DEST"/>
+  <int value="29" label="COPYENGINE_E_PATH_TOO_DEEP_SRC"/>
+  <int value="30" label="COPYENGINE_E_PATH_TOO_DEEP_DEST"/>
+  <int value="31" label="COPYENGINE_E_ROOT_DIR_SRC"/>
+  <int value="32" label="COPYENGINE_E_ROOT_DIR_DEST"/>
+  <int value="33" label="COPYENGINE_E_ACCESS_DENIED_SRC"/>
+  <int value="34" label="COPYENGINE_E_ACCESS_DENIED_DEST"/>
+  <int value="35" label="COPYENGINE_E_PATH_NOT_FOUND_SRC"/>
+  <int value="36" label="COPYENGINE_E_PATH_NOT_FOUND_DEST"/>
+  <int value="37" label="COPYENGINE_E_NET_DISCONNECT_SRC"/>
+  <int value="38" label="COPYENGINE_E_NET_DISCONNECT_DEST"/>
+  <int value="39" label="COPYENGINE_E_SHARING_VIOLATION_SRC"/>
+  <int value="40" label="COPYENGINE_E_SHARING_VIOLATION_DEST"/>
+  <int value="41" label="COPYENGINE_E_ALREADY_EXISTS_NORMAL"/>
+  <int value="42" label="COPYENGINE_E_ALREADY_EXISTS_READONLY"/>
+  <int value="43" label="COPYENGINE_E_ALREADY_EXISTS_SYSTEM"/>
+  <int value="44" label="COPYENGINE_E_ALREADY_EXISTS_FOLDER"/>
+  <int value="45" label="COPYENGINE_E_STREAM_LOSS"/>
+  <int value="46" label="COPYENGINE_E_EA_LOSS"/>
+  <int value="47" label="COPYENGINE_E_PROPERTY_LOSS"/>
+  <int value="48" label="COPYENGINE_E_PROPERTIES_LOSS"/>
+  <int value="49" label="COPYENGINE_E_ENCRYPTION_LOSS"/>
+  <int value="50" label="COPYENGINE_E_DISK_FULL"/>
+  <int value="51" label="COPYENGINE_E_DISK_FULL_CLEAN"/>
+  <int value="52" label="COPYENGINE_E_EA_NOT_SUPPORTED"/>
+  <int value="53" label="COPYENGINE_E_CANT_REACH_SOURCE"/>
 </enum>
 
 <enum name="WinJumplistCategory">

@@ -67,7 +67,6 @@ void DesktopNotificationHandler::DismissEntries(
   for (const std::string& guid : guids) {
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
         NotificationHandler::Type::SEND_TAB_TO_SELF, guid);
-    RecordNotificationHistogram(SendTabToSelfNotification::kDismissedRemotely);
   }
 }
 

@@ -12,7 +12,7 @@ NotificationData::NotificationData(const NotificationData& other) = default;
 
 bool NotificationData::operator==(const NotificationData& other) const {
   return id == other.id && title == other.title && message == other.message &&
-         url == other.url;
+         icons.size() == other.icons.size() && custom_data == other.custom_data;
 }
 
 NotificationData::~NotificationData() = default;

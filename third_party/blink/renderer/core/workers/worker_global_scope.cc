@@ -390,7 +390,7 @@ void WorkerGlobalScope::WorkerScriptFetchFinished(
     RunWorkerScript();
 }
 
-void WorkerGlobalScope::ReadyToRunClassicScript() {
+void WorkerGlobalScope::ReadyToRunWorkerScript() {
   DCHECK(IsContextThread());
 
   DCHECK_EQ(ScriptEvalState::kPauseAfterFetch, script_eval_state_);

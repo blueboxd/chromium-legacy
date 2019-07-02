@@ -13,6 +13,7 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -37,8 +38,8 @@ namespace {
 // Kiosk Next back button with permanent round rectangle background.
 class KioskNextBackButton : public BackButton {
  public:
-  explicit KioskNextBackButton(ShelfView* shelf_view)
-      : BackButton(shelf_view) {}
+  explicit KioskNextBackButton(ShelfButtonDelegate* shelf_button_delegate)
+      : BackButton(shelf_button_delegate) {}
   ~KioskNextBackButton() override = default;
 
  private:
@@ -65,8 +66,8 @@ class KioskNextBackButton : public BackButton {
 // Kiosk Next home button with permanent round rectangle background.
 class KioskNextHomeButton : public HomeButton {
  public:
-  KioskNextHomeButton(ShelfView* shelf_view, Shelf* shelf)
-      : HomeButton(shelf_view, shelf) {}
+  explicit KioskNextHomeButton(ShelfButtonDelegate* shelf_button_delegate)
+      : HomeButton(shelf_button_delegate) {}
   ~KioskNextHomeButton() override = default;
 
  private:
@@ -89,8 +90,7 @@ class KioskNextHomeButton : public HomeButton {
 
   void OnPressed(app_list::AppListShowSource show_source,
                  base::TimeTicks time_stamp) override {
-    Shell::Get()->home_screen_controller()->GoHome(
-        shelf_view()->GetDisplayId());
+    Shell::Get()->home_screen_controller()->GoHome(GetDisplayId());
   }
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextHomeButton);
@@ -160,7 +160,7 @@ std::unique_ptr<BackButton> KioskNextShelfView::CreateBackButton() {
 }
 
 std::unique_ptr<HomeButton> KioskNextShelfView::CreateHomeButton() {
-  return std::make_unique<KioskNextHomeButton>(this, shelf());
+  return std::make_unique<KioskNextHomeButton>(this);
 }
 
 }  // namespace ash

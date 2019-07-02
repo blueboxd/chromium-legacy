@@ -132,6 +132,10 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   if (SyscallSets::IsPrctl(sysno)) {
     return Allow();
   }
+
+  if (sysno == __NR_ftruncate) {
+    return Allow();
+  }
 #endif
 
   if (IsBaselinePolicyAllowed(sysno)) {

@@ -32,6 +32,8 @@
   cell.image = [UIImage imageNamed:self.iconImageName];
   if (self.selected) {
     cell.accessoryType = UITableViewCellAccessoryCheckmark;
+  } else {
+    cell.accessoryType = UITableViewCellAccessoryNone;
   }
 }
 

@@ -150,7 +150,17 @@ class LocationLine extends cr.EventTarget {
     const paths = relativePath.split('/');
     for (let i = 0; i < paths.length; i++) {
       currentUrl += '/' + encodeURIComponent(paths[i]);
-      components.push(new LocationLine.PathComponent(paths[i], currentUrl));
+      let path = paths[i];
+      if (i === 0 &&
+          locationInfo.rootType === VolumeManagerCommon.RootType.DOWNLOADS) {
+        if (path === 'Downloads') {
+          path = str('DOWNLOADS_DIRECTORY_LABEL');
+        }
+        if (path === 'PvmDefault') {
+          path = str('PLUGIN_VM_DIRECTORY_LABEL');
+        }
+      }
+      components.push(new LocationLine.PathComponent(path, currentUrl));
     }
 
     return components;

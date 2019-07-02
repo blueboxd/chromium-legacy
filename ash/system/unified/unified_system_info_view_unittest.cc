@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_info_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -12,6 +13,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/scoped_feature_list.h"
 
 namespace ash {
 
@@ -25,6 +27,10 @@ class UnifiedSystemInfoViewTest : public AshTestBase {
     model_ = std::make_unique<UnifiedSystemTrayModel>();
     controller_ = std::make_unique<UnifiedSystemTrayController>(model_.get());
     info_view_ = std::make_unique<UnifiedSystemInfoView>(controller_.get());
+
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndDisableFeature(
+        features::kManagedDeviceUIRedesign);
   }
 
   void TearDown() override {
@@ -41,6 +47,7 @@ class UnifiedSystemInfoViewTest : public AshTestBase {
   std::unique_ptr<UnifiedSystemTrayModel> model_;
   std::unique_ptr<UnifiedSystemTrayController> controller_;
   std::unique_ptr<UnifiedSystemInfoView> info_view_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemInfoViewTest);
 };

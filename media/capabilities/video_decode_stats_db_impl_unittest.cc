@@ -10,8 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -203,29 +201,14 @@ TEST_F(VideoDecodeStatsDBImplTest, ConfigureMaxFramesPerBuffer) {
   ASSERT_LT(new_max_frames_per_buffer, previous_max_frames_per_buffer);
 
   // Override field trial.
-  std::map<std::string, std::string> params;
+  base::FieldTrialParams params;
   params[VideoDecodeStatsDBImpl::kMaxFramesPerBufferParamName] =
       base::NumberToString(new_max_frames_per_buffer);
 
-  const std::string kTrialName = "TrialName";
-  const std::string kGroupName = "GroupName";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      media::kMediaCapabilitiesWithParameters, params);
 
-  field_trial_list.reset();
-  field_trial_list.reset(new base::FieldTrialList(nullptr));
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      media::kMediaCapabilitiesWithParameters.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
-  std::map<std::string, std::string> actual_params;
+  base::FieldTrialParams actual_params;
   EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
       media::kMediaCapabilitiesWithParameters, &actual_params));
   EXPECT_EQ(params, actual_params);
@@ -259,29 +242,14 @@ TEST_F(VideoDecodeStatsDBImplTest, ConfigureExpireDays) {
   ASSERT_LT(new_max_days_to_keep_stats, previous_max_days_to_keep_stats);
 
   // Override field trial.
-  std::map<std::string, std::string> params;
+  base::FieldTrialParams params;
   params[VideoDecodeStatsDBImpl::kMaxDaysToKeepStatsParamName] =
       base::NumberToString(new_max_days_to_keep_stats);
 
-  const std::string kTrialName = "TrialName";
-  const std::string kGroupName = "GroupName";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      media::kMediaCapabilitiesWithParameters, params);
 
-  field_trial_list.reset();
-  field_trial_list.reset(new base::FieldTrialList(nullptr));
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      media::kMediaCapabilitiesWithParameters.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
-  std::map<std::string, std::string> actual_params;
+  base::FieldTrialParams actual_params;
   EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
       media::kMediaCapabilitiesWithParameters, &actual_params));
   EXPECT_EQ(params, actual_params);
@@ -563,28 +531,12 @@ TEST_F(VideoDecodeStatsDBImplTest, EnableUnweightedEntries) {
   EXPECT_FALSE(GetEnableUnweightedEntries());
 
   // Override field trial.
-  std::map<std::string, std::string> params;
+  base::FieldTrialParams params;
   params[VideoDecodeStatsDBImpl::kEnableUnweightedEntriesParamName] = "true";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      media::kMediaCapabilitiesWithParameters, params);
 
-  const std::string kTrialName = "TrialName";
-  const std::string kGroupName = "GroupName";
-
-  field_trial_list.reset();
-  field_trial_list.reset(new base::FieldTrialList(nullptr));
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      media::kMediaCapabilitiesWithParameters.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
-  std::map<std::string, std::string> actual_params;
+  base::FieldTrialParams actual_params;
   EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
       media::kMediaCapabilitiesWithParameters, &actual_params));
   EXPECT_EQ(params, actual_params);

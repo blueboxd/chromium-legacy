@@ -58,7 +58,7 @@ const base::Feature kDriveFsMirroring{"DriveFsMirroring",
 
 // If enabled shows the visual signals feedback panel.
 const base::Feature kEnableFileManagerFeedbackPanel{
-    "EnableFeedbackPanel", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableFeedbackPanel", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the enhanced external media formatting dialog in the file manager,
 // with support for labelling and also NTFS/exFAT filesystems.

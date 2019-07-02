@@ -32,6 +32,13 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
         const FrameSinkId& id) = 0;
   };
 
+  // If provided in SetPreferredFrameInterval, this indicates that we don't have
+  // any preferred setting and should let the platform decide the display's
+  // refresh rate.
+  static constexpr base::TimeDelta UnspecifiedFrameInterval() {
+    return base::TimeDelta::FromSeconds(0);
+  }
+
   // This object should be created and held for the duration when surface
   // aggregation for a frame to be presented by the display is in progress. It
   // is used by the FrameRateDecider to keep track of surfaces drawn and updated

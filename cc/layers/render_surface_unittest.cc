@@ -21,6 +21,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
+#include "cc/test/fake_raster_source.h"
+
 namespace cc {
 namespace {
 
@@ -76,7 +78,7 @@ class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
   FakePictureLayerImplForRenderSurfaceTest(LayerTreeImpl* tree_impl, int id)
       : FakePictureLayerImpl(tree_impl,
                              id,
-                             Layer::LayerMaskType::MULTI_TEXTURE_MASK) {}
+                             Layer::LayerMaskType::SINGLE_TEXTURE_MASK) {}
 
   std::vector<gfx::Rect> quad_rects_;
 };
@@ -239,75 +241,6 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   EXPECT_EQ(origin, pass->transform_to_root_target);
 }
 
-TEST(RenderSurfaceTest, SanityCheckSurfaceDropsOccludedRenderPassDrawQuads) {
-  FakeImplTaskRunnerProvider task_runner_provider;
-  TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink =
-      FakeLayerTreeFrameSink::Create3d();
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
-  // Set a big enough viewport to show the entire render pass.
-  host_impl.active_tree()->SetDeviceViewportSize(gfx::Size(1000, 1000));
-
-  std::unique_ptr<LayerImpl> root_layer =
-      LayerImpl::Create(host_impl.active_tree(), 1);
-
-  int owning_layer_id = 2;
-  std::unique_ptr<LayerImpl> owning_layer =
-      LayerImpl::Create(host_impl.active_tree(), owning_layer_id);
-
-  int mask_layer_id = 3;
-  std::unique_ptr<FakePictureLayerImplForRenderSurfaceTest> mask_layer =
-      FakePictureLayerImplForRenderSurfaceTest::CreateMask(
-          host_impl.active_tree(), mask_layer_id);
-  mask_layer->SetBounds(gfx::Size(200, 100));
-  mask_layer->SetDrawsContent(true);
-  std::vector<gfx::Rect> quad_rects;
-  quad_rects.push_back(gfx::Rect(0, 0, 100, 100));
-  quad_rects.push_back(gfx::Rect(100, 0, 100, 100));
-  mask_layer->SetQuadRectsForTesting(quad_rects);
-
-  owning_layer->SetBounds(gfx::Size(200, 100));
-  owning_layer->SetDrawsContent(true);
-  owning_layer->test_properties()->SetMaskLayer(std::move(mask_layer));
-  root_layer->test_properties()->AddChild(std::move(owning_layer));
-  host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
-  host_impl.SetVisible(true);
-  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
-  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl.active_tree()->UpdateDrawProperties();
-
-  ASSERT_TRUE(
-      GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id)));
-  RenderSurfaceImpl* render_surface =
-      GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id));
-
-  gfx::Rect content_rect(0, 0, 200, 100);
-  gfx::Rect occluded(0, 0, 100, 100);
-
-  render_surface->SetContentRectForTesting(content_rect);
-  render_surface->set_occlusion_in_content_space(
-      Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
-                SimpleEnclosedRegion(occluded)));
-
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-  AppendQuadsData append_quads_data;
-
-  render_surface->AppendQuads(DRAW_MODE_HARDWARE, render_pass.get(),
-                              &append_quads_data);
-
-  ASSERT_EQ(1u, render_pass->shared_quad_state_list.size());
-  viz::SharedQuadState* shared_quad_state =
-      render_pass->shared_quad_state_list.front();
-
-  EXPECT_EQ(content_rect,
-            gfx::Rect(shared_quad_state->visible_quad_layer_rect));
-
-  // The quad (0, 0, 100, 100) is occluded and should be dropped.
-  ASSERT_EQ(1u, render_pass->quad_list.size());
-  EXPECT_EQ(gfx::Rect(100, 0, 100, 100).ToString(),
-            render_pass->quad_list.front()->rect.ToString());
-}
-
 TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
@@ -328,7 +261,11 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
   std::unique_ptr<FakePictureLayerImplForRenderSurfaceTest> mask_layer =
       FakePictureLayerImplForRenderSurfaceTest::CreateMask(
           host_impl.active_tree(), mask_layer_id);
+
   mask_layer->SetBounds(gfx::Size(200, 100));
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(mask_layer->bounds()));
+  mask_layer->SetRasterSourceOnActive(raster_source, Region());
   mask_layer->SetDrawsContent(true);
   std::vector<gfx::Rect> quad_rects;
   quad_rects.push_back(gfx::Rect(0, 0, 100, 100));
@@ -345,10 +282,9 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 
-  ASSERT_TRUE(
-      GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id)));
   RenderSurfaceImpl* render_surface =
       GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id));
+  ASSERT_TRUE(render_surface);
 
   gfx::Rect content_rect(0, 0, 200, 100);
   gfx::Rect occluded(0, 0, 200, 100);
@@ -373,14 +309,9 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
 
   EXPECT_EQ(content_rect,
             gfx::Rect(shared_quad_state->visible_quad_layer_rect));
-
-  // Neither of the two quads should be occluded since mask occlusion is
-  // ignored.
-  ASSERT_EQ(2u, render_pass->quad_list.size());
-  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+  ASSERT_EQ(1u, render_pass->quad_list.size());
+  EXPECT_EQ(gfx::Rect(0, 0, 200, 100).ToString(),
             render_pass->quad_list.front()->rect.ToString());
-  EXPECT_EQ(gfx::Rect(100, 0, 100, 100).ToString(),
-            render_pass->quad_list.back()->rect.ToString());
 }
 
 }  // namespace

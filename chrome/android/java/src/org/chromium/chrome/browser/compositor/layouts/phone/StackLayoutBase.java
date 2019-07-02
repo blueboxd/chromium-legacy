@@ -62,7 +62,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -1636,6 +1635,17 @@ public abstract class StackLayoutBase extends Layout {
         compositorAnimator.setStartDelay(startTime);
         compositorAnimator.start();
 
+        for (int i = mLayoutAnimations.size() - 1; i >= 0; i--) {
+            if (mLayoutAnimations.get(i).second == property
+                    && !mLayoutAnimations.get(i).first.isRunning()) {
+                mLayoutAnimations.set(i,
+                        new Pair<CompositorAnimator, FloatProperty>(compositorAnimator, property));
+
+                requestUpdate();
+                return;
+            }
+        }
+
         mLayoutAnimations.add(
                 new Pair<CompositorAnimator, FloatProperty>(compositorAnimator, property));
 
@@ -1658,15 +1668,9 @@ public abstract class StackLayoutBase extends Layout {
      * @param prop   The property to search for.
      */
     protected void cancelAnimation(FloatProperty<StackLayoutBase> property) {
-        Pair<CompositorAnimator, FloatProperty> a;
-        Iterator<Pair<CompositorAnimator, FloatProperty>> animationIterator =
-                mLayoutAnimations.iterator();
-
-        while (animationIterator.hasNext()) {
-            a = animationIterator.next();
-            if (a.second == property) {
-                a.first.cancel();
-                animationIterator.remove();
+        for (int i = mLayoutAnimations.size() - 1; i >= 0; i--) {
+            if (mLayoutAnimations.get(i).second == property) {
+                mLayoutAnimations.get(i).first.cancel();
             }
         }
     }

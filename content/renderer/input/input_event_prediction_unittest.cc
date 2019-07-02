@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/common/content_features.h"
@@ -63,25 +61,10 @@ class InputEventPredictionTest : public testing::Test {
 
   void ConfigureFieldTrial(const base::Feature& feature,
                            const std::string& predictor_type) {
-    const std::string kTrialName = "TestTrial";
-    const std::string kGroupName = "TestGroup";
-
-    field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(nullptr));
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     params["predictor"] = predictor_type;
-    base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-        kTrialName, kGroupName, params);
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        feature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    base::FeatureList::ClearInstanceForTesting();
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(feature, params);
 
     EXPECT_EQ(params["predictor"],
               GetFieldTrialParamValueByFeature(feature, "predictor"));
@@ -98,7 +81,6 @@ class InputEventPredictionTest : public testing::Test {
   std::unique_ptr<InputEventPrediction> event_predictor_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventPredictionTest);
 };

@@ -51,6 +51,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
                                     InstallResultCode code);
   void SetNextUninstallExternalWebAppResult(const GURL& app_url,
                                             bool uninstalled);
+  void SetNextCanSkipAppUpdateForSync(bool can_skip_app_update_for_sync);
 
   std::unique_ptr<WebApplicationInfo> web_app_info() {
     return std::move(web_app_info_copy_);
@@ -77,6 +78,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
   base::Optional<AppId> next_app_id_;
   base::Optional<InstallResultCode> next_result_code_;
   std::map<GURL, bool> next_uninstall_external_web_app_results_;
+  bool next_can_skip_app_update_for_sync_ = false;
 
   int num_create_os_shortcuts_calls_ = 0;
   int num_reparent_tab_calls_ = 0;

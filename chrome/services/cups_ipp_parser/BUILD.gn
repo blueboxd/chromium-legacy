@@ -7,7 +7,7 @@ import("//printing/buildflags/buildflags.gni")
 
 enable_service = use_cups && is_chromeos
 
-source_set("lib") {
+source_set("cups_ipp_parser") {
   sources = [
     "cups_ipp_parser_service.cc",
     "cups_ipp_parser_service.h",

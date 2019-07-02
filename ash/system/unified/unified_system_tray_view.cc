@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
@@ -18,6 +19,7 @@
 #include "ash/system/unified/notification_hidden_view.h"
 #include "ash/system/unified/page_indicator_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
+#include "ash/system/unified/unified_managed_device_view.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -270,6 +272,11 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   system_tray_container_->AddChildView(page_indicator_view_);
   system_tray_container_->AddChildView(sliders_container_);
   system_tray_container_->AddChildView(system_info_view_);
+
+  if (features::IsManagedDeviceUIRedesignEnabled()) {
+    managed_device_view_ = new UnifiedManagedDeviceView();
+    system_tray_container_->AddChildView(managed_device_view_);
+  }
 
   detailed_view_container_->SetVisible(false);
   AddChildView(detailed_view_container_);

@@ -33,8 +33,7 @@ void FakePredictor::Train(unsigned int target, unsigned int condition) {
   counts_[target] += 1.0f;
 }
 
-base::flat_map<unsigned int, float> FakePredictor::Rank(
-    unsigned int condition) {
+std::map<unsigned int, float> FakePredictor::Rank(unsigned int condition) {
   return counts_;
 }
 
@@ -59,8 +58,7 @@ DefaultPredictor::~DefaultPredictor() {}
 
 void DefaultPredictor::Train(unsigned int target, unsigned int condition) {}
 
-base::flat_map<unsigned int, float> DefaultPredictor::Rank(
-    unsigned int condition) {
+std::map<unsigned int, float> DefaultPredictor::Rank(unsigned int condition) {
   LogUsageError(UsageError::kInvalidRankCall);
   NOTREACHED();
   return {};
@@ -104,7 +102,7 @@ void ConditionalFrequencyPredictor::TrainWithDelta(unsigned int target,
   events.total += delta;
 }
 
-base::flat_map<unsigned int, float> ConditionalFrequencyPredictor::Rank(
+std::map<unsigned int, float> ConditionalFrequencyPredictor::Rank(
     unsigned int condition) {
   const auto& it = table_.find(condition);
   // If the total frequency is zero, we can't return any meaningful results, so
@@ -112,7 +110,7 @@ base::flat_map<unsigned int, float> ConditionalFrequencyPredictor::Rank(
   if (it == table_.end() || it->second.total == 0.0f)
     return {};
 
-  base::flat_map<unsigned int, float> result;
+  std::map<unsigned int, float> result;
   const auto& events = it->second;
   for (const auto& target_freq : events.freqs)
     result[target_freq.first] = target_freq.second / events.total;
@@ -162,9 +160,8 @@ void FrecencyPredictor::Train(unsigned int target, unsigned int condition) {
   data.last_score += 1.0f - decay_coeff_;
 }
 
-base::flat_map<unsigned int, float> FrecencyPredictor::Rank(
-    unsigned int condition) {
-  base::flat_map<unsigned int, float> result;
+std::map<unsigned int, float> FrecencyPredictor::Rank(unsigned int condition) {
+  std::map<unsigned int, float> result;
   for (auto& pair : targets_) {
     DecayScore(&pair.second);
     result[pair.first] = pair.second.last_score;
@@ -194,7 +191,7 @@ void FrecencyPredictor::FromProto(const RecurrencePredictorProto& proto) {
 
   num_updates_ = predictor.num_updates();
 
-  base::flat_map<unsigned int, TargetData> targets;
+  std::map<unsigned int, TargetData> targets;
   for (const auto& target_data : predictor.targets()) {
     targets[target_data.id()] = {target_data.last_score(),
                                  target_data.last_num_updates()};
@@ -258,9 +255,8 @@ void HourBinPredictor::Train(unsigned int target, unsigned int condition) {
   (*frequency_table.mutable_frequency())[target] += 1;
 }
 
-base::flat_map<unsigned int, float> HourBinPredictor::Rank(
-    unsigned int condition) {
-  base::flat_map<unsigned int, float> ranks;
+std::map<unsigned int, float> HourBinPredictor::Rank(unsigned int condition) {
+  std::map<unsigned int, float> ranks;
   const auto& frequency_table_map = proto_.binned_frequency_table();
   for (const auto& hour_and_weight : bin_weights_) {
     // Find adjacent bin and weight.
@@ -347,11 +343,10 @@ void MarkovPredictor::Train(unsigned int target, unsigned int condition) {
   previous_target_ = target;
 }
 
-base::flat_map<unsigned int, float> MarkovPredictor::Rank(
-    unsigned int condition) {
+std::map<unsigned int, float> MarkovPredictor::Rank(unsigned int condition) {
   if (previous_target_)
     return frequencies_.Rank(previous_target_.value());
-  return base::flat_map<unsigned int, float>();
+  return std::map<unsigned int, float>();
 }
 
 void MarkovPredictor::ToProto(RecurrencePredictorProto* proto) const {

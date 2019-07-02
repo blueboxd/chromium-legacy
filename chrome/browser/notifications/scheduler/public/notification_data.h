@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_NOTIFICATION_DATA_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_NOTIFICATION_DATA_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -16,8 +18,9 @@ namespace notifications {
 // persisted to disk as protobuffer NotificationData. The clients of
 // notification scheduler can optionally use the texts or icon in this struct,
 // or retrieving the hard coded assets and rewrites the data before notification
-// is shown.
+// is shown in NotificationSchedulerClient::BeforeShowNotification().
 struct NotificationData {
+  using CustomData = std::map<std::string, std::string>;
   NotificationData();
   NotificationData(const NotificationData& other);
   bool operator==(const NotificationData& other) const;
@@ -34,11 +37,13 @@ struct NotificationData {
   // The body text of the notification.
   base::string16 message;
 
-  // The bitmap for the small icon.
-  SkBitmap icon;
+  // A list of icons. On Android, the first element will be used as small icon,
+  // the second as large icon(optional).
+  std::vector<SkBitmap> icons;
 
-  // URL of the web site responsible for showing the notification.
-  std::string url;
+  // Custom key value pair data associated with each notification. Will be sent
+  // back after user interaction.
+  CustomData custom_data;
 };
 
 }  // namespace notifications

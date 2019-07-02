@@ -181,15 +181,15 @@ class CustomTabSessionImpl
     UMA_HISTOGRAM_ENUMERATION("Arc.CustomTabs.SessionEndReason",
                               session_end_reason);
     auto elapsed = lifetime_timer_.Elapsed();
-    UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.All", elapsed);
+    UMA_HISTOGRAM_LONG_TIMES("Arc.CustomTabs.SessionLifetime2.All", elapsed);
     switch (session_end_reason) {
       case SessionEndReason::CLOSED:
-        UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.Closed",
-                                   elapsed);
+        UMA_HISTOGRAM_LONG_TIMES("Arc.CustomTabs.SessionLifetime2.Closed",
+                                 elapsed);
         break;
       case SessionEndReason::FORWARDED_TO_NORMAL_TAB:
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Arc.CustomTabs.SessionLifetime.ForwardedToNormalTab", elapsed);
+        UMA_HISTOGRAM_LONG_TIMES(
+            "Arc.CustomTabs.SessionLifetime2.ForwardedToNormalTab", elapsed);
         break;
     }
   }

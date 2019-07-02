@@ -1,6 +1,7 @@
 # tags: [ linux mac win ]
 # tags: [ debug ]
 # tags: [ amd amd-0x6613 intel ]
+# results: [ Failure RetryOnFailure Skip ]
 
 crbug.com/599776 [ win amd ] ScreenshotSync_GPURasterWithCanvas [ RetryOnFailure ]
 crbug.com/599776 [ mac intel ] ScreenshotSync_GPURasterWithCanvas [ RetryOnFailure ]

@@ -1217,6 +1217,15 @@
           android:readPermission="android.permission.GLOBAL_SEARCH"/>
     </provider>
     <provider
+        android:authorities="org.chromium.chrome.DownloadFileProvider"
+        android:exported="false"
+        android:grantUriPermissions="true"
+        android:name="org.chromium.chrome.browser.download.DownloadFileProvider">
+      <meta-data
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/file_paths"/>
+    </provider>
+    <provider
         android:authorities="org.chromium.chrome.FileProvider"
         android:exported="false"
         android:grantUriPermissions="true"

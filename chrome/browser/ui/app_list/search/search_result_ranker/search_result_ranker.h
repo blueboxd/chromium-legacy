@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
@@ -70,10 +70,10 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   float results_list_boost_coefficient_ = 0.0f;
 
   // Stores the scores produced by |results_list_group_ranker_|.
-  base::flat_map<std::string, float> group_ranks_;
+  std::map<std::string, float> group_ranks_;
 
   // Stores the scores produced by |query_based_mixed_types_ranker|.
-  base::flat_map<std::string, float> query_mixed_ranks_;
+  std::map<std::string, float> query_mixed_ranks_;
 
   // The |results_list_group_ranker_| and |query_based_mixed_types_ranker_| are
   // models for two different experiments. Only one will be constructed.

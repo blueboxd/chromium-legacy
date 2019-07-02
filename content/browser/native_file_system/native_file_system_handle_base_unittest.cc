@@ -28,7 +28,11 @@ class TestNativeFileSystemHandle : public NativeFileSystemHandleBase {
                              const BindingContext& context,
                              const storage::FileSystemURL& url,
                              const SharedHandleState& handle_state)
-      : NativeFileSystemHandleBase(manager, context, url, handle_state) {}
+      : NativeFileSystemHandleBase(manager,
+                                   context,
+                                   url,
+                                   handle_state,
+                                   /*is_directory=*/false) {}
 
  private:
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override {

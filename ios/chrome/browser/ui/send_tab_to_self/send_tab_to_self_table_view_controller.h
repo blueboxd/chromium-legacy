@@ -10,12 +10,16 @@
 namespace send_tab_to_self {
 class SendTabToSelfModel;
 }
+
+@protocol SendTabToSelfModalDelegate;
+
 // SendTabToSelfTableViewController represents the content for the
 // Send Tab To Self Modal dialog.
 @interface SendTabToSelfTableViewController : ChromeTableViewController
 
 - (instancetype)initWithModel:
-    (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel
+                    (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel
+                     delegate:(id<SendTabToSelfModalDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

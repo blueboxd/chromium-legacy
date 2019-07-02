@@ -193,18 +193,14 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   if (raster_source_->IsSolidColor()) {
-    // TODO(sunxd): Solid color non-mask layers are forced to have contents
-    // scale = 1. This is a workaround to temperarily fix
-    // https://crbug.com/796558.
-    // We need to investigate into the ca layers logic and remove this
-    // workaround after fixing the bug.
-    float max_contents_scale =
-        !(mask_type_ == Layer::LayerMaskType::MULTI_TEXTURE_MASK)
-            ? 1
-            : CanHaveTilings() ? ideal_contents_scale_
-                               : std::min(kMaxIdealContentsScale,
-                                          std::max(GetIdealContentsScale(),
-                                                   MinimumContentsScale()));
+    // TODO(979672): This is still hard-coded at 1.0. This has some history:
+    //  - for crbug.com/769319, the contents scale was allowed to change, to
+    //    avoid blurring on high-dpi screens.
+    //  - for crbug.com/796558, the max device scale was hard-coded back to 1.0
+    //    for single-tile masks, to avoid problems with transforms.
+    // To avoid those transform/scale bugs, this is currently left at 1.0. See
+    // crbug.com/979672 for more context and test links.
+    float max_contents_scale = 1;
 
     // The downstream CA layers use shared_quad_state to generate resources of
     // the right size even if it is a solid color picture layer.
@@ -430,7 +426,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
           float alpha =
               (SkColorGetA(draw_info.solid_color()) * (1.0f / 255.0f)) *
               shared_quad_state->opacity;
-          if (mask_type_ == Layer::LayerMaskType::MULTI_TEXTURE_MASK ||
+          if (mask_type_ != Layer::LayerMaskType::NOT_MASK ||
               alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();

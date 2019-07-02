@@ -58,6 +58,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 // TODO(crbug.com/952461): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kMultiDisplayOverviewAndSplitView;
 
+// Enables the redesigned managed device info UI in the system tray.
+ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
+
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 
@@ -109,6 +112,8 @@ ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsManagedDeviceUIRedesignEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 

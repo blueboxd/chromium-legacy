@@ -40,16 +40,15 @@ bool BookmarkAppRegistrar::IsInstalled(const GURL& start_url) const {
   // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
   // or check the web extent (hosted apps).
   for (const scoped_refptr<const Extension>& extension : extensions) {
-    if (!extension->is_hosted_app())
+    if (!extension->from_bookmark())
       continue;
 
     if (!BookmarkAppIsLocallyInstalled(profile(), extension.get()))
       continue;
 
-    if (extension->web_extent().MatchesURL(start_url) ||
-        AppLaunchInfo::GetLaunchWebURL(extension.get()) == start_url) {
+    DCHECK(extension->web_extent().is_empty());
+    if (AppLaunchInfo::GetLaunchWebURL(extension.get()) == start_url)
       return true;
-    }
   }
   return false;
 }

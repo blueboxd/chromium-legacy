@@ -55,7 +55,7 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
                 int v_stride,
                 const base::TimeDelta& duration,
                 bool force_keyframe,
-                std::string* const output_data,
+                std::string& output_data,
                 bool* const keyframe);
 
   // Returns true if |codec_config| has been filled in at least once.

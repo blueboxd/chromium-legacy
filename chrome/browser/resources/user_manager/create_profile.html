@@ -2,6 +2,7 @@
 
 <link rel="import" href="/profile_browser_proxy.html">
 <link rel="import" href="/shared_styles.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.html">
@@ -14,13 +15,11 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 
 <dom-module id="create-profile">
   <template>
-    <style
-        include="shared-styles iron-positioning md-select">
+    <style include="shared-styles iron-positioning md-select">
       :host {
         align-self: center;
       }
@@ -140,14 +139,13 @@
       <div id="actions">
         <paper-spinner-lite active="[[isSpinnerActive_(createInProgress_)]]">
         </paper-spinner-lite>
-        <paper-button id="cancel" class="cancel-button"
-            on-tap="onCancelTap_">
+        <cr-button id="cancel" class="cancel-button" on-click="onCancelTap_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button id="save" class="action-button" on-tap="onSaveTap_"
+        </cr-button>
+        <cr-button id="save" class="action-button" on-click="onSaveTap_"
             disabled="[[isSaveDisabled_(createInProgress_, profileName_)]]">
           $i18n{createProfileConfirm}
-        </paper-button>
+        </cr-button>
       </div>
     </div>
   </template>

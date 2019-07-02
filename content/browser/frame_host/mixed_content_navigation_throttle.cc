@@ -205,7 +205,8 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
                                                    handle_impl->GetURL());
         GetContentClient()->browser()->RecordURLMetric(
             "ContentSettings.MixedScript.RanMixedScript", origin_url);
-        mixed_content_features_.insert(MIXED_CONTENT_BLOCKABLE_ALLOWED);
+        mixed_content_features_.insert(
+            blink::mojom::WebFeature::kMixedContentBlockableAllowed);
       }
       break;
     }
@@ -271,13 +272,15 @@ FrameTreeNode* MixedContentNavigationThrottle::InWhichFrameIsContentMixed(
     // make sure we're not breaking the world without realizing it.
     if (mixed_content_node->current_origin().scheme() != url::kHttpsScheme) {
       mixed_content_features_.insert(
-          MIXED_CONTENT_IN_NON_HTTPS_FRAME_THAT_RESTRICTS_MIXED_CONTENT);
+          blink::mojom::WebFeature::
+              kMixedContentInNonHTTPSFrameThatRestrictsMixedContent);
     }
   } else if (!IsOriginSecure(url) &&
              (IsSecureScheme(root->current_origin().scheme()) ||
               IsSecureScheme(parent->current_origin().scheme()))) {
     mixed_content_features_.insert(
-        MIXED_CONTENT_IN_SECURE_FRAME_THAT_DOES_NOT_RESTRICT_MIXED_CONTENT);
+        blink::mojom::WebFeature::
+            kMixedContentInSecureFrameThatDoesNotRestrictMixedContent);
   }
   return mixed_content_node;
 }
@@ -297,25 +300,27 @@ void MixedContentNavigationThrottle::MaybeSendBlinkFeatureUsageReport() {
 void MixedContentNavigationThrottle::ReportBasicMixedContentFeatures(
     blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type) {
-  mixed_content_features_.insert(MIXED_CONTENT_PRESENT);
+  mixed_content_features_.insert(
+      blink::mojom::WebFeature::kMixedContentPresent);
 
   // Report any blockable content.
   if (mixed_content_context_type ==
       blink::WebMixedContentContextType::kBlockable) {
-    mixed_content_features_.insert(MIXED_CONTENT_BLOCKABLE);
+    mixed_content_features_.insert(
+        blink::mojom::WebFeature::kMixedContentBlockable);
     return;
   }
 
   // Note: as there's no mixed content checks for sub-resources on the browser
   // side there should only be a subset of RequestContextType values that could
   // ever be found here.
-  UseCounterFeature feature;
+  blink::mojom::WebFeature feature;
   switch (request_context_type) {
     case blink::mojom::RequestContextType::INTERNAL:
-      feature = MIXED_CONTENT_INTERNAL;
+      feature = blink::mojom::WebFeature::kMixedContentInternal;
       break;
     case blink::mojom::RequestContextType::PREFETCH:
-      feature = MIXED_CONTENT_PREFETCH;
+      feature = blink::mojom::WebFeature::kMixedContentPrefetch;
       break;
 
     case blink::mojom::RequestContextType::AUDIO:

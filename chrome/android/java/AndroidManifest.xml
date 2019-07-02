@@ -962,6 +962,14 @@ by a child template that "extends" this file.
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <provider android:name="org.chromium.chrome.browser.download.DownloadFileProvider"
+            android:authorities="{{ manifest_package }}.DownloadFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- Sync adapter for browser invalidation. -->
         <service android:name="org.chromium.chrome.browser.invalidation.ChromeBrowserSyncAdapterService"
             android:exported="false">

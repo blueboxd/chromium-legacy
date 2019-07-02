@@ -142,7 +142,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9c9af8ebc7ac365cf795689ee61b8c38afffc91d',
+  'skia_revision': '27c8b9fccce66a55d05565129a88e7e43fe3c2f7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -205,7 +205,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '0384e1a460f71631c2660348c7a4f29ef28d8baa',
+  'catapult_revision': '2c752374f1ec682dc41e179278071bc8621bff3e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '773a551d1ae4b8aee689e3c439ca71708f065ce6',
+  'dawn_revision': '521003fd4ea812776065c8f461bcb64751494d8b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -806,7 +806,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e355c1c23c8ac209d91885ef31a6dcc38fbc3cfd',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '16584a68b378caef055f936da36d044aee87865d',
       'condition': 'checkout_linux',
   },
 
@@ -1191,7 +1191,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' +  '181e4db475b31107b062a00fcecc06ded8c0ccfc',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' +  '499d07100fe9782de301798ccf0d87604428fb86',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1359,7 +1359,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '5985a0481e5350f39dbc9c3ec92f13739a9a05ba',
+    Var('webrtc_git') + '/src.git' + '@' + 'ebdf9f8163cf8ac85d626aa30596ca9e8aeacd7f',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1400,7 +1400,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5799362c2d2b7f598eb225c9dd1abeb2f3a47cc8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c76a279bf09845e1eb1cefa5212f6bf40819166c',
     'condition': 'checkout_src_internal',
   },
 

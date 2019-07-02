@@ -37,9 +37,9 @@ struct NotificationEntry {
   // shown.
   NotificationData notification_data;
 
-  // The unique identifier of the icon, which must be loaded asynchronously into
-  // memory.
-  std::string icon_uuid;
+  // The unique identifier of the icons, which must be loaded asynchronously
+  // into memory.
+  std::vector<std::string> icons_uuid;
 
   // Scheduling details.
   ScheduleParams schedule_params;

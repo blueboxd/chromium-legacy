@@ -347,6 +347,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
   bool IsConnectedToSerialPort() override;
+  bool HasNativeFileSystemDirectoryHandles() override;
+  bool HasWritableNativeFileSystemHandles() override;
   bool HasPictureInPictureVideo() override;
   bool IsCrashed() override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
@@ -953,6 +955,16 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // ports.
   void IncrementSerialActiveFrameCount();
   void DecrementSerialActiveFrameCount();
+
+  // Modify the counter of native file system directory handles for this
+  // WebContents.
+  void IncrementNativeFileSystemDirectoryHandleCount();
+  void DecrementNativeFileSystemDirectoryHandleCount();
+
+  // Modify the counter of native file system handles with write access for this
+  // WebContents.
+  void IncrementWritableNativeFileSystemHandleCount();
+  void DecrementWritableNativeFileSystemHandleCount();
 
   // Called when the WebContents gains or loses a persistent video.
   void SetHasPersistentVideo(bool has_persistent_video);
@@ -1782,6 +1794,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   size_t bluetooth_connected_device_count_ = 0;
   size_t serial_active_frame_count_ = 0;
+
+  size_t native_file_system_directory_handle_count_ = 0;
+  size_t native_file_system_writable_handle_count_ = 0;
 
   bool has_picture_in_picture_video_ = false;
 

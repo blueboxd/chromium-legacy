@@ -82,8 +82,11 @@ std::string DebugString(const NotificationData* data) {
   DCHECK(data);
   std::ostringstream stream;
   stream << " Notification Data: \n id:" << data->id
-         << " \n title:" << data->title << "\n message:" << data->message
-         << " \n url:" << data->url;
+         << " \n title:" << data->title << "\n message:" << data->message;
+  stream << " \n custom data: ";
+  for (const auto& pair : data->custom_data)
+    stream << " key:" << pair.first << " , value:" << pair.second;
+
   return stream.str();
 }
 
@@ -94,9 +97,13 @@ std::string DebugString(const NotificationEntry* entry) {
          << " \n guid: " << entry->guid << "\n create_time: "
          << entry->create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
          << " \n notification_data:" << DebugString(&entry->notification_data)
-         << " \n icon_id:" << entry->icon_uuid
          << " \n schedule params: priority:"
          << static_cast<int>(entry->schedule_params.priority);
+
+  stream << " \n icons_id:";
+  for (const auto& icon_id : entry->icons_uuid)
+    stream << icon_id << "  ";
+
   return stream.str();
 }
 

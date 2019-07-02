@@ -1293,4 +1293,9 @@ void RecordFirstBackgroundDownloadInterruptReason(
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+void RecordWinFileMoveError(int os_error) {
+  base::UmaHistogramSparse("Download.WinFileMoveError", os_error);
+}
+#endif  // defined(OS_WIN)
 }  // namespace download

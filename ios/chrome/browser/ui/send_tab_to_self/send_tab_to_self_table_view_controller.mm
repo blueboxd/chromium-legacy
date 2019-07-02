@@ -5,11 +5,13 @@
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_table_view_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
@@ -48,24 +50,32 @@ typedef NS_ENUM(NSInteger, ItemType) {
 };
 
 @interface SendTabToSelfTableViewController () {
+  // The mapping of device names to their releveant cache_guids, device types,
+  // and active times.
   std::map<std::string, send_tab_to_self::TargetDeviceInfo> _target_device_map;
 }
+// Item that holds the currently selected device.
+@property(nonatomic, strong) SendTabToSelfImageDetailTextItem* selectedItem;
 
-// Item that holds the cancel Button for this Infobar. e.g. "Never Save for this
-// site".
+// Delegate to handle dismisal and event actions.
+@property(nonatomic, weak) id<SendTabToSelfModalDelegate> delegate;
+
+// Item that holds the cancel Button for this modal dialog.
 @property(nonatomic, strong) TableViewTextButtonItem* sendToDevice;
 @end
 
 @implementation SendTabToSelfTableViewController
 
 - (instancetype)initWithModel:
-    (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel {
+                    (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel
+                     delegate:(id<SendTabToSelfModalDelegate>)delegate {
   self = [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
 
   if (self) {
     _target_device_map =
         sendTabToSelfModel->GetTargetDeviceNameToCacheInfoMap();
+    _delegate = delegate;
   }
   return self;
 }
@@ -85,7 +95,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
-                           action:nil];
+                           action:@selector(dismiss:)];
   cancelButton.accessibilityIdentifier = kSendTabToSelfModalCancelButton;
 
   self.navigationItem.leftBarButtonItem = cancelButton;
@@ -133,7 +143,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     if (iter == _target_device_map.begin()) {
       deviceItem.selected = YES;
+      self.selectedItem = deviceItem;
     }
+
+    deviceItem.cacheGuid = base::SysUTF8ToNSString(iter->second.cache_guid);
 
     [model addItem:deviceItem
         toSectionWithIdentifier:SectionIdentifierDevicesToSend];
@@ -154,7 +167,56 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierActionButton];
 }
 
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  ItemType itemType = static_cast<ItemType>(
+      [self.tableViewModel itemTypeForIndexPath:indexPath]);
+
+  if (itemType == ItemTypeSend) {
+    TableViewTextButtonCell* tableViewTextButtonCell =
+        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+    [tableViewTextButtonCell.button addTarget:self
+                                       action:@selector(sendTabWhenPressed:)
+                             forControlEvents:UIControlEventTouchUpInside];
+  }
+  return cell;
+}
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  DCHECK(item);
+  if (item.type == ItemTypeDevice) {
+    SendTabToSelfImageDetailTextItem* imageDetailTextItem =
+        base::mac::ObjCCastStrict<SendTabToSelfImageDetailTextItem>(item);
+    if (imageDetailTextItem == self.selectedItem) {
+      [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+      return;
+    }
+    self.selectedItem.selected = NO;
+    imageDetailTextItem.selected = YES;
+    [self reconfigureCellsForItems:@[ self.selectedItem, imageDetailTextItem ]];
+    self.selectedItem = imageDetailTextItem;
+    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+  }
+}
+
 #pragma mark - Helpers
+
+- (void)sendTabWhenPressed:(UIButton*)sender {
+  [self.delegate sendTabToTargetDeviceCacheGUID:self.selectedItem.cacheGuid];
+  [self.delegate dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)dismiss:(UIButton*)sender {
+  [self.delegate dismissViewControllerAnimated:YES completion:nil];
+}
 
 - (NSString*)sendTabToSelfdaysSinceLastUpdate:(int)days {
   NSString* active_time;

@@ -17,3 +17,10 @@ include_rules = [
   # //base/util can use //base but not vice versa.
   "-util",
 ]
+
+specific_include_rules = {
+  # Dependencies specific for fuzz targets and other fuzzing-related code.
+  ".*fuzz.*": [
+    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
+  ],
+}

@@ -91,10 +91,10 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     SharedWorkerThread* thread,
     base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
-  // When off-the-main-thread script fetch is enabled, ReadyToRunClassicScript()
+  // When off-the-main-thread script fetch is enabled, ReadyToRunWorkerScript()
   // will be called after an app cache is selected.
   if (!features::IsOffMainThreadSharedWorkerScriptFetchEnabled())
-    ReadyToRunClassicScript();
+    ReadyToRunWorkerScript();
 }
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
@@ -208,7 +208,7 @@ void SharedWorkerGlobalScope::Connect(MessagePortChannel channel) {
 void SharedWorkerGlobalScope::OnAppCacheSelected() {
   DCHECK(IsContextThread());
   DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-  ReadyToRunClassicScript();
+  ReadyToRunWorkerScript();
 }
 
 void SharedWorkerGlobalScope::DidReceiveResponseForClassicScript(

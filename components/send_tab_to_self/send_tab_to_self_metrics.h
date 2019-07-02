@@ -18,10 +18,10 @@ enum class SendTabToSelfNotification {
   kDismissed = 1,
   // A notification was shown from a remotely added entry.
   kShown = 2,
-  // A notification was dismissed remotely.
-  kDismissedRemotely = 3,
+  // 3 is once |kDismissedRemotely| and has been obsoleted.
+  // Numeric values should skip 3.
   // Update kMaxValue when new enums are added.
-  kMaxValue = kDismissedRemotely,
+  kMaxValue = kShown,
 };
 
 void RecordNotificationHistogram(SendTabToSelfNotification status);

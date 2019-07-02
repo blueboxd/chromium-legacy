@@ -287,6 +287,9 @@ float MixerInput::TargetVolume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   float volume = stream_volume_multiplier_ * type_volume_multiplier_ *
                  mute_volume_multiplier_;
+  // Volume is clamped after all gains have been multiplied, to avoid clipping.
+  // TODO(kmackay): Consider removing this clamp and use a postprocessor filter
+  // to avoid clipping instead.
   return std::max(0.0f, std::min(volume, 1.0f));
 }
 

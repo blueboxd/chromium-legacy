@@ -65,6 +65,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -165,6 +166,8 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
                               blink::FrameOcclusionState::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::NavigationBlockedReason,
                           blink::NavigationBlockedReason::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::WebFeature,
+                          blink::mojom::WebFeature::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
   IPC_STRUCT_TRAITS_MEMBER(observed_types)
@@ -1052,11 +1055,11 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdateUserActivationState,
 IPC_MESSAGE_ROUTED1(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                     bool /* value */)
 
-// Updates the renderer with a list of unique blink::UseCounter::Feature values
-// representing Blink features used, performed or encountered by the browser
-// during the current page load happening on the frame.
+// Updates the renderer with a list of unique WebFeature values representing
+// Blink features used, performed or encountered by the browser during the
+// current page load happening on the frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_BlinkFeatureUsageReport,
-                    std::set<int>) /* features */
+                    std::set<blink::mojom::WebFeature>) /* features */
 
 // Informs the renderer that mixed content was found by the browser. The
 // included data is used for instance to report to the CSP policy and to log to

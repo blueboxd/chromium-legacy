@@ -177,9 +177,9 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
                     base::TimeTicks timestamp));
 
   void OnEncodedAudio(const media::AudioParameters& params,
-                      std::unique_ptr<std::string> encoded_data,
+                      std::string encoded_data,
                       base::TimeTicks timestamp) {
-    EXPECT_TRUE(!encoded_data->empty());
+    EXPECT_TRUE(!encoded_data.empty());
 
     if (codec_ == AudioTrackRecorder::CodecId::OPUS) {
       // Decode |encoded_data| and check we get the expected number of frames
@@ -188,22 +188,22 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
           kDefaultSampleRate * kOpusBufferDurationMs / 1000,
           opus_decode_float(
               opus_decoder_,
-              reinterpret_cast<uint8_t*>(base::data(*encoded_data)),
-              encoded_data->size(), opus_buffer_.get(), kFramesPerBuffer, 0));
+              reinterpret_cast<uint8_t*>(base::data(encoded_data)),
+              encoded_data.size(), opus_buffer_.get(), kFramesPerBuffer, 0));
     } else if (codec_ == AudioTrackRecorder::CodecId::PCM) {
       // Manually confirm that we're getting the same data out as what we
       // generated from the sine wave.
-      for (size_t b = 0; b + 3 < encoded_data->size() &&
+      for (size_t b = 0; b + 3 < encoded_data.size() &&
                          first_source_cache_pos_ < first_source_cache_.size();
            b += sizeof(first_source_cache_[0]), ++first_source_cache_pos_) {
         float sample;
-        memcpy(&sample, &(*encoded_data)[b], 4);
+        memcpy(&sample, &(encoded_data)[b], 4);
         ASSERT_FLOAT_EQ(sample, first_source_cache_[first_source_cache_pos_])
             << "(Sample " << first_source_cache_pos_ << ")";
       }
     }
 
-    DoOnEncodedAudio(params, *encoded_data, timestamp);
+    DoOnEncodedAudio(params, std::move(encoded_data), timestamp);
   }
 
   // ATR and WebMediaStreamTrack for fooling it.

@@ -26,8 +26,7 @@ namespace ash {
 
 class AssistantOverlay;
 class HomeButton;
-class Shelf;
-class ShelfView;
+class ShelfButtonDelegate;
 
 // Controls behavior of the HomeButton, including a possible long-press
 // action (for Assistant).
@@ -37,16 +36,14 @@ class HomeButtonController : public AppListControllerObserver,
                              public TabletModeObserver,
                              public DefaultVoiceInteractionObserver {
  public:
-  HomeButtonController(HomeButton* button, Shelf* shelf);
+  HomeButtonController(HomeButton* button,
+                       ShelfButtonDelegate* shelf_button_delegate);
   ~HomeButtonController() override;
 
   // Maybe handles a gesture event based on the event and whether voice
-  // interaction is available.
-  // |shelf_view| is used to determine whether it is safe to animate the ripple.
-  //
-  // Returns true if the event is consumed; otherwise, HomeButton should pass
-  // the event along to Button to consume.
-  bool MaybeHandleGestureEvent(ui::GestureEvent* event, ShelfView* shelf_view);
+  // interaction is available. Returns true if the event is consumed; otherwise,
+  // HomeButton should pass the event along to Button to consume.
+  bool MaybeHandleGestureEvent(ui::GestureEvent* event);
 
   // Whether voice interaction is available via long-press.
   bool IsVoiceInteractionAvailable();
@@ -88,8 +85,8 @@ class HomeButtonController : public AppListControllerObserver,
   // The button that owns this controller.
   HomeButton* const button_;
 
-  // The shelf the button resides in.
-  Shelf* const shelf_;
+  // Delegate to communicate with the host view.
+  ShelfButtonDelegate* const shelf_button_delegate_;
 
   // Owned by the button's view hierarchy. Null if voice interaction is not
   // enabled.

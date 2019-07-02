@@ -280,6 +280,14 @@ suite('drag and drop', function() {
     assertDeepEquals(['11'], getDragIds());
   });
 
+  test('drag multiple list items preserve displaying order', function() {
+    // Dragging multiple items with different selection order.
+    store.data.selection.items = new Set(['15', '13']);
+    let dragElement = getListItem('13');
+    simulateDragStart(dragElement);
+    assertDeepEquals(['13', '15'], getDragIds());
+  });
+
   test('bookmarks from different profiles', function() {
     dndManager.handleChromeDragEnter_(createDragData(['11'], false));
 
@@ -351,6 +359,20 @@ suite('drag and drop', function() {
     assertEquals(
         DropPosition.NONE, dndManager.calculateValidDropPositions_(list));
   });
+
+  // This is a regression test for https://crbug.com/974525.
+  test(
+      'drag bookmark that is not in selected folder but in search result',
+      function() {
+        store.data.search.term = 'Asgore';
+        store.data.search.results = ['11', '13', '2'];
+        store.data.selectedFolder = null;
+        store.notifyObservers();
+
+        simulateDragStart(getListItem('13'));
+
+        assertDeepEquals(['13'], getDragIds());
+      });
 
   test('calculateDropInfo_', function() {
     function assertDropInfo(parentId, index, element, position) {

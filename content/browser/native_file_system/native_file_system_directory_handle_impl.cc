@@ -57,7 +57,11 @@ NativeFileSystemDirectoryHandleImpl::NativeFileSystemDirectoryHandleImpl(
     const BindingContext& context,
     const storage::FileSystemURL& url,
     const SharedHandleState& handle_state)
-    : NativeFileSystemHandleBase(manager, context, url, handle_state) {}
+    : NativeFileSystemHandleBase(manager,
+                                 context,
+                                 url,
+                                 handle_state,
+                                 /*is_directory=*/true) {}
 
 NativeFileSystemDirectoryHandleImpl::~NativeFileSystemDirectoryHandleImpl() =
     default;

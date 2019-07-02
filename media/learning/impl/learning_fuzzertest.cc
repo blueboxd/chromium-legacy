@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/fuzzed_data_provider.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/learning/impl/learning_task_controller_impl.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 using media::learning::FeatureValue;
 using media::learning::FeatureVector;
@@ -14,7 +14,7 @@ using media::learning::LearningTaskControllerImpl;
 using media::learning::ObservationCompletion;
 using media::learning::TargetValue;
 
-ValueDescription ConsumeValueDescription(base::FuzzedDataProvider* provider) {
+ValueDescription ConsumeValueDescription(FuzzedDataProvider* provider) {
   ValueDescription desc;
   desc.name = provider->ConsumeRandomLengthString(100);
   desc.ordering = provider->ConsumeEnum<LearningTask::Ordering>();
@@ -22,15 +22,15 @@ ValueDescription ConsumeValueDescription(base::FuzzedDataProvider* provider) {
   return desc;
 }
 
-double ConsumeDouble(base::FuzzedDataProvider* provider) {
-  std::vector<uint8_t> v = provider->ConsumeBytes(sizeof(double));
+double ConsumeDouble(FuzzedDataProvider* provider) {
+  std::vector<uint8_t> v = provider->ConsumeBytes<uint8_t>(sizeof(double));
   if (v.size() == sizeof(double))
     return reinterpret_cast<double*>(v.data())[0];
 
   return 0;
 }
 
-FeatureVector ConsumeFeatureVector(base::FuzzedDataProvider* provider) {
+FeatureVector ConsumeFeatureVector(FuzzedDataProvider* provider) {
   FeatureVector features;
   int n = provider->ConsumeIntegralInRange(0, 100);
   while (n-- > 0)
@@ -41,7 +41,7 @@ FeatureVector ConsumeFeatureVector(base::FuzzedDataProvider* provider) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  base::FuzzedDataProvider provider(data, size);
+  FuzzedDataProvider provider(data, size);
 
   LearningTask task;
   task.name = provider.ConsumeRandomLengthString(100);

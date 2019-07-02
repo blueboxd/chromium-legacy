@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -77,7 +77,7 @@ struct KeyEventData {
 // It is generated for each focused text field and passed to Android.
 // This interface will be closed when the focus moves to another text field.
 //
-// Next method ID: 7
+// Next method ID: 8
 [MinVersion=2]
 interface InputConnection {
   // Commits text to the focused text field and set the new cursor position.
@@ -106,6 +106,9 @@ interface InputConnection {
 
   // Sends a key event.
   [MinVersion=7] SendKeyEvent@6(KeyEventData key_event_data);
+
+  // Starts composition over a given range.
+  [MinVersion=8] SetCompositionRange@7(Range new_range);
 };
 
 // This interface is called by container when Android's InputMethodManager state

@@ -198,6 +198,7 @@ void ScopedFeatureList::InitWithFeaturesImpl(
     const std::vector<Feature>& enabled_features,
     const std::vector<FeatureAndParams>& enabled_features_and_params,
     const std::vector<Feature>& disabled_features) {
+  DCHECK(!init_called_);
   DCHECK(enabled_features.empty() || enabled_features_and_params.empty());
 
   Features merged_features;

@@ -158,10 +158,6 @@ bool HTMLScriptElement::async() const {
   return FastHasAttribute(kAsyncAttr) || loader_->IsNonBlocking();
 }
 
-KURL HTMLScriptElement::Src() const {
-  return GetDocument().CompleteURL(SourceAttributeValue());
-}
-
 String HTMLScriptElement::SourceAttributeValue() const {
   return getAttribute(kSrcAttr).GetString();
 }

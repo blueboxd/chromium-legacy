@@ -11,10 +11,11 @@
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/format_utils.h"
+#include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/native_pixmap.h"
 
 #if defined(USE_OZONE)
-#include "ui/gfx/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
@@ -123,6 +124,42 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   NOTREACHED();
 #endif  // defined(OS_LINUX)
   return handle;
+}
+
+scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
+    const VideoFrame* video_frame) {
+  DCHECK(video_frame);
+
+  // Create a native pixmap from the frame's memory buffer handle.
+  gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle =
+      CreateGpuMemoryBufferHandle(video_frame);
+  if (gpu_memory_buffer_handle.is_null()) {
+    VLOGF(1) << "Failed to create GPU memory handle from video frame";
+    return nullptr;
+  }
+
+  auto buffer_format =
+      VideoPixelFormatToGfxBufferFormat(video_frame->layout().format());
+  if (!buffer_format) {
+    VLOGF(1) << "Unexpected video frame format";
+    return nullptr;
+  }
+
+  scoped_refptr<gfx::NativePixmap> native_pixmap;
+#if defined(USE_OZONE)
+  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
+  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
+  native_pixmap = factory->CreateNativePixmapFromHandle(
+      gfx::kNullAcceleratedWidget, video_frame->layout().coded_size(),
+      *buffer_format, std::move(gpu_memory_buffer_handle.native_pixmap_handle));
+#endif
+  if (!native_pixmap) {
+    VLOGF(1) << "Failed to create pixmap from native handle";
+    return nullptr;
+  }
+
+  DCHECK(native_pixmap->AreDmaBufFdsValid());
+  return native_pixmap;
 }
 
 }  // namespace media

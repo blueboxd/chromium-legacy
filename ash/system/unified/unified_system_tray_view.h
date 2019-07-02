@@ -16,6 +16,7 @@ class FeaturePodsContainerView;
 class TopShortcutsView;
 class NotificationHiddenView;
 class PageIndicatorView;
+class UnifiedManagedDeviceView;
 class UnifiedMessageCenterView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
@@ -156,6 +157,9 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   views::View* const system_tray_container_;
   views::View* const detailed_view_container_;
   UnifiedMessageCenterView* const message_center_view_;
+
+  // Null if kManagedDeviceUIRedesign is disabled.
+  UnifiedManagedDeviceView* managed_device_view_ = nullptr;
 
   // The maximum height available to the view.
   int max_height_ = 0;

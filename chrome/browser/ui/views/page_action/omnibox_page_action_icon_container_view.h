@@ -20,6 +20,7 @@ class CommandUpdater;
 class FindBarIcon;
 class IntentPickerView;
 class ManagePasswordsIconViews;
+class NativeFileSystemAccessIconView;
 class PwaInstallView;
 class TranslateIconView;
 class ZoomView;
@@ -88,6 +89,7 @@ class OmniboxPageActionIconContainerView
   send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
       nullptr;
   TranslateIconView* translate_icon_ = nullptr;
+  NativeFileSystemAccessIconView* native_file_system_icon_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

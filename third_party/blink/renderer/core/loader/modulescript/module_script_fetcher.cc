@@ -21,12 +21,10 @@ void ModuleScriptFetcher::Client::OnFailed() {
   NotifyFetchFinished(base::nullopt, HeapVector<Member<ConsoleMessage>>());
 }
 
+// <specdef href="https://html.spec.whatwg.org/C/#fetch-a-single-module-script">
 bool ModuleScriptFetcher::WasModuleLoadSuccessful(
     Resource* resource,
     HeapVector<Member<ConsoleMessage>>* error_messages) {
-  // Implements conditions in Step 7 of
-  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
-
   DCHECK(error_messages);
 
   if (resource) {
@@ -34,7 +32,7 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
         resource->IntegrityReportInfo(), error_messages);
   }
 
-  // - response's type is "error"
+  // <spec step="9">... response's type is "error" ...</spec>
   if (!resource || resource->ErrorOccurred() ||
       resource->IntegrityDisposition() !=
           ResourceIntegrityDisposition::kPassed) {
@@ -42,18 +40,23 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
   }
 
   const auto& response = resource->GetResponse();
-  // - response's status is not an ok status
+  // <spec step="9">... response's status is not an ok status</spec>
   if (response.IsHTTP() && !cors::IsOkStatus(response.HttpStatusCode())) {
     return false;
   }
 
-  // The result of extracting a MIME type from response's header list
-  // (ignoring parameters) is not a JavaScript MIME type
+  // <spec step="10">Let type be the result of extracting a MIME type from
+  // response's header list.</spec>
+  //
+  // <spec step="12">If type is a JavaScript MIME type, then:</spec>
+  //
   // Note: For historical reasons, fetching a classic script does not include
   // MIME type checking. In contrast, module scripts will fail to load if they
   // are not of a correct MIME type.
   // We use ResourceResponse::HttpContentType() instead of MimeType(), as
   // MimeType() may be rewritten by mime sniffer.
+  //
+  // Non-JavaScript module is not yet implemented.
   if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
           response.HttpContentType())) {
     String message =

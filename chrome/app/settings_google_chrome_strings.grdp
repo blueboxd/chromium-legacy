@@ -2,13 +2,13 @@
 <!-- Settings-specific Google Chrome strings (included from google_chrome_strings.grd). -->
 <grit-part>
   <!-- About Page -->
+  <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chrome page.">
+    About Chrome
+  </message>
+  <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
+    Get help with Chrome
+  </message>
   <if expr="not chromeos">
-    <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chrome page.">
-      About Chrome
-    </message>
-    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-      Get help with Chrome
-    </message>
     <message name="IDS_SETTINGS_UPGRADE_UPDATING" desc="Status label: Updating Google Chrome">
       Updating Google Chrome
     </message>
@@ -23,10 +23,10 @@
     </message>
   </if>
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chrome OS page.">
+    <message name="IDS_SETTINGS_ABOUT_OS" desc="Menu title for the About Chrome OS page.">
       About Chrome OS
     </message>
-    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
+    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME_OS" desc="Text of the button which takes the user to the Chrome help page.">
       Get help with Chrome OS
     </message>
   </if>

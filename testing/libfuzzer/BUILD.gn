@@ -11,6 +11,7 @@
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
+# TODO(mmoroz): we should eventually rename this into "fuzzing_engine_main".
 source_set("libfuzzer_main") {
   deps = []
   sources = []

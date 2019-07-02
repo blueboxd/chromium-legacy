@@ -10,7 +10,6 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/fuzzed_data_provider.h"
 
 #include "chrome/chrome_cleaner/parsers/shortcut_parser/target/lnk_parser.h"
 
@@ -21,8 +20,7 @@ struct Environment {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static Environment env;
 
-  base::FuzzedDataProvider data_provider(data, size);
-  std::vector<BYTE> file_buffer = data_provider.ConsumeRemainingBytes();
+  std::vector<BYTE> file_buffer(data, data + size);
 
   chrome_cleaner::ParsedLnkFile parsed_shortcut;
 

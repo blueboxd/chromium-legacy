@@ -274,6 +274,38 @@ void InputConnectionImpl::SendKeyEvent(mojom::KeyEventDataPtr data_ptr) {
   ime_engine_->SendKeyEvents(input_context_id_, {event});
 }
 
+void InputConnectionImpl::SetCompositionRange(
+    const gfx::Range& new_composition_range) {
+  ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
+
+  gfx::Range selection_range = gfx::Range();
+  if (!client->GetEditableSelectionRange(&selection_range)) {
+    LOG(ERROR)
+        << "SetCompositionRange failed: Editable text field is not focused";
+    return;
+  }
+
+  StartStateUpdateTimer();
+
+  const int before = selection_range.start() - new_composition_range.start();
+  const int after = new_composition_range.end() - selection_range.end();
+  input_method::InputMethodEngineBase::SegmentInfo segment_info;
+  segment_info.start = 0;
+  segment_info.end = new_composition_range.length();
+  segment_info.style =
+      input_method::InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+
+  std::string error;
+  if (!ime_engine_->input_method::InputMethodEngineBase::SetCompositionRange(
+          input_context_id_, before, after, {segment_info}, &error)) {
+    LOG(ERROR) << "SetCompositionRange failed: range="
+               << new_composition_range.ToString() << ", error=\"" << error
+               << "\"";
+  }
+}
+
 void InputConnectionImpl::StartStateUpdateTimer() {
   // It's safe to use Unretained() here because the timer is automatically
   // canceled when it go out of scope.

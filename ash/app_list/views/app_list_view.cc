@@ -1487,13 +1487,9 @@ void AppListView::StartAnimationForState(ash::AppListViewState target_state) {
     animation_duration = kAppListAnimationDurationFromFullscreenMs;
   }
   if (target_state == ash::AppListViewState::kClosed) {
-    // If animating from PEEKING, animate the opacity twice as fast so the
-    // SearchBoxView does not flash behind the shelf.
-    int child_animation_duration = animation_duration;
-    if (app_list_state_ == ash::AppListViewState::kPeeking ||
-        app_list_state_ == ash::AppListViewState::kClosed) {
-      child_animation_duration /= 2;
-    }
+    // On closing, animate the opacity twice as fast so the SearchBoxView does
+    // not flash behind the shelf.
+    const int child_animation_duration = animation_duration / 2;
     app_list_main_view_->contents_view()->FadeOutOnClose(
         base::TimeDelta::FromMilliseconds(child_animation_duration));
   } else if (GetWidget()->GetNativeView()->bounds().y() ==

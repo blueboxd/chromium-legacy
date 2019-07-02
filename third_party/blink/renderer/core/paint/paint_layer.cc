@@ -832,24 +832,16 @@ void PaintLayer::UpdateLayerPosition() {
   }
 
   if (PaintLayer* containing_layer = ContainingLayer()) {
-    if (containing_layer->GetLayoutObject().HasOverflowClip() &&
-        !containing_layer->IsRootLayer()) {
-      // Subtract our container's scroll offset.
-      IntSize offset =
-          containing_layer->GetLayoutBox()->ScrolledContentOffset();
-      local_point -= PhysicalOffset(offset);
-    } else {
-      auto& container = containing_layer->GetLayoutObject();
-      if (GetLayoutObject().IsOutOfFlowPositioned() &&
-          container.IsLayoutInline() &&
-          container.CanContainOutOfFlowPositionedElement(
-              GetLayoutObject().StyleRef().GetPosition())) {
-        // Adjust offset for absolute under in-flow positioned inline.
-        PhysicalOffset offset =
-            ToLayoutInline(container).OffsetForInFlowPositionedInline(
-                ToLayoutBox(GetLayoutObject()));
-        local_point += offset;
-      }
+    auto& container = containing_layer->GetLayoutObject();
+    if (GetLayoutObject().IsOutOfFlowPositioned() &&
+        container.IsLayoutInline() &&
+        container.CanContainOutOfFlowPositionedElement(
+            GetLayoutObject().StyleRef().GetPosition())) {
+      // Adjust offset for absolute under in-flow positioned inline.
+      PhysicalOffset offset =
+          ToLayoutInline(container).OffsetForInFlowPositionedInline(
+              ToLayoutBox(GetLayoutObject()));
+      local_point += offset;
     }
   }
 
@@ -1575,6 +1567,7 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     return nullptr;
 
   location += layer->Location();
+  location -= PhysicalOffset(containing_layer->ScrolledContentOffset());
   return containing_layer;
 }
 
@@ -3276,15 +3269,10 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   }
 }
 
-PhysicalOffset PaintLayer::LocationInternal() const {
-  PhysicalOffset result = location_;
-  PaintLayer* containing_layer = ContainingLayer();
-  if (containing_layer && containing_layer->IsRootLayer() &&
-      containing_layer->GetLayoutObject().HasOverflowClip()) {
-    result -= PhysicalOffset(
-        containing_layer->GetLayoutBox()->ScrolledContentOffset());
-  }
-  return result;
+IntSize PaintLayer::ScrolledContentOffset() const {
+  if (GetLayoutObject().HasOverflowClip())
+    return GetLayoutBox()->ScrolledContentOffset();
+  return IntSize();
 }
 
 PaintLayerClipper PaintLayer::Clipper(

@@ -294,12 +294,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return curr;
   }
 
+  // The physical offset from this PaintLayer to its ContainingLayer.
+  // Does not include any scroll offset of the ContainingLayer.
   PhysicalOffset Location() const {
 #if DCHECK_IS_ON()
     DCHECK(!needs_position_update_);
 #endif
-    return LocationInternal();
+    return location_;
   }
+
+  IntSize ScrolledContentOffset() const;
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
@@ -1261,8 +1265,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                                          CalculateBoundsOptions) const;
 
   bool NeedsFilterReferenceBox() const;
-
-  PhysicalOffset LocationInternal() const;
 
   AncestorDependentCompositingInputs& EnsureAncestorDependentCompositingInputs()
       const {

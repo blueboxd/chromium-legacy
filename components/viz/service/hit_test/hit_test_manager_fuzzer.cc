@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -17,35 +16,36 @@
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 
 constexpr uint32_t kMaxDepthAllowed = 255;
 
-uint32_t GetNextUInt32NonZero(base::FuzzedDataProvider* fuzz) {
+uint32_t GetNextUInt32NonZero(FuzzedDataProvider* fuzz) {
   return fuzz->ConsumeIntegralInRange<uint32_t>(
       1, std::numeric_limits<uint32_t>::max());
 }
 
-gfx::Transform GetNextTransform(base::FuzzedDataProvider* fuzz) {
+gfx::Transform GetNextTransform(FuzzedDataProvider* fuzz) {
   gfx::Transform transform;
   if (fuzz->ConsumeBool() && fuzz->remaining_bytes() >= sizeof(transform)) {
     std::vector<uint8_t> matrix_bytes =
-        fuzz->ConsumeBytes(sizeof(gfx::Transform));
+        fuzz->ConsumeBytes<uint8_t>(sizeof(gfx::Transform));
     memcpy(&transform, matrix_bytes.data(), matrix_bytes.size());
   }
   return transform;
 }
 
 void SubmitHitTestRegionList(
-    base::FuzzedDataProvider* fuzz,
+    FuzzedDataProvider* fuzz,
     viz::TestLatestLocalSurfaceIdLookupDelegate* delegate,
     viz::FrameSinkManagerImpl* frame_sink_manager,
     const viz::SurfaceId& surface_id,
     bool support_is_root,
     const uint32_t depth);
 
-void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
+void AddHitTestRegion(FuzzedDataProvider* fuzz,
                       std::vector<viz::HitTestRegion>* regions,
                       uint32_t child_count,
                       viz::TestLatestLocalSurfaceIdLookupDelegate* delegate,
@@ -95,7 +95,7 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
 }
 
 void SubmitHitTestRegionList(
-    base::FuzzedDataProvider* fuzz,
+    FuzzedDataProvider* fuzz,
     viz::TestLatestLocalSurfaceIdLookupDelegate* delegate,
     viz::FrameSinkManagerImpl* frame_sink_manager,
     const viz::SurfaceId& surface_id,
@@ -136,7 +136,7 @@ void SubmitHitTestRegionList(
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
-  base::FuzzedDataProvider fuzz(data, num_bytes);
+  FuzzedDataProvider fuzz(data, num_bytes);
   viz::ServerSharedBitmapManager shared_bitmap_manager;
   viz::FrameSinkManagerImpl frame_sink_manager(&shared_bitmap_manager);
   viz::TestLatestLocalSurfaceIdLookupDelegate delegate;

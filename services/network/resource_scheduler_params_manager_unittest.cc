@@ -7,9 +7,6 @@
 #include <map>
 #include <string>
 
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "net/nqe/network_quality_estimator_params.h"
@@ -35,12 +32,8 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
   ~ResourceSchedulerParamsManagerTest() override {}
 
   void ReadConfigTestHelper(size_t num_ranges) {
-    const char kTrialName[] = "TrialName";
-    const char kGroupName[] = "GroupName";
-
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
     base::test::ScopedFeatureList scoped_feature_list;
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     int index = 1;
     net::EffectiveConnectionType effective_connection_type =
         net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
@@ -56,15 +49,8 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
       ++index;
     }
 
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-    base::FieldTrial* field_trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    std::unique_ptr<base::FeatureList> feature_list(
-        std::make_unique<base::FeatureList>());
-    feature_list->RegisterFieldTrialOverride(
-        features::kThrottleDelayable.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-    scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kThrottleDelayable, params);
 
     ResourceSchedulerParamsManager resource_scheduler_params_manager;
 
@@ -252,14 +238,6 @@ TEST_F(ResourceSchedulerParamsManagerTest,
 }
 
 TEST_F(ResourceSchedulerParamsManagerTest, MaxQueuingTime) {
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-  const std::string kTrialName = "TrialFoo";
-  const std::string kGroupName = "GroupFoo";  // Value not used
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
   ResourceSchedulerParamsManager resource_scheduler_params_manager;
 
   for (int effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
@@ -336,43 +314,24 @@ TEST_F(ResourceSchedulerParamsManagerTest, MaxQueuingTime) {
 // Verify that the params are parsed correctly when
 // kDelayRequestsOnMultiplexedConnections and kThrottleDelayable are enabled.
 TEST_F(ResourceSchedulerParamsManagerTest, MultipleFieldTrialsEnabled) {
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-  const std::string kTrialNameMultiplex = "TrialMultiplex";
-  const std::string kTrialNameThrottleDelayable = "TrialThrottleDelayable";
-  const std::string kGroupName = "GroupFoo";  // Value not used
-
   base::test::ScopedFeatureList scoped_feature_list;
 
   // Configure kDelayRequestsOnMultiplexedConnections experiment params.
-  std::map<std::string, std::string> params_multiplex;
+  base::FieldTrialParams params_multiplex;
   params_multiplex["MaxEffectiveConnectionType"] = "3G";
-  scoped_refptr<base::FieldTrial> trial_multiplex =
-      base::FieldTrialList::CreateFieldTrial(kTrialNameMultiplex, kGroupName);
-  ASSERT_TRUE(
-      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-          kTrialNameMultiplex, kGroupName, params_multiplex));
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      features::kDelayRequestsOnMultiplexedConnections.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial_multiplex.get());
 
   // Configure kThrottleDelayable experiment params.
-  std::map<std::string, std::string> params_throttle_delayable;
+  base::FieldTrialParams params_throttle_delayable;
   params_throttle_delayable["EffectiveConnectionType1"] = "3G";
   params_throttle_delayable["MaxDelayableRequests1"] = "12";
   params_throttle_delayable["NonDelayableWeight1"] = "3.0";
   params_throttle_delayable["EffectiveConnectionType2"] = "4G";
   params_throttle_delayable["MaxDelayableRequests2"] = "14";
   params_throttle_delayable["NonDelayableWeight2"] = "4.0";
-  ASSERT_TRUE(base::AssociateFieldTrialParams(
-      kTrialNameThrottleDelayable, kGroupName, params_throttle_delayable));
-  base::FieldTrial* trial_throttle_delayable =
-      base::FieldTrialList::CreateFieldTrial(kTrialNameThrottleDelayable,
-                                             kGroupName);
-  feature_list->RegisterFieldTrialOverride(
-      features::kThrottleDelayable.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial_throttle_delayable);
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{features::kDelayRequestsOnMultiplexedConnections, params_multiplex},
+       {features::kThrottleDelayable, params_throttle_delayable}},
+      {});
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager;
 
@@ -435,12 +394,8 @@ TEST_F(ResourceSchedulerParamsManagerTest, MultipleFieldTrialsEnabled) {
 // the parser stops reading the configuration after it encounters the first
 // missing index.
 TEST_F(ResourceSchedulerParamsManagerTest, ReadInvalidConfigTest) {
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-  const char kTrialName[] = "TrialName";
-  const char kGroupName[] = "GroupName";
-
   base::test::ScopedFeatureList scoped_feature_list;
-  std::map<std::string, std::string> params;
+  base::FieldTrialParams params;
   // Skip configuration parameters for index 2 to test that the parser stops
   // when it cannot find the parameters for an index.
   for (int range_index : {1, 3, 4}) {
@@ -453,15 +408,8 @@ TEST_F(ResourceSchedulerParamsManagerTest, ReadInvalidConfigTest) {
   params["BadConfigParam1"] = "100";
   params["BadConfigParam2"] = "100";
 
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-  std::unique_ptr<base::FeatureList> feature_list(
-      std::make_unique<base::FeatureList>());
-  feature_list->RegisterFieldTrialOverride(
-      features::kThrottleDelayable.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kThrottleDelayable, params);
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager;
 
@@ -496,23 +444,8 @@ TEST_F(ResourceSchedulerParamsManagerTest, ReadValidConfigTest3) {
 }
 
 TEST_F(ResourceSchedulerParamsManagerTest, ThrottleDelayableDisabled) {
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-  const char kTrialName[] = "TrialName";
-  const char kGroupName[] = "GroupName";
-
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
   base::test::ScopedFeatureList scoped_feature_list;
-
-  std::unique_ptr<base::FeatureList> feature_list(
-      std::make_unique<base::FeatureList>());
-
-  feature_list->RegisterFieldTrialOverride(
-      "ThrottleDelayable", base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-      field_trial);
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  scoped_feature_list.InitAndDisableFeature(features::kThrottleDelayable);
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager;
 
@@ -530,7 +463,7 @@ TEST_F(ResourceSchedulerParamsManagerTest,
        MaxDelayableRequestsAndNonDelayableWeightSet) {
   base::test::ScopedFeatureList scoped_feature_list;
 
-  std::map<std::string, std::string> params;
+  base::FieldTrialParams params;
 
   params["EffectiveConnectionType1"] = "Slow-2G";
   size_t max_delayable_requests_slow_2g = 2u;
@@ -547,22 +480,8 @@ TEST_F(ResourceSchedulerParamsManagerTest,
       base::NumberToString(max_delayable_requests_3g);
   params["NonDelayableWeight2"] = base::NumberToString(non_delayable_weight_3g);
 
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-  const char kTrialName[] = "TrialName";
-  const char kGroupName[] = "GroupName";
-
-  ASSERT_TRUE(base::AssociateFieldTrialParams(kTrialName, kGroupName, params));
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-  ASSERT_TRUE(field_trial);
-
-  std::unique_ptr<base::FeatureList> feature_list(
-      std::make_unique<base::FeatureList>());
-
-  feature_list->RegisterFieldTrialOverride(
-      "ThrottleDelayable", base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-      field_trial);
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kThrottleDelayable, params);
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager;
 

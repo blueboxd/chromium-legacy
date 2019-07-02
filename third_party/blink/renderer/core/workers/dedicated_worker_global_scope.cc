@@ -99,7 +99,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<Vector<String>> outside_origin_trial_tokens)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
   // Dedicated workers don't need to pause after script fetch.
-  ReadyToRunClassicScript();
+  ReadyToRunWorkerScript();
   // Inherit the outside's origin trial tokens.
   OriginTrialContext::AddTokens(this, outside_origin_trial_tokens.get());
 }

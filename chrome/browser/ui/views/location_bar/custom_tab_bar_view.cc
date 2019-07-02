@@ -28,6 +28,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -47,7 +48,7 @@
 
 namespace {
 
-constexpr SkColor kCustomTabBarViewBackgroundColor = SK_ColorWHITE;
+constexpr SkColor kDefaultCustomTabBarBackgroundColor = SK_ColorWHITE;
 
 // The frame color is different on ChromeOS and other platforms because Ash
 // specifies its own default frame color, which is not exposed through
@@ -185,10 +186,17 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   // If we have a theme color, use that, otherwise fall back to the default
   // frame color.
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
-  SetBackground(views::CreateSolidBackground(kCustomTabBarViewBackgroundColor));
+
+  // In dark mode, match the default frame color.
+  background_color_ =
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+          ? GetDefaultFrameColor()
+          : kDefaultCustomTabBarBackgroundColor;
+
+  SetBackground(views::CreateSolidBackground(background_color_));
 
   const SkColor foreground_color =
-      color_utils::GetColorWithMaxContrast(kCustomTabBarViewBackgroundColor);
+      color_utils::GetColorWithMaxContrast(background_color_);
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
@@ -198,8 +206,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);
 
-  title_origin_view_ =
-      new CustomTabBarTitleOriginView(kCustomTabBarViewBackgroundColor);
+  title_origin_view_ = new CustomTabBarTitleOriginView(background_color_);
   title_origin_view_->SetProperty(
       views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
                                    views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -287,7 +294,8 @@ gfx::Size CustomTabBarView::CalculatePreferredSize() const {
 void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   views::View::OnPaintBackground(canvas);
 
-  constexpr SkColor kSeparatorColor = SK_ColorBLACK;
+  SkColor separator_color =
+      color_utils::IsDark(background_color_) ? SK_ColorWHITE : SK_ColorBLACK;
   constexpr float kSeparatorOpacity = 0.15f;
 
   gfx::Rect bounds = GetLocalBounds();
@@ -298,23 +306,21 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   bounds.Inset(0, 0, 0, 1);
 
   // Custom tab/content separator (bottom border).
-  canvas->FillRect(
-      gfx::Rect(bounds.bottom_left(), separator_size),
-      color_utils::AlphaBlend(kSeparatorColor, kCustomTabBarViewBackgroundColor,
-                              kSeparatorOpacity));
+  canvas->FillRect(gfx::Rect(bounds.bottom_left(), separator_size),
+                   color_utils::AlphaBlend(separator_color, background_color_,
+                                           kSeparatorOpacity));
 
   // Don't render the separator if there is already sufficient contrast between
   // the custom tab bar and the title bar.
   constexpr float kMaxContrastForSeparator = 1.1f;
-  if (color_utils::GetContrastRatio(kCustomTabBarViewBackgroundColor,
-                                    title_bar_color_) >
+  if (color_utils::GetContrastRatio(background_color_, title_bar_color_) >
       kMaxContrastForSeparator) {
     return;
   }
 
   // Frame/Custom tab separator (top border).
   canvas->FillRect(gfx::Rect(bounds.origin(), separator_size),
-                   color_utils::AlphaBlend(kSeparatorColor, title_bar_color_,
+                   color_utils::AlphaBlend(separator_color, title_bar_color_,
                                            kSeparatorOpacity));
 }
 
@@ -345,7 +351,10 @@ bool CustomTabBarView::ShowPageInfoDialog() {
 
 SkColor CustomTabBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  return GetOmniboxSecurityChipColor(OmniboxTint::LIGHT, security_level);
+  OmniboxTint tint = color_utils::IsDark(background_color_)
+                         ? OmniboxTint::DARK
+                         : OmniboxTint::LIGHT;
+  return GetOmniboxSecurityChipColor(tint, security_level);
 }
 
 gfx::ImageSkia CustomTabBarView::GetLocationIcon(

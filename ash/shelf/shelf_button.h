@@ -9,16 +9,15 @@
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
-class InkDropButtonListener;
-class ShelfView;
+class ShelfButtonDelegate;
 
 // Button used for items on the shelf.
 class ASH_EXPORT ShelfButton : public views::Button {
  public:
-  explicit ShelfButton(ShelfView* shelf_view);
+  explicit ShelfButton(ShelfButtonDelegate* shelf_button_delegate);
   ~ShelfButton() override;
 
-  // views::Button
+  // views::Button:
   const char* GetClassName() const override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -26,13 +25,13 @@ class ASH_EXPORT ShelfButton : public views::Button {
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
  protected:
-  ShelfView* shelf_view() { return shelf_view_; }
+  ShelfButtonDelegate* shelf_button_delegate() {
+    return shelf_button_delegate_;
+  }
 
  private:
-  // The shelf view hosting this button.
-  ShelfView* shelf_view_;
-
-  InkDropButtonListener* listener_;
+  // A class to which this button delegates handling some of its events.
+  ShelfButtonDelegate* const shelf_button_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfButton);
 };

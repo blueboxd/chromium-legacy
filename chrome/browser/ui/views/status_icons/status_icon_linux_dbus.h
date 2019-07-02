@@ -44,21 +44,28 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  // Step 1: verify with the StatusNotifierWatcher that a StatusNotifierHost is
+  // Step 0: send the request to verify that the StatusNotifierWatcher service
+  // is owned.
+  void CheckStatusNotifierWatcherHasOwner();
+
+  // Step 1: verify that the StatusNotifierWatcher service is owned.
+  void OnNameHasOwnerResponse(dbus::Response* response);
+
+  // Step 2: verify with the StatusNotifierWatcher that a StatusNotifierHost is
   // registered.
   void OnHostRegisteredResponse(dbus::Response* response);
 
-  // Step 2: register a StatusNotifierItem service.
+  // Step 3: register a StatusNotifierItem service.
   void OnOwnership(const std::string& service_name, bool success);
 
-  // Step 3: export methods for the StatusNotifierItem and the properties
+  // Step 4: export methods for the StatusNotifierItem and the properties
   // interface.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
                   bool success);
   void OnInitialized(bool success);
 
-  // Step 4: register the StatusNotifierItem with the StatusNotifierWatcher.
+  // Step 5: register the StatusNotifierItem with the StatusNotifierWatcher.
   void OnRegistered(dbus::Response* response);
 
   // DBus methods.

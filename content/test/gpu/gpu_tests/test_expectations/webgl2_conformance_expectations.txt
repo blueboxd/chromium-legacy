@@ -5,6 +5,7 @@
 #         qualcomm nvidia-0xfe9 nvidia nvidia-0xf02 intel-0xa2e ]
 # tags: [ debug ]
 # tags: [ intel_lt_25.20.100.6444 mesa_lt_17.3.9 mesa_lt_17.1.6 ]
+# results: [ Failure RetryOnFailure Skip ]
 
 
 # ===================================

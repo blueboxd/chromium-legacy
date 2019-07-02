@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "base/test/fuzzed_data_provider.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "third_party/sfntly/src/cpp/src/sample/chromium/font_subsetter.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   constexpr int kMaxFontNameSize = 128;
   constexpr int kMaxFontSize = 50 * 1024 * 1024;
-  base::FuzzedDataProvider fuzzed_data(data, size);
+  FuzzedDataProvider fuzzed_data(data, size);
 
   size_t font_name_size =
       fuzzed_data.ConsumeIntegralInRange(0, kMaxFontNameSize);
@@ -24,7 +24,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<unsigned char> font_str =
       fuzzed_data.ConsumeBytes<unsigned char>(font_str_size);
 
-  std::vector<uint8_t> glyph_ids_str = fuzzed_data.ConsumeRemainingBytes();
+  std::vector<uint8_t> glyph_ids_str =
+      fuzzed_data.ConsumeRemainingBytes<uint8_t>();
   const unsigned int* glyph_ids =
       reinterpret_cast<const unsigned int*>(glyph_ids_str.data());
   size_t glyph_ids_size = glyph_ids_str.size() *

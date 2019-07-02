@@ -40,3 +40,8 @@ by uninstalling the app:
 ```shell
 out/Default/bin/webview_log_verbosifier_apk uninstall
 ```
+
+## See also
+
+* [How to set commandline flags in
+  WebView](/android_webview/docs/commandline-flags.md)

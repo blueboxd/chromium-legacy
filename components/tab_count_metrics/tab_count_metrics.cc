@@ -40,7 +40,6 @@ constexpr const char* kTabCountBucketNames[]{
 std::string HistogramName(const std::string prefix,
                           bool live_tabs_only,
                           size_t bucket) {
-  DCHECK(live_tabs_only);
   static_assert(base::size(kTabCountBucketMins) == kNumTabCountBuckets,
                 "kTabCountBucketMins must have kNumTabCountBuckets elements.");
   static_assert(base::size(kTabCountBucketNames) == kNumTabCountBuckets,

@@ -326,27 +326,6 @@ GLint Clamp(GLint value, GLint min, GLint max) {
   return value;
 }
 
-// Return true if a character belongs to the ASCII subset as defined in
-// GLSL ES 1.0 spec section 3.1.
-bool ValidateCharacter(unsigned char c) {
-  // Printing characters are valid except " $ ` @ \ ' DEL.
-  if (c >= 32 && c <= 126 && c != '"' && c != '$' && c != '`' && c != '@' &&
-      c != '\\' && c != '\'')
-    return true;
-  // Horizontal tab, line feed, vertical tab, form feed, carriage return
-  // are also valid.
-  if (c >= 9 && c <= 13)
-    return true;
-  return false;
-}
-
-bool IsPrefixReserved(const String& name) {
-  if (name.StartsWith("gl_") || name.StartsWith("webgl_") ||
-      name.StartsWith("_webgl_"))
-    return true;
-  return false;
-}
-
 // Strips comments from shader text. This allows non-ASCII characters
 // to be used in comments without potentially breaking OpenGL
 // implementations not expecting characters outside the GLSL ES set.
@@ -6976,6 +6955,18 @@ bool WebGLRenderingContextBase::ValidateSize(const char* function_name,
   return true;
 }
 
+bool WebGLRenderingContextBase::ValidateCharacter(unsigned char c) {
+  // Printing characters are valid except " $ ` @ \ ' DEL.
+  if (c >= 32 && c <= 126 && c != '"' && c != '$' && c != '`' && c != '@' &&
+      c != '\\' && c != '\'')
+    return true;
+  // Horizontal tab, line feed, vertical tab, form feed, carriage return
+  // are also valid.
+  if (c >= 9 && c <= 13)
+    return true;
+  return false;
+}
+
 bool WebGLRenderingContextBase::ValidateString(const char* function_name,
                                                const String& string) {
   for (wtf_size_t i = 0; i < string.length(); ++i) {
@@ -6985,6 +6976,13 @@ bool WebGLRenderingContextBase::ValidateString(const char* function_name,
     }
   }
   return true;
+}
+
+bool WebGLRenderingContextBase::IsPrefixReserved(const String& name) {
+  if (name.StartsWith("gl_") || name.StartsWith("webgl_") ||
+      name.StartsWith("_webgl_"))
+    return true;
+  return false;
 }
 
 bool WebGLRenderingContextBase::ValidateShaderSource(const String& string) {

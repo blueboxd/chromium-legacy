@@ -6702,7 +6702,8 @@ void RenderFrameImpl::OnClearFocusedElement() {
     webview->ClearFocusedElement();
 }
 
-void RenderFrameImpl::OnBlinkFeatureUsageReport(const std::set<int>& features) {
+void RenderFrameImpl::OnBlinkFeatureUsageReport(
+    const std::set<blink::mojom::WebFeature>& features) {
   frame_->BlinkFeatureUsageReport(features);
 }
 

@@ -5,17 +5,16 @@
 #include "ash/shelf/shelf_button.h"
 
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/shelf/ink_drop_button_listener.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/animation/ink_drop_impl.h"
 
 namespace ash {
 
-ShelfButton::ShelfButton(ShelfView* shelf_view)
-    : Button(nullptr), shelf_view_(shelf_view), listener_(shelf_view) {
-  DCHECK(shelf_view_);
+ShelfButton::ShelfButton(ShelfButtonDelegate* shelf_button_delegate)
+    : Button(nullptr), shelf_button_delegate_(shelf_button_delegate) {
+  DCHECK(shelf_button_delegate_);
   set_hide_ink_drop_when_showing_context_menu(false);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
@@ -35,7 +34,8 @@ const char* ShelfButton::GetClassName() const {
 }
 
 void ShelfButton::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  shelf_view_->OnShelfButtonAboutToRequestFocusFromTabTraversal(this, reverse);
+  shelf_button_delegate_->OnShelfButtonAboutToRequestFocusFromTabTraversal(
+      this, reverse);
 }
 
 // Do not remove this function to avoid unnecessary ChromeVox announcement
@@ -49,8 +49,8 @@ void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void ShelfButton::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
-  if (listener_)
-    listener_->ButtonPressed(this, event, GetInkDrop());
+  if (shelf_button_delegate_)
+    shelf_button_delegate_->ButtonPressed(/*sender=*/this, event, GetInkDrop());
 }
 
 std::unique_ptr<views::InkDrop> ShelfButton::CreateInkDrop() {

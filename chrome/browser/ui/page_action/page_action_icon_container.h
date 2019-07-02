@@ -17,6 +17,7 @@ enum class PageActionIconType {
   kSendTabToSelf,
   kTranslate,
   kZoom,
+  kNativeFileSystemAccess,
 };
 
 class PageActionIconContainer {

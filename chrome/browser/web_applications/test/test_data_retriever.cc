@@ -24,8 +24,10 @@ void TestDataRetriever::GetWebApplicationInfo(
     content::WebContents* web_contents,
     GetWebApplicationInfoCallback callback) {
   DCHECK(web_contents);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(web_app_info_)));
+
+  completion_callback_ =
+      base::BindOnce(std::move(callback), std::move(web_app_info_));
+  ScheduleCompletionCallback();
 }
 
 void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
@@ -34,10 +36,10 @@ void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
     CheckInstallabilityCallback callback) {
   DCHECK(manifest_);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
+  completion_callback_ =
       base::BindOnce(std::move(callback), *manifest_,
-                     /*valid_manifest_for_web_app=*/true, is_installable_));
+                     /*valid_manifest_for_web_app=*/true, is_installable_);
+  ScheduleCompletionCallback();
 }
 
 void TestDataRetriever::GetIcons(content::WebContents* web_contents,
@@ -50,8 +52,10 @@ void TestDataRetriever::GetIcons(content::WebContents* web_contents,
         get_icons_delegate_.Run(web_contents, icon_urls, skip_page_favicons);
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(icons_map_)));
+  completion_callback_ =
+      base::BindOnce(std::move(callback), std::move(icons_map_));
+  ScheduleCompletionCallback();
+
   icons_map_.clear();
 }
 
@@ -92,6 +96,17 @@ void TestDataRetriever::BuildDefaultDataToRetrieve(const GURL& url,
   SetManifest(std::move(manifest), /*is_installable=*/true);
 
   SetIcons(IconsMap{});
+}
+
+void TestDataRetriever::ScheduleCompletionCallback() {
+  // If |this| DataRetriever destroyed, the completion callback gets cancelled.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&TestDataRetriever::CallCompletionCallback,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TestDataRetriever::CallCompletionCallback() {
+  std::move(completion_callback_).Run();
 }
 
 }  // namespace web_app

@@ -30,8 +30,6 @@ namespace media {
 
 class AcceleratedVideoDecoder;
 class DmabufVideoFramePool;
-class VaapiPictureFactory;
-class VaapiPicture;
 class VaapiWrapper;
 class VideoFrame;
 class VideoFrameConverter;
@@ -132,7 +130,7 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   // video frame, or stopped using it as a reference frame. Note that this
   // doesn't mean the frame can be reused immediately, as it might still be used
   // by the client.
-  void ReleaseFrameTask(std::unique_ptr<VaapiPicture> picture,
+  void ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
                         VASurfaceID surface_id);
   // Called when a video frame was returned to the video frame pool on the
   // decoder thread. This will happen when both the client and decoder
@@ -188,7 +186,6 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   // Platform and codec specific video decoder.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  std::unique_ptr<VaapiPictureFactory> vaapi_picture_factory_;
 
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
   base::Thread decoder_thread_;

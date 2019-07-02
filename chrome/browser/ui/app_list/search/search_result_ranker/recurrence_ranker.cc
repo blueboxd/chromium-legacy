@@ -76,7 +76,7 @@ std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
 
 std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
     int n,
-    const base::flat_map<std::string, float>& ranks) {
+    const std::map<std::string, float>& ranks) {
   std::vector<std::pair<std::string, float>> sorted_ranks(ranks.begin(),
                                                           ranks.end());
   std::sort(sorted_ranks.begin(), sorted_ranks.end(),
@@ -92,10 +92,10 @@ std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
   return sorted_ranks;
 }
 
-base::flat_map<std::string, float> ZipTargetsWithScores(
-    const base::flat_map<std::string, FrecencyStore::ValueData>& target_to_id,
-    const base::flat_map<unsigned int, float>& id_to_score) {
-  base::flat_map<std::string, float> target_to_score;
+std::map<std::string, float> ZipTargetsWithScores(
+    const FrecencyStore::ScoreTable& target_to_id,
+    const std::map<unsigned int, float>& id_to_score) {
+  std::map<std::string, float> target_to_score;
   for (const auto& pair : target_to_id) {
     DCHECK(pair.second.last_num_updates ==
            target_to_id.begin()->second.last_num_updates);
@@ -108,9 +108,9 @@ base::flat_map<std::string, float> ZipTargetsWithScores(
   return target_to_score;
 }
 
-base::flat_map<std::string, float> GetScoresFromFrecencyStore(
-    const base::flat_map<std::string, FrecencyStore::ValueData>& target_to_id) {
-  base::flat_map<std::string, float> target_to_score;
+std::map<std::string, float> GetScoresFromFrecencyStore(
+    const std::map<std::string, FrecencyStore::ValueData>& target_to_id) {
+  std::map<std::string, float> target_to_score;
   for (const auto& pair : target_to_id) {
     DCHECK(pair.second.last_num_updates ==
            target_to_id.begin()->second.last_num_updates);
@@ -242,7 +242,7 @@ void RecurrenceRanker::RemoveCondition(const std::string& condition) {
   MaybeSave();
 }
 
-base::flat_map<std::string, float> RecurrenceRanker::Rank(
+std::map<std::string, float> RecurrenceRanker::Rank(
     const std::string& condition) {
   if (!load_from_disk_completed_)
     return {};
@@ -268,12 +268,12 @@ std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
   return SortAndTruncateRanks(n, Rank(condition));
 }
 
-base::flat_map<std::string, FrecencyStore::ValueData>*
+std::map<std::string, FrecencyStore::ValueData>*
 RecurrenceRanker::GetTargetData() {
   return targets_->get_mutable_values();
 }
 
-base::flat_map<std::string, FrecencyStore::ValueData>*
+std::map<std::string, FrecencyStore::ValueData>*
 RecurrenceRanker::GetConditionData() {
   return conditions_->get_mutable_values();
 }

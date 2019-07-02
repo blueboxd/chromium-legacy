@@ -3,9 +3,9 @@
 <link rel="import" href="/profile_browser_proxy.html">
 <link rel="import" href="/shared_styles.html">
 <link rel="import" href="/strings.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="control-bar">
   <template>
@@ -25,17 +25,16 @@
         user-select: none;
       }
 
-      paper-button + paper-button {
+      cr-button + cr-button {
         margin-inline-start: 8px;
       }
     </style>
     <div id="container" class="layout horizontal end-justified">
       <div id="logo" class="product-logo" alt=""></div>
-      <paper-button id="launchGuest"
-          on-tap="onLaunchGuestTap_"
-          hidden="[[!showGuest]]">$i18n{browseAsGuest}</paper-button>
-      <paper-button id="addUser" on-tap="onAddUserTap_"
-          hidden="[[!showAddPerson]]">$i18n{addUser}</paper-button>
+      <cr-button id="launchGuest" on-click="onLaunchGuestTap_"
+          hidden="[[!showGuest]]">$i18n{browseAsGuest}</cr-button>
+      <cr-button id="addUser" on-click="onAddUserTap_"
+          hidden="[[!showAddPerson]]">$i18n{addUser}</cr-button>
     </div>
   </template>
   <script src="control_bar.js"></script>

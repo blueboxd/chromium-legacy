@@ -4,13 +4,60 @@
 
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 
+#include "base/task/post_task.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/web_contents_observer.h"
+
 namespace content {
+
+class NativeFileSystemHandleBase::UsageIndicatorTracker
+    : public WebContentsObserver {
+ public:
+  UsageIndicatorTracker(int process_id, int frame_id, bool is_directory)
+      : WebContentsObserver(
+            WebContentsImpl::FromRenderFrameHostID(process_id, frame_id)),
+        is_directory_(is_directory) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (web_contents() && is_directory_)
+      web_contents()->IncrementNativeFileSystemDirectoryHandleCount();
+  }
+
+  ~UsageIndicatorTracker() override {
+    if (web_contents()) {
+      if (is_directory_)
+        web_contents()->DecrementNativeFileSystemDirectoryHandleCount();
+      if (is_writable_)
+        web_contents()->DecrementWritableNativeFileSystemHandleCount();
+    }
+  }
+
+  void SetWritable(bool writable) {
+    if (writable == is_writable_ || !web_contents())
+      return;
+
+    is_writable_ = writable;
+    if (is_writable_)
+      web_contents()->IncrementWritableNativeFileSystemHandleCount();
+    else
+      web_contents()->DecrementWritableNativeFileSystemHandleCount();
+  }
+
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(WebContentsObserver::web_contents());
+  }
+
+ private:
+  const bool is_directory_;
+  bool is_writable_ = false;
+};
 
 NativeFileSystemHandleBase::NativeFileSystemHandleBase(
     NativeFileSystemManagerImpl* manager,
     const BindingContext& context,
     const storage::FileSystemURL& url,
-    const SharedHandleState& handle_state)
+    const SharedHandleState& handle_state,
+    bool is_directory)
     : manager_(manager),
       context_(context),
       url_(url),
@@ -25,6 +72,13 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
          url_.type() == storage::kFileSystemTypeTemporary ||
          url_.type() == storage::kFileSystemTypeTest)
       << url_.type();
+  if (url_.type() == storage::kFileSystemTypeNativeLocal) {
+    DCHECK_EQ(url_.mount_type(), storage::kFileSystemTypeIsolated);
+    usage_indicator_tracker_ = base::SequenceBound<UsageIndicatorTracker>(
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        context_.process_id, context_.frame_id, bool{is_directory});
+    UpdateWritableUsage();
+  }
 }
 
 NativeFileSystemHandleBase::~NativeFileSystemHandleBase() = default;
@@ -36,6 +90,7 @@ NativeFileSystemHandleBase::GetReadPermissionStatus() {
 
 NativeFileSystemHandleBase::PermissionStatus
 NativeFileSystemHandleBase::GetWritePermissionStatus() {
+  UpdateWritableUsage();
   // It is not currently possible to have write only handles, so first check the
   // read permission status. See also:
   // http://wicg.github.io/native-file-system/#api-filesystemhandle-querypermission
@@ -78,6 +133,19 @@ void NativeFileSystemHandleBase::DoRequestPermission(
       context().process_id, context().frame_id,
       base::BindOnce(&NativeFileSystemHandleBase::DoGetPermissionStatus,
                      AsWeakPtr(), writable, std::move(callback)));
+}
+
+void NativeFileSystemHandleBase::UpdateWritableUsage() {
+  if (!usage_indicator_tracker_)
+    return;
+  bool is_writable =
+      handle_state_.read_grant->GetStatus() == PermissionStatus::GRANTED &&
+      handle_state_.write_grant->GetStatus() == PermissionStatus::GRANTED;
+  if (is_writable != was_writable_at_last_check_) {
+    was_writable_at_last_check_ = is_writable;
+    usage_indicator_tracker_.Post(
+        FROM_HERE, &UsageIndicatorTracker::SetWritable, is_writable);
+  }
 }
 
 }  // namespace content

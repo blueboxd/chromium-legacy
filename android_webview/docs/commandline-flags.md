@@ -69,6 +69,13 @@ adb shell "rm ${FLAG_FILE}"
 adb shell "cat ${FLAG_FILE}"
 ```
 
+## Verifying flags are applied
+
+You can confirm you've applied commandline flags correctly by dumping the full
+state of the commandline flags with the [WebView Log Verbosifier
+app](/android_webview/tools/webview_log_verbosifier/README.md) and starting up a
+WebView app.
+
 ## Applying Features with flags
 
 WebView supports the same `--enable-features=feature1,feature2` and

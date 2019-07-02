@@ -40,8 +40,20 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   bool IsFadingOut() const;
 
+  // Record a histogram metric of tab hover cards seen prior to a tab being
+  // selected by mouse press.
+  void RecordHoverCardsSeenRatioMetric();
+
+  void reset_hover_cards_seen_count() { hover_cards_seen_count_ = 0; }
+
   // BubbleDialogDelegateView:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   int GetDialogButtons() const override;
+
+  void set_last_mouse_exit_timestamp(
+      base::TimeTicks last_mouse_exit_timestamp) {
+    last_mouse_exit_timestamp_ = last_mouse_exit_timestamp;
+  }
 
  private:
   friend class TabHoverCardBubbleViewBrowserTest;
@@ -61,6 +73,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   gfx::Size CalculatePreferredSize() const override;
 
+  void RecordTimeSinceLastSeenMetric(base::TimeDelta elapsed_time);
+
   base::OneShotTimer delayed_show_timer_;
 
   // Fade animations interfere with browser tests so we disable them in tests.
@@ -69,12 +83,23 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Used to animate the tab hover card's movement between tabs.
   std::unique_ptr<WidgetSlideAnimationDelegate> slide_animation_delegate_;
 
+  // Timestamp of the last time a hover card was visible, recorded before it is
+  // hidden. This is used for metrics.
   base::TimeTicks last_visible_timestamp_;
+
+  // Timestamp of the last time the hover card is hidden by the mouse leaving
+  // the tab strip. This is used for reshowing the hover card without delay if
+  // the mouse reenters within a given amount of time.
+  base::TimeTicks last_mouse_exit_timestamp_;
 
   views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
   views::Label* domain_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;
+
+  // Counter used to keey track of the number of tab hover cards seen before a
+  // tab is selected by mouse press.
+  size_t hover_cards_seen_count_ = 0;
 
   base::WeakPtrFactory<TabHoverCardBubbleView> weak_factory_{this};
 

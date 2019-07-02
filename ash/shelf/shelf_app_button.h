@@ -82,8 +82,6 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnFocus() override;
-  void OnBlur() override;
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
@@ -121,6 +119,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
 
   // The icon part of a button can be animated independently of the rest.
   views::ImageView* icon_view_;
+
+  // The ShelfView showing this ShelfAppButton. Owned by RootWindowController.
+  ShelfView* shelf_view_;
 
   // Draws an indicator underneath the image to represent the state of the
   // application.

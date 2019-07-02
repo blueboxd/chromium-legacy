@@ -46,7 +46,7 @@ class MODULES_EXPORT AudioTrackRecorder
 
   using OnEncodedAudioCB =
       base::RepeatingCallback<void(const media::AudioParameters& params,
-                                   std::unique_ptr<std::string> encoded_data,
+                                   std::string encoded_data,
                                    base::TimeTicks capture_time)>;
 
   static CodecId GetPreferredCodecId();

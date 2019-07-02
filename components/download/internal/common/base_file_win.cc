@@ -15,6 +15,7 @@
 #include "base/win/com_init_util.h"
 #include "base/win/iunknown_impl.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
+#include "components/download/public/common/download_stats.h"
 
 namespace download {
 namespace {
@@ -26,6 +27,7 @@ DownloadInterruptReason HRESULTToDownloadInterruptReason(HRESULT hr) {
   if (SUCCEEDED(hr) && HRESULT_FACILITY(hr) != FACILITY_SHELL)
     return DOWNLOAD_INTERRUPT_REASON_NONE;
 
+  DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   // All of the remaining HRESULTs to be considered are either from the copy
   // engine, or are unknown; we've got handling for all the copy engine errors,
   // and otherwise we'll just return the generic error reason.
@@ -51,7 +53,8 @@ DownloadInterruptReason HRESULTToDownloadInterruptReason(HRESULT hr) {
       // open; often it's antivirus scanning, and this error can be treated as
       // transient, as we assume eventually the other process will close its
       // handle.
-      return DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+      reason = DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+      break;
 
     case COPYENGINE_E_PATH_TOO_DEEP_DEST:
     case COPYENGINE_E_PATH_TOO_DEEP_SRC:
@@ -59,7 +62,8 @@ DownloadInterruptReason HRESULTToDownloadInterruptReason(HRESULT hr) {
     case COPYENGINE_E_NEWFOLDER_NAME_TOO_LONG:
       // Any of these errors can be encountered if MAXPATH is hit while writing
       // out a filename. This can happen really just about anywhere.
-      return DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG;
+      reason = DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG;
+      break;
 
     case COPYENGINE_S_USER_IGNORED:
       // On Windows 7, inability to access a file may return "user ignored"
@@ -81,14 +85,16 @@ DownloadInterruptReason HRESULTToDownloadInterruptReason(HRESULT hr) {
     case COPYENGINE_E_SRC_IS_R_DVD:
       // When the source is actually a disk, and a Move is attempted, it can't
       // delete the source. This is unlikely to be encountered in our scenario.
-      return DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+      reason = DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+      break;
 
     case COPYENGINE_E_FILE_TOO_LARGE:
     case COPYENGINE_E_DISK_FULL:
     case COPYENGINE_E_REMOVABLE_FULL:
     case COPYENGINE_E_DISK_FULL_CLEAN:
       // No room for the file in the destination location.
-      return DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE;
+      reason = DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE;
+      break;
 
     case COPYENGINE_E_ALREADY_EXISTS_NORMAL:
     case COPYENGINE_E_ALREADY_EXISTS_READONLY:
@@ -119,7 +125,13 @@ DownloadInterruptReason HRESULTToDownloadInterruptReason(HRESULT hr) {
     case COPYENGINE_E_USER_CANCELLED:
     case COPYENGINE_E_CANCELLED:
     case COPYENGINE_E_REQUIRES_ELEVATION:
-      return DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+      reason = DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+      break;
+  }
+
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    RecordWinFileMoveError(HRESULT_CODE(hr));
+    return reason;
   }
 
   // Copy operations may still return Win32 error codes, so handle those here.
@@ -302,10 +314,9 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     file_operation->GetAnyOperationsAborted(&any_operations_aborted);
     if (any_operations_aborted)
       interrupt_reason = DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
-  }
-
-  if (interrupt_reason != DOWNLOAD_INTERRUPT_REASON_NONE)
+  } else {
     return LogInterruptReason("IFileOperation::MoveItem", hr, interrupt_reason);
+  }
 
   return interrupt_reason;
 }

@@ -599,7 +599,10 @@ Chromium is unable to recover your settings.
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_ABOUT" desc="The text label of the About Chrome OS menu item">
+        <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
+          About &amp;Chromium
+        </message>
+        <message name="IDS_ABOUT_OS" desc="The text label of the About Chrome OS menu item">
           About &amp;Chromium OS
         </message>
         <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome OS Now menu item">

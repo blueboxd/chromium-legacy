@@ -367,7 +367,7 @@ void ShelfView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
-  overflow_button_ = new OverflowButton(this, shelf_);
+  overflow_button_ = new OverflowButton(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
   UpdateBackButton();
@@ -399,11 +399,6 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
 bool ShelfView::IsShowingMenu() const {
   return shelf_menu_model_adapter_ &&
          shelf_menu_model_adapter_->IsShowingMenu();
-}
-
-bool ShelfView::IsShowingMenuForView(const views::View* view) const {
-  return IsShowingMenu() &&
-         shelf_menu_model_adapter_->IsShowingMenuForView(*view);
 }
 
 bool ShelfView::IsShowingOverflowBubble() const {
@@ -571,7 +566,7 @@ bool ShelfView::OnKeyPressed(const ui::KeyEvent& event) {
       ash::keyboard_util::IsArrowKeyCode(event.key_code())) {
     bool swap_with_next = (event.key_code() == ui::VKEY_DOWN ||
                            event.key_code() == ui::VKEY_RIGHT);
-    SwapButtons(focused_button_, swap_with_next);
+    SwapButtons(GetFocusManager()->GetFocusedView(), swap_with_next);
     return true;
   }
   return views::View::OnKeyPressed(event);
@@ -607,6 +602,19 @@ View* ShelfView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   }
   // If none of our children qualifies, just return the shelf view itself.
   return this;
+}
+
+void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
+    ShelfButton* button,
+    bool reverse) {
+  if (is_overflow_mode()) {
+    main_shelf()->OnShelfButtonAboutToRequestFocusFromTabTraversal(button,
+                                                                   reverse);
+    return;
+  }
+
+  if (ShouldFocusOut(reverse, button))
+    shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kShelfView);
 }
 
 void ShelfView::ButtonPressed(views::Button* sender,
@@ -722,6 +730,41 @@ void ShelfView::ButtonPressed(views::Button* sender,
                      ink_drop));
 }
 
+bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
+  if (dragging())
+    return false;
+
+  // Ignore if we are already in a pointer event sequence started with a repost
+  // event on the same shelf item. See crbug.com/343005 for more detail.
+  if (is_repost_event_on_same_item_)
+    return false;
+
+  // Don't activate the item twice on double-click. Otherwise the window starts
+  // animating open due to the first click, then immediately minimizes due to
+  // the second click. The user most likely intended to open or minimize the
+  // item once, not do both.
+  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
+    return false;
+
+  const bool repost = IsRepostEvent(event);
+
+  // The back and app buttons are not part of the view model, treat them
+  // separately.
+  if (view == GetHomeButton() || view == GetBackButton())
+    return !repost;
+
+  // Ignore if this is a repost event on the last pressed shelf item.
+  int index = view_model_->GetIndexOfView(view);
+  if (index == -1)
+    return false;
+  return !repost || last_pressed_index_ != index;
+}
+
+bool ShelfView::IsShowingMenuForView(const views::View* view) const {
+  return IsShowingMenu() &&
+         shelf_menu_model_adapter_->IsShowingMenuForView(*view);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView, FocusTraversable implementation:
 
@@ -820,7 +863,7 @@ void ShelfView::UpdateDragIconProxyByLocation(
     drag_image_->SetScreenPosition(origin_in_screen_coordinates);
 }
 
-bool ShelfView::IsDraggedView(const ShelfAppButton* view) const {
+bool ShelfView::IsDraggedView(const views::View* view) const {
   return drag_view_ == view;
 }
 
@@ -867,23 +910,6 @@ views::View* ShelfView::FindLastFocusableChild() {
 
 views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) {
   return last ? FindLastFocusableChild() : FindFirstFocusableChild();
-}
-
-void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
-    ShelfButton* button,
-    bool reverse) {
-  if (is_overflow_mode()) {
-    main_shelf()->OnShelfButtonAboutToRequestFocusFromTabTraversal(button,
-                                                                   reverse);
-    return;
-  }
-
-  if (ShouldFocusOut(reverse, button))
-    shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kShelfView);
-}
-
-int64_t ShelfView::GetDisplayId() const {
-  return GetDisplayIdForView(this);
 }
 
 // static
@@ -1015,37 +1041,7 @@ void ShelfView::EndDrag(bool cancel) {
   drag_and_drop_shelf_id_ = ShelfID();
 }
 
-bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
-  if (dragging())
-    return false;
-
-  // Ignore if we are already in a pointer event sequence started with a repost
-  // event on the same shelf item. See crbug.com/343005 for more detail.
-  if (is_repost_event_on_same_item_)
-    return false;
-
-  // Don't activate the item twice on double-click. Otherwise the window starts
-  // animating open due to the first click, then immediately minimizes due to
-  // the second click. The user most likely intended to open or minimize the
-  // item once, not do both.
-  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
-    return false;
-
-  const bool repost = IsRepostEvent(event);
-
-  // The back and app buttons are not part of the view model, treat them
-  // separately.
-  if (view == GetHomeButton() || view == GetBackButton())
-    return !repost;
-
-  // Ignore if this is a repost event on the last pressed shelf item.
-  int index = view_model_->GetIndexOfView(view);
-  if (index == -1)
-    return false;
-  return !repost || last_pressed_index_ != index;
-}
-
-void ShelfView::SwapButtons(ShelfButton* button_to_swap, bool with_next) {
+void ShelfView::SwapButtons(views::View* button_to_swap, bool with_next) {
   if (!button_to_swap)
     return;
   // We don't allow reordering of buttons that aren't app buttons.

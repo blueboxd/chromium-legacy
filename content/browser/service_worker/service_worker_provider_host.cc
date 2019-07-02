@@ -46,6 +46,7 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -224,7 +225,8 @@ ServiceWorkerProviderHost::PreCreateForWebWorker(
     blink::mojom::ServiceWorkerProviderType provider_type,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
-  DCHECK(provider_type == ServiceWorkerProviderType::kForDedicatedWorker ||
+  DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
+          provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||
          provider_type == ServiceWorkerProviderType::kForSharedWorker);
   blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
   (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);

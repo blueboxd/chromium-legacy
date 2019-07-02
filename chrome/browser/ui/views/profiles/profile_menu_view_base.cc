@@ -345,7 +345,9 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets()));
 
-  for (MenuItems& group : menu_item_groups_) {
+  for (unsigned group_index = 0; group_index < menu_item_groups_.size();
+       group_index++) {
+    MenuItems& group = menu_item_groups_[group_index];
     if (group.items.empty()) {
       // An empty group represents a separator.
       contents_view->AddChildView(new views::Separator());
@@ -378,6 +380,16 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
         child_spacing = kNone;
       } else {
         child_spacing = kLarge;
+      }
+
+      // Reduce margins if previous/next group is not a separator.
+      if (group_index + 1 < menu_item_groups_.size() &&
+          !menu_item_groups_[group_index + 1].items.empty()) {
+        bottom_margin = kTiny;
+      }
+      if (group_index > 0 &&
+          !menu_item_groups_[group_index - 1].items.empty()) {
+        top_margin = kTiny;
       }
 
       sub_view->SetLayoutManager(std::make_unique<views::BoxLayout>(

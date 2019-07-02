@@ -173,8 +173,8 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
   entry.notification_data.id = kGuid;
   entry.notification_data.title = base::UTF8ToUTF16("title");
   entry.notification_data.message = base::UTF8ToUTF16("message");
-  entry.icon_uuid = "icon_uuid";
-  entry.notification_data.url = "url";
+  entry.icons_uuid = {"icon_uuid_0", "icon_uuid_1"};
+  entry.notification_data.custom_data = {{"url", "https://www.example.com"}};
   TestNotificationEntryConversion(&entry);
 
   // Test scheduling params.

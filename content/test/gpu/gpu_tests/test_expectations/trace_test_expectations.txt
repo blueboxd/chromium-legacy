@@ -1,6 +1,7 @@
 # tags: [ android chromeos linux mac win win10 win7 ]
 # tags: [ debug ]
 # tags: [ intel nvidia qualcomm-adreno-(tm)-418 nvidia-0x1cb3]
+# results: [ Failure RetryOnFailure Skip ]
 
  # TODO(kbr): flakily timing out on this configuration.
 crbug.com/648369 [ linux debug intel ] TraceTest_* [ RetryOnFailure ]

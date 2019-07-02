@@ -236,7 +236,9 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   scroll_layer->GetScrollableArea()->SetScrollOffset(ScrollOffset(1000, 1000),
                                                      kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_EQ(PhysicalOffset(-1000, -1000), content_layer->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), content_layer->Location());
+  EXPECT_EQ(IntSize(1000, 1000),
+            content_layer->ContainingLayer()->ScrolledContentOffset());
   EXPECT_FALSE(content_layer->NeedsRepaint());
   EXPECT_FALSE(scroll_layer->NeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
@@ -266,7 +268,10 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   scroll_layer->GetScrollableArea()->SetScrollOffset(ScrollOffset(1000, 1000),
                                                      kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_EQ(PhysicalOffset(-1000, -1000), content_layer->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), content_layer->Location());
+  EXPECT_EQ(IntSize(1000, 1000),
+            content_layer->ContainingLayer()->ScrolledContentOffset());
+
   EXPECT_TRUE(scroll_layer->NeedsRepaint());
   EXPECT_FALSE(content_layer->NeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
@@ -1398,14 +1403,17 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
   EXPECT_EQ(container, span->Parent());
   EXPECT_EQ(container, span->ContainingLayer());
 
-  EXPECT_EQ(PhysicalOffset(100, -300), span->Location());
+  EXPECT_EQ(PhysicalOffset(100, 100), span->Location());
+  EXPECT_EQ(IntSize(0, 400), span->ContainingLayer()->ScrolledContentOffset());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     EXPECT_EQ(PhysicalOffset(50, 50), floating->Location());
     EXPECT_EQ(PhysicalOffset(50, 50), floating->VisualOffsetFromAncestor(span));
     EXPECT_EQ(PhysicalOffset(150, -250),
               floating->VisualOffsetFromAncestor(container));
   } else {
-    EXPECT_EQ(PhysicalOffset(50, -350), floating->Location());
+    EXPECT_EQ(PhysicalOffset(50, 50), floating->Location());
+    EXPECT_EQ(IntSize(0, 400),
+              floating->ContainingLayer()->ScrolledContentOffset());
     EXPECT_EQ(PhysicalOffset(-50, -50),
               floating->VisualOffsetFromAncestor(span));
     EXPECT_EQ(PhysicalOffset(50, -350),
@@ -1648,7 +1656,9 @@ TEST_P(PaintLayerTest, ColumnSpanLayerUnderExtraLayerScrolled) {
   EXPECT_EQ(columns, extra_layer->Parent()->Parent());
   EXPECT_EQ(columns, extra_layer->ContainingLayer()->Parent());
 
-  EXPECT_EQ(PhysicalOffset(-150, 50), spanner->Location());
+  EXPECT_EQ(PhysicalOffset(50, 50), spanner->Location());
+  EXPECT_EQ(IntSize(200, 0),
+            spanner->ContainingLayer()->ScrolledContentOffset());
   EXPECT_EQ(PhysicalOffset(100, 100), extra_layer->Location());
   // -60 = 2nd-column-x(40) - scroll-offset-x(200) + x-location(100)
   // 20 = y-location(100) - column-height(80)

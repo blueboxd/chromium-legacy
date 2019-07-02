@@ -100,6 +100,16 @@ void CreditCardSaveManager::AttemptToOfferCardLocalSave(
   has_non_focusable_field_ = has_non_focusable_field;
   from_dynamic_change_form_ = from_dynamic_change_form;
 
+  // If the card data does not have the expiration month or the year, then do
+  // not offer to save to save locally, as the local save bubble does not
+  // support the expiration date fix flow.
+  if (local_card_save_candidate_
+          .GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale_)
+          .empty() ||
+      local_card_save_candidate_
+          .GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_)
+          .empty())
+    return;
   // Query the Autofill StrikeDatabase on if we should pop up the
   // offer-to-save prompt for this card.
   show_save_prompt_ =

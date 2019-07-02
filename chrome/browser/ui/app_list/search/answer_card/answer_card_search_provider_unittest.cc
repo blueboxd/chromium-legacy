@@ -12,8 +12,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -77,18 +75,11 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     controller_ = std::make_unique<::test::TestAppListControllerDelegate>();
 
     // Set up card server URL.
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     params["ServerUrl"] = kQueryBase;
     params["QuerySuffix"] = kSomeParam;
-    base::AssociateFieldTrialParams("TestTrial", "TestGroup", params);
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial("TestTrial", "TestGroup");
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(
-        app_list_features::kEnableAnswerCard.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        app_list_features::kEnableAnswerCard, params);
 
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), base::BindRepeating(&CreateTemplateURLService));

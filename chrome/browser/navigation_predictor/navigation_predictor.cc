@@ -113,11 +113,11 @@ NavigationPredictor::NavigationPredictor(
       source_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "source_engagement_score_scale",
-          100)),
+          0)),
       target_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "target_engagement_score_scale",
-          100)),
+          0)),
       area_rank_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "area_rank_scale",

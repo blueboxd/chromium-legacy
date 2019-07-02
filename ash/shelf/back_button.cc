@@ -5,6 +5,7 @@
 #include "ash/shelf/back_button.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -18,7 +19,8 @@ namespace ash {
 // static
 const char BackButton::kViewClassName[] = "ash/BackButton";
 
-BackButton::BackButton(ShelfView* shelf_view) : ShelfControlButton(shelf_view) {
+BackButton::BackButton(ShelfButtonDelegate* shelf_button_delegate)
+    : ShelfControlButton(shelf_button_delegate) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
 }
 

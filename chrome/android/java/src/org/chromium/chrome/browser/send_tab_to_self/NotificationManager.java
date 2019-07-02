@@ -70,7 +70,6 @@ public class NotificationManager {
         @Override
         public void onReceive(Context context, Intent intent) {
             String guid = intent.getStringExtra(NOTIFICATION_GUID_EXTRA);
-            hideNotification(guid, InteractionType.DISMISSED_REMOTELY);
             SendTabToSelfAndroidBridge.dismissEntry(Profile.getLastUsedProfile(), guid);
         }
     }

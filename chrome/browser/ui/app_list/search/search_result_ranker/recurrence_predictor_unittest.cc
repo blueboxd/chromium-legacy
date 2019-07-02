@@ -142,7 +142,7 @@ class HourBinPredictorTest : public testing::Test {
 
     config_.set_weekly_decay_coeff(0.5f);
 
-    const base::flat_map<int, float> bin_weights = {
+    const std::map<int, float> bin_weights = {
         {-2, 0.05}, {-1, 0.15}, {0, 0.6}, {1, 0.15}, {2, 0.05}};
     for (const auto& pair : bin_weights) {
       auto* config_pair = config_.add_bin_weights();
@@ -250,7 +250,7 @@ TEST_F(HourBinPredictorTest, GetTheRightBin) {
 }
 
 TEST_F(HourBinPredictorTest, TrainAndRankSingleBin) {
-  base::flat_map<int, float> weights;
+  std::map<int, float> weights;
   for (const auto& pair : config_.bin_weights())
     weights[pair.bin()] = pair.weight();
 
@@ -278,7 +278,7 @@ TEST_F(HourBinPredictorTest, TrainAndRankSingleBin) {
 }
 
 TEST_F(HourBinPredictorTest, TrainAndRankMultipleBin) {
-  base::flat_map<int, float> weights;
+  std::map<int, float> weights;
   for (const auto& pair : config_.bin_weights())
     weights[pair.bin()] = pair.weight();
 

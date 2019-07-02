@@ -459,6 +459,11 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordFirstBackgroundDownloadInterruptReason(
     DownloadInterruptReason reason,
     bool download_started);
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+// Records the OS error code when moving a file on Windows.
+COMPONENTS_DOWNLOAD_EXPORT void RecordWinFileMoveError(int os_error);
+#endif  // defined(OS_WIN)
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_

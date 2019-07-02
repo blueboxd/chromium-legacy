@@ -107,6 +107,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
       app_launch_source = extensions::AppLaunchSource::kSourceSystemTray;
       break;
     case HELP_SOURCE_WEBUI:
+    case HELP_SOURCE_WEBUI_CHROME_OS:
       app_launch_source = extensions::AppLaunchSource::kSourceAboutPage;
       break;
     default:
@@ -126,9 +127,21 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     case HELP_SOURCE_MENU:
       url = GURL(kChromeHelpViaMenuURL);
       break;
+#if defined(OS_CHROMEOS)
+    case HELP_SOURCE_WEBUI:
+      if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
+        url = GURL(kChromeHelpViaWebUIURL);
+      else
+        url = GURL(kChromeOsHelpViaWebUIURL);
+      break;
+    case HELP_SOURCE_WEBUI_CHROME_OS:
+      url = GURL(kChromeOsHelpViaWebUIURL);
+      break;
+#else
     case HELP_SOURCE_WEBUI:
       url = GURL(kChromeHelpViaWebUIURL);
       break;
+#endif
     default:
       NOTREACHED() << "Unhandled help source " << source;
   }
@@ -380,14 +393,16 @@ void ShowImportDialog(Browser* browser) {
 void ShowAboutChrome(Browser* browser) {
   base::RecordAction(UserMetricsAction("AboutChrome"));
 #if defined(OS_CHROMEOS)
-  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-      browser->profile(), GURL(kChromeUIHelpURL));
-#else
+  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+        browser->profile(), GURL(kChromeUIHelpURL));
+    return;
+  }
+#endif
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIHelpURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, std::move(params));
-#endif
 }
 
 void ShowSearchEngineSettings(Browser* browser) {

@@ -233,7 +233,7 @@ Polymer({
 
   /** @private */
   onHelpClick_: function() {
-    this.aboutBrowserProxy_.openHelpPage();
+    this.aboutBrowserProxy_.openOsHelpPage();
   },
 
   /** @private */

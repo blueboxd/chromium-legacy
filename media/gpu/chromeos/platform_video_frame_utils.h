@@ -11,6 +11,7 @@
 
 namespace gfx {
 struct GpuMemoryBufferHandle;
+class NativePixmap;
 }  // namespace gfx
 
 namespace media {
@@ -27,6 +28,11 @@ MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
 
 // Create a shared GPU memory handle to the |video_frame|'s data.
 MEDIA_GPU_EXPORT gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
+    const VideoFrame* video_frame);
+
+// Create a native pixmap from the specified |video_frame|. The video frame's
+// data will not be copied, the pixmap will point to the same GPU memory buffer.
+scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
     const VideoFrame* video_frame);
 
 }  // namespace media

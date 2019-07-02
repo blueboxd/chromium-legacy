@@ -192,14 +192,14 @@ class ChromeLauncherController
   // This special treatment is required to address crbug.com/234268.
   bool ContentCanBeHandledByGmailApp(content::WebContents* web_contents);
 
-  // Get the favicon for the application list entry for |web_contents|.
-  // Note that for incognito windows the incognito icon will be returned.
-  // If |web_contents| has not loaded, returns the default favicon.
-  gfx::Image GetAppListIcon(content::WebContents* web_contents) const;
+  // Get the favicon for the application menu entry for |web_contents|.
+  // Returns the incognito icon if |web_contents| has an incognito profile.
+  // Returns the default favicon if |web_contents| is null or has not loaded.
+  gfx::Image GetAppMenuIcon(content::WebContents* web_contents) const;
 
-  // Get the title for the applicatoin list entry for |web_contents|.
-  // If |web_contents| has not loaded, returns "Net Tab".
-  base::string16 GetAppListTitle(content::WebContents* web_contents) const;
+  // Get the title for the application menu entry for |web_contents|.
+  // Returns "New Tab" if |web_contents| is null or has not loaded.
+  base::string16 GetAppMenuTitle(content::WebContents* web_contents) const;
 
   // Returns the ash::ShelfItemDelegate of BrowserShortcut.
   BrowserShortcutLauncherItemController*
@@ -313,9 +313,6 @@ class ChromeLauncherController
 
   // Create the Chrome browser shortcut ShelfItem.
   void CreateBrowserShortcutLauncherItem();
-
-  // Check if the given |web_contents| is in incognito mode.
-  bool IsIncognito(content::WebContents* web_contents) const;
 
   // Finds the index of where to insert the next item.
   int FindInsertionPoint();

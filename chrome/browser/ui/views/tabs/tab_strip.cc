@@ -18,6 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -1173,7 +1174,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
     // like the new tab button magically appears from beyond the end of the tab
     // strip.
     bounds_animator_.StopAnimatingView(new_tab_button_);
-    new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
+    new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
   }
 
   SwapLayoutIfNecessary();
@@ -1365,6 +1366,11 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
   selected_tabs_ = new_selection;
 
   UpdateHoverCard(nullptr, /* should_show */ false);
+  // The hover cards seen count is reset when the active tab is changed by any
+  // event. Note TabStrip::SelectTab does not capture tab changes triggered by
+  // the keyboard.
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_)
+    hover_card_->reset_hover_cards_seen_count();
 
   // Notify all tabs whose selected state changed.
   for (auto tab_index :
@@ -1445,8 +1451,15 @@ bool TabStrip::MaySetClip() {
 
 void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   int model_index = GetModelIndexOfTab(tab);
-  if (IsValidModelIndex(model_index))
+  if (IsValidModelIndex(model_index)) {
+    // Report histogram metrics for the number of tab hover cards seen before
+    // a tab is selected by mouse press.
+    if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_ &&
+        event.type() == ui::ET_MOUSE_PRESSED && !tab->IsActive()) {
+      hover_card_->RecordHoverCardsSeenRatioMetric();
+    }
     controller_->SelectTab(model_index, event);
+  }
 }
 
 void TabStrip::ExtendSelectionTo(Tab* tab) {
@@ -1993,7 +2006,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
                                 largest_min_tab_width);
   }
   return gfx::Size(needed_tab_width + TabToNewTabButtonSpacing() +
-                       new_tab_button_bounds_.width() + FrameGrabWidth(),
+                       new_tab_button_ideal_bounds_.width() + FrameGrabWidth(),
                    GetLayoutConstant(TAB_HEIGHT));
 }
 
@@ -2094,7 +2107,7 @@ void TabStrip::Init() {
   new_tab_button_->AddObserver(this);
 
   UpdateNewTabButtonBorder();
-  new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
+  new_tab_button_ideal_bounds_.set_size(new_tab_button_->GetPreferredSize());
 
   if (g_drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
@@ -2173,6 +2186,7 @@ void TabStrip::StartMoveTabAnimation() {
 }
 
 void TabStrip::AnimateToIdealBounds() {
+  UpdateHoverCard(nullptr, /* should_show */ false);
   // bounds_animator_ and TabStripLayoutHelper::animator_ should not run
   // concurrently. bounds_animator_ takes precedence, and can finish what the
   // other started.
@@ -2208,8 +2222,10 @@ void TabStrip::AnimateToIdealBounds() {
   }
 
   if (bounds_animator_.GetTargetBounds(new_tab_button_) !=
-      new_tab_button_bounds_)
-    bounds_animator_.AnimateViewTo(new_tab_button_, new_tab_button_bounds_);
+      new_tab_button_ideal_bounds_) {
+    bounds_animator_.AnimateViewTo(new_tab_button_,
+                                   new_tab_button_ideal_bounds_);
+  }
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
@@ -2258,15 +2274,18 @@ void TabStrip::LayoutToCurrentBounds() {
 
     views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
     bounds_animator_.StopAnimatingView(new_tab_button_);
+    new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
   } else {
     const int available_width = (available_width_for_tabs_ < 0)
                                     ? GetTabAreaWidth()
                                     : available_width_for_tabs_;
     int trailing_x = layout_helper_->LayoutTabs(available_width);
-    new_tab_button_bounds_.set_origin(gfx::Point(
+
+    gfx::Rect new_tab_button_current_bounds = new_tab_button_ideal_bounds_;
+    new_tab_button_current_bounds.set_origin(gfx::Point(
         std::min(available_width, trailing_x) + TabToNewTabButtonSpacing(), 0));
+    new_tab_button_->SetBoundsRect(new_tab_button_current_bounds);
   }
-  new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
 
   SetTabVisibility();
 
@@ -2304,8 +2323,8 @@ int TabStrip::GetInactiveTabWidth() const {
 }
 
 int TabStrip::GetTabAreaWidth() const {
-  return drag_context_->TabDragAreaEndX() - new_tab_button_bounds_.width() -
-         TabToNewTabButtonSpacing();
+  return drag_context_->TabDragAreaEndX() -
+         new_tab_button_ideal_bounds_.width() - TabToNewTabButtonSpacing();
 }
 
 int TabStrip::GetNewTabButtonIdealX() const {
@@ -2729,7 +2748,8 @@ void TabStrip::UpdateIdealBounds() {
     layout_helper_->UpdateIdealBounds(available_width);
   }
 
-  new_tab_button_bounds_.set_origin(gfx::Point(GetNewTabButtonIdealX(), 0));
+  new_tab_button_ideal_bounds_.set_origin(
+      gfx::Point(GetNewTabButtonIdealX(), 0));
 }
 
 int TabStrip::UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
@@ -2977,6 +2997,8 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
 void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_)
+    hover_card_->set_last_mouse_exit_timestamp(base::TimeTicks::Now());
   UpdateHoverCard(nullptr, /* should_show */ false);
 }
 
@@ -3088,8 +3110,8 @@ void TabStrip::OnViewFocused(views::View* observed_view) {
 
 void TabStrip::OnTouchUiChanged() {
   UpdateNewTabButtonBorder();
-  new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
-  new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
+  new_tab_button_ideal_bounds_.set_size(new_tab_button_->GetPreferredSize());
+  new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
   StopAnimating(true);
   PreferredSizeChanged();
 }

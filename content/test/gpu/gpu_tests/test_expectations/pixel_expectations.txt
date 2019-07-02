@@ -6,6 +6,7 @@
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
 #         qualcomm-adreno-(tm)-540
 # ]
+# results: [ Failure RetryOnFailure Skip ]
 
 # Seems to be flaky on the new AMD R7 240 drivers.
 crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFailure ]

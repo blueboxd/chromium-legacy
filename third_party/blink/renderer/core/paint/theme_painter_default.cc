@@ -149,6 +149,7 @@ bool ThemePainterDefault::PaintCheckbox(const Node* node,
                                         const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
+  extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.checked = LayoutTheme::IsChecked(node);
   extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
 
@@ -177,6 +178,7 @@ bool ThemePainterDefault::PaintRadio(const Node* node,
                                      const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
+  extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.checked = LayoutTheme::IsChecked(node);
 
   Platform::Current()->ThemeEngine()->Paint(canvas, WebThemeEngine::kPartRadio,
@@ -192,6 +194,7 @@ bool ThemePainterDefault::PaintButton(const Node* node,
                                       const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
+  extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.has_border = true;
   extra_params.button.background_color =
       UseMockTheme() ? 0xffc0c0c0 : kDefaultButtonBackgroundColor;

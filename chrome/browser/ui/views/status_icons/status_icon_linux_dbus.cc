@@ -38,6 +38,9 @@
 
 namespace {
 
+// Service names.
+const char kServiceStatusNotifierWatcher[] = "org.kde.StatusNotifierWatcher";
+
 // Interfaces.
 // If/when the StatusNotifierItem spec gets accepted AND widely used, replace
 // "kde" with "freedesktop".
@@ -50,6 +53,7 @@ const char kPathStatusNotifierWatcher[] = "/StatusNotifierWatcher";
 const char kPathDbusMenu[] = "/com/canonical/dbusmenu";
 
 // Methods.
+const char kMethodNameHasOwner[] = "NameHasOwner";
 const char kMethodRegisterStatusNotifierItem[] = "RegisterStatusNotifierItem";
 const char kMethodActivate[] = "Activate";
 const char kMethodContextMenu[] = "ContextMenu";
@@ -138,21 +142,8 @@ auto MakeDbusToolTip(const std::string& text) {
 }  // namespace
 
 StatusIconLinuxDbus::StatusIconLinuxDbus()
-    : bus_(CreateBus()),
-      watcher_(
-          bus_->GetObjectProxy(kInterfaceStatusNotifierWatcher,
-                               dbus::ObjectPath(kPathStatusNotifierWatcher))),
-      weak_factory_(this) {
-  dbus::MethodCall is_status_notifier_host_registered_call(
-      DBUS_INTERFACE_PROPERTIES, kMethodGet);
-  dbus::MessageWriter writer(&is_status_notifier_host_registered_call);
-  writer.AppendString(kInterfaceStatusNotifierWatcher);
-  writer.AppendString(kPropertyIsStatusNotifierHostRegistered);
-  watcher_->CallMethod(
-      &is_status_notifier_host_registered_call,
-      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::BindRepeating(&StatusIconLinuxDbus::OnHostRegisteredResponse,
-                          weak_factory_.GetWeakPtr()));
+    : bus_(CreateBus()), weak_factory_(this) {
+  CheckStatusNotifierWatcherHasOwner();
 }
 
 StatusIconLinuxDbus::~StatusIconLinuxDbus() {
@@ -198,6 +189,39 @@ void StatusIconLinuxDbus::RefreshPlatformContextMenu() {
 void StatusIconLinuxDbus::ExecuteCommand(int command_id, int event_flags) {
   DCHECK_EQ(command_id, 0);
   delegate_->OnClick();
+}
+
+void StatusIconLinuxDbus::CheckStatusNotifierWatcherHasOwner() {
+  dbus::ObjectProxy* bus_proxy =
+      bus_->GetObjectProxy(DBUS_SERVICE_DBUS, dbus::ObjectPath(DBUS_PATH_DBUS));
+  dbus::MethodCall method_call(DBUS_INTERFACE_DBUS, kMethodNameHasOwner);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kServiceStatusNotifierWatcher);
+  bus_proxy->CallMethod(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindRepeating(&StatusIconLinuxDbus::OnNameHasOwnerResponse,
+                          weak_factory_.GetWeakPtr()));
+}
+
+void StatusIconLinuxDbus::OnNameHasOwnerResponse(dbus::Response* response) {
+  dbus::MessageReader reader(response);
+  bool owned = false;
+  if (!response || !reader.PopBool(&owned) || !owned) {
+    delegate_->OnImplInitializationFailed();
+    return;
+  }
+
+  watcher_ = bus_->GetObjectProxy(kServiceStatusNotifierWatcher,
+                                  dbus::ObjectPath(kPathStatusNotifierWatcher));
+
+  dbus::MethodCall method_call(DBUS_INTERFACE_PROPERTIES, kMethodGet);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kInterfaceStatusNotifierWatcher);
+  writer.AppendString(kPropertyIsStatusNotifierHostRegistered);
+  watcher_->CallMethod(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindRepeating(&StatusIconLinuxDbus::OnHostRegisteredResponse,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void StatusIconLinuxDbus::OnHostRegisteredResponse(dbus::Response* response) {

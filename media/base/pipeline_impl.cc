@@ -1168,7 +1168,7 @@ void PipelineImpl::SetVolume(float volume) {
   DVLOG(2) << __func__ << "(" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (volume < 0.0f || volume > 1.0f)
+  if (volume < 0.0f)
     return;
 
   volume_ = volume;

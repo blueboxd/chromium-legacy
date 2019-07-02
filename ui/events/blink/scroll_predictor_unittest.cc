@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -110,26 +108,11 @@ class ScrollPredictorTest : public testing::Test {
 
   void ConfigureFieldTrial(const base::Feature& feature,
                            const std::string& predictor_type) {
-    const std::string kTrialName = "TestTrial";
-    const std::string kGroupName = "TestGroup";
-
-    field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(nullptr));
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     params["predictor"] = predictor_type;
-    base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-        kTrialName, kGroupName, params);
 
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        feature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    base::FeatureList::ClearInstanceForTesting();
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
-
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(feature, params);
     EXPECT_EQ(params["predictor"],
               GetFieldTrialParamValueByFeature(feature, "predictor"));
   }
@@ -142,7 +125,6 @@ class ScrollPredictorTest : public testing::Test {
   EventWithCallback::OriginalEventList original_events_;
   std::unique_ptr<ScrollPredictor> scroll_predictor_;
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollPredictorTest);

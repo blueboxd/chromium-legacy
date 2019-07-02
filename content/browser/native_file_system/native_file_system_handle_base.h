@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequence_bound.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/common/content_export.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -40,7 +41,8 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
   NativeFileSystemHandleBase(NativeFileSystemManagerImpl* manager,
                              const BindingContext& context,
                              const storage::FileSystemURL& url,
-                             const SharedHandleState& handle_state);
+                             const SharedHandleState& handle_state,
+                             bool is_directory);
   virtual ~NativeFileSystemHandleBase();
 
   const storage::FileSystemURL& url() const { return url_; }
@@ -92,6 +94,12 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
   const BindingContext context_;
   const storage::FileSystemURL url_;
   const SharedHandleState handle_state_;
+
+  class UsageIndicatorTracker;
+  base::SequenceBound<UsageIndicatorTracker> usage_indicator_tracker_;
+  bool was_writable_at_last_check_ = false;
+
+  void UpdateWritableUsage();
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemHandleBase);
 };

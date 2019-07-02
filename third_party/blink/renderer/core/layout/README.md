@@ -1,3 +1,8 @@
+<!---
+  The live version of this document can be viewed at:
+  https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/layout/README.md
+-->
+
 # Blink Layout
 
 The `Source/core/layout` directory contains the implementation of layout objects.

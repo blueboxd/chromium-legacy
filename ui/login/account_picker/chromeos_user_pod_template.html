@@ -18,11 +18,8 @@
       Inlined from Polymer's iron-icons to avoid importing everything.
       See http://goo.gl/Y1OdAq for instructions on adding additional icons.
       -->
-      <g id="arrow-forward" fill="none" fill-rule="evenodd">
-        <polygon points="0 0 20 0 20 20 0 20"/>
-        <polygon fill="#FFF" points="10.042 3.5 8.896 4.646 13.43 9.188 3.542 9.188 3.542 10.813 13.43 10.813 8.896 15.354 10.042 16.5 16.542 10"/>
-      </g>
-      <g id="dropdown" fill="#FFFFFF" stroke="none" stroke-width="1" fill-rule="evenodd" opacity="0.34">
+      <g id="arrow-forward"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path></g>
+      <g id="dropdown" stroke="none" stroke-width="1" fill-rule="evenodd">
         <polygon points="16.59 8.59 12 13.17 7.41 8.59 6 10 12 16 18 10"></polygon>
       </g>
       <g id="legacy-supervised-badge">
@@ -104,7 +101,7 @@
       <div class="name-container">
         <div class="name"></div>
         <div class="action-box-area">
-          <cr-icon-button class="action-box-button" disabled
+          <cr-icon-button class="action-box-button"
               iron-icon="user-pod:dropdown"></cr-icon-button>
           <div class="action-box-button ripple-circle"></div>
           <iron-icon icon="cr:more-vert" class="action-box-icon"></iron-icon>
@@ -158,10 +155,10 @@
             <div class="action-box-remove-non-owner-user-warning-text">
               $i18n{removeNonOwnerUserWarningText}
             </div>
-            <!-- paper-button is imported inside user_manager.html -->
-            <paper-button class="remove-warning-button action-button">
+            <!-- cr-button is imported inside user_manager.html -->
+            <cr-button class="remove-warning-button action-button" noink>
               $i18n{removeUserWarningButtonTitle}
-            </paper-button>
+            </cr-button>
           </div>
         </div>
       </div>

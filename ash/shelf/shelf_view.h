@@ -15,9 +15,9 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
-#include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shell_observer.h"
@@ -107,9 +107,9 @@ enum ShelfAlignmentUmaEnumValue {
 //
 
 class ASH_EXPORT ShelfView : public views::View,
+                             public ShelfButtonDelegate,
                              public ShelfModelObserver,
                              public ShellObserver,
-                             public InkDropButtonListener,
                              public views::ContextMenuController,
                              public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
@@ -149,8 +149,6 @@ class ASH_EXPORT ShelfView : public views::View,
     owner_overflow_bubble_ = owner;
   }
 
-  void set_focused_button(ShelfButton* focused) { focused_button_ = focused; }
-
   HomeButton* GetHomeButton() const;
   BackButton* GetBackButton() const;
   OverflowButton* GetOverflowButton() const;
@@ -189,10 +187,14 @@ class ASH_EXPORT ShelfView : public views::View,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
-  // InkDropButtonListener:
+  // ShelfButtonDelegate:
+  void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
+                                                        bool reverse) override;
   void ButtonPressed(views::Button* sender,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
+  bool ShouldEventActivateButton(views::View* view,
+                                 const ui::Event& event) override;
 
   // Overridden from FocusTraversable:
   views::FocusSearch* GetFocusSearch() override;
@@ -232,15 +234,11 @@ class ASH_EXPORT ShelfView : public views::View,
   bool Drag(const gfx::Point& location_in_screen_coordinates) override;
   void EndDrag(bool cancel) override;
 
-  // Returns true if |event| on the shelf item is going to activate the item.
-  // Used to determine whether a pending ink drop should be shown or not.
-  bool ShouldEventActivateButton(views::View* view, const ui::Event& event);
-
   // Swaps the given button with the next one if |with_next| is true, or with
   // the previous one if |with_next| is false.
-  void SwapButtons(ShelfButton* button_to_swap, bool with_next);
+  void SwapButtons(views::View* button_to_swap, bool with_next);
 
-  // The shelf buttons use the Pointer interface to enable item reordering.
+  // The ShelfAppButtons use the Pointer interface to enable item reordering.
   enum Pointer { NONE, DRAG_AND_DROP, MOUSE, TOUCH };
   void PointerPressedOnButton(views::View* view,
                               Pointer pointer,
@@ -261,7 +259,7 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnTabletModeChanged();
 
   // True if the current |drag_view_| is the given |drag_view|.
-  bool IsDraggedView(const ShelfAppButton* drag_view) const;
+  bool IsDraggedView(const views::View* drag_view) const;
 
   // Returns the list of open windows that correspond to the app represented by
   // this shelf view.
@@ -279,12 +277,6 @@ class ASH_EXPORT ShelfView : public views::View,
   views::View* FindFirstOrLastFocusableChild(bool last);
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
-
-  void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
-                                                        bool reverse);
-
-  // Returns the ID of the display where this view is shown.
-  int64_t GetDisplayId() const;
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -614,10 +606,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
-
-  // The button that is currently focused for keyboard navigation, or null
-  // if nothing is focused.
-  ShelfButton* focused_button_ = nullptr;
 
   // True if a drag and drop operation created/pinned the item in the launcher
   // and it needs to be deleted/unpinned again if the operation gets cancelled.

@@ -30,12 +30,8 @@ std::unique_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
     case Layer::LayerMaskType::NOT_MASK:
       layer_impl = FakePictureLayerImpl::Create(tree_impl, id());
       break;
-    case Layer::LayerMaskType::MULTI_TEXTURE_MASK:
-      layer_impl = FakePictureLayerImpl::CreateMask(tree_impl, id());
-      break;
     case Layer::LayerMaskType::SINGLE_TEXTURE_MASK:
-      layer_impl =
-          FakePictureLayerImpl::CreateSingleTextureMask(tree_impl, id());
+      layer_impl = FakePictureLayerImpl::CreateMask(tree_impl, id());
       break;
     default:
       NOTREACHED();

@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -21,6 +22,7 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -204,14 +206,19 @@ void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
 
 void PluginVmManager::OnListVms(
     base::Optional<vm_tools::plugin_dispatcher::ListVmResponse> reply) {
-  if (!reply.has_value() || reply->error()) {
+  if (!reply.has_value()) {
     LOG(ERROR) << "Failed to list VMs.";
     LaunchFailed();
     return;
   }
-  if (reply->vm_info_size() != 1) {
-    LOG(ERROR) << "Default VM is missing.";
-    LaunchFailed();
+  if (reply->error() || reply->vm_info_size() != 1) {
+    // Currently the error() field is set when the requested VM doesn't exist,
+    // but having an empty vm_info list should also be a valid response.
+    LOG(WARNING) << "Default VM is missing, it may have been manually removed.";
+    profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
+                                     false);
+    plugin_vm::ShowPluginVmLauncherView(profile_);
+    LaunchFailed(PluginVmLaunchResult::kVmMissing);
     return;
   }
 

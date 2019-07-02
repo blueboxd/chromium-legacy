@@ -30,8 +30,7 @@ auto CombineWithLayerMaskTypes(
     const std::vector<PixelResourceTestCase>& test_cases) {
   return ::testing::Combine(
       ::testing::ValuesIn(test_cases),
-      ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
-                        Layer::LayerMaskType::MULTI_TEXTURE_MASK));
+      ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK));
 }
 
 // TODO(crbug.com/963446): Enable these tests for Vulkan.

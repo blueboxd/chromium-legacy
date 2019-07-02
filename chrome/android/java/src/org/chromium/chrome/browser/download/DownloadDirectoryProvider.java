@@ -58,7 +58,10 @@ public class DownloadDirectoryProvider {
         File[] getExternalFilesDirs();
     }
 
-    private static class DownloadDirectoryProviderDelegate implements Delegate {
+    /**
+     * Class that calls Android API to get download directories.
+     */
+    public static class DownloadDirectoryProviderDelegate implements Delegate {
         @Override
         public File getPrimaryDownloadDirectory() {
             return DownloadDirectoryProvider.getPrimaryDownloadDirectory();

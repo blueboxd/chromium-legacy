@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RECURRENCE_PREDICTOR_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RECURRENCE_PREDICTOR_H_
 
+#include <map>
 #include <memory>
 
-#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.h"
@@ -43,7 +43,7 @@ class RecurrencePredictor {
 
   // Return a map of all known targets to their scores for the given condition
   // under this predictor. Scores must be within the range [0,1].
-  virtual base::flat_map<unsigned int, float> Rank(unsigned int condition) = 0;
+  virtual std::map<unsigned int, float> Rank(unsigned int condition) = 0;
 
   virtual void ToProto(RecurrencePredictorProto* proto) const = 0;
   virtual void FromProto(const RecurrencePredictorProto& proto) = 0;
@@ -63,7 +63,7 @@ class FakePredictor : public RecurrencePredictor {
 
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
-  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -71,7 +71,7 @@ class FakePredictor : public RecurrencePredictor {
   static const char kPredictorName[];
 
  private:
-  base::flat_map<unsigned int, float> counts_;
+  std::map<unsigned int, float> counts_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePredictor);
 };
@@ -86,7 +86,7 @@ class DefaultPredictor : public RecurrencePredictor {
 
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
-  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -119,7 +119,7 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
     Events(const Events& other);
     ~Events();
 
-    base::flat_map<unsigned int, float> freqs;
+    std::map<unsigned int, float> freqs;
     float total = 0.0f;
   };
 
@@ -127,7 +127,7 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
   // Add 1.0f to the relative frequency of |target| given |condition|.
   void Train(unsigned int target, unsigned int condition) override;
   // The scores in the returned map sum to 1 if the map is non-empty.
-  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -139,7 +139,7 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
 
  private:
   // Stores a mapping from conditions to events to frequencies.
-  base::flat_map<unsigned int, ConditionalFrequencyPredictor::Events> table_;
+  std::map<unsigned int, ConditionalFrequencyPredictor::Events> table_;
 
   DISALLOW_COPY_AND_ASSIGN(ConditionalFrequencyPredictor);
 };
@@ -164,7 +164,7 @@ class FrecencyPredictor : public RecurrencePredictor {
 
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
-  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -186,8 +186,7 @@ class FrecencyPredictor : public RecurrencePredictor {
   unsigned int num_updates_ = 0;
 
   // This stores all the data of the frecency predictor.
-  // TODO(tby): benchmark which map is best in practice for our use.
-  base::flat_map<unsigned int, FrecencyPredictor::TargetData> targets_;
+  std::map<unsigned int, FrecencyPredictor::TargetData> targets_;
 
   DISALLOW_COPY_AND_ASSIGN(FrecencyPredictor);
 };
@@ -202,7 +201,7 @@ class HourBinPredictor : public RecurrencePredictor {
 
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
-  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -233,7 +232,7 @@ class HourBinPredictor : public RecurrencePredictor {
 
   // Weightings for how much an update in bin should affect the bins around it.
   // Keys in the map are relative indices from the updated bin.
-  base::flat_map<int, float> bin_weights_;
+  std::map<int, float> bin_weights_;
 
   // How much to decay frequencies each week.
   float weekly_decay_coeff_;
@@ -250,7 +249,7 @@ class MarkovPredictor : public RecurrencePredictor {
 
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
-  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;

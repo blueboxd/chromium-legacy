@@ -925,3 +925,12 @@ test.util.sync.setPreferences = preferences => {
 test.util.sync.recordEnumMetric = (name, value, validValues) => {
   metrics.recordEnum(name, value, validValues);
 };
+
+/**
+ * Reloads the Files app (Background & Foreground).
+ * NOTE: Any foreground window opened before the reload will be killed, so any
+ * appId/windowId won't be usable after the reload.
+ */
+test.util.sync.reload = () => {
+  chrome.runtime.reload();
+};

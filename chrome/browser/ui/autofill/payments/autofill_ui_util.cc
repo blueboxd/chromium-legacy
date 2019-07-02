@@ -60,6 +60,7 @@ void UpdatePageActionIcon(PageActionIconType icon_type,
       case PageActionIconType::kSendTabToSelf:
       case PageActionIconType::kTranslate:
       case PageActionIconType::kZoom:
+      case PageActionIconType::kNativeFileSystemAccess:
         NOTREACHED();
     }
   }

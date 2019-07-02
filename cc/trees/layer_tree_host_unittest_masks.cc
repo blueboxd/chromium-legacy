@@ -50,7 +50,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
 
     gfx::Size mask_size(100, 100);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     mask_layer_id_ = mask_layer->id();
 
     layer_tree_host()->SetRootLayer(root);
@@ -89,21 +89,9 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
         render_pass_quad->rect);
     EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
               rect_in_target_space.ToString());
-    if (host_impl->settings().enable_mask_tiling) {
-      PictureLayerImpl* mask_layer_impl = static_cast<PictureLayerImpl*>(
-          host_impl->active_tree()->LayerById(mask_layer_id_));
-      gfx::SizeF texture_size(
-          mask_layer_impl->CalculateTileSize(mask_layer_impl->bounds()));
-      EXPECT_EQ(
-          gfx::RectF(50.f / texture_size.width(), 50.f / texture_size.height(),
-                     50.f / texture_size.width(), 50.f / texture_size.height())
-              .ToString(),
-          render_pass_quad->mask_uv_rect.ToString());
-    } else {
-      EXPECT_EQ(gfx::ScaleRect(gfx::RectF(50.f, 50.f, 50.f, 50.f), 1.f / 100.f)
-                    .ToString(),
-                render_pass_quad->mask_uv_rect.ToString());
-    }
+    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(50.f, 50.f, 50.f, 50.f), 1.f / 100.f)
+                  .ToString(),
+              render_pass_quad->mask_uv_rect.ToString());
     EndTest();
     return draw_result;
   }
@@ -114,27 +102,8 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
   FakeContentLayerClient client_;
 };
 
-class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin_Untiled
-    : public LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = false;
-  }
-};
-
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin_Untiled);
-
-class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin_Tiled
-    : public LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = true;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin_Tiled);
+    LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin);
 
 class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
  protected:
@@ -191,7 +160,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
 
     gfx::Size mask_size(50, 50);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     mask_layer_id_ = mask_layer->id();
 
     layer_tree_host()->SetRootLayer(root);
@@ -226,21 +195,9 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     // coords in the mask are scaled by 10/50 and 20/50.
     // The surface is clipped to (20,10) so the mask texture coords are offset
     // by 20/50 and 10/50
-    if (host_impl->settings().enable_mask_tiling) {
-      PictureLayerImpl* mask_layer_impl = static_cast<PictureLayerImpl*>(
-          host_impl->active_tree()->LayerById(mask_layer_id_));
-      gfx::SizeF texture_size(
-          mask_layer_impl->CalculateTileSize(mask_layer_impl->bounds()));
-      EXPECT_EQ(
-          gfx::RectF(20.f / texture_size.width(), 10.f / texture_size.height(),
-                     10.f / texture_size.width(), 20.f / texture_size.height())
-              .ToString(),
-          render_pass_quad->mask_uv_rect.ToString());
-    } else {
-      EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
-                    .ToString(),
-                render_pass_quad->mask_uv_rect.ToString());
-    }
+    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
+                  .ToString(),
+              render_pass_quad->mask_uv_rect.ToString());
     EndTest();
     return draw_result;
   }
@@ -251,27 +208,8 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
-class LayerTreeTestMaskLayerForSurfaceWithClippedLayer_Untiled
-    : public LayerTreeTestMaskLayerForSurfaceWithClippedLayer {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = false;
-  }
-};
-
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithClippedLayer_Untiled);
-
-class LayerTreeTestMaskLayerForSurfaceWithClippedLayer_Tiled
-    : public LayerTreeTestMaskLayerForSurfaceWithClippedLayer {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = true;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithClippedLayer_Tiled);
+    LayerTreeTestMaskLayerForSurfaceWithClippedLayer);
 
 class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     : public LayerTreeTest {
@@ -333,7 +271,7 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
 
     gfx::Size mask_size(50, 50);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
     // Setting will change transform on mask layer will make it not adjust
     // raster scale, which will remain 1. This means the mask_layer and render
     // surface will have a scale of 2 during draw time.
@@ -378,21 +316,9 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     // coords in the mask are scaled by 10/50 and 20/50.
     // The surface is clipped to (20,10) so the mask texture coords are offset
     // by 20/50 and 10/50
-    if (host_impl->settings().enable_mask_tiling) {
-      PictureLayerImpl* mask_layer_impl = static_cast<PictureLayerImpl*>(
-          host_impl->active_tree()->LayerById(mask_layer_id_));
-      gfx::SizeF texture_size(
-          mask_layer_impl->CalculateTileSize(mask_layer_impl->bounds()));
-      EXPECT_EQ(
-          gfx::RectF(20.f / texture_size.width(), 10.f / texture_size.height(),
-                     10.f / texture_size.width(), 20.f / texture_size.height())
-              .ToString(),
-          render_pass_quad->mask_uv_rect.ToString());
-    } else {
-      EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
-                    .ToString(),
-                render_pass_quad->mask_uv_rect.ToString());
-    }
+    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
+                  .ToString(),
+              render_pass_quad->mask_uv_rect.ToString());
     EndTest();
     return draw_result;
   }
@@ -403,27 +329,8 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
   FakeContentLayerClient client_;
 };
 
-class LayerTreeTestMaskLayerForSurfaceWithDifferentScale_Untiled
-    : public LayerTreeTestMaskLayerForSurfaceWithDifferentScale {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = false;
-  }
-};
-
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithDifferentScale_Untiled);
-
-class LayerTreeTestMaskLayerForSurfaceWithDifferentScale_Tiled
-    : public LayerTreeTestMaskLayerForSurfaceWithDifferentScale {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = true;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithDifferentScale_Tiled);
+    LayerTreeTestMaskLayerForSurfaceWithDifferentScale);
 
 class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
  protected:
@@ -471,7 +378,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     content_layer->SetBounds(scaling_layer_size);
 
     mask_layer->SetBounds(scaling_layer_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
@@ -495,34 +402,25 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
               root_pass->quad_list.front()->material);
     const viz::RenderPassDrawQuad* render_pass_quad =
         viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    gfx::Rect rect_in_target_space = MathUtil::MapEnclosingClippedRect(
+        render_pass_quad->shared_quad_state->quad_to_target_transform,
+        render_pass_quad->rect);
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // Check that the tree scaling is correctly taken into account for the
         // mask, that should fully map onto the quad.
         EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
-                  render_pass_quad->rect.ToString());
-        if (host_impl->settings().enable_mask_tiling) {
-          EXPECT_EQ(
-              gfx::RectF(0.f, 0.f, 100.f / 128.f, 100.f / 128.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
-        } else {
-          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                    render_pass_quad->mask_uv_rect.ToString());
-        }
+                  rect_in_target_space.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_rect.ToString());
         break;
       case 1:
         // Applying a DSF should change the render surface size, but won't
         // affect which part of the mask is used.
         EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
-                  render_pass_quad->rect.ToString());
-        if (host_impl->settings().enable_mask_tiling) {
-          EXPECT_EQ(
-              gfx::RectF(0.f, 0.f, 100.f / 128.f, 100.f / 128.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
-        } else {
-          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                    render_pass_quad->mask_uv_rect.ToString());
-        }
+                  rect_in_target_space.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_rect.ToString());
         EndTest();
         break;
     }
@@ -544,27 +442,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
-class LayerTreeTestMaskLayerWithScaling_Untiled
-    : public LayerTreeTestMaskLayerWithScaling {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = false;
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithScaling_Untiled);
-
-class LayerTreeTestMaskLayerWithScaling_Tiled
-    : public LayerTreeTestMaskLayerWithScaling {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = true;
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithScaling_Tiled);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithScaling);
 
 class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
  protected:
@@ -642,26 +520,7 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
-class LayerTreeTestMaskWithNonExactTextureSize_Untiled
-    : public LayerTreeTestMaskWithNonExactTextureSize {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = false;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskWithNonExactTextureSize_Untiled);
-
-class LayerTreeTestMaskWithNonExactTextureSize_Tiled
-    : public LayerTreeTestMaskWithNonExactTextureSize {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = true;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskWithNonExactTextureSize_Tiled);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskWithNonExactTextureSize);
 
 }  // namespace
 }  // namespace cc

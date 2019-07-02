@@ -54,4 +54,31 @@
     // Focus should be on file list.
     await remoteCall.waitForElement(appId, '#file-list:focus');
   };
+
+  /**
+   * Tests that Downloads is translated in the breadcrumbs.
+   */
+  testcase.breadcrumbsDownloadsTranslation = async () => {
+    // Switch UI to Portuguese (Portugal).
+    await sendTestMessage({name: 'switchLanguage', language: 'pt-PT'});
+
+    // Reload Files app to pick up the new language.
+    await remoteCall.callRemoteTestUtil('reload', null, []);
+
+    // Open Files app.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+    // Check the breadcrumbs for Downloads:
+    // Os meu ficheiros => My files.
+    // Transferências => Downloads (as in Transfers).
+    const path =
+        await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []);
+    chrome.test.assertEq('/Os meus ficheiros/Transferências', path);
+
+    // Navigate to Downloads/photos.
+    await remoteCall.navigateWithDirectoryTree(
+        appId, RootPath.DOWNLOADS_PATH + '/photos',
+        'Os meus ficheiros/Transferências');
+  };
 })();

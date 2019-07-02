@@ -25,7 +25,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/unsent_log_store_metrics_impl.h"
 #include "components/ukm/ukm_pref_names.h"
-#include "components/variations/variations_associated_data.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -78,44 +77,14 @@ bool TestIsWebstoreExtension(base::StringPiece id) {
   return (id == "bhcnanendmgjjeghamaccjnochlnhcgj");
 }
 
-// TODO(rkaplow): consider making this a generic testing class in
-// components/variations.
 class ScopedUkmFeatureParams {
  public:
-  ScopedUkmFeatureParams(
-      base::FeatureList::OverrideState feature_state,
-      const std::map<std::string, std::string>& variation_params) {
-    static const char kTestFieldTrialName[] = "TestTrial";
-    static const char kTestExperimentGroupName[] = "TestGroup";
-
-    variations::testing::ClearAllVariationParams();
-
-    EXPECT_TRUE(variations::AssociateVariationParams(
-        kTestFieldTrialName, kTestExperimentGroupName, variation_params));
-
-    base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
-        kTestFieldTrialName, kTestExperimentGroupName);
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(kUkmFeature.name, feature_state,
-                                             field_trial);
-
-    // Since we are adding a scoped feature list after browser start, copy over
-    // the existing feature list to prevent inconsistency.
-    base::FeatureList* existing_feature_list = base::FeatureList::GetInstance();
-    if (existing_feature_list) {
-      std::string enabled_features;
-      std::string disabled_features;
-      base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
-                                                            &disabled_features);
-      feature_list->InitializeFromCommandLine(enabled_features,
-                                              disabled_features);
-    }
-
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  explicit ScopedUkmFeatureParams(const base::FieldTrialParams& params) {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(kUkmFeature,
+                                                            params);
   }
 
-  ~ScopedUkmFeatureParams() { variations::testing::ClearAllVariationParams(); }
+  ~ScopedUkmFeatureParams() {}
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -212,8 +181,7 @@ TEST_F(UkmServiceTest, EnableDisableSchedule) {
 
 TEST_F(UkmServiceTest, PersistAndPurge) {
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
@@ -290,8 +258,7 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 
 TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
@@ -314,8 +281,7 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
 
 TEST_F(UkmServiceTest, MetricsProviderTest) {
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
@@ -392,8 +358,7 @@ TEST_F(UkmServiceTest, LogsRotation) {
 TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   // Testing two whitelisted Entries.
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
@@ -477,7 +442,6 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
   for (bool restrict_to_whitelisted_source_ids : {true, false}) {
     base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
     ScopedUkmFeatureParams params(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         {{"RestrictToWhitelistedSourceIds",
           restrict_to_whitelisted_source_ids ? "true" : "false"},
          {"WhitelistEntries", Entry1And2Whitelist()}});
@@ -549,8 +513,7 @@ TEST_F(UkmServiceTest, RecordSessionId) {
 TEST_F(UkmServiceTest, SourceSize) {
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   // Set a threshold of number of Sources via Feature Params.
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"MaxSources", "2"}});
+  ScopedUkmFeatureParams params({{"MaxSources", "2"}});
 
   ClearPrefs();
   UkmService service(&prefs_, &client_,
@@ -604,8 +567,7 @@ TEST_F(UkmServiceTest, PurgeMidUpload) {
 TEST_F(UkmServiceTest, WhitelistEntryTest) {
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   // Testing two whitelisted Entries.
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   ClearPrefs();
   UkmService service(&prefs_, &client_,
@@ -676,7 +638,6 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
     base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
     // Set a threshold of number of Sources via Feature Params.
     ScopedUkmFeatureParams params(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         {{"MaxKeptSources", "3"},
          {"WhitelistEntries", Entry1And2Whitelist()},
          {"RestrictToWhitelistedSourceIds",
@@ -797,8 +758,7 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
   };
 
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   for (const auto& test : test_cases) {
     ClearPrefs();
@@ -883,8 +843,7 @@ TEST_F(UkmServiceTest, NonWhitelistedCarryoverUrls) {
   };
 
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   for (const auto& test : test_cases) {
     ClearPrefs();
@@ -980,7 +939,7 @@ TEST_F(UkmServiceTest, SupportedSchemes) {
   };
 
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE, {});
+  ScopedUkmFeatureParams params({});
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);
@@ -1039,7 +998,7 @@ TEST_F(UkmServiceTest, SupportedSchemesNoExtensions) {
   };
 
   base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE, {});
+  ScopedUkmFeatureParams params({});
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
   TestRecordingHelper recorder(&service);

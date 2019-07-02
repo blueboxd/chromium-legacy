@@ -91,8 +91,8 @@ struct PageImportanceSignals;
 //       content::WebContents::Create(
 //           content::WebContents::CreateParams(browser_context)));
 //   gfx::NativeView view = web_contents->GetNativeView();
-//   // |view| is an HWND, NSView*, GtkWidget*, etc.; insert it into the view
-//   // hierarchy wherever it needs to go.
+//   // |view| is an HWND, NSView*, etc.; insert it into the view hierarchy
+//   // wherever it needs to go.
 //
 // That's it; go to your kitchen, grab a scone, and chill. WebContents will do
 // all the multi-process stuff behind the scenes. More details are at
@@ -477,6 +477,14 @@ class WebContents : public PageNavigator,
   // Indicates whether any frame in the WebContents is connected to a serial
   // port.
   virtual bool IsConnectedToSerialPort() = 0;
+
+  // Indicates whether any frame in the WebContents has native file system
+  // directory handles.
+  virtual bool HasNativeFileSystemDirectoryHandles() = 0;
+
+  // Indicates whether any frame in the WebContents has writable native file
+  // system handles.
+  virtual bool HasWritableNativeFileSystemHandles() = 0;
 
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;

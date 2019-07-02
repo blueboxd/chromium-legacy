@@ -1185,9 +1185,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // true.
   bool ValidateSize(const char* function_name, GLint x, GLint y, GLint z = 0);
 
+  // Helper function to check if a character belongs to the ASCII subset as
+  // defined in GLSL ES 1.0 spec section 3.1.
+  bool ValidateCharacter(unsigned char c);
+
   // Helper function to check if all characters in the string belong to the
   // ASCII subset as defined in GLSL ES 1.0 spec section 3.1.
   bool ValidateString(const char* function_name, const String&);
+
+  // Helper function to check if an identifier starts with reserved prefixes.
+  bool IsPrefixReserved(const String& name);
 
   // Helper function to check if all characters in the shader source belong to
   // the ASCII subset as defined in GLSL ES 1.0 spec section 3.1 Character Set

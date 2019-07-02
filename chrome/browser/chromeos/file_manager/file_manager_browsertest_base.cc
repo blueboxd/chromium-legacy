@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -2292,6 +2293,23 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isSmbEnabled") {
     *output = IsNativeSmbTest() ? "true" : "false";
+    return;
+  }
+
+  if (name == "switchLanguage") {
+    std::string language;
+    ASSERT_TRUE(value.GetString("language", &language));
+    base::RunLoop run_loop;
+    chromeos::locale_util::SwitchLanguage(
+        language, true, false,
+        base::BindRepeating(
+            [](base::RunLoop* run_loop,
+               const chromeos::locale_util::LanguageSwitchResult&) {
+              run_loop->Quit();
+            },
+            &run_loop),
+        profile());
+    run_loop.Run();
     return;
   }
 

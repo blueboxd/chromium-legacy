@@ -7,8 +7,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -798,7 +796,6 @@ TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseAppend) {
 // the default value.
 TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   base::test::ScopedFeatureList scoped_feature_list;
-  std::unique_ptr<base::FieldTrialList> field_trial_list;
 
   double previous_smooth_dropped_frames_threshold =
       GetMaxSmoothDroppedFramesPercent();
@@ -809,30 +806,14 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
             previous_smooth_dropped_frames_threshold);
 
   // Override field trial.
-  std::map<std::string, std::string> trial_params;
+  base::FieldTrialParams trial_params;
   trial_params
       [VideoDecodePerfHistory::kMaxSmoothDroppedFramesPercentParamName] =
           base::NumberToString(new_smooth_dropped_frames_threshold);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      media::kMediaCapabilitiesWithParameters, trial_params);
 
-  field_trial_list.reset();
-  field_trial_list.reset(new base::FieldTrialList(nullptr));
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-  const std::string kTrialName = "TrialName";
-  const std::string kGroupName = "GroupName";
-
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, trial_params);
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      media::kMediaCapabilitiesWithParameters.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
-  std::map<std::string, std::string> actual_trial_params;
+  base::FieldTrialParams actual_trial_params;
   EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
       media::kMediaCapabilitiesWithParameters, &actual_trial_params));
   EXPECT_EQ(trial_params, actual_trial_params);

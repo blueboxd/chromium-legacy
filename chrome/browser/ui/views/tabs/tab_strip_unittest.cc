@@ -175,6 +175,10 @@ class TabStripTest : public ChromeViewsTestBase,
     tab_strip_->CompleteAnimationAndLayout();
   }
 
+  int TabToNewTabButtonSpacing() {
+    return tab_strip_->TabToNewTabButtonSpacing();
+  }
+
   void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
 
   const StackedTabStripLayout* touch_layout() const {
@@ -756,7 +760,19 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
 
   CompleteAnimationAndLayout();
 
-  EXPECT_LE(tab_strip_->new_tab_button_bounds().right(), kTabStripWidth);
+  EXPECT_LE(tab_strip_->new_tab_button_ideal_bounds().right(), kTabStripWidth);
+}
+
+TEST_P(TabStripTest, NewTabButtonRightOfTabs) {
+  const int kTabStripWidth = 500;
+  tab_strip_->SetBounds(0, 0, kTabStripWidth, 20);
+
+  controller_->AddTab(0, true);
+
+  AnimateToIdealBounds();
+
+  EXPECT_EQ(tab_strip_->new_tab_button_ideal_bounds().x(),
+            tab_strip_->ideal_bounds(0).right() + TabToNewTabButtonSpacing());
 }
 
 // The cached widths are private, but if they give incorrect results it can

@@ -8894,6 +8894,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_VR_PRESENTING" desc="Extra tool tip text, when the tab is presenting VR content to a headset.">
         This tab is presenting VR content to a headset.
       </message>
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_NATIVE_FILE_SYSTEM_WRITABLE" desc="Extra tool tip text, when the tab can edit native files.">
+        This tab is allowed to save to original files.
+      </message>
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_NATIVE_FILE_SYSTEM_DIRECTORY" desc="Extra tool tip text, when the tab can read directories from the native file system.">
+        This tab is allowed to read a folder on your device.
+      </message>
 
       <!-- Tab accessibility labels -->
       <message name="IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT" desc="Accessibility label text, when the tab is recording media. Example: 'Google Hangouts - Camera or microphone recording'">
@@ -8933,6 +8939,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <ph name="WINDOW_TITLE">
           $1<ex>A VR-enabled website</ex>
         </ph> - VR presenting to headset
+      </message>
+      <message name="IDS_TAB_AX_LABEL_NATIVE_FILE_SYSTEM_WRITABLE_FORMAT" desc="Accessibility label text, when the tab has write access to the native file system. Example: 'Google Docs - is allowed to save to original files'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Docs</ex></ph> - is allowed to save to original files
+      </message>
+      <message name="IDS_TAB_AX_LABEL_NATIVE_FILE_SYSTEM_DIRECTORY_FORMAT" desc="Accessibility label text, when the tab has read access to directories on the native file system. Example: 'Google Docs - is allowed to read a folder on your device'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Docs</ex></ph> - is allowed to read a folder on your device
       </message>
 
       <!-- ProcessSingleton -->
@@ -9485,6 +9497,35 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming write access to files or directories using the Native File System API">
       Save to original file
+    </message>
+
+    <!-- Native File System usage indicator -->
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_USAGE_TOOLTIP" desc="Tooltip for native file system omnibox usage indicator.">
+      This page is allowed to save to original files.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_USAGE_TOOLTIP" desc="Tooltip for native file system omnibox usage indicator.">
+      This page is allowed to read a folder on your device.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files. This site can save changes only while this tab is open.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the files in the following folder. This site can save changes only while this tab is open.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can read all the files in the following folder. This site can see changes to the folder only while this tab is open.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT" desc="Text to display a list of files in the native file system usage bubble">
+      {0, plural,
+        =1 {File: <ph name="FILES">{1}<ex>README.md</ex></ph>}
+        other {Files: <ph name="FILES">{1}<ex>Chrome.png, README.md</ex></ph>}
+      }
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT" desc="Text to display a list of directories in the native file system usage bubble">
+      {0, plural,
+        =1 {Folder: <ph name="DIRECTORIES">{1}<ex>My Documents</ex></ph>}
+        other {Folders: <ph name="DIRECTORIES">{1}<ex>My Documents, Downloads</ex></ph>}
+      }
     </message>
 
     <!-- Relaunch notification bubble and dialog. -->

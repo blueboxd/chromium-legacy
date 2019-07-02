@@ -86,8 +86,7 @@ base::Optional<unsigned int> FrecencyStore::GetId(const std::string& value) {
   return it->second.id;
 }
 
-const base::flat_map<std::string, FrecencyStore::ValueData>&
-FrecencyStore::GetAll() {
+const FrecencyStore::ScoreTable& FrecencyStore::GetAll() {
   DecayAllScores();
   return values_;
 }
@@ -114,7 +113,7 @@ void FrecencyStore::FromProto(const FrecencyStoreProto& proto) {
   num_updates_ = proto.num_updates();
   next_id_ = proto.next_id();
 
-  base::flat_map<std::string, ValueData> values;
+  ScoreTable values;
   for (const auto& pair : proto.values()) {
     values[pair.first] = {pair.second.id(), pair.second.last_score(),
                           pair.second.last_num_updates()};
@@ -162,7 +161,7 @@ void FrecencyStore::Cleanup() {
               return a.second.last_score > b.second.last_score;
             });
 
-  base::flat_map<std::string, ValueData> values;
+  ScoreTable values;
   for (unsigned int i = 0;
        i < value_limit_ && i < static_cast<unsigned int>(value_pairs.size());
        ++i) {

@@ -221,6 +221,7 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
     NotifyError();
     return;
   }
+  output_frame->set_timestamp(input_frame->timestamp());
   std::move(cb).Run(std::move(output_frame));
 }
 

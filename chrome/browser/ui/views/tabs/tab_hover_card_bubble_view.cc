@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/metrics/tab_count_metrics.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "components/tab_count_metrics/tab_count_metrics.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -358,26 +360,17 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
 
 void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
+  RecordTimeSinceLastSeenMetric(base::TimeTicks::Now() -
+                                last_visible_timestamp_);
   // If less than |kShowWithoutDelayTimeBuffer| time has passed since the hover
   // card was last visible then it is shown immediately. This is to account for
   // if hover unintentionally leaves the tab strip.
   constexpr base::TimeDelta kShowWithoutDelayTimeBuffer =
       base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta elapsed_time =
-      base::TimeTicks::Now() - last_visible_timestamp_;
-  constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =
-      base::TimeDelta::FromSeconds(5);
-  if ((!widget_->IsVisible() || IsFadingOut()) &&
-      elapsed_time <= kMaxHoverCardReshowTimeDelta) {
-    constexpr base::TimeDelta kMinHoverCardReshowTimeDelta =
-        base::TimeDelta::FromMilliseconds(1);
-    constexpr int kHoverCardHistogramBucketCount = 50;
-    UMA_HISTOGRAM_CUSTOM_TIMES("TabHoverCards.TimeSinceLastVisible",
-                               elapsed_time, kMinHoverCardReshowTimeDelta,
-                               kMaxHoverCardReshowTimeDelta,
-                               kHoverCardHistogramBucketCount);
-  }
-  bool within_delay_time_buffer = !last_visible_timestamp_.is_null() &&
+      base::TimeTicks::Now() - last_mouse_exit_timestamp_;
+
+  bool within_delay_time_buffer = !last_mouse_exit_timestamp_.is_null() &&
                                   elapsed_time <= kShowWithoutDelayTimeBuffer;
   // Hover cards should be shown without delay if triggered within the time
   // buffer or if the tab or its children have focus which indicates that the
@@ -399,6 +392,9 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
       !slide_animation_delegate_->IsAnimating()) {
     return;
   }
+
+  if (widget_->IsVisible())
+    ++hover_cards_seen_count_;
 
   if (widget_->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
@@ -439,6 +435,35 @@ void TabHoverCardBubbleView::FadeOutToHide() {
 
 bool TabHoverCardBubbleView::IsFadingOut() const {
   return fade_animation_delegate_->IsFadingOut();
+}
+
+void TabHoverCardBubbleView::RecordHoverCardsSeenRatioMetric() {
+  const char kHistogramPrefixHoverCardsSeenBeforeSelection[] =
+      "TabHoverCards.TabHoverCardsSeenBeforeTabSelection";
+  const size_t tab_count = tab_count_metrics::TabCount();
+  const size_t bucket = tab_count_metrics::BucketForTabCount(tab_count);
+  constexpr int kMinHoverCardsSeen = 0;
+  constexpr int kMaxHoverCardsSeen = 100;
+  constexpr int kHistogramBucketCount = 50;
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      tab_count_metrics::HistogramName(
+          kHistogramPrefixHoverCardsSeenBeforeSelection,
+          /* live_tabs_only */ false, bucket),
+      static_cast<int>(bucket),
+      static_cast<int>(tab_count_metrics::kNumTabCountBuckets),
+      Add(hover_cards_seen_count_),
+      base::Histogram::FactoryGet(
+          tab_count_metrics::HistogramName(
+              kHistogramPrefixHoverCardsSeenBeforeSelection,
+              /* live_tabs_only */ false, bucket),
+          kMinHoverCardsSeen, kMaxHoverCardsSeen, kHistogramBucketCount,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
+}
+
+void TabHoverCardBubbleView::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                       bool visible) {
+  if (visible)
+    ++hover_cards_seen_count_;
 }
 
 int TabHoverCardBubbleView::GetDialogButtons() const {
@@ -541,4 +566,20 @@ gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
   preferred_size.set_width(GetPreferredTabHoverCardWidth());
   DCHECK(!preferred_size.IsEmpty());
   return preferred_size;
+}
+
+void TabHoverCardBubbleView::RecordTimeSinceLastSeenMetric(
+    base::TimeDelta elapsed_time) {
+  constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =
+      base::TimeDelta::FromSeconds(5);
+  if ((!widget_->IsVisible() || IsFadingOut()) &&
+      elapsed_time <= kMaxHoverCardReshowTimeDelta) {
+    constexpr base::TimeDelta kMinHoverCardReshowTimeDelta =
+        base::TimeDelta::FromMilliseconds(1);
+    constexpr int kHoverCardHistogramBucketCount = 50;
+    UMA_HISTOGRAM_CUSTOM_TIMES("TabHoverCards.TimeSinceLastVisible",
+                               elapsed_time, kMinHoverCardReshowTimeDelta,
+                               kMaxHoverCardReshowTimeDelta,
+                               kHoverCardHistogramBucketCount);
+  }
 }

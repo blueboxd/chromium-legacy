@@ -8,6 +8,7 @@
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
 # tags: [ intel_lt_25.20.100.6444 mesa_lt_17.1.6 ]
+# results: [ Failure RetryOnFailure Skip ]
 
 
 # ===================================

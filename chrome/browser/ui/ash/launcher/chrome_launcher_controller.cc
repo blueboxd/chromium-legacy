@@ -652,10 +652,14 @@ bool ChromeLauncherController::ContentCanBeHandledByGmailApp(
   return false;
 }
 
-gfx::Image ChromeLauncherController::GetAppListIcon(
+gfx::Image ChromeLauncherController::GetAppMenuIcon(
     content::WebContents* web_contents) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (IsIncognito(web_contents))
+  if (!web_contents)
+    return rb.GetImageNamed(IDR_DEFAULT_FAVICON);
+  const Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsIncognitoProfile())
     return rb.GetImageNamed(IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER);
   favicon::FaviconDriver* favicon_driver =
       favicon::ContentFaviconDriver::FromWebContents(web_contents);
@@ -665,9 +669,11 @@ gfx::Image ChromeLauncherController::GetAppListIcon(
   return result;
 }
 
-base::string16 ChromeLauncherController::GetAppListTitle(
+base::string16 ChromeLauncherController::GetAppMenuTitle(
     content::WebContents* web_contents) const {
-  base::string16 title = web_contents->GetTitle();
+  if (!web_contents)
+    return l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  const base::string16& title = web_contents->GetTitle();
   if (!title.empty())
     return title;
   WebContentsToAppIDMap::const_iterator iter =
@@ -1048,14 +1054,6 @@ void ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   // Add the item towards the start of the shelf, it will be ordered by weight.
   model_->AddAt(0, browser_shortcut);
   item_controller->UpdateBrowserItemState();
-}
-
-bool ChromeLauncherController::IsIncognito(
-    content::WebContents* web_contents) const {
-  const Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return profile->IsOffTheRecord() && !profile->IsGuestSession() &&
-         !profile->IsSystemProfile();
 }
 
 int ChromeLauncherController::FindInsertionPoint() {

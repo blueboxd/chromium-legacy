@@ -139,8 +139,10 @@ class TabStrip : public views::AccessiblePaneView,
   // Sets |stacked_layout_| and animates if necessary.
   void SetStackedLayout(bool stacked_layout);
 
-  // Returns the bounds of the new tab button.
-  gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
+  // Returns the ideal bounds of the new tab button.
+  gfx::Rect new_tab_button_ideal_bounds() const {
+    return new_tab_button_ideal_bounds_;
+  }
 
   // Adds a tab at the specified index.
   void AddTabAt(int model_index, TabRendererData data, bool is_active);
@@ -591,7 +593,7 @@ class TabStrip : public views::AccessiblePaneView,
   NewTabButton* new_tab_button_ = nullptr;
 
   // Ideal bounds of the new tab button.
-  gfx::Rect new_tab_button_bounds_;
+  gfx::Rect new_tab_button_ideal_bounds_;
 
   // If this value is nonnegative, it is used as the width to lay out tabs
   // (instead of tab_area_width()). Most of the time this will be -1, but while

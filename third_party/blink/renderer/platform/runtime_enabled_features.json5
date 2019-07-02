@@ -908,6 +908,9 @@
     {
       name: "MediaDocumentDownloadButton",
     },
+    {
+      name: "MediaElementVolumeGreaterThanOne",
+    },
     // Set to reflect the kMediaEngagementBypassAutoplayPolicies feature.
     {
       name: "MediaEngagementBypassAutoplayPolicies",

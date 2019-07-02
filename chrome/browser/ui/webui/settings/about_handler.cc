@@ -395,6 +395,9 @@ void AboutHandler::RegisterMessages() {
                                           base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
+      "openOsHelpPage", base::BindRepeating(&AboutHandler::HandleOpenOsHelpPage,
+                                            base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "setChannel", base::BindRepeating(&AboutHandler::HandleSetChannel,
                                         base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -520,6 +523,13 @@ void AboutHandler::HandleOpenHelpPage(const base::ListValue* args) {
 }
 
 #if defined(OS_CHROMEOS)
+
+void AboutHandler::HandleOpenOsHelpPage(const base::ListValue* args) {
+  DCHECK(args->empty());
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  chrome::ShowHelp(browser, chrome::HELP_SOURCE_WEBUI_CHROME_OS);
+}
 
 void AboutHandler::HandleSetChannel(const base::ListValue* args) {
   DCHECK(args->GetSize() == 2);

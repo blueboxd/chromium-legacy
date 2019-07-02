@@ -13,14 +13,13 @@
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
-class ShelfView;
-class Shelf;
+class ShelfButtonDelegate;
 
 // Base class for controls shown on the shelf that are not app shortcuts, such
 // as the app list, back, and overflow buttons.
 class ASH_EXPORT ShelfControlButton : public ShelfButton {
  public:
-  explicit ShelfControlButton(ShelfView* shelf_view);
+  explicit ShelfControlButton(ShelfButtonDelegate* shelf_button_delegate_);
   ~ShelfControlButton() override;
 
   // Get the center point of the button used to draw its background and ink
@@ -45,7 +44,6 @@ class ASH_EXPORT ShelfControlButton : public ShelfButton {
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
-  Shelf* shelf_;
   gfx::Rect ideal_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfControlButton);

@@ -52,8 +52,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   void setInnerText(const StringOrTrustedScript&, ExceptionState&) override;
   void setTextContent(const StringOrTrustedScript&, ExceptionState&) override;
 
-  KURL Src() const;
-
   void setAsync(bool);
   bool async() const;
 

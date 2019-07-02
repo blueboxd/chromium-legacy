@@ -546,7 +546,7 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-accoun
 
 .action-box-button {
   --cr-icon-button-icon-size: 24px;
-  --cr-icon-button-size: 24px;
+  --cr-icon-button-size: 28px;
   margin-inline-end: 0;
   margin-inline-start: 8px;
   margin-top: 3px;
@@ -966,8 +966,8 @@ html[dir=rtl] .pod.public-account .button-container {
 
 .public-account-submit-button {
   --cr-icon-button-color: #FFF;
+  --cr-icon-button-size: 40px;
   opacity: 1;
-  margin: 10px 7px 8px 11px;
 }
 
 .monitoring-container {

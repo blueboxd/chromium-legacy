@@ -4,7 +4,9 @@
   </template>
 </dom-module>
 
-<style is="custom-style" include="user-pod-template-shared-styles"></style>
+<custom-style>
+  <style is="custom-style" include="user-pod-template-shared-styles"></style>
+</custom-style>
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 
@@ -143,10 +145,10 @@
       <div class="action-box-remove-non-owner-user-warning-text">
         $i18n{removeNonOwnerUserWarningText}
       </div>
-      <!-- paper-button is imported inside user_manager.html -->
-      <paper-button class="remove-warning-button action-button">
+      <!-- cr-button is imported inside user_manager.html -->
+      <cr-button class="remove-warning-button action-button">
         $i18n{removeUserWarningButtonTitle}
-      </paper-button>
+      </cr-button>
     </div>
   </div>
   <div class="user-type-bubble">

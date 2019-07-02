@@ -60,14 +60,14 @@ const char kChromeHelpViaMenuURL[] =
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeHelpViaWebUIURL[] =
+    "https://support.google.com/chrome/?p=help&ctx=settings";
 #if defined(OS_CHROMEOS)
+const char kChromeOsHelpViaWebUIURL[] =
 #if defined(GOOGLE_CHROME_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=settings";
 #endif  // defined(GOOGLE_CHROME_BUILD)
-#else
-    "https://support.google.com/chrome/?p=help&ctx=settings";
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeNativeScheme[] = "chrome-native";

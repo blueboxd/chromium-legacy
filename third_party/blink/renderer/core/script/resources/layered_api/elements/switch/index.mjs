@@ -43,6 +43,9 @@ export class StdSwitchElement extends HTMLElement {
   attributeChangedCallback(attrName, oldValue, newValue) {
     if (attrName == STATE_ATTR) {
       this[_track].value = newValue !== null;
+      // TODO(tkent): We should not add aria-checked attribute.
+      // https://github.com/WICG/aom/issues/127
+      this.setAttribute('aria-checked', newValue !== null ? 'true' : 'false');
     }
   }
 
@@ -52,6 +55,12 @@ export class StdSwitchElement extends HTMLElement {
     if (!this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0');
     }
+
+    // TODO(tkent): We should not add role attribute.
+    // https://github.com/WICG/aom/issues/127
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'switch');
+    }
   }
 
   // TODO(tkent): Make this private.
@@ -60,6 +69,8 @@ export class StdSwitchElement extends HTMLElement {
     let root = this.attachShadow({mode: 'closed'});
     this[_containerElement] = factory.createElement('span');
     this[_containerElement].id = 'container';
+    // Shadow elements should be invisible for a11y technologies.
+    this[_containerElement].setAttribute('aria-hidden', 'true');
     root.appendChild(this[_containerElement]);
 
     this[_track] = new SwitchTrack(factory);

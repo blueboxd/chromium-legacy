@@ -29,7 +29,9 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -296,6 +298,26 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   }
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
+};
+
+// Run tests with PlzDedicatedWorker.
+// TODO(https://crbug.com/906991): Merge this test fixture into
+// ServiceWorkerProviderHostTest once PlzDedicatedWorker is enabled by default.
+class ServiceWorkerProviderHostTestWithPlzDedicatedWorker
+    : public ServiceWorkerProviderHostTest {
+ public:
+  ServiceWorkerProviderHostTestWithPlzDedicatedWorker() {
+    // ServiceWorkerProviderHost for dedicated workers is available only when
+    // PlzDedicatedWorker is enabled.
+    scoped_feature_list_.InitWithFeatures(
+        {blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
+         blink::features::kPlzDedicatedWorker,
+         network::features::kNetworkService} /* enabled_features */,
+        {} /* disabled_features */);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
@@ -901,8 +923,9 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
   }
 }
 
-TEST_F(ServiceWorkerProviderHostTest,
+TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
        ReservedClientsAreNotExposedToClientsApiForDedicatedWorker) {
+  ASSERT_TRUE(blink::features::IsPlzDedicatedWorkerEnabled());
   TestReservedClientsAreNotExposed(
       blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
       GURL("https://www.example.com/dedicated_worker.js"));
@@ -958,7 +981,9 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   EXPECT_TRUE(host->is_execution_ready());
 }
 
-TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForDedicatedWorker) {
+TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
+       ClientPhaseForDedicatedWorker) {
+  ASSERT_TRUE(blink::features::IsPlzDedicatedWorkerEnabled());
   TestClientPhaseTransition(
       blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
       GURL("https://www.example.com/dedicated_worker.js"));

@@ -23,6 +23,8 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -134,6 +136,13 @@ void SigninErrorNotifier::OnErrorChanged() {
 }
 
 void SigninErrorNotifier::HandleDeviceAccountError() {
+  // If this error has occurred because a user's account has just been converted
+  // to a Family Link Supervised account, then suppress the notificaiton.
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  if (service->signout_required_after_supervision_enabled())
+    return;
+
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(

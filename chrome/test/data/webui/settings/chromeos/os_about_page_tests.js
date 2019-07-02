@@ -128,15 +128,12 @@ cr.define('settings_about_page', function() {
       });
 
       test('Relaunch', function() {
-        let relaunch = page.$.relaunch;
+        const {relaunch} = page.$;
         assertTrue(!!relaunch);
         assertTrue(relaunch.hidden);
 
         fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
         assertFalse(relaunch.hidden);
-
-        relaunch = page.$.relaunch;
-        assertTrue(!!relaunch);
         relaunch.click();
         return lifetimeBrowserProxy.whenCalled('relaunch');
       });
@@ -156,9 +153,7 @@ cr.define('settings_about_page', function() {
        * channel are the same.
        */
       test('ButtonsUpdate_SameChannel', function() {
-        const relaunch = page.$.relaunch;
-        const checkForUpdates = page.$.checkForUpdates;
-        const relaunchAndPowerwash = page.$.relaunchAndPowerwash;
+        const {checkForUpdates, relaunch, relaunchAndPowerwash} = page.$;
 
         assertTrue(!!relaunch);
         assertTrue(!!relaunchAndPowerwash);
@@ -222,24 +217,22 @@ cr.define('settings_about_page', function() {
        * 'update-status-changed' events for the case where the target channel
        * is more stable than current channel.
        */
-      test('ButtonsUpdate_BetaToStable', function() {
+      test('ButtonsUpdate_BetaToStable', async () => {
         aboutBrowserProxy.setChannels(
             BrowserChannel.BETA, BrowserChannel.STABLE);
         aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
 
-        return initNewPage().then(function() {
-          assertTrue(!!page.$.relaunch);
-          assertTrue(!!page.$.relaunchAndPowerwash);
+        await initNewPage();
+        assertTrue(!!page.$.relaunch);
+        assertTrue(!!page.$.relaunchAndPowerwash);
 
-          assertTrue(page.$.relaunch.hidden);
-          assertFalse(page.$.relaunchAndPowerwash.hidden);
+        assertTrue(page.$.relaunch.hidden);
+        assertFalse(page.$.relaunchAndPowerwash.hidden);
 
-          page.$.relaunchAndPowerwash.click();
-          return lifetimeBrowserProxy.whenCalled('factoryReset')
-              .then((requestTpmFirmwareUpdate) => {
-                assertFalse(requestTpmFirmwareUpdate);
-              });
-        });
+        page.$.relaunchAndPowerwash.click();
+        const requestTpmFirmwareUpdate =
+            await lifetimeBrowserProxy.whenCalled('factoryReset');
+        assertFalse(requestTpmFirmwareUpdate);
       });
 
       /**
@@ -247,21 +240,20 @@ cr.define('settings_about_page', function() {
        * 'update-status-changed' events for the case where the target channel
        * is less stable than current channel.
        */
-      test('ButtonsUpdate_StableToBeta', function() {
+      test('ButtonsUpdate_StableToBeta', async () => {
         aboutBrowserProxy.setChannels(
             BrowserChannel.STABLE, BrowserChannel.BETA);
         aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
 
-        return initNewPage().then(function() {
-          assertTrue(!!page.$.relaunch);
-          assertTrue(!!page.$.relaunchAndPowerwash);
+        await initNewPage();
+        assertTrue(!!page.$.relaunch);
+        assertTrue(!!page.$.relaunchAndPowerwash);
 
-          assertFalse(page.$.relaunch.hidden);
-          assertTrue(page.$.relaunchAndPowerwash.hidden);
+        assertFalse(page.$.relaunch.hidden);
+        assertTrue(page.$.relaunchAndPowerwash.hidden);
 
-          page.$.relaunch.click();
-          return lifetimeBrowserProxy.whenCalled('relaunch');
-        });
+        page.$.relaunch.click();
+        await lifetimeBrowserProxy.whenCalled('relaunch');
       });
 
       /**
@@ -269,26 +261,25 @@ cr.define('settings_about_page', function() {
        * 'target-channel-changed' event (normally fired from
        * <settings-channel-switcher-dialog>).
        */
-      test('ButtonsUpdate_TargetChannelChangedEvent', function() {
+      test('ButtonsUpdate_TargetChannelChangedEvent', async () => {
         aboutBrowserProxy.setChannels(BrowserChannel.BETA, BrowserChannel.BETA);
         aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
 
-        return initNewPage().then(function() {
-          assertFalse(page.$.relaunch.hidden);
-          assertTrue(page.$.relaunchAndPowerwash.hidden);
+        await initNewPage();
+        assertFalse(page.$.relaunch.hidden);
+        assertTrue(page.$.relaunchAndPowerwash.hidden);
 
-          page.fire('target-channel-changed', BrowserChannel.DEV);
-          assertFalse(page.$.relaunch.hidden);
-          assertTrue(page.$.relaunchAndPowerwash.hidden);
+        page.fire('target-channel-changed', BrowserChannel.DEV);
+        assertFalse(page.$.relaunch.hidden);
+        assertTrue(page.$.relaunchAndPowerwash.hidden);
 
-          page.fire('target-channel-changed', BrowserChannel.STABLE);
-          assertTrue(page.$.relaunch.hidden);
-          assertFalse(page.$.relaunchAndPowerwash.hidden);
-        });
+        page.fire('target-channel-changed', BrowserChannel.STABLE);
+        assertTrue(page.$.relaunch.hidden);
+        assertFalse(page.$.relaunchAndPowerwash.hidden);
       });
 
-      test('RegulatoryInfo', function() {
-        let regulatoryInfo = null;
+      test('RegulatoryInfo', async () => {
+        const regulatoryInfo = {text: 'foo', url: 'bar'};
 
         /**
          * Checks the visibility of the "regulatory info" section.
@@ -296,137 +287,104 @@ cr.define('settings_about_page', function() {
          *     visible.
          * @return {!Promise}
          */
-        function checkRegulatoryInfo(isShowing) {
-          return aboutBrowserProxy.whenCalled('getRegulatoryInfo')
-              .then(function() {
-                const regulatoryInfoEl = page.$.regulatoryInfo;
-                assertTrue(!!regulatoryInfoEl);
-                assertEquals(isShowing, !regulatoryInfoEl.hidden);
+        async function checkRegulatoryInfo(isShowing) {
+          await aboutBrowserProxy.whenCalled('getRegulatoryInfo');
+          const regulatoryInfoEl = page.$.regulatoryInfo;
+          assertTrue(!!regulatoryInfoEl);
+          assertEquals(isShowing, !regulatoryInfoEl.hidden);
 
-                if (isShowing) {
-                  const img = regulatoryInfoEl.querySelector('img');
-                  assertTrue(!!img);
-                  assertEquals(regulatoryInfo.text, img.getAttribute('alt'));
-                  assertEquals(regulatoryInfo.url, img.getAttribute('src'));
-                }
-              });
+          if (isShowing) {
+            const img = regulatoryInfoEl.querySelector('img');
+            assertTrue(!!img);
+            assertEquals(regulatoryInfo.text, img.getAttribute('alt'));
+            assertEquals(regulatoryInfo.url, img.getAttribute('src'));
+          }
         }
 
-        return checkRegulatoryInfo(false)
-            .then(function() {
-              regulatoryInfo = {text: 'foo', url: 'bar'};
-              aboutBrowserProxy.setRegulatoryInfo(regulatoryInfo);
-              return initNewPage();
-            })
-            .then(function() {
-              return checkRegulatoryInfo(true);
-            });
+        await checkRegulatoryInfo(false);
+        aboutBrowserProxy.setRegulatoryInfo(regulatoryInfo);
+        await initNewPage();
+        await checkRegulatoryInfo(true);
       });
 
-      test('TPMFirmwareUpdate', function() {
-        return initNewPage()
-            .then(function() {
-              assertTrue(page.$.aboutTPMFirmwareUpdate.hidden);
-              aboutBrowserProxy.setTPMFirmwareUpdateStatus(
-                  {updateAvailable: true});
-              aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
-            })
-            .then(function() {
-              assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
-              page.$.aboutTPMFirmwareUpdate.click();
-            })
-            .then(function() {
-              const dialog = page.$$('os-settings-powerwash-dialog');
-              assertTrue(!!dialog);
-              assertTrue(dialog.$.dialog.open);
-              dialog.$$('#powerwash').click();
-              return lifetimeBrowserProxy.whenCalled('factoryReset')
-                  .then((requestTpmFirmwareUpdate) => {
-                    assertTrue(requestTpmFirmwareUpdate);
-                  });
-            });
+      test('TPMFirmwareUpdate', async () => {
+        assertTrue(page.$.aboutTPMFirmwareUpdate.hidden);
+        aboutBrowserProxy.setTPMFirmwareUpdateStatus({updateAvailable: true});
+        aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
+        assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
+        page.$.aboutTPMFirmwareUpdate.click();
+        await PolymerTest.flushTasks();
+        const dialog = page.$$('os-settings-powerwash-dialog');
+        assertTrue(!!dialog);
+        assertTrue(dialog.$.dialog.open);
+        dialog.$$('#powerwash').click();
+        const requestTpmFirmwareUpdate =
+            await lifetimeBrowserProxy.whenCalled('factoryReset');
+        assertTrue(requestTpmFirmwareUpdate);
       });
 
-      test('DeviceEndOfLife', function() {
+      test('DeviceEndOfLife', async () => {
         /**
          * Checks the visibility of the end of life message and icon.
          * @param {boolean} isShowing Whether the end of life UI is expected
          *     to be visible.
          * @return {!Promise}
          */
-        function checkHasEndOfLife(isShowing) {
-          return aboutBrowserProxy.whenCalled('getHasEndOfLife')
-              .then(function() {
-                const endOfLifeMessageContainer =
-                    page.$.endOfLifeMessageContainer;
-                assertTrue(!!endOfLifeMessageContainer);
-                assertEquals(isShowing, !endOfLifeMessageContainer.hidden);
+        async function checkHasEndOfLife(isShowing) {
+          await aboutBrowserProxy.whenCalled('getHasEndOfLife');
+          const {endOfLifeMessageContainer} = page.$;
+          assertTrue(!!endOfLifeMessageContainer);
+          assertEquals(isShowing, !endOfLifeMessageContainer.hidden);
 
-                // Update status message should be hidden before user has
-                // checked for updates.
-                assertTrue(page.$.updateStatusMessage.hidden);
+          // Update status message should be hidden before user has
+          // checked for updates.
+          assertTrue(page.$.updateStatusMessage.hidden);
 
-                fireStatusChanged(UpdateStatus.CHECKING);
-                assertEquals(isShowing, page.$.updateStatusMessage.hidden);
+          fireStatusChanged(UpdateStatus.CHECKING);
+          assertEquals(isShowing, page.$.updateStatusMessage.hidden);
 
-                if (isShowing) {
-                  const icon = page.$$('iron-icon');
-                  assertTrue(!!icon);
-                  assertEquals(null, icon.src);
-                  assertEquals('settings:end-of-life', icon.icon);
+          if (isShowing) {
+            const icon = page.$$('iron-icon');
+            assertTrue(!!icon);
+            assertEquals(null, icon.src);
+            assertEquals('settings:end-of-life', icon.icon);
 
-                  const checkForUpdates = page.$.checkForUpdates;
-                  assertTrue(!!checkForUpdates);
-                  assertTrue(checkForUpdates.hidden);
-                }
-              });
+            const {checkForUpdates} = page.$;
+            assertTrue(!!checkForUpdates);
+            assertTrue(checkForUpdates.hidden);
+          }
         }
 
         // Force test proxy to not respond to JS requests.
         // End of life message should still be hidden in this case.
-        aboutBrowserProxy.setHasEndOfLife(new Promise(function(res, rej) {}));
-        return initNewPage()
-            .then(function() {
-              return checkHasEndOfLife(false);
-            })
-            .then(function() {
-              aboutBrowserProxy.setHasEndOfLife(true);
-              return initNewPage();
-            })
-            .then(function() {
-              return checkHasEndOfLife(true);
-            })
-            .then(function() {
-              aboutBrowserProxy.setHasEndOfLife(false);
-              return initNewPage();
-            })
-            .then(function() {
-              return checkHasEndOfLife(false);
-            });
+        aboutBrowserProxy.setHasEndOfLife(new Promise(() => {}));
+        await initNewPage();
+        await checkHasEndOfLife(false);
+        aboutBrowserProxy.setHasEndOfLife(true);
+        await initNewPage();
+        await checkHasEndOfLife(true);
+        aboutBrowserProxy.setHasEndOfLife(false);
+        await initNewPage();
+        await checkHasEndOfLife(false);
       });
 
       test('GetHelp', function() {
         assertTrue(!!page.$.help);
         page.$.help.click();
-        return aboutBrowserProxy.whenCalled('openHelpPage');
+        return aboutBrowserProxy.whenCalled('openOsHelpPage');
       });
     });
   }
 
   function registerOfficialBuildTests() {
     suite('AboutPageTest_OfficialBuild', function() {
-      let page = null;
-      let browserProxy = null;
-
-      setup(function() {
-        browserProxy = new TestAboutPageBrowserProxy();
+      test('ReportAnIssue', function() {
+        const browserProxy = new TestAboutPageBrowserProxy();
         settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
-        page = document.createElement('os-settings-about-page');
+        const page = document.createElement('os-settings-about-page');
         document.body.appendChild(page);
-      });
 
-      test('ReportAnIssue', function() {
         assertTrue(!!page.$.reportIssue);
         page.$.reportIssue.click();
         return browserProxy.whenCalled('openFeedbackDialog');

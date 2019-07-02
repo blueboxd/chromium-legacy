@@ -165,6 +165,9 @@ cr.define('settings', function() {
     // </if>
 
     // <if expr="chromeos">
+    /** Opens the OS help page. */
+    openOsHelpPage() {}
+
     /**
      * Checks for available update and applies if it exists.
      */
@@ -255,6 +258,11 @@ cr.define('settings', function() {
     // </if>
 
     // <if expr="chromeos">
+    /** @override */
+    openOsHelpPage() {
+      chrome.send('openOsHelpPage');
+    }
+
     /** @override */
     requestUpdate() {
       chrome.send('requestUpdate');

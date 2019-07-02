@@ -119,10 +119,6 @@ void TestLayerTreeHostBase::SetupPendingTree(
         pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);
         break;
       case Layer::LayerMaskType::SINGLE_TEXTURE_MASK:
-        pending_layer =
-            FakePictureLayerImpl::CreateSingleTextureMask(pending_tree, id_);
-        break;
-      case Layer::LayerMaskType::MULTI_TEXTURE_MASK:
         pending_layer = FakePictureLayerImpl::CreateMask(pending_tree, id_);
         break;
       default:

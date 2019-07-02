@@ -32,12 +32,10 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -73,29 +71,6 @@ bool IsManagedBrowser(Browser* browser) {
   return false;
 }
 
-// Check if the given |web_contents| is in incognito mode.
-bool IsIncognito(content::WebContents* web_contents) {
-  const Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return profile->IsOffTheRecord() && !profile->IsGuestSession();
-}
-
-// Get the favicon for the browser list entry for |web_contents|.
-// Note that for incognito windows the incognito icon will be returned.
-gfx::Image GetBrowserListIcon(content::WebContents* web_contents) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageNamed(IsIncognito(web_contents)
-                              ? IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER
-                              : IDR_ASH_SHELF_LIST_BROWSER);
-}
-
-// Get the title for the browser list entry for |web_contents|.
-// If |web_contents| has not loaded, returns "New Tab".
-base::string16 GetBrowserListTitle(content::WebContents* web_contents) {
-  const base::string16& title = web_contents->GetTitle();
-  return title.empty() ? l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE) : title;
-}
-
 // Returns true when the given |browser| is listed in the browser application
 // list.
 bool IsBrowserRepresentedInBrowserList(Browser* browser) {
@@ -125,17 +100,14 @@ bool IsBrowserRepresentedInBrowserList(Browser* browser) {
 BrowserList::BrowserVector GetListOfActiveBrowsers() {
   BrowserList::BrowserVector active_browsers;
   for (auto* browser : *BrowserList::GetInstance()) {
-    // Make sure that the browser is from the current user, has a proper window,
-    // and the window was already shown.
+    // Only include browsers for the active user.
     if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
 
-    // Non-minimized invisible browser windows on the active desk should be
-    // excluded.
+    // Exclude invisible non-minimized browser windows on the active desk.
     aura::Window* native_window = browser->window()->GetNativeWindow();
-    if (!native_window->IsVisible() &&
-        ash::desks_util::BelongsToActiveDesk(native_window) &&
-        !browser->window()->IsMinimized()) {
+    if (!browser->window()->IsVisible() && !browser->window()->IsMinimized() &&
+        ash::desks_util::BelongsToActiveDesk(native_window)) {
       continue;
     }
     if (!IsBrowserRepresentedInBrowserList(browser) &&
@@ -268,14 +240,18 @@ BrowserShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
     if (!(event_flags & ui::EF_SHIFT_DOWN)) {
       app_menu_items.push_back({browser, kNoTab});
       auto* tab = tab_strip->GetActiveWebContents();
-      items.push_back(
-          {GetBrowserListTitle(tab), GetBrowserListIcon(tab).AsImageSkia()});
+      const gfx::Image& icon =
+          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              (browser->profile() && browser->profile()->IsIncognitoProfile())
+                  ? IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER
+                  : IDR_ASH_SHELF_LIST_BROWSER);
+      items.push_back({controller->GetAppMenuTitle(tab), icon.AsImageSkia()});
     } else {
       for (int i = 0; i < tab_strip->count(); ++i) {
         auto* tab = tab_strip->GetWebContentsAt(i);
         app_menu_items.push_back({browser, i});
-        items.push_back({controller->GetAppListTitle(tab),
-                         controller->GetAppListIcon(tab).AsImageSkia()});
+        items.push_back({controller->GetAppMenuTitle(tab),
+                         controller->GetAppMenuIcon(tab).AsImageSkia()});
       }
     }
   }

@@ -13,9 +13,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -165,7 +162,6 @@ class CancelingTestRequest : public TestRequest {
 class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest() : field_trial_list_(nullptr) {
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
     InitializeScheduler();
     context_.set_http_server_properties(&http_server_properties_);
     context_.set_network_quality_estimator(&network_quality_estimator_);
@@ -511,8 +507,6 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
 }
 
 TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-
   InitializeScheduler();
   http_server_properties_.SetSupportsSpdy(
       url::SchemeHostPort("https", "spdyhost", 443), true);
@@ -813,7 +807,6 @@ TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
 }
 
 TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
-  base::test::ScopedFeatureList scoped_feature_list;
   InitializeScheduler();
   SetMaxDelayableRequests(1);
 
@@ -1020,7 +1013,6 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
 // Test that a change in network conditions midway during loading does not
 // change the behavior of the resource scheduler.
 TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
-  base::test::ScopedFeatureList scoped_feature_list;
   InitializeThrottleDelayableExperiment(true, 0.0);
   // ECT value is in range for which the limit is overridden to 2.
   network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
@@ -1073,7 +1065,6 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
 // the new delayable requests don't start until the number of requests in
 // flight have gone below the new limit.
 TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
-  base::test::ScopedFeatureList scoped_feature_list;
   InitializeThrottleDelayableExperiment(true, 0.0);
   // ECT value is in range for which the limit is overridden to 4.
   network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
@@ -1152,23 +1143,8 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
 }
 
 TEST_F(ResourceSchedulerTest, ThrottleDelayableDisabled) {
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-  const char kTrialName[] = "TrialName";
-  const char kGroupName[] = "GroupName";
-
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
   base::test::ScopedFeatureList scoped_feature_list;
-
-  std::unique_ptr<base::FeatureList> feature_list(
-      std::make_unique<base::FeatureList>());
-
-  feature_list->RegisterFieldTrialOverride(
-      "ThrottleDelayable", base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-      field_trial);
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  scoped_feature_list.InitAndDisableFeature(features::kThrottleDelayable);
 
   InitializeScheduler();
   network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
@@ -1200,7 +1176,6 @@ TEST_F(ResourceSchedulerTest, ThrottleDelayableDisabled) {
 // than the maximum effective connection type set in the experiment
 // configuration.
 TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableOutsideECT) {
-  base::test::ScopedFeatureList scoped_feature_list;
   const double kNonDelayableWeight = 2.0;
   const int kDefaultMaxNumDelayableRequestsPerClient =
       10;  // Should be in sync with cc.
@@ -1231,7 +1206,6 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableOutsideECT) {
 // Test that delayable requests are throttled by the right amount as the number
 // of non-delayable requests in-flight change.
 TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
   const double kNonDelayableWeight = 2.0;
   const int kDefaultMaxNumDelayableRequestsPerClient =
       8;  // Should be in sync with cc.

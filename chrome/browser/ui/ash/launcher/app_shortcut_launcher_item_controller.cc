@@ -199,8 +199,8 @@ AppShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   AppMenuItems items;
   for (content::WebContents* item : app_menu_items_) {
-    items.push_back({controller->GetAppListTitle(item),
-                     controller->GetAppListIcon(item).AsImageSkia()});
+    items.push_back({controller->GetAppMenuTitle(item),
+                     controller->GetAppMenuIcon(item).AsImageSkia()});
   }
   return items;
 }

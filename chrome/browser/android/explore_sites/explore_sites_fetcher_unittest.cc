@@ -8,9 +8,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -75,21 +72,9 @@ class ExploreSitesFetcherTest : public testing::Test {
   void RespondWithHttpError(net::HttpStatusCode http_error);
 
   void SetUpExperimentOption(std::string option, std::string data) {
-    const std::string kTrialName = "trial_name";
-    const std::string kGroupName = "group_name";
-
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-    std::map<std::string, std::string> params = {{option, data}};
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(
-        chrome::android::kExploreSites.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    base::FieldTrialParams params = {{option, data}};
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        chrome::android::kExploreSites, params);
   }
 
   network::ResourceRequest last_resource_request;

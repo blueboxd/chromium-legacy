@@ -2156,13 +2156,12 @@ void WebLocalFrameImpl::NotifyUserActivation() {
   LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 }
 
-void WebLocalFrameImpl::BlinkFeatureUsageReport(const std::set<int>& features) {
+void WebLocalFrameImpl::BlinkFeatureUsageReport(
+    const std::set<blink::mojom::WebFeature>& features) {
   DCHECK(!features.empty());
   // Assimilate all features used/performed by the browser into UseCounter.
-  for (int feature : features) {
-    UseCounter::Count(GetFrame()->GetDocument(),
-                      static_cast<WebFeature>(feature));
-  }
+  for (const auto& feature : features)
+    UseCounter::Count(GetFrame()->GetDocument(), feature);
 }
 
 void WebLocalFrameImpl::MixedContentFound(

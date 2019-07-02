@@ -6,11 +6,10 @@
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/ink_drop_button_listener.h"
-#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -21,10 +20,10 @@
 
 namespace ash {
 
-ShelfControlButton::ShelfControlButton(ShelfView* shelf_view)
-    : ShelfButton(shelf_view), shelf_(shelf_view->shelf()) {
+ShelfControlButton::ShelfControlButton(
+    ShelfButtonDelegate* shelf_button_delegate)
+    : ShelfButton(shelf_button_delegate) {
   set_has_ink_drop_action_on_click(true);
-
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(kShelfFocusBorderColor);
   SetFocusPainter(nullptr);

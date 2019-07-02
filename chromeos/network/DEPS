@@ -29,4 +29,9 @@ specific_include_rules = {
  "ui_proxy_config_service_unittest.cc": [
     "+components/sync_preferences/testing_pref_service_syncable.h"
   ],
+
+  # Dependencies specific for fuzz targets and other fuzzing-related code.
+  ".*fuzz.*": [
+    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
+  ],
 }

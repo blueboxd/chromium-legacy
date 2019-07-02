@@ -163,7 +163,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   // Those services will be initialized lazily.
   // List in lexicographical order.
   ArcAccessibilityHelperBridge::GetForBrowserContext(profile);
-  ArcAppfuseBridge::GetForBrowserContext(profile);
   ArcAppPermissionsBridge::GetForBrowserContext(profile);
   ArcAudioBridge::GetForBrowserContext(profile);
   ArcAuthService::GetForBrowserContext(profile);
@@ -191,7 +190,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(
       profile->GetPrefs());
-  ArcObbMounterBridge::GetForBrowserContext(profile);
   ArcOemCryptoBridge::GetForBrowserContext(profile);
   ArcPipBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
@@ -218,6 +216,12 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
     apps::ArcAppsFactory::GetForProfile(profile);
   }
   chromeos::ApkWebAppService::Get(profile);
+
+  // ARC Container-only services.
+  if (!arc::IsArcVmEnabled()) {
+    ArcAppfuseBridge::GetForBrowserContext(profile);
+    ArcObbMounterBridge::GetForBrowserContext(profile);
+  }
 
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =

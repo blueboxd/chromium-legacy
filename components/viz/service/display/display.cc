@@ -451,12 +451,8 @@ bool Display::DrawAndSwap() {
                                      stored_latency_info_.end());
   stored_latency_info_.clear();
   bool have_copy_requests = false;
-  size_t total_quad_count = 0;
-  for (const auto& pass : frame.render_pass_list) {
+  for (const auto& pass : frame.render_pass_list)
     have_copy_requests |= !pass->copy_requests.empty();
-    total_quad_count += pass->quad_list.size();
-  }
-  UMA_HISTOGRAM_COUNTS_1000("Compositing.Display.Draw.Quads", total_quad_count);
 
   gfx::Size surface_size;
   bool have_damage = false;

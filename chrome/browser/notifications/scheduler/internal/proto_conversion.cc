@@ -177,7 +177,11 @@ void NotificationDataToProto(NotificationData* notification_data,
   proto->set_id(notification_data->id);
   proto->set_title(base::UTF16ToUTF8(notification_data->title));
   proto->set_message(base::UTF16ToUTF8(notification_data->message));
-  proto->set_url(notification_data->url);
+  for (const auto& pair : notification_data->custom_data) {
+    auto* data = proto->add_custom_data();
+    data->set_key(pair.first);
+    data->set_value(pair.second);
+  }
 }
 
 // Converts NotificationData from proto buffer type.
@@ -186,7 +190,10 @@ void NotificationDataFromProto(proto::NotificationData* proto,
   notification_data->id = proto->id();
   notification_data->title = base::UTF8ToUTF16(proto->title());
   notification_data->message = base::UTF8ToUTF16(proto->message());
-  notification_data->url = proto->url();
+  for (int i = 0; i < proto->custom_data_size(); ++i) {
+    const auto& pair = proto->custom_data(i);
+    notification_data->custom_data.emplace(pair.key(), pair.value());
+  }
 }
 
 // Converts ScheduleParams::Priority to proto buffer type.
@@ -312,7 +319,11 @@ void NotificationEntryToProto(NotificationEntry* entry,
   proto->set_create_time(TimeToMilliseconds(entry->create_time));
   auto* proto_notification_data = proto->mutable_notification_data();
   NotificationDataToProto(&entry->notification_data, proto_notification_data);
-  proto_notification_data->set_icon_uuid(entry->icon_uuid);
+  for (const auto& icon_id : entry->icons_uuid) {
+    auto* proto_icon_id = proto_notification_data->add_icon_uuid();
+    *proto_icon_id = icon_id;
+  }
+
   auto* proto_schedule_params = proto->mutable_schedule_params();
   ScheduleParamsToProto(&entry->schedule_params, proto_schedule_params);
 }
@@ -324,7 +335,10 @@ void NotificationEntryFromProto(proto::NotificationEntry* proto,
   entry->create_time = MillisecondsToTime(proto->create_time());
   NotificationDataFromProto(proto->mutable_notification_data(),
                             &entry->notification_data);
-  entry->icon_uuid = proto->mutable_notification_data()->icon_uuid();
+  for (int i = 0; i < proto->notification_data().icon_uuid_size(); ++i) {
+    entry->icons_uuid.emplace_back(proto->notification_data().icon_uuid(i));
+  }
+
   ScheduleParamsFromProto(proto->mutable_schedule_params(),
                           &entry->schedule_params);
 }

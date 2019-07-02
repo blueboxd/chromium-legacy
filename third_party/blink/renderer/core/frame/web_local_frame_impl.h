@@ -268,7 +268,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool IsLoading() const override;
   bool IsNavigationScheduledWithin(double interval) const override;
   void NotifyUserActivation() override;
-  void BlinkFeatureUsageReport(const std::set<int>& features) override;
+  void BlinkFeatureUsageReport(
+      const std::set<blink::mojom::WebFeature>& features) override;
   void MixedContentFound(const WebURL& main_resource_url,
                          const WebURL& mixed_content_url,
                          mojom::RequestContextType,

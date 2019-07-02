@@ -280,7 +280,7 @@ std::unique_ptr<BackButton> DefaultShelfView::CreateBackButton() {
 }
 
 std::unique_ptr<HomeButton> DefaultShelfView::CreateHomeButton() {
-  return std::make_unique<HomeButton>(this, shelf());
+  return std::make_unique<HomeButton>(this);
 }
 
 int DefaultShelfView::GetAvailableSpaceForAppIcons() const {

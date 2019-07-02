@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "chromeos/network/onc/variable_expander.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace chromeos {
 namespace variable_expander {
@@ -18,7 +18,7 @@ Environment* env = new Environment();
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   const std::string machine_name = data_provider.ConsumeRandomLengthString(32);
   std::string str_to_expand = data_provider.ConsumeRemainingBytesAsString();
 

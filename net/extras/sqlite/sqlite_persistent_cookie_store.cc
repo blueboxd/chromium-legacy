@@ -765,8 +765,6 @@ bool SQLitePersistentCookieStore::Backend::CreateDatabaseSchema() {
 bool SQLitePersistentCookieStore::Backend::DoInitializeDatabase() {
   DCHECK(db());
 
-  base::Time start = base::Time::Now();
-
   // Retrieve all the domains
   sql::Statement smt(
       db()->GetUniqueStatement("SELECT DISTINCT host_key FROM cookies"));
@@ -780,29 +778,12 @@ bool SQLitePersistentCookieStore::Backend::DoInitializeDatabase() {
   while (smt.Step())
     host_keys.push_back(smt.ColumnString(0));
 
-  UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.TimeLoadDomains",
-                             base::Time::Now() - start,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1), 50);
-
-  base::Time start_parse = base::Time::Now();
-
   // Build a map of domain keys (always eTLD+1) to domains.
   for (size_t idx = 0; idx < host_keys.size(); ++idx) {
     const std::string& domain = host_keys[idx];
     std::string key = CookieMonster::GetKey(domain);
     keys_to_load_[key].insert(domain);
   }
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.TimeParseDomains",
-                             base::Time::Now() - start_parse,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1), 50);
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.TimeInitializeDomainMap",
-                             base::Time::Now() - start,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1), 50);
 
   if (!restore_old_session_cookies_)
     DeleteSessionCookiesOnStartup();

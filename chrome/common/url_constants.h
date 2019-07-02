@@ -60,6 +60,9 @@ extern const char kChromeBetaForumURL[];
 extern const char kChromeHelpViaKeyboardURL[];
 extern const char kChromeHelpViaMenuURL[];
 extern const char kChromeHelpViaWebUIURL[];
+#if defined(OS_CHROMEOS)
+extern const char kChromeOsHelpViaWebUIURL[];
+#endif
 
 // The chrome-native: scheme is used show pages rendered with platform specific
 // widgets instead of using HTML.

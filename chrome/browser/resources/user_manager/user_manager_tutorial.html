@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="/shared_styles.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="user-manager-tutorial">
   <template>
@@ -104,6 +104,7 @@
         border-top: 10px solid transparent;
         bottom: -10px;
         box-shadow: var(--cr-card-shadow);
+        clip-path: inset(0 0 -5px -5px);
         height: 0;
         position: absolute;
         right: 40px;
@@ -200,9 +201,9 @@
             <div class="slide-text">$i18n{slideYourChromeText}</div>
           </div>
           <div class="slide-buttons">
-            <paper-button on-tap="onNextTap_" data-next$="[[steps_.GUESTS]]">
+            <cr-button on-click="onNextClick_" data-next$="[[steps_.GUESTS]]">
               $i18n{tutorialNext}
-            </paper-button>
+            </cr-button>
           </div>
         </div>
       </template>
@@ -215,9 +216,9 @@
             <div class="slide-text">$i18n{slideGuestsText}</div>
           </div>
           <div class="slide-buttons">
-            <paper-button on-tap="onNextTap_" data-next$="[[steps_.FRIENDS]]">
+            <cr-button on-click="onNextClick_" data-next$="[[steps_.FRIENDS]]">
               $i18n{tutorialNext}
-            </paper-button>
+            </cr-button>
           </div>
           <div class="arrow-down"></div>
         </div>
@@ -231,9 +232,9 @@
             <div class="slide-text">$i18n{slideFriendsText}</div>
           </div>
           <div class="slide-buttons">
-            <paper-button on-tap="onNextTap_" data-next$="[[steps_.COMPLETE]]">
+            <cr-button on-click="onNextClick_" data-next$="[[steps_.COMPLETE]]">
               $i18n{tutorialNext}
-            </paper-button>
+            </cr-button>
           </div>
           <div class="arrow-down"></div>
         </div>
@@ -247,9 +248,9 @@
             <div class="slide-text">$i18n{slideCompleteText}</div>
           </div>
           <div class="slide-buttons">
-            <paper-button on-tap="onNextTap_" data-next$="[[steps_.NOT_YOU]]">
+            <cr-button on-click="onNextClick_" data-next$="[[steps_.NOT_YOU]]">
               $i18n{tutorialDone}
-            </paper-button>
+            </cr-button>
           </div>
         </div>
       </template>

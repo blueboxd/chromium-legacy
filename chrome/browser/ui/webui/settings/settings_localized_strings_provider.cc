@@ -401,13 +401,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 void AddAboutStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
     {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
-    {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
-#if defined(OS_CHROMEOS)
-    {"aboutProductTitle", IDS_PRODUCT_OS_NAME},
-#else
-    {"aboutProductTitle", IDS_PRODUCT_NAME},
-#endif
-    {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
 
 #if defined(GOOGLE_CHROME_BUILD)
     {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
@@ -476,6 +469,30 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+#if defined(OS_CHROMEOS)
+  html_source->AddLocalizedString("aboutOsPageTitle", IDS_SETTINGS_ABOUT_OS);
+  html_source->AddLocalizedString("aboutGetHelpUsingChromeOs",
+                                  IDS_SETTINGS_GET_HELP_USING_CHROME_OS);
+  html_source->AddLocalizedString("aboutOsProductTitle", IDS_PRODUCT_OS_NAME);
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    html_source->AddLocalizedString("aboutGetHelpUsingChrome",
+                                    IDS_SETTINGS_GET_HELP_USING_CHROME);
+    html_source->AddLocalizedString("aboutPageTitle",
+                                    IDS_SETTINGS_ABOUT_PROGRAM);
+    html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_NAME);
+  } else {
+    html_source->AddLocalizedString("aboutGetHelpUsingChrome",
+                                    IDS_SETTINGS_GET_HELP_USING_CHROME_OS);
+    html_source->AddLocalizedString("aboutPageTitle", IDS_SETTINGS_ABOUT_OS);
+    html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_OS_NAME);
+  }
+#else
+  html_source->AddLocalizedString("aboutGetHelpUsingChrome",
+                                  IDS_SETTINGS_GET_HELP_USING_CHROME);
+  html_source->AddLocalizedString("aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM);
+  html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_NAME);
+#endif
 
   html_source->AddString(
       "aboutUpgradeUpToDate",

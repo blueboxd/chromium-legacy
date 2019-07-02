@@ -32,6 +32,11 @@ enum HelpSource {
 
   // WebUI (the "About" page).
   HELP_SOURCE_WEBUI,
+
+#if defined(OS_CHROMEOS)
+  // WebUI (the OS "About" page).
+  HELP_SOURCE_WEBUI_CHROME_OS,
+#endif
 };
 
 // Sources of feedback requests.

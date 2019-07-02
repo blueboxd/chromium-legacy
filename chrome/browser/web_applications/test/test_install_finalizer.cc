@@ -108,7 +108,7 @@ void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
 bool TestInstallFinalizer::CanSkipAppUpdateForSync(
     const AppId& app_id,
     const WebApplicationInfo& web_app_info) const {
-  return false;
+  return next_can_skip_app_update_for_sync_;
 }
 
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
@@ -123,6 +123,11 @@ void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
     bool uninstalled) {
   DCHECK(!base::Contains(next_uninstall_external_web_app_results_, app_url));
   next_uninstall_external_web_app_results_[app_url] = uninstalled;
+}
+
+void TestInstallFinalizer::SetNextCanSkipAppUpdateForSync(
+    bool can_skip_app_update_for_sync) {
+  next_can_skip_app_update_for_sync_ = can_skip_app_update_for_sync;
 }
 
 }  // namespace web_app

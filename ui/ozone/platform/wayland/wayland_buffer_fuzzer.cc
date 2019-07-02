@@ -14,8 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -53,7 +53,7 @@ class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
 
   std::vector<uint32_t> known_fourccs{
       DRM_FORMAT_R8,          DRM_FORMAT_GR88,        DRM_FORMAT_ABGR8888,

@@ -17,15 +17,13 @@ class ImageView;
 }
 
 namespace ash {
-
-class Shelf;
 class ShelfView;
 
 // Shelf overflow button.
 class ASH_EXPORT OverflowButton : public ShelfControlButton {
  public:
   // |shelf_view| is the view containing this button.
-  OverflowButton(ShelfView* shelf_view, Shelf* shelf);
+  explicit OverflowButton(ShelfView* shelf_view);
   ~OverflowButton() override;
 
   // views::Button
@@ -38,6 +36,8 @@ class ASH_EXPORT OverflowButton : public ShelfControlButton {
 
   const gfx::ImageSkia horizontal_dots_image_;
   views::ImageView* horizontal_dots_image_view_;
+  // Owned by RootWindowController.
+  ShelfView* shelf_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };

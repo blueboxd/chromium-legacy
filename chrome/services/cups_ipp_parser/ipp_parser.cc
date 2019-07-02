@@ -4,7 +4,7 @@
 
 #include "chrome/services/cups_ipp_parser/ipp_parser.h"
 
-#include <cups/cups.h>
+#include <cups/ipp.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -65,23 +65,6 @@ int LocateEndOfHeaders(base::StringPiece request) {
   return idx - end_of_headers_delimiter_size;
 }
 
-// Return the starting index of the IPP data/payload (pdf).
-// Returns |ipp_metadata|.size() on empty IPP data and -1 on failure.
-int LocateStartOfIppData(base::span<const uint8_t> ipp_metadata) {
-  std::vector<uint8_t> sentinel_wrapper(
-      ipp_converter::ConvertToByteBuffer(kIppSentinel));
-  auto it = std::search(ipp_metadata.begin(), ipp_metadata.end(),
-                        sentinel_wrapper.begin(), sentinel_wrapper.end());
-  if (it == ipp_metadata.end()) {
-    return -1;
-  }
-
-  // Advance to the start of IPP data and check existence or end of request.
-  it += strlen(kIppSentinel);
-  return it <= ipp_metadata.end() ? std::distance(ipp_metadata.begin(), it)
-                                  : -1;
-}
-
 // Returns the starting index of the IPP metadata, -1 on failure.
 int LocateStartOfIppMetadata(base::span<const uint8_t> request) {
   std::vector<char> char_buffer = ipp_converter::ConvertToCharBuffer(request);
@@ -132,24 +115,27 @@ base::Optional<std::vector<HttpHeader>> ExtractHttpHeaders(
   return ipp_converter::ParseHeaders(headers_slice);
 }
 
-mojom::IppMessagePtr ExtractIppMessage(base::span<const uint8_t> ipp_metadata) {
+// Parses |ipp_metadata| and sets |ipp_message| and |ipp_data| accordingly.
+// Returns false and leaves the outputs unchanged on failure.
+bool ExtractIppMetadata(base::span<const uint8_t> ipp_metadata,
+                        mojom::IppMessagePtr* ipp_message,
+                        std::vector<uint8_t>* ipp_data) {
   printing::ScopedIppPtr ipp = ipp_converter::ParseIppMessage(ipp_metadata);
   if (!ipp) {
-    return nullptr;
+    return false;
   }
 
-  return ipp_converter::ConvertIppToMojo(ipp.get());
-}
-
-base::Optional<std::vector<uint8_t>> ExtractIppData(
-    base::span<const uint8_t> ipp_metadata) {
-  auto start_of_ipp_data = LocateStartOfIppData(ipp_metadata);
-  if (start_of_ipp_data < 0) {
-    return base::nullopt;
+  mojom::IppMessagePtr message = ipp_converter::ConvertIppToMojo(ipp.get());
+  if (!message) {
+    return false;
   }
 
-  ipp_metadata = ipp_metadata.subspan(start_of_ipp_data);
-  return std::vector<uint8_t>{ipp_metadata.begin(), ipp_metadata.end()};
+  size_t ipp_message_length = ippLength(ipp.get());
+  ipp_metadata = ipp_metadata.subspan(ipp_message_length);
+  *ipp_data = std::vector<uint8_t>(ipp_metadata.begin(), ipp_metadata.end());
+
+  *ipp_message = std::move(message);
+  return true;
 }
 
 }  // namespace
@@ -182,16 +168,11 @@ void IppParser::ParseIpp(const std::vector<uint8_t>& to_parse,
     return Fail("Failed to parse headers", std::move(callback));
   }
 
-  // Parse IPP message.
-  auto ipp_message = ExtractIppMessage(ipp_metadata);
-  if (!ipp_message) {
-    return Fail("Failed to parse IPP message", std::move(callback));
-  }
-
-  // Parse IPP data.
-  auto ipp_data = ExtractIppData(ipp_metadata);
-  if (!ipp_data) {
-    return Fail("Failed to parse IPP data", std::move(callback));
+  // Parse IPP message and IPP data.
+  mojom::IppMessagePtr ipp_message;
+  std::vector<uint8_t> ipp_data;
+  if (!ExtractIppMetadata(ipp_metadata, &ipp_message, &ipp_data)) {
+    return Fail("Failed to parse IPP metadata", std::move(callback));
   }
 
   // Marshall response.
@@ -204,7 +185,7 @@ void IppParser::ParseIpp(const std::vector<uint8_t>& to_parse,
 
   parsed_request->headers = std::move(*headers);
   parsed_request->ipp = std::move(ipp_message);
-  parsed_request->data = std::move(*ipp_data);
+  parsed_request->data = std::move(ipp_data);
 
   DVLOG(1) << "Finished parsing IPP request.";
   std::move(callback).Run(std::move(parsed_request));

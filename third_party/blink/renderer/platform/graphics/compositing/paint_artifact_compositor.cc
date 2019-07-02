@@ -74,6 +74,7 @@ void PaintArtifactCompositor::EnableExtraDataForTesting() {
 }
 
 void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
+  tracks_raster_invalidations_ = should_track;
   for (auto& client : content_layer_clients_)
     client->GetRasterInvalidator().SetTracksRasterInvalidations(should_track);
 }
@@ -89,6 +90,8 @@ void PaintArtifactCompositor::WillBeRemovedFromFrame() {
 
 std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
     LayerTreeFlags flags) const {
+  if (!tracks_raster_invalidations_)
+    flags &= ~kLayerTreeIncludesPaintInvalidations;
   ContentLayerClientImpl::LayerAsJSONContext context(flags);
   auto layers_json = std::make_unique<JSONArray>();
   for (const auto& client : content_layer_clients_) {

@@ -1,5 +1,6 @@
 # tags: [ highsierra linux ]
 # tags: [ nvidia ]
+# results: [ Failure RetryOnFailure Skip ]
 
 # Accelerated 2D canvas is not available on Linux due to driver instability
 crbug.com/254724 [ linux ] HardwareAcceleratedFeature_canvas_accelerated [ Failure ]

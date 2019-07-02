@@ -473,6 +473,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux xp ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Failure Skip ]
     [ intel win ] a/b/c/d [ Failure ]
     [ intel xp debug ] a/b/c/d [ Skip ]
     '''
@@ -483,6 +484,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Failure Skip ]
     [ intel win7 ] a/b/c/d [ Failure ]
     [ intel xp debug ] a/b/c/d [ Skip ]
     '''
@@ -492,6 +494,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux xp ]
     # tags: [ intel amd nvidia nvidia-0x01 ]
     # tags: [ debug release ]
+    # results: [ Failure Skip ]
     [ nvidia win ] a/b/c/d [ Failure ]
     [ nvidia-0x01 xp debug ] a/b/c/d [ Skip ]
     '''
@@ -502,6 +505,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
     # tags: [ intel amd nvidia nvidia-0x01 nvidia-0x02 ]
     # tags: [ debug release ]
+    # results: [ Failure Skip ]
     [ nvidia-0x01 win ] a/b/c/* [ Failure ]
     [ nvidia win7 debug ] a/b/c/* [ Skip ]
     '''
@@ -512,6 +516,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
     # tags: [ intel amd nvidia nvidia-0x01 nvidia-0x02 ]
     # tags: [ debug release ]
+    # results: [ Failure Skip ]
     [ nvidia-0x01 win7 ] a/b/c/d [ Failure ]
     [ nvidia-0x02 win7 debug ] a/b/c/d [ Skip ]
     [ nvidia win debug ] a/b/c/* [ Skip ]
@@ -522,6 +527,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
     # tags: [ intel amd nvidia nvidia-0x01 ]
     # tags: [ debug release ]
+    # results: [ Failure Skip ]
     [ nvidia-0x01 win ] a/b/c/d [ Failure ]
     [ nvidia win7 debug ] a/b/c/d [ Skip ]
     '''
@@ -532,6 +538,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Failure Skip RetryOnFailure ]
     [ intel win ] a/b/c/d [ Failure ]
     [ intel win debug ] a/b/c/d [ Skip ]
     [ intel  ] a/b/c/d [ Failure ]
@@ -544,15 +551,15 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
       CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
     self.assertIn("Found conflicts for test a/b/c/d in test.txt:",
       str(context.exception))
-    self.assertIn('line 4 conflicts with line 5',
-      str(context.exception))
-    self.assertIn('line 4 conflicts with line 6',
-      str(context.exception))
     self.assertIn('line 5 conflicts with line 6',
+      str(context.exception))
+    self.assertIn('line 5 conflicts with line 7',
+      str(context.exception))
+    self.assertIn('line 6 conflicts with line 7',
       str(context.exception))
     self.assertIn("Found conflicts for test a/b in test.txt:",
       str(context.exception))
-    self.assertIn('line 7 conflicts with line 8',
+    self.assertIn('line 8 conflicts with line 9',
       str(context.exception))
     self.assertNotIn("Found conflicts for test a/b/c in test.txt:",
       str(context.exception))
@@ -561,6 +568,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Failure RetryOnFailure ]
     [ intel debug ] a/b/c/d* [ Failure ]
     [ intel debug mac ] a/b/c/d [ RetryOnFailure ]
     [ intel debug mac ] a/b/c/d/e [ Failure ]
@@ -569,17 +577,18 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
       CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
     self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
         str(context.exception))
-    self.assertIn(("line 4 conflicts with line 5: Pattern 'a/b/c/d*' on line 4 "
+    self.assertIn(("line 5 conflicts with line 6: Pattern 'a/b/c/d*' on line 5 "
         "has the Failure expectation however the the pattern on 'a/b/c/d'"
-        " line 5 has the Pass expectation"),
+        " line 6 has the Pass expectation"),
         str(context.exception))
-    self.assertNotIn('line 4 conflicts with line 6',
+    self.assertNotIn('line 5 conflicts with line 7',
         str(context.exception))
 
   def testNoCollisionWithGlobsWithFailureExpectation(self):
     test_expectations = '''# tags: [ mac win linux ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Failure Skip ]
     [ intel debug mac ] a/b/c/* [ Failure ]
     [ intel debug ] a/b/c/d [ Failure ]
     [ intel debug ] a/b/c/d [ Skip ]
@@ -590,6 +599,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Skip Failure RetryOnFailure ]
     [ intel debug ] a/b/c/d* [ Skip ]
     [ intel debug mac ] a/b/c/d [ Failure ]
     [ intel debug mac ] a/b/c/d/e [ RetryOnFailure ]
@@ -598,19 +608,20 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
       CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
     self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
         str(context.exception))
-    self.assertNotIn('line 4 conflicts with line 5',
+    self.assertNotIn('line 5 conflicts with line 6',
         str(context.exception))
-    self.assertIn('line 4 conflicts with line 6',
+    self.assertIn('line 5 conflicts with line 7',
         str(context.exception))
-    self.assertIn(("line 4 conflicts with line 6: Pattern 'a/b/c/d*' on line 4 "
+    self.assertIn(("line 5 conflicts with line 7: Pattern 'a/b/c/d*' on line 5 "
         "has the Skip expectation however the the pattern on 'a/b/c/d/e'"
-        " line 6 has the Pass expectation"),
+        " line 7 has the Pass expectation"),
         str(context.exception))
 
   def testNoCollisionWithGlobsWithSkipExpectation(self):
     test_expectations = '''# tags: [ mac win linux ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Skip ]
     [ intel debug mac ] a/b/c/* [ Skip ]
     [ intel debug ] a/b/c/d [ Skip ]
     [ intel debug ] a/b/c/d [ Skip ]
@@ -621,6 +632,7 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     test_expectations = '''# tags: [ mac win linux ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
+    # results: [ Failure ]
     [ intel win release ] a/b/* [ Failure ]
     [ intel debug ] a/b/c/d [ Failure ]
     [ nvidia debug ] a/b/c/d [ Failure ]
@@ -629,17 +641,20 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
 
   def testExpectationPatternNotInGeneratedTests(self):
     with self.assertRaises(AssertionError) as context:
-      _TestCheckTestExpectationsAreForExistingTests('a/b/d [ Failure ]')
-    self.assertIn(("1: Pattern 'a/b/d' does not match with any"
+      _TestCheckTestExpectationsAreForExistingTests(
+          '# results: [ Failure ]\na/b/d [ Failure ]')
+    self.assertIn(("2: Pattern 'a/b/d' does not match with any"
                   " tests in the GpuIntegrationTest test suite"),
                   str(context.exception))
 
   def testExpectationPatternIsShorterThanAnyTestName(self):
     with self.assertRaises(AssertionError) as context:
-      _TestCheckTestExpectationsAreForExistingTests('a/b [ Failure ]')
-    self.assertIn(("1: Pattern 'a/b' does not match with any"
+      _TestCheckTestExpectationsAreForExistingTests(
+          '# results: [ Failure ]\na/b [ Failure ]')
+    self.assertIn(("2: Pattern 'a/b' does not match with any"
                   " tests in the GpuIntegrationTest test suite"),
                   str(context.exception))
 
   def testGlobMatchesTestName(self):
-    _TestCheckTestExpectationsAreForExistingTests('a/b* [ Failure ]')
+    _TestCheckTestExpectationsAreForExistingTests(
+        '# results: [ Failure ]\na/b* [ Failure ]')

@@ -45,7 +45,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #endif
       "");
 
-  FuzzedDataProvider fuzzed_data(data, size);
+  // Use the fully qualified name to avoid ambiguity with the standard class.
+  blink::FuzzedDataProvider fuzzed_data(data, size);
 
   // Initialize metadata using the fuzzed data.
   bool stop_on_error = fuzzed_data.ConsumeBool();

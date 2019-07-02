@@ -8,11 +8,12 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/assistant_overlay.h"
 #include "ash/shelf/home_button.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_state.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -42,10 +43,11 @@ bool CanActivate() {
 
 }  // namespace
 
-HomeButtonController::HomeButtonController(HomeButton* button, Shelf* shelf)
-    : button_(button), shelf_(shelf) {
+HomeButtonController::HomeButtonController(
+    HomeButton* button,
+    ShelfButtonDelegate* shelf_button_delegate)
+    : button_(button), shelf_button_delegate_(shelf_button_delegate) {
   DCHECK(button_);
-  DCHECK(shelf_);
   Shell* shell = Shell::Get();
   // AppListController is only available in non-KioskNext sessions.
   if (shell->app_list_controller())
@@ -76,8 +78,7 @@ HomeButtonController::~HomeButtonController() {
   VoiceInteractionController::Get()->RemoveLocalObserver(this);
 }
 
-bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
-                                                   ShelfView* shelf_view) {
+bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
@@ -96,7 +97,7 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
       // |ET_GESTURE_TAP_DOWN| event to be handled. This will cause the
       // |ET_GESTURE_TAP| or |ET_GESTURE_TAP_CANCEL| not to be sent to
       // |button_|, therefore leaving the assistant overlay ripple visible.
-      if (!shelf_view->ShouldEventActivateButton(button_, *event))
+      if (!shelf_button_delegate_->ShouldEventActivateButton(button_, *event))
         return true;
 
       if (IsVoiceInteractionAvailable()) {
@@ -164,11 +165,8 @@ bool HomeButtonController::IsVoiceInteractionRunning() {
 
 void HomeButtonController::OnAppListVisibilityChanged(bool shown,
                                                       int64_t display_id) {
-  if (display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(button_->GetWidget()->GetNativeWindow())
-          .id() != display_id) {
+  if (button_->GetDisplayId() != display_id)
     return;
-  }
   if (shown)
     OnAppListShown();
   else
@@ -248,13 +246,15 @@ void HomeButtonController::OnAppListShown() {
   if (!Shell::Get()->home_screen_controller()->IsHomeScreenAvailable())
     button_->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
-  shelf_->UpdateAutoHideState();
+  RootWindowController::ForWindow(button_->GetWidget()->GetNativeWindow())
+      ->UpdateShelfVisibility();
 }
 
 void HomeButtonController::OnAppListDismissed() {
   button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   is_showing_app_list_ = false;
-  shelf_->UpdateAutoHideState();
+  RootWindowController::ForWindow(button_->GetWidget()->GetNativeWindow())
+      ->UpdateShelfVisibility();
 }
 
 void HomeButtonController::InitializeVoiceInteractionOverlay() {

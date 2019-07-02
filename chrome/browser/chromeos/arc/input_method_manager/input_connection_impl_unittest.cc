@@ -89,17 +89,32 @@ class TestIMEInputContextHandler : public ui::MockIMEInputContextHandler {
     ++send_key_event_call_count_;
   }
 
+  bool SetCompositionRange(
+      uint32_t before,
+      uint32_t after,
+      const std::vector<ui::ImeTextSpan>& text_spans) override {
+    ui::MockIMEInputContextHandler::SetCompositionRange(before, after,
+                                                        text_spans);
+    composition_range_history_.push_back(std::make_tuple(before, after));
+    return true;
+  }
+
   void Reset() {
     ui::MockIMEInputContextHandler::Reset();
     send_key_event_call_count_ = 0;
+    composition_range_history_.clear();
   }
 
   int send_key_event_call_count() const { return send_key_event_call_count_; }
+  const std::vector<std::tuple<int, int>>& composition_range_history() {
+    return composition_range_history_;
+  }
 
  private:
   ui::InputMethod* const input_method_;
 
   int send_key_event_call_count_ = 0;
+  std::vector<std::tuple<int, int>> composition_range_history_;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEInputContextHandler);
 };
@@ -146,7 +161,7 @@ class InputConnectionImplTest : public testing::Test {
   InputConnectionImplTest() = default;
   ~InputConnectionImplTest() override = default;
 
-  std::unique_ptr<InputConnectionImpl> createNewConnection(int context_id) {
+  std::unique_ptr<InputConnectionImpl> CreateNewConnection(int context_id) {
     return std::make_unique<InputConnectionImpl>(engine_.get(), bridge_.get(),
                                                  context_id);
   }
@@ -209,7 +224,7 @@ class InputConnectionImplTest : public testing::Test {
 }  // anonymous namespace
 
 TEST_F(InputConnectionImplTest, CommitText) {
-  auto connection = createNewConnection(1);
+  auto connection = CreateNewConnection(1);
   engine()->FocusIn(context());
 
   context_handler()->Reset();
@@ -231,7 +246,7 @@ TEST_F(InputConnectionImplTest, CommitText) {
 }
 
 TEST_F(InputConnectionImplTest, DeleteSurroundingText) {
-  auto connection = createNewConnection(1);
+  auto connection = CreateNewConnection(1);
   engine()->FocusIn(context());
 
   context_handler()->Reset();
@@ -242,7 +257,7 @@ TEST_F(InputConnectionImplTest, DeleteSurroundingText) {
 }
 
 TEST_F(InputConnectionImplTest, FinishComposingText) {
-  auto connection = createNewConnection(1);
+  auto connection = CreateNewConnection(1);
   engine()->FocusIn(context());
 
   // If there is no composing text, FinishComposingText() does nothing.
@@ -271,7 +286,7 @@ TEST_F(InputConnectionImplTest, FinishComposingText) {
 
 TEST_F(InputConnectionImplTest, SetComposingText) {
   const base::string16 text = base::ASCIIToUTF16("text");
-  auto connection = createNewConnection(1);
+  auto connection = CreateNewConnection(1);
   engine()->FocusIn(context());
 
   context_handler()->Reset();
@@ -310,7 +325,7 @@ TEST_F(InputConnectionImplTest, SetComposingText) {
 }
 
 TEST_F(InputConnectionImplTest, SetSelection) {
-  auto connection = createNewConnection(1);
+  auto connection = CreateNewConnection(1);
   engine()->FocusIn(context());
   ASSERT_TRUE(client()->selection_history().empty());
 
@@ -324,7 +339,7 @@ TEST_F(InputConnectionImplTest, SetSelection) {
 }
 
 TEST_F(InputConnectionImplTest, SendKeyEvent) {
-  auto connection = createNewConnection(1);
+  auto connection = CreateNewConnection(1);
   engine()->FocusIn(context());
 
   context_handler()->Reset();
@@ -375,8 +390,25 @@ TEST_F(InputConnectionImplTest, SendKeyEvent) {
   engine()->FocusOut();
 }
 
+TEST_F(InputConnectionImplTest, SetCompositionRange) {
+  auto connection = CreateNewConnection(1);
+  engine()->FocusIn(context());
+
+  context_handler()->Reset();
+  client()->SetText("abcde");
+  // ab|cde
+  client()->SetCursorPos(2);
+  // a[b|cd]e
+  connection->SetCompositionRange(gfx::Range(1, 4));
+  EXPECT_EQ(1u, context_handler()->composition_range_history().size());
+  EXPECT_EQ(std::make_tuple(1, 2),
+            context_handler()->composition_range_history().back());
+
+  engine()->FocusOut();
+}
+
 TEST_F(InputConnectionImplTest, InputContextHandlerIsNull) {
-  auto connection = createNewConnection(1);
+  auto connection = CreateNewConnection(1);
   ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 
   connection->CommitText(base::ASCIIToUTF16("text"), 1);

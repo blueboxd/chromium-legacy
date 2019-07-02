@@ -996,6 +996,7 @@ if (!is_android) {
       "../browser/prerender/prerender_nostate_prefetch_browsertest.cc",
       "../browser/prerender/prerender_test_utils.cc",
       "../browser/prerender/prerender_test_utils.h",
+      "../browser/previews/defer_all_script_browsertest.cc",
       "../browser/previews/hints_fetcher_browsertest.cc",
       "../browser/previews/lazyload_browsertest.cc",
       "../browser/previews/previews_browsertest.cc",

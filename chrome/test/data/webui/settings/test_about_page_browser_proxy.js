@@ -15,7 +15,8 @@ class TestAboutPageBrowserProxy extends TestBrowserProxy {
     if (cr.isChromeOS) {
       methodNames.push(
           'getChannelInfo', 'getVersionInfo', 'getRegulatoryInfo',
-          'getHasEndOfLife', 'refreshTPMFirmwareUpdateStatus', 'setChannel');
+          'getHasEndOfLife', 'openOsHelpPage', 'refreshTPMFirmwareUpdateStatus',
+          'setChannel');
     }
 
     if (cr.isMac) {
@@ -175,5 +176,10 @@ if (cr.isChromeOS) {
     this.methodCalled('refreshTPMFirmwareUpdateStatus');
     cr.webUIListenerCallback(
         'tpm-firmware-update-status-changed', this.tpmFirmwareUpdateStatus_);
+  };
+
+  /** @override */
+  TestAboutPageBrowserProxy.prototype.openOsHelpPage = function() {
+    this.methodCalled('openOsHelpPage');
   };
 }

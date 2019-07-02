@@ -1438,7 +1438,7 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
 
   SetFetchHandlerExistence(fetch_hander_existence);
 
-  ReadyToRunClassicScript();
+  ReadyToRunWorkerScript();
 }
 
 void ServiceWorkerGlobalScope::DispatchInstallEvent(

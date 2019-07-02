@@ -517,10 +517,17 @@ void MouseEvent::ComputeRelativePosition() {
       layer_location_ = view->DocumentToFrame(scaled_page_location);
 
     // FIXME: Does this differ from PaintLayer::ConvertToLayerCoords?
-    for (PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer(); layer;
-         layer = layer->ContainingLayer()) {
-      layer_location_ -= DoubleSize(layer->Location().left.ToDouble(),
-                                    layer->Location().top.ToDouble());
+    PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer();
+    while (layer) {
+      PhysicalOffset physical_offset = layer->Location();
+      PaintLayer* containing_layer = layer->ContainingLayer();
+      if (containing_layer) {
+        physical_offset -=
+            PhysicalOffset(containing_layer->ScrolledContentOffset());
+      }
+      layer_location_ -= DoubleSize(physical_offset.left.ToDouble(),
+                                    physical_offset.top.ToDouble());
+      layer = containing_layer;
     }
     if (inverse_zoom_factor != 1.0f)
       layer_location_.Scale(inverse_zoom_factor, inverse_zoom_factor);

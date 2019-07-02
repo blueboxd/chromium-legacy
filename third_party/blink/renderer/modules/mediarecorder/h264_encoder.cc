@@ -84,7 +84,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
   const media::WebmMuxer::VideoParameters video_params(frame);
   frame = nullptr;
 
-  std::unique_ptr<std::string> data(new std::string);
+  std::string data;
   const uint8_t kNALStartCode[4] = {0, 0, 0, 1};
   for (int layer = 0; layer < info.iLayerNum; ++layer) {
     const SLayerBSInfo& layerInfo = info.sLayerInfo[layer];
@@ -101,7 +101,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
       layer_len += layerInfo.pNalLengthInByte[nal];
     }
     // Copy the entire layer's data (including NAL start codes).
-    data->append(reinterpret_cast<char*>(layerInfo.pBsBuf), layer_len);
+    data.append(reinterpret_cast<char*>(layerInfo.pBsBuf), layer_len);
   }
 
   const bool is_key_frame = info.eFrameType == videoFrameTypeIDR;
@@ -110,7 +110,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
       CrossThreadBindOnce(
           OnFrameEncodeCompleted,
           WTF::Passed(CrossThreadBindRepeating(on_encoded_video_callback_)),
-          video_params, std::move(data), nullptr, capture_timestamp,
+          video_params, std::move(data), std::string(), capture_timestamp,
           is_key_frame));
 }
 

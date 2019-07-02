@@ -80,6 +80,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "remove_box.icon",
     "resize_handle.icon",
     "sad_tab.icon",
+    "save_original_file.icon",
     "security.icon",
     "send_tab_to_self.icon",
     "sensors.icon",

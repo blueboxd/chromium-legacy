@@ -29,7 +29,11 @@ promise_test(async () => {
   assert_true(transitionStartCounter > 0);
   if (transitionStartCounter > transitionEndCounter) {
     await new Promise((resolve, reject) => {
-      thumb.addEventListener('transitionend', resolve, {once: true});
+      thumb.addEventListener('transitionend', () => {
+        if (transitionStartCounter == transitionEndCounter) {
+          resolve();
+        }
+      });
     });
   }
   assert_equals(thumb.runningTransitions, 0);

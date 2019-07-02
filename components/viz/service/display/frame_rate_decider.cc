@@ -109,10 +109,11 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
         client_->GetPreferredFrameIntervalForFrameSinkId(frame_sink_id));
   }
 
-  base::TimeDelta new_preferred_interval;
-  if (min_frame_sink_interval == BeginFrameArgs::MinInterval()) {
-    new_preferred_interval = *supported_intervals_.begin();
-  } else {
+  // If we don't have an explicit preference from the active frame sinks, then
+  // we use a 0 value for preferred frame interval to let the framework pick the
+  // ideal refresh rate.
+  base::TimeDelta new_preferred_interval = UnspecifiedFrameInterval();
+  if (min_frame_sink_interval != BeginFrameArgs::MinInterval()) {
     for (auto supported_interval : supported_intervals_) {
       // Pick the display interval which is closest to the preferred interval.
       // TODO(khushalsagar): This should suffice for the current use-case (based

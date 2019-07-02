@@ -2949,8 +2949,6 @@ if (use_v8_in_net) {
       "proxy_resolution/proxy_resolver_v8.h",
       "proxy_resolution/proxy_resolver_v8_tracing.cc",
       "proxy_resolution/proxy_resolver_v8_tracing.h",
-      "proxy_resolution/proxy_resolver_v8_tracing_wrapper.cc",
-      "proxy_resolution/proxy_resolver_v8_tracing_wrapper.h",
     ]
 
     defines = [ "NET_IMPLEMENTATION" ]
@@ -5258,7 +5256,6 @@ test("net_unittests") {
     "proxy_resolution/proxy_list_unittest.cc",
     "proxy_resolution/proxy_resolution_service_unittest.cc",
     "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
-    "proxy_resolution/proxy_resolver_v8_tracing_wrapper_unittest.cc",
     "proxy_resolution/proxy_resolver_v8_unittest.cc",
     "proxy_resolution/proxy_server_unittest.cc",
     "quic/bidirectional_stream_quic_impl_unittest.cc",
@@ -5961,7 +5958,6 @@ test("net_unittests") {
   } else {
     sources -= [
       "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
-      "proxy_resolution/proxy_resolver_v8_tracing_wrapper_unittest.cc",
       "proxy_resolution/proxy_resolver_v8_unittest.cc",
     ]
   }

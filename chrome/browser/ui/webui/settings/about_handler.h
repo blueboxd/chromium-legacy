@@ -85,6 +85,9 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void HandleOpenHelpPage(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
+  // Opens the help page. |args| must be empty.
+  void HandleOpenOsHelpPage(const base::ListValue* args);
+
   // Sets the release track version.
   void HandleSetChannel(const base::ListValue* args);
 

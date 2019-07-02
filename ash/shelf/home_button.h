@@ -16,8 +16,7 @@
 
 namespace ash {
 
-class Shelf;
-class ShelfView;
+class ShelfButtonDelegate;
 
 // Button used for the AppList icon on the shelf. It opens the app list (in
 // clamshell mode) or home screen (in tablet mode). Because the clamshell-mode
@@ -31,7 +30,7 @@ class ASH_EXPORT HomeButton : public ShelfControlButton,
  public:
   static const char kViewClassName[];
 
-  HomeButton(ShelfView* shelf_view, Shelf* shelf);
+  explicit HomeButton(ShelfButtonDelegate* shelf_button_delegate);
   ~HomeButton() override;
 
   // views::Button:
@@ -47,6 +46,9 @@ class ASH_EXPORT HomeButton : public ShelfControlButton,
 
   virtual void OnPressed(app_list::AppListShowSource show_source,
                          base::TimeTicks time_stamp);
+
+  // Returns the display which contains this view.
+  int64_t GetDisplayId() const;
 
  protected:
   // views::Button:

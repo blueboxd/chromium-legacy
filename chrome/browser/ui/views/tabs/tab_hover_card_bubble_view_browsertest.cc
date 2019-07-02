@@ -118,10 +118,10 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
     tab_strip->OnMouseExited(stop_hover_event);
   }
 
-  void ClickMouseOnTab() {
+  void ClickMouseOnTab(int index) {
     TabStrip* tab_strip =
         BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
-    Tab* tab = tab_strip->tab_at(0);
+    Tab* tab = tab_strip->tab_at(index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_NONE, 0);
     tab->OnMousePressed(click_event);
@@ -134,6 +134,10 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
     ui::MouseEvent hover_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_NONE, 0);
     tab->OnMouseEntered(hover_event);
+  }
+
+  int GetHoverCardsSeenCount(const TabHoverCardBubbleView* hover_card) {
+    return hover_card->hover_cards_seen_count_;
   }
 
   // DialogBrowserTest:
@@ -255,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
   EXPECT_TRUE(widget != nullptr);
   EXPECT_TRUE(widget->IsVisible());
 
-  ClickMouseOnTab();
+  ClickMouseOnTab(0);
   EXPECT_FALSE(widget->IsVisible());
 }
 
@@ -300,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
   EXPECT_TRUE(widget != nullptr);
   EXPECT_TRUE(widget->IsVisible());
-  ClickMouseOnTab();
+  ClickMouseOnTab(0);
   EXPECT_FALSE(widget->IsVisible());
 }
 
@@ -360,4 +364,36 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
   tab->OnMouseEntered(hover_event);
   ASSERT_FALSE(
       BrowserView::GetBrowserViewForBrowser(inactive_window)->IsActive());
+}
+
+// Verify counter for tab hover cards seen ratio metric increases as hover
+// cards are shown and is reset when a tab is selected.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       HoverCardsSeenRatioMetric) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  tab_strip->AddTabAt(1, TabRendererData(), false);
+  tab_strip->AddTabAt(2, TabRendererData(), false);
+
+  HoverMouseOverTabAt(0);
+
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+
+  EXPECT_EQ(GetHoverCardsSeenCount(hover_card), 1);
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  HoverMouseOverTabAt(1);
+  EXPECT_EQ(GetHoverCardsSeenCount(hover_card), 2);
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  ui::ListSelectionModel selection;
+  selection.SetSelectedIndex(1);
+  tab_strip->SetSelection(selection);
+  EXPECT_EQ(GetHoverCardsSeenCount(hover_card), 0);
+  EXPECT_FALSE(widget->IsVisible());
 }

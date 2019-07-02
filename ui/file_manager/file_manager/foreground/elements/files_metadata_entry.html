@@ -45,22 +45,23 @@
       }
 
       #value[loading] {
+        /* TODO(crbug.com/965370) loading is only set on |size| metatdata of a
+           directory entry. This font-size makes the modificationTime value that
+           appears below it, render further down from its normal position. Once
+           the size is loaded, this "loading" CSS is removed & modificationTime
+           renders in its normal position: visual effect is the modificationTime
+           "bounces" around in the metadata box. */
         font-size: 30px;
       }
 
       #value[loading]::after {
+        /* TODO(crbug.com/965370) see above */
         animation: ellipsis steps(4,end) 900ms infinite;
         content: '\2026'; /* ascii code for the ellipsis character */
         display: inline-block;
         overflow: hidden;
         vertical-align: bottom;
         width: 0;
-      }
-
-      @keyframes ellipsis {
-        to {
-          width: 1.25em;
-        }
       }
 
       @keyframes ellipsis {
@@ -88,7 +89,14 @@
     <div id="box" hidden="[[!value]]">
       <div id="padding"></div>
       <div id="key">[[key]]</div>
-      <div id="value" loading$="{{loading}}"><div hidden="[[loading]]">[[value]]</div></div>
+      <!-- TODO(crbug.com/965370) The loading animation is only applied to a
+           directory entry size metadata field at this time. On switching to
+           another directory, the size field value is cleared, and that hides
+           our <div id="box"> parent. Result: the #value[loading] animation
+           applied here _is never visible_! -->
+      <div id="value" loading$="{{loading}}">
+        <div hidden="[[loading]]">[[value]]</div>
+      </div>
     </div>
   </template>
 </dom-module>

@@ -141,7 +141,7 @@ bool ActiveAudioDecoderWrapper::SetConfig(const AudioConfig& config) {
 }
 
 bool ActiveAudioDecoderWrapper::SetVolume(float multiplier) {
-  stream_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
+  stream_volume_multiplier_ = std::max(0.0f, multiplier);
   float volume = stream_volume_multiplier_ * global_volume_multiplier_;
   if (buffer_delegate_) {
     buffer_delegate_->OnSetVolume(volume);

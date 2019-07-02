@@ -55,9 +55,9 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onNextTap_: function(event) {
-    const element = Polymer.dom(event).rootTarget;
-    this.currentStep_ = element.dataset.next;
+  onNextClick_: function(event) {
+    this.currentStep_ =
+        event.composedPath().find(e => e.tagName == 'CR-BUTTON').dataset.next;
   },
 
   /**

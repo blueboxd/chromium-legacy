@@ -371,7 +371,8 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
 void RootCompositorFrameSinkImpl::SetPreferredFrameInterval(
     base::TimeDelta interval) {
 #if defined(OS_ANDROID)
-  float refresh_rate = 1 / interval.InSecondsF();
+  float refresh_rate =
+      interval.InSecondsF() == 0 ? 0 : (1 / interval.InSecondsF());
   if (display_client_)
     display_client_->SetPreferredRefreshRate(refresh_rate);
 #else

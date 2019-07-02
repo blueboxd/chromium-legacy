@@ -13,6 +13,8 @@
 
 namespace ash {
 
+class ShelfButtonDelegate;
+
 // The back button shown on the shelf when tablet mode is enabled. Its opacity
 // and visiblity are handled by its parent, ShelfView, to ensure the fade
 // in/out of the icon matches the movement of ShelfView's items.
@@ -20,7 +22,7 @@ class ASH_EXPORT BackButton : public ShelfControlButton {
  public:
   static const char kViewClassName[];
 
-  explicit BackButton(ShelfView* shelf_view);
+  explicit BackButton(ShelfButtonDelegate* shelf_button_delegate);
   ~BackButton() override;
 
   // views::Button:

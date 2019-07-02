@@ -25,6 +25,9 @@
 // The state displaying a check mark accessory.
 @property(nonatomic) BOOL selected;
 
+// The cache GUID for the device being displayed.
+@property(nonatomic, copy) NSString* cacheGuid;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_IMAGE_DETAIL_TEXT_ITEM_H_

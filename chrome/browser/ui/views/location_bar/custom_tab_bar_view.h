@@ -88,6 +88,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
                              bool reload_prompt);
 
   SkColor title_bar_color_;
+  SkColor background_color_;
 
   base::string16 last_title_;
   base::string16 last_location_;

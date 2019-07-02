@@ -107,7 +107,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   const bool force_keyframe = frame_has_alpha && !last_frame_had_alpha_;
   last_frame_had_alpha_ = frame_has_alpha;
 
-  std::unique_ptr<std::string> data(new std::string);
+  std::string data;
   bool keyframe = false;
   DoEncode(encoder_.get(), frame_size, frame->data(VideoFrame::kYPlane),
            frame->visible_data(VideoFrame::kYPlane),
@@ -115,10 +115,10 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
            frame->visible_data(VideoFrame::kUPlane),
            frame->stride(VideoFrame::kUPlane),
            frame->visible_data(VideoFrame::kVPlane),
-           frame->stride(VideoFrame::kVPlane), duration, force_keyframe,
-           data.get(), &keyframe);
+           frame->stride(VideoFrame::kVPlane), duration, force_keyframe, data,
+           &keyframe);
 
-  std::unique_ptr<std::string> alpha_data(new std::string);
+  std::string alpha_data;
   if (frame_has_alpha) {
     bool alpha_keyframe = false;
     DoEncode(alpha_encoder_.get(), frame_size, frame->data(VideoFrame::kAPlane),
@@ -126,8 +126,8 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
              frame->stride(VideoFrame::kAPlane), alpha_dummy_planes_.data(),
              SafeCast<int>(u_plane_stride_),
              alpha_dummy_planes_.data() + v_plane_offset_,
-             SafeCast<int>(v_plane_stride_), duration, keyframe,
-             alpha_data.get(), &alpha_keyframe);
+             SafeCast<int>(v_plane_stride_), duration, keyframe, alpha_data,
+             &alpha_keyframe);
     DCHECK_EQ(keyframe, alpha_keyframe);
   }
   frame = nullptr;
@@ -152,7 +152,7 @@ void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
                           int v_stride,
                           const base::TimeDelta& duration,
                           bool force_keyframe,
-                          std::string* const output_data,
+                          std::string& output_data,
                           bool* const keyframe) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
@@ -186,8 +186,8 @@ void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
   while ((pkt = vpx_codec_get_cx_data(encoder, &iter))) {
     if (pkt->kind != VPX_CODEC_CX_FRAME_PKT)
       continue;
-    output_data->assign(static_cast<char*>(pkt->data.frame.buf),
-                        pkt->data.frame.sz);
+    output_data.assign(static_cast<char*>(pkt->data.frame.buf),
+                       pkt->data.frame.sz);
     *keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
     break;
   }

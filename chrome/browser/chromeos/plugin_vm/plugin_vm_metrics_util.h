@@ -23,7 +23,8 @@ enum class PluginVmLaunchResult {
   kSuccess = 0,
   kError = 1,
   kInvalidLicense = 2,
-  kMaxValue = kInvalidLicense,
+  kVmMissing = 3,
+  kMaxValue = kVmMissing,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

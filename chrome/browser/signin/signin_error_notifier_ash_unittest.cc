@@ -17,6 +17,8 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -82,6 +84,27 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(SigninErrorNotifierTest, NoNotification) {
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
+}
+
+// Verify that if Supervision has just been added for the current user
+// the notification isn't shown.  This is because the Add Supervision
+// flow itself will prompt the user to sign out, so the notification
+// is unnecessary.
+TEST_F(SigninErrorNotifierTest, NoNotificationAfterAddSupervisionEnabled) {
+  std::string account_id =
+      identity_test_env()->MakeAccountAvailable(kTestEmail).account_id;
+  identity_test_env()->SetPrimaryAccount(kTestEmail);
+
+  // Mark signout required.
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  service->set_signout_required_after_supervision_enabled();
+
+  SetAuthError(
+      identity_test_env()->identity_manager()->GetPrimaryAccountId(),
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
   EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
 }
 

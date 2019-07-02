@@ -6,14 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FUZZED_DATA_PROVIDER_H_
 
 #include "base/macros.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace blink {
 
-// This class simply wraps //base/test/fuzzed_data_provider and vends Blink
-// friendly types.
+// This class simply wraps FuzzedDataProvider and vends Blink friendly types.
 class FuzzedDataProvider {
   DISALLOW_NEW();
 
@@ -57,7 +56,7 @@ class FuzzedDataProvider {
   size_t RemainingBytes() { return provider_.remaining_bytes(); }
 
  private:
-  base::FuzzedDataProvider provider_;
+  ::FuzzedDataProvider provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedDataProvider);
 };

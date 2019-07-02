@@ -38,7 +38,7 @@ void NotificationsInternalsUIMessageHandler::HandleScheduleNotification(
   CHECK_EQ(args->GetList().size(), 4u);
   notifications::ScheduleParams schedule_params;
   notifications::NotificationData data;
-  data.url = args->GetList()[1].GetString();
+  data.custom_data.emplace("url", args->GetList()[1].GetString());
   data.title = base::UTF8ToUTF16(args->GetList()[2].GetString());
   data.message = base::UTF8ToUTF16(args->GetList()[3].GetString());
   auto params = std::make_unique<notifications::NotificationParams>(

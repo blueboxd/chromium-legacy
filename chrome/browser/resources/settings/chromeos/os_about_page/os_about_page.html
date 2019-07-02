@@ -77,7 +77,7 @@
         width: 330px;
       }
     </style>
-    <settings-section page-title="$i18n{aboutPageTitle}" section="about">
+    <settings-section page-title="$i18n{aboutOsPageTitle}" section="about">
       <settings-animated-pages id="pages" section="about"
           focus-config="[[focusConfig_]]">
         <div route-path="default">
@@ -86,7 +86,7 @@
                 srcset="chrome://theme/current-channel-logo@1x 1x,
                         chrome://theme/current-channel-logo@2x 2x"
                 alt="$i18n{aboutProductLogoAlt}">
-            <h1 class="product-title">$i18n{aboutProductTitle}</h1>
+            <h1 class="product-title">$i18n{aboutOsProductTitle}</h1>
           </div>
           <div class="settings-box two-line">
             <!-- TODO(dpapad): Investigate why vulcanize does not handle well
@@ -155,7 +155,7 @@
                 aria-labelledby="aboutTPMFirmwareUpdate"></cr-icon-button>
           </div>
           <cr-link-row class="hr" id="help" on-click="onHelpClick_"
-              label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row>
+              label="$i18n{aboutGetHelpUsingChromeOs}" external></cr-link-row>
 <if expr="_google_chrome">
           <cr-link-row class="hr" id="reportIssue"
               on-click="onReportIssueClick_"
@@ -180,7 +180,7 @@
     <settings-section>
       <div class="settings-box padded block first">
         <div class="info-section">
-          <div class="secondary">$i18n{aboutProductTitle}</div>
+          <div class="secondary">$i18n{aboutOsProductTitle}</div>
           <div class="secondary">$i18n{aboutProductCopyright}</div>
         </div>
 

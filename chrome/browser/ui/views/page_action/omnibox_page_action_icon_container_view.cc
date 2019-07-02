@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
+#include "chrome/browser/ui/views/native_file_system/native_file_system_access_icon_view.h"
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
@@ -72,6 +73,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
                 params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(send_tab_to_self_icon_view_);
         break;
+      case PageActionIconType::kNativeFileSystemAccess:
+        native_file_system_icon_ = new NativeFileSystemAccessIconView(
+            params.page_action_icon_delegate);
+        page_action_icons_.push_back(native_file_system_icon_);
+        break;
       case PageActionIconType::kLocalCardMigration:
       case PageActionIconType::kSaveCard:
         NOTREACHED();
@@ -114,6 +120,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return zoom_view_;
     case PageActionIconType::kSendTabToSelf:
       return send_tab_to_self_icon_view_;
+    case PageActionIconType::kNativeFileSystemAccess:
+      return native_file_system_icon_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
       NOTREACHED();

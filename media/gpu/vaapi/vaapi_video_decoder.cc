@@ -19,12 +19,11 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_h264_accelerator.h"
-#include "media/gpu/vaapi/vaapi_picture.h"
-#include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/video_frame_converter.h"
+#include "ui/gfx/native_pixmap.h"
 
 namespace media {
 
@@ -42,6 +41,14 @@ unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
     default:
       return VA_RT_FORMAT_YUV420;
   }
+}
+
+gfx::BufferFormat GetBufferFormat() {
+#if defined(USE_OZONE)
+  return gfx::BufferFormat::YUV_420_BIPLANAR;
+#else
+  return gfx::BufferFormat::RGBX_8888;
+#endif
 }
 
 }  // namespace
@@ -79,7 +86,6 @@ VaapiVideoDecoder::VaapiVideoDecoder(
     std::unique_ptr<VideoFrameConverter> frame_converter)
     : frame_pool_(std::move(frame_pool)),
       frame_converter_(std::move(frame_converter)),
-      vaapi_picture_factory_(new VaapiPictureFactory()),
       client_task_runner_(std::move(client_task_runner)),
       decoder_thread_("VaapiDecoderThread"),
       weak_this_factory_(this) {
@@ -411,29 +417,20 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
 
   frame->set_timestamp(current_decode_task_->buffer_->timestamp());
 
-  // Create a VaapiPicture for the frame
-  std::unique_ptr<VaapiPicture> picture = vaapi_picture_factory_->Create(
-      vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
-      PictureBuffer(frame->unique_id(), frame->coded_size()));
-
-  // Import the frame's memory handle into the VaapiPicture, this will create
-  // a VASurface using the handle.
-  gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle =
-      media::CreateGpuMemoryBufferHandle(frame.get());
-  LOG_ASSERT(!gpu_memory_buffer_handle.is_null())
-      << "Failed to create GPU memory handle";
-
-  auto buffer_format =
-      VideoPixelFormatToGfxBufferFormat(frame->layout().format());
-  if (!buffer_format) {
-    VLOGF(1) << "Unexpected frame format";
+  // Create a native pixmap from the video frame.
+  scoped_refptr<gfx::NativePixmap> native_pixmap =
+      CreateNativePixmap(frame.get());
+  if (!native_pixmap) {
+    VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
     SetState(State::kError);
     return nullptr;
   }
 
-  if (!picture->ImportGpuMemoryBufferHandle(
-          *buffer_format, std::move(gpu_memory_buffer_handle))) {
-    LOG(ERROR) << "Failed to import GpuMemoryBufferHandle";
+  // Create VASurface from the native pixmap.
+  scoped_refptr<VASurface> va_surface =
+      vaapi_wrapper_->CreateVASurfaceForPixmap(native_pixmap);
+  if (!va_surface || va_surface->id() == VA_INVALID_ID) {
+    VLOGF(1) << "Failed to create VASurface from NativePixmap";
     SetState(State::kError);
     return nullptr;
   }
@@ -442,17 +439,19 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
   // frame to output when the surface is ready. It's also important to keep a
   // reference to the video frame during decoding, as the frame will be
   // automatically returned to the pool when the last reference is dropped.
-  VASurfaceID surface_id = picture->va_surface_id();
+  VASurfaceID surface_id = va_surface->id();
   DCHECK_EQ(output_frames_.count(surface_id), 0u);
   output_frames_[surface_id] = frame;
 
-  // When the last reference to the VASurface is dropped ReleaseFrameTask() will
-  // be called. This means the decoder no longer needs the frame for output or
-  // reference, so we can safely remove it from |output_frames_| and destroy the
-  // associated VaapiPicture and surface. The frame will be returned to the
-  // pool once the client stops using it.
+  // When the decoder is done using the frame for output or reference, it will
+  // drop its reference to the surface. We can then safely destroy the surface
+  // and remove the associated video frame from |output_frames_|. To be notified
+  // when this happens we wrap the surface in another surface that calls
+  // ReleaseFrameTask() on destruction. The |va_surface| object is bound to the
+  // destruction callback to keep it alive, since the associated VAAPI surface
+  // will be automatically destroyed when we drop the reference.
   VASurface::ReleaseCB release_frame_cb = base::BindOnce(
-      &VaapiVideoDecoder::ReleaseFrameTask, weak_this_, std::move(picture));
+      &VaapiVideoDecoder::ReleaseFrameTask, weak_this_, std::move(va_surface));
 
   return new VASurface(surface_id, frame->layout().coded_size(),
                        GetVaFormatForVideoCodecProfile(profile_),
@@ -505,8 +504,8 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   visible_rect_ = decoder_->GetVisibleRect();
   natural_size_ = visible_rect_.size();
   gfx::Size pic_size = decoder_->GetPicSize();
-  const VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
-      vaapi_picture_factory_->GetBufferFormat());
+  const VideoPixelFormat format =
+      GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   auto frame_layout = VideoFrameLayout::Create(format, pic_size);
   frame_pool_->SetFrameFormat(*frame_layout, visible_rect_, natural_size_);
   frame_pool_->SetMaxNumFrames(decoder_->GetRequiredNumOfPictures());
@@ -523,15 +522,16 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
       base::BindOnce(&VaapiVideoDecoder::HandleDecodeTask, weak_this_));
 }
 
-void VaapiVideoDecoder::ReleaseFrameTask(std::unique_ptr<VaapiPicture> picture,
+void VaapiVideoDecoder::ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
                                          VASurfaceID surface_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK_EQ(picture->va_surface_id(), surface_id);
+  DCHECK_EQ(va_surface->id(), surface_id);
   DVLOGF(4);
 
   // The decoder has finished using the frame associated with |surface_id| for
   // output or reference, so it's safe to drop our reference here. Once the
-  // client drops their reference NotifyFrameAvailableTask() will be called.
+  // client drops its reference the frame will be automatically returned to the
+  // pool for reuse.
   size_t num_erased = output_frames_.erase(surface_id);
   DCHECK_EQ(num_erased, 1u);
 

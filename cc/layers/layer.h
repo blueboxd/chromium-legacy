@@ -78,7 +78,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // describe how the mask would be generated as a texture in that case.
   enum LayerMaskType {
     NOT_MASK = 0,
-    MULTI_TEXTURE_MASK,
     SINGLE_TEXTURE_MASK,
   };
 

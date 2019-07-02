@@ -14,7 +14,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -65,7 +65,7 @@ app_list::SearchBoxView* GetSearchBoxView() {
 
 aura::Window* GetVirtualKeyboardWindow() {
   return Shell::Get()
-      ->ash_keyboard_controller()
+      ->keyboard_controller()
       ->keyboard_controller()
       ->GetKeyboardWindow();
 }
@@ -143,7 +143,7 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
 // and app list state is HALF, the rounded corners should be hidden
 // (https://crbug.com/942084).
 TEST_F(AppListControllerImplTest, HideRoundingCorners) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
       keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the app list view and click on the search box with mouse. So the
@@ -224,7 +224,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
 // the AppListView is in PEEKING state and the virtual keyboard is enabled (see
 // https://crbug.com/944233).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
       keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the AppListView and click on the search box with mouse. So the
@@ -257,7 +257,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
 // Verifies that in tablet mode, the AppListView has correct bounds when the
 // virtual keyboard is dismissed (see https://crbug.com/944133).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
       keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the AppListView and click on the search box with mouse so the
@@ -273,7 +273,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
   // Close the virtual keyboard. Wait until it is hidden.
-  Shell::Get()->ash_keyboard_controller()->HideKeyboard(HideReason::kUser);
+  Shell::Get()->keyboard_controller()->HideKeyboard(HideReason::kUser);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
 

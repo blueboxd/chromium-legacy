@@ -741,6 +741,9 @@
   <message name="IDS_FILE_BROWSER_MOVE_UNEXPECTED_ERROR" desc="File Manager error message.">
     Move failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not move</ex></ph>
   </message>
+  <message name="IDS_FILE_BROWSER_TO_FOLDER_NAME" desc="File Manager status message.">
+    To <ph name="FOLDER_NAME">$1<ex>images</ex></ph>
+  </message>
   <message name="IDS_FILE_BROWSER_ZIP_FILE_NAME" desc="File Manager status message.">
     Zipping <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>

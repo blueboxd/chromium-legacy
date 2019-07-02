@@ -53,6 +53,8 @@ class KeyboardUIFactory;
 
 // Provides control of the virtual keyboard, including enabling/disabling the
 // keyboard and controlling its visibility.
+// TODO(shend): Rename this to KeyboardUIController and move enable / disable
+// logic to KeyboardControllerImpl.
 class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
                                            public aura::WindowObserver,
                                            public ContainerBehavior::Delegate {

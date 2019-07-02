@@ -49,8 +49,11 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
   // ImageMetadataStorage:
   void Initialize(base::OnceClosure callback) override;
   bool IsInitialized() override;
+  void LoadImageMetadata(const std::string& key,
+                         ImageMetadataCallback callback) override;
   void SaveImageMetadata(const std::string& key,
-                         const size_t data_size) override;
+                         const size_t data_size,
+                         bool needs_transcoding) override;
   void DeleteImageMetadata(const std::string& key) override;
   void UpdateImageMetadata(const std::string& key) override;
   void GetAllKeys(KeysCallback callback) override;
@@ -68,6 +71,10 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
  private:
   void OnDatabaseInitialized(base::OnceClosure callback,
                              leveldb_proto::Enums::InitStatus status);
+  void LoadImageMetadataImpl(
+      ImageMetadataCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<CachedImageMetadataProto>> entries);
   void OnImageUpdated(bool success);
   void UpdateImageMetadataImpl(
       bool success,

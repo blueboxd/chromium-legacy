@@ -1,6 +1,6 @@
 [document web]
 ++[log] name='Atomic illegal' atomic:true live:polite relevant:additions text
-++[autocomplete] name='Autocomplete illegal' selectable-text autocomplete:x-illegal
+++[entry] name='Autocomplete illegal' selectable-text autocomplete:x-illegal
 ++[log] name='Busy illegal' busy atomic:false busy:true live:polite relevant:additions text
 ++[tree item] name='Checked illegal' checked selectable checkable:true
 ++[section] name='Current illegal' current:true

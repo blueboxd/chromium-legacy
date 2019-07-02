@@ -1212,10 +1212,8 @@ TEST(FieldTrialListTest, MAYBE_TestCopyFieldTrialStateToFlags) {
 }
 
 TEST(FieldTrialListTest, InstantiateAllocator) {
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.Init();
-
   FieldTrialList field_trial_list(nullptr);
+
   FieldTrialList::CreateFieldTrial("Trial1", "Group1");
 
   FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
@@ -1240,7 +1238,6 @@ TEST(FieldTrialListTest, AddTrialsToAllocator) {
     test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.Init();
 
-    FieldTrialList field_trial_list(nullptr);
     FieldTrialList::CreateFieldTrial("Trial1", "Group1");
     FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
     FieldTrialList::AllStatesToString(&save_string, false);
@@ -1267,7 +1264,6 @@ TEST(FieldTrialListTest, DoNotAddSimulatedFieldTrialsToAllocator) {
 
     // Create a simulated trial and a real trial and call group() on them, which
     // should only add the real trial to the field trial allocator.
-    FieldTrialList field_trial_list(nullptr);
     FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
 
     // This shouldn't add to the allocator.
@@ -1304,7 +1300,6 @@ TEST(FieldTrialListTest, AssociateFieldTrialParams) {
   std::string group_name("Group1");
 
   // Create a field trial with some params.
-  FieldTrialList field_trial_list(nullptr);
   FieldTrialList::CreateFieldTrial(trial_name, group_name);
   std::map<std::string, std::string> params;
   params["key1"] = "value1";
@@ -1346,7 +1341,6 @@ TEST(FieldTrialListTest, MAYBE_ClearParamsFromSharedMemory) {
     scoped_feature_list.Init();
 
     // Create a field trial with some params.
-    FieldTrialList field_trial_list(nullptr);
     FieldTrial* trial =
         FieldTrialList::CreateFieldTrial(trial_name, group_name);
     std::map<std::string, std::string> params;

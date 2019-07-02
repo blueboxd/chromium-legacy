@@ -9,11 +9,12 @@ from .common import WithDebugInfo
 from .common import WithExposure
 from .common import WithExtendedAttributes
 from .identifier_ir_map import IdentifierIRMap
-from .idl_definition import IdlDefinition
 from .idl_member import IdlMember
+from .user_defined_type import UserDefinedType
 
 
-class Interface(IdlDefinition):
+class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
+                WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """A summarized interface definition in IDL.
 
     Interface provides information about an interface, partial interfaces,
@@ -164,6 +165,11 @@ class Interface(IdlDefinition):
         @return Setlike?
         """
         raise exceptions.NotImplementedError()
+
+    # UserDefinedType overrides
+    @property
+    def is_interface(self):
+        return True
 
 
 class Iterable(IdlMember):

@@ -645,6 +645,18 @@ class FileTransferController {
                     item.message = strf('COPY_ITEMS_REMAINING', entries.length);
                   }
                 }
+                // TODO(crbug.com/947388) Use VolumeManager/getLocationInfo
+                // for i18n translations of the path name.
+                let destinationName = null;
+                if (destinationEntry instanceof VolumeEntry) {
+                  destinationName = destinationEntry.name;
+                } else {
+                  destinationName = destinationEntry.fullPath;
+                }
+                if (destinationName) {
+                  item.subMessage = strf(
+                      'TO_FOLDER_NAME', destinationName.replace(/^\//, ''));
+                }
                 this.progressCenter_.updateItem(item);
                 // Check if cross share is needed or not.
                 return this.getMultiProfileShareEntries_(entries);

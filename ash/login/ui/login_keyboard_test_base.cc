@@ -4,7 +4,7 @@
 
 #include "ash/login/ui/login_keyboard_test_base.h"
 
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"

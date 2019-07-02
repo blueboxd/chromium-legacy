@@ -169,6 +169,11 @@ class ManagementPolicy {
   bool ShouldForceUninstall(const Extension* extension,
                             base::string16* error) const;
 
+  // Returns true if the |extension| should be repaired upon corruption.
+  // Note that this method doesn't check whether extension is corrupted or not
+  // (it's job of ContentVerifier).
+  bool ShouldRepairIfCorrupted(const Extension* extension);
+
   // For use in testing.
   void UnregisterAllProviders();
   int GetNumProviders() const;

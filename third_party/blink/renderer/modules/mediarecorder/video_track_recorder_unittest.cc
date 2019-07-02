@@ -104,11 +104,12 @@ class VideoTrackRecorderTest
                     base::TimeTicks timestamp,
                     bool keyframe));
   void OnEncodedVideo(const media::WebmMuxer::VideoParameters& params,
-                      std::string encoded_data,
-                      std::string encoded_alpha,
+                      std::unique_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_alpha,
                       base::TimeTicks timestamp,
                       bool is_key_frame) {
-    DoOnEncodedVideo(params, encoded_data, encoded_alpha, timestamp,
+    DoOnEncodedVideo(params, *encoded_data,
+                     encoded_alpha ? *encoded_alpha : std::string(), timestamp,
                      is_key_frame);
   }
 

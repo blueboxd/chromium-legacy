@@ -111,6 +111,8 @@ class WebAppInstallManager final : public InstallManager {
   AppRegistrar* app_registrar_;
   InstallFinalizer* install_finalizer_;
 
+  bool is_shutting_down_ = false;
+
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppInstallManager);

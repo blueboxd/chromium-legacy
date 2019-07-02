@@ -8,10 +8,11 @@ from .common import WithComponent
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
 from .identifier_ir_map import IdentifierIRMap
-from .idl_definition import IdlDefinition
+from .user_defined_type import UserDefinedType
 
 
-class CallbackInterface(IdlDefinition):
+class CallbackInterface(UserDefinedType, WithExtendedAttributes,
+                        WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-interfaces"""
 
     class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
@@ -55,3 +56,8 @@ class CallbackInterface(IdlDefinition):
         @return tuple(Constant)
         """
         raise exceptions.NotImplementedError()
+
+    # UserDefinedType overrides
+    @property
+    def is_callback_interface(self):
+        return True

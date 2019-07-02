@@ -270,6 +270,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void NotifyUserActivation() override;
   void BlinkFeatureUsageReport(
       const std::set<blink::mojom::WebFeature>& features) override;
+  void BlinkFeatureUsageReport(blink::mojom::WebFeature feature) override;
   void MixedContentFound(const WebURL& main_resource_url,
                          const WebURL& mixed_content_url,
                          mojom::RequestContextType,

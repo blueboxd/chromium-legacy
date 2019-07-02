@@ -12,7 +12,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -191,7 +191,7 @@ void ShellTestApi::SetTabletModeEnabledForTest(bool enable) {
 }
 
 void ShellTestApi::EnableVirtualKeyboard() {
-  shell_->ash_keyboard_controller()->SetEnableFlag(
+  shell_->keyboard_controller()->SetEnableFlag(
       keyboard::KeyboardEnableFlag::kCommandLineEnabled);
 }
 

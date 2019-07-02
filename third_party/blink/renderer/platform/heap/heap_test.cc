@@ -41,6 +41,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -155,6 +156,9 @@ class KeyWithCopyingMoveConstructor final {
 
 struct SameSizeAsPersistent {
   void* pointer_[4];
+#if BUILDFLAG(RAW_HEAP_SNAPSHOTS)
+  PersistentLocation location;
+#endif  // BUILDFLAG(RAW_HEAP_SNAPSHOTS)
 };
 
 static_assert(sizeof(Persistent<IntWrapper>) <= sizeof(SameSizeAsPersistent),

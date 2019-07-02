@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
+#include "components/signin/ios/browser/fake_device_accounts_provider.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -86,8 +86,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
   }
 
   static identity::IdentityTestEnvironment::ExtraParams CreateExtraParams() {
-    auto provider =
-        std::make_unique<FakeProfileOAuth2TokenServiceIOSProvider>();
+    auto provider = std::make_unique<FakeDeviceAccountsProvider>();
     provider->AddAccount(kTestGaiaId, kTestEmail);
     identity::IdentityTestEnvironment::ExtraParams extra_params;
     extra_params.token_service_provider = std::move(provider);
@@ -126,8 +125,8 @@ TEST_F(CWVSyncControllerTest, DataSourceCallbacks) {
     [sync_controller_ startSyncWithIdentity:identity dataSource:data_source];
 
     std::set<std::string> scopes = {kTestScope1, kTestScope2};
-    ProfileOAuth2TokenServiceIOSProvider::AccessTokenCallback callback;
-    [sync_controller_ fetchAccessTokenForScopes:scopes callback:callback];
+    [sync_controller_ fetchAccessTokenForScopes:scopes
+                                       callback:base::DoNothing()];
 
     [data_source verify];
   }

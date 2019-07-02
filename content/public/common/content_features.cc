@@ -42,7 +42,7 @@ const base::Feature kAppCacheIncludePaddingInQuota{
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{
   "AudioServiceAudioStreams",
-#if defined(OS_LINUX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -731,6 +731,10 @@ const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
 // Start streaming scripts on script preload.
 const base::Feature kScriptStreamingOnPreload{
     "ScriptStreamingOnPreload", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the Trusted Types API is available.
+const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.

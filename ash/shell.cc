@@ -53,7 +53,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/laser/laser_pointer_controller.h"
@@ -577,8 +577,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
-  ash_keyboard_controller_ =
-      std::make_unique<AshKeyboardController>(session_controller_.get());
+  keyboard_controller_ =
+      std::make_unique<KeyboardControllerImpl>(session_controller_.get());
 
   if (base::FeatureList::IsEnabled(features::kUseBluetoothSystemInAsh)) {
     tray_bluetooth_helper_ =
@@ -642,7 +642,7 @@ Shell::~Shell() {
   // Destroy the virtual keyboard controller before the tablet mode controller
   // since the latters destructor triggers events that the former is listening
   // to but no longer cares about.
-  ash_keyboard_controller_->DestroyVirtualKeyboard();
+  keyboard_controller_->DestroyVirtualKeyboard();
 
   // Depends on |tablet_mode_controller_|.
   shelf_controller_->Shutdown();
@@ -817,7 +817,7 @@ Shell::~Shell() {
   display_change_observer_.reset();
   display_shutdown_observer_.reset();
 
-  ash_keyboard_controller_.reset();
+  keyboard_controller_.reset();
 
   PowerStatus::Shutdown();
   // Depends on SessionController.
@@ -1112,8 +1112,7 @@ void Shell::Init(
   // Create virtual keyboard after WindowTreeHostManager::InitHosts() since
   // it may enable the virtual keyboard immediately, which requires a
   // WindowTreeHostManager to host the keyboard window.
-  ash_keyboard_controller_->CreateVirtualKeyboard(
-      std::move(keyboard_ui_factory));
+  keyboard_controller_->CreateVirtualKeyboard(std::move(keyboard_ui_factory));
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::CursorType::kPointer);

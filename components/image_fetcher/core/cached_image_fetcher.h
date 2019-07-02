@@ -46,16 +46,16 @@ class CachedImageFetcher : public ImageFetcher {
 
  private:
   // Cache
-  void OnImageFetchedFromCache(
-      CachedImageFetcherRequest request,
-      ImageDataFetcherCallback image_data_callback,
-      ImageFetcherCallback image_callback,
-      std::string image_data);
-  void OnImageDecodedFromCache(
-      CachedImageFetcherRequest request,
-      ImageDataFetcherCallback image_data_callback,
-      ImageFetcherCallback image_callback,
-      const gfx::Image& image);
+  void OnImageFetchedFromCache(CachedImageFetcherRequest request,
+                               ImageDataFetcherCallback image_data_callback,
+                               ImageFetcherCallback image_callback,
+                               bool cache_result_needs_transcoding,
+                               std::string image_data);
+  void OnImageDecodedFromCache(CachedImageFetcherRequest request,
+                               ImageDataFetcherCallback image_data_callback,
+                               ImageFetcherCallback image_callback,
+                               bool cache_result_needs_transcoding,
+                               const gfx::Image& image);
 
   // Network
   void EnqueueFetchImageFromNetwork(
@@ -66,16 +66,25 @@ class CachedImageFetcher : public ImageFetcher {
       CachedImageFetcherRequest request,
       ImageDataFetcherCallback image_data_callback,
       ImageFetcherCallback image_callback);
-  void StoreImageDataWithoutTranscoding(
+  void OnImageFetchedWithoutTranscoding(
       CachedImageFetcherRequest request,
       ImageDataFetcherCallback image_data_callback,
       const std::string& image_data,
       const RequestMetadata& request_metadata);
-  void StoreImageDataWithTranscoding(CachedImageFetcherRequest request,
-                                     ImageFetcherCallback image_data_callback,
-                                     const gfx::Image& image,
-                                     const RequestMetadata& request_metadata);
-  void StoreData(CachedImageFetcherRequest request, std::string image_data);
+  void OnImageFetchedForTranscoding(CachedImageFetcherRequest request,
+                                    ImageFetcherCallback image_data_callback,
+                                    const gfx::Image& image,
+                                    const RequestMetadata& request_metadata);
+  // Encode the given |image_data| and store it.
+  // |cache_result_needs_transcoding| is passed along for metrics purposes.
+  void EncodeAndStoreData(bool cache_result_needs_transcoding,
+                          CachedImageFetcherRequest request,
+                          const gfx::Image& image);
+  // Store the given |image_data| in the cache. |cache_result_needs_transcoding|
+  // is passed along for metrics purposes.
+  void StoreData(bool cache_result_needs_transcoding,
+                 CachedImageFetcherRequest request,
+                 std::string image_data);
 
   // Owned by ImageFetcherService.
   ImageFetcher* image_fetcher_;

@@ -48,7 +48,7 @@ class CONTROLLER_EXPORT MemoryUsageMonitor {
   void RemoveObserver(Observer*);
   bool HasObserver(Observer*);
 
-  bool TimerIsActive() const { return timer_.IsActive(); }
+  bool TimerIsActive() const { return timer_.IsRunning(); }
 
  protected:
   // Adds V8 related memory usage data to the given struct.
@@ -62,9 +62,9 @@ class CONTROLLER_EXPORT MemoryUsageMonitor {
   virtual void StartMonitoringIfNeeded();
   virtual void StopMonitoring();
 
-  void TimerFired(TimerBase*);
+  void TimerFired();
 
-  TaskRunnerTimer<MemoryUsageMonitor> timer_;
+  base::RepeatingTimer timer_;
   base::ObserverList<Observer> observers_;
 };
 

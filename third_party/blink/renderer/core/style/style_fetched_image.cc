@@ -41,7 +41,9 @@ namespace blink {
 StyleFetchedImage::StyleFetchedImage(const Document& document,
                                      FetchParameters& params,
                                      bool is_lazyload_possibly_deferred)
-    : document_(&document), url_(params.Url()) {
+    : document_(&document),
+      url_(params.Url()),
+      origin_clean_(!params.IsFromOriginDirtyStyleSheet()) {
   is_image_resource_ = true;
   is_lazyload_possibly_deferred_ = is_lazyload_possibly_deferred;
 
@@ -77,7 +79,9 @@ ImageResourceContent* StyleFetchedImage::CachedImage() const {
 }
 
 CSSValue* StyleFetchedImage::CssValue() const {
-  return CSSImageValue::Create(url_, const_cast<StyleFetchedImage*>(this));
+  return CSSImageValue::Create(
+      url_, origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
+      const_cast<StyleFetchedImage*>(this));
 }
 
 CSSValue* StyleFetchedImage::ComputedCSSValue() const {

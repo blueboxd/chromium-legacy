@@ -152,7 +152,6 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
             local_frame_->GetDocument()->GetResourceCoordinator()) {
       document_resource_coordinator->SetNetworkAlmostIdle();
     }
-    local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
     if (WebServiceWorkerNetworkProvider* service_worker_network_provider =
             loader->GetServiceWorkerNetworkProvider()) {
       service_worker_network_provider->DispatchNetworkQuiet();

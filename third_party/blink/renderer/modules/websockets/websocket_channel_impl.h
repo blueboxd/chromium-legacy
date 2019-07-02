@@ -95,8 +95,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
             unsigned byte_offset,
             unsigned byte_length) override;
   void Send(scoped_refptr<BlobDataHandle>) override;
-  void SendTextAsCharVector(std::unique_ptr<Vector<char>> data) override;
-  void SendBinaryAsCharVector(std::unique_ptr<Vector<char>> data) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
   // argument to omit payload.
   void Close(int code, const String& reason) override;
@@ -174,8 +172,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
     kMessageTypeText,
     kMessageTypeBlob,
     kMessageTypeArrayBuffer,
-    kMessageTypeTextAsCharVector,
-    kMessageTypeBinaryAsCharVector,
     kMessageTypeClose,
   };
 

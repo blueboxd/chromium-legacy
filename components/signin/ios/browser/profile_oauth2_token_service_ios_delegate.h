@@ -12,14 +12,14 @@
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 class AccountTrackerService;
-class ProfileOAuth2TokenServiceIOSProvider;
+class DeviceAccountsProvider;
 class SigninClient;
 
 class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
  public:
   ProfileOAuth2TokenServiceIOSDelegate(
       SigninClient* client,
-      std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider,
+      std::unique_ptr<DeviceAccountsProvider> provider,
       AccountTrackerService* account_tracker_service);
   ~ProfileOAuth2TokenServiceIOSDelegate() override;
 
@@ -103,7 +103,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
 
   // The client with which this instance was initialied, or NULL.
   SigninClient* client_ = nullptr;
-  std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider_;
+  std::unique_ptr<DeviceAccountsProvider> provider_;
   AccountTrackerService* account_tracker_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceIOSDelegate);

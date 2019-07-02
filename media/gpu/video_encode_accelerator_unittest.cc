@@ -124,11 +124,16 @@ const int k2160PSizeInPixels = 3840 * 2160;
 const unsigned int kMinFramesForBitrateTests = 300;
 // The percentiles to measure for encode latency.
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
-// Timeout for the flush is completed. In the multiple encoder test case, the
-// FPS might be lower than expected. Let us assume that the lowest FPS is 5,
-// then the period per frame is 200 milliseconds. Here we set the timeout 10x
-// periods considering that there might be some pending frames.
-const unsigned int kFlushTimeoutMs = 2000;
+// Timeout for the flush is completed. The period starts from passing the last
+// frame to the encoder, to the flush callback is called. There might be many
+// pending frames in the encoder, so the timeout might be larger than a frame
+// period.
+// In the multiple encoder test case, the FPS might be lower than expected.
+// Currently the largest resolution we run at lab is 4K. The FPS of the slowest
+// device in single encoder is about 10. In MultipleEncoders test case, the
+// measured time period on the slowest device is about 5 seconds. Here we set
+// the timeout 2x of the measured period.
+const unsigned int kFlushTimeoutMs = 10000;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3

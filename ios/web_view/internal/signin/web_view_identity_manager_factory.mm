@@ -23,7 +23,7 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
-#include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
+#include "ios/web_view/internal/signin/web_view_device_accounts_provider_impl.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
@@ -46,8 +46,7 @@ std::unique_ptr<ProfileOAuth2TokenService> BuildTokenService(
   IOSWebViewSigninClient* signin_client =
       WebViewSigninClientFactory::GetForBrowserState(browser_state);
   auto token_service_provider =
-      std::make_unique<WebViewProfileOAuth2TokenServiceIOSProviderImpl>(
-          signin_client);
+      std::make_unique<WebViewDeviceAccountsProviderImpl>(signin_client);
   auto delegate = std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
       signin_client, std::move(token_service_provider),
       account_tracker_service);

@@ -454,8 +454,8 @@ String MediaRecorderHandler::ActualMimeType() {
 
 void MediaRecorderHandler::OnEncodedVideo(
     const media::WebmMuxer::VideoParameters& params,
-    std::string encoded_data,
-    std::string encoded_alpha,
+    std::unique_ptr<std::string> encoded_data,
+    std::unique_ptr<std::string> encoded_alpha,
     base::TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(IsMainThread());
@@ -474,9 +474,10 @@ void MediaRecorderHandler::OnEncodedVideo(
   }
 }
 
-void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
-                                          std::string encoded_data,
-                                          base::TimeTicks timestamp) {
+void MediaRecorderHandler::OnEncodedAudio(
+    const media::AudioParameters& params,
+    std::unique_ptr<std::string> encoded_data,
+    base::TimeTicks timestamp) {
   DCHECK(IsMainThread());
 
   if (UpdateTracksAndCheckIfChanged()) {

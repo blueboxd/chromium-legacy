@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"

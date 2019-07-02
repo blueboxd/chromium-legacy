@@ -54,7 +54,7 @@ void ShowFormAction::OnFormValuesChanged(const FormProto::Result* form_result) {
   user_action.callback = base::BindOnce(&ShowFormAction::OnButtonClicked,
                                         weak_ptr_factory_.GetWeakPtr());
 
-  std::unique_ptr<std::vector<UserAction>> user_actions;
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
   user_actions->emplace_back(std::move(user_action));
   delegate_->Prompt(std::move(user_actions));
 }

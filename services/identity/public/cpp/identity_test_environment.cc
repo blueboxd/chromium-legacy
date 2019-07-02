@@ -34,8 +34,8 @@
 #include "services/identity/public/cpp/test_identity_manager_observer.h"
 
 #if defined(OS_IOS)
+#include "components/signin/ios/browser/device_accounts_provider.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

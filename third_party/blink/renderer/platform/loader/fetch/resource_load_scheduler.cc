@@ -40,12 +40,6 @@ const char kOutstandingLimitForBackgroundSubFrameName[] = "bg_sub_limit";
 constexpr size_t kOutstandingLimitForBackgroundMainFrameDefault = 3u;
 constexpr size_t kOutstandingLimitForBackgroundSubFrameDefault = 2u;
 
-// Maximum request count that request count metrics assume.
-constexpr base::HistogramBase::Sample kMaximumReportSize10K = 10000;
-
-// Bucket count for metrics.
-constexpr int32_t kReportBucketCount = 25;
-
 constexpr char kRendererSideResourceScheduler[] =
     "RendererSideResourceScheduler";
 
@@ -125,7 +119,6 @@ class ResourceLoadScheduler::TrafficMonitor {
  public:
   explicit TrafficMonitor(
       const DetachableResourceFetcherProperties& resource_fetcher_properties);
-  ~TrafficMonitor();
 
   // Notified when the ThrottlingState is changed.
   void OnLifecycleStateChanged(scheduler::SchedulingLifecycleState);
@@ -143,10 +136,6 @@ class ResourceLoadScheduler::TrafficMonitor {
   scheduler::SchedulingLifecycleState current_state_ =
       scheduler::SchedulingLifecycleState::kStopped;
 
-  uint32_t total_throttled_request_count_ = 0;
-  uint32_t total_not_throttled_request_count_ = 0;
-  bool report_all_is_called_ = false;
-
   scheduler::AggregatedMetricReporter<scheduler::FrameStatus, int64_t>
       traffic_kilobytes_per_frame_status_;
   scheduler::AggregatedMetricReporter<scheduler::FrameStatus, int64_t>
@@ -162,10 +151,6 @@ ResourceLoadScheduler::TrafficMonitor::TrafficMonitor(
       decoded_kilobytes_per_frame_status_(
           "Blink.ResourceLoadScheduler.DecodedBytes.KBPerFrameStatus",
           &TakeWholeKilobytes) {}
-
-ResourceLoadScheduler::TrafficMonitor::~TrafficMonitor() {
-  ReportAll();
-}
 
 void ResourceLoadScheduler::TrafficMonitor::OnLifecycleStateChanged(
     scheduler::SchedulingLifecycleState state) {
@@ -194,7 +179,6 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
         request_count_by_circumstance.Count(
             ToSample(ReportCircumstance::kSubframeThrottled));
       }
-      total_throttled_request_count_++;
       break;
     case scheduler::SchedulingLifecycleState::kNotThrottled:
       if (resource_fetcher_properties_->IsMainFrame()) {
@@ -204,7 +188,6 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
         request_count_by_circumstance.Count(
             ToSample(ReportCircumstance::kSubframeNotThrottled));
       }
-      total_not_throttled_request_count_++;
       break;
     case scheduler::SchedulingLifecycleState::kStopped:
       break;
@@ -221,51 +204,6 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
   if (decoded_kilobytes) {
     decoded_kilobytes_per_frame_status_.RecordTask(
         resource_fetcher_properties_->GetFrameStatus(), decoded_kilobytes);
-  }
-}
-
-void ResourceLoadScheduler::TrafficMonitor::ReportAll() {
-  // Currently we only care about stats from frames.
-  if (!IsMainThread())
-    return;
-
-  // Blink has several cases to create DocumentLoader not for an actual page
-  // load use. I.e., per a XMLHttpRequest in "document" type response.
-  // We just ignore such uninteresting cases in following metrics.
-  if (!total_throttled_request_count_ && !total_not_throttled_request_count_)
-    return;
-
-  if (report_all_is_called_)
-    return;
-  report_all_is_called_ = true;
-
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, main_frame_total_throttled_request_count,
-      ("Blink.ResourceLoadScheduler.TotalRequestCount.MainframeThrottled", 0,
-       kMaximumReportSize10K, kReportBucketCount));
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, main_frame_total_not_throttled_request_count,
-      ("Blink.ResourceLoadScheduler.TotalRequestCount.MainframeNotThrottled", 0,
-       kMaximumReportSize10K, kReportBucketCount));
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, sub_frame_total_throttled_request_count,
-      ("Blink.ResourceLoadScheduler.TotalRequestCount.SubframeThrottled", 0,
-       kMaximumReportSize10K, kReportBucketCount));
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, sub_frame_total_not_throttled_request_count,
-      ("Blink.ResourceLoadScheduler.TotalRequestCount.SubframeNotThrottled", 0,
-       kMaximumReportSize10K, kReportBucketCount));
-
-  if (resource_fetcher_properties_->IsMainFrame()) {
-    main_frame_total_throttled_request_count.Count(
-        total_throttled_request_count_);
-    main_frame_total_not_throttled_request_count.Count(
-        total_not_throttled_request_count_);
-  } else {
-    sub_frame_total_throttled_request_count.Count(
-        total_throttled_request_count_);
-    sub_frame_total_not_throttled_request_count.Count(
-        total_not_throttled_request_count_);
   }
 }
 
@@ -423,13 +361,6 @@ void ResourceLoadScheduler::SetOutstandingLimitForTesting(size_t tight_limit,
   tight_outstanding_limit_ = tight_limit;
   normal_outstanding_limit_ = normal_limit;
   MaybeRun();
-}
-
-void ResourceLoadScheduler::OnNetworkQuiet() {
-  DCHECK(IsMainThread());
-
-  // Flush out all traffic reports here for safety.
-  traffic_monitor_->ReportAll();
 }
 
 bool ResourceLoadScheduler::IsClientDelayable(const ClientIdWithPriority& info,

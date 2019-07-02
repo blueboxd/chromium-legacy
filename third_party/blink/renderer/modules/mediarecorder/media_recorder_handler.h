@@ -89,13 +89,15 @@ class MODULES_EXPORT MediaRecorderHandler
   // Called to indicate there is encoded video data available. |encoded_alpha|
   // represents the encode output of alpha channel when available, can be
   // nullptr otherwise.
+  // TODO(crbug.com/960665): Replace std::string with WTF::String
   void OnEncodedVideo(const media::WebmMuxer::VideoParameters& params,
-                      std::string encoded_data,
-                      std::string encoded_alpha,
+                      std::unique_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_alpha,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
+  // TODO(crbug.com/960665): Replace std::string with WTF::String
   void OnEncodedAudio(const media::AudioParameters& params,
-                      std::string encoded_data,
+                      std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp);
   void WriteData(base::StringPiece data);
 

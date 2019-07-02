@@ -4,4 +4,4 @@
 ++++[combo box] supports-autocompletion selectable-text autocomplete:list haspopup:listbox
 ++++[combo box] supports-autocompletion selectable-text autocomplete:both haspopup:listbox
 ++++[combo box] selectable-text haspopup:listbox
-++++[autocomplete] supports-autocompletion selectable-text autocomplete:inline
+++++[entry] supports-autocompletion selectable-text autocomplete:inline

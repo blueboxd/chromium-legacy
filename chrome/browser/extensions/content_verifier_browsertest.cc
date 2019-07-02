@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
   TestExtensionRegistryObserver registry_observer(
       ExtensionRegistry::Get(profile()), kExtensionId);
   ContentVerifier* verifier = system->content_verifier();
-  verifier->VerifyFailed(kExtensionId, ContentVerifyJob::HASH_MISMATCH);
+  verifier->VerifyFailedForTest(kExtensionId, ContentVerifyJob::HASH_MISMATCH);
 
   // Make sure the extension first got disabled due to corruption.
   EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
@@ -404,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
   // at startup in the non-PRE test.
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   ContentVerifier* verifier = system->content_verifier();
-  verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+  verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
   EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   int reasons = prefs->GetDisableReasons(id_);
@@ -450,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
   const size_t iterations = 4;
   for (size_t i = 0; i < iterations; i++) {
     TestExtensionRegistryObserver registry_observer(registry, id_);
-    verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+    verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
     EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
     // Resolve the request to |delay_tracker|, so the reinstallation can
     // proceed.
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, FailedUpdateRetries) {
   content_verifier_test::DelayTracker delay_tracker;
   service->set_external_updates_disabled_for_test(true);
   TestExtensionRegistryObserver registry_observer(registry, id_);
-  verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+  verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
   EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
 
   const std::vector<base::TimeDelta>& calls = delay_tracker.calls();

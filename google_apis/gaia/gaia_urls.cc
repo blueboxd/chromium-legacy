@@ -294,12 +294,6 @@ GURL GaiaUrls::ListAccountsURLWithSource(const std::string& source) {
 }
 
 GURL GaiaUrls::LogOutURLWithSource(const std::string& source) {
-  return source.empty() ? service_logout_url_
-                        : service_logout_url_.Resolve(
-                              base::StringPrintf("?source=%s", source.c_str()));
-}
-
-GURL GaiaUrls::LogOutURLWithSourceAndContinueURL(const std::string& source) {
   std::string params =
       source.empty()
           ? base::StringPrintf("?continue=%s",

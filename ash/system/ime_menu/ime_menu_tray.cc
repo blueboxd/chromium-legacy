@@ -6,7 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/ash_constants.h"
@@ -395,7 +395,7 @@ void ImeMenuTray::ShowKeyboardWithKeyset(
   CloseBubble();
 
   Shell::Get()
-      ->ash_keyboard_controller()
+      ->keyboard_controller()
       ->virtual_keyboard_controller()
       ->ForceShowKeyboardWithKeyset(keyset);
 }

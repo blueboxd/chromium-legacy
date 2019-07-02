@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
@@ -399,7 +398,7 @@ void AccessibilitySelectionTest::RunSelectionTest(
 
   const String test_file = test_path + String::FromUTF8(kTestFileSuffix);
   scoped_refptr<SharedBuffer> test_file_buffer = ReadFromFile(test_file);
-  auto test_file_chars = test_file_buffer->CopyAs<std::vector<char>>();
+  auto test_file_chars = test_file_buffer->CopyAs<Vector<char>>();
   std::string test_file_contents;
   std::copy(test_file_chars.begin(), test_file_chars.end(),
             std::back_inserter(test_file_contents));
@@ -410,7 +409,7 @@ void AccessibilitySelectionTest::RunSelectionTest(
 
   const String ax_file = test_path + String::FromUTF8(kAXTestExpectationSuffix);
   scoped_refptr<SharedBuffer> ax_file_buffer = ReadFromFile(ax_file);
-  auto ax_file_chars = ax_file_buffer->CopyAs<std::vector<char>>();
+  auto ax_file_chars = ax_file_buffer->CopyAs<Vector<char>>();
   std::string ax_file_contents;
   std::copy(ax_file_chars.begin(), ax_file_chars.end(),
             std::back_inserter(ax_file_contents));

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant.header;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -22,31 +23,33 @@ import java.util.Collections;
  */
 public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     private final ProfileDataCache mProfileCache;
+    private final ViewGroup mView;
     private final ImageView mProfileView;
     private final String mSignedInAccountName;
 
-    public AssistantHeaderCoordinator(
-            Context context, ViewGroup bottomBarView, AssistantHeaderModel model) {
+    public AssistantHeaderCoordinator(Context context, AssistantHeaderModel model) {
         // Create the poodle and insert it before the status message. We have to create a view
         // bigger than the desired poodle size (24dp) because the actual downstream implementation
         // needs extra space for the animation.
+        mView = (ViewGroup) LayoutInflater.from(context).inflate(
+                R.layout.autofill_assistant_header, /* root= */ null);
         AnimatedPoodle poodle = new AnimatedPoodle(context,
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_poodle_view_size),
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_poodle_size));
-        addPoodle(bottomBarView, poodle.getView());
+        addPoodle(mView, poodle.getView());
 
         int imageSize = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_profile_size);
         mProfileCache = new ProfileDataCache(context, imageSize);
-        mProfileView = bottomBarView.findViewById(R.id.profile_image);
+        mProfileView = mView.findViewById(R.id.profile_image);
         mSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
-        setupProfileImage(context, bottomBarView);
+        setupProfileImage();
 
         // Bind view and mediator through the model.
         AssistantHeaderViewBinder.ViewHolder viewHolder =
-                new AssistantHeaderViewBinder.ViewHolder(context, bottomBarView, poodle);
+                new AssistantHeaderViewBinder.ViewHolder(context, mView, poodle);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
         PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
 
@@ -61,6 +64,11 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
         setProfileImageFor(mSignedInAccountName);
     }
 
+    /** Return the view associated to this coordinator. */
+    public View getView() {
+        return mView;
+    }
+
     /**
      * Cleanup resources when this goes out of scope.
      */
@@ -70,14 +78,14 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
         }
     }
 
-    private void addPoodle(ViewGroup root, View poodleView) {
+    private void addPoodle(View root, View poodleView) {
         View statusMessage = root.findViewById(R.id.status_message);
         ViewGroup parent = (ViewGroup) statusMessage.getParent();
         parent.addView(poodleView, parent.indexOfChild(statusMessage));
     }
 
     // TODO(b/130415092): Use image from AGSA if chrome is not signed in.
-    private void setupProfileImage(Context context, ViewGroup root) {
+    private void setupProfileImage() {
         if (mSignedInAccountName != null) {
             mProfileCache.addObserver(this);
             mProfileCache.update(Collections.singletonList(mSignedInAccountName));

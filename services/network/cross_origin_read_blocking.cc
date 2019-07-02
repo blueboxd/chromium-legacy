@@ -220,10 +220,6 @@ std::set<int>& GetPluginProxyingProcesses() {
   return *set;
 }
 
-bool ShouldEnforceInitiatorLock() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService);
-}
-
 // The function below returns a set of MIME types below may be blocked by CORB
 // without any confirmation sniffing (in contrast to HTML/JSON/XML which require
 // confirmation sniffing because images, scripts, etc. are frequently
@@ -684,10 +680,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // there was no initiator or if it was incompatible with the lock. Using a
   // unique origin makes CORB treat the response as cross-origin and thus
   // considers it eligible for blocking (based on content-type, sniffing, etc.).
-  url::Origin initiator = GetTrustworthyInitiator(
-      ShouldEnforceInitiatorLock() ? request_initiator_site_lock
-                                   : base::nullopt,
-      request_initiator);
+  url::Origin initiator =
+      GetTrustworthyInitiator(request_initiator_site_lock, request_initiator);
 
   // Don't block same-origin documents.
   if (initiator.IsSameOriginWith(target_origin))

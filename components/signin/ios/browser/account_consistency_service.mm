@@ -42,7 +42,8 @@ NSString* const kChromeConnectedCookieTemplate =
      "document.cookie=\"X-CHROME-CONNECTED=; path=/; domain=\" + domain + \";"
      " expires=Thu, 01-Jan-1970 00:00:01 GMT\";"
      "document.cookie=\"CHROME_CONNECTED=%@; path=/; domain=\" + domain + \";"
-     " expires=\" + new Date(%f).toGMTString() + \"; secure;\"</script></html>";
+     " expires=\" + new Date(%f).toGMTString() + \"; secure;"
+     " samesite=lax;\"</script></html>";
 
 // WebStatePolicyDecider that monitors the HTTP headers on Gaia responses,
 // reacting on the X-Chrome-Manage-Accounts header and notifying its delegate.

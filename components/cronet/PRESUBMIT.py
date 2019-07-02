@@ -33,6 +33,8 @@ def _GetPathsToPrepend(input_api):
         'third_party', 'catapult', 'telemetry'),
     input_api.os_path.join(chromium_src_dir,
         'third_party', 'catapult', 'devil'),
+    input_api.os_path.join(chromium_src_dir,
+        'third_party', 'catapult', 'common', 'py_utils'),
   ]
 
 

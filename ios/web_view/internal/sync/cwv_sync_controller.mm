@@ -23,6 +23,8 @@
 #error "This file requires ARC support."
 #endif
 
+using AccessTokenCallback = DeviceAccountsProvider::AccessTokenCallback;
+
 NSErrorDomain const CWVSyncErrorDomain =
     @"org.chromium.chromewebview.SyncErrorDomain";
 
@@ -204,21 +206,23 @@ class WebViewSyncControllerObserverBridge
 #pragma mark - Internal Methods
 
 - (void)fetchAccessTokenForScopes:(const std::set<std::string>&)scopes
-                         callback:(const ProfileOAuth2TokenServiceIOSProvider::
-                                       AccessTokenCallback&)callback {
+                         callback:(AccessTokenCallback)callback {
+  DCHECK(!callback.is_null());
   NSMutableArray<NSString*>* scopesArray = [NSMutableArray array];
   for (const auto& scope : scopes) {
     [scopesArray addObject:base::SysUTF8ToNSString(scope)];
   }
-  ProfileOAuth2TokenServiceIOSProvider::AccessTokenCallback scopedCallback =
-      callback;
+
+  // AccessTokenCallback is non-copyable. Using __block allocates the memory
+  // directly in the block object at compilation time (instead of doing a
+  // copy). This is required to have correct interaction between move-only
+  // types and Objective-C blocks.
+  __block AccessTokenCallback scopedCallback = std::move(callback);
   [_dataSource syncController:self
       getAccessTokenForScopes:[scopesArray copy]
             completionHandler:^(NSString* accessToken, NSDate* expirationDate,
                                 NSError* error) {
-              if (!scopedCallback.is_null()) {
-                scopedCallback.Run(accessToken, expirationDate, error);
-              }
+              std::move(scopedCallback).Run(accessToken, expirationDate, error);
             }];
 }
 

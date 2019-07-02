@@ -8,11 +8,12 @@ from .common import WithComponent
 from .common import WithDebugInfo
 from .common import WithExposure
 from .common import WithExtendedAttributes
+from .common import WithIdentifier
 from .identifier_ir_map import IdentifierIRMap
-from .idl_definition import IdlDefinition
 
 
-class Namespace(IdlDefinition):
+class Namespace(WithIdentifier, WithExtendedAttributes, WithExposure,
+                WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-namespaces"""
 
     class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithExposure,

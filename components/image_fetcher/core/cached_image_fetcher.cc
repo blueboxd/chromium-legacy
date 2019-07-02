@@ -127,6 +127,7 @@ void CachedImageFetcher::OnImageFetchedFromCache(
     CachedImageFetcherRequest request,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback,
+    bool cache_result_needs_transcoding,
     std::string image_data) {
   if (image_data.empty()) {
     ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
@@ -142,14 +143,16 @@ void CachedImageFetcher::OnImageFetchedFromCache(
     ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
                                              ImageFetcherEvent::kCacheHit);
 
-    // Only continue with decoding if the user actually asked for an image.
-    if (!image_callback.is_null()) {
+    // Only continue with decoding if the user actually asked for an image, or
+    // the image hasn't been transcoded yet.
+    if (!image_callback.is_null() || cache_result_needs_transcoding) {
       GetImageDecoder()->DecodeImage(
           image_data, gfx::Size(),
           base::BindOnce(&CachedImageFetcher::OnImageDecodedFromCache,
                          weak_ptr_factory_.GetWeakPtr(), std::move(request),
                          std::move(image_data_callback),
-                         std::move(image_callback)));
+                         std::move(image_callback),
+                         cache_result_needs_transcoding));
     }
   }
 }
@@ -158,6 +161,7 @@ void CachedImageFetcher::OnImageDecodedFromCache(
     CachedImageFetcherRequest request,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback,
+    bool cache_result_needs_transcoding,
     const gfx::Image& image) {
   if (image.IsEmpty()) {
     // Upon failure, fetch from the network.
@@ -173,6 +177,16 @@ void CachedImageFetcher::OnImageDecodedFromCache(
     ImageCallbackIfPresent(std::move(image_callback), image, RequestMetadata());
     ImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(
         request.params.uma_client_name(), request.start_time);
+
+    // If cache_result_needs_transcoding is true, then this should be stored
+    // again to replace the image data already on disk with the transcoded data.
+    if (cache_result_needs_transcoding) {
+      EncodeAndStoreData(/* cache_result_needs_transcoding */ true,
+                         std::move(request), image);
+      ImageFetcherMetricsReporter::ReportEvent(
+          request.params.uma_client_name(),
+          ImageFetcherEvent::kImageQueuedForTranscodingDecoded);
+    }
   }
 }
 
@@ -200,7 +214,7 @@ void CachedImageFetcher::FetchImageFromNetwork(
   bool skip_transcoding = request.params.skip_transcoding();
   if (skip_transcoding) {
     wrapper_data_callback =
-        base::BindOnce(&CachedImageFetcher::StoreImageDataWithoutTranscoding,
+        base::BindOnce(&CachedImageFetcher::OnImageFetchedWithoutTranscoding,
                        weak_ptr_factory_.GetWeakPtr(), std::move(request),
                        std::move(image_data_callback));
   } else {
@@ -211,7 +225,7 @@ void CachedImageFetcher::FetchImageFromNetwork(
     // 3. Cache the result.
     wrapper_data_callback = std::move(image_data_callback);
     wrapper_image_callback =
-        base::BindOnce(&CachedImageFetcher::StoreImageDataWithTranscoding,
+        base::BindOnce(&CachedImageFetcher::OnImageFetchedForTranscoding,
                        weak_ptr_factory_.GetWeakPtr(), std::move(request),
                        std::move(image_callback));
   }
@@ -220,7 +234,7 @@ void CachedImageFetcher::FetchImageFromNetwork(
                                     std::move(request.params));
 }
 
-void CachedImageFetcher::StoreImageDataWithoutTranscoding(
+void CachedImageFetcher::OnImageFetchedWithoutTranscoding(
     CachedImageFetcherRequest request,
     ImageDataFetcherCallback image_data_callback,
     const std::string& image_data,
@@ -233,10 +247,11 @@ void CachedImageFetcher::StoreImageDataWithoutTranscoding(
                                              ImageFetcherEvent::kTotalFailure);
   }
 
-  StoreData(std::move(request), image_data);
+  StoreData(/* cache_result_needs_transcoding */ false, std::move(request),
+            image_data);
 }
 
-void CachedImageFetcher::StoreImageDataWithTranscoding(
+void CachedImageFetcher::OnImageFetchedForTranscoding(
     CachedImageFetcherRequest request,
     ImageFetcherCallback image_callback,
     const gfx::Image& image,
@@ -252,13 +267,21 @@ void CachedImageFetcher::StoreImageDataWithTranscoding(
         request.params.uma_client_name(), request.start_time);
   }
 
+  EncodeAndStoreData(/* cache_result_needs_transcoding */ false,
+                     std::move(request), image);
+}
+
+void CachedImageFetcher::EncodeAndStoreData(bool cache_result_needs_transcoding,
+                                            CachedImageFetcherRequest request,
+                                            const gfx::Image& image) {
   // Copy the image data out and store it on disk.
   const SkBitmap* bitmap = image.IsEmpty() ? nullptr : image.ToSkBitmap();
   // If the bitmap is null or otherwise not ready, skip encoding.
   if (bitmap == nullptr || bitmap->isNull() || !bitmap->readyToDraw()) {
     ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
                                              ImageFetcherEvent::kTotalFailure);
-    StoreData(std::move(request), "");
+
+    image_cache_->DeleteImage(request.url.spec());
   } else {
     std::string uma_client_name = request.params.uma_client_name();
     // Post a task to another thread to encode the image data downloaded.
@@ -266,11 +289,13 @@ void CachedImageFetcher::StoreImageDataWithTranscoding(
         FROM_HERE,
         base::BindOnce(&EncodeSkBitmapToPNG, uma_client_name, *bitmap),
         base::BindOnce(&CachedImageFetcher::StoreData,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(request)));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       cache_result_needs_transcoding, std::move(request)));
   }
 }
 
-void CachedImageFetcher::StoreData(CachedImageFetcherRequest request,
+void CachedImageFetcher::StoreData(bool cache_result_needs_transcoding,
+                                   CachedImageFetcherRequest request,
                                    std::string image_data) {
   std::string url = request.url.spec();
   // If the image is empty, delete the image.
@@ -280,7 +305,14 @@ void CachedImageFetcher::StoreData(CachedImageFetcherRequest request,
   }
 
   if (!read_only_) {
-    image_cache_->SaveImage(std::move(url), std::move(image_data));
+    if (cache_result_needs_transcoding) {
+      ImageFetcherMetricsReporter::ReportEvent(
+          request.params.uma_client_name(),
+          ImageFetcherEvent::kImageQueuedForTranscodingStoredBack);
+    }
+
+    image_cache_->SaveImage(std::move(url), std::move(image_data),
+                            /* needs_transcoding */ false);
   }
 }
 

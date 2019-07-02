@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -26,8 +27,6 @@ const CGFloat kHorizontalPadding = 40;
 const CGFloat kProfileImageFixedSize = 48;
 
 // UI Refresh Constants:
-// Text label gray color.
-const CGFloat kGrayHexColor = 0x6d6d72;
 // Vertical spacing between stackView and cell contentView.
 const CGFloat kStackViewVerticalPadding = 11.0;
 // Horizontal spacing between stackView and cell contentView.
@@ -98,7 +97,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _textLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    _textLabel.textColor = UIColorFromRGB(kGrayHexColor);
+    _textLabel.textColor = UIColor.cr_labelColor;
 
     // Create and setup primary button.
     UIButton* primaryButton;

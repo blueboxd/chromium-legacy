@@ -2164,6 +2164,11 @@ void WebLocalFrameImpl::BlinkFeatureUsageReport(
     UseCounter::Count(GetFrame()->GetDocument(), feature);
 }
 
+void WebLocalFrameImpl::BlinkFeatureUsageReport(
+    blink::mojom::WebFeature feature) {
+  UseCounter::Count(GetFrame()->GetDocument(), feature);
+}
+
 void WebLocalFrameImpl::MixedContentFound(
     const WebURL& main_resource_url,
     const WebURL& mixed_content_url,

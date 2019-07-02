@@ -76,6 +76,12 @@ class ProgressCenterItem {
     this.message = '';
 
     /**
+     * Optional sub message for the progress item.
+     * @type {string}
+     */
+    this.subMessage = '';
+
+    /**
      * Max value of the progress.
      * @type {number}
      */

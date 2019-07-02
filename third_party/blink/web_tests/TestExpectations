@@ -3195,6 +3195,13 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/swap-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-missed.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/attr-referrer/cross-origin/http-http/img-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/cross-origin/http-http/img-tag/keep-origin-redirect/insecure-protocol.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/cross-origin/http-http/img-tag/no-redirect/insecure-protocol.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/http-rp/cross-origin/http-http/img-tag/keep-origin-redirect/insecure-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/no-redirect/cross-origin.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/no-redirect/same-origin-upgrade.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/redirect/redirect-origin.any.worker.html [ Timeout ]
@@ -4609,9 +4616,10 @@ crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-w
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Skip ]
 # This is crashing because of DCHECK.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/dedicated-worker-service-worker-interception.https.html [ Skip ]
-# These are timing out.
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Skip ]
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Skip ]
+# These are timing out because filesystem: URL is not supported yet with
+# PlzDedicatedWorker.
+crbug.com/980451 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Skip ]
+crbug.com/980451 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Skip ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.

@@ -27,7 +27,10 @@ enum class ImageFetcherEvent {
   kCacheStartupEvictionFinished = 7,
   kJavaInMemoryCacheHit = 8,
   kJavaDiskCacheHit = 9,
-  kMaxValue = kJavaDiskCacheHit,
+  kImageQueuedForTranscodingDecoded = 10,
+  kImageQueuedForTranscodingStoredBack = 11,
+  kLoadImageMetadata = 12,
+  kMaxValue = kLoadImageMetadata,
 };
 
 class ImageFetcherMetricsReporter {
@@ -63,6 +66,9 @@ class ImageFetcherMetricsReporter {
 
   // Report the time between cache evictions.
   static void ReportTimeSinceLastCacheLRUEviction(base::Time start_time);
+
+  // Report the time it takes to load metadata.
+  static void ReportLoadImageMetadata(base::TimeTicks start_time);
 };
 
 }  // namespace image_fetcher

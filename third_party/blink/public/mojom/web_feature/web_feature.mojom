@@ -2327,6 +2327,7 @@ enum WebFeature {
   kPeriodicBackgroundSyncUnregister = 2938,
   kCreateObjectURLMediaSourceFromWorker = 2939,
   kCSSAtRuleProperty = 2940,
+  kServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet = 2941,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

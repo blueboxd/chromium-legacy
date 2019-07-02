@@ -128,7 +128,7 @@ class ImmersiveContext;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
 class KioskNextShellControllerImpl;
-class AshKeyboardController;
+class KeyboardControllerImpl;
 class LaserPointerController;
 class LocaleUpdateControllerImpl;
 class LockStateController;
@@ -381,8 +381,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   KioskNextShellControllerImpl* kiosk_next_shell_controller() {
     return kiosk_next_shell_controller_.get();
   }
-  AshKeyboardController* ash_keyboard_controller() {
-    return ash_keyboard_controller_.get();
+  KeyboardControllerImpl* keyboard_controller() {
+    return keyboard_controller_.get();
   }
   LaserPointerController* laser_pointer_controller() {
     return laser_pointer_controller_.get();
@@ -753,7 +753,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       bluetooth_notification_controller_;
   std::unique_ptr<BluetoothPowerController> bluetooth_power_controller_;
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
-  std::unique_ptr<AshKeyboardController> ash_keyboard_controller_;
+  std::unique_ptr<KeyboardControllerImpl> keyboard_controller_;
   std::unique_ptr<DisplayColorManager> display_color_manager_;
   std::unique_ptr<DisplayErrorObserver> display_error_observer_;
   std::unique_ptr<ProjectingObserver> projecting_observer_;

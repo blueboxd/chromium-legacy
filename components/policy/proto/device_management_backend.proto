@@ -564,6 +564,8 @@ message PolicyData {
   optional string command_invalidation_topic = 27;
 
   // Whether the device needs to upload an enrollment identifier to the cloud.
+  // TODO(b/136188860) migrates to enrollment_certificate_needed under
+  // client_action_required.
   optional bool enrollment_id_needed = 28;
 
   // Gaia id of the user the policy is intended for.
@@ -595,7 +597,7 @@ message PolicyData {
 
   // This field is used for asking client to perform some actions. For instance,
   // server asks client to re-upload enrollment certificate. In long term, new
-  // added field which asks client to perform an acion in policy data should be
+  // added field which asks client to perform an action in policy data should be
   // put in ClientActionRequired message.
   optional ClientActionRequired client_action_required = 33;
 }

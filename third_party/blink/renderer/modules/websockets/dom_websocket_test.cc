@@ -55,14 +55,6 @@ class MockWebSocketChannel : public WebSocketChannel {
   void Send(scoped_refptr<BlobDataHandle> handle) override {
     SendMock(handle.get());
   }
-  MOCK_METHOD1(SendTextAsCharVectorMock, void(Vector<char>*));
-  void SendTextAsCharVector(std::unique_ptr<Vector<char>> vector) override {
-    SendTextAsCharVectorMock(vector.get());
-  }
-  MOCK_METHOD1(SendBinaryAsCharVectorMock, void(Vector<char>*));
-  void SendBinaryAsCharVector(std::unique_ptr<Vector<char>> vector) override {
-    SendBinaryAsCharVectorMock(vector.get());
-  }
   MOCK_CONST_METHOD0(BufferedAmount, unsigned());
   MOCK_METHOD2(Close, void(int, const String&));
   MOCK_METHOD3(FailMock,

@@ -193,6 +193,14 @@ class PLATFORM_EXPORT FetchParameters {
   // method sets image_request_optimization_ to the appropriate value.
   void SetAllowImagePlaceholder();
 
+  // See documentation in blink::ResourceRequest.
+  bool IsFromOriginDirtyStyleSheet() const {
+    return is_from_origin_dirty_style_sheet_;
+  }
+  void SetFromOriginDirtyStyleSheet(bool dirty) {
+    is_from_origin_dirty_style_sheet_ = dirty;
+  }
+
  private:
   ResourceRequest resource_request_;
   // |decoder_options_|'s ContentType is set to |kPlainTextContent| in
@@ -206,6 +214,7 @@ class PLATFORM_EXPORT FetchParameters {
   ClientHintsPreferences client_hint_preferences_;
   ImageRequestOptimization image_request_optimization_;
   bool is_stale_revalidation_ = false;
+  bool is_from_origin_dirty_style_sheet_ = false;
 };
 
 }  // namespace blink

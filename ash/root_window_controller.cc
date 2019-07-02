@@ -17,7 +17,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/keyboard/arc/arc_virtual_keyboard_container_layout_manager.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_layout_manager.h"
 #include "ash/keyboard/ui/keyboard_util.h"
@@ -610,7 +610,7 @@ void RootWindowController::CloseChildWindows() {
 
   // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
-  Shell::Get()->ash_keyboard_controller()->OnRootWindowClosing(root);
+  Shell::Get()->keyboard_controller()->OnRootWindowClosing(root);
 
   shelf_->ShutdownShelfWidget();
 
@@ -804,7 +804,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     Shell::Get()->desks_controller()->OnRootWindowAdded(root_window);
 
   if (root_window_type == RootWindowType::PRIMARY) {
-    shell->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
+    shell->keyboard_controller()->RebuildKeyboardIfEnabled();
   } else {
     window_tree_host_->Show();
 

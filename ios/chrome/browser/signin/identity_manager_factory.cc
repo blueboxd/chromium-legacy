@@ -22,8 +22,8 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/signin/device_accounts_provider_impl.h"
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -38,8 +38,7 @@ std::unique_ptr<ProfileOAuth2TokenService> BuildTokenService(
     AccountTrackerService* account_tracker_service) {
   auto delegate = std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
-      account_tracker_service);
+      std::make_unique<DeviceAccountsProviderImpl>(), account_tracker_service);
   return std::make_unique<ProfileOAuth2TokenService>(
       chrome_browser_state->GetPrefs(), std::move(delegate));
 }

@@ -255,6 +255,7 @@ class WebLocalFrame : public WebFrame {
   // browser during the current page load happening on the frame.
   virtual void BlinkFeatureUsageReport(
       const std::set<blink::mojom::WebFeature>& features) = 0;
+  virtual void BlinkFeatureUsageReport(blink::mojom::WebFeature feature) = 0;
 
   // Informs the renderer that mixed content was found externally regarding this
   // frame. Currently only the the browser process can do so. The included data

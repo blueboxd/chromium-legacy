@@ -99,36 +99,45 @@ class CrashNotificationDelegate : public message_center::NotificationDelegate {
 
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
-    // http://crbug.com/247790 involves a crash notification balloon being
-    // clicked while the extension isn't in the TERMINATED state. In that case,
-    // any of the "reload" methods called below can unload the extension, which
-    // indirectly destroys *this, invalidating all the member variables, so we
-    // copy the extension ID before using it.
-    std::string copied_extension_id = extension_id_;
-    if (is_hosted_app_) {
-      // There can be a race here: user clicks the balloon, and simultaneously
-      // reloads the sad tab for the app. So we check here to be safe before
-      // loading the background page.
-      BackgroundContentsService* service =
-          BackgroundContentsServiceFactory::GetForProfile(profile_);
-      if (!service->GetAppBackgroundContents(copied_extension_id)) {
-        service->LoadBackgroundContentsForExtension(profile_,
-                                                    copied_extension_id);
-      }
-    } else if (is_platform_app_) {
-      apps::AppLoadService::Get(profile_)->RestartApplication(
-          copied_extension_id);
-    } else {
-      extensions::ExtensionSystem::Get(profile_)
-          ->extension_service()
-          ->ReloadExtension(copied_extension_id);
-    }
-
-    CloseBalloon(copied_extension_id, profile_);
+    // Pass arguments by value as HandleClick() might destroy *this.
+    HandleClick(is_hosted_app_, is_platform_app_, extension_id_, profile_);
+    // *this might be destroyed now, do not access any members anymore!
   }
 
  private:
   ~CrashNotificationDelegate() override {}
+
+  // Static to prevent accidental use of members as *this might get destroyed.
+  static void HandleClick(bool is_hosted_app,
+                          bool is_platform_app,
+                          std::string extension_id,
+                          Profile* profile) {
+    // http://crbug.com/247790 involves a crash notification balloon being
+    // clicked while the extension isn't in the TERMINATED state. In that case,
+    // any of the "reload" methods called below can unload the extension, which
+    // indirectly destroys the CrashNotificationDelegate, invalidating all its
+    // member variables. Make sure to pass arguments by value when adding new
+    // ones to this method.
+    // TODO(knollr): Write a test for the flow of clicking on an extension
+    // crashed notification.
+    if (is_hosted_app) {
+      // There can be a race here: user clicks the balloon, and simultaneously
+      // reloads the sad tab for the app. So we check here to be safe before
+      // loading the background page.
+      BackgroundContentsService* service =
+          BackgroundContentsServiceFactory::GetForProfile(profile);
+      if (!service->GetAppBackgroundContents(extension_id))
+        service->LoadBackgroundContentsForExtension(profile, extension_id);
+    } else if (is_platform_app) {
+      apps::AppLoadService::Get(profile)->RestartApplication(extension_id);
+    } else {
+      extensions::ExtensionSystem::Get(profile)
+          ->extension_service()
+          ->ReloadExtension(extension_id);
+    }
+
+    CloseBalloon(extension_id, profile);
+  }
 
   Profile* profile_;
   bool is_hosted_app_;

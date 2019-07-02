@@ -80,6 +80,11 @@ url::Origin GetTrustworthyInitiator(
   if (!request_initiator.has_value())
     return unique_origin_fallback;
 
+  if (!base::FeatureList::IsEnabled(features::kNetworkService) ||
+      !base::FeatureList::IsEnabled(features::kRequestInitiatorSiteLock)) {
+    return request_initiator.value();
+  }
+
   InitiatorLockCompatibility initiator_compatibility =
       VerifyRequestInitiatorLock(request_initiator_site_lock,
                                  request_initiator);

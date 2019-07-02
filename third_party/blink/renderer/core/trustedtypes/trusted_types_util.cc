@@ -110,16 +110,16 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   return !allow;
 }
 
-bool RequireTrustedTypes(const ExecutionContext* execution_context) {
-  return execution_context &&
-         execution_context->GetSecurityContext().RequireTrustedTypes();
-}
-
 TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
   return execution_context->GetTrustedTypes()->getExposedPolicy("default");
 }
 
 }  // namespace
+
+bool RequireTrustedTypesCheck(const ExecutionContext* execution_context) {
+  return execution_context &&
+         execution_context->GetSecurityContext().RequireTrustedTypes();
+}
 
 String GetStringFromTrustedType(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
@@ -129,7 +129,7 @@ String GetStringFromTrustedType(
   DCHECK(!string_or_trusted_type.IsNull());
 
   if (string_or_trusted_type.IsString() &&
-      RequireTrustedTypes(execution_context)) {
+      RequireTrustedTypesCheck(execution_context)) {
     TrustedTypeFail(kAnyTrustedTypeAssignment, execution_context,
                     exception_state);
     return g_empty_string;
@@ -236,7 +236,7 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
 String GetStringFromTrustedHTML(const String& string,
                                 const ExecutionContext* execution_context,
                                 ExceptionState& exception_state) {
-  bool require_trusted_type = RequireTrustedTypes(execution_context);
+  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
   if (!require_trusted_type) {
     return string;
   }
@@ -272,7 +272,7 @@ String GetStringFromTrustedScript(
   // string_or_trusted_script.IsNull(), unlike the various similar methods in
   // this file.
 
-  bool require_trusted_type = RequireTrustedTypes(execution_context);
+  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
   if (!require_trusted_type) {
     if (string_or_trusted_script.IsString()) {
       return string_or_trusted_script.GetAsString();
@@ -325,7 +325,7 @@ String GetStringFromTrustedScriptURL(
   DCHECK(!string_or_trusted_script_url.IsNull());
 
   bool require_trusted_type =
-      RequireTrustedTypes(execution_context) &&
+      RequireTrustedTypesCheck(execution_context) &&
       RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context);
   if (!require_trusted_type && string_or_trusted_script_url.IsString()) {
     return string_or_trusted_script_url.GetAsString();
@@ -363,7 +363,7 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
                                ExceptionState& exception_state) {
   DCHECK(!string_or_trusted_url.IsNull());
 
-  bool require_trusted_type = RequireTrustedTypes(execution_context);
+  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
   if (!require_trusted_type && string_or_trusted_url.IsUSVString()) {
     return string_or_trusted_url.GetAsUSVString();
   }
@@ -397,7 +397,7 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
 Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
                                             Document* doc,
                                             ExceptionState& exception_state) {
-  bool require_trusted_type = RequireTrustedTypes(doc);
+  bool require_trusted_type = RequireTrustedTypesCheck(doc);
   if (!require_trusted_type)
     return child;
 

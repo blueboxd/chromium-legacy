@@ -108,6 +108,12 @@ class CORE_EXPORT CSPDirectiveList
   void ReportMixedContent(const KURL& mixed_url,
                           ResourceRequest::RedirectStatus) const;
 
+  bool ShouldDisableEval() const {
+    return ShouldDisableEvalBecauseScriptSrc() ||
+           ShouldDisableEvalBecauseTrustedTypes();
+  }
+  bool ShouldDisableEvalBecauseScriptSrc() const;
+  bool ShouldDisableEvalBecauseTrustedTypes() const;
   const String& EvalDisabledErrorMessage() const {
     return eval_disabled_error_message_;
   }

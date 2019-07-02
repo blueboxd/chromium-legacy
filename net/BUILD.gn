@@ -6441,6 +6441,17 @@ fuzzer_test("net_cert_parse_certificate_fuzzer") {
   ]
 }
 
+fuzzer_test("net_canonical_cookie_fuzzer") {
+  sources = [
+    "cookies/canonical_cookie_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//net",
+  ]
+  seed_corpus = "data/fuzzer_data/net_canonical_cookie_fuzzer/"
+}
+
 fuzzer_test("net_parse_cookie_line_fuzzer") {
   sources = [
     "cookies/parse_cookie_line_fuzzer.cc",

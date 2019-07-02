@@ -69,7 +69,7 @@ class IOSWebViewSigninClient : public SigninClient {
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Used to add and remove content settings observers.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  // Used by WebViewProfileOAuth2TokenServiceIOSProviderImpl to fetch access
+  // Used by WebViewDeviceAccountsProviderImpl to fetch access
   // tokens. Also used to notify of signout events. Held weak so this class
   // does not determine |sync_controller_|'s lifetime.
   __weak CWVSyncController* sync_controller_ = nil;

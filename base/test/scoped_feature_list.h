@@ -51,10 +51,9 @@ class ScopedFeatureList final {
   // Resets the instance to a non-initialized state.
   void Reset();
 
-  // WARNING: This method will reset any globally configured features to their
-  // default values, which can hide feature interaction bugs. Please use
-  // sparingly.  https://crbug.com/713390
-  // Initializes and registers a FeatureList instance with no overrides.
+  // Initializes and registers a FeatureList instance without any additional
+  // enabled or disabled features. Existing state, if any, will be kept. This is
+  // equivalent to calling InitWithFeatures({}, {}).
   void Init();
 
   // WARNING: This method will reset any globally configured features to their

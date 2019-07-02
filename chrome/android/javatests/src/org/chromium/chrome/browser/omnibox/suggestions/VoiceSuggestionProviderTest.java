@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.Vo
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
-import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 import java.util.ArrayList;
 import java.util.List;

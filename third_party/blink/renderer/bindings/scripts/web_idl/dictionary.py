@@ -8,11 +8,12 @@ from .common import WithComponent
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
 from .identifier_ir_map import IdentifierIRMap
-from .idl_definition import IdlDefinition
 from .idl_member import IdlMember
+from .user_defined_type import UserDefinedType
 
 
-class Dictionary(IdlDefinition):
+class Dictionary(UserDefinedType, WithExtendedAttributes,
+                 WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-dictionaries"""
 
     class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
@@ -56,6 +57,11 @@ class Dictionary(IdlDefinition):
         @return tuple(DictionaryMember)
         """
         raise exceptions.NotImplementedError()
+
+    # UserDefinedType overrides
+    @property
+    def is_dictionary(self):
+        return True
 
 
 class DictionaryMember(IdlMember):

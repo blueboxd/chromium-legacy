@@ -31,7 +31,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 
 namespace blink {
@@ -266,10 +266,25 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* CreateFromInlineTextBox(AbstractInlineTextBox*);
 
  private:
-  struct AXEventParams {
-    Persistent<AXObject> target;
+  struct AXEventParams : public GarbageCollectedFinalized<AXEventParams> {
+    AXEventParams(AXObject* target,
+                  ax::mojom::Event event_type,
+                  ax::mojom::EventFrom event_from)
+        : target(target), event_type(event_type), event_from(event_from) {}
+    Member<AXObject> target;
     ax::mojom::Event event_type;
     ax::mojom::EventFrom event_from;
+
+    void Trace(Visitor* visitor) { visitor->Trace(target); }
+  };
+
+  struct TreeUpdateParams : public GarbageCollectedFinalized<TreeUpdateParams> {
+    TreeUpdateParams(Node* node, base::OnceClosure callback)
+        : node(node), callback(std::move(callback)) {}
+    WeakMember<Node> node;
+    base::OnceClosure callback;
+
+    void Trace(Visitor* visitor) { visitor->Trace(node); }
   };
 
   ax::mojom::EventFrom ComputeEventFrom();
@@ -299,7 +314,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   bool has_been_disposed_ = false;
 #endif
 
-  std::vector<AXEventParams> notifications_to_post_;
+  HeapVector<Member<AXEventParams>> notifications_to_post_;
   void PostNotificationsAfterLayout(Document*);
 
   // ContextLifecycleObserver overrides.
@@ -363,8 +378,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // The main document, plus any page popups.
   HeapHashSet<WeakMember<Document>> documents_;
-  typedef std::vector<std::pair<WeakPersistent<Node>, base::OnceClosure>>
-      TreeUpdateCallbackQueue;
+  typedef HeapVector<Member<TreeUpdateParams>> TreeUpdateCallbackQueue;
   TreeUpdateCallbackQueue tree_update_callback_queue_;
 
   bool is_handling_action_ = false;

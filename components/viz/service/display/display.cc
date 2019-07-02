@@ -10,6 +10,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
+#include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -486,6 +487,7 @@ bool Display::DrawAndSwap() {
   bool should_draw = have_copy_requests || (have_damage && size_matches);
   client_->DisplayWillDrawAndSwap(should_draw, &frame.render_pass_list);
 
+  base::Optional<base::ElapsedTimer> draw_timer;
   if (should_draw) {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
@@ -506,16 +508,16 @@ bool Display::DrawAndSwap() {
       DCHECK(!disable_image_filtering);
     }
 
-    base::ElapsedTimer draw_timer;
+    draw_timer.emplace();
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size);
     if (software_renderer_) {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
-                              draw_timer.Elapsed().InMicroseconds());
+                              draw_timer->Elapsed().InMicroseconds());
     } else {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
-                              draw_timer.Elapsed().InMicroseconds());
+                              draw_timer->Elapsed().InMicroseconds());
     }
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
@@ -526,6 +528,7 @@ bool Display::DrawAndSwap() {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
                                  swapped_trace_id_, "Swap");
+    draw_start_times_pending_swap_ack_.emplace_back(draw_timer->Begin());
     swapped_since_resize_ = true;
 
     if (scheduler_) {
@@ -597,6 +600,8 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
+  DCHECK(!draw_start_times_pending_swap_ack_.empty());
+
   if (scheduler_) {
     scheduler_->DidReceiveSwapBuffersAck();
     if (no_pending_swaps_callback_ && scheduler_->pending_swaps() == 0)
@@ -616,8 +621,16 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   // the swap was triggered. Note that not all output surfaces provide timing
   // information, hence the check for a valid swap_start.
   const auto swap_time = pending_presented_callbacks_.front().first;
-  if (!timings.swap_start.is_null())
+  if (!timings.swap_start.is_null()) {
     DCHECK_LE(swap_time, timings.swap_start);
+    base::TimeDelta delta =
+        timings.swap_start - draw_start_times_pending_swap_ack_.front();
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Compositing.Display.DrawToSwapUs", delta,
+        base::TimeDelta::FromMicroseconds(100),
+        base::TimeDelta::FromMilliseconds(100), 50);
+  }
+  draw_start_times_pending_swap_ack_.pop_front();
 }
 
 void Display::DidReceiveTextureInUseResponses(

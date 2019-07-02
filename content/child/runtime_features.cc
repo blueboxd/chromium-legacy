@@ -544,6 +544,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(
       base::FeatureList::IsEnabled(features::kMouseSubframeNoImplicitCapture));
+
+  if (base::FeatureList::IsEnabled(features::kTrustedDOMTypes))
+    WebRuntimeFeatures::EnableFeatureFromString("TrustedDOMTypes", true);
 }
 
 }  // namespace

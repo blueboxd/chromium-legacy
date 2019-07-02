@@ -52,7 +52,6 @@ class GaiaUrls {
 
   GURL ListAccountsURLWithSource(const std::string& source);
   GURL LogOutURLWithSource(const std::string& source);
-  GURL LogOutURLWithSourceAndContinueURL(const std::string& source);
   GURL GetCheckConnectionInfoURLWithSource(const std::string& source);
 
  private:

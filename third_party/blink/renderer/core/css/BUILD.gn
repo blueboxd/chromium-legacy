@@ -114,6 +114,7 @@ blink_core_sources("css") {
     "css_media_rule.h",
     "css_namespace_rule.cc",
     "css_namespace_rule.h",
+    "css_origin_clean.h",
     "css_page_rule.cc",
     "css_page_rule.h",
     "css_paint_image_generator.cc",

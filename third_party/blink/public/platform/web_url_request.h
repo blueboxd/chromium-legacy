@@ -386,6 +386,8 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT int GetLoadFlagsForWebUrlRequest() const;
 
+  BLINK_PLATFORM_EXPORT bool IsFromOriginDirtyStyleSheet() const;
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;

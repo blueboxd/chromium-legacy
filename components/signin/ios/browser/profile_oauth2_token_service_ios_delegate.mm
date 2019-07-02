@@ -22,7 +22,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
+#include "components/signin/ios/browser/device_accounts_provider.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -35,7 +35,7 @@ namespace {
 // Match the way Chromium handles authentication errors in
 // google_apis/gaia/oauth2_access_token_fetcher.cc:
 GoogleServiceAuthError GetGoogleServiceAuthErrorFromNSError(
-    ProfileOAuth2TokenServiceIOSProvider* provider,
+    DeviceAccountsProvider* provider,
     const std::string& gaia_id,
     NSError* error) {
   if (!error)
@@ -73,7 +73,7 @@ GoogleServiceAuthError GetGoogleServiceAuthErrorFromNSError(
 class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
   SSOAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
-                        ProfileOAuth2TokenServiceIOSProvider* provider,
+                        DeviceAccountsProvider* provider,
                         const AccountInfo& account);
   ~SSOAccessTokenFetcher() override;
 
@@ -89,7 +89,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
                              NSError* error);
 
  private:
-  ProfileOAuth2TokenServiceIOSProvider* provider_;  // weak
+  DeviceAccountsProvider* provider_;  // weak
   AccountInfo account_;
   bool request_was_cancelled_;
   base::WeakPtrFactory<SSOAccessTokenFetcher> weak_factory_;
@@ -99,7 +99,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 
 SSOAccessTokenFetcher::SSOAccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer,
-    ProfileOAuth2TokenServiceIOSProvider* provider,
+    DeviceAccountsProvider* provider,
     const AccountInfo& account)
     : OAuth2AccessTokenFetcher(consumer),
       provider_(provider),
@@ -118,8 +118,8 @@ void SSOAccessTokenFetcher::Start(const std::string& client_id,
   std::set<std::string> scopes_set(scopes.begin(), scopes.end());
   provider_->GetAccessToken(
       account_.gaia, client_id, scopes_set,
-      base::Bind(&SSOAccessTokenFetcher::OnAccessTokenResponse,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SSOAccessTokenFetcher::OnAccessTokenResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SSOAccessTokenFetcher::CancelRequest() {
@@ -149,7 +149,7 @@ void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
 
 ProfileOAuth2TokenServiceIOSDelegate::ProfileOAuth2TokenServiceIOSDelegate(
     SigninClient* client,
-    std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider,
+    std::unique_ptr<DeviceAccountsProvider> provider,
     AccountTrackerService* account_tracker_service)
     : client_(client),
       provider_(std::move(provider)),

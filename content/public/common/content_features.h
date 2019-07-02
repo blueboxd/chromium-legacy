@@ -153,6 +153,7 @@ CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrPlaneDetection;
 CONTENT_EXPORT extern const base::Feature kScriptStreamingOnPreload;
+CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;

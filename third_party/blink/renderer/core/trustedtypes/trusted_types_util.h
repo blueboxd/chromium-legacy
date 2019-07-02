@@ -72,6 +72,15 @@ Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
                                             Document*,
                                             ExceptionState&);
 
+// Determine whether a Trusted Types check is needed in this execution context.
+//
+// Note: All methods above handle this internally and will return success if a
+// check is not required. However, in cases where not-required doesn't
+// immediately imply "okay" this method can be used.
+// Example: To determine whether 'eval' may pass, one needs to also take CSP
+// into account.
+bool CORE_EXPORT RequireTrustedTypesCheck(const ExecutionContext*);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TRUSTEDTYPES_TRUSTED_TYPES_UTIL_H_

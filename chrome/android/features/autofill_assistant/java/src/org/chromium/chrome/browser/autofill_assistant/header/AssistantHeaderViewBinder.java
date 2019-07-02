@@ -45,13 +45,13 @@ class AssistantHeaderViewBinder
         @Nullable
         TextBubble mTextBubble;
 
-        public ViewHolder(Context context, View bottomBarView, AnimatedPoodle poodle) {
+        public ViewHolder(Context context, ViewGroup headerView, AnimatedPoodle poodle) {
             mContext = context;
             mPoodle = poodle;
-            mHeader = bottomBarView.findViewById(R.id.header);
-            mStatusMessage = bottomBarView.findViewById(R.id.status_message);
-            mProgressBar = new AnimatedProgressBar(bottomBarView.findViewById(R.id.progress_bar));
-            mProfileIconView = bottomBarView.findViewById(R.id.profile_image);
+            mHeader = headerView;
+            mStatusMessage = headerView.findViewById(R.id.status_message);
+            mProgressBar = new AnimatedProgressBar(headerView.findViewById(R.id.progress_bar));
+            mProfileIconView = headerView.findViewById(R.id.profile_image);
             mProfileIconMenu = new PopupMenu(context, mProfileIconView);
             mProfileIconMenu.inflate(R.menu.profile_icon_menu);
             mProfileIconView.setOnClickListener(unusedView -> mProfileIconMenu.show());
@@ -110,8 +110,9 @@ class AssistantHeaderViewBinder
         int viewType = AssistantChipViewHolder.getViewType(chip);
 
         // If there is already a chip in the header but with incompatible type, remove it.
+        ViewGroup parent = (ViewGroup) view.mStatusMessage.getParent();
         if (view.mChip != null && view.mChip.getType() != viewType) {
-            view.mHeader.removeView(view.mChip.getView());
+            parent.removeView(view.mChip.getView());
             view.mChip = null;
         }
 
@@ -119,7 +120,7 @@ class AssistantHeaderViewBinder
         // header.
         if (view.mChip == null) {
             view.mChip = AssistantChipViewHolder.create(view.mHeader, viewType);
-            view.mHeader.addView(view.mChip.getView());
+            parent.addView(view.mChip.getView());
         }
 
         // Bind the chip to the view.

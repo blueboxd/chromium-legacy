@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ash/ime/ime_controller.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -194,7 +194,7 @@ void VirtualKeyboardController::OnKeyboardHidden(bool is_temporary_hide) {
 void VirtualKeyboardController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
   // Force on-screen keyboard to reset.
-  Shell::Get()->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
+  Shell::Get()->keyboard_controller()->RebuildKeyboardIfEnabled();
 }
 
 void VirtualKeyboardController::OnBluetoothAdapterOrDeviceChanged(

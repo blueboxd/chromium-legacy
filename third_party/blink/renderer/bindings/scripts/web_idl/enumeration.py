@@ -8,10 +8,11 @@ from .common import WithComponent
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
 from .identifier_ir_map import IdentifierIRMap
-from .idl_definition import IdlDefinition
+from .user_defined_type import UserDefinedType
 
 
-class Enumeration(IdlDefinition):
+class Enumeration(UserDefinedType, WithExtendedAttributes,
+                  WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-enums"""
 
     class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
@@ -38,3 +39,8 @@ class Enumeration(IdlDefinition):
         @return tuple(str)
         """
         raise exceptions.NotImplementedError()
+
+    # UserDefinedType overrides
+    @property
+    def is_enumeration(self):
+        return True

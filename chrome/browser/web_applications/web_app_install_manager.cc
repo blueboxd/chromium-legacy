@@ -34,8 +34,9 @@ WebAppInstallManager::WebAppInstallManager(Profile* profile,
 WebAppInstallManager::~WebAppInstallManager() = default;
 
 void WebAppInstallManager::Shutdown() {
-  InstallManager::Shutdown();
+  is_shutting_down_ = true;
 
+  InstallManager::Shutdown();
   {
     TaskQueue empty;
     task_queue_.swap(empty);
@@ -120,6 +121,9 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
+  if (is_shutting_down_)
+    return;
+
   if (install_finalizer_->CanSkipAppUpdateForSync(app_id,
                                                   *web_application_info)) {
     std::move(callback).Run(app_id, InstallResultCode::kAlreadyInstalled);
@@ -169,6 +173,9 @@ void WebAppInstallManager::SetUrlLoaderForTesting(
 }
 
 void WebAppInstallManager::MaybeStartQueuedTask() {
+  if (is_shutting_down_)
+    return;
+
   DCHECK(web_contents_ready_);
   DCHECK(!task_queue_.empty());
 
@@ -221,6 +228,7 @@ void WebAppInstallManager::CreateWebContentsIfNecessary() {
     return;
 
   DCHECK(!web_contents_ready_);
+  DCHECK(!is_shutting_down_);
 
   web_contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(profile()));

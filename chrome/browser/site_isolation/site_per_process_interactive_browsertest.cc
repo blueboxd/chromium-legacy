@@ -764,6 +764,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   EXPECT_TRUE(
       ExecuteScript(grandchild, "location.href = '/fullscreen_frame.html'"));
   observer.Wait();
+  grandchild = ChildFrameAt(child, 0);
   EXPECT_EQ(embedded_test_server()->GetURL("a.com", "/fullscreen_frame.html"),
             grandchild->GetLastCommittedURL());
 
@@ -916,6 +917,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_TRUE(
       ExecuteScript(c_middle, "location.href = '/fullscreen_frame.html'"));
   observer.Wait();
+  c_middle = ChildFrameAt(c_top, 0);
   EXPECT_EQ(embedded_test_server()->GetURL("c.com", "/fullscreen_frame.html"),
             c_middle->GetLastCommittedURL());
   content::RenderFrameHost* c_bottom = ChildFrameAt(c_middle, 0);

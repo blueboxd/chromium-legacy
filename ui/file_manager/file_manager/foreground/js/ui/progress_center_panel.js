@@ -336,6 +336,9 @@ class ProgressCenterPanel {
           panelItem = this.feedbackHost_.addPanelItem(item.id);
           panelItem.panelType = panelItem.panelTypeProgress;
           panelItem.setAttribute('primary-text', item.message);
+          if (item.subMessage) {
+            panelItem.setAttribute('secondary-text', item.subMessage);
+          }
         }
         panelItem.progress = item.progressRateInPercent;
         // Remove the feedback panel when complete, and create

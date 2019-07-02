@@ -155,6 +155,11 @@ bool ManagementPolicy::ShouldForceUninstall(const Extension* extension,
                              false, extension, error);
 }
 
+bool ManagementPolicy::ShouldRepairIfCorrupted(const Extension* extension) {
+  return MustRemainEnabled(extension, nullptr) ||
+         MustRemainInstalled(extension, nullptr);
+}
+
 void ManagementPolicy::UnregisterAllProviders() {
   providers_.clear();
 }

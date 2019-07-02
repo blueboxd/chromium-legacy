@@ -11,8 +11,8 @@
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/signin/device_accounts_provider_impl.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 
 namespace {
@@ -105,7 +105,7 @@ std::unique_ptr<KeyedService> IdentityTestEnvironmentChromeBrowserStateAdaptor::
 
   identity::IdentityTestEnvironment::ExtraParams extra_params;
   extra_params.token_service_provider =
-      std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>();
+      std::make_unique<DeviceAccountsProviderImpl>();
 
   return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),

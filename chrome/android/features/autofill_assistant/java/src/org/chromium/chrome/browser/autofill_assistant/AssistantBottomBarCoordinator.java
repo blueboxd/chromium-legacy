@@ -102,8 +102,7 @@ class AssistantBottomBarCoordinator
         setupAnimations(model, rootView);
 
         // Instantiate child components.
-        mHeaderCoordinator =
-                new AssistantHeaderCoordinator(activity, bottomBarView, model.getHeaderModel());
+        mHeaderCoordinator = new AssistantHeaderCoordinator(activity, model.getHeaderModel());
         mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
         mPaymentRequestCoordinator =
@@ -115,8 +114,9 @@ class AssistantBottomBarCoordinator
                 new AssistantActionsCarouselCoordinator(activity, model.getActionsModel());
         BottomSheet bottomSheet = controller.getBottomSheet();
         mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(activity, this, bottomSheet,
-                mContent.getToolbarView(), bottomBarView, mSuggestionsCoordinator.getView(),
-                mActionsCoordinator.getView(), AssistantPeekHeightCoordinator.PeekMode.HANDLE);
+                mContent.getToolbarView(), mHeaderCoordinator.getView(),
+                mSuggestionsCoordinator.getView(), mActionsCoordinator.getView(),
+                AssistantPeekHeightCoordinator.PeekMode.HANDLE);
 
         // We don't want to animate the carousels children views as they are already animated by the
         // recyclers ItemAnimator, so we exclude them to avoid a clash between the animations.
@@ -125,6 +125,7 @@ class AssistantBottomBarCoordinator
 
         // Add child views to bottom bar container. We put all child views in the scrollable
         // container, except the actions and suggestions.
+        bottomBarView.addView(mHeaderCoordinator.getView(), 0);
         scrollableContentContainer.addView(mInfoBoxCoordinator.getView());
         scrollableContentContainer.addView(mDetailsCoordinator.getView());
         scrollableContentContainer.addView(mPaymentRequestCoordinator.getView());

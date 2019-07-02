@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -209,8 +208,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
   ExtensionService* service = system->extension_service();
   Mode mode = ShouldBeVerified(*extension);
   if (mode >= ContentVerifierDelegate::ENFORCE) {
-    if (ContentVerifier::ShouldRepairIfCorrupted(system->management_policy(),
-                                                 extension)) {
+    if (system->management_policy()->ShouldRepairIfCorrupted(extension)) {
       PendingExtensionManager* pending_manager =
           service->pending_extension_manager();
       if (pending_manager->IsPolicyReinstallForCorruptionExpected(extension_id))

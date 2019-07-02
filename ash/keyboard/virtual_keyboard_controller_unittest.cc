@@ -10,7 +10,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/shell.h"
@@ -32,7 +32,7 @@ namespace ash {
 namespace {
 
 VirtualKeyboardController* GetVirtualKeyboardController() {
-  return Shell::Get()->ash_keyboard_controller()->virtual_keyboard_controller();
+  return Shell::Get()->keyboard_controller()->virtual_keyboard_controller();
 }
 
 }  // namespace

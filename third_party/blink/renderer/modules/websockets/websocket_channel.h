@@ -75,8 +75,6 @@ class MODULES_EXPORT WebSocketChannel
                     unsigned byte_offset,
                     unsigned byte_length) = 0;
   virtual void Send(scoped_refptr<BlobDataHandle>) = 0;
-  virtual void SendTextAsCharVector(std::unique_ptr<Vector<char>>) = 0;
-  virtual void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>) = 0;
 
   // Do not call |Send| after calling this method.
   virtual void Close(int code, const String& reason) = 0;

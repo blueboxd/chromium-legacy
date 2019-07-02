@@ -67,7 +67,6 @@
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/error_map.h"
 #include "extensions/browser/event_router_factory.h"
@@ -1881,7 +1880,7 @@ DeveloperPrivateRepairExtensionFunction::Run() {
   // Also note that if we let |reinstaller| continue with the repair, this would
   // have uninstalled the extension but then we would have failed to reinstall
   // it for policy check (see PolicyCheck::Start()).
-  if (ContentVerifier::ShouldRepairIfCorrupted(management_policy, extension))
+  if (management_policy->ShouldRepairIfCorrupted(extension))
     return RespondNow(Error(kCannotRepairPolicyExtension));
 
   content::WebContents* web_contents = GetSenderWebContents();

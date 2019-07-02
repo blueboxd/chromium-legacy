@@ -761,9 +761,9 @@ SMILTime SVGSMILElement::FindInstanceTime(BeginOrEnd begin_or_end,
 SMILTime SVGSMILElement::RepeatingDuration() const {
   // Computing the active duration
   // http://www.w3.org/TR/SMIL2/smil-timing.html#Timing-ComputingActiveDur
-  SMILTime repeat_count = this->RepeatCount();
-  SMILTime repeat_dur = this->RepeatDur();
-  SMILTime simple_duration = this->SimpleDuration();
+  SMILTime repeat_count = RepeatCount();
+  SMILTime repeat_dur = RepeatDur();
+  SMILTime simple_duration = SimpleDuration();
   if (!simple_duration ||
       (repeat_dur.IsUnresolved() && repeat_count.IsUnresolved()))
     return simple_duration;

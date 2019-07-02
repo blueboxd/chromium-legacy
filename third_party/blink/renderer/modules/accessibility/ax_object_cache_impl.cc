@@ -725,7 +725,7 @@ AXObject::InOrderTraversalIterator AXObjectCacheImpl::InOrderTraversalEnd() {
 void AXObjectCacheImpl::DeferTreeUpdateInternal(Node* node,
                                                 base::OnceClosure callback) {
   tree_update_callback_queue_.push_back(
-      std::make_pair(WrapWeakPersistent(node), std::move(callback)));
+      MakeGarbageCollected<TreeUpdateParams>(node, std::move(callback)));
 }
 
 void AXObjectCacheImpl::DeferTreeUpdate(
@@ -934,14 +934,14 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
     return;
   TreeUpdateCallbackQueue old_tree_update_callback_queue;
   tree_update_callback_queue_.swap(old_tree_update_callback_queue);
-  for (auto& pair : old_tree_update_callback_queue) {
-    Node* node = pair.first;
+  for (auto& tree_update : old_tree_update_callback_queue) {
+    Node* node = tree_update->node;
     if (!node)
       continue;
-    base::OnceClosure& callback = pair.second;
+    base::OnceClosure& callback = tree_update->callback;
     if (node->GetDocument() != document) {
       tree_update_callback_queue_.push_back(
-          std::make_pair(WrapWeakPersistent(node), std::move(callback)));
+          MakeGarbageCollected<TreeUpdateParams>(node, std::move(callback)));
       continue;
     }
     std::move(callback).Run();
@@ -949,10 +949,10 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
 }
 
 void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
-  std::vector<AXEventParams> old_notifications_to_post;
+  HeapVector<Member<AXEventParams>> old_notifications_to_post;
   notifications_to_post_.swap(old_notifications_to_post);
   for (auto& params : old_notifications_to_post) {
-    AXObject* obj = params.target;
+    AXObject* obj = params->target;
 
     if (!obj || !obj->AXObjectID())
       continue;
@@ -960,10 +960,11 @@ void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
     if (obj->IsDetached())
       continue;
 
-    ax::mojom::Event event_type = params.event_type;
-    ax::mojom::EventFrom event_from = params.event_from;
+    ax::mojom::Event event_type = params->event_type;
+    ax::mojom::EventFrom event_from = params->event_from;
     if (obj->GetDocument() != document) {
-      notifications_to_post_.push_back({obj, event_type, event_from});
+      notifications_to_post_.push_back(
+          MakeGarbageCollected<AXEventParams>(obj, event_type, event_from));
       continue;
     }
 
@@ -1007,7 +1008,8 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
     return;
 
   modification_count_++;
-  notifications_to_post_.push_back({object, notification, ComputeEventFrom()});
+  notifications_to_post_.push_back(MakeGarbageCollected<AXEventParams>(
+      object, notification, ComputeEventFrom()));
 }
 
 bool AXObjectCacheImpl::IsAriaOwned(const AXObject* object) const {
@@ -1781,7 +1783,9 @@ void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_object_mapping_);
 
   visitor->Trace(objects_);
+  visitor->Trace(notifications_to_post_);
   visitor->Trace(documents_);
+  visitor->Trace(tree_update_callback_queue_);
   AXObjectCache::Trace(visitor);
 }
 

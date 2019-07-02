@@ -24,7 +24,7 @@ class PrefService;
 class TestSigninClient;
 
 #if defined(OS_IOS)
-class ProfileOAuth2TokenServiceIOSProvider;
+class DeviceAccountsProvider;
 #endif
 
 namespace sync_preferences {
@@ -61,8 +61,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 #if defined(OS_IOS)
     // If non-null, an iOS delegate instance will be constructed for the
     // token service as opposed to the default fake delegate.
-    std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>
-        token_service_provider;
+    std::unique_ptr<DeviceAccountsProvider> token_service_provider;
 #endif
   };
 

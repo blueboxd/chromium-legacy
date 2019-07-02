@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
+#include "base/debug/debugger.h"
 #include "base/run_loop.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -500,7 +501,9 @@ TEST_F(ScopedTaskEnvironmentTest, SetsDefaultRunTimeout) {
         RunLoop::ScopedRunTimeoutForTest::Current();
     EXPECT_NE(run_timeout, old_run_timeout);
     EXPECT_TRUE(run_timeout);
-    EXPECT_LT(run_timeout->timeout(), TestTimeouts::test_launcher_timeout());
+    if (!debug::BeingDebugged()) {
+      EXPECT_LT(run_timeout->timeout(), TestTimeouts::test_launcher_timeout());
+    }
     EXPECT_NONFATAL_FAILURE({ run_timeout->on_timeout().Run(); },
                             "RunLoop::Run() timed out");
   }

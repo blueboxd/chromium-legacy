@@ -7,11 +7,11 @@ source_set("browser") {
   sources = [
     "account_consistency_service.h",
     "account_consistency_service.mm",
+    "device_accounts_provider.h",
+    "device_accounts_provider.mm",
     "manage_accounts_delegate.h",
     "profile_oauth2_token_service_ios_delegate.h",
     "profile_oauth2_token_service_ios_delegate.mm",
-    "profile_oauth2_token_service_ios_provider.h",
-    "profile_oauth2_token_service_ios_provider.mm",
     "wait_for_network_callback_helper.cc",
     "wait_for_network_callback_helper.h",
   ]
@@ -49,8 +49,8 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "fake_profile_oauth2_token_service_ios_provider.h",
-    "fake_profile_oauth2_token_service_ios_provider.mm",
+    "fake_device_accounts_provider.h",
+    "fake_device_accounts_provider.mm",
   ]
 
   public_deps = [

@@ -83,9 +83,10 @@ class NET_EXPORT CanonicalCookie {
   };
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
-  // |creation_time|.  Canonicalizes and validates inputs. May return NULL if
-  // an attribute value is invalid.  |creation_time| may not be null. Sets
-  // optional |status| to the relevent CookieInclusionStatus if provided
+  // |creation_time|.  Canonicalizes and validates inputs.  May return NULL if
+  // an attribute value is invalid.  |url| must be valid.  |creation_time| may
+  // not be null. Sets optional |status| to the relevant CookieInclusionStatus
+  // if provided
   static std::unique_ptr<CanonicalCookie> Create(
       const GURL& url,
       const std::string& cookie_line,

@@ -13,7 +13,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
+#include "components/signin/ios/browser/fake_device_accounts_provider.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
@@ -25,7 +25,7 @@
 #error "This file requires ARC support."
 #endif
 
-typedef ProfileOAuth2TokenServiceIOSProvider::AccountInfo ProviderAccount;
+typedef DeviceAccountsProvider::AccountInfo ProviderAccount;
 
 class ProfileOAuth2TokenServiceIOSDelegateTest
     : public testing::Test,
@@ -52,7 +52,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     prefs_.registry()->RegisterListPref(
         prefs::kTokenServiceExcludedSecondaryAccounts);
 
-    fake_provider_ = new FakeProfileOAuth2TokenServiceIOSProvider();
+    fake_provider_ = new FakeDeviceAccountsProvider();
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_delegate_.reset(new ProfileOAuth2TokenServiceIOSDelegate(
@@ -109,7 +109,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   TestingPrefServiceSimple prefs_;
   TestSigninClient client_;
   AccountTrackerService account_tracker_;
-  FakeProfileOAuth2TokenServiceIOSProvider* fake_provider_;
+  FakeDeviceAccountsProvider* fake_provider_;
   std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate> oauth2_delegate_;
   TestingOAuth2TokenServiceConsumer consumer_;
   int token_available_count_;

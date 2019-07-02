@@ -161,6 +161,11 @@ CSPDirectiveList* CSPDirectiveList::Create(
             ->GetText() +
         "\".\n";
     directives->SetEvalDisabledErrorMessage(message);
+  } else if (directives->trusted_types_) {
+    String message =
+        "Refused to evaluate a string as JavaScript because this document "
+        "requires 'Trusted Type' assignment.";
+    directives->SetEvalDisabledErrorMessage(message);
   }
 
   if (directives->IsReportOnly() &&
@@ -770,6 +775,16 @@ bool CSPDirectiveList::AllowWasmEval(
   return IsReportOnly() ||
          CheckWasmEval(OperativeDirective(
              ContentSecurityPolicy::DirectiveType::kScriptSrc));
+}
+
+bool CSPDirectiveList::ShouldDisableEvalBecauseScriptSrc() const {
+  return !AllowEval(
+      nullptr, SecurityViolationReportingPolicy::kSuppressReporting,
+      ContentSecurityPolicy::kWillNotThrowException, g_empty_string);
+}
+
+bool CSPDirectiveList::ShouldDisableEvalBecauseTrustedTypes() const {
+  return trusted_types_;
 }
 
 bool CSPDirectiveList::AllowPluginType(

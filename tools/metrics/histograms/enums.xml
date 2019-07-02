@@ -23797,6 +23797,8 @@ Called by update_net_error_codes.py.-->
   <int value="2938" label="PeriodicBackgroundSyncUnregister"/>
   <int value="2939" label="CreateObjectURLMediaSourceFromWorker"/>
   <int value="2940" label="CSSAtRuleProperty"/>
+  <int value="2941"
+      label="ServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29873,6 +29875,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Cache startup eviction finished"/>
   <int value="8" label="Java in-memory cache hit"/>
   <int value="9" label="Java disk cache hit"/>
+  <int value="10" label="Image queued for transcoding was decoded."/>
+  <int value="11"
+      label="Image queued for transcoding was stored back to cache."/>
+  <int value="12" label="Load image metadata"/>
 </enum>
 
 <enum name="IMECommitType">

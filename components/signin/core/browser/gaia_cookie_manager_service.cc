@@ -39,10 +39,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
-#endif
-
 namespace {
 
 // The maximum number of retries for a fetcher used in this class.
@@ -945,17 +941,7 @@ void GaiaCookieManagerService::StartFetchingLogOut() {
   RecordLogoutRequestState(LogoutRequestState::kStarted);
   gaia_auth_fetcher_ =
       signin_client_->CreateGaiaAuthFetcher(this, requests_.front().source());
-  bool use_continue_url = false;
-#if defined(OS_ANDROID)
-  use_continue_url = base::FeatureList::IsEnabled(signin::kMiceFeature);
-#elif defined(OS_CHROMEOS)
-  use_continue_url = chromeos::switches::IsAccountManagerEnabled();
-#endif
-  if (use_continue_url) {
-    gaia_auth_fetcher_->StartLogOutWithBlankContinueURL();
-  } else {
-    gaia_auth_fetcher_->StartLogOut();
-  }
+  gaia_auth_fetcher_->StartLogOut();
 }
 
 void GaiaCookieManagerService::StartFetchingListAccounts() {

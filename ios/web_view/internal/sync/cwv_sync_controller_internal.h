@@ -9,7 +9,7 @@
 
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
+#include "ios/web_view/internal/signin/web_view_device_accounts_provider_impl.h"
 #import "ios/web_view/public/cwv_sync_controller.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,11 +33,11 @@ class SigninErrorController;
                   (SigninErrorController*)SigninErrorController
     NS_DESIGNATED_INITIALIZER;
 
-// Called by WebViewProfileOAuth2TokenServiceIOSProviderImpl to obtain
+// Called by WebViewDeviceAccountsProviderImpl to obtain
 // access tokens for |scopes| to be passed back in |callback|.
 - (void)fetchAccessTokenForScopes:(const std::set<std::string>&)scopes
-                         callback:(const ProfileOAuth2TokenServiceIOSProvider::
-                                       AccessTokenCallback&)callback;
+                         callback:(DeviceAccountsProvider::AccessTokenCallback)
+                                      callback;
 
 // Called by IOSWebViewSigninClient when signing out.
 - (void)didSignoutWithSourceMetric:(signin_metrics::ProfileSignout)metric;

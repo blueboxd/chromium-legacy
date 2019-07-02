@@ -19,7 +19,6 @@
     <dimen name="autofill_assistant_actions_spacing">8dp</dimen>
     <dimen name="autofill_assistant_actions_shadow_width">8dp</dimen>
     <dimen name="autofill_assistant_actions_gradient_width">160dp</dimen>
-    <dimen name="autofill_assistant_progress_bar_height">2dp</dimen>
     <dimen name="autofill_assistant_toolbar_vertical_padding">8dp</dimen>
     <dimen name="autofill_assistant_toolbar_swipe_handle_height">4dp</dimen>
     <dimen name="autofill_assistant_choicelist_edit_button_size">20dp</dimen>

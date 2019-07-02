@@ -211,6 +211,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   int64_t swapped_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
 
+  base::circular_deque<base::TimeTicks> draw_start_times_pending_swap_ack_;
+
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
 

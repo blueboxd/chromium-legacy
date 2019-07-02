@@ -150,9 +150,7 @@ void ScopedFeatureList::Reset() {
 }
 
 void ScopedFeatureList::Init() {
-  std::unique_ptr<FeatureList> feature_list(new FeatureList);
-  feature_list->InitializeFromCommandLine(std::string(), std::string());
-  InitWithFeatureList(std::move(feature_list));
+  InitWithFeaturesImpl({}, {}, {});
 }
 
 void ScopedFeatureList::InitWithFeatureList(

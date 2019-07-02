@@ -16,7 +16,7 @@
 #include "ash/events/select_to_speak_event_handler.h"
 #include "ash/events/switch_access_event_handler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/accessibility_controller_client.h"
@@ -1326,9 +1326,9 @@ base::string16 AccessibilityControllerImpl::GetBatteryDescription() const {
 
 void AccessibilityControllerImpl::SetVirtualKeyboardVisible(bool is_visible) {
   if (is_visible)
-    Shell::Get()->ash_keyboard_controller()->ShowKeyboard();
+    Shell::Get()->keyboard_controller()->ShowKeyboard();
   else
-    Shell::Get()->ash_keyboard_controller()->HideKeyboard(HideReason::kUser);
+    Shell::Get()->keyboard_controller()->HideKeyboard(HideReason::kUser);
 }
 
 void AccessibilityControllerImpl::NotifyAccessibilityStatusChanged() {

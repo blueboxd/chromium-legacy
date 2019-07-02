@@ -60,6 +60,12 @@ const base::Feature kFetchMetadata{"FetchMetadata",
 const base::Feature kFetchMetadataDestination{
     "FetchMetadataDestination", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When kRequestInitiatorSiteLock is enabled, then CORB, CORP and Sec-Fetch-Site
+// will validate network::ResourceRequest::request_initiator against
+// network::mojom::URLLoaderFactoryParams::request_initiator_site_lock.
+const base::Feature kRequestInitiatorSiteLock{"RequestInitiatorSiteLock",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))

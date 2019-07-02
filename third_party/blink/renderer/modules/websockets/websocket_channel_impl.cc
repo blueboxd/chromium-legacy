@@ -107,8 +107,6 @@ class WebSocketChannelImpl::Message
   explicit Message(const std::string&);
   explicit Message(scoped_refptr<BlobDataHandle>);
   explicit Message(DOMArrayBuffer*);
-  // For WorkerWebSocketChannel
-  explicit Message(std::unique_ptr<Vector<char>>, MessageType);
   // Close message
   Message(uint16_t code, const String& reason);
 
@@ -119,7 +117,6 @@ class WebSocketChannelImpl::Message
   std::string text;
   scoped_refptr<BlobDataHandle> blob_data_handle;
   Member<DOMArrayBuffer> array_buffer;
-  std::unique_ptr<Vector<char>> vector_data;
   uint16_t code;
   String reason;
 };
@@ -337,32 +334,6 @@ void WebSocketChannelImpl::Send(const DOMArrayBuffer& buffer,
   ProcessSendQueue();
 }
 
-void WebSocketChannelImpl::SendTextAsCharVector(
-    std::unique_ptr<Vector<char>> data) {
-  NETWORK_DVLOG(1) << this << " SendTextAsCharVector("
-                   << static_cast<void*>(data.get()) << ", " << data->size()
-                   << ")";
-  probe::DidSendWebSocketMessage(execution_context_, identifier_,
-                                 WebSocketOpCode::kOpCodeText, true,
-                                 data->data(), data->size());
-  messages_.push_back(MakeGarbageCollected<Message>(
-      std::move(data), kMessageTypeTextAsCharVector));
-  ProcessSendQueue();
-}
-
-void WebSocketChannelImpl::SendBinaryAsCharVector(
-    std::unique_ptr<Vector<char>> data) {
-  NETWORK_DVLOG(1) << this << " SendBinaryAsCharVector("
-                   << static_cast<void*>(data.get()) << ", " << data->size()
-                   << ")";
-  probe::DidSendWebSocketMessage(execution_context_, identifier_,
-                                 WebSocketOpCode::kOpCodeBinary, true,
-                                 data->data(), data->size());
-  messages_.push_back(MakeGarbageCollected<Message>(
-      std::move(data), kMessageTypeBinaryAsCharVector));
-  ProcessSendQueue();
-}
-
 void WebSocketChannelImpl::Close(int code, const String& reason) {
   NETWORK_DVLOG(1) << this << " Close(" << code << ", " << reason << ")";
   DCHECK(handle_);
@@ -426,14 +397,6 @@ WebSocketChannelImpl::Message::Message(
 WebSocketChannelImpl::Message::Message(DOMArrayBuffer* array_buffer)
     : type(kMessageTypeArrayBuffer), array_buffer(array_buffer) {}
 
-WebSocketChannelImpl::Message::Message(
-    std::unique_ptr<Vector<char>> vector_data,
-    MessageType type)
-    : type(type), vector_data(std::move(vector_data)) {
-  DCHECK(type == kMessageTypeTextAsCharVector ||
-         type == kMessageTypeBinaryAsCharVector);
-}
-
 WebSocketChannelImpl::Message::Message(uint16_t code, const String& reason)
     : type(kMessageTypeClose), code(code), reason(reason) {}
 
@@ -492,18 +455,6 @@ void WebSocketChannelImpl::ProcessSendQueue() {
         SendInternal(WebSocketHandle::kMessageTypeBinary,
                      static_cast<const char*>(message->array_buffer->Data()),
                      message->array_buffer->ByteLength(),
-                     &consumed_buffered_amount);
-        break;
-      case kMessageTypeTextAsCharVector:
-        CHECK(message->vector_data);
-        SendInternal(WebSocketHandle::kMessageTypeText,
-                     message->vector_data->data(), message->vector_data->size(),
-                     &consumed_buffered_amount);
-        break;
-      case kMessageTypeBinaryAsCharVector:
-        CHECK(message->vector_data);
-        SendInternal(WebSocketHandle::kMessageTypeBinary,
-                     message->vector_data->data(), message->vector_data->size(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeClose: {

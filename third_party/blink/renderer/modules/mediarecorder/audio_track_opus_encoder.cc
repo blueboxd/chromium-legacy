@@ -171,9 +171,9 @@ void AudioTrackOpusEncoder::EncodeAudio(
     audio_bus->ToInterleaved<media::Float32SampleTypeTraits>(
         audio_bus->frames(), buffer_.get());
 
-    std::string encoded_data;
+    std::unique_ptr<std::string> encoded_data(new std::string());
     if (DoEncode(opus_encoder_, buffer_.get(), kOpusPreferredFramesPerBuffer,
-                 &encoded_data)) {
+                 encoded_data.get())) {
       const base::TimeTicks capture_time_of_first_sample =
           capture_time - media::AudioTimestampHelper::FramesToTime(
                              input_bus->frames(), input_params_.sample_rate());

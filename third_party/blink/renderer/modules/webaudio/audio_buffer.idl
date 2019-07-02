@@ -28,6 +28,7 @@
 
 // See https://webaudio.github.io/web-audio-api/#AudioBuffer
 [
+    Exposed=Window,
     Constructor(AudioBufferOptions options),
     RaisesException=Constructor,
     Measure

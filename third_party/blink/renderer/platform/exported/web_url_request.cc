@@ -492,6 +492,10 @@ base::Optional<WebString> WebURLRequest::GetDevToolsId() const {
   return resource_request_->GetDevToolsId();
 }
 
+bool WebURLRequest::IsFromOriginDirtyStyleSheet() const {
+  return resource_request_->IsFromOriginDirtyStyleSheet();
+}
+
 WebURLRequest::WebURLRequest(ResourceRequest& r) : resource_request_(&r) {}
 
 }  // namespace blink

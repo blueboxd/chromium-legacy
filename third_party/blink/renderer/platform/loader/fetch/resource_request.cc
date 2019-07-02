@@ -129,6 +129,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetPurposeHeader(GetPurposeHeader());
   request->SetUkmSourceId(GetUkmSourceId());
   request->SetInspectorId(InspectorId());
+  request->SetFromOriginDirtyStyleSheet(IsFromOriginDirtyStyleSheet());
 
   return request;
 }

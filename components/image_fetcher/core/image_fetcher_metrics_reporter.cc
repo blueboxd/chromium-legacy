@@ -29,6 +29,7 @@ constexpr char kImageLoadFromNetworkHistogram[] =
     "CachedImageFetcher.ImageLoadFromNetworkTime";
 constexpr char kImageLoadFromNetworkAfterCacheHitHistogram[] =
     "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit";
+constexpr char kLoadImageMetadata[] = "CachedImageFetcher.LoadImageMetadata";
 
 // Returns a raw pointer to a histogram which is owned
 base::HistogramBase* GetTimeHistogram(const std::string& histogram_name,
@@ -116,6 +117,13 @@ void ImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
   base::TimeDelta time_delta = base::Time::Now() - start_time;
   UMA_HISTOGRAM_TIMES("CachedImageFetcher.TimeSinceLastCacheLRUEviction",
                       time_delta);
+}
+
+// static
+void ImageFetcherMetricsReporter::ReportLoadImageMetadata(
+    base::TimeTicks start_time) {
+  base::TimeDelta time_delta = base::TimeTicks::Now() - start_time;
+  UMA_HISTOGRAM_TIMES(kLoadImageMetadata, time_delta);
 }
 
 }  // namespace image_fetcher

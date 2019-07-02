@@ -83,6 +83,7 @@ class StyleFetchedImage final : public StyleImage,
   Member<ImageResourceContent> image_;
   Member<const Document> document_;
   const KURL url_;
+  const bool origin_clean_;
 };
 
 template <>

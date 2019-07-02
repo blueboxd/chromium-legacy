@@ -98,8 +98,21 @@ bool ImageMetadataStoreLevelDB::IsInitialized() {
          initialization_status_ == InitializationStatus::INIT_FAILURE;
 }
 
+void ImageMetadataStoreLevelDB::LoadImageMetadata(
+    const std::string& key,
+    ImageMetadataCallback callback) {
+  DCHECK(IsInitialized());
+
+  database_->LoadEntriesWithFilter(
+      base::BindRepeating(&KeyMatcherFilter, key), CreateReadOptions(),
+      /* target_prefix */ "",
+      base::BindOnce(&ImageMetadataStoreLevelDB::LoadImageMetadataImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void ImageMetadataStoreLevelDB::SaveImageMetadata(const std::string& key,
-                                                  const size_t data_size) {
+                                                  const size_t data_size,
+                                                  bool needs_transcoding) {
   // If the database is not initialized yet, ignore the request.
   if (!IsInitialized()) {
     return;
@@ -112,6 +125,7 @@ void ImageMetadataStoreLevelDB::SaveImageMetadata(const std::string& key,
   metadata_proto.set_data_size(data_size);
   metadata_proto.set_creation_time(current_time);
   metadata_proto.set_last_used_time(current_time);
+  metadata_proto.set_needs_transcoding(needs_transcoding);
 
   auto entries_to_save = std::make_unique<MetadataKeyEntryVector>();
   entries_to_save->emplace_back(key, metadata_proto);
@@ -186,6 +200,19 @@ void ImageMetadataStoreLevelDB::OnDatabaseInitialized(
                                ? InitializationStatus::INITIALIZED
                                : InitializationStatus::INIT_FAILURE;
   std::move(callback).Run();
+}
+
+void ImageMetadataStoreLevelDB::LoadImageMetadataImpl(
+    ImageMetadataCallback callback,
+    bool success,
+    std::unique_ptr<std::vector<CachedImageMetadataProto>> entries) {
+  if (!success || entries->size() == 0) {
+    std::move(callback).Run(CachedImageMetadataProto());
+    return;
+  }
+
+  DCHECK(entries->size() == 1);
+  std::move(callback).Run(std::move(entries->at(0)));
 }
 
 void ImageMetadataStoreLevelDB::OnImageUpdated(bool success) {

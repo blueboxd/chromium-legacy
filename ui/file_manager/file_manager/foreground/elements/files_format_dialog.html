@@ -51,7 +51,7 @@
       </div>
       <div slot="body">
         <div>[[i18n('FORMAT_DIALOG_MESSAGE')]]</div>
-        <div id="warning-container" hidden="[[!space_used_]]">
+        <div id="warning-container" hidden="[[!space_used_]]" role="alert">
           <iron-icon id="warning-icon" icon="cr:warning"></iron-icon>
           <div id="warning-message">
             [[i18n('FORMAT_DIALOG_DELETE_WARNING', space_used_)]]

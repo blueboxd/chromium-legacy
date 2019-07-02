@@ -58,13 +58,6 @@ struct CrossThreadCopier<media::WebmMuxer::VideoParameters> {
   static Type Copy(Type pointer) { return pointer; }
 };
 
-template <>
-struct CrossThreadCopier<std::string> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = std::string;
-  static Type Copy(Type&& value) { return std::move(value); }
-};
-
 }  // namespace WTF
 
 namespace blink {
@@ -96,8 +89,8 @@ class MODULES_EXPORT VideoTrackRecorder
 
   using OnEncodedVideoCB = base::RepeatingCallback<void(
       const media::WebmMuxer::VideoParameters& params,
-      std::string encoded_data,
-      std::string encoded_alpha,
+      std::unique_ptr<std::string> encoded_data,
+      std::unique_ptr<std::string> encoded_alpha,
       base::TimeTicks capture_timestamp,
       bool is_key_frame)>;
   using OnErrorCB = base::RepeatingClosure;
@@ -154,16 +147,16 @@ class MODULES_EXPORT VideoTrackRecorder
 
     using OnEncodedVideoInternalCB = WTF::CrossThreadFunction<void(
         const media::WebmMuxer::VideoParameters& params,
-        std::string encoded_data,
-        std::string encoded_alpha,
+        std::unique_ptr<std::string> encoded_data,
+        std::unique_ptr<std::string> encoded_alpha,
         base::TimeTicks capture_timestamp,
         bool is_key_frame)>;
 
     static void OnFrameEncodeCompleted(
         const OnEncodedVideoInternalCB& on_encoded_video_cb,
         const media::WebmMuxer::VideoParameters& params,
-        std::string data,
-        std::string alpha_data,
+        std::unique_ptr<std::string> data,
+        std::unique_ptr<std::string> alpha_data,
         base::TimeTicks capture_timestamp,
         bool keyframe);
 

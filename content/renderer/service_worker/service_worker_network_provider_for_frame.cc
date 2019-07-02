@@ -45,6 +45,10 @@ class ServiceWorkerNetworkProviderForFrame::NewDocumentObserver
     owner_->NotifyExecutionReady();
   }
 
+  void ReportFeatureUsage(blink::mojom::WebFeature feature) {
+    render_frame()->GetWebFrame()->BlinkFeatureUsageReport(feature);
+  }
+
   void OnDestruct() override {
     // Deletes |this|.
     owner_->observer_.reset();
@@ -125,6 +129,14 @@ ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
   // If GetSkipServiceWorker() returns true, do not intercept the request.
   if (request.GetSkipServiceWorker())
     return nullptr;
+
+  // Record use counter for intercepting requests from opaque stylesheets.
+  // TODO(crbug.com/898497): Remove this feature usage once we have enough data.
+  if (observer_ && request.IsFromOriginDirtyStyleSheet()) {
+    observer_->ReportFeatureUsage(
+        blink::mojom::WebFeature::
+            kServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet);
+  }
 
   // Create our own SubresourceLoader to route the request to the controller
   // ServiceWorker.

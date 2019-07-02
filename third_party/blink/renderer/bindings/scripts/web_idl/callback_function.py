@@ -8,10 +8,11 @@ from .common import WithComponent
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
 from .identifier_ir_map import IdentifierIRMap
-from .idl_definition import IdlDefinition
+from .user_defined_type import UserDefinedType
 
 
-class CallbackFunction(IdlDefinition):
+class CallbackFunction(UserDefinedType, WithExtendedAttributes,
+                       WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-callback-functions"""
 
     class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
@@ -46,3 +47,8 @@ class CallbackFunction(IdlDefinition):
         @return Argument
         """
         raise exceptions.NotImplementedError()
+
+    # UserDefinedType overrides
+    @property
+    def is_callback_function(self):
+        return True

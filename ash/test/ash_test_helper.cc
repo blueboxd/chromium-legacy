@@ -14,7 +14,7 @@
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_prefs.h"
@@ -187,7 +187,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   // OnLoadKeyboardContentsRequested().
   test_keyboard_controller_observer_ =
       std::make_unique<TestKeyboardControllerObserver>(
-          shell->ash_keyboard_controller());
+          shell->keyboard_controller());
 
   new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
 
@@ -207,7 +207,7 @@ void AshTestHelper::TearDown() {
   Shell::DeleteInstance();
   new_window_delegate_.reset();
 
-  // Needs to be reset after Shell::Get()->ash_keyboard_controller() is deleted.
+  // Needs to be reset after Shell::Get()->keyboard_controller() is deleted.
   test_keyboard_controller_observer_.reset();
 
   // Suspend the tear down until all resources are returned via

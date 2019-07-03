@@ -379,20 +379,24 @@ void IntentPickerBubbleView::Initialize(bool show_remember_selection) {
                               views::GridLayout::kFixedSize, kTitlePadding);
   scroll_view_ = layout->AddView(std::move(scroll_view));
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId, 0);
-  layout->AddView(CreateHorizontalSeparator());
 
-  // This second ColumnSet has a padding column in order to manipulate the
-  // Checkbox positioning freely.
-  constexpr int kColumnSetIdPadded = 1;
-  views::ColumnSet* cs_padded = layout->AddColumnSet(kColumnSetIdPadded);
-  cs_padded->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
-  cs_padded->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                       views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                       kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
-
-  layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetIdPadded,
-                              views::GridLayout::kFixedSize, 0);
   if (show_remember_selection) {
+    layout->AddView(CreateHorizontalSeparator());
+
+    // This second ColumnSet has a padding column in order to manipulate the
+    // Checkbox positioning freely.
+    constexpr int kColumnSetIdPadded = 1;
+    views::ColumnSet* cs_padded = layout->AddColumnSet(kColumnSetIdPadded);
+    cs_padded->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
+    cs_padded->AddColumn(
+        views::GridLayout::FILL, views::GridLayout::CENTER,
+        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+        kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
+
+    layout->StartRowWithPadding(views::GridLayout::kFixedSize,
+                                kColumnSetIdPadded,
+                                views::GridLayout::kFixedSize, 0);
+
     remember_selection_checkbox_ = layout->AddView(
         std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
             IDS_INTENT_PICKER_BUBBLE_VIEW_REMEMBER_SELECTION)));

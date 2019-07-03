@@ -140,6 +140,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override;
+  void NotifyHitTestRegionUpdated(const viz::AggregatedHitTestRegion&) override;
+  bool ScreenRectIsUnstableFor(const blink::WebInputEvent& event) override;
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
@@ -310,6 +312,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   const bool enable_surface_synchronization_;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
+
+  gfx::RectF last_stable_screen_rect_;
+  base::TimeTicks screen_rect_stable_since_;
 
   gfx::Insets insets_;
 

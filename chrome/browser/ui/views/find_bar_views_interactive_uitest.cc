@@ -6,6 +6,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -613,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionDuringFind) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, EscapeOnPageClosesFind) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, GlobalEscapeClosesFind) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.
@@ -626,17 +627,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, EscapeOnPageClosesFind) {
   browser()->GetFindBarController()->Show(false, true);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
-  // put focus onto the page
-  ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER));
-  ASSERT_TRUE(IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+  // Put focus into location bar
+  chrome::FocusLocationBar(browser());
 
   // Close find with escape
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
                                               false, false, false));
 
-  // Focus should still be on the page
-  ASSERT_TRUE(IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
   // Find should be closed
   ASSERT_FALSE(IsFindBarVisible());
 }

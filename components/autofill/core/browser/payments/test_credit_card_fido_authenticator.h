@@ -6,19 +6,24 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_TEST_CREDIT_CARD_FIDO_AUTHENTICATOR_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 namespace autofill {
 
 // Test class for CreditCardFIDOAuthenticator.
 class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
  public:
-  explicit TestCreditCardFIDOAuthenticator(AutofillClient* client);
+  explicit TestCreditCardFIDOAuthenticator(AutofillDriver* driver,
+                                           AutofillClient* client);
   ~TestCreditCardFIDOAuthenticator() override;
 
   void SetUserVerifiable(bool is_user_verifiable) {
@@ -30,7 +35,7 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   }
 
   // CreditCardFIDOAuthenticator:
-  bool IsUserVerifiable() override;
+  void IsUserVerifiable(base::OnceCallback<void(bool)> callback) override;
   bool IsUserOptedIn() override;
 
  private:

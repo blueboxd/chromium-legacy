@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "components/autofill/content/browser/key_press_handler_manager.h"
+#include "components/autofill/content/browser/webauthn/internal_authenticator_impl.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -54,6 +56,8 @@ class ContentAutofillDriver : public AutofillDriver,
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
+  void ConnectToAuthenticator(
+      blink::mojom::InternalAuthenticatorRequest request) override;
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,
                               const FormData& data) override;
@@ -154,6 +158,11 @@ class ContentAutofillDriver : public AutofillDriver,
   // TODO: unify autofill_handler_ and autofill_manager_ to a single pointer to
   // a common root.
   AutofillManager* autofill_manager_;
+
+#if !defined(OS_ANDROID)
+  // Implementation of the InternalAuthenticator mojom.
+  std::unique_ptr<content::InternalAuthenticatorImpl> authenticator_impl_;
+#endif
 
   // AutofillExternalDelegate instance that this object instantiates in the
   // case where the Autofill native UI is enabled.

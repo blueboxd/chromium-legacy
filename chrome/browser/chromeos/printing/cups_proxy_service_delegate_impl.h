@@ -14,6 +14,8 @@
 #include "chrome/services/cups_proxy/cups_proxy_service_delegate.h"
 #include "chromeos/printing/printer_configuration.h"
 
+#include "base/task/post_task.h"
+
 class Profile;
 
 namespace chromeos {
@@ -39,6 +41,9 @@ class CupsProxyServiceDelegateImpl : public printing::CupsProxyServiceDelegate {
 
   // Returns whether |printer| is currently installed in CUPS with this config.
   bool IsPrinterInstalled(const Printer& printer) override;
+
+  // Returns an IO-thread task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
   // Install |printer| into CUPS.
   void SetupPrinter(const Printer& printer,

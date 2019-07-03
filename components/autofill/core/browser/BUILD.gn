@@ -150,8 +150,6 @@ jumbo_static_library("browser") {
     "payments/credit_card_access_manager.h",
     "payments/credit_card_cvc_authenticator.cc",
     "payments/credit_card_cvc_authenticator.h",
-    "payments/credit_card_fido_authenticator.cc",
-    "payments/credit_card_fido_authenticator.h",
     "payments/credit_card_save_manager.cc",
     "payments/credit_card_save_manager.h",
     "payments/credit_card_save_strike_database.cc",
@@ -303,6 +301,8 @@ jumbo_static_library("browser") {
       "autofill_credit_card_policy_handler.h",
       "autofill_policy_handler.cc",
       "autofill_policy_handler.h",
+      "payments/credit_card_fido_authenticator.cc",
+      "payments/credit_card_fido_authenticator.h",
     ]
   }
 
@@ -361,6 +361,7 @@ jumbo_static_library("browser") {
     deps += [
       "//components/policy/core/browser",
       "//components/policy/core/common",
+      "//third_party/blink/public/common",
     ]
   }
 
@@ -387,8 +388,6 @@ jumbo_static_library("test_support") {
     "mock_autocomplete_history_manager.h",
     "payments/test_authentication_requester.cc",
     "payments/test_authentication_requester.h",
-    "payments/test_credit_card_fido_authenticator.cc",
-    "payments/test_credit_card_fido_authenticator.h",
     "payments/test_credit_card_save_manager.cc",
     "payments/test_credit_card_save_manager.h",
     "payments/test_credit_card_save_strike_database.cc",
@@ -463,6 +462,15 @@ jumbo_static_library("test_support") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
+
+  if (!is_ios) {
+    sources += [
+      "payments/test_credit_card_fido_authenticator.cc",
+      "payments/test_credit_card_fido_authenticator.h",
+    ]
+
+    deps += [ "//third_party/blink/public/common" ]
+  }
 }
 
 bundle_data("unit_tests_bundle_data") {
@@ -535,7 +543,6 @@ source_set("unit_tests") {
     "payments/autofill_wallet_data_type_controller_unittest.cc",
     "payments/credit_card_access_manager_unittest.cc",
     "payments/credit_card_cvc_authenticator_unittest.cc",
-    "payments/credit_card_fido_authenticator_unittest.cc",
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
     "payments/legal_message_line_unittest.cc",
@@ -578,6 +585,7 @@ source_set("unit_tests") {
       "autofill_address_policy_handler_unittest.cc",
       "autofill_credit_card_policy_handler_unittest.cc",
       "autofill_policy_handler_unittest.cc",
+      "payments/credit_card_fido_authenticator_unittest.cc",
     ]
   }
 
@@ -639,7 +647,10 @@ source_set("unit_tests") {
   ]
 
   if (!is_ios) {
-    deps += [ "//components/policy/core/common" ]
+    deps += [
+      "//components/policy/core/common",
+      "//third_party/blink/public/common",
+    ]
   }
 }
 

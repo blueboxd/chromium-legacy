@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/payments/test_authentication_requester.h"
+#include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -113,8 +114,8 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
             autofill_client_.GetIdentityManager(), &personal_data_manager_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client));
-    fido_authenticator_ =
-        std::make_unique<CreditCardFIDOAuthenticator>(&autofill_client_);
+    fido_authenticator_ = std::make_unique<CreditCardFIDOAuthenticator>(
+        autofill_driver_.get(), &autofill_client_);
   }
 
   void TearDown() override {
@@ -156,14 +157,17 @@ TEST_F(CreditCardFIDOAuthenticatorTest, IsUserOptedInFalse) {
 }
 
 TEST_F(CreditCardFIDOAuthenticatorTest, IsUserVerifiableFalse) {
-  EXPECT_FALSE(fido_authenticator_->IsUserVerifiable());
+  fido_authenticator_->IsUserVerifiable(
+      base::BindOnce(&TestAuthenticationRequester::IsUserVerifiableCallback,
+                     requester_->GetWeakPtr()));
+  EXPECT_FALSE(requester_->is_user_verifiable().value());
 }
 
 TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCardFailure) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
   fido_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                    base::Value());
+                                    base::TimeTicks::Now(), base::Value());
   EXPECT_FALSE(requester_->did_succeed());
 }
 

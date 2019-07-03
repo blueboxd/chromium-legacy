@@ -476,7 +476,7 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(video_frame);
-  VLOGF(4);
+  DVLOGF(4);
 
   scoped_refptr<VideoFrame> converted_frame =
       frame_converter_->ConvertFrame(video_frame);
@@ -540,7 +540,7 @@ void VaapiVideoDecoder::ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
 
 void VaapiVideoDecoder::NotifyFrameAvailableTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  VLOGF(4);
+  DVLOGF(4);
 
   // If we were waiting for output buffers, retry the current decode task.
   if (state_ == State::kWaitingForOutput) {

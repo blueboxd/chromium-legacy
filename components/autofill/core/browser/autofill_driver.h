@@ -8,7 +8,12 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
+
+#if !defined(OS_IOS)
+#include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
+#endif
 
 namespace net {
 class URLRequestContextGetter;
@@ -56,6 +61,12 @@ class AutofillDriver {
 
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;
+
+#if !defined(OS_IOS)
+  // Binds the mojom request in order to facilitate WebAuthn flows.
+  virtual void ConnectToAuthenticator(
+      blink::mojom::InternalAuthenticatorRequest request) = 0;
+#endif
 
   // Forwards |data| to the renderer. |query_id| is the id of the renderer's
   // original request for the data. |action| is the action the renderer should

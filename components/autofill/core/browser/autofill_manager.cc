@@ -1262,7 +1262,7 @@ void AutofillManager::Reset() {
       driver()->IsInMainFrame(), form_interactions_ukm_logger_.get(),
       personal_data_, client_));
   credit_card_access_manager_.reset(new CreditCardAccessManager(
-      client_, personal_data_, credit_card_form_event_logger_.get()));
+      driver(), client_, personal_data_, credit_card_form_event_logger_.get()));
 #if defined(OS_ANDROID) || defined(OS_IOS)
   autofill_assistant_.Reset();
 #endif
@@ -1310,6 +1310,7 @@ AutofillManager::AutofillManager(
               personal_data_,
               client_)),
       credit_card_access_manager_(std::make_unique<CreditCardAccessManager>(
+          driver,
           client_,
           personal_data_,
           credit_card_form_event_logger_.get())),

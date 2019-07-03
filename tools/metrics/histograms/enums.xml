@@ -23811,6 +23811,7 @@ Called by update_net_error_codes.py.-->
   <int value="2949" label="CredentialManagerGetWithUVM"/>
   <int value="2950" label="CredentialManagerCreateSuccessWithUVM"/>
   <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
+  <int value="2952" label="DiscardInputEventToMovingIframe"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

@@ -7,12 +7,14 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -24,8 +26,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "url/origin.h"
 
 namespace autofill {
 
@@ -94,6 +98,17 @@ ContentAutofillDriver::GetURLLoaderFactory() {
 
 bool ContentAutofillDriver::RendererIsAvailable() {
   return render_frame_host_->GetRenderViewHost() != nullptr;
+}
+
+void ContentAutofillDriver::ConnectToAuthenticator(
+    blink::mojom::InternalAuthenticatorRequest request) {
+#if defined(OS_ANDROID)
+  render_frame_host_->GetJavaInterfaces()->GetInterface(std::move(request));
+#else
+  authenticator_impl_ = std::make_unique<content::InternalAuthenticatorImpl>(
+      render_frame_host_, url::Origin::Create(payments::GetBaseSecureUrl()));
+  authenticator_impl_->Bind(std::move(request));
+#endif
 }
 
 void ContentAutofillDriver::SendFormDataToRenderer(

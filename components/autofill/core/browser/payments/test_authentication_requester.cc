@@ -30,6 +30,7 @@ void TestAuthenticationRequester::OnCVCAuthenticationComplete(
   }
 }
 
+#if !defined(OS_IOS)
 void TestAuthenticationRequester::OnFIDOAuthenticationComplete(
     bool did_succeed,
     const CreditCard* card) {
@@ -39,5 +40,11 @@ void TestAuthenticationRequester::OnFIDOAuthenticationComplete(
     number_ = card->number();
   }
 }
+
+void TestAuthenticationRequester::IsUserVerifiableCallback(
+    bool is_user_verifiable) {
+  is_user_verifiable_ = is_user_verifiable;
+}
+#endif
 
 }  // namespace autofill

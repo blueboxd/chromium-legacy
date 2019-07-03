@@ -203,8 +203,10 @@ class OAuth2AccessTokenManager {
       const ScopeSet& scopes,
       Consumer* consumer);
 
-  // Fetches an OAuth token for the specified client/scopes.
-  void FetchOAuth2Token(
+  // Fetches an OAuth token for the specified client/scopes. Virtual so it can
+  // be overridden for tests.
+  // TODO(https://crbug.com/967598): Move this to protected.
+  virtual void FetchOAuth2Token(
       RequestImpl* request,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -234,11 +236,15 @@ class OAuth2AccessTokenManager {
   // used to request the tokens.
   void ClearCacheForAccount(const CoreAccountId& account_id);
 
-  // Cancels all requests that are currently in progress.
-  void CancelAllRequests();
+  // Cancels all requests that are currently in progress. Virtual so it can be
+  // overridden for tests.
+  // TODO(https://crbug.com/967598): Move this to protected.
+  virtual void CancelAllRequests();
 
-  // Cancels all requests related to a given |account_id|.
-  void CancelRequestsForAccount(const CoreAccountId& account_id);
+  // Cancels all requests related to a given |account_id|. Virtual so it can be
+  // overridden for tests.
+  // TODO(https://crbug.com/967598): Move this to protected.
+  virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
 
   // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
   // invalid. This should be done if the token was received from this class,
@@ -250,11 +256,12 @@ class OAuth2AccessTokenManager {
                              const std::string& access_token);
 
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
-  // |scopes|.
-  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
-                                 const std::string& client_id,
-                                 const ScopeSet& scopes,
-                                 const std::string& access_token);
+  // |scopes|. Virtual so it can be overridden for tests.
+  // TODO(https://crbug.com/967598): Move this to protected.
+  virtual void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
+                                         const std::string& client_id,
+                                         const ScopeSet& scopes,
+                                         const std::string& access_token);
 
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
 
@@ -262,6 +269,10 @@ class OAuth2AccessTokenManager {
   size_t GetNumPendingRequestsForTesting(const std::string& client_id,
                                          const CoreAccountId& account_id,
                                          const ScopeSet& scopes) const;
+
+  // Returns a list of DiagnosticsObservers.
+  const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
+  GetDiagnosticsObserversForTesting();
 
  private:
   // TODO(https://crbug.com/967598): Remove this once |token_cache_| management

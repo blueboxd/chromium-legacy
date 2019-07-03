@@ -10,15 +10,15 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/favicon/favicon_request_handler_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/favicon/core/favicon_request_handler.h"
+#include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
@@ -142,9 +142,11 @@ void FaviconSource::StartDataRequest(
         }
       }
     }
-    favicon::FaviconRequestHandler* favicon_request_handler =
-        FaviconRequestHandlerFactory::GetForBrowserContext(profile_);
-    if (!favicon_request_handler) {
+    favicon::HistoryUiFaviconRequestHandler*
+        history_ui_favicon_request_handler =
+            HistoryUiFaviconRequestHandlerFactory::GetForBrowserContext(
+                profile_);
+    if (!history_ui_favicon_request_handler) {
       SendDefaultResponse(callback);
       return;
     }
@@ -152,7 +154,7 @@ void FaviconSource::StartDataRequest(
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile_);
     sync_sessions::OpenTabsUIDelegate* open_tabs =
         session_sync_service->GetOpenTabsUIDelegate();
-    favicon_request_handler->GetRawFaviconForPageURL(
+    history_ui_favicon_request_handler->GetRawFaviconForPageURL(
         url, desired_size_in_pixel,
         base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
                        base::Unretained(this),

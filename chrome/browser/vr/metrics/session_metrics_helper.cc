@@ -262,8 +262,6 @@ void SessionMetricsHelper::RecordInlineSessionStart(size_t session_id) {
           std::make_unique<ukm::builders::XR_WebXR_Session>(
               ukm::GetSourceIdForWebContentsDocument(web_contents()))));
 
-  // TODO(https://crbug.com/968648): Use chain notation to set values for
-  // metrics.
   // TODO(https://crbug.com/968546): StartAction is currently not present in
   // XR.WebXR.Session event. Remove this & change the below code with
   // replacement metrics once they are designed:
@@ -271,8 +269,7 @@ void SessionMetricsHelper::RecordInlineSessionStart(size_t session_id) {
   //    PresentationStartAction::kOther);
   // WebVR does not come through this path as it does not have a separate
   // concept of inline sessions.
-  result.first->second->ukm_entry()->SetIsLegacyWebVR(false);
-  result.first->second->ukm_entry()->SetMode(
+  result.first->second->ukm_entry()->SetIsLegacyWebVR(false).SetMode(
       static_cast<int64_t>(device::SessionMode::kInline));
 }
 
@@ -354,16 +351,13 @@ void SessionMetricsHelper::LogPresentationStartAction(
 
   UMA_HISTOGRAM_ENUMERATION("XR.WebXR.PresentationSession", action);
 
-  // TODO(https://crbug.com/968648): Use chain notation to set values for
-  // metrics.
   // TODO(https://crbug.com/968546): StartAction is currently not present in
   // XR.WebXR.Session event. Remove this & change the below code with
   // replacement metrics once they are designed:
   // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(action);
-  webxr_immersive_session_tracker_->ukm_entry()->SetIsLegacyWebVR(
-      is_legacy_webvr);
-  webxr_immersive_session_tracker_->ukm_entry()->SetMode(
-      static_cast<int64_t>(xr_session_mode));
+  webxr_immersive_session_tracker_->ukm_entry()
+      ->SetIsLegacyWebVR(is_legacy_webvr)
+      .SetMode(static_cast<int64_t>(xr_session_mode));
 }
 
 void SessionMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
@@ -688,17 +682,16 @@ void SessionMetricsHelper::DidFinishNavigation(
               std::make_unique<ukm::builders::XR_WebXR_Session>(
                   ukm::GetSourceIdForWebContentsDocument(web_contents())));
       if (pending_immersive_session_start_info_) {
-        // TODO(https://crbug.com/968648): Use chain notation to set values for
-        // metrics.
         // TODO(https://crbug.com/968546): StartAction is currently not present
         // in XR.WebXR.Session event. Remove this & change the below code with
         // replacement metrics once they are designed:
         // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(
         //    pending_immersive_session_start_info_->action);
-        webxr_immersive_session_tracker_->ukm_entry()->SetIsLegacyWebVR(
-            pending_immersive_session_start_info_->is_legacy_webvr);
-        webxr_immersive_session_tracker_->ukm_entry()->SetMode(
-            static_cast<int64_t>(pending_immersive_session_start_info_->mode));
+        webxr_immersive_session_tracker_->ukm_entry()
+            ->SetIsLegacyWebVR(
+                pending_immersive_session_start_info_->is_legacy_webvr)
+            .SetMode(static_cast<int64_t>(
+                pending_immersive_session_start_info_->mode));
         pending_immersive_session_start_info_ = base::nullopt;
       }
     }

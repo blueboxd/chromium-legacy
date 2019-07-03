@@ -13,14 +13,18 @@
 
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
-#include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
+#endif
 
 namespace autofill {
 
@@ -28,8 +32,12 @@ class AutofillManager;
 
 // Manages logic for accessing credit cards either stored locally or stored
 // with Google Payments. Owned by AutofillManager.
+#if defined(OS_IOS)
+class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester {
+#else
 class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
                                 public CreditCardFIDOAuthenticator::Requester {
+#endif
  public:
   class Accessor {
    public:
@@ -40,8 +48,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
         const base::string16& cvc = base::string16()) = 0;
   };
 
-  explicit CreditCardAccessManager(AutofillManager* autofill_manager);
+  explicit CreditCardAccessManager(AutofillDriver* driver,
+                                   AutofillManager* autofill_manager);
   CreditCardAccessManager(
+      AutofillDriver* driver,
       AutofillClient* client,
       PersonalDataManager* personal_data_manager,
       CreditCardFormEventLogger* credit_card_form_event_logger = nullptr);
@@ -79,7 +89,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 
+#if !defined(OS_IOS)
   CreditCardFIDOAuthenticator* GetOrCreateFIDOAuthenticator();
+#endif
 
  private:
   friend class AutofillAssistantTest;
@@ -87,10 +99,19 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   friend class AutofillMetricsTest;
   friend class CreditCardAccessManagerTest;
 
+#if !defined(OS_IOS)
   void set_fido_authenticator_for_testing(
       std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator) {
     fido_authenticator_ = std::move(fido_authenticator);
   }
+#endif
+
+  // Invoked from CreditCardFIDOAuthenticator::IsUserVerifiable().
+  // |is_user_verifiable| is set to true only if user has a verifying platform
+  // authenticator. e.g. Touch/Face ID, Windows Hello, Android fingerprint,
+  // etc., is available and enabled. If set to true, then an Unmask Details
+  // request will be sent to Google Payments.
+  void GetUnmaskDetailsIfUserIsVerifiable(bool is_user_verifiable);
 
   // Sets |unmask_details_|. May be ignored if response is too late and user is
   // not opted-in for FIDO auth, or if user does not select a card.
@@ -108,9 +129,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
       const CreditCard* card = nullptr,
       const base::string16& cvc = base::string16()) override;
 
+#if !defined(OS_IOS)
   // CreditCardFIDOAuthenticator::Requester:
   void OnFIDOAuthenticationComplete(bool did_succeed,
                                     const CreditCard* card = nullptr) override;
+#endif
 
   bool is_authentication_in_progress() {
     return is_authentication_in_progress_;
@@ -127,6 +150,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // Is set to true only when waiting for the callback to
   // OnCVCAuthenticationComplete() to be executed.
   bool is_authentication_in_progress_ = false;
+
+  // The associated autofill driver. Weak reference.
+  AutofillDriver* const driver_;
 
   // The associated autofill client. Weak reference.
   AutofillClient* const client_;
@@ -148,7 +174,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 
   // Authenticators for card unmasking.
   std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+#if !defined(OS_IOS)
   std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator_;
+#endif
 
   // Suggested authentication method and other information to facilitate card
   // unmasking.
@@ -161,6 +189,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 
   // The credit card being accessed.
   const CreditCard* card_;
+
+  // Set to true only if user has a verifying platform authenticator.
+  // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
+  // and enabled.
+  base::Optional<bool> is_user_verifiable_;
 
   // The object attempting to access a card.
   base::WeakPtr<Accessor> accessor_;

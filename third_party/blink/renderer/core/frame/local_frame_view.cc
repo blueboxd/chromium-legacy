@@ -1036,7 +1036,6 @@ void LocalFrameView::ForceUpdateViewportIntersections() {
   UpdateViewportIntersectionsForSubtree(
       IntersectionObservation::kImplicitRootObserversNeedUpdate |
       IntersectionObservation::kIgnoreDelay);
-  frame_->Owner()->SetNeedsOcclusionTracking(false);
 }
 
 LayoutSVGRoot* LocalFrameView::EmbeddedReplacedContent() const {

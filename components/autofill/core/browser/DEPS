@@ -59,6 +59,13 @@ specific_include_rules = {
   "autofill_metrics_unittest\.cc": [
     "+components/ukm",
   ],
+  "(test_)?credit_card_fido_authenticator\.(cc|h)": [
+    "+third_party/blink/public/mojom/webauthn/authenticator.mojom.h",
+    "+third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h",
+  ],
+  "autofill_driver\.h": [
+    "+third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
+  ],
   "credit_card_save_manager_unittest\.cc": [
     "+components/ukm",
   ],

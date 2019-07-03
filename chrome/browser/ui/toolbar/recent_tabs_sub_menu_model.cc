@@ -16,9 +16,9 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/favicon/favicon_request_handler_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/favicon/core/favicon_request_handler.h"
+#include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -584,13 +584,15 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
                    weak_ptr_factory_.GetWeakPtr(), command_id),
         &local_tab_cancelable_task_tracker_);
   } else {
-    favicon::FaviconRequestHandler* favicon_request_handler =
-        FaviconRequestHandlerFactory::GetForBrowserContext(browser_->profile());
+    favicon::HistoryUiFaviconRequestHandler*
+        history_ui_favicon_request_handler =
+            HistoryUiFaviconRequestHandlerFactory::GetForBrowserContext(
+                browser_->profile());
     // Can be null for tests.
-    if (!favicon_request_handler)
+    if (!history_ui_favicon_request_handler)
       return;
     sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
-    favicon_request_handler->GetFaviconImageForPageURL(
+    history_ui_favicon_request_handler->GetFaviconImageForPageURL(
         url,
         base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
                        weak_ptr_factory_.GetWeakPtr(), command_id),

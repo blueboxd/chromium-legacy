@@ -758,6 +758,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP" desc="The tooltip text for the close button in a notification.">
         Close
       </message>
+      <message name="IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP" desc="The tooltip and spoken feedback text for the snooze button in a notification. Usually 'button' is suffixed to this text automatically during spoken feedback.">
+        Snooze
+      </message>
       <message name="IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the settings button in a notification. Usually 'button' is suffixed to this text automatically.">
         Notification settings
       </message>

@@ -13,6 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/printing/printer_configuration.h"
 
+#include "base/task/post_task.h"
+
 namespace chromeos {
 namespace printing {
 
@@ -34,6 +36,7 @@ class CupsProxyServiceDelegate {
   virtual base::Optional<chromeos::Printer> GetPrinter(
       const std::string& id) = 0;
   virtual bool IsPrinterInstalled(const Printer& printer) = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() = 0;
 
   // |cb| will be run on this delegate's sequenced context.
   virtual void SetupPrinter(const Printer& printer,

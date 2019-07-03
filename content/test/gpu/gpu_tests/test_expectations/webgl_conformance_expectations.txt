@@ -66,12 +66,9 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # https://github.com/KhronosGroup/WebGL/pull/2607
 crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 
-# Unsuppress after both
-# https://chromium-review.googlesource.com/1558678 and
-# https://github.com/KhronosGroup/WebGL/pull/2878 land and are rolled
-# in.
-# TODO(kbr): this is actually crbug.com/angleproject/3285 .
-crbug.com/angleproject/3285 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+# Recent regression of invariance rules
+# TODO(kbr): re-add suppressions below once this is removed.
+crbug.com/980675 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # Nvidia bugs fixed in latest driver
 # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
@@ -88,6 +85,7 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 crbug.com/735483 conformance/rendering/texture-switch-performance.html [ Skip ]
 crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]
 
+crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 # TODO(shrekshao): Restore failure expectation for
 # ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016
 # as Flaky after 953120 is fixed.

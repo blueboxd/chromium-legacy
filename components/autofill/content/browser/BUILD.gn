@@ -49,6 +49,10 @@ jumbo_static_library("browser") {
     "//ui/gfx/geometry",
     "//url",
   ]
+
+  if (!is_android) {
+    deps += [ "//components/autofill/content/browser/webauthn" ]
+  }
 }
 
 proto_library("risk_proto") {

@@ -47,16 +47,17 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # Conformance expectations
 # ========================
 
+# Recent regression of invariance rules
+# TODO(kbr): re-add suppressions below once this is removed.
+crbug.com/980675 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+
+crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
+# TODO(kbr): restore suppression for Android / Qualcomm below after this is fixed.
+crbug.com/949249 conformance2/extensions/ovr_multiview2.html [ Failure ]
+
 # Failing new test
 crbug.com/874620 [ linux nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
 crbug.com/874620 [ opengl win nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
-
-# Unsuppress after both
-# https://chromium-review.googlesource.com/1558678 and
-# https://github.com/KhronosGroup/WebGL/pull/2878 land and are rolled
-# in.
-# TODO(kbr): this is actually crbug.com/angleproject/3285 .
-crbug.com/angleproject/3285 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # Too slow (take about one hour to run)
 crbug.com/619403 deqp/functional/gles3/builtinprecision/* [ Skip ]
@@ -90,6 +91,9 @@ crbug.com/angleproject/2291 [ win ] conformance2/rendering/framebuffer-texture-c
 crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
 crbug.com/angleproject/1465 [ win ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
+
+# Win / D3D11 backend
+crbug.com/angleproject/3388 [ win d3d11 ] conformance2/uniforms/large-uniform-buffers.html [ Failure ]
 
 # Win / NVidia
 crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ RetryOnFailure ]
@@ -739,7 +743,8 @@ crbug.com/951628 [ android no-passthrough ] conformance/rendering/blending.html 
 
 # Qualcomm (Pixel 2) failures
 crbug.com/906737 [ android qualcomm ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/906739 [ android qualcomm ] conformance2/extensions/ovr_multiview2.html [ Failure ]
+# TODO(kbr): uncomment after http://crbug.com/949249 fixed
+# crbug.com/906739 [ android qualcomm ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 crbug.com/906742 [ android qualcomm ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
 crbug.com/906735 [ android qualcomm ] conformance2/textures/video/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Failure ]
 crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]

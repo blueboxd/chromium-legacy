@@ -258,6 +258,10 @@ class WebInputEvent {
     // in event sending.
     kFromDebugger = 1 << 23,
 
+    // Indicates this event is targeting an OOPIF, and the iframe or one of its
+    // ancestor frames moved within its embedding page's viewport recently.
+    kTargetFrameMovedRecently = 1 << 24,
+
     // The set of non-stateful modifiers that specifically change the
     // interpretation of the key being pressed. For example; IsLeft,
     // IsRight, IsComposing don't change the meaning of the key
@@ -439,6 +443,10 @@ class WebInputEvent {
   void SetTimeStamp(base::TimeTicks time_stamp) { time_stamp_ = time_stamp; }
 
   unsigned size() const { return size_; }
+
+  void SetTargetFrameMovedRecently() const {
+    const_cast<WebInputEvent*>(this)->modifiers_ |= kTargetFrameMovedRecently;
+  }
 
  protected:
   // The root frame scale.

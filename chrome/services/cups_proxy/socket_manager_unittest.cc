@@ -8,14 +8,15 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/public/cpp/type_conversions.h"
 #include "chrome/services/cups_proxy/socket_manager.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
-#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cups_proxy {
@@ -49,6 +50,20 @@ base::Optional<std::string> GetTestFile(std::string test_name) {
 }
 
 }  // namespace
+
+// Fake delegate granting handle to an IO-thread task runner.
+class FakeServiceDelegate
+    : public chromeos::printing::FakeCupsProxyServiceDelegate {
+ public:
+  FakeServiceDelegate() = default;
+  ~FakeServiceDelegate() override = default;
+
+  // Note: Can't simulate actual IO thread in unit_tests, so we serve an
+  // arbitrary SingleThreadTaskRunner.
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override {
+    return base::CreateSingleThreadTaskRunner({});
+  }
+};
 
 // Gives full control over the "CUPS daemon" in this test.
 class FakeSocket : public net::UnixDomainClientSocket {
@@ -158,11 +173,14 @@ class FakeSocket : public net::UnixDomainClientSocket {
 
 class SocketManagerTest : public testing::Test {
  public:
-  SocketManagerTest() : weak_factory_(this) {
+  SocketManagerTest() {
+    delegate_ = std::make_unique<FakeServiceDelegate>();
+
     std::unique_ptr<FakeSocket> socket = std::make_unique<FakeSocket>();
     socket_ = socket.get();
 
-    manager_ = SocketManager::CreateForTesting(std::move(socket));
+    manager_ = SocketManager::CreateForTesting(std::move(socket),
+                                               delegate_->GetWeakPtr());
   }
 
   base::Optional<std::vector<uint8_t>> ProxyToCups(std::string request) {
@@ -190,11 +208,14 @@ class SocketManagerTest : public testing::Test {
     std::move(finish_cb).Run();
   }
 
+  // Fake injected service delegate.
+  std::unique_ptr<FakeServiceDelegate> delegate_;
+
   // Not owned.
   FakeSocket* socket_;
 
   std::unique_ptr<SocketManager> manager_;
-  base::WeakPtrFactory<SocketManagerTest> weak_factory_;
+  base::WeakPtrFactory<SocketManagerTest> weak_factory_{this};
 };
 
 // "basic_handshake" test file contains a simple HTTP request sent by libCUPS,

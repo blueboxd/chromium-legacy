@@ -580,6 +580,12 @@ size_t OAuth2AccessTokenManager::GetNumPendingRequestsForTesting(
              : iter->second->GetWaitingRequestCount();
 }
 
+const base::ObserverList<OAuth2AccessTokenManager::DiagnosticsObserver,
+                         true>::Unchecked&
+OAuth2AccessTokenManager::GetDiagnosticsObserversForTesting() {
+  return diagnostics_observer_list_;
+}
+
 std::unique_ptr<OAuth2AccessTokenFetcher>
 OAuth2AccessTokenManager::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,

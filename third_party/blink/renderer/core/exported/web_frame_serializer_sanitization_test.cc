@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
-#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -188,8 +187,6 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
 
   WebLocalFrameImpl* MainFrameImpl() { return helper_.LocalMainFrame(); }
 
-  HistogramTester histogram_tester_;
-
  private:
   frame_test_helpers::WebViewHelper helper_;
   SimpleMHTMLPartsGenerationDelegate mhtml_delegate_;
@@ -323,8 +320,6 @@ TEST_F(WebFrameSerializerSanitizationTest, RemovePopupOverlayIfRequested) {
   String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "popup.html");
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
-  histogram_tester_.ExpectUniqueSample(
-      "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", true, 1);
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, PopupOverlayNotFound) {
@@ -332,8 +327,6 @@ TEST_F(WebFrameSerializerSanitizationTest, PopupOverlayNotFound) {
   SetRemovePopupOverlay(true);
   String mhtml =
       GenerateMHTMLFromHtml("http://www.test.com", "text_only_page.html");
-  histogram_tester_.ExpectUniqueSample(
-      "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", false, 1);
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
@@ -342,8 +335,6 @@ TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
   String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "popup.html");
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
-  histogram_tester_.ExpectTotalCount(
-      "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", 0);
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, LinkIntegrity) {

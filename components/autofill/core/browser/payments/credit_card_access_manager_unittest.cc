@@ -39,7 +39,6 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
-#include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -69,6 +68,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
+
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
+#endif
 
 using base::ASCIIToUTF16;
 
@@ -154,9 +157,13 @@ class CreditCardAccessManagerTest : public testing::Test {
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client_));
     credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
-        &autofill_client_, &personal_data_manager_, nullptr);
+        autofill_driver_.get(), &autofill_client_, &personal_data_manager_,
+        nullptr);
+#if !defined(OS_IOS)
     credit_card_access_manager_->set_fido_authenticator_for_testing(
-        std::make_unique<TestCreditCardFIDOAuthenticator>(&autofill_client_));
+        std::make_unique<TestCreditCardFIDOAuthenticator>(
+            autofill_driver_.get(), &autofill_client_));
+#endif
   }
 
   void TearDown() override {
@@ -197,6 +204,10 @@ class CreditCardAccessManagerTest : public testing::Test {
     personal_data_manager_.AddServerCreditCard(masked_server_card);
   }
 
+  CreditCardCVCAuthenticator* GetCVCAuthenticator() {
+    return credit_card_access_manager_->GetOrCreateCVCAuthenticator();
+  }
+
   // Returns true if full card request was sent from CVC auth.
   bool GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult result,
                             const std::string& real_pan) {
@@ -210,6 +221,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     return true;
   }
 
+#if !defined(OS_IOS)
   // Returns true if full card request was sent from FIDO auth.
   bool GetRealPanForFIDOAuth(AutofillClient::PaymentsRpcResult result,
                              const std::string& real_pan) {
@@ -223,10 +235,6 @@ class CreditCardAccessManagerTest : public testing::Test {
     return true;
   }
 
-  CreditCardCVCAuthenticator* GetCVCAuthenticator() {
-    return credit_card_access_manager_->GetOrCreateCVCAuthenticator();
-  }
-
   TestCreditCardFIDOAuthenticator* GetFIDOAuthenticator() {
     return static_cast<TestCreditCardFIDOAuthenticator*>(
         credit_card_access_manager_->GetOrCreateFIDOAuthenticator());
@@ -237,6 +245,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     // default. Once implemented, update this function along with
     // TestCreditCardFIDOAuthenticator to mock a user verification gesture.
   }
+#endif
 
   void InvokeUnmaskDetailsTimeout() {
     credit_card_access_manager_->ready_to_start_authentication_.Signal();
@@ -331,6 +340,9 @@ TEST_F(CreditCardAccessManagerTest, FetchLocalCardSuccess) {
   CreateLocalCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
 
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
 
   EXPECT_TRUE(accessor_->did_succeed());
@@ -340,6 +352,9 @@ TEST_F(CreditCardAccessManagerTest, FetchLocalCardSuccess) {
 // Ensures that FetchCreditCard() reports a failure when a card does not exist.
 TEST_F(CreditCardAccessManagerTest, FetchNullptrFailure) {
   personal_data_manager_.ClearCreditCards();
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
 
   credit_card_access_manager_->FetchCreditCard(nullptr,
                                                accessor_->GetWeakPtr());
@@ -351,6 +366,9 @@ TEST_F(CreditCardAccessManagerTest, FetchNullptrFailure) {
 TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCSuccess) {
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
 
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
 
@@ -365,6 +383,9 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCNetworkError) {
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
 
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
 
   EXPECT_TRUE(
@@ -377,6 +398,9 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCNetworkError) {
 TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCPermanentFailure) {
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
 
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
 
@@ -401,6 +425,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
 }
 
+#if !defined(OS_IOS)
 // Ensures that CVC prompt is invoked after WebAuthn fails.
 TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
   CreateServerCard(kTestGUID, kTestNumber);
@@ -442,6 +467,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
 }
+#endif
 
 // Ensures that |is_authentication_in_progress_| is set correctly.
 TEST_F(CreditCardAccessManagerTest, AuthenticationInProgress) {

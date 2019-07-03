@@ -20,6 +20,11 @@ bool FakeCupsProxyServiceDelegate::IsPrinterInstalled(const Printer& printer) {
   return false;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeCupsProxyServiceDelegate::GetIOTaskRunner() {
+  return nullptr;
+}
+
 void FakeCupsProxyServiceDelegate::SetupPrinter(const Printer& printer,
                                                 PrinterSetupCallback cb) {}
 

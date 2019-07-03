@@ -9,11 +9,15 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
 
 namespace autofill {
+
+using blink::mojom::InternalAuthenticatorPtr;
 
 // Authenticates credit card unmasking through FIDO authentication, using the
 // WebAuthn specification, standardized by the FIDO alliance. The Webauthn
@@ -30,18 +34,19 @@ class CreditCardFIDOAuthenticator {
         bool did_succeed,
         const CreditCard* card = nullptr) = 0;
   };
-  explicit CreditCardFIDOAuthenticator(AutofillClient* client);
+  CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);
   virtual ~CreditCardFIDOAuthenticator();
 
   // Authentication
   void Authenticate(const CreditCard* card,
                     base::WeakPtr<Requester> requester,
+                    base::TimeTicks form_parsed_timestamp,
                     base::Value request_options);
 
-  // Returns true only if user has a verifying platform authenticator.
-  // e.g. Touch/Face ID, Windows Hello, Android Fingerprint etc is available and
-  // enabled.
-  virtual bool IsUserVerifiable();
+  // Invokes callback with true if user has a verifying platform authenticator.
+  // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
+  // and enabled. Otherwise invokes callback with false.
+  virtual void IsUserVerifiable(base::OnceCallback<void(bool)> callback);
 
   // Returns true only if the user has opted-in to use WebAuthn for autofill.
   virtual bool IsUserOptedIn();
@@ -51,11 +56,23 @@ class CreditCardFIDOAuthenticator {
   friend class CreditCardAccessManagerTest;
   friend class CreditCardFIDOAuthenticatorTest;
 
+  // Card being unmasked.
+  const CreditCard* card_;
+
+  // Meant for histograms recorded in FullCardRequest.
+  base::TimeTicks form_parsed_timestamp_;
+
+  // The associated autofill driver. Weak reference.
+  AutofillDriver* const autofill_driver_;
+
   // The associated autofill client. Weak reference.
   AutofillClient* const autofill_client_;
 
   // Payments client to make requests to Google Payments.
   payments::PaymentsClient* const payments_client_;
+
+  // Authenticator pointer to facilitate WebAuthn.
+  InternalAuthenticatorPtr authenticator_;
 
   // Responsible for getting the full card details, including the PAN and the
   // CVC.

@@ -326,6 +326,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("rgbaVisual", rgba_visual);
 #endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
+  enumerator->EndAuxAttributes();
 }
 
 }  // namespace gpu

@@ -53,7 +53,6 @@ static_library("test_support") {
     "copy_only_int.h",
     "do_nothing_promise.cc",
     "do_nothing_promise.h",
-    "fuzzed_data_provider.h",
     "gmock_callback_support.h",
     "gtest_util.cc",
     "gtest_util.h",

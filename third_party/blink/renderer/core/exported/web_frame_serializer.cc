@@ -105,7 +105,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   MHTMLFrameSerializerDelegate(
       WebFrameSerializer::MHTMLPartsGenerationDelegate&,
       HeapHashSet<WeakMember<const Element>>&);
-  ~MHTMLFrameSerializerDelegate() override;
+  ~MHTMLFrameSerializerDelegate() override = default;
   bool ShouldIgnoreElement(const Element&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) override;
   bool RewriteLink(const Element&, String& rewritten_link) override;
@@ -134,14 +134,6 @@ MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
     : web_delegate_(web_delegate),
       shadow_template_elements_(shadow_template_elements),
       popup_overlays_skipped_(false) {}
-
-MHTMLFrameSerializerDelegate::~MHTMLFrameSerializerDelegate() {
-  if (web_delegate_.RemovePopupOverlay()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "PageSerialization.MhtmlGeneration.PopupOverlaySkipped",
-        popup_overlays_skipped_);
-  }
-}
 
 bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
   if (ShouldIgnoreHiddenElement(element))

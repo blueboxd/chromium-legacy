@@ -45,6 +45,11 @@ bool CupsProxyServiceDelegateImpl::IsPrinterInstalled(const Printer& printer) {
   return printers_manager_->IsPrinterInstalled(printer);
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+CupsProxyServiceDelegateImpl::GetIOTaskRunner() {
+  return base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+}
+
 void CupsProxyServiceDelegateImpl::SetupPrinter(
     const Printer& printer,
     printing::PrinterSetupCallback cb) {

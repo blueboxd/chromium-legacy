@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/test_autofill_driver.h"
+
+#include "build/build_config.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -39,6 +41,11 @@ TestAutofillDriver::GetURLLoaderFactory() {
 bool TestAutofillDriver::RendererIsAvailable() {
   return true;
 }
+
+#if !defined(OS_IOS)
+void TestAutofillDriver::ConnectToAuthenticator(
+    blink::mojom::InternalAuthenticatorRequest request) {}
+#endif
 
 void TestAutofillDriver::SendFormDataToRenderer(int query_id,
                                                 RendererFormDataAction action,

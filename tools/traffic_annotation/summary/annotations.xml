@@ -101,7 +101,7 @@ Refer to README.md for content description and update process.
  <item id="external_policy_fetcher" hash_code="9459438" type="0" content_hash_code="64260484" os_list="linux,windows" file_path="components/policy/core/common/cloud/external_policy_data_fetcher.cc"/>
  <item id="family_info" hash_code="30913825" type="0" content_hash_code="25369370" os_list="linux,windows" file_path="chrome/browser/supervised_user/child_accounts/family_info_fetcher.cc"/>
  <item id="favicon_loader" hash_code="112189210" type="0" content_hash_code="70773116" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
- <item id="favicon_request_handler_get_favicon" hash_code="18468467" type="0" content_hash_code="72011341" os_list="linux,windows" file_path="components/favicon/core/favicon_request_handler.cc"/>
+ <item id="history_ui_favicon_request_handler_get_favicon" hash_code="17562717" type="0" content_hash_code="64054629" os_list="linux,windows" file_path="components/favicon/core/history_ui_favicon_request_handler_impl.cc"/>
  <item id="feed_image_fetcher" hash_code="87439531" type="0" deprecated="2019-01-04" content_hash_code="26756208" file_path=""/>
  <item id="gaia_auth_check_connection_info" hash_code="4598626" type="0" content_hash_code="57347000" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
  <item id="gaia_auth_exchange_cookies" hash_code="134289752" type="0" deprecated="2018-09-11" content_hash_code="66433230" file_path=""/>

@@ -1065,7 +1065,7 @@ TEST_F(IdentityManagerTest,
 
   // The URLLoaderFactory present in the pending request should match
   // the one we specified when creating the AccessTokenFetcher.
-  std::vector<FakeProfileOAuth2TokenService::PendingRequest> pending_requests =
+  std::vector<FakeOAuth2AccessTokenManager::PendingRequest> pending_requests =
       token_service()->GetPendingRequests();
   EXPECT_EQ(pending_requests.size(), 1U);
   EXPECT_EQ(pending_requests[0].url_loader_factory,
@@ -1105,7 +1105,7 @@ TEST_F(IdentityManagerTest,
   run_loop2.Run();
 
   // There should be one pending request now as well, just like before.
-  std::vector<FakeProfileOAuth2TokenService::PendingRequest> pending_requests2 =
+  std::vector<FakeOAuth2AccessTokenManager::PendingRequest> pending_requests2 =
       token_service()->GetPendingRequests();
   EXPECT_EQ(pending_requests2.size(), 1U);
 

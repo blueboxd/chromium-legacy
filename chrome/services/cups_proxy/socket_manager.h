@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/optional.h"
 
+#include "chrome/services/cups_proxy/cups_proxy_service_delegate.h"
+
 namespace net {
 class UnixDomainClientSocket;
 }  // namespace net
@@ -21,16 +23,18 @@ using SocketManagerCallback =
     base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
 
 // This manager proxies IPP requests to the CUPS daemon and asynchronously
-// responds with the IPP response. This class can be created anywhere but must
-// be accessed from a sequenced context.
+// responds with the IPP response. This class must be created and accessed
+// from a sequenced context.
 class SocketManager {
  public:
   // Factory function.
-  static std::unique_ptr<SocketManager> Create();
+  static std::unique_ptr<SocketManager> Create(
+      base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
 
   // Factory function that allows injected dependencies, for testing.
   static std::unique_ptr<SocketManager> CreateForTesting(
-      std::unique_ptr<net::UnixDomainClientSocket> socket);
+      std::unique_ptr<net::UnixDomainClientSocket> socket,
+      base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
 
   virtual ~SocketManager() = default;
 

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -27,6 +28,10 @@ class TestAutofillDriver : public AutofillDriver {
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
+#if !defined(OS_IOS)
+  void ConnectToAuthenticator(
+      blink::mojom::InternalAuthenticatorRequest request) override;
+#endif
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,
                               const FormData& data) override;

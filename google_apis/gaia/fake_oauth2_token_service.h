@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "google_apis/gaia/fake_oauth2_access_token_manager.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
-#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace network {
@@ -55,19 +55,7 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       const std::string& access_token) override {}
 
  private:
-  struct PendingRequest {
-    PendingRequest();
-    PendingRequest(const PendingRequest& other);
-    ~PendingRequest();
-
-    CoreAccountId account_id;
-    std::string client_id;
-    std::string client_secret;
-    OAuth2AccessTokenManager::ScopeSet scopes;
-    base::WeakPtr<OAuth2AccessTokenManager::RequestImpl> request;
-  };
-
-  std::vector<PendingRequest> pending_requests_;
+  FakeOAuth2AccessTokenManager* GetFakeAccessTokenManager();
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenService);
 };

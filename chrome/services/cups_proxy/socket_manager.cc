@@ -83,7 +83,8 @@ struct SocketRequest {
 class SocketManagerImpl : public SocketManager {
  public:
   explicit SocketManagerImpl(
-      std::unique_ptr<net::UnixDomainClientSocket> socket);
+      std::unique_ptr<net::UnixDomainClientSocket> socket,
+      base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
   ~SocketManagerImpl() override;
 
   void ProxyToCups(std::vector<uint8_t> request,
@@ -106,10 +107,10 @@ class SocketManagerImpl : public SocketManager {
   void Fail(const char* error_message);
 
   // Sequence this manager runs on, |in_flight_->cb_| is posted here.
-  scoped_refptr<base::SequencedTaskRunner> main_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> main_runner_;
 
   // Single thread task runner the thread-affine |socket_| runs on.
-  scoped_refptr<base::SingleThreadTaskRunner> socket_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> socket_runner_;
 
   // Created in sequence but accessed and deleted on IO thread.
   std::unique_ptr<SocketRequest> in_flight_;
@@ -125,24 +126,18 @@ SocketRequest::SocketRequest(SocketRequest&& other) = default;
 SocketRequest::~SocketRequest() = default;
 
 SocketManagerImpl::SocketManagerImpl(
-    std::unique_ptr<net::UnixDomainClientSocket> socket)
-    : socket_(std::move(socket)), weak_factory_(this) {
-  socket_runner_ =
-      base::CreateSingleThreadTaskRunnerWithTraits(base::TaskTraits());
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
+    std::unique_ptr<net::UnixDomainClientSocket> socket,
+    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate)
+    : main_runner_(base::SequencedTaskRunnerHandle::Get()),
+      socket_runner_(delegate->GetIOTaskRunner()),
+      socket_(std::move(socket)),
+      weak_factory_(this) {}
 SocketManagerImpl::~SocketManagerImpl() {}
 
 void SocketManagerImpl::ProxyToCups(std::vector<uint8_t> request,
                                     SocketManagerCallback cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!in_flight_);  // Only handles one request at a time.
-
-  // Lazily save the main runner, needed to post |cb| to.
-  if (!main_runner_) {
-    main_runner_ = base::SequencedTaskRunnerHandle::Get();
-  }
 
   // Save request.
   in_flight_ = std::make_unique<SocketRequest>();
@@ -286,15 +281,19 @@ void SocketManagerImpl::Fail(const char* error_message) {
 
 }  // namespace
 
-std::unique_ptr<SocketManager> SocketManager::Create() {
+std::unique_ptr<SocketManager> SocketManager::Create(
+    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate) {
   return std::make_unique<SocketManagerImpl>(
       std::make_unique<net::UnixDomainClientSocket>(
-          kCupsSocketPath, false /* not abstract namespace */));
+          kCupsSocketPath, false /* not abstract namespace */),
+      std::move(delegate));
 }
 
 std::unique_ptr<SocketManager> SocketManager::CreateForTesting(
-    std::unique_ptr<net::UnixDomainClientSocket> socket) {
-  return std::make_unique<SocketManagerImpl>(std::move(socket));
+    std::unique_ptr<net::UnixDomainClientSocket> socket,
+    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate) {
+  return std::make_unique<SocketManagerImpl>(std::move(socket),
+                                             std::move(delegate));
 }
 
 }  // namespace cups_proxy

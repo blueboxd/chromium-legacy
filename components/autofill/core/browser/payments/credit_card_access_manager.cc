@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -41,16 +42,20 @@ bool WaitForEvent(base::WaitableEvent* event) {
 }  // namespace
 
 CreditCardAccessManager::CreditCardAccessManager(
+    AutofillDriver* driver,
     AutofillManager* autofill_manager)
     : CreditCardAccessManager(
+          driver,
           autofill_manager->client(),
           autofill_manager->client()->GetPersonalDataManager()) {}
 
 CreditCardAccessManager::CreditCardAccessManager(
+    AutofillDriver* driver,
     AutofillClient* client,
     PersonalDataManager* personal_data_manager,
     CreditCardFormEventLogger* form_event_logger)
-    : client_(client),
+    : driver_(driver),
+      client_(client),
       payments_client_(client_->GetPaymentsClient()),
       personal_data_manager_(personal_data_manager),
       form_event_logger_(form_event_logger),
@@ -147,16 +152,26 @@ CreditCard* CreditCardAccessManager::GetCreditCard(std::string guid) {
 void CreditCardAccessManager::PrepareToFetchCreditCard() {
   // Reset in case a late response was ignored.
   ready_to_start_authentication_.Reset();
+#if !defined(OS_IOS)
+  GetOrCreateFIDOAuthenticator()->IsUserVerifiable(base::BindOnce(
+      &CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable,
+      weak_ptr_factory_.GetWeakPtr()));
+#endif
+}
 
-  // If user is not verifiable, the only option is to perform CVC Auth, which
-  // does not require unmask details.
-  if (!GetOrCreateFIDOAuthenticator()->IsUserVerifiable())
-    return;
+void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
+    bool is_user_verifiable) {
+  is_user_verifiable_ = is_user_verifiable;
 
-  payments_client_->GetUnmaskDetails(
-      base::BindOnce(&CreditCardAccessManager::OnDidGetUnmaskDetails,
-                     weak_ptr_factory_.GetWeakPtr()),
-      personal_data_manager_->app_locale());
+  // If user is verifiable, then make preflight call to payments to fetch unmask
+  // details, otherwise the only option is to perform CVC Auth, which does not
+  // require any.
+  if (is_user_verifiable_) {
+    payments_client_->GetUnmaskDetails(
+        base::BindOnce(&CreditCardAccessManager::OnDidGetUnmaskDetails,
+                       weak_ptr_factory_.GetWeakPtr()),
+        personal_data_manager_->app_locale());
+  }
 }
 
 void CreditCardAccessManager::OnDidGetUnmaskDetails(
@@ -218,10 +233,14 @@ void CreditCardAccessManager::Authenticate(bool did_get_unmask_details) {
           unmask_details_.fido_eligible_card_ids.end();
 
   if (card_is_eligible_for_fido) {
+#if defined(OS_IOS)
+    NOTREACHED();
+#else
     DCHECK(unmask_details_.fido_request_options.is_dict());
     GetOrCreateFIDOAuthenticator()->Authenticate(
-        card_, weak_ptr_factory_.GetWeakPtr(),
+        card_, weak_ptr_factory_.GetWeakPtr(), form_parsed_timestamp_,
         std::move(unmask_details_.fido_request_options));
+#endif
   } else {
     GetOrCreateCVCAuthenticator()->Authenticate(
         card_, weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
@@ -236,13 +255,15 @@ CreditCardAccessManager::GetOrCreateCVCAuthenticator() {
   return cvc_authenticator_.get();
 }
 
+#if !defined(OS_IOS)
 CreditCardFIDOAuthenticator*
 CreditCardAccessManager::GetOrCreateFIDOAuthenticator() {
   if (!fido_authenticator_)
     fido_authenticator_ =
-        std::make_unique<CreditCardFIDOAuthenticator>(client_);
+        std::make_unique<CreditCardFIDOAuthenticator>(driver_, client_);
   return fido_authenticator_.get();
 }
+#endif
 
 void CreditCardAccessManager::OnCVCAuthenticationComplete(
     bool did_succeed,
@@ -252,6 +273,7 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   accessor_->OnCreditCardFetched(did_succeed, card, cvc);
 }
 
+#if !defined(OS_IOS)
 void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     bool did_succeed,
     const CreditCard* card) {
@@ -266,10 +288,15 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
         form_parsed_timestamp_);
   }
 }
+#endif
 
 bool CreditCardAccessManager::AuthenticationRequiresUnmaskDetails() {
-  return GetOrCreateFIDOAuthenticator()->IsUserVerifiable() &&
+#if defined(OS_IOS)
+  return false;
+#else
+  return is_user_verifiable_.value_or(false) &&
          GetOrCreateFIDOAuthenticator()->IsUserOptedIn();
+#endif
 }
 
 bool CreditCardAccessManager::IsLocalCard(const CreditCard* card) {

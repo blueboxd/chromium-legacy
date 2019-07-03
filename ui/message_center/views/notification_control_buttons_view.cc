@@ -97,9 +97,9 @@ void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
         gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon,
                               gfx::kChromeIconGrey));
     snooze_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+        IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP));
     snooze_button_->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+        IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP));
     snooze_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
 

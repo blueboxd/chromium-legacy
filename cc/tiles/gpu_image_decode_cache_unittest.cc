@@ -422,6 +422,20 @@ class GpuImageDecodeCacheTest
     }
   }
 
+  void VerifyUploadedPlaneSizes(
+      GpuImageDecodeCache* cache,
+      const DrawImage& draw_image,
+      const SkISize plane_sizes[SkYUVASizeInfo::kMaxCount]) {
+    for (size_t i = 0; i < SkYUVASizeInfo::kMaxCount; ++i) {
+      // TODO(crbug.com/910276): Skip alpha plane until supported in cache.
+      if (i != SkYUVAIndex::kA_Index) {
+        auto uploaded_plane = cache->GetUploadedPlaneForTesting(draw_image, i);
+        ASSERT_TRUE(uploaded_plane);
+        EXPECT_EQ(plane_sizes[i], uploaded_plane->dimensions());
+      }
+    }
+  }
+
  protected:
   FakeDiscardableManager discardable_manager_;
   scoped_refptr<GPUImageDecodeTestMockContextProvider> context_provider_;
@@ -2650,9 +2664,9 @@ TEST_P(GpuImageDecodeCacheTest, BasicMips) {
     EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
     if (do_yuv_decode_) {
-      // As of M74, Skia will flatten a YUV SkImage upon calling
-      // makeTextureImage. Thus, we must separately request mips for each
-      // plane and compare to the original uploaded planes.
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
+      // must separately request mips for each plane and compare to the original
+      // uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
                                        should_have_mips);
       EXPECT_TRUE(
@@ -2727,9 +2741,9 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
 
     // No mips should be generated.
     if (do_yuv_decode_) {
-      // As of M74, Skia will flatten a YUV SkImage upon calling
-      // makeTextureImage. Thus, we must separately request mips for each
-      // plane and compare to the original uploaded planes.
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
+      // must separately request mips for each plane and compare to the original
+      // uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
                                        false /* should_have_mips */);
     } else {
@@ -2770,6 +2784,9 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
 
     // Mips should be generated
     if (do_yuv_decode_) {
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
+      // must separately request mips for each plane and compare to the original
+      // uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
                                        true /* should_have_mips */);
       EXPECT_TRUE(
@@ -2825,9 +2842,9 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
 
     // No mips should be generated.
     if (do_yuv_decode_) {
-      // As of M74, Skia will flatten a YUV SkImage upon calling
-      // makeTextureImage. Thus, we must separately request mips for each
-      // plane and compare to the original uploaded planes.
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
+      // must separately request mips for each plane and compare to the original
+      // uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
                                        false /* should_have_mips */);
     } else {
@@ -2861,6 +2878,9 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
 
     // Mips should be generated.
     if (do_yuv_decode_) {
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
+      // must separately request mips for each plane and compare to the original
+      // uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
                                        true /* should_have_mips */);
       EXPECT_TRUE(
@@ -2909,6 +2929,118 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
       cache->UnrefImage(draw_and_decoded_draw_image.image);
     }
   }
+}
+
+TEST_P(GpuImageDecodeCacheTest,
+       OriginalYUVDecodeScaledDrawCorrectlyMipsPlanes) {
+  // This test creates an image that will be YUV decoded and drawn at 80% scale.
+  // Because the final size is between mip levels, we expect the image to be
+  // decoded and uploaded at original size (mip level 0 for all planes) but to
+  // have mips attached since kMedium_SkFilterQuality uses bilinear filtering
+  // between mip levels.
+  if (!do_yuv_decode_) {
+    // The YUV case may choose different mip levels between chroma and luma
+    // planes.
+    return;
+  }
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality filter_quality = kMedium_SkFilterQuality;
+  SkSize requires_decode_at_original_scale = SkSize::Make(0.8f, 0.8f);
+
+  PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image.width(), image.height()), filter_quality,
+      CreateMatrix(requires_decode_at_original_scale, is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+
+  // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
+  // must separately request mips for each plane and compare to the original
+  // uploaded planes.
+  CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                   true /* should_have_mips */);
+  SkYUVASizeInfo yuv_size_info = GetYUV420SizeInfo(GetNormalImageSize());
+  VerifyUploadedPlaneSizes(cache.get(), draw_image, yuv_size_info.fSizes);
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheTest, ScaledYUVDecodeScaledDrawCorrectlyMipsPlanes) {
+  // This test creates an image that will be YUV decoded and drawn at 45% scale.
+  // Because the final size is between mip levels, we expect the image to be
+  // decoded and uploaded at half its original size (mip level 1 for Y plane but
+  // level 0 for chroma planes) and to have mips attached since
+  // kMedium_SkFilterQuality uses bilinear filtering between mip levels.
+  if (!do_yuv_decode_) {
+    // The YUV case may choose different mip levels between chroma and luma
+    // planes.
+    return;
+  }
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality filter_quality = kMedium_SkFilterQuality;
+  SkSize less_than_half_scale = SkSize::Make(0.45f, 0.45f);
+
+  gfx::Size image_size = GetNormalImageSize();
+  PaintImage image = CreatePaintImageInternal(image_size);
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       filter_quality,
+                       CreateMatrix(less_than_half_scale, is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+
+  // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
+  // must separately request mips for each plane and compare to the original
+  // uploaded planes.
+  CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                   true /* should_have_mips */);
+
+  // Because we intend to draw this image at 0.45 x 0.45 scale, we will upload
+  // the Y plane at mip level 1 (corresponding to half the original size). The
+  // chroma planes (U and V) should be uploaded at the same size as the Y plane,
+  // corresponding to mip level 0, because the largest dimensions greater than
+  // or equal to target dimensions for them is their original size.
+  SkISize mipped_plane_sizes[SkYUVASizeInfo::kMaxCount];
+  mipped_plane_sizes[SkYUVAIndex::kY_Index] = SkISize::Make(
+      (image_size.width() + 1) / 2, (image_size.height() + 1) / 2);
+  mipped_plane_sizes[SkYUVAIndex::kU_Index] =
+      mipped_plane_sizes[SkYUVAIndex::kY_Index];
+  mipped_plane_sizes[SkYUVAIndex::kV_Index] =
+      mipped_plane_sizes[SkYUVAIndex::kY_Index];
+  VerifyUploadedPlaneSizes(cache.get(), draw_image, mipped_plane_sizes);
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
 }
 
 TEST_P(GpuImageDecodeCacheTest, GetBorderlineLargeDecodedImageForDraw) {

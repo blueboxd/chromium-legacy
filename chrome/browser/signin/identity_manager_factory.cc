@@ -20,7 +20,6 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -120,14 +119,14 @@ IdentityManagerFactory::~IdentityManagerFactory() {}
 // static
 identity::IdentityManager* IdentityManagerFactory::GetForProfile(
     Profile* profile) {
-  return static_cast<IdentityManagerWrapper*>(
+  return static_cast<identity::IdentityManager*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
 identity::IdentityManager* IdentityManagerFactory::GetForProfileIfExists(
     const Profile* profile) {
-  return static_cast<IdentityManagerWrapper*>(
+  return static_cast<identity::IdentityManager*>(
       GetInstance()->GetServiceForBrowserContext(const_cast<Profile*>(profile),
                                                  false));
 }
@@ -192,7 +191,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
           ChromeSigninClientFactory::GetForProfile(profile),
           token_service.get(), account_tracker_service.get());
 
-  auto identity_manager = std::make_unique<IdentityManagerWrapper>(
+  auto identity_manager = std::make_unique<identity::IdentityManager>(
       std::move(account_tracker_service), std::move(token_service),
       std::move(gaia_cookie_manager_service),
       std::move(primary_account_manager), std::move(account_fetcher_service),
@@ -207,7 +206,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
 
 void IdentityManagerFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
-  auto* identity_manager = static_cast<IdentityManagerWrapper*>(
+  auto* identity_manager = static_cast<identity::IdentityManager*>(
       GetServiceForBrowserContext(context, false));
   if (identity_manager) {
     for (Observer& observer : observer_list_)

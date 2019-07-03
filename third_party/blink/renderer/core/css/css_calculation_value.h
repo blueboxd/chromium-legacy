@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
 
+// TODO(xiaochengh): Rename to css_math_expression_node.h
+
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_math_operator.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -40,8 +42,6 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
-
-class CalculationValue;
 
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
@@ -59,8 +59,13 @@ enum CalculationCategory {
   kCalcOther
 };
 
-class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
+class CORE_EXPORT CSSCalcExpressionNode
+    : public GarbageCollected<CSSCalcExpressionNode> {
  public:
+  static CSSCalcExpressionNode* CreateFromPixelsAndPercent(double pixels,
+                                                           double percent);
+  static CSSCalcExpressionNode* ParseCalc(const CSSParserTokenRange& tokens);
+
   virtual bool IsPrimitiveValue() const { return false; }
   virtual bool IsBinaryOperation() const { return false; }
 
@@ -98,10 +103,10 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
 };
 
 // TODO(crbug.com/825895): Rename it and make it store a CSSNumericLiteralValue
-class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
+class CORE_EXPORT CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
  public:
   static CSSCalcPrimitiveValue* Create(CSSPrimitiveValue* value,
-                                       bool is_integer);
+                                       bool is_integer = false);
   static CSSCalcPrimitiveValue* Create(double value,
                                        CSSPrimitiveValue::UnitType type,
                                        bool is_integer);
@@ -136,7 +141,7 @@ struct DowncastTraits<CSSCalcPrimitiveValue> {
   }
 };
 
-class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
+class CORE_EXPORT CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
  public:
   static CSSCalcExpressionNode* Create(CSSCalcExpressionNode* left_side,
                                        CSSCalcExpressionNode* right_side,
@@ -201,57 +206,6 @@ struct DowncastTraits<CSSCalcBinaryOperation> {
   static bool AllowFrom(const CSSCalcExpressionNode& node) {
     return node.IsBinaryOperation();
   }
-};
-
-class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
- public:
-  static CSSCalcValue* Create(const CSSParserTokenRange&, ValueRange);
-  static CSSCalcValue* Create(CSSCalcExpressionNode*,
-                              ValueRange = kValueRangeAll);
-
-  static CSSCalcExpressionNode* CreateExpressionNode(CSSPrimitiveValue*,
-                                                     bool is_integer = false);
-  static CSSCalcExpressionNode* CreateExpressionNode(CSSCalcExpressionNode*,
-                                                     CSSCalcExpressionNode*,
-                                                     CSSMathOperator);
-  static CSSCalcExpressionNode* CreateExpressionNode(double pixels,
-                                                     double percent);
-
-  CSSCalcValue(CSSCalcExpressionNode* expression, ValueRange range)
-      : expression_(expression),
-        non_negative_(range == kValueRangeNonNegative) {}
-
-  scoped_refptr<CalculationValue> ToCalcValue(
-      const CSSToLengthConversionData& conversion_data) const {
-    PixelsAndPercent value(0, 0);
-    expression_->AccumulatePixelsAndPercent(conversion_data, value);
-    return CalculationValue::Create(
-        value, non_negative_ ? kValueRangeNonNegative : kValueRangeAll);
-  }
-  CalculationCategory Category() const { return expression_->Category(); }
-  bool IsInt() const { return expression_->IsInteger(); }
-  double DoubleValue() const;
-  bool IsNegative() const { return expression_->DoubleValue() < 0; }
-  ValueRange PermittedValueRange() {
-    return non_negative_ ? kValueRangeNonNegative : kValueRangeAll;
-  }
-  double ComputeLengthPx(const CSSToLengthConversionData&) const;
-  void AccumulateLengthArray(CSSLengthArray& length_array,
-                             double multiplier) const {
-    expression_->AccumulateLengthArray(length_array, multiplier);
-  }
-  CSSCalcExpressionNode* ExpressionNode() const { return expression_.Get(); }
-
-  String CustomCSSText() const;
-  bool Equals(const CSSCalcValue&) const;
-
-  void Trace(blink::Visitor* visitor) { visitor->Trace(expression_); }
-
- private:
-  double ClampToPermittedRange(double) const;
-
-  const Member<CSSCalcExpressionNode> expression_;
-  const bool non_negative_;
 };
 
 }  // namespace blink

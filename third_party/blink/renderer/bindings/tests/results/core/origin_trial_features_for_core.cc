@@ -60,20 +60,12 @@ void InstallOriginTrialFeaturesForCore(
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
   if (wrapper_type_info == V8TestInterface::GetWrapperTypeInfo()) {
-    if (RuntimeEnabledFeatures::OriginTrialFeatureEnabled(execution_context)) {
-      V8TestInterface::InstallOriginTrialFeature(
-          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
-    }
     if (RuntimeEnabledFeatures::TestFeatureEnabled(execution_context)) {
       V8TestInterface::InstallTestFeature(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
   }
   if (wrapper_type_info == V8TestObject::GetWrapperTypeInfo()) {
-    if (RuntimeEnabledFeatures::OriginTrialFeatureEnabled(execution_context)) {
-      V8TestObject::InstallOriginTrialFeature(
-          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
-    }
     if (RuntimeEnabledFeatures::FeatureNameEnabled(execution_context)) {
       V8TestObject::InstallFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
@@ -97,19 +89,6 @@ void InstallPendingOriginTrialFeatureForCore(OriginTrialFeature feature,
       if (context_data->GetExistingConstructorAndPrototypeForType(
               V8TestObject::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
         V8TestObject::InstallFeatureName(
-            isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
-      }
-      break;
-    }
-    case OriginTrialFeature::kOriginTrialFeature: {
-      if (context_data->GetExistingConstructorAndPrototypeForType(
-              V8TestInterface::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
-        V8TestInterface::InstallOriginTrialFeature(
-            isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
-      }
-      if (context_data->GetExistingConstructorAndPrototypeForType(
-              V8TestObject::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
-        V8TestObject::InstallOriginTrialFeature(
             isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
       }
       break;

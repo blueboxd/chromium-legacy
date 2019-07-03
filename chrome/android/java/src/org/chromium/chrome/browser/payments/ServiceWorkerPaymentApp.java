@@ -36,6 +36,7 @@ import java.util.Set;
 public class ServiceWorkerPaymentApp extends PaymentInstrument implements PaymentApp {
     private final WebContents mWebContents;
     private final long mRegistrationId;
+    private final URI mScope;
     private final Set<String> mMethodNames;
     private final boolean mExplicitlyVerified;
     private final Capabilities[] mCapabilities;
@@ -47,7 +48,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private final boolean mNeedsInstallation;
     private final String mAppName;
     private final URI mSwUri;
-    private final URI mScope;
     private final boolean mUseCache;
 
     /** The endpoint for payment handler communication, such as the change-payment-method event. */
@@ -130,6 +130,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
                 TextUtils.isEmpty(name) ? null : origin, icon);
         mWebContents = webContents;
         mRegistrationId = registrationId;
+        mScope = scope;
 
         // Name and/or icon are set to null if fetching or processing the corresponding web
         // app manifest failed. Then do not preselect this payment app.
@@ -153,7 +154,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mNeedsInstallation = false;
         mAppName = name;
         mSwUri = null;
-        mScope = null;
         mUseCache = false;
     }
 
@@ -182,6 +182,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mWebContents = webContents;
         // No registration ID before the app is registered (installed).
         mRegistrationId = -1;
+        mScope = scope;
         // If name and/or icon is missing or failed to parse from the web app manifest, then do not
         // preselect this payment app.
         mCanPreselect = !TextUtils.isEmpty(name) && icon != null;
@@ -199,7 +200,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mNeedsInstallation = true;
         mAppName = name;
         mSwUri = swUri;
-        mScope = scope;
         mUseCache = useCache;
     }
 
@@ -214,8 +214,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     @Override
-    public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
-            String iframeOrigin, byte[][] unusedCertificateChain,
+    public void getInstruments(String id, Map<String, PaymentMethodData> methodDataMap,
+            String origin, String iframeOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentDetailsModifier> modifiers, final InstrumentsCallback callback) {
         // Do not send canMakePayment event when in incognito mode or basic-card is the only
         // supported payment method or this app needs installation for the payment request or this
@@ -230,8 +230,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
             return;
         }
 
-        ServiceWorkerPaymentAppBridge.canMakePayment(mWebContents, mRegistrationId, origin,
-                iframeOrigin, new HashSet<>(methodDataMap.values()),
+        ServiceWorkerPaymentAppBridge.canMakePayment(mWebContents, mRegistrationId,
+                mScope.toString(), id, origin, iframeOrigin, new HashSet<>(methodDataMap.values()),
                 new HashSet<>(modifiers.values()), (boolean canMakePayment) -> {
                     List<PaymentInstrument> instruments = canMakePayment
                             ? Collections.singletonList(ServiceWorkerPaymentApp.this)
@@ -359,9 +359,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
                     icon == null ? null : icon.getBitmap(), mSwUri, mScope, mUseCache,
                     mMethodNames.toArray(new String[0])[0]);
         } else {
-            ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId, origin,
-                    iframeOrigin, id, new HashSet<>(methodData.values()), total,
-                    new HashSet<>(modifiers.values()), mPaymentHandlerHost, callback);
+            ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId,
+                    mScope.toString(), origin, iframeOrigin, id, new HashSet<>(methodData.values()),
+                    total, new HashSet<>(modifiers.values()), mPaymentHandlerHost, callback);
         }
     }
 
@@ -383,8 +383,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     @Override
-    public void abortPaymentApp(AbortCallback callback) {
-        ServiceWorkerPaymentAppBridge.abortPaymentApp(mWebContents, mRegistrationId, callback);
+    public void abortPaymentApp(String id, AbortCallback callback) {
+        ServiceWorkerPaymentAppBridge.abortPaymentApp(
+                mWebContents, mRegistrationId, mScope.toString(), id, callback);
     }
 
     @Override

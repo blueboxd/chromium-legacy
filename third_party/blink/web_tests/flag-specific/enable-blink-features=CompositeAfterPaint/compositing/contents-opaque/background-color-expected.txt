@@ -7,37 +7,17 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV class='box translucent composited'",
+      "name": "LayoutNGBlockFlow DIV class='box translucent composited'",
+      "position": [8, 108],
       "bounds": [100, 100],
-      "backgroundColor": "#00FF0080",
-      "transform": 1
+      "backgroundColor": "#00FF0080"
     },
     {
-      "name": "LayoutBlockFlow DIV class='box opaque composited'",
+      "name": "LayoutNGBlockFlow DIV class='box opaque composited'",
+      "position": [8, 208],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 2
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 108, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 208, 0, 1]
-      ]
+      "backgroundColor": "#008000"
     }
   ]
 }

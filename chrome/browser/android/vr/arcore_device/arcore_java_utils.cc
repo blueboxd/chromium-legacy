@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr/ar_jni_headers/ArCoreJavaUtils_jni.h"
@@ -107,13 +110,13 @@ void ArCoreJavaUtils::RequestArSession(
   DVLOG(1) << __func__;
   JNIEnv* env = AttachCurrentThread();
 
-  Java_ArCoreJavaUtils_launchArConsentDialog(
-      env, j_arcore_java_utils_,
-      getTabFromRenderer(render_process_id, render_frame_id));
-
   surface_ready_callback_ = std::move(ready_callback);
   surface_touch_callback_ = std::move(touch_callback);
   surface_destroyed_callback_ = std::move(destroyed_callback);
+
+  Java_ArCoreJavaUtils_startSession(
+      env, j_arcore_java_utils_,
+      getTabFromRenderer(render_process_id, render_frame_id));
 }
 
 void ArCoreJavaUtils::DestroyDrawingSurface() {

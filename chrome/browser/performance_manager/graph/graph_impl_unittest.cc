@@ -26,10 +26,10 @@ TEST(GraphImplTest, SafeCasting) {
 TEST(GraphImplTest, FindOrCreateSystemNode) {
   GraphImpl graph;
 
-  SystemNodeImpl* system_node = graph.FindOrCreateSystemNode();
+  SystemNodeImpl* system_node = graph.FindOrCreateSystemNodeImpl();
 
   // A second request should return the same instance.
-  EXPECT_EQ(system_node, graph.FindOrCreateSystemNode());
+  EXPECT_EQ(system_node, graph.FindOrCreateSystemNodeImpl());
 }
 
 TEST(GraphImplTest, GetProcessNodeByPid) {
@@ -93,16 +93,16 @@ TEST(GraphImplTest, GetAllCUsByType) {
   GraphImpl graph;
   MockMultiplePagesInSingleProcessGraph mock_graph(&graph);
 
-  std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodes();
+  std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodeImpls();
   ASSERT_EQ(1u, processes.size());
   EXPECT_NE(nullptr, processes[0]);
 
-  std::vector<FrameNodeImpl*> frames = graph.GetAllFrameNodes();
+  std::vector<FrameNodeImpl*> frames = graph.GetAllFrameNodeImpls();
   ASSERT_EQ(2u, frames.size());
   EXPECT_NE(nullptr, frames[0]);
   EXPECT_NE(nullptr, frames[1]);
 
-  std::vector<PageNodeImpl*> pages = graph.GetAllPageNodes();
+  std::vector<PageNodeImpl*> pages = graph.GetAllPageNodeImpls();
   ASSERT_EQ(2u, pages.size());
   EXPECT_NE(nullptr, pages[0]);
   EXPECT_NE(nullptr, pages[1]);
@@ -122,7 +122,7 @@ TEST(GraphImplTest, SerializationId) {
   EXPECT_NE(0u, id);
   EXPECT_EQ(id, NodeBase::GetSerializationId(process.get()));
 
-  SystemNodeImpl* system = graph.FindOrCreateSystemNode();
+  SystemNodeImpl* system = graph.FindOrCreateSystemNodeImpl();
 
   // Different nodes should be assigned different IDs.
   EXPECT_NE(id, NodeBase::GetSerializationId(system));

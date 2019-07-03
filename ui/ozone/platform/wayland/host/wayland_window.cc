@@ -88,8 +88,8 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate),
       connection_(connection),
       xdg_shell_objects_factory_(new XDGShellObjectFactory()),
-      state_(PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL),
-      pending_state_(PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {
+      state_(PlatformWindowState::kNormal),
+      pending_state_(PlatformWindowState::kUnknown) {
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
   SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
@@ -417,7 +417,7 @@ void WaylandWindow::ToggleFullscreen() {
   // trigger the change.
   if (!is_active_) {
     DCHECK(!IsFullscreen());
-    pending_state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+    pending_state_ = PlatformWindowState::kFullScreen;
     return;
   }
 
@@ -431,12 +431,12 @@ void WaylandWindow::ToggleFullscreen() {
     // state changes asynchronously, which leads to a wrong return value in
     // DesktopWindowTreeHostPlatform::IsFullscreen, for example, and media
     // files can never be set to fullscreen.
-    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+    state_ = PlatformWindowState::kFullScreen;
     xdg_surface_->SetFullscreen();
   } else {
     // Check the comment above. If it's not handled synchronously, media files
     // may not leave the fullscreen mode.
-    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+    state_ = PlatformWindowState::kUnknown;
     xdg_surface_->UnSetFullscreen();
   }
 
@@ -593,16 +593,16 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
   // minimized before and !is_activated is sent.
   if ((is_minimizing_ || IsMinimized()) && !is_activated) {
     is_minimizing_ = false;
-    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+    state_ = PlatformWindowState::kMinimized;
   } else if (is_fullscreen) {
     // To ensure the |delegate_| is notified about state changes to fullscreen,
     // assume the old_state is UNKNOWN (check comment in ToggleFullscreen).
-    old_state = PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
-    DCHECK(state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN);
+    old_state = PlatformWindowState::kUnknown;
+    DCHECK(state_ == PlatformWindowState::kFullScreen);
   } else if (is_maximized) {
-    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+    state_ = PlatformWindowState::kMaximized;
   } else {
-    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
+    state_ = PlatformWindowState::kNormal;
   }
   const bool state_changed = old_state != state_;
   const bool is_normal = !IsFullscreen() && !IsMaximized();
@@ -643,7 +643,7 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
     // have any meaningful value stored.
     if (is_normal) {
       SetRestoredBoundsInPixels({});
-    } else if (old_state == PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL ||
+    } else if (old_state == PlatformWindowState::kNormal ||
                restored_bounds_px_.IsEmpty()) {
       SetRestoredBoundsInPixels(bounds_px_);
     }
@@ -773,24 +773,22 @@ void WaylandWindow::SetBufferScale(int32_t new_scale, bool update_bounds) {
 }
 
 bool WaylandWindow::IsMinimized() const {
-  return state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+  return state_ == PlatformWindowState::kMinimized;
 }
 
 bool WaylandWindow::IsMaximized() const {
-  return state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+  return state_ == PlatformWindowState::kMaximized;
 }
 
 bool WaylandWindow::IsFullscreen() const {
-  return state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+  return state_ == PlatformWindowState::kFullScreen;
 }
 
 void WaylandWindow::MaybeTriggerPendingStateChange() {
-  if (pending_state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN ||
-      !is_active_)
+  if (pending_state_ == PlatformWindowState::kUnknown || !is_active_)
     return;
-  DCHECK_EQ(pending_state_,
-            PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN);
-  pending_state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+  DCHECK_EQ(pending_state_, PlatformWindowState::kFullScreen);
+  pending_state_ = PlatformWindowState::kUnknown;
   ToggleFullscreen();
 }
 

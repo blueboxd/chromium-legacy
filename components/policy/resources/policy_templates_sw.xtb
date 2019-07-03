@@ -2744,7 +2744,7 @@ Kama sera hii haijawekwa, kiteuzi kikubwa huzimwa wakati skrini ya kuingia katik
 <translation id="5983708779415553259">Tabia chaguomsingi ya tovuti zisizo katika furushi lolote la maudhui</translation>
 <translation id="5997543603646547632">Tumia saa ya saa 24 kwa chaguomsingi</translation>
 <translation id="5997846976342452720">Bainisha ikiwa kipataji cha programu jalizi lazima kizimwe (kilichoacha kuendesha huduma)</translation>
-<translation id="5998198091336830580">Sera hii ni sehemu ya kikundi kifuatacho cha atomiki (tutatumia tu sera kutoka chanzo chenye kipaumbele cha juu zaidi, zilizo katika kikundi hicho) :</translation>
+<translation id="5998198091336830580">Sera hii ni sehemu ya kikundi kifuatacho cha atomiki (tutatumia tu sera kutoka chanzo chenye kipaumbele cha juu zaidi, kilicho katika kikundi hicho) :</translation>
 <translation id="6017568866726630990">Onyesha mazungumzo ya kuchapisha ya mfumo badala ya uhakiki wa kuchapisha.
 
    Mpangilio huu unapowashwa, <ph name="PRODUCT_NAME" /> itafungua mazungumzo ya kuchapisha ya mfumo badala ya uhakiki wa kuchapisha wa kijenzi cha ndani mtumiaji anapoomba ukurasa kuchapishwa.
@@ -4023,11 +4023,11 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Lemaza kuhifadhi historia ya kivinjari</translation>
 <translation id="8499172469244085141">Mipangilio ya Chaguo-Msingi (watumiaji wanaweza kubadilisha)</translation>
-<translation id="849962487677588458">Tumeacha kutumia sera hii na tutaiondoa kwenye Chrome 78 na nafasi yake haitachukuliwa na sera nyingine.
+<translation id="849962487677588458">Tumeacha kutumia sera hii na tutaiondoa kwenye Chrome 78. Nafasi yake haitachukuliwa na sera nyingine.
 
       Sera hii huwasha HTTP/0.9 kwenye milango isipokuwa ya 80 katika HTTP na ya 443 katika HTTPS.
 
-      Sera hii imezimwa kwa chaguomsingi na ikiwashwa, huwafanya watumiaji waweze kuathiriwa na tatizo la usalama https://crbug.com/600352.
+      Sera hii imezimwa kwa chaguomsingi na ikiwashwa, huwa inafungua nafasi ya watumiaji kuathiriwa na tatizo la usalama https://crbug.com/600352.
 
       Sera hii ina lengo la kuzipa biashara nafasi ya kuhamisha seva zilizopo kutoka HTTP/0.9 na itaondolewa baadaye.
 

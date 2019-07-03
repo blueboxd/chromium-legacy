@@ -35,9 +35,5 @@ interface TestConstants {
     [RuntimeEnabled=FeatureName1] const short FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2 = 7;
     [RuntimeEnabled=FeatureName2] const short FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1 = 8;
     [RuntimeEnabled=FeatureName2] const short FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2 = 9;
-    [RuntimeEnabled=OriginTrialFeature1] const short FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1 = 10;
-    [RuntimeEnabled=OriginTrialFeature1] const short FEATURE3_ORIGIN_TRIAL_ENABLED_CONST2 = 11;
-    [RuntimeEnabled=OriginTrialFeature2] const short FEATURE4_ORIGIN_TRIAL_ENABLED_CONST1 = 12;
-    [RuntimeEnabled=OriginTrialFeature2] const short FEATURE4_ORIGIN_TRIAL_ENABLED_CONST2 = 13;
     [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
 };

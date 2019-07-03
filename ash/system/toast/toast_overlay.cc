@@ -4,7 +4,7 @@
 
 #include "ash/system/toast/toast_overlay.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -249,11 +249,11 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
       overlay_window,
       base::TimeDelta::FromMilliseconds(kSlideAnimationDurationMs));
 
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 }
 
 ToastOverlay::~ToastOverlay() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   overlay_widget_->Close();
 }
 

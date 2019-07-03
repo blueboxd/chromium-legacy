@@ -414,7 +414,7 @@ void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
   if (!entry)
     return;
-  DCHECK_EQ("firstInput", entry->entryType());
+  DCHECK_EQ("first-input", entry->entryType());
   if (HasObserverFor(PerformanceEntry::kFirstInput)) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kEventTimingExplicitlyRequested);

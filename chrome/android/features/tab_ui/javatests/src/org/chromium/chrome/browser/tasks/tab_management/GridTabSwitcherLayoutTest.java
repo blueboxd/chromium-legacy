@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
-import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
@@ -16,6 +15,10 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAU
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.action.ViewActions;
+import android.support.test.espresso.contrib.RecyclerViewActions;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 
@@ -204,36 +207,7 @@ public class GridTabSwitcherLayoutTest {
 
         GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
         for (int i = 0; i < mRepeat; i++) {
-            Tab currentTab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
-            boolean checkThumbnail = !currentTab.isNativePage();
-
-            if (checkThumbnail)
-                mActivityTestRule.getActivity().getTabContentManager().removeTabThumbnail(
-                        currentTab.getId());
-
-            int count = getCaptureCount();
-            waitForCaptureRateControl();
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
-            assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
-
-            // Make sure the fading animation is done.
-            int delta;
-            if (TextUtils.equals(mActivityTestRule.getActivity()
-                                         .getCurrentWebContents()
-                                         .getLastCommittedUrl(),
-                        NTP_URL)) {
-                delta = 0;
-            } else {
-                delta = 1;
-                // TODO(wychen): refactor areAnimatorsEnabled() to a util class.
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                        && TabGridContainerViewBinderTest.areAnimatorsEnabled()) {
-                    delta += 1;
-                }
-            }
-            CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
-            if (checkThumbnail) checkThumbnailsExist(currentTab);
+            enterGTS();
 
             // clang-format off
             TestThreadUtils.runOnUiThreadBlocking(
@@ -244,19 +218,7 @@ public class GridTabSwitcherLayoutTest {
                     DEFAULT_POLLING_INTERVAL);
             // clang-format on
         }
-        int expected;
-        if (TextUtils.equals(
-                    mActivityTestRule.getActivity().getCurrentWebContents().getLastCommittedUrl(),
-                    NTP_URL)) {
-            expected = 0;
-        } else {
-            expected = mRepeat;
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                    && TabGridContainerViewBinderTest.areAnimatorsEnabled()) {
-                expected += mRepeat;
-            }
-        }
-        Assert.assertEquals(expected, getCaptureCount() - initCount);
+        checkFinalCaptureCount(false, initCount);
     }
 
     @Test
@@ -315,35 +277,9 @@ public class GridTabSwitcherLayoutTest {
         final int initCount = getCaptureCount();
 
         for (int i = 0; i < mRepeat; i++) {
-            Tab currentTab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
-            boolean checkThumbnail = !currentTab.isNativePage();
+            enterGTS();
 
-            if (checkThumbnail)
-                mActivityTestRule.getActivity().getTabContentManager().removeTabThumbnail(
-                        currentTab.getId());
-
-            int count = getCaptureCount();
-            waitForCaptureRateControl();
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
-            assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
-            int delta;
-            if (TextUtils.equals(mActivityTestRule.getActivity()
-                                         .getCurrentWebContents()
-                                         .getLastCommittedUrl(),
-                        NTP_URL)) {
-                delta = 0;
-            } else {
-                delta = 1;
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                        && TabGridContainerViewBinderTest.areAnimatorsEnabled()) {
-                    delta += 1;
-                }
-            }
-            CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
-            if (checkThumbnail) checkThumbnailsExist(currentTab);
-
-            int index = mActivityTestRule.getActivity().getCurrentTabModel().index();
+            final int index = mActivityTestRule.getActivity().getCurrentTabModel().index();
             final int targetIndex = switchToAnotherTab ? 1 - index : index;
             Tab targetTab =
                     mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(targetIndex);
@@ -354,26 +290,68 @@ public class GridTabSwitcherLayoutTest {
             if (switchToAnotherTab) {
                 waitForCaptureRateControl();
             }
-            int count2 = getCaptureCount();
+            int count = getCaptureCount();
+            Espresso.onView(ViewMatchers.withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .perform(RecyclerViewActions.actionOnItemAtPosition(
+                            targetIndex, ViewActions.click()));
             // clang-format off
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
-                            targetIndex, FROM_USER));
-            CriteriaHelper.pollInstrumentationThread(
+            CriteriaHelper.pollUiThread(
                     () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
                     "Overview not hidden yet");
             // clang-format on
+            int delta;
             if (switchToAnotherTab
                     && !TextUtils.equals(mActivityTestRule.getActivity()
                                                  .getCurrentWebContents()
                                                  .getLastCommittedUrl(),
                             NTP_URL)) {
+                // Capture the original tab.
                 delta = 1;
             } else {
                 delta = 0;
             }
-            CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count2));
+            CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
         }
+        checkFinalCaptureCount(switchToAnotherTab, initCount);
+        assertThumbnailsAreReleased();
+    }
+
+    private void enterGTS() throws InterruptedException {
+        Tab currentTab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
+        boolean checkThumbnail = !currentTab.isNativePage();
+
+        if (checkThumbnail)
+            mActivityTestRule.getActivity().getTabContentManager().removeTabThumbnail(
+                    currentTab.getId());
+
+        int count = getCaptureCount();
+        waitForCaptureRateControl();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
+        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        // Make sure the fading animation is done.
+        int delta;
+        if (TextUtils.equals(
+                    mActivityTestRule.getActivity().getCurrentWebContents().getLastCommittedUrl(),
+                    NTP_URL)) {
+            // NTP is not invalidated, so no new captures.
+            delta = 0;
+        } else {
+            // The final capture at GridTabSwitcherLayout#finishedShowing time.
+            delta = 1;
+            // TODO(wychen): refactor areAnimatorsEnabled() to a util class.
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+                    && TabGridContainerViewBinderTest.areAnimatorsEnabled()) {
+                // The faster capturing without writing back to cache.
+                delta += 1;
+            }
+        }
+        CriteriaHelper.pollUiThread(Criteria.equals(delta, () -> getCaptureCount() - count));
+        if (checkThumbnail) checkThumbnailsExist(currentTab);
+    }
+
+    private void checkFinalCaptureCount(boolean switchToAnotherTab, int initCount) {
         int expected;
         if (TextUtils.equals(
                     mActivityTestRule.getActivity().getCurrentWebContents().getLastCommittedUrl(),
@@ -390,7 +368,6 @@ public class GridTabSwitcherLayoutTest {
             }
         }
         Assert.assertEquals(expected, getCaptureCount() - initCount);
-        assertThumbnailsAreReleased();
     }
 
     private void checkThumbnailsExist(Tab tab) {

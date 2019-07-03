@@ -4,7 +4,7 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -198,7 +198,7 @@ void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
   views::View::ConvertPointFromWidget(virtual_keyboard_tray_.get(), &location);
   if (event->type() == ui::ET_MOUSE_PRESSED &&
       !virtual_keyboard_tray_->HitTestPoint(location)) {
-    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+    keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
   }
   views::Widget::OnMouseEvent(event);
 }
@@ -210,7 +210,7 @@ void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
   views::View::ConvertPointFromWidget(virtual_keyboard_tray_.get(), &location);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
       !virtual_keyboard_tray_->HitTestPoint(location)) {
-    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+    keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
   }
   views::Widget::OnGestureEvent(event);
 }

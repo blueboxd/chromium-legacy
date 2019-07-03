@@ -118,6 +118,7 @@ jumbo_component("accessibility") {
 
   if (has_native_accessibility) {
     sources += [
+      "platform/ax_fragment_root_delegate_win.h",
       "platform/ax_fragment_root_win.cc",
       "platform/ax_fragment_root_win.h",
       "platform/ax_platform_node_mac.h",

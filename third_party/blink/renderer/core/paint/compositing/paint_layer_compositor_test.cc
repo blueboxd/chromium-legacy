@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 
+#include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
-#include "third_party/blink/renderer/core/animation/element_animation.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -77,10 +77,8 @@ TEST_F(PaintLayerCompositorTest,
   EXPECT_EQ(DocumentLifecycle::kPaintClean,
             GetDocument().Lifecycle().GetState());
 
-  HeapVector<Member<Animation>> boxAnimations =
-      ElementAnimation::getAnimations(*box);
-  HeapVector<Member<Animation>> otherBoxAnimations =
-      ElementAnimation::getAnimations(*box);
+  HeapVector<Member<Animation>> boxAnimations = box->getAnimations();
+  HeapVector<Member<Animation>> otherBoxAnimations = otherBox->getAnimations();
 
   EXPECT_EQ(1ul, boxAnimations.size());
   EXPECT_EQ(1ul, otherBoxAnimations.size());

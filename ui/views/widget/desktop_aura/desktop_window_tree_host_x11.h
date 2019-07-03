@@ -367,7 +367,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool should_maximize_after_map_ = false;
 
   // Whether we used an ARGB visual for our window.
-  bool use_argb_visual_ = false;
+  bool visual_has_alpha_ = false;
 
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 

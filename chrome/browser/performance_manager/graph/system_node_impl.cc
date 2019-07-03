@@ -115,7 +115,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
   }
 
   // Grab all the processes to see if there were any we didn't get data for.
-  std::vector<ProcessNodeImpl*> processes = graph_->GetAllProcessNodes();
+  std::vector<ProcessNodeImpl*> processes = graph_->GetAllProcessNodeImpls();
 
   if (found_processes.size() != processes.size()) {
     // We didn't find them all, compute the difference and clear the data for

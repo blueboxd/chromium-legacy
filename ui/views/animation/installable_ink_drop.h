@@ -12,6 +12,8 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_event_handler.h"
 #include "ui/views/animation/ink_drop_state.h"
+#include "ui/views/animation/installable_ink_drop_animator.h"
+#include "ui/views/animation/installable_ink_drop_painter.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
 
@@ -43,6 +45,10 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
  public:
   // Create ink drop for |view|. Note that |view| must live longer than us.
   explicit InstallableInkDrop(View* view);
+
+  InstallableInkDrop(const InstallableInkDrop&) = delete;
+  InstallableInkDrop(InstallableInkDrop&&) = delete;
+
   ~InstallableInkDrop() override;
 
   // Should only be used for inspecting properties of the layer in tests.
@@ -80,18 +86,25 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
   static SkPath GetHighlightPathForView(const View* view);
 
  private:
+  void SchedulePaint();
+  void UpdatePainterForCurrentState();
+
   // The view this ink drop is showing for. |layer_| is added to the layer
   // hierarchy that |view_| belongs to. We track events on |view_| to update our
   // visual state.
   View* const view_;
 
-  // Observes |view_| and updates our visual state accordingly.
-  InkDropEventHandler event_handler_;
-
   // The layer we paint to.
   std::unique_ptr<ui::Layer> layer_;
 
-  InkDropState current_state_ = InkDropState::HIDDEN;
+  // Observes |view_| and updates our visual state accordingly.
+  InkDropEventHandler event_handler_;
+
+  InstallableInkDropPainter painter_;
+  InstallableInkDropAnimator animator_;
+
+  bool is_hovered_ = false;
+  bool is_focused_ = false;
 };
 
 }  // namespace views

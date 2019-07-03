@@ -124,7 +124,7 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
   mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
   mock_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
 
-  auto* main_frame = mock_graph.page->GetMainFrameNode();
+  auto* main_frame = mock_graph.page->GetMainFrameNodeImpl();
   main_frame->OnNavigationCommitted(kExampleUrl, /* same_document */ false);
 
   WebUIGraphDumpImpl impl(&graph);

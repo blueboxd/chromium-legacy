@@ -491,10 +491,12 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
       // inline-size, the regular layout code (|NGBlockNode::Layout()|) cannot
       // re-layout if it discovers that a scrollbar was added or removed. Handle
       // that situation here. The assumption is that if preferred logical widths
-      // are dirty after layout, it means that scrollbars appeared or
-      // disappeared. We have the same logic in legacy layout in
+      // are dirty after layout, AND its inline-size depends on preferred
+      // logical widths, it means that scrollbars appeared or disappeared. We
+      // have the same logic in legacy layout in
       // |LayoutBlockFlow::UpdateBlockLayout()|.
-      if (node.GetLayoutBox()->PreferredLogicalWidthsDirty()) {
+      if (node.GetLayoutBox()->PreferredLogicalWidthsDirty() &&
+          AbsoluteNeedsChildInlineSize(candidate_style)) {
         // Freeze the scrollbars for this layout pass. We don't want them to
         // change *again*.
         freeze_scrollbars.emplace();

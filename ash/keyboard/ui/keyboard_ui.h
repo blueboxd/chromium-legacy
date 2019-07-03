@@ -22,7 +22,7 @@ class InputMethod;
 
 namespace keyboard {
 
-class KeyboardController;
+class KeyboardUIController;
 
 // Interface representing a window containing virtual keyboard UI.
 class KEYBOARD_EXPORT KeyboardUI {
@@ -72,14 +72,14 @@ class KEYBOARD_EXPORT KeyboardUI {
 
   virtual void KeyboardContentsLoaded(const gfx::Size& size);
 
-  // |controller| may be null when KeyboardController is being destroyed.
-  void SetController(KeyboardController* controller);
+  // |controller| may be null when KeyboardUIController is being destroyed.
+  void SetController(KeyboardUIController* controller);
 
  protected:
-  KeyboardController* keyboard_controller() { return keyboard_controller_; }
+  KeyboardUIController* keyboard_controller() { return keyboard_controller_; }
 
  private:
-  keyboard::KeyboardController* keyboard_controller_ = nullptr;
+  keyboard::KeyboardUIController* keyboard_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUI);
 };

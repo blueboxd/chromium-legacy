@@ -3741,10 +3741,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(VARIANT_FALSE, result.ptr()->boolVal);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIFrameRootNodeChange) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableExperimentalUIAutomation);
+class AccessibilityWinUIABrowserTest : public AccessibilityWinBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AccessibilityWinBrowserTest::SetUpCommandLine(command_line);
 
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableExperimentalUIAutomation);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       TestIFrameRootNodeChange) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
@@ -3792,6 +3800,24 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIFrameRootNodeChange) {
   ASSERT_HRESULT_SUCCEEDED(
       parent->Navigate(NavigateDirection_FirstChild, &first_child));
   EXPECT_EQ(content_root.Get(), first_child.Get());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, TestGetFragmentRoot) {
+  // Verify that we can obtain a fragment root from a fragment without having
+  // sent WM_GETOBJECT to the host window.
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      </html>)HTML");
+
+  Microsoft::WRL::ComPtr<IRawElementProviderFragment> content_root;
+  ASSERT_HRESULT_SUCCEEDED(
+      GetManager()->GetRoot()->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(&content_root)));
+
+  Microsoft::WRL::ComPtr<IRawElementProviderFragmentRoot> fragment_root;
+  ASSERT_HRESULT_SUCCEEDED(content_root->get_FragmentRoot(&fragment_root));
+  ASSERT_NE(nullptr, fragment_root.Get());
 }
 
 }  // namespace content

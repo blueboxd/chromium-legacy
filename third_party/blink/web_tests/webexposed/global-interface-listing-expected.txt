@@ -10482,6 +10482,7 @@ interface Worklet
     method constructor
 interface WorkletAnimation
     attribute @@toStringTag
+    getter animatorName
     getter currentTime
     getter effect
     getter playState

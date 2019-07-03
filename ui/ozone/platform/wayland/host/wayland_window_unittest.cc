@@ -234,7 +234,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   // Make sure the window has normal state initially.
   EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
   window_->SetBounds(kNormalBounds);
-  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
   VerifyAndClearExpectations();
 
   auto active_maximized = MakeStateArray(
@@ -245,7 +245,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
   EXPECT_CALL(delegate_, OnBoundsChanged(kMaximizedBounds));
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kMaximized)));
   window_->Maximize();
   SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 1,
                      active_maximized.get());
@@ -276,7 +276,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds.width(),
                                                kNormalBounds.height()));
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kNormal)));
   EXPECT_CALL(delegate_, OnActivationChanged(_)).Times(0);
   EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
@@ -291,7 +291,7 @@ TEST_P(WaylandWindowTest, Minimize) {
   ScopedWlArray states;
 
   // Make sure the window is initialized to normal state from the beginning.
-  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
   SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
@@ -302,7 +302,7 @@ TEST_P(WaylandWindowTest, Minimize) {
   // comes, its state is changed to minimized. This EXPECT_CALL ensures this
   // behaviour.
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MINIMIZED)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kMinimized)));
   window_->Minimize();
   // Reinitialize wl_array, which removes previous old states.
   states = ScopedWlArray();
@@ -323,7 +323,7 @@ TEST_P(WaylandWindowTest, Minimize) {
 
 TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   // Make sure the window is initialized to normal state from the beginning.
-  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
 
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(0, 0, 1, states.get());
@@ -333,20 +333,20 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)));
   window_->ToggleFullscreen();
   // Make sure than WaylandWindow manually handles fullscreen states. Check the
   // comment in the WaylandWindow::ToggleFullscreen.
   EXPECT_EQ(window_->GetPlatformWindowState(),
-            PLATFORM_WINDOW_STATE_FULLSCREEN);
+            PlatformWindowState::kFullScreen);
   SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kNormal)));
   window_->Restore();
-  EXPECT_EQ(window_->GetPlatformWindowState(), PLATFORM_WINDOW_STATE_UNKNOWN);
+  EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kUnknown);
   // Reinitialize wl_array, which removes previous old states.
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(0, 0, 3, states.get());
@@ -355,7 +355,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
 
 TEST_P(WaylandWindowTest, StartWithFullscreen) {
   // Make sure the window is initialized to normal state from the beginning.
-  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
 
   // The state must not be changed to the fullscreen before the surface is
   // activated.
@@ -363,7 +363,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(0);
   window_->ToggleFullscreen();
   // The state of the window must still be a normal one.
-  EXPECT_EQ(window_->GetPlatformWindowState(), PLATFORM_WINDOW_STATE_NORMAL);
+  EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kNormal);
 
   Sync();
 
@@ -371,7 +371,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   // the state change.
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)));
 
   // Activate the surface.
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
@@ -383,7 +383,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   // must change to a fullscreen before the state change is confirmed by the
   // wayland. See comment in the WaylandWindow::ToggleFullscreen.
   EXPECT_EQ(window_->GetPlatformWindowState(),
-            PLATFORM_WINDOW_STATE_FULLSCREEN);
+            PlatformWindowState::kFullScreen);
 
   AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
   SendConfigureEvent(0, 0, 2, states.get());
@@ -398,7 +398,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   // Make sure the window has normal state initially.
   EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
   window_->SetBounds(kNormalBounds);
-  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
   VerifyAndClearExpectations();
 
   auto active_maximized = MakeStateArray(
@@ -409,7 +409,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
   EXPECT_CALL(delegate_, OnBoundsChanged(kMaximizedBounds));
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kMaximized)));
   window_->Maximize();
   SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 2,
                      active_maximized.get());
@@ -421,7 +421,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)));
   window_->ToggleFullscreen();
   AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, active_maximized.get());
   SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 3,
@@ -435,7 +435,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
   EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+              OnWindowStateChanged(Eq(PlatformWindowState::kNormal)));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   auto active = InitializeWlArrayWithActivatedState();

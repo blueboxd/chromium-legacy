@@ -68,7 +68,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // Returns the current main frame node (if there is one), otherwise returns
   // any of the potentially multiple main frames that currently exist. If there
   // are no main frames at the moment, returns nullptr.
-  FrameNodeImpl* GetMainFrameNode() const;
+  FrameNodeImpl* GetMainFrameNodeImpl() const;
 
   // Accessors.
   bool is_visible() const;
@@ -138,6 +138,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   ukm::SourceId GetUkmSourceID() const override;
   LifecycleState GetLifecycleState() const override;
   int64_t GetNavigationID() const override;
+  const FrameNode* GetMainFrameNode() const override;
   const GURL& GetMainFrameUrl() const override;
 
   void AddFrame(FrameNodeImpl* frame_node);

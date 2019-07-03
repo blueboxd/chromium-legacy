@@ -273,7 +273,7 @@ class AndroidPort(base.Port):
         devil_chromium.Initialize(
             output_directory=self._build_path(),
             adb_path=self._path_from_chromium_base(
-                'third_party', 'android_tools', 'sdk', 'platform-tools', 'adb'))
+                'third_party', 'android_sdk', 'public', 'platform-tools', 'adb'))
         devil_env.config.InitializeLogging(
             logging.DEBUG
             if self._debug_logging and self.get_option('debug_rwt_logging')

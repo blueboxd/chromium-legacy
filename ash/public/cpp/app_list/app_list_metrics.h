@@ -90,6 +90,8 @@ ASH_PUBLIC_EXPORT void RecordSearchResultOpenTypeHistogram(
 ASH_PUBLIC_EXPORT void RecordZeroStateSuggestionOpenTypeHistogram(
     SearchResultType type);
 
+ASH_PUBLIC_EXPORT void RecordLauncherIssuedSearchQueryLength(int query_length);
+
 }  // namespace app_list
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_METRICS_H_

@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -183,7 +183,7 @@ gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {
   if (exclude_shelf_)
     return screen_util::GetDisplayWorkAreaBoundsInParentForLockScreen(window);
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   const int keyboard_height =
       keyboard_controller->IsEnabled()
           ? keyboard_controller->GetKeyboardLockScreenOffsetBounds().height()

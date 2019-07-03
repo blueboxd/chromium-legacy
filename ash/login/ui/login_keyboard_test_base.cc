@@ -5,8 +5,8 @@
 #include "ash/login/ui/login_keyboard_test_base.h"
 
 #include "ash/keyboard/keyboard_controller_impl.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/lock_screen.h"
@@ -31,7 +31,7 @@ void LoginKeyboardTestBase::SetUp() {
 }
 
 void LoginKeyboardTestBase::ShowKeyboard() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(false);
   // Set keyboard height to half of the root window - this should overlap with
   // lock/login layout.
@@ -43,13 +43,13 @@ void LoginKeyboardTestBase::ShowKeyboard() {
 }
 
 void LoginKeyboardTestBase::HideKeyboard() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->HideKeyboardByUser();
   ASSERT_FALSE(keyboard_controller->IsKeyboardVisible());
 }
 
 gfx::Rect LoginKeyboardTestBase::GetKeyboardBoundsInScreen() const {
-  return keyboard::KeyboardController::Get()
+  return keyboard::KeyboardUIController::Get()
       ->GetKeyboardWindow()
       ->GetBoundsInScreen();
 }

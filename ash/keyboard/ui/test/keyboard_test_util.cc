@@ -4,7 +4,7 @@
 
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -18,10 +18,10 @@ class KeyboardVisibilityChangeWaiter : public ash::KeyboardControllerObserver {
  public:
   explicit KeyboardVisibilityChangeWaiter(bool wait_until)
       : wait_until_(wait_until) {
-    KeyboardController::Get()->AddObserver(this);
+    KeyboardUIController::Get()->AddObserver(this);
   }
   ~KeyboardVisibilityChangeWaiter() override {
-    KeyboardController::Get()->RemoveObserver(this);
+    KeyboardUIController::Get()->RemoveObserver(this);
   }
 
   void Wait() { run_loop_.Run(); }
@@ -39,7 +39,7 @@ class KeyboardVisibilityChangeWaiter : public ash::KeyboardControllerObserver {
 };
 
 bool WaitVisibilityChangesTo(bool wait_until) {
-  if (KeyboardController::Get()->IsKeyboardVisible() == wait_until)
+  if (KeyboardUIController::Get()->IsKeyboardVisible() == wait_until)
     return true;
   KeyboardVisibilityChangeWaiter waiter(wait_until);
   waiter.Wait();
@@ -54,7 +54,7 @@ bool WaitUntilLoaded() {
   // In tests, the keyboard window is mocked out so it usually "loads" within a
   // single RunUntilIdle call.
   base::RunLoop run_loop;
-  while (KeyboardController::Get()->GetStateForTest() ==
+  while (KeyboardUIController::Get()->GetStateForTest() ==
          KeyboardUIState::kLoading) {
     run_loop.RunUntilIdle();
   }
@@ -78,7 +78,7 @@ bool WaitUntilHidden() {
 }
 
 bool IsKeyboardShowing() {
-  auto* keyboard_controller = KeyboardController::Get();
+  auto* keyboard_controller = KeyboardUIController::Get();
   DCHECK(keyboard_controller->IsEnabled());
 
   // KeyboardController sets its state to SHOWN when it is about to show.
@@ -86,7 +86,7 @@ bool IsKeyboardShowing() {
 }
 
 bool IsKeyboardHiding() {
-  auto* keyboard_controller = KeyboardController::Get();
+  auto* keyboard_controller = KeyboardUIController::Get();
   DCHECK(keyboard_controller->IsEnabled());
 
   return keyboard_controller->GetStateForTest() == KeyboardUIState::kWillHide ||

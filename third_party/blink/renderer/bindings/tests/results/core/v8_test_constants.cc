@@ -156,10 +156,6 @@ static void InstallV8TestConstantsTemplate(
   static_assert(7 == TestConstants::kFeature1OriginTrialEnabledConst2, "the value of TestConstants_kFeature1OriginTrialEnabledConst2 does not match with implementation");
   static_assert(8 == TestConstants::kFeature2OriginTrialEnabledConst1, "the value of TestConstants_kFeature2OriginTrialEnabledConst1 does not match with implementation");
   static_assert(9 == TestConstants::kFeature2OriginTrialEnabledConst2, "the value of TestConstants_kFeature2OriginTrialEnabledConst2 does not match with implementation");
-  static_assert(10 == TestConstants::kFeature3OriginTrialEnabledConst1, "the value of TestConstants_kFeature3OriginTrialEnabledConst1 does not match with implementation");
-  static_assert(11 == TestConstants::kFeature3OriginTrialEnabledConst2, "the value of TestConstants_kFeature3OriginTrialEnabledConst2 does not match with implementation");
-  static_assert(12 == TestConstants::kFeature4OriginTrialEnabledConst1, "the value of TestConstants_kFeature4OriginTrialEnabledConst1 does not match with implementation");
-  static_assert(13 == TestConstants::kFeature4OriginTrialEnabledConst2, "the value of TestConstants_kFeature4OriginTrialEnabledConst2 does not match with implementation");
   static_assert(1 == TestConstants::CONST_IMPL, "the value of TestConstants_CONST_IMPL does not match with implementation");
 
   // Custom signature
@@ -262,68 +258,6 @@ void V8TestConstants::InstallFeatureName2(
 
 void V8TestConstants::InstallFeatureName2(ScriptState* script_state) {
   InstallFeatureName2(script_state, v8::Local<v8::Object>());
-}
-
-void V8TestConstants::InstallOriginTrialFeature1(
-    v8::Isolate* isolate,
-    const DOMWrapperWorld& world,
-    v8::Local<v8::Object> instance,
-    v8::Local<v8::Object> prototype,
-    v8::Local<v8::Function> interface) {
-  static constexpr V8DOMConfiguration::ConstantConfiguration
-  kFEATURE3ORIGINTRIALENABLEDCONST1Configuration = {"FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(10)};
-  V8DOMConfiguration::InstallConstant(
-      isolate, interface, prototype, kFEATURE3ORIGINTRIALENABLEDCONST1Configuration);
-  static constexpr V8DOMConfiguration::ConstantConfiguration
-  kFEATURE3ORIGINTRIALENABLEDCONST2Configuration = {"FEATURE3_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(11)};
-  V8DOMConfiguration::InstallConstant(
-      isolate, interface, prototype, kFEATURE3ORIGINTRIALENABLEDCONST2Configuration);
-}
-
-void V8TestConstants::InstallOriginTrialFeature1(
-    ScriptState* script_state, v8::Local<v8::Object> instance) {
-  V8PerContextData* per_context_data = script_state->PerContextData();
-  v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
-      V8TestConstants::GetWrapperTypeInfo());
-  v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
-      V8TestConstants::GetWrapperTypeInfo());
-  ALLOW_UNUSED_LOCAL(interface);
-  InstallOriginTrialFeature1(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
-}
-
-void V8TestConstants::InstallOriginTrialFeature1(ScriptState* script_state) {
-  InstallOriginTrialFeature1(script_state, v8::Local<v8::Object>());
-}
-
-void V8TestConstants::InstallOriginTrialFeature2(
-    v8::Isolate* isolate,
-    const DOMWrapperWorld& world,
-    v8::Local<v8::Object> instance,
-    v8::Local<v8::Object> prototype,
-    v8::Local<v8::Function> interface) {
-  static constexpr V8DOMConfiguration::ConstantConfiguration
-  kFEATURE4ORIGINTRIALENABLEDCONST1Configuration = {"FEATURE4_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(12)};
-  V8DOMConfiguration::InstallConstant(
-      isolate, interface, prototype, kFEATURE4ORIGINTRIALENABLEDCONST1Configuration);
-  static constexpr V8DOMConfiguration::ConstantConfiguration
-  kFEATURE4ORIGINTRIALENABLEDCONST2Configuration = {"FEATURE4_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(13)};
-  V8DOMConfiguration::InstallConstant(
-      isolate, interface, prototype, kFEATURE4ORIGINTRIALENABLEDCONST2Configuration);
-}
-
-void V8TestConstants::InstallOriginTrialFeature2(
-    ScriptState* script_state, v8::Local<v8::Object> instance) {
-  V8PerContextData* per_context_data = script_state->PerContextData();
-  v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
-      V8TestConstants::GetWrapperTypeInfo());
-  v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
-      V8TestConstants::GetWrapperTypeInfo());
-  ALLOW_UNUSED_LOCAL(interface);
-  InstallOriginTrialFeature2(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
-}
-
-void V8TestConstants::InstallOriginTrialFeature2(ScriptState* script_state) {
-  InstallOriginTrialFeature2(script_state, v8::Local<v8::Object>());
 }
 
 v8::Local<v8::FunctionTemplate> V8TestConstants::DomTemplate(

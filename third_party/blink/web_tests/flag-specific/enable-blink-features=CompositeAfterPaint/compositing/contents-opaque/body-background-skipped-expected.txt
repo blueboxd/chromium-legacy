@@ -7,22 +7,11 @@
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='underbody'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='underbody'",
+      "position": [8, 8],
       "bounds": [200, 200],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
+      "backgroundColor": "#008000"
     }
   ]
 }

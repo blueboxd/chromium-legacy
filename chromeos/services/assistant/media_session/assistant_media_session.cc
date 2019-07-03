@@ -54,6 +54,16 @@ void AssistantMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
   std::move(callback).Run(std::move(info));
 }
 
+// TODO(b/135064564): Update StartDucking() and StopDucking() after volume
+// control API for media streams is implemented.
+void AssistantMediaSession::StartDucking() {
+  Suspend(SuspendType::kSystem);
+}
+
+void AssistantMediaSession::StopDucking() {
+  Resume(SuspendType::kSystem);
+}
+
 void AssistantMediaSession::Suspend(SuspendType suspend_type) {
   if (!IsActive())
     return;

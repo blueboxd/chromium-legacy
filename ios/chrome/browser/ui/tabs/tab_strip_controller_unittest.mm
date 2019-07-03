@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
@@ -104,25 +103,6 @@
                                 WebStateOpener());
 
   return tab;
-}
-
-- (Tab*)currentTab {
-  web::WebState* activeWebState = _webStateList->GetActiveWebState();
-  return activeWebState ? LegacyTabHelper::GetTabForWebState(activeWebState)
-                        : nil;
-}
-
-- (Tab*)tabAtIndex:(NSUInteger)index {
-  DCHECK(index < static_cast<NSUInteger>(INT_MAX));
-  DCHECK(static_cast<int>(index) < _webStateList->count());
-  return LegacyTabHelper::GetTabForWebState(
-      _webStateList->GetWebStateAt(static_cast<int>(index)));
-}
-
-- (NSUInteger)indexOfTab:(Tab*)tab {
-  const int index = _webStateList->GetIndexOfWebState(tab.webState);
-  return index == WebStateList::kInvalidIndex ? NSNotFound
-                                              : static_cast<NSUInteger>(index);
 }
 
 - (BOOL)isEmpty {

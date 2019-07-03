@@ -3126,6 +3126,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "win-use-native-spellchecker",
+    "owners": [ "gujen@google.com", "yyushkina@google.com" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "windows-mixed-reality",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79

@@ -181,14 +181,14 @@ const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
     // Wrap out of range values with a calc.
     CSSCalcExpressionNode* node = ToCalcExpressionNode();
     node->SetIsNestedCalc();
-    return CSSMathFunctionValue::Create(CSSCalcValue::Create(node));
+    return CSSMathFunctionValue::Create(node);
   }
 
   return CSSNumericLiteralValue::Create(value_, unit_);
 }
 
 CSSCalcExpressionNode* CSSUnitValue::ToCalcExpressionNode() const {
-  return CSSCalcValue::CreateExpressionNode(
+  return CSSCalcPrimitiveValue::Create(
       CSSNumericLiteralValue::Create(value_, unit_));
 }
 

@@ -3116,8 +3116,6 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
       {"securityKeysResetStep2", IDS_SETTINGS_SECURITY_KEYS_RESET_STEP2},
       {"securityKeysResetSuccess", IDS_SETTINGS_SECURITY_KEYS_RESET_SUCCESS},
       {"securityKeysResetTitle", IDS_SETTINGS_SECURITY_KEYS_RESET_TITLE},
-      {"securityKeysSavedCredentials",
-       IDS_SETTINGS_SECURITY_KEYS_SAVED_CREDENTIALS_TITLE},
       {"securityKeysSetPIN", IDS_SETTINGS_SECURITY_KEYS_SET_PIN},
       {"securityKeysSetPINChangeTitle",
        IDS_SETTINGS_SECURITY_KEYS_SET_PIN_CHANGE_TITLE},

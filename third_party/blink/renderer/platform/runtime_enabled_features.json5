@@ -476,6 +476,10 @@
       status: "experimental",
     },
     {
+      name: "DiscardInputToMovingIframes",
+      status: "experimental",
+    },
+    {
       name: "DisplayCutoutAPI",
       settable_from_internals: true,
     },

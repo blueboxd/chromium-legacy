@@ -10,8 +10,12 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-// Capabilities of which a device can perform.
-enum class SharingDeviceCapability { kNone = 0 };
+// Capabilities which a device can perform. These are stored in sync preferences
+// when the device is registered, and the values should never be changed. When
+// adding a new capability, the value should be '1 << (NEXT_FREE_BIT_ID)' and
+// NEXT_FREE_BIT_ID should be incremented by one.
+// NEXT_FREE_BIT_ID: 1
+enum class SharingDeviceCapability { kNone = 0, kTelephony = 1 << 0 };
 
 // A class that holds information regarding the properties of a device.
 class SharingDeviceInfo {

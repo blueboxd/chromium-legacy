@@ -158,6 +158,10 @@ MojoResult MessagePipeDispatcher::WriteMessage(
     return MOJO_RESULT_UNKNOWN;
   }
 
+  // We may need to update anyone watching our signals in case we just exceeded
+  // the unread message count quota.
+  base::AutoLock lock(signal_lock_);
+  watchers_.NotifyState(GetHandleSignalsStateNoLock());
   return MOJO_RESULT_OK;
 }
 
@@ -194,6 +198,8 @@ MojoResult MessagePipeDispatcher::ReadMessage(
 }
 
 MojoResult MessagePipeDispatcher::SetQuota(MojoQuotaType type, uint64_t limit) {
+  base::AutoLock lock(signal_lock_);
+
   switch (type) {
     case MOJO_QUOTA_TYPE_RECEIVE_QUEUE_LENGTH:
       if (limit == MOJO_QUOTA_LIMIT_NONE)
@@ -209,6 +215,23 @@ MojoResult MessagePipeDispatcher::SetQuota(MojoQuotaType type, uint64_t limit) {
         receive_queue_memory_size_limit_ = limit;
       break;
 
+    case MOJO_QUOTA_TYPE_UNREAD_MESSAGE_COUNT:
+      if (limit == MOJO_QUOTA_LIMIT_NONE) {
+        unread_message_count_limit_.reset();
+        node_controller_->node()->SetAcknowledgeRequestInterval(port_, 0);
+      } else {
+        unread_message_count_limit_ = limit;
+        // Setting the acknowledge request interval for the port to half the
+        // unread quota limit, means the ack roundtrip has half the window to
+        // catch up with sent messages. In other words, if the producer is
+        // producing messages at a steady rate of limit/2 packets per message
+        // round trip or lower, the quota limit won't be exceeded. This is
+        // assuming the consumer is consuming messages at the same rate.
+        node_controller_->node()->SetAcknowledgeRequestInterval(
+            port_, (limit + 1) / 2);
+      }
+      break;
+
     default:
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
@@ -219,6 +242,8 @@ MojoResult MessagePipeDispatcher::SetQuota(MojoQuotaType type, uint64_t limit) {
 MojoResult MessagePipeDispatcher::QueryQuota(MojoQuotaType type,
                                              uint64_t* limit,
                                              uint64_t* usage) {
+  base::AutoLock lock(signal_lock_);
+
   ports::PortStatus port_status;
   if (node_controller_->node()->GetStatus(port_, &port_status) != ports::OK) {
     CHECK(in_transit_ || port_transferred_ || port_closed_);
@@ -234,6 +259,11 @@ MojoResult MessagePipeDispatcher::QueryQuota(MojoQuotaType type,
     case MOJO_QUOTA_TYPE_RECEIVE_QUEUE_MEMORY_SIZE:
       *limit = receive_queue_memory_size_limit_.value_or(MOJO_QUOTA_LIMIT_NONE);
       *usage = port_status.queued_num_bytes;
+      break;
+
+    case MOJO_QUOTA_TYPE_UNREAD_MESSAGE_COUNT:
+      *limit = unread_message_count_limit_.value_or(MOJO_QUOTA_LIMIT_NONE);
+      *usage = port_status.unacknowledged_message_count;
       break;
 
     default:
@@ -383,6 +413,10 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateNoLock() const {
     rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
   } else if (receive_queue_memory_size_limit_ &&
              port_status.queued_num_bytes > *receive_queue_memory_size_limit_) {
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
+  } else if (unread_message_count_limit_ &&
+             port_status.unacknowledged_message_count >
+                 *unread_message_count_limit_) {
     rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
   }
   rv.satisfiable_signals |=

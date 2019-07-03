@@ -139,6 +139,11 @@
     "label": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests",
     "type": "raw",
   },
+  "angle_deqp_khr_gles31_tests": {
+    "args": [],
+    "label": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests",
+    "type": "raw",
+  },
   "angle_end2end_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_end2end_tests",

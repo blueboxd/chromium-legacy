@@ -104,12 +104,12 @@ CSSCalcExpressionNode* CSSMathSum::ToCalcExpressionNode() const {
   if (NumericValues().size() == 1)
     return NumericValues()[0]->ToCalcExpressionNode();
 
-  CSSCalcExpressionNode* node = CSSCalcValue::CreateExpressionNode(
+  CSSCalcExpressionNode* node = CSSCalcBinaryOperation::Create(
       NumericValues()[0]->ToCalcExpressionNode(),
       NumericValues()[1]->ToCalcExpressionNode(), CSSMathOperator::kAdd);
 
   for (wtf_size_t i = 2; i < NumericValues().size(); i++) {
-    node = CSSCalcValue::CreateExpressionNode(
+    node = CSSCalcBinaryOperation::Create(
         node, NumericValues()[i]->ToCalcExpressionNode(),
         CSSMathOperator::kAdd);
   }

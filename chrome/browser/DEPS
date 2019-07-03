@@ -236,7 +236,7 @@ specific_include_rules = {
     "+services/network/initiator_lock_compatibility.h",
   ],
   "input_method_manager_impl.cc": [
-    "+ash/keyboard/ui/keyboard_controller.h",
+    "+ash/keyboard/ui/keyboard_ui_controller.h",
   ],
   "chrome_browsing_data_remover_delegate_unittest.cc": [
     "+services/network/network_context.h",

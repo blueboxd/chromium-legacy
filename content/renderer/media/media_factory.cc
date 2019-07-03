@@ -442,17 +442,22 @@ MediaFactory::CreateRendererFactorySelector(
   factory_selector->SetUseMediaPlayer(use_media_player);
 
   // FlingingRendererClientFactory (FRCF) setup.
-  auto mojo_flinging_factory = std::make_unique<media::MojoRendererFactory>(
-      GetMediaInterfaceFactory());
+  auto mojo_flinging_factory =
+      std::make_unique<media::MojoRendererFactory>(GetMediaInterfaceFactory());
 
   auto flinging_factory = std::make_unique<FlingingRendererClientFactory>(
       std::move(mojo_flinging_factory), std::move(client_wrapper));
 
-  // base::Unretained is safe here because |factory_selector| owns
-  // |flinging_factory|.
+  // base::Unretained() is safe here because |factory_selector| owns and
+  // outlives |flinging_factory|.
+  factory_selector->StartRequestRemotePlayStateCB(
+      base::BindOnce(&FlingingRendererClientFactory::SetRemotePlayStateChangeCB,
+                     base::Unretained(flinging_factory.get())));
+
+  // base::Unretained() is also safe here, for the same reasons.
   factory_selector->SetQueryIsFlingingActiveCB(
-      base::Bind(&FlingingRendererClientFactory::IsFlingingActive,
-                 base::Unretained(flinging_factory.get())));
+      base::BindRepeating(&FlingingRendererClientFactory::IsFlingingActive,
+                          base::Unretained(flinging_factory.get())));
 
   factory_selector->AddFactory(
       media::RendererFactorySelector::FactoryType::FLINGING,

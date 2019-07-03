@@ -5,7 +5,7 @@
 #include "ash/wm/overview/overview_controller.h"
 
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -388,20 +388,20 @@ class OverviewVirtualKeyboardTest : public OverviewControllerTest {
     ASSERT_TRUE(keyboard::IsKeyboardEnabled());
     keyboard::test::WaitUntilLoaded();
 
-    keyboard_controller()->GetKeyboardWindow()->SetBounds(
+    keyboard_ui_controller()->GetKeyboardWindow()->SetBounds(
         keyboard::KeyboardBoundsFromRootBounds(
             Shell::GetPrimaryRootWindow()->bounds(), 100));
     // Wait for keyboard window to load.
     base::RunLoop().RunUntilIdle();
   }
 
-  keyboard::KeyboardController* keyboard_controller() {
-    return keyboard::KeyboardController::Get();
+  keyboard::KeyboardUIController* keyboard_ui_controller() {
+    return keyboard::KeyboardUIController::Get();
   }
 };
 
 TEST_F(OverviewVirtualKeyboardTest, ToggleOverviewModeHidesVirtualKeyboard) {
-  keyboard_controller()->ShowKeyboard(false /* locked */);
+  keyboard_ui_controller()->ShowKeyboard(false /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   Shell::Get()->overview_controller()->StartOverview();
@@ -412,7 +412,7 @@ TEST_F(OverviewVirtualKeyboardTest, ToggleOverviewModeHidesVirtualKeyboard) {
 
 TEST_F(OverviewVirtualKeyboardTest,
        ToggleOverviewModeDoesNotHideLockedVirtualKeyboard) {
-  keyboard_controller()->ShowKeyboard(true /* locked */);
+  keyboard_ui_controller()->ShowKeyboard(true /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   Shell::Get()->overview_controller()->StartOverview();

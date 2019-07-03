@@ -17,6 +17,10 @@
 
 class SkBitmap;
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class BrowserContext;
@@ -47,6 +51,7 @@ class CONTENT_EXPORT PaymentAppProvider {
   virtual void InvokePaymentApp(
       BrowserContext* browser_context,
       int64_t registration_id,
+      const url::Origin& sw_origin,
       payments::mojom::PaymentRequestEventDataPtr event_data,
       InvokePaymentAppCallback callback) = 0;
   virtual void InstallAndInvokePaymentApp(
@@ -62,10 +67,14 @@ class CONTENT_EXPORT PaymentAppProvider {
   virtual void CanMakePayment(
       BrowserContext* browser_context,
       int64_t registration_id,
+      const url::Origin& sw_origin,
+      const std::string& payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,
       PaymentEventResultCallback callback) = 0;
   virtual void AbortPayment(BrowserContext* browser_context,
                             int64_t registration_id,
+                            const url::Origin& sw_origin,
+                            const std::string& payment_request_id,
                             PaymentEventResultCallback callback) = 0;
 
   // Set opened window for payment handler. Note that we maintain at most one

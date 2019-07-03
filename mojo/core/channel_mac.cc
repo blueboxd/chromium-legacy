@@ -133,8 +133,8 @@ class ChannelMac : public Channel,
     }
 
     for (uint16_t i = 0; i < mach_ports_header->num_ports; ++i) {
-      auto type = static_cast<PlatformHandle::Type>(
-          mach_ports_header->entries[i].mach_entry.type);
+      auto type =
+          static_cast<PlatformHandle::Type>(mach_ports_header->entries[i].type);
       if (type == PlatformHandle::Type::kNone) {
         return false;
       } else if (type == PlatformHandle::Type::kFd &&

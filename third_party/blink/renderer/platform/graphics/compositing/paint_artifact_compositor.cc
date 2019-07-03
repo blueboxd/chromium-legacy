@@ -176,6 +176,9 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   if (!scroll_offset_node)
     return nullptr;
 
+  // We don't decomposite scroll transform nodes.
+  DCHECK_EQ(FloatPoint(), pending_layer.offset_of_decomposited_transforms);
+
   const auto& scroll_node = *scroll_offset_node->ScrollNode();
   auto scroll_element_id = scroll_node.GetCompositorElementId();
 
@@ -235,9 +238,9 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   DCHECK(first_paint_chunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
-  if (scoped_refptr<cc::Layer> foreign_layer =
-          ForeignLayerForPaintChunk(*paint_artifact, first_paint_chunk,
-                                    pending_layer.offset_to_transform_parent)) {
+  if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
+          *paint_artifact, first_paint_chunk,
+          pending_layer.offset_of_decomposited_transforms)) {
     DCHECK_EQ(paint_chunks.size(), 1u);
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->content_layers.push_back(foreign_layer);
@@ -257,7 +260,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   std::unique_ptr<ContentLayerClientImpl> content_layer_client =
       ClientForPaintChunk(first_paint_chunk);
 
-  gfx::Rect cc_combined_bounds(EnclosingIntRect(pending_layer.bounds));
+  IntRect cc_combined_bounds = EnclosingIntRect(pending_layer.bounds);
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
@@ -272,7 +275,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   // here to avoid changing foreign layers. This includes things set by
   // GraphicsLayer on the ContentsLayer() or by video clients etc.
   cc_layer->SetContentsOpaque(pending_layer.rect_known_to_be_opaque.Contains(
-      FloatRect(EnclosingIntRect(pending_layer.bounds))));
+      FloatRect(cc_combined_bounds)));
 
   return cc_layer;
 }
@@ -338,7 +341,6 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
           first_paint_chunk.known_to_be_opaque ? bounds : FloatRect()),
       property_tree_state(
           first_paint_chunk.properties.GetPropertyTreeState().Unalias()),
-      offset_to_transform_parent(FloatPoint()),
       requires_own_layer(chunk_requires_own_layer) {
   paint_chunk_indices.push_back(chunk_index);
 }
@@ -386,12 +388,6 @@ void PaintArtifactCompositor::PendingLayer::Upcast(
   // query conservative opaque rect after mapping to an ancestor space,
   // which is not supported by GeometryMapper yet.
   rect_known_to_be_opaque = FloatRect();
-}
-
-void PaintArtifactCompositor::PendingLayer::DecompositeTransform() {
-  const auto& transform = property_tree_state.Transform().Unalias();
-  property_tree_state.SetTransform(*transform.Parent());
-  offset_to_transform_parent += transform.Translation2D();
 }
 
 const PaintChunk& PaintArtifactCompositor::PendingLayer::FirstPaintChunk(
@@ -794,10 +790,8 @@ static void UpdateCompositorViewportProperties(
 //  9. All child transform nodes are also able to be de-composited.
 // This algorithm should be O(t+c+e) where t,c,e are the number of transform,
 // clip, and effect nodes in the full tree.
-void PaintArtifactCompositor::DecompositeTransforms() {
-  // TODO(masonfreed): CAP is not yet implemented here.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
+void PaintArtifactCompositor::DecompositeTransforms(
+    const PaintArtifact& paint_artifact) {
   WTF::HashMap<const TransformPaintPropertyNode*, bool> can_be_decomposited;
   WTF::HashSet<const void*> clips_and_effects_seen;
   for (const auto& pending_layer : pending_layers_) {
@@ -852,18 +846,35 @@ void PaintArtifactCompositor::DecompositeTransforms() {
       if (!node->IsRoot())
         mark_not_decompositable(&node->LocalTransformSpace());
     }
+
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // The scroll translation node of a scroll hit test layer may not be
+      // referenced by any pending layer's property tree state. Disallow
+      // decomposition of it (and its ancestors).
+      if (const auto* scroll_translation =
+              ScrollTranslationForScrollHitTestLayer(paint_artifact,
+                                                     pending_layer))
+        mark_not_decompositable(scroll_translation);
+    }
   }
 
   // Now, for any transform nodes that can be de-composited, re-map their
   // transform to point to the correct parent, and set the
   // offset_to_transform_parent.
   for (auto& pending_layer : pending_layers_) {
-    const auto* transform_node = &pending_layer.property_tree_state.Transform();
-    while (transform_node && !transform_node->IsRoot() &&
-           can_be_decomposited.at(transform_node)) {
-      pending_layer.DecompositeTransform();
-      transform_node = SafeUnalias(transform_node->Parent());
+    const auto* transform =
+        &pending_layer.property_tree_state.Transform().Unalias();
+    while (!transform->IsRoot() && can_be_decomposited.at(transform)) {
+      pending_layer.offset_of_decomposited_transforms +=
+          transform->Translation2D();
+      transform = &transform->Parent()->Unalias();
     }
+    pending_layer.property_tree_state.SetTransform(*transform);
+    // Move bounds into the new transform space.
+    pending_layer.bounds.MoveBy(
+        pending_layer.offset_of_decomposited_transforms);
+    pending_layer.rect_known_to_be_opaque.MoveBy(
+        pending_layer.offset_of_decomposited_transforms);
   }
 }
 
@@ -915,7 +926,7 @@ void PaintArtifactCompositor::Update(
     entry.in_use = false;
 
   // See if we can de-composite any transforms.
-  DecompositeTransforms();
+  DecompositeTransforms(*paint_artifact);
 
   for (auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;

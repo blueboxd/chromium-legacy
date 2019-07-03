@@ -153,7 +153,7 @@ base::TimeDelta PageNodeImpl::TimeSinceLastVisibilityChange() const {
   return PerformanceManagerClock::NowTicks() - visibility_change_time_;
 }
 
-FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
+FrameNodeImpl* PageNodeImpl::GetMainFrameNodeImpl() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (main_frame_nodes_.empty())
     return nullptr;
@@ -339,6 +339,10 @@ PageNodeImpl::LifecycleState PageNodeImpl::GetLifecycleState() const {
 int64_t PageNodeImpl::GetNavigationID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return navigation_id();
+}
+
+const FrameNode* PageNodeImpl::GetMainFrameNode() const {
+  return GetMainFrameNodeImpl();
 }
 
 const GURL& PageNodeImpl::GetMainFrameUrl() const {

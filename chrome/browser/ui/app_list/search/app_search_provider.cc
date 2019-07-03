@@ -941,25 +941,21 @@ void AppSearchProvider::UpdateRecommendedResults(
     const auto find_in_app_list = id_to_app_list_index.find(app->id());
     const base::Time time = app->GetLastActivityTime();
 
-    if (app->id() == kInternalAppIdContinueReading) {
-      // Case 1: if it's |kInternalAppIdContinueReading|, set relevance as 1.0
-      // (always show it as the first).
-      result->set_relevance(1.0);
-    } else if (find_in_ranker != ranker_scores.end()) {
-      // Case 2: if it's recommended by |ranker_|, set relevance as a score
-      // in [0.67, 0.99].
-      result->set_relevance(ReRange(find_in_ranker->second, 0.67, 0.99));
+    if (find_in_ranker != ranker_scores.end()) {
+      // Case 1: if it's recommended by |ranker_|, set relevance as a score
+      // in [0.67, 1.0].
+      result->set_relevance(ReRange(find_in_ranker->second, 0.67, 1.0));
     } else if (!time.is_null()) {
-      // Case 3: if it has last activity time or install time, set the relevance
+      // Case 2: if it has last activity time or install time, set the relevance
       // in [0.34, 0.66] based on the time.
       result->UpdateFromLastLaunchedOrInstalledTime(clock_->Now(), time);
       result->set_relevance(ReRange(result->relevance(), 0.34, 0.66));
     } else if (find_in_app_list != id_to_app_list_index.end()) {
-      // Case 4: if it's in the app_list_index, set the relevance in [0.1, 0.33]
+      // Case 3: if it's in the app_list_index, set the relevance in [0.1, 0.33]
       result->set_relevance(
           ReRange(1.0f / (1.0f + find_in_app_list->second), 0.1, 0.33));
     } else {
-      // Case 5: otherwise set the relevance as 0.0f;
+      // Case 4: otherwise set the relevance as 0.0f;
       result->set_relevance(0.0f);
     }
 

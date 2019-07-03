@@ -21,7 +21,7 @@
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/top_icon_animation_view.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
@@ -36,7 +36,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/background.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/painter.h"
@@ -64,62 +64,82 @@ int GetCompositorActivatedFrameCount(ui::Compositor* compositor) {
 // Transit from the background of the folder item's icon to the opened
 // folder's background when opening the folder. Transit the other way when
 // closing the folder.
-class BackgroundAnimation : public gfx::SlideAnimation,
-                            public gfx::AnimationDelegate {
+class BackgroundAnimation : public AppListFolderView::Animation,
+                            public views::AnimationDelegateViews {
  public:
-  BackgroundAnimation(bool show, AppListFolderView* folder_view)
-      : gfx::SlideAnimation(this), show_(show), folder_view_(folder_view) {
+  BackgroundAnimation(bool show,
+                      AppListFolderView* folder_view,
+                      views::View* background_view)
+      : AnimationDelegateViews(background_view),
+        show_(show),
+        animation_(this),
+        folder_view_(folder_view),
+        background_view_(background_view) {
+    animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    animation_.SetSlideDuration(
+        AppListConfig::instance().folder_transition_in_duration_ms());
+  }
+
+  ~BackgroundAnimation() override = default;
+
+ private:
+  // AppListView::Animation:
+  void ScheduleAnimation() override {
     // Calculate the source and target states.
     const int icon_radius = AppListConfig::instance().folder_icon_radius();
     const int folder_radius =
         AppListConfig::instance().folder_background_radius();
     from_radius_ = show_ ? icon_radius : folder_radius;
     to_radius_ = show_ ? folder_radius : icon_radius;
-    from_rect_ = show ? folder_view_->folder_item_icon_bounds()
-                      : folder_view_->background_view()->bounds();
-    to_rect_ = show ? folder_view_->background_view()->bounds()
-                    : folder_view_->folder_item_icon_bounds();
+    from_rect_ = show_ ? folder_view_->folder_item_icon_bounds()
+                       : background_view_->bounds();
+    from_rect_ -= background_view_->bounds().OffsetFromOrigin();
+    to_rect_ = show_ ? background_view_->bounds()
+                     : folder_view_->folder_item_icon_bounds();
+    to_rect_ -= background_view_->bounds().OffsetFromOrigin();
     const SkColor background_color =
         AppListConfig::instance().folder_background_color();
-    from_color_ = show_ ? AppListConfig::instance().folder_bubble_color()
-                        : background_color;
-    to_color_ = show_ ? background_color
-                      : AppListConfig::instance().folder_bubble_color();
+    const SkColor from_color =
+        show_ ? AppListConfig::instance().folder_bubble_color()
+              : background_color;
+    const SkColor to_color =
+        show_ ? background_color
+              : AppListConfig::instance().folder_bubble_color();
 
-    SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    SetSlideDuration(
-        AppListConfig::instance().folder_transition_in_duration_ms());
+    background_view_->layer()->SetColor(from_color);
+    background_view_->layer()->SetClipRect(from_rect_);
+    background_view_->layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(from_radius_));
 
-    folder_view_->UpdateBackgroundMask(
-        from_radius_,
-        folder_view_->background_view()->bounds().InsetsFrom(from_rect_));
+    // We use the layer animation for the color, while gfx::Animation to update
+    // the corner radius and the clip rect. They can be slightly inconsistent
+    // since these animations run independently.
+    ui::ScopedLayerAnimationSettings settings(
+        background_view_->layer()->GetAnimator());
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        AppListConfig::instance().folder_transition_in_duration_ms()));
+    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    background_view_->layer()->SetColor(to_color);
+
+    animation_.Show();
   }
 
-  ~BackgroundAnimation() override = default;
+  bool IsAnimationRunning() override { return animation_.is_animating(); }
 
- private:
   // gfx::AnimationDelegate
   void AnimationProgressed(const gfx::Animation* animation) override {
     const double progress = animation->GetCurrentValue();
     const int current_radius =
         gfx::Tween::IntValueBetween(progress, from_radius_, to_radius_);
-    const SkColor current_color =
-        gfx::Tween::ColorValueBetween(progress, from_color_, to_color_);
-    const gfx::Rect current_rect = gfx::Tween::RectValueBetween(
-        animation->GetCurrentValue(), from_rect_, to_rect_);
-
-    folder_view_->background_view()->SetBackground(
-        views::CreateSolidBackground(current_color));
-    folder_view_->UpdateBackgroundMask(
-        current_radius,
-        folder_view_->background_view()->bounds().InsetsFrom(current_rect));
-    folder_view_->background_view()->SchedulePaint();
+    background_view_->layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(current_radius));
+    const gfx::Rect current_bounds =
+        gfx::Tween::RectValueBetween(progress, from_rect_, to_rect_);
+    background_view_->layer()->SetClipRect(current_bounds);
   }
-
   void AnimationEnded(const gfx::Animation* animation) override {
     folder_view_->RecordAnimationSmoothness();
   }
-
   void AnimationCanceled(const gfx::Animation* animation) override {
     AnimationEnded(animation);
   }
@@ -128,43 +148,48 @@ class BackgroundAnimation : public gfx::SlideAnimation,
   const bool show_;
 
   // The source and target state of the background's corner radius.
-  int from_radius_;
-  int to_radius_;
+  int from_radius_ = 0;
+  int to_radius_ = 0;
 
-  // The source and target state of the background's bounds.
+  // The source and target state of the bounds of the background.
   gfx::Rect from_rect_;
   gfx::Rect to_rect_;
 
-  // The source and target state of the background's color.
-  SkColor from_color_;
-  SkColor to_color_;
-
+  gfx::SlideAnimation animation_;
   AppListFolderView* const folder_view_;  // Not owned.
+  views::View* const background_view_;    // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundAnimation);
 };
 
 // Decrease the opacity of the folder item's title when opening the folder.
 // Increase it when closing the folder.
-class FolderItemTitleAnimation : public gfx::SlideAnimation,
-                                 public gfx::AnimationDelegate {
+class FolderItemTitleAnimation : public AppListFolderView::Animation,
+                                 public views::AnimationDelegateViews {
  public:
   FolderItemTitleAnimation(bool show, AppListFolderView* folder_view)
-      : gfx::SlideAnimation(this), show_(show), folder_view_(folder_view) {
+      : views::AnimationDelegateViews(folder_view),
+        show_(show),
+        animation_(this),
+        folder_view_(folder_view) {
     // Calculate the source and target states.
     from_color_ = show_ ? AppListConfig::instance().grid_title_color()
                         : SK_ColorTRANSPARENT;
     to_color_ = show_ ? SK_ColorTRANSPARENT
                       : AppListConfig::instance().grid_title_color();
 
-    SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    SetSlideDuration(
+    animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    animation_.SetSlideDuration(
         AppListConfig::instance().folder_transition_in_duration_ms());
   }
 
   ~FolderItemTitleAnimation() override = default;
 
  private:
+  // AppListFolderView::Animation:
+  void ScheduleAnimation() override { animation_.Show(); }
+  bool IsAnimationRunning() override { return animation_.is_animating(); }
+
   // gfx::AnimationDelegate
   void AnimationProgressed(const gfx::Animation* animation) override {
     if (!folder_view_->GetActivatedFolderItemView())
@@ -193,6 +218,7 @@ class FolderItemTitleAnimation : public gfx::SlideAnimation,
   SkColor from_color_;
   SkColor to_color_;
 
+  gfx::SlideAnimation animation_;
   AppListFolderView* const folder_view_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(FolderItemTitleAnimation);
@@ -407,7 +433,6 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
     if (hide_for_reparent_) {
       gfx::Rect rect(folder_view_->bounds());
       folder_view_->SetBoundsRect(gfx::Rect(rect.x(), rect.y(), 1, 1));
-      folder_view_->UpdateBackgroundMaskBounds();
     }
 
     // Reset the transform after animation so that the following folder's
@@ -445,7 +470,8 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   // contents container using layer animation, so use another layer to perform
   // such changes.
   background_view_ = AddChildView(std::make_unique<views::View>());
-  background_view_->SetPaintToLayer();
+  background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  background_view_->layer()->SetColor(SK_ColorTRANSPARENT);
   background_view_->layer()->SetFillsBoundsOpaquely(false);
   view_model_->Add(background_view_, kIndexBackground);
 
@@ -502,13 +528,14 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
   items_grid_view_->pagination_model()->SelectPage(0, false);
 
   // Animate the background corner radius, opacity and bounds.
-  background_animation_ = std::make_unique<BackgroundAnimation>(show, this);
-  background_animation_->Show();
+  background_animation_ =
+      std::make_unique<BackgroundAnimation>(show, this, background_view_);
+  background_animation_->ScheduleAnimation();
 
   // Animate the folder item's title's opacity.
   folder_item_title_animation_ =
       std::make_unique<FolderItemTitleAnimation>(show, this);
-  folder_item_title_animation_->Show();
+  folder_item_title_animation_->ScheduleAnimation();
 
   // Animate the bounds and opacity of items in the first page of the opened
   // folder.
@@ -604,7 +631,7 @@ void AppListFolderView::UpdatePreferredBounds() {
 }
 
 int AppListFolderView::GetYOffsetForFolder() {
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   if (!keyboard_controller->IsEnabled())
     return 0;
 
@@ -657,20 +684,6 @@ void AppListFolderView::RecordAnimationSmoothness() {
   // Resets the frame number so that further invocation won't record the
   // metrics.
   animation_start_frame_number_.reset();
-}
-
-void AppListFolderView::UpdateBackgroundMask(int corner_radius,
-                                             const gfx::Insets& insets) {
-  background_mask_ = views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, corner_radius,
-                                                  insets));
-  background_mask_->layer()->SetFillsBoundsOpaquely(false);
-  background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
-  background_view_->layer()->SetMaskLayer(background_mask_->layer());
-}
-
-void AppListFolderView::UpdateBackgroundMaskBounds() {
-  background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
 }
 
 void AppListFolderView::OnTabletModeChanged(bool started) {
@@ -807,8 +820,7 @@ void AppListFolderView::HideViewImmediately() {
   hide_for_reparent_ = false;
 
   // Transit all the states immediately to the end of folder closing animation.
-  background_view_->SetBackground(nullptr);
-  background_view_->SchedulePaint();
+  background_view_->layer()->SetColor(SK_ColorTRANSPARENT);
   AppListItemView* activated_folder_item_view = GetActivatedFolderItemView();
   if (activated_folder_item_view) {
     activated_folder_item_view->SetIconVisible(true);

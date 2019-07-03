@@ -13,7 +13,6 @@ js_type_check("closure_compile") {
 js_library("cr_view_manager") {
   deps = [
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/web_animations.js" ]
 }

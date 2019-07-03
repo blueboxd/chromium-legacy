@@ -123,6 +123,14 @@ void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
     return;
   }
 
+  if (authenticator->Options()->client_pin_availability !=
+      AuthenticatorSupportedOptions::ClientPinAvailability::
+          kSupportedAndPinSet) {
+    std::move(error_callback_)
+        .Run(FidoReturnCode::kAuthenticatorMissingUserVerification);
+    return;
+  }
+
   authenticator_ = authenticator;
   authenticator_->GetRetries(base::BindOnce(
       &BioEnrollmentHandler::OnRetriesResponse, weak_factory_.GetWeakPtr()));

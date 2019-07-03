@@ -37,6 +37,8 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   using Tags = ash::SearchResultTags;
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
+  using DisplayLocation = ash::SearchResultDisplayLocation;
+  using DisplayIndex = ash::SearchResultDisplayIndex;
 
   SearchResult();
   virtual ~SearchResult();
@@ -104,6 +106,18 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   ResultType result_type() const { return metadata_->result_type; }
   void set_result_type(ResultType result_type) {
     metadata_->result_type = result_type;
+  }
+
+  DisplayLocation display_location() const {
+    return metadata_->display_location;
+  }
+  void set_display_location(DisplayLocation display_location) {
+    metadata_->display_location = display_location;
+  }
+
+  DisplayIndex display_index() const { return metadata_->display_index; }
+  void set_display_index(DisplayIndex display_index) {
+    metadata_->display_index = display_index;
   }
 
   int result_subtype() const { return metadata_->result_subtype; }

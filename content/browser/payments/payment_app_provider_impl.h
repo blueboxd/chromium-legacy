@@ -23,6 +23,7 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
                          GetAllPaymentAppsCallback callback) override;
   void InvokePaymentApp(BrowserContext* browser_context,
                         int64_t registration_id,
+                        const url::Origin& sw_origin,
                         payments::mojom::PaymentRequestEventDataPtr event_data,
                         InvokePaymentAppCallback callback) override;
   void InstallAndInvokePaymentApp(
@@ -37,10 +38,14 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
       InvokePaymentAppCallback callback) override;
   void CanMakePayment(BrowserContext* browser_context,
                       int64_t registration_id,
+                      const url::Origin& sw_origin,
+                      const std::string& payment_request_id,
                       payments::mojom::CanMakePaymentEventDataPtr event_data,
                       PaymentEventResultCallback callback) override;
   void AbortPayment(BrowserContext* browser_context,
                     int64_t registration_id,
+                    const url::Origin& sw_origin,
+                    const std::string& payment_request_id,
                     PaymentEventResultCallback callback) override;
   void SetOpenedWindow(WebContents* web_contents) override;
   void CloseOpenedWindow(BrowserContext* browser_context) override;

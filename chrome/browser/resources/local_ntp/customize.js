@@ -98,6 +98,7 @@ customize.IDS = {
   COLORS_MENU: 'colors-menu',
   CUSTOMIZATION_MENU: 'customization-menu',
   CUSTOM_BG: 'custom-bg',
+  CUSTOM_BG_PREVIEW: 'custom-bg-preview',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
   DEFAULT_WALLPAPERS: 'edit-bg-default-wallpapers',
@@ -853,18 +854,18 @@ customize.richerPicker_previewImage = function(tile) {
   // TODO(crbug/971853): add browertests for previews.
   // Set preview images at 720p by replacing the params in the url.
   const re = /w\d+\-h\d+/;
-  $(customize.IDS.CUSTOM_BG).style.backgroundImage =
+  $(customize.IDS.CUSTOM_BG_PREVIEW).style.backgroundImage =
       tile.style.backgroundImage.replace(re, 'w1280-h720');
-  $(customize.IDS.CUSTOM_BG).style.opacity = 1;
+  $(customize.IDS.CUSTOM_BG_PREVIEW).style.opacity = 1;
+  $(customize.IDS.CUSTOM_BG).style.opacity = 0;
 };
 
 /**
  * Remove a preview image of a custom backgrounds.
- * @param {!Element} tile The tile that was deselected.
  */
-customize.richerPicker_unpreviewImage = function(tile) {
-  $(customize.IDS.CUSTOM_BG).style.backgroundImage =
-      customize.originalBackground;
+customize.richerPicker_unpreviewImage = function() {
+  $(customize.IDS.CUSTOM_BG_PREVIEW).style.opacity = 0;
+  $(customize.IDS.CUSTOM_BG).style.opacity = 1;
 };
 
 /**
@@ -894,7 +895,7 @@ customize.richerPicker_deselectBackgroundTile = function(tile) {
   customize.selectedOptions.background = null;
   customize.richerPicker_removeSelectedState(tile);
   customize.richerPicker_maybeToggleDone();
-  customize.richerPicker_unpreviewImage(tile);
+  customize.richerPicker_unpreviewImage();
 };
 
 /**
@@ -1289,6 +1290,8 @@ customize.richerPicker_resetCustomizationMenu = function() {
 customize.richerPicker_closeCustomizationMenu = function() {
   $(customize.IDS.CUSTOMIZATION_MENU).close();
   customize.richerPicker_resetCustomizationMenu();
+
+  customize.richerPicker_unpreviewImage();
 };
 
 /**

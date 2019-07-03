@@ -39,8 +39,8 @@ if (enable_arcore) {
 if (enable_vr) {
   import("//chrome/android/features/vr/vr_module_tmpl.gni")
 }
-if (dfmify_devtools) {
-  import("//chrome/android/features/devtools/devtools_module_tmpl.gni")
+if (dfmify_dev_ui) {
+  import("//chrome/android/features/dev_ui/dev_ui_module_tmpl.gni")
 }
 
 chrome_public_manifest_package = "org.chromium.chrome"
@@ -2290,10 +2290,10 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     version_name = _version_name
   }
 
-  if (dfmify_devtools) {
-    devtools_module_tmpl("${target_name}__devtools_bundle_module") {
+  if (dfmify_dev_ui) {
+    dev_ui_module_tmpl("${target_name}__dev_ui_bundle_module") {
       manifest_package = chrome_public_manifest_package
-      module_name = "Devtools" + _bundle_name
+      module_name = "DevUi" + _bundle_name
       base_module_target = ":$_base_module_target_name"
       uncompress_shared_libraries = true
       version_code = _version_code
@@ -2341,14 +2341,6 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         },
       ]
     }
-    if (dfmify_devtools) {
-      extra_modules += [
-        {
-          name = "devtools"
-          module_target = ":${target_name}__devtools_bundle_module"
-        },
-      ]
-    }
     if (!disable_autofill_assistant_dfm) {
       extra_modules += [
         {
@@ -2363,6 +2355,14 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
           name = "tab_ui"
           module_target = ":${target_name}__tab_ui_bundle_module"
           proguard_async = async_tab_ui
+        },
+      ]
+    }
+    if (dfmify_dev_ui) {
+      extra_modules += [
+        {
+          name = "dev_ui"
+          module_target = ":${target_name}__dev_ui_bundle_module"
         },
       ]
     }
@@ -2675,6 +2675,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfModelObserverBridge.java",
     "java/src/org/chromium/chrome/browser/send_tab_to_self/TargetDeviceInfo.java",
     "java/src/org/chromium/chrome/browser/sessions/SessionTabHelper.java",
+    "java/src/org/chromium/chrome/browser/sharing/SharingJNIBridge.java",
     "java/src/org/chromium/chrome/browser/sharing/click_to_call/ClickToCallMessageHandler.java",
     "java/src/org/chromium/chrome/browser/signin/ChromeSigninManagerDelegate.java",
     "java/src/org/chromium/chrome/browser/signin/IdentityServicesProvider.java",

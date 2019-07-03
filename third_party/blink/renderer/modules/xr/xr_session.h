@@ -61,7 +61,9 @@ class XRSession final
     kBlendModeAlphaBlend
   };
 
-  XRSession(XR*,
+  enum class UserActivation { kEnabled, kDisabled };
+
+  XRSession(XR* xr,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
@@ -85,13 +87,15 @@ class XRSession final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend)
 
-  void updateRenderState(XRRenderStateInit*, ExceptionState&);
+  void updateRenderState(XRRenderStateInit* render_state_init,
+                         ExceptionState& exception_state);
   void updateWorldTrackingState(
-      XRWorldTrackingStateInit* worldTrackingStateInit,
+      XRWorldTrackingStateInit* world_tracking_state_init,
       ExceptionState& exception_state);
-  ScriptPromise requestReferenceSpace(ScriptState*, const String&);
+  ScriptPromise requestReferenceSpace(ScriptState* script_state,
+                                      const String& type);
 
-  int requestAnimationFrame(V8XRFrameRequestCallback*);
+  int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);
 
   XRInputSourceArray* inputSources() const;
@@ -101,7 +105,7 @@ class XRSession final
                                XRSpace* space);
 
   // Called by JavaScript to manually end the session.
-  ScriptPromise end(ScriptState*);
+  ScriptPromise end(ScriptState* script_state);
 
   bool ended() { return ended_; }
 
@@ -130,14 +134,15 @@ class XRSession final
 
   void OnFocusChanged();
   void OnFrame(double timestamp,
-               std::unique_ptr<TransformationMatrix>,
+               std::unique_ptr<TransformationMatrix> base_pose_matrix,
                const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
                const device::mojom::blink::XRPlaneDetectionDataPtr&
                    detected_planes_data);
 
   void OnInputStateChange(
       int16_t frame_id,
-      base::span<const device::mojom::blink::XRInputSourceStatePtr>);
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>
+          input_states);
 
   // XRInputSourceButtonListener
   void OnButtonEvent(
@@ -145,12 +150,13 @@ class XRSession final
 
   WTF::Vector<XRViewData>& views();
 
-  void AddTransientInputSource(XRInputSource*);
-  void RemoveTransientInputSource(XRInputSource*);
+  void AddTransientInputSource(XRInputSource* input_source);
+  void RemoveTransientInputSource(XRInputSource* input_source);
 
-  void OnSelectStart(XRInputSource*);
-  void OnSelectEnd(XRInputSource*);
-  void OnSelect(XRInputSource*);
+  void OnSelectStart(XRInputSource* input_source);
+  void OnSelectEnd(XRInputSource* input_source,
+                   UserActivation user_activation = UserActivation::kEnabled);
+  void OnSelect(XRInputSource* input_source);
 
   void OnPoseReset();
 
@@ -192,7 +198,7 @@ class XRSession final
 
   bool UsesInputEventing() { return uses_input_eventing_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor* visitor) override;
 
   // ScriptWrappable
   bool HasPendingActivity() const override;
@@ -204,19 +210,21 @@ class XRSession final
   void UpdateCanvasDimensions(Element*);
   void ApplyPendingRenderState();
 
-  void UpdateSelectState(XRInputSource*,
-                         const device::mojom::blink::XRInputSourceStatePtr&);
-  void UpdateSelectStateOnRemoval(XRInputSource*);
-  XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
-                                             XRInputSource*);
+  void UpdateSelectState(
+      XRInputSource* input_source,
+      const device::mojom::blink::XRInputSourceStatePtr& state);
+  void UpdateSelectStateOnRemoval(XRInputSource* input_source);
+  XRInputSourceEvent* CreateInputSourceEvent(const AtomicString& type,
+                                             XRInputSource* input_source);
 
   void OnInputStateChangeInternal(
       int16_t frame_id,
-      base::span<const device::mojom::blink::XRInputSourceStatePtr>,
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>
+          input_states,
       bool from_eventing);
 
   // XRSessionClient
-  void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
+  void OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) override;
   void OnExitPresent() override;
   void OnFocus() override;
   void OnBlur() override;

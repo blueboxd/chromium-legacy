@@ -7,34 +7,146 @@
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
 struct SameSizeAsCSSMathFunctionValue : CSSPrimitiveValue {
-  Member<void*> calc;
+  Member<void*> expression;
+  bool non_negative;
 };
 ASSERT_SIZE(CSSMathFunctionValue, SameSizeAsCSSMathFunctionValue);
 
 void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
-  visitor->Trace(calc_);
+  visitor->Trace(expression_);
   CSSPrimitiveValue::TraceAfterDispatch(visitor);
 }
 
-CSSMathFunctionValue::CSSMathFunctionValue(CSSCalcValue* calc)
-    : CSSPrimitiveValue(UnitType::kCalc, kMathFunctionClass), calc_(calc) {}
+CSSMathFunctionValue::CSSMathFunctionValue(CSSCalcExpressionNode* expression,
+                                           ValueRange range)
+    : CSSPrimitiveValue(UnitType::kCalc, kMathFunctionClass),
+      expression_(expression),
+      non_negative_(range == kValueRangeNonNegative) {}
 
 // static
-CSSMathFunctionValue* CSSMathFunctionValue::Create(CSSCalcValue* calc) {
-  return MakeGarbageCollected<CSSMathFunctionValue>(calc);
+CSSMathFunctionValue* CSSMathFunctionValue::Create(
+    CSSCalcExpressionNode* expression,
+    ValueRange range) {
+  if (!expression)
+    return nullptr;
+  return MakeGarbageCollected<CSSMathFunctionValue>(expression, range);
 }
 
 // static
 CSSMathFunctionValue* CSSMathFunctionValue::Create(const Length& length,
                                                    float zoom) {
   const CalculationValue& calc = length.GetCalculationValue();
-  return Create(CSSCalcValue::Create(
-      CSSCalcValue::CreateExpressionNode(calc.Pixels() / zoom, calc.Percent()),
-      calc.GetValueRange()));
+  return Create(CSSCalcExpressionNode::CreateFromPixelsAndPercent(
+                    calc.Pixels() / zoom, calc.Percent()),
+                calc.GetValueRange());
+}
+
+CSSPrimitiveValue::UnitType CSSMathFunctionValue::TypeWithMathFunctionResolved()
+    const {
+  switch (expression_->Category()) {
+    case kCalcAngle:
+      return UnitType::kDegrees;
+    case kCalcFrequency:
+      return UnitType::kHertz;
+    case kCalcNumber:
+      return UnitType::kNumber;
+    case kCalcPercent:
+      return UnitType::kPercentage;
+    case kCalcLength:
+      return UnitType::kPixels;
+    case kCalcPercentNumber:
+      return UnitType::kCalcPercentageWithNumber;
+    case kCalcPercentLength:
+      return UnitType::kCalcPercentageWithLength;
+    case kCalcLengthNumber:
+      return UnitType::kCalcLengthWithNumber;
+    case kCalcPercentLengthNumber:
+      return UnitType::kCalcPercentageWithLengthAndNumber;
+    case kCalcTime:
+      return UnitType::kMilliseconds;
+    case kCalcOther:
+      return UnitType::kUnknown;
+  }
+  return UnitType::kUnknown;
+}
+
+double CSSMathFunctionValue::DoubleValue() const {
+  // TODO(crbug.com/979895): Make sure this function is called only when
+  // applicable.
+  return ClampToPermittedRange(expression_->DoubleValue());
+}
+
+double CSSMathFunctionValue::ComputeSeconds() const {
+  DCHECK_EQ(kCalcTime, expression_->Category());
+  UnitType current_type = expression_->TypeWithCalcResolved();
+  if (current_type == UnitType::kSeconds)
+    return GetDoubleValue();
+  if (current_type == UnitType::kMilliseconds)
+    return GetDoubleValue() / 1000;
+  NOTREACHED();
+  return 0;
+}
+
+double CSSMathFunctionValue::ComputeDegrees() const {
+  DCHECK_EQ(kCalcAngle, expression_->Category());
+  UnitType current_type = expression_->TypeWithCalcResolved();
+  switch (current_type) {
+    case UnitType::kDegrees:
+      return GetDoubleValue();
+    case UnitType::kRadians:
+      return rad2deg(GetDoubleValue());
+    case UnitType::kGradians:
+      return grad2deg(GetDoubleValue());
+    case UnitType::kTurns:
+      return turn2deg(GetDoubleValue());
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+double CSSMathFunctionValue::ComputeLengthPx(
+    const CSSToLengthConversionData& conversion_data) const {
+  return ClampToPermittedRange(expression_->ComputeLengthPx(conversion_data));
+}
+
+void CSSMathFunctionValue::AccumulateLengthArray(CSSLengthArray& length_array,
+                                                 double multiplier) const {
+  expression_->AccumulateLengthArray(length_array, multiplier);
+}
+
+Length CSSMathFunctionValue::ConvertToLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return Length(ToCalcValue(conversion_data));
+}
+
+static String BuildCSSText(const String& expression) {
+  StringBuilder result;
+  result.Append("calc");
+  bool expression_has_single_term = expression[0] != '(';
+  if (expression_has_single_term)
+    result.Append('(');
+  result.Append(expression);
+  if (expression_has_single_term)
+    result.Append(')');
+  return result.ToString();
+}
+
+String CSSMathFunctionValue::CustomCSSText() const {
+  return BuildCSSText(expression_->CustomCSSText());
+}
+
+bool CSSMathFunctionValue::Equals(const CSSMathFunctionValue& other) const {
+  return DataEquivalent(expression_, other.expression_);
+}
+
+double CSSMathFunctionValue::ClampToPermittedRange(double value) const {
+  return non_negative_ && value < 0 ? 0 : value;
 }
 
 }  // namespace blink

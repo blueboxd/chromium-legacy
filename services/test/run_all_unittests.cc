@@ -23,10 +23,6 @@
 #include "base/android/jni_android.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "mojo/core/embedder/default_mach_broker.h"
-#endif
-
 namespace {
 
 class ServiceTestSuite : public base::TestSuite {
@@ -81,11 +77,6 @@ int main(int argc, char** argv) {
   mojo::core::Configuration mojo_config;
   mojo_config.is_broker_process = true;
   mojo::core::Init(mojo_config);
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  mojo::core::SetMachPortProvider(
-      mojo::core::DefaultMachBroker::Get()->port_provider());
-#endif
 
   base::Thread ipc_thread("IPC thread");
   ipc_thread.StartWithOptions(

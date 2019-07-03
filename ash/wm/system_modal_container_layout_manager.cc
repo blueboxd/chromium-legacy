@@ -7,7 +7,7 @@
 #include <cmath>
 #include <memory>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -48,7 +48,7 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     : container_(container) {}
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->HasObserver(this))
     keyboard_controller->RemoveObserver(this);
 }
@@ -160,8 +160,8 @@ void SystemModalContainerLayoutManager::CreateModalBackground() {
     window_dimmer_->window()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
     // The keyboard isn't always enabled.
-    if (keyboard::KeyboardController::Get()->IsEnabled())
-      keyboard::KeyboardController::Get()->AddObserver(this);
+    if (keyboard::KeyboardUIController::Get()->IsEnabled())
+      keyboard::KeyboardUIController::Get()->AddObserver(this);
   }
   window_dimmer_->window()->Show();
 }
@@ -170,7 +170,7 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
   if (!window_dimmer_)
     return;
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->HasObserver(this))
     keyboard_controller->RemoveObserver(this);
   window_dimmer_.reset();
@@ -255,8 +255,8 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() const {
   // windows. This way we avoid flashing lines upon resize animation and if the
   // keyboard will not fill left to right, the background is still covered.
   gfx::Rect valid_bounds = container_->bounds();
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::Get();
+  keyboard::KeyboardUIController* keyboard_controller =
+      keyboard::KeyboardUIController::Get();
   if (keyboard_controller->IsEnabled()) {
     gfx::Rect bounds =
         keyboard_controller->GetWorkspaceOccludedBoundsInScreen();

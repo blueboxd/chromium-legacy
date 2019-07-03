@@ -19,6 +19,16 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
   CSSNumericLiteralValue(double num, UnitType type);
 
   double DoubleValue() const { return num_; }
+  double ComputeSeconds() const;
+  double ComputeDegrees() const;
+
+  double ComputeLengthPx(
+      const CSSToLengthConversionData& conversion_data) const;
+  void AccumulateLengthArray(CSSLengthArray& length_array,
+                             double multiplier) const;
+
+  String CustomCSSText() const;
+  bool Equals(const CSSNumericLiteralValue& other) const;
 
   void TraceAfterDispatch(blink::Visitor* visitor);
 

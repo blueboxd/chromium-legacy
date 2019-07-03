@@ -34,11 +34,6 @@ class MediaControlTimelineMetrics {
   // startGesture/Key and recordEndGesture/Key.
   void OnInput(double from_seconds, double to_seconds);
 
-  // Reports width to UMA the first time the media starts playing.
-  void RecordPlaying(WebScreenOrientationType,
-                     bool is_fullscreen,
-                     int timeline_width);
-
  private:
   enum class State {
     // No active gesture. Progresses to kKeyDown on |startKey|, or

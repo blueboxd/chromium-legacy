@@ -15,10 +15,6 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 
-#if defined(OS_MACOSX)
-#include "content/browser/mach_broker_mac.h"
-#endif
-
 namespace content {
 
 ServiceManagerEnvironment::ServiceManagerEnvironment(
@@ -29,10 +25,6 @@ ServiceManagerEnvironment::ServiceManagerEnvironment(
           mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST)),
       service_manager_context_(
           std::make_unique<ServiceManagerContext>(ipc_thread_->task_runner())) {
-#if defined(OS_MACOSX)
-  mojo::core::SetMachPortProvider(MachBroker::GetInstance());
-#endif  // defined(OS_MACOSX)
-
   auto* system_connection = ServiceManagerConnection::GetForProcess();
   RegisterCommonBrowserInterfaces(system_connection);
   system_connection->Start();

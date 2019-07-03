@@ -9,6 +9,9 @@
 
 namespace {
 
+// The following constants affect logging, and  should not be changed without
+// deprecating the related UMA histograms.
+
 const char kAppListSearchResultOpenTypeHistogram[] =
     "Apps.AppListSearchResultOpenTypeV2";
 const char kAppListSearchResultOpenTypeHistogramInTablet[] =
@@ -21,6 +24,13 @@ const char kAppListSuggestionChipOpenTypeHistogramInTablet[] =
     "Apps.AppListSuggestedChipOpenType.TabletMode";
 const char kAppListZeroStateSuggestionOpenTypeHistogram[] =
     "Apps.AppList.ZeroStateSuggestionOpenType";
+// The UMA histogram that logs the length of user typed queries app list
+// launcher issues to the search providers.
+constexpr char kAppListLauncherIssuedSearchQueryLength[] =
+    "Apps.AppListLauncherIssuedSearchQueryLength";
+
+// Maximum query length logged for user typed query in characters.
+constexpr int kMaxLoggedUserQueryLength = 20;
 
 }  // namespace
 
@@ -70,6 +80,15 @@ void RecordSearchResultOpenTypeHistogram(
 void RecordZeroStateSuggestionOpenTypeHistogram(SearchResultType type) {
   UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSuggestionOpenTypeHistogram, type,
                             SEARCH_RESULT_TYPE_BOUNDARY);
+}
+
+void RecordLauncherIssuedSearchQueryLength(int query_length) {
+  if (query_length > 0) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        kAppListLauncherIssuedSearchQueryLength,
+        std::min(query_length, kMaxLoggedUserQueryLength),
+        kMaxLoggedUserQueryLength);
+  }
 }
 
 }  // namespace app_list

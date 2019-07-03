@@ -245,6 +245,8 @@ crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-o
 crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
 
+crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
+
 # Display locking, currently only available via a virtual test.
 crbug.com/882663 wpt_internal/display-lock [ Skip ]
 
@@ -350,6 +352,7 @@ crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-
 # Subpixel rounding differences that are incorrect.
 crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
+crbug.com/836886 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
 crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure Pass ]
 crbug.com/921105 virtual/disable-blink-gen-property-trees/animations/skew-notsequential-compositor.html [ Skip ]
@@ -359,10 +362,6 @@ crbug.com/946532 external/wpt/css/css-backgrounds/background-clip/clip-text-dyna
 crbug.com/363609 external/wpt/css/css-transforms/rotateY-180deg-with-overflow-scroll.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
-
-# Fixed in CompositeAfterPaint.
-crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Failure ]
-crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -2919,8 +2918,6 @@ crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [
 crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
-crbug.com/600248 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
-
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
 
@@ -3206,6 +3203,12 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-003.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-004.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-005.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-003.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-005.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-looped-001.tentative.html [ Failure ]
@@ -6220,6 +6223,8 @@ crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jque
 # Sheriff 2019-06-26
 crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-markers.html [ Pass Failure ]
 
+crbug.com/979253 external/wpt/css/css-pseudo/first-line-with-out-of-flow.html [ Failure ]
+
 # Sheriff 2019-06-27
 crbug.com/979193 [ Mac ] paint/invalidation/svg/relative-sized-use-on-symbol.xhtml [ Pass Failure ]
 crbug.com/979193 [ Mac ] paint/invalidation/svg/remove-background-property-on-root.html [ Pass Failure ]
@@ -6238,6 +6243,7 @@ crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-wor
 # Sheriff 2019-07-03
 crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
 crbug.com/980924 [ Linux Win Debug ] external/wpt/html/cross-origin/null.tentative.html [ Pass Failure ]
+crbug.com/980283 [ Mac ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
 
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]

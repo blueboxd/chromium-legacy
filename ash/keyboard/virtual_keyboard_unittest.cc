@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -44,7 +44,7 @@ TEST_F(VirtualKeyboardTest, EventsAreHandledBasedOnHitTestBounds) {
   std::unique_ptr<aura::Window> background_window(
       CreateTestWindowInShellWithDelegate(&delegate, 0, root_window->bounds()));
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(false);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
@@ -94,7 +94,7 @@ TEST_F(VirtualKeyboardTest, HitTestBoundsAreResetWhenContainerTypeChanges) {
   std::unique_ptr<aura::Window> background_window(
       CreateTestWindowInShellWithDelegate(&delegate, 0, root_window->bounds()));
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(false);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 

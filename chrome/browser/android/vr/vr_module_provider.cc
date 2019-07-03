@@ -13,6 +13,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/vr/android/gvr/vr_module_delegate.h"
+#include "device/vr/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_ARCORE)
+#include "chrome/browser/android/vr/arcore_device/arcore_consent_prompt.h"
+#endif
 
 namespace vr {
 
@@ -84,6 +89,9 @@ static void JNI_VrModuleProvider_Init(JNIEnv* env) {
   device::VrModuleDelegateFactory::Set(
       std::make_unique<VrModuleProviderFactory>());
   GvrConsentHelper::SetInstance(std::make_unique<vr::GvrConsentHelperImpl>());
+#if BUILDFLAG(ENABLE_ARCORE)
+  ArcoreConsentPromptInterface::SetInstance(new ArcoreConsentPrompt());
+#endif
 }
 
 static void JNI_VrModuleProvider_RegisterJni(JNIEnv* env) {

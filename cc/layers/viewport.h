@@ -46,10 +46,12 @@ class CC_EXPORT Viewport {
 
   // Scrolls the viewport, applying the unique bubbling between the inner and
   // outer viewport unless the scroll_outer_viewport bit is off. Scrolls can be
-  // consumed by browser controls.
-  ScrollResult ScrollBy(const gfx::Vector2dF& delta,
+  // consumed by browser controls. The delta is in physical pixels, that is, it
+  // will be scaled by the page scale to ensure the content moves
+  // |physical_delta| number of pixels.
+  ScrollResult ScrollBy(const gfx::Vector2dF& physical_delta,
                         const gfx::Point& viewport_point,
-                        bool is_wheel_scroll,
+                        bool is_direct_manipulation,
                         bool affect_browser_controls,
                         bool scroll_outer_viewport);
 

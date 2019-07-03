@@ -146,7 +146,6 @@ CastRemotingConnector* CastRemotingConnector::Get(
         base::BindRepeating(
             [](content::WebContents* contents,
                PermissionResultCallback result_callback) {
-              if (media_router::ShouldUseViewsDialog()) {
                 media_router::MediaRemotingDialogView::GetPermission(
                     contents, std::move(result_callback));
                 return media_router::MediaRemotingDialogView::IsShowing()
@@ -154,10 +153,6 @@ CastRemotingConnector* CastRemotingConnector::Get(
                                  &media_router::MediaRemotingDialogView::
                                      HideDialog)
                            : CancelPermissionRequestCallback();
-              } else {
-                std::move(result_callback).Run(true);
-                return CancelPermissionRequestCallback();
-              }
             },
             contents)
 #else

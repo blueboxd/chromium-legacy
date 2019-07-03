@@ -7,35 +7,22 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='box' class='green drop-shadowed box'",
+          "object": "LayoutNGBlockFlow DIV id='box' class='green drop-shadowed box'",
           "rect": [8, 8, 330, 330],
           "reason": "chunk disappeared"
         }
       ]
     },
     {
-      "name": "LayoutBlockFlow DIV id='box' class='green box blurry'",
-      "position": [-30, -30],
-      "bounds": [260, 260],
+      "name": "LayoutNGBlockFlow DIV id='box' class='green box blurry'",
+      "bounds": [238, 238],
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
-          "rect": [0, 0, 260, 260],
+          "object": "LayoutNGBlockFlow DIV id='box' class='green box blurry'",
+          "rect": [0, 0, 238, 238],
           "reason": "full layer"
         }
-      ],
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
       ]
     }
   ]

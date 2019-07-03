@@ -9,7 +9,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/time/time.h"
 #include "device/vr/orientation/orientation_device.h"
-#include "device/vr/vr_display_impl.h"
+#include "device/vr/orientation/orientation_session.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -141,7 +141,7 @@ void VROrientationDevice::RequestSession(
 
   mojom::XRFrameDataProviderPtr data_provider;
   mojom::XRSessionControllerPtr controller;
-  magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
+  magic_window_sessions_.push_back(std::make_unique<VROrientationSession>(
       this, mojo::MakeRequest(&data_provider), mojo::MakeRequest(&controller)));
 
   auto session = mojom::XRSession::New();
@@ -153,9 +153,9 @@ void VROrientationDevice::RequestSession(
   std::move(callback).Run(std::move(session), std::move(controller));
 }
 
-void VROrientationDevice::EndMagicWindowSession(VRDisplayImpl* session) {
+void VROrientationDevice::EndMagicWindowSession(VROrientationSession* session) {
   base::EraseIf(magic_window_sessions_,
-                [session](const std::unique_ptr<VRDisplayImpl>& item) {
+                [session](const std::unique_ptr<VROrientationSession>& item) {
                   return item.get() == session;
                 });
 }

@@ -1788,8 +1788,6 @@ void MediaControlsImpl::OnPlay() {
 }
 
 void MediaControlsImpl::OnPlaying() {
-  timeline_->OnPlaying();
-
   StartHideMediaControlsTimer();
   UpdateCSSClassFromState();
 }

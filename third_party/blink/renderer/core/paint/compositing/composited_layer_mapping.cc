@@ -2955,7 +2955,12 @@ PhysicalRect CompositedLayerMapping::ContentsBox() const {
 }
 
 bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
-  return owning_layer_.NeedsReorderOverlayScrollbars();
+  const ComputedStyle& style = owning_layer_.GetLayoutObject().StyleRef();
+  return owning_layer_.GetScrollableArea() &&
+         owning_layer_.GetScrollableArea()->HasOverlayScrollbars() &&
+         !style.IsStackingContext() &&
+         (style.IsStacked() ||
+          owning_layer_.IsNonStackedWithInFlowStackedDescendant());
 }
 
 GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
@@ -3173,6 +3178,13 @@ void CompositedLayerMapping::DoPaintTask(
         paint_info.paint_layer->SubpixelAccumulation());
     PaintLayerPainter(*paint_info.paint_layer)
         .PaintLayerContents(context, painting_info, paint_layer_flags);
+
+    if (paint_info.paint_layer->ContainsDirtyOverlayScrollbars()) {
+      PaintLayerPainter(*paint_info.paint_layer)
+          .PaintLayerContents(
+              context, painting_info,
+              paint_layer_flags | kPaintLayerPaintingOverlayScrollbars);
+    }
   } else {
     PaintLayerPaintingInfo painting_info(
         paint_info.paint_layer, CullRect(dirty_rect), kGlobalPaintNormalPhase,

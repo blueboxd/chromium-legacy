@@ -113,6 +113,7 @@ constexpr const char* kAtomsToCache[] = {
     "CHECK",
     "CHOME_SELECTION",
     "CHROME_SELECTION",
+    "CHROMIUM_COMPOSITE_WINDOW",
     "CHROMIUM_TIMESTAMP",
     "CLIPBOARD",
     "CLIPBOARD_MANAGER",

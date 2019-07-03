@@ -46,7 +46,7 @@ void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
     LayoutSVGResourceContainer* layout_object =
-        ToLayoutSVGResourceContainer(this->GetLayoutObject());
+        ToLayoutSVGResourceContainer(GetLayoutObject());
     if (layout_object)
       layout_object->InvalidateCacheAndMarkForLayout();
     return;

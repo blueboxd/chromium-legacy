@@ -106,6 +106,7 @@ class MessagePipeDispatcher : public Dispatcher {
   WatcherSet watchers_;
   base::Optional<uint64_t> receive_queue_length_limit_;
   base::Optional<uint64_t> receive_queue_memory_size_limit_;
+  base::Optional<uint64_t> unread_message_count_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };

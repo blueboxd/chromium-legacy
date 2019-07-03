@@ -94,6 +94,19 @@ Usage() {
 }
 
 
+DownloadOrCopyNonUniqueFilename() {
+  # Use this function instead of DownloadOrCopy when the url uniquely
+  # identifies the file, but the filename (excluding the directory)
+  # does not.
+  local url="$1"
+  local dest="$2"
+
+  local hash="$(echo "$url" | sha256sum | cut -d' ' -f1)"
+
+  DownloadOrCopy "${url}" "${dest}.${hash}"
+  cp "${dest}.${hash}" "$dest"
+}
+
 DownloadOrCopy() {
   if [ -f "$2" ] ; then
     echo "$2 already in place"
@@ -216,7 +229,7 @@ GeneratePackageListDist() {
   local package_file_arch="${repo_name}/binary-${arch}/Packages.${PACKAGES_EXT}"
   local package_list_arch="${repo_basedir}/${package_file_arch}"
 
-  DownloadOrCopy "${package_list_arch}" "${package_list}"
+  DownloadOrCopyNonUniqueFilename "${package_list_arch}" "${package_list}"
   VerifyPackageListing "${package_file_arch}" "${package_list}" ${repo} ${dist}
   ExtractPackageXz "${package_list}" "${TMP_PACKAGE_LIST}" ${repo}
 }
@@ -784,8 +797,8 @@ VerifyPackageListing() {
 
   CheckForDebianGPGKeyring
 
-  DownloadOrCopy ${release_list} ${release_file}
-  DownloadOrCopy ${release_list_gpg} ${release_file_gpg}
+  DownloadOrCopyNonUniqueFilename ${release_list} ${release_file}
+  DownloadOrCopyNonUniqueFilename ${release_list_gpg} ${release_file_gpg}
   echo "Verifying: ${release_file} with ${release_file_gpg}"
   set -x
   gpgv --keyring "${KEYRING_FILE}" "${release_file_gpg}" "${release_file}"

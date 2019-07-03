@@ -2042,10 +2042,10 @@ Verdiene for denne regelen og WebUsbAllowDevicesForUrls-regelen slås sammen.</t
 
       Hvis regelen ikke er angitt, brukes standardperioden på 345 600 000 millisekunder (fire dager) for <ph name="PRODUCT_OS_NAME" />-enheter og 604 800 000 millisekunder (én uke) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4777805166623621364">
-      Denne innstillingen (SitePerProcess) kan brukes til å nekte brukere å velge bort standardatferden, som er å isolere alle nettsteder. Merk at regelen IsolateOrigins også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
+      Denne innstillingen (SitePerProcess) kan brukes til å nekte brukere å velge bort standardfunksjonaliteten, som er å isolere alle nettsteder. Merk at regelen IsolateOrigins også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
       Hvis regelen er slått på, kan ikke brukerne velge bort standardfunksjonaliteten der alle nettsteder kjører i sine egne prosesser.
       Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).  Nettstedsisolering slås ikke av selv om du slår av regelen og/eller ikke konfigurerer den.
-      På <ph name="PRODUCT_OS_NAME" /> versjon 76 og eldre anbefales det også å sette enhetsregelen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />til samme verdi. Hvis disse to reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
+      I <ph name="PRODUCT_OS_NAME" /> versjon 76 og eldre anbefales det også å sette enhetsregelen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />til samme verdi. Hvis disse to reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
 
       MERK: Denne regelen gjelder ikke på Android. For å slå på SitePerProcess på Android, bruk regelinnstillingen SitePerProcessAndroid.
       </translation>
@@ -4018,7 +4018,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Denne regelen er slått av som standard. Hvis den er slått på, er brukerne utsatt for sikkerhetsproblemet https://crbug.com/600352.
 
-      Denne regelen er ment å gi bedrifter mulighet til å migrere eksisterende servere bort fra HTTP/0.9 og kommer til å bli fjernet på et fremtidig tidspunkt.
+      Denne regelen er ment å gi bedrifter mulighet til å migrere eksisterende tjenere bort fra HTTP/0.9 og kommer til å bli fjernet på et fremtidig tidspunkt.
 
       Hvis denne regelen ikke er angitt, blir HTTP/0.9 slått av på ikke-standardporter.</translation>
 <translation id="8507835864888987300">Angir en målversjon for automatiske oppdateringer.

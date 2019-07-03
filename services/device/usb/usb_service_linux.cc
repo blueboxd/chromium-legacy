@@ -204,9 +204,7 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
 }
 
 void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceChanged(
-    ScopedUdevDevicePtr) {
-  NOTIMPLEMENTED();
-}
+    ScopedUdevDevicePtr) {}
 
 UsbServiceLinux::UsbServiceLinux()
     : UsbService(),

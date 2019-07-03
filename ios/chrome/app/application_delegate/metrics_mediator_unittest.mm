@@ -136,7 +136,6 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
     WebStateList* web_state_list = web_state_list_.get();
     [[[mainTabModel stub] andReturnValue:OCMOCK_VALUE(web_state_list)]
         webStateList];
-
     StubBrowserInterfaceProvider* concreteProvider =
         [[StubBrowserInterfaceProvider alloc] init];
     concreteProvider.mainInterface.tabModel = mainTabModel;

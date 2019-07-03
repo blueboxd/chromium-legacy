@@ -277,7 +277,9 @@ class CORE_EXPORT EventHandler final
                      ScrollGranularity,
                      Node* start_node = nullptr);
 
-  bool IsTouchPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
+  bool IsPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
+
+  LocalFrame* DetermineActivePointerTrackerFrame(PointerId pointer_id) const;
 
   // Clears drag target and related states. It is called when drag is done or
   // canceled.
@@ -361,8 +363,9 @@ class CORE_EXPORT EventHandler final
 
   Element* EffectiveMouseEventTargetElement(Element*);
 
-  // Dispatches ME after corresponding PE provided the PE has not been canceled.
-  // The |mouse_event_type| arg must be one of {mousedown, mousemove, mouseup}.
+  // Dispatches ME after corresponding PE provided the PE has not been
+  // canceled. The |mouse_event_type| arg must be one of {mousedown,
+  // mousemove, mouseup}.
   WebInputEventResult DispatchMousePointerEvent(
       const WebInputEvent::Type,
       Element* target,
@@ -403,7 +406,7 @@ class CORE_EXPORT EventHandler final
 
   bool ShouldBrowserControlsConsumeScroll(FloatSize) const;
 
-  bool RootFrameTouchPointerActiveInCurrentFrame(PointerId pointer_id) const;
+  bool RootFrameTrackedActivePointerInCurrentFrame(PointerId pointer_id) const;
 
   void CaptureMouseEventsToWidget(bool);
 
@@ -464,11 +467,10 @@ class CORE_EXPORT EventHandler final
 
   TaskRunnerTimer<EventHandler> active_interval_timer_;
 
-  // last_show_press_timestamp_ prevents the active state rewrited by following
-  // events too soon (less than 0.15s).
-  // It is ok we only record last_show_press_timestamp_ in root frame since
-  // root frame will have subframe as active element if subframe has active
-  // element.
+  // last_show_press_timestamp_ prevents the active state rewrited by
+  // following events too soon (less than 0.15s). It is ok we only record
+  // last_show_press_timestamp_ in root frame since root frame will have
+  // subframe as active element if subframe has active element.
   base::Optional<base::TimeTicks> last_show_press_timestamp_;
   Member<Element> last_deferred_tap_element_;
 

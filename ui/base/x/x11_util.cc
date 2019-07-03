@@ -12,6 +12,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#include <bitset>
 #include <list>
 #include <map>
 #include <memory>
@@ -192,10 +193,6 @@ unsigned int GetMaxCursorSize() {
   // on some buggy implementations of XWayland/XMir.
   return min_dimension > 0 ? min_dimension : 64;
 }
-
-struct XImageDeleter {
-  void operator()(XImage* image) const { XDestroyImage(image); }
-};
 
 // Custom release function that will be passed to Skia so that it deletes the
 // image when the SkBitmap goes out of scope.
@@ -1341,6 +1338,11 @@ void XScopedCursor::reset(::Cursor cursor) {
   cursor_ = cursor;
 }
 
+void XImageDeleter::operator()(XImage* image) const {
+  if (image)
+    XDestroyImage(image);
+}
+
 namespace test {
 
 const XcursorImage* GetCachedXcursorImage(::Cursor cursor) {
@@ -1492,7 +1494,7 @@ void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
                                            Visual** visual,
                                            int* depth,
                                            Colormap* colormap,
-                                           bool* using_argb_visual) {
+                                           bool* visual_has_alpha) {
   base::AutoLock lock(lock_);
   bool use_argb = want_argb_visual && using_compositing_wm_ &&
                   (using_software_rendering_ || have_gpu_argb_visual_);
@@ -1501,7 +1503,7 @@ void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
                            : system_visual_id_;
 
   bool success =
-      GetVisualInfoImpl(visual_id, visual, depth, colormap, using_argb_visual);
+      GetVisualInfoImpl(visual_id, visual, depth, colormap, visual_has_alpha);
   DCHECK(success);
 }
 
@@ -1509,10 +1511,10 @@ bool XVisualManager::GetVisualInfo(VisualID visual_id,
                                    Visual** visual,
                                    int* depth,
                                    Colormap* colormap,
-                                   bool* using_argb_visual) {
+                                   bool* visual_has_alpha) {
   base::AutoLock lock(lock_);
   return GetVisualInfoImpl(visual_id, visual, depth, colormap,
-                           using_argb_visual);
+                           visual_has_alpha);
 }
 
 bool XVisualManager::OnGPUInfoChanged(bool software_rendering,
@@ -1543,7 +1545,7 @@ bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
                                        Visual** visual,
                                        int* depth,
                                        Colormap* colormap,
-                                       bool* using_argb_visual) {
+                                       bool* visual_has_alpha) {
   auto it = visuals_.find(visual_id);
   if (it == visuals_.end())
     return false;
@@ -1558,8 +1560,15 @@ bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
     *depth = visual_info.depth;
   if (colormap)
     *colormap = is_default_visual ? CopyFromParent : visual_data.GetColormap();
-  if (using_argb_visual)
-    *using_argb_visual = visual_id == transparent_visual_id_;
+  if (visual_has_alpha) {
+    auto popcount = [](auto x) {
+      return std::bitset<8 * sizeof(decltype(x))>(x).count();
+    };
+    *visual_has_alpha = popcount(visual_info.red_mask) +
+                            popcount(visual_info.green_mask) +
+                            popcount(visual_info.blue_mask) <
+                        static_cast<std::size_t>(visual_info.depth);
+  }
   return true;
 }
 

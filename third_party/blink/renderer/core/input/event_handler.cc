@@ -712,6 +712,10 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     return result;
   }
 
+  if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
+                                                            *frame_))
+    return WebInputEventResult::kHandledSuppressed;
+
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::NotifyUserActivation(frame_);
   frame_->LocalFrameRoot()
@@ -1096,28 +1100,35 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   if (subframe)
     return PassMouseReleaseEventToSubframe(mev, subframe);
 
-  // Mouse events will be associated with the Document where mousedown
-  // occurred. If, e.g., there is a mousedown, then a drag to a different
-  // Document and mouseup there, the mouseup's gesture will be associated with
-  // the mousedown's Document. It's not absolutely certain that this is the
-  // correct behavior.
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (frame_->LocalFrameRoot()
-          .GetEventHandler()
-          .last_mouse_down_user_gesture_token_) {
-    gesture_indicator = std::make_unique<UserGestureIndicator>(
-        std::move(frame_->LocalFrameRoot()
-                      .GetEventHandler()
-                      .last_mouse_down_user_gesture_token_));
-  } else {
-    gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
-  }
+  WebInputEventResult event_result = WebInputEventResult::kNotHandled;
 
-  WebInputEventResult event_result = DispatchMousePointerEvent(
-      WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
-      mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
-      (GetSelectionController().HasExtendedSelection() &&
-       IsSelectionOverLink(mev)));
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
+                                                            *frame_)) {
+    event_result = WebInputEventResult::kHandledSuppressed;
+  } else {
+    // Mouse events will be associated with the Document where mousedown
+    // occurred. If, e.g., there is a mousedown, then a drag to a different
+    // Document and mouseup there, the mouseup's gesture will be associated with
+    // the mousedown's Document. It's not absolutely certain that this is the
+    // correct behavior.
+    if (frame_->LocalFrameRoot()
+            .GetEventHandler()
+            .last_mouse_down_user_gesture_token_) {
+      gesture_indicator = std::make_unique<UserGestureIndicator>(
+          std::move(frame_->LocalFrameRoot()
+                        .GetEventHandler()
+                        .last_mouse_down_user_gesture_token_));
+    } else {
+      gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
+    }
+
+    event_result = DispatchMousePointerEvent(
+        WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
+        mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
+        (GetSelectionController().HasExtendedSelection() &&
+         IsSelectionOverLink(mev)));
+  }
 
   scroll_manager_->ClearResizeScrollableArea(false);
 
@@ -1292,57 +1303,68 @@ Element* EventHandler::EffectiveMouseEventTargetElement(
   return new_element_under_mouse;
 }
 
-bool EventHandler::IsTouchPointerIdActiveOnFrame(PointerId pointer_id,
-                                                 LocalFrame* frame) const {
-  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
-  return pointer_event_manager_->IsTouchPointerIdActiveOnFrame(pointer_id,
-                                                               frame);
+bool EventHandler::IsPointerIdActiveOnFrame(PointerId pointer_id,
+                                            LocalFrame* frame) const {
+  DCHECK(frame_ == &frame_->LocalFrameRoot() || frame_ == frame);
+  return pointer_event_manager_->IsPointerIdActiveOnFrame(pointer_id, frame);
 }
 
-bool EventHandler::RootFrameTouchPointerActiveInCurrentFrame(
+bool EventHandler::RootFrameTrackedActivePointerInCurrentFrame(
     PointerId pointer_id) const {
   return frame_ != &frame_->LocalFrameRoot() &&
-         frame_->LocalFrameRoot()
-             .GetEventHandler()
-             .IsTouchPointerIdActiveOnFrame(pointer_id, frame_);
+         frame_->LocalFrameRoot().GetEventHandler().IsPointerIdActiveOnFrame(
+             pointer_id, frame_);
 }
 
 bool EventHandler::IsPointerEventActive(PointerId pointer_id) {
   return pointer_event_manager_->IsActive(pointer_id) ||
-         RootFrameTouchPointerActiveInCurrentFrame(pointer_id);
+         RootFrameTrackedActivePointerInCurrentFrame(pointer_id);
+}
+
+LocalFrame* EventHandler::DetermineActivePointerTrackerFrame(
+    PointerId pointer_id) const {
+  // If pointer_id is active on current |frame_|, pointer states are in
+  // current frame's PEM; otherwise, check if it's a touch-like pointer that
+  // have its active states in the local frame root's PEM.
+  if (IsPointerIdActiveOnFrame(pointer_id, frame_))
+    return frame_;
+  if (RootFrameTrackedActivePointerInCurrentFrame(pointer_id))
+    return &frame_->LocalFrameRoot();
+  return nullptr;
 }
 
 void EventHandler::SetPointerCapture(PointerId pointer_id, Element* target) {
   // TODO(crbug.com/591387): This functionality should be per page not per
   // frame.
-  if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    frame_->LocalFrameRoot().GetEventHandler().SetPointerCapture(pointer_id,
-                                                                 target);
-  } else {
-    if (pointer_event_manager_->SetPointerCapture(pointer_id, target) &&
-        pointer_id == PointerEventFactory::kMouseId) {
-      CaptureMouseEventsToWidget(true);
+  LocalFrame* tracking_frame = DetermineActivePointerTrackerFrame(pointer_id);
 
-      // TODO(crbug.com/919908) This is a temporary approach to make pointer
-      // capture work across in-process frames while mouse subframe capture
-      // disabled. It's to experiment removing the frame capture logic. This
-      // must be re-write before the flag enabled.
-      if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
-        LocalFrame* frame = frame_;
-        LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
-        while (parent) {
-          Element* subframe_element = nullptr;
-          if (frame->OwnerLayoutObject() &&
-              frame->OwnerLayoutObject()->GetNode()) {
-            subframe_element =
-                DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
-          }
+  bool captured =
+      tracking_frame &&
+      tracking_frame->GetEventHandler()
+          .pointer_event_manager_->SetPointerCapture(pointer_id, target);
 
-          parent->GetEventHandler().capturing_subframe_element_ =
-              subframe_element;
-          frame = parent;
-          parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
+  if (captured && pointer_id == PointerEventFactory::kMouseId) {
+    CaptureMouseEventsToWidget(true);
+
+    // TODO(crbug.com/919908) This is a temporary approach to make pointer
+    // capture work across in-process frames while mouse subframe capture
+    // disabled. It's to experiment removing the frame capture logic. This
+    // must be re-write before the flag enabled.
+    if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
+      LocalFrame* frame = frame_;
+      LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
+      while (parent) {
+        Element* subframe_element = nullptr;
+        if (frame->OwnerLayoutObject() &&
+            frame->OwnerLayoutObject()->GetNode()) {
+          subframe_element =
+              DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
         }
+
+        parent->GetEventHandler().capturing_subframe_element_ =
+            subframe_element;
+        frame = parent;
+        parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
       }
     }
   }
@@ -1350,32 +1372,33 @@ void EventHandler::SetPointerCapture(PointerId pointer_id, Element* target) {
 
 void EventHandler::ReleasePointerCapture(PointerId pointer_id,
                                          Element* target) {
-  if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    frame_->LocalFrameRoot().GetEventHandler().ReleasePointerCapture(pointer_id,
-                                                                     target);
-  } else {
-    if (pointer_event_manager_->ReleasePointerCapture(pointer_id, target) &&
-        pointer_id == PointerEventFactory::kMouseId) {
-      CaptureMouseEventsToWidget(false);
+  LocalFrame* tracking_frame = DetermineActivePointerTrackerFrame(pointer_id);
 
-      // TODO(crbug/919908) same as SetPointerCapture, this is temporary
-      // approach for removing mouse subframe capture. It must be re-write
-      // before enable the flag.
-      if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
-        LocalFrame* frame = frame_;
-        LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
-        while (parent) {
-          Element* subframe_element = nullptr;
-          if (frame->OwnerLayoutObject() &&
-              frame->OwnerLayoutObject()->GetNode()) {
-            subframe_element =
-                DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
-          }
+  bool released =
+      tracking_frame &&
+      tracking_frame->GetEventHandler()
+          .pointer_event_manager_->ReleasePointerCapture(pointer_id, target);
 
-          parent->GetEventHandler().capturing_subframe_element_ = nullptr;
-          frame = parent;
-          parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
+  if (released && pointer_id == PointerEventFactory::kMouseId) {
+    CaptureMouseEventsToWidget(false);
+
+    // TODO(crbug/919908) same as SetPointerCapture, this is temporary
+    // approach for removing mouse subframe capture. It must be re-write
+    // before enable the flag.
+    if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
+      LocalFrame* frame = frame_;
+      LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
+      while (parent) {
+        Element* subframe_element = nullptr;
+        if (frame->OwnerLayoutObject() &&
+            frame->OwnerLayoutObject()->GetNode()) {
+          subframe_element =
+              DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
         }
+
+        parent->GetEventHandler().capturing_subframe_element_ = nullptr;
+        frame = parent;
+        parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
       }
     }
   }
@@ -1387,12 +1410,12 @@ void EventHandler::ReleaseMousePointerCapture() {
 
 bool EventHandler::HasPointerCapture(PointerId pointer_id,
                                      const Element* target) const {
-  if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    return frame_->LocalFrameRoot().GetEventHandler().HasPointerCapture(
-        pointer_id, target);
-  } else {
-    return pointer_event_manager_->HasPointerCapture(pointer_id, target);
+  if (LocalFrame* tracking_frame =
+          DetermineActivePointerTrackerFrame(pointer_id)) {
+    return tracking_frame->GetEventHandler()
+        .pointer_event_manager_->HasPointerCapture(pointer_id, target);
   }
+  return false;
 }
 
 void EventHandler::ElementRemoved(Element* target) {
@@ -1498,6 +1521,10 @@ WebInputEventResult EventHandler::HandleGestureEvent(
 
 WebInputEventResult EventHandler::HandleGestureEventInFrame(
     const GestureEventWithHitTestResults& targeted_event) {
+  if (event_handling_util::ShouldDiscardEventTargetingFrame(
+          targeted_event.Event(), *frame_)) {
+    return WebInputEventResult::kHandledSuppressed;
+  }
   return gesture_manager_->HandleGestureEventInFrame(targeted_event);
 }
 

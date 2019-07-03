@@ -8,11 +8,30 @@
 #include "content/browser/accessibility/test_browser_accessibility_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
 namespace content {
+
+class TestFragmentRootDelegate : public ui::AXFragmentRootDelegateWin {
+ public:
+  TestFragmentRootDelegate(
+      BrowserAccessibilityManager* browser_accessibility_manager)
+      : browser_accessibility_manager_(browser_accessibility_manager) {}
+  ~TestFragmentRootDelegate() = default;
+
+  gfx::NativeViewAccessible GetChildOfAXFragmentRoot() override {
+    return browser_accessibility_manager_->GetRoot()->GetNativeViewAccessible();
+  }
+
+  gfx::NativeViewAccessible GetParentOfAXFragmentRoot() override {
+    return nullptr;
+  }
+
+  BrowserAccessibilityManager* browser_accessibility_manager_;
+};
 
 class BrowserAccessibilityManagerWinTest : public testing::Test {
  public:
@@ -50,14 +69,15 @@ TEST_F(BrowserAccessibilityManagerWinTest, DynamicallyAddedIFrame) {
           MakeAXTreeUpdate(root), test_browser_accessibility_delegate_.get(),
           new BrowserAccessibilityFactory()));
 
+  TestFragmentRootDelegate test_fragment_root_delegate(root_manager.get());
+
   ui::AXPlatformNode* root_document_root_node =
       ui::AXPlatformNode::FromNativeViewAccessible(
           root_manager->GetRoot()->GetNativeViewAccessible());
 
   std::unique_ptr<ui::AXPlatformNodeDelegate> fragment_root =
-      std::make_unique<ui::AXFragmentRootWin>(
-          gfx::kMockAcceleratedWidget,
-          static_cast<ui::AXPlatformNodeWin*>(root_document_root_node));
+      std::make_unique<ui::AXFragmentRootWin>(gfx::kMockAcceleratedWidget,
+                                              &test_fragment_root_delegate);
 
   EXPECT_EQ(fragment_root->GetChildCount(), 1);
   EXPECT_EQ(fragment_root->ChildAtIndex(0),
@@ -110,14 +130,15 @@ TEST_F(BrowserAccessibilityManagerWinTest, ChildTree) {
           parent_tree_update, test_browser_accessibility_delegate_.get(),
           new BrowserAccessibilityFactory()));
 
+  TestFragmentRootDelegate test_fragment_root_delegate(parent_manager.get());
+
   ui::AXPlatformNode* root_document_root_node =
       ui::AXPlatformNode::FromNativeViewAccessible(
           parent_manager->GetRoot()->GetNativeViewAccessible());
 
   std::unique_ptr<ui::AXPlatformNodeDelegate> fragment_root =
-      std::make_unique<ui::AXFragmentRootWin>(
-          gfx::kMockAcceleratedWidget,
-          static_cast<ui::AXPlatformNodeWin*>(root_document_root_node));
+      std::make_unique<ui::AXFragmentRootWin>(gfx::kMockAcceleratedWidget,
+                                              &test_fragment_root_delegate);
 
   EXPECT_EQ(fragment_root->GetChildCount(), 1);
   EXPECT_EQ(fragment_root->ChildAtIndex(0),

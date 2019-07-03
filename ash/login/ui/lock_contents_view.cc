@@ -199,15 +199,15 @@ void MakeSectionBold(views::StyledLabel* label,
   add_style(regular_style, *bold_start + bold_length + 1, text.length());
 }
 
-keyboard::KeyboardController* GetKeyboardControllerForWidget(
+keyboard::KeyboardUIController* GetKeyboardControllerForWidget(
     const views::Widget* widget) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->IsEnabled())
+  auto* keyboard_ui_controller = keyboard::KeyboardUIController::Get();
+  if (!keyboard_ui_controller->IsEnabled())
     return nullptr;
 
-  aura::Window* keyboard_window = keyboard_controller->GetRootWindow();
+  aura::Window* keyboard_window = keyboard_ui_controller->GetRootWindow();
   aura::Window* this_window = widget->GetNativeWindow()->GetRootWindow();
-  return keyboard_window == this_window ? keyboard_controller : nullptr;
+  return keyboard_window == this_window ? keyboard_ui_controller : nullptr;
 }
 
 bool IsPublicAccountUser(const LoginUserInfo& user) {
@@ -395,7 +395,7 @@ LockContentsView::LockContentsView(
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the system tray. LockContentsView should otherwise not be
@@ -462,7 +462,7 @@ LockContentsView::LockContentsView(
 LockContentsView::~LockContentsView() {
   Shell::Get()->accelerator_controller()->UnregisterAll(this);
   data_dispatcher_->RemoveObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 
   if (unlock_attempt_ > 0) {
@@ -1377,7 +1377,7 @@ void LockContentsView::DoLayout() {
   // depend on the preferred size to determine layout.
   gfx::Size preferred_size = display.size();
   preferred_size.set_height(preferred_size.height() -
-                            keyboard::KeyboardController::Get()
+                            keyboard::KeyboardUIController::Get()
                                 ->GetWorkspaceOccludedBoundsInScreen()
                                 .height());
   SetPreferredSize(preferred_size);
@@ -1786,7 +1786,7 @@ void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
   ShowParentAccessDialog(false);
 }
 
-keyboard::KeyboardController* LockContentsView::GetKeyboardControllerForView()
+keyboard::KeyboardUIController* LockContentsView::GetKeyboardControllerForView()
     const {
   return GetWidget() ? GetKeyboardControllerForWidget(GetWidget()) : nullptr;
 }

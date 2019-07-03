@@ -4636,17 +4636,27 @@ void LayerTreeHostImpl::RequestUpdateForSynchronousInputHandler() {
   UpdateRootLayerStateForSynchronousInputHandler();
 }
 
-void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
-    const gfx::ScrollOffset& root_offset) {
-  TRACE_EVENT2("cc",
-               "LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset",
-               "offset_x", root_offset.x(), "offset_y", root_offset.y());
+static gfx::Vector2dF ContentToPhysical(const gfx::Vector2dF& content_delta,
+                                        float page_scale_factor) {
+  gfx::Vector2dF physical_delta = content_delta;
+  physical_delta.Scale(page_scale_factor);
+  return physical_delta;
+}
 
-  gfx::Vector2dF delta = root_offset.DeltaFrom(viewport()->TotalScrollOffset());
+void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
+    const gfx::ScrollOffset& root_content_offset) {
+  TRACE_EVENT2(
+      "cc", "LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset",
+      "offset_x", root_content_offset.x(), "offset_y", root_content_offset.y());
+
+  gfx::Vector2dF physical_delta = ContentToPhysical(
+      root_content_offset.DeltaFrom(viewport()->TotalScrollOffset()),
+      active_tree()->page_scale_factor_for_scroll());
+
   bool changed = !viewport()
-                      ->ScrollBy(delta,
+                      ->ScrollBy(physical_delta,
                                  /*viewport_point=*/gfx::Point(),
-                                 /*is_wheel_scroll=*/false,
+                                 /*is_direct_manipulation=*/false,
                                  /*affect_browser_controls=*/false,
                                  /*scroll_outer_viewport=*/true)
                       .consumed_delta.IsZero();

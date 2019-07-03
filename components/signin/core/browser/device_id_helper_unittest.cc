@@ -7,7 +7,6 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +23,8 @@ TEST(DeviceIdHelper, GenerateSigninScopedDeviceId) {
 
 TEST(DeviceIdHelper, RecreateSigninScopedDeviceId) {
   sync_preferences::TestingPrefServiceSyncable prefs;
-  ProfileOAuth2TokenService::RegisterProfilePrefs(prefs.registry());
+  prefs.registry()->RegisterStringPref(
+      prefs::kGoogleServicesSigninScopedDeviceId, std::string());
   ASSERT_TRUE(
       prefs.GetString(prefs::kGoogleServicesSigninScopedDeviceId).empty());
 
@@ -42,7 +42,9 @@ TEST(DeviceIdHelper, RecreateSigninScopedDeviceId) {
 
 TEST(DeviceIdHelper, GetOrCreateScopedDeviceId) {
   sync_preferences::TestingPrefServiceSyncable prefs;
-  ProfileOAuth2TokenService::RegisterProfilePrefs(prefs.registry());
+  prefs.registry()->RegisterStringPref(
+      prefs::kGoogleServicesSigninScopedDeviceId, std::string());
+
   ASSERT_TRUE(
       prefs.GetString(prefs::kGoogleServicesSigninScopedDeviceId).empty());
 

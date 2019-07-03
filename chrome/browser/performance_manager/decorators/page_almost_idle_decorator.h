@@ -7,32 +7,44 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
+
+class FrameNodeImpl;
+class PageNodeImpl;
+class ProcessNodeImpl;
 
 // The PageAlmostIdle decorator is responsible for determining when a page has
 // reached an "almost idle" state after initial load, based on CPU and network
 // quiescence, as well as an absolute timeout. This state is then updated on
 // PageNodes in a graph.
-class PageAlmostIdleDecorator : public GraphImplObserverDefaultImpl {
+class PageAlmostIdleDecorator : public FrameNode::ObserverDefaultImpl,
+                                public GraphOwnedDefaultImpl,
+                                public PageNode::ObserverDefaultImpl,
+                                public ProcessNode::ObserverDefaultImpl {
  public:
   class Data;
 
   PageAlmostIdleDecorator();
   ~PageAlmostIdleDecorator() override;
 
-  // GraphObserver implementation:
-  void OnRegistered() override;
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override;
-  void OnIsLoadingChanged(PageNodeImpl* page_node) override;
-  void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override;
-  void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override;
+  // FrameNodeObserver implementation:
+  void OnNetworkAlmostIdleChanged(const FrameNode* frame_node) override;
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
+
+  // PageNodeObserver implementation:
+  void OnIsLoadingChanged(const PageNode* page_node) override;
+  void OnMainFrameNavigationCommitted(const PageNode* page_node) override;
+
+  // ProcessNodeObserver implementation:
+  void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) override;
 
  protected:
   friend class PageAlmostIdleDecoratorTest;
@@ -55,6 +67,12 @@ class PageAlmostIdleDecorator : public GraphImplObserverDefaultImpl {
   // busy, or continue loading content.
   static constexpr base::TimeDelta kWaitingForIdleTimeout =
       base::TimeDelta::FromMinutes(1);
+
+  // (Un)registers the various node observer flavors of this object with the
+  // graph. These are invoked by OnPassedToGraph and OnTakenFromGraph, but
+  // hoisted to their own functions for testing.
+  void RegisterObservers(Graph* graph);
+  void UnregisterObservers(Graph* graph);
 
   // These are called when properties/events affecting the load-idle state are
   // observed. Frame and Process variants will eventually all redirect to the

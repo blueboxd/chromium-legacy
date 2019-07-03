@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/task_traits.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
@@ -58,7 +59,8 @@ class TracingController {
   // to dump the trace data to a file.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
       const base::FilePath& file_path,
-      const base::Closure& callback);
+      const base::Closure& callback,
+      base::TaskPriority write_priority = base::TaskPriority::BEST_EFFORT);
 
   // Get a set of category groups. The category groups can change as
   // new code paths are reached.

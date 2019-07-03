@@ -240,7 +240,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />：<ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">找不到 PPD。請確認 Chromebook 已連上網路，然後再試一次。</translation>
 <translation id="1355466263109342573">「<ph name="PLUGIN_NAME" />」遭到封鎖</translation>
-<translation id="1357589289913453911">擴充功能 ID</translation>
 <translation id="1358741672408003399">拼字與文法</translation>
 <translation id="1361164813881551742">手動新增</translation>
 <translation id="1361655923249334273">未使用</translation>
@@ -320,7 +319,6 @@
 <translation id="1470967055429794975">這項操作將清除這個安全金鑰上的所有資料，包括 PIN 碼</translation>
 <translation id="1475502736924165259">您儲存的這些憑證不屬於任何其他類別</translation>
 <translation id="1476607407192946488">語言設定(&amp;L)</translation>
-<translation id="1477301030751268706">Identity API 憑證快取</translation>
 <translation id="1478340334823509079">詳細資料：<ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">未啟用安裝功能</translation>
 <translation id="1483493594462132177">傳送</translation>
@@ -728,7 +726,6 @@
 <translation id="2090876986345970080">系統安全性設定</translation>
 <translation id="2091887806945687916">音訊</translation>
 <translation id="2097372108957554726">你必須登入 Chrome 註冊新裝置</translation>
-<translation id="2098305189700762159">找不到</translation>
 <translation id="2099172618127234427">你即將啟用 Chrome 作業系統偵錯功能，這會一併設定 sshd 精靈，並允許從 USB 磁碟機執行啟動作業。</translation>
 <translation id="2099686503067610784">要刪除伺服器憑證「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="2100273922101894616">自動登入</translation>
@@ -940,7 +937,6 @@
 <translation id="2386926718981642523">只要說出「Ok Google」，就能隨時存取 Google 助理</translation>
 <translation id="2387458720915042159">Proxy 連線類型</translation>
 <translation id="2391419135980381625">標準字型</translation>
-<translation id="2391762656119864333">撤銷</translation>
 <translation id="2392369802118427583">啟用</translation>
 <translation id="2394566832561516196">系統將在你重新載入網頁後清除設定</translation>
 <translation id="2395616325548404795">你的 <ph name="DEVICE_TYPE" /> 已成功註冊企業管理服務，但無法傳送資產和位置資訊。請前往管理控制台，為這個裝置手動輸入這些資訊。</translation>
@@ -1956,7 +1952,6 @@
 <translation id="3894123633473837029">透過 Sherlog 納入最近的 Google 助理歷史記錄。這可能包括你的身分、位置和偵錯資訊。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="389589731200570180">與訪客共用</translation>
-<translation id="3898521660513055167">憑證狀態</translation>
 <translation id="389901847090970821">選取鍵盤</translation>
 <translation id="3899879303189199559">離線超過一年</translation>
 <translation id="3900966090527141178">匯出密碼</translation>
@@ -2791,7 +2786,6 @@
 <translation id="5235050375939235066">要解除安裝應用程式嗎？</translation>
 <translation id="5235750401727657667">取代新分頁開啟時顯示的網頁</translation>
 <translation id="5238278114306905396">「<ph name="EXTENSION_NAME" />」應用程式已自動移除。</translation>
-<translation id="5238369540257804368">範圍</translation>
 <translation id="5241128660650683457">讀取你在造訪的網站上產生的所有資料</translation>
 <translation id="5242724311594467048">啟用「<ph name="EXTENSION_NAME" />」？</translation>
 <translation id="5243522832766285132">請稍後再試</translation>
@@ -3230,7 +3224,6 @@
 <translation id="5870155679953074650">硬性錯誤數</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5877584842898320529">選取的印表機無法使用或未正確安裝。<ph name="BR" />請檢查你的印表機，或改選其他印表機。</translation>
-<translation id="5880247576487732437">提供的憑證</translation>
 <translation id="5882919346125742463">已知網路</translation>
 <translation id="5884474295213649357">這個分頁已連上 USB 裝置。</translation>
 <translation id="5885324376209859881">管理媒體設定...</translation>
@@ -4694,7 +4687,6 @@
 <translation id="8045923671629973368">輸入應用程式 ID 或線上應用程式商店網址</translation>
 <translation id="804786196054284061">使用者授權協議</translation>
 <translation id="8049705080247101012">Google 已將「<ph name="EXTENSION_NAME" />」標示為惡意擴充功能並禁止安裝</translation>
-<translation id="8049913480579063185">擴充功能名稱</translation>
 <translation id="8050038245906040378">Microsoft 商用程式碼簽署</translation>
 <translation id="8053278772142718589">PKCS #12 檔案</translation>
 <translation id="8053390638574070785">重新載入此網頁</translation>
@@ -4944,7 +4936,6 @@
 <translation id="8449008133205184768">貼上並符合樣式</translation>
 <translation id="8449036207308062757">管理儲存空間</translation>
 <translation id="8452135315243592079">找不到 SIM 卡</translation>
-<translation id="845627346958584683">到期時間</translation>
 <translation id="845702320058262034">無法連線。請確認手機的藍牙功能已開啟。</translation>
 <translation id="8457451314607652708">匯入書籤</translation>
 <translation id="8460336040822756677">關閉 <ph name="DEVICE_TYPE" /> 專用 Smart Lock 後，您必須輸入密碼才能解鎖 Chrome 裝置，無法直接使用手機解鎖。</translation>
@@ -5058,7 +5049,6 @@
 <translation id="8637542770513281060">你的電腦含有安全模組，用於實作 Chrome 作業系統中許多重要的安全性功能。如需瞭解詳情，請造訪 Chromebook 說明中心：https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">可安裝系統更新，正在準備下載…</translation>
 <translation id="8639047128869322042">正在檢查有害軟體...</translation>
-<translation id="8642171459927087831">存取憑證</translation>
 <translation id="8642900771896232685">2 秒</translation>
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">如要繼續，請選擇一個選項：</translation>

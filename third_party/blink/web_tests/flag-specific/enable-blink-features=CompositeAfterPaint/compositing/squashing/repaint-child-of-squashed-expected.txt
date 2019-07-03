@@ -8,29 +8,18 @@ CASE 1, original layer tree
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 1
+      "backgroundColor": "#0000FF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='box top'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='box top'",
       "position": [130, 130],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF"
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [50, 50, 0, 1]
-      ]
     }
   ]
 }
@@ -45,35 +34,24 @@ CASE 2, change color of "inner" to red
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 1
+      "backgroundColor": "#0000FF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='box top'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='box top'",
       "position": [130, 130],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='inner'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='inner'",
           "rect": [10, 10, 50, 50],
           "reason": "background"
         }
-      ]
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [50, 50, 0, 1]
       ]
     }
   ]

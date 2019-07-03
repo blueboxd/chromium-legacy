@@ -13,9 +13,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/vr/orientation/orientation_device.h"
+#include "device/vr/orientation/orientation_session.h"
 #include "device/vr/test/fake_orientation_provider.h"
 #include "device/vr/test/fake_sensor_provider.h"
-#include "device/vr/vr_display_impl.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
@@ -165,15 +165,15 @@ class VROrientationDeviceTest : public testing::Test {
     device_->SetInlinePosesEnabled(enabled);
   }
 
-  std::unique_ptr<VRDisplayImpl> MakeDisplay() {
+  std::unique_ptr<VROrientationSession> MakeDisplay() {
     mojom::XRFrameDataProviderPtr data_provider;
     mojom::XRSessionControllerPtr controller;
-    return std::make_unique<VRDisplayImpl>(device_.get(),
-                                           mojo::MakeRequest(&data_provider),
-                                           mojo::MakeRequest(&controller));
+    return std::make_unique<VROrientationSession>(
+        device_.get(), mojo::MakeRequest(&data_provider),
+        mojo::MakeRequest(&controller));
   }
 
-  void TryGetFrameData(VRDisplayImpl* display, bool expect_null) {
+  void TryGetFrameData(VROrientationSession* display, bool expect_null) {
     bool was_called = false;
     auto callback = [](bool expect_null, bool* was_called,
                        mojom::XRFrameDataPtr data) {
@@ -395,7 +395,7 @@ TEST_F(VROrientationDeviceTest, GetFrameDataHelper) {
   // 2) call GetFrameData and check behavior
   // 3) unrestrict frame data
   // 4) call GetFrameData and check behavior
-  std::unique_ptr<VRDisplayImpl> display = MakeDisplay();
+  std::unique_ptr<VROrientationSession> display = MakeDisplay();
   TryGetFrameData(display.get(), true);
   static_cast<mojom::XRSessionController*>(display.get())
       ->SetFrameDataRestricted(false);

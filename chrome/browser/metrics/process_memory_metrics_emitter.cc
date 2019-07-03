@@ -835,7 +835,7 @@ namespace {
 // main-frame of the given |page|.
 bool HostsMainFrame(performance_manager::ProcessNodeImpl* process,
                     performance_manager::PageNodeImpl* page) {
-  performance_manager::FrameNodeImpl* main_frame = page->GetMainFrameNode();
+  performance_manager::FrameNodeImpl* main_frame = page->GetMainFrameNodeImpl();
   if (main_frame == nullptr) {
     // |process| can't host a frame that doesn't exist.
     return false;
@@ -851,7 +851,7 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     performance_manager::GraphImpl* graph) {
   std::vector<ProcessInfo> process_infos;
   std::vector<performance_manager::ProcessNodeImpl*> process_nodes =
-      graph->GetAllProcessNodes();
+      graph->GetAllProcessNodeImpls();
   for (auto* process_node : process_nodes) {
     if (process_node->process_id() == base::kNullProcessId)
       continue;

@@ -26,14 +26,14 @@ namespace {
 
 using ::payments::mojom::CanMakePaymentEventData;
 using ::payments::mojom::CanMakePaymentEventDataPtr;
-using ::payments::mojom::PaymentRequestEventData;
-using ::payments::mojom::PaymentRequestEventDataPtr;
-using ::payments::mojom::PaymentHandlerResponsePtr;
 using ::payments::mojom::PaymentCurrencyAmount;
 using ::payments::mojom::PaymentDetailsModifier;
 using ::payments::mojom::PaymentDetailsModifierPtr;
+using ::payments::mojom::PaymentHandlerResponsePtr;
 using ::payments::mojom::PaymentItem;
 using ::payments::mojom::PaymentMethodData;
+using ::payments::mojom::PaymentRequestEventData;
+using ::payments::mojom::PaymentRequestEventDataPtr;
 
 void GetAllPaymentAppsCallback(const base::Closure& done_callback,
                                PaymentAppProvider::PaymentApps* out_apps,
@@ -96,6 +96,10 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     ASSERT_EQ("registered", script_result);
   }
 
+  url::Origin GetTestServerOrigin() {
+    return url::Origin::Create(https_server_->GetURL("/"));
+  }
+
   std::vector<int64_t> GetAllPaymentAppRegistrationIDs() {
     base::RunLoop run_loop;
     PaymentAppProvider::PaymentApps apps;
@@ -113,11 +117,14 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     return registrationIds;
   }
 
-  bool AbortPayment(int64_t registration_id) {
+  bool AbortPayment(int64_t registration_id,
+                    const url::Origin& sw_origin,
+                    const std::string& payment_request_id) {
     base::RunLoop run_loop;
     bool payment_aborted = false;
     PaymentAppProvider::GetInstance()->AbortPayment(
         shell()->web_contents()->GetBrowserContext(), registration_id,
+        sw_origin, payment_request_id,
         base::BindOnce(&PaymentEventResultCallback, run_loop.QuitClosure(),
                        &payment_aborted));
     run_loop.Run();
@@ -126,6 +133,8 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
   }
 
   bool CanMakePaymentWithTestData(int64_t registration_id,
+                                  const url::Origin& sw_origin,
+                                  const std::string& payment_request_id,
                                   const std::string& supported_method) {
     CanMakePaymentEventDataPtr event_data =
         CreateCanMakePaymentEventData(supported_method);
@@ -134,7 +143,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     bool can_make_payment = false;
     PaymentAppProvider::GetInstance()->CanMakePayment(
         shell()->web_contents()->GetBrowserContext(), registration_id,
-        std::move(event_data),
+        sw_origin, payment_request_id, std::move(event_data),
         base::BindOnce(&PaymentEventResultCallback, run_loop.QuitClosure(),
                        &can_make_payment));
     run_loop.Run();
@@ -144,12 +153,14 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 
   PaymentHandlerResponsePtr InvokePaymentAppWithTestData(
       int64_t registration_id,
+      const url::Origin& sw_origin,
       const std::string& supported_method,
       const std::string& instrument_key) {
     base::RunLoop run_loop;
     PaymentHandlerResponsePtr response;
     PaymentAppProvider::GetInstance()->InvokePaymentApp(
         shell()->web_contents()->GetBrowserContext(), registration_id,
+        sw_origin,
         CreatePaymentRequestEventData(supported_method, instrument_key),
         base::BindOnce(&InvokePaymentAppCallback, run_loop.QuitClosure(),
                        &response));
@@ -250,7 +261,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
   ASSERT_EQ(1U, registrationIds.size());
 
   bool payment_aborted =
-      AbortPayment(blink::mojom::kInvalidServiceWorkerRegistrationId);
+      AbortPayment(blink::mojom::kInvalidServiceWorkerRegistrationId,
+                   GetTestServerOrigin(), "id");
   ASSERT_FALSE(payment_aborted);
 
   ClearStoragePartitionData();
@@ -268,7 +280,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_AbortPayment) {
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(1U, registrationIds.size());
 
-  bool payment_aborted = AbortPayment(registrationIds[0]);
+  bool payment_aborted =
+      AbortPayment(registrationIds[0], GetTestServerOrigin(), "id");
   ASSERT_TRUE(payment_aborted);
 
   ClearStoragePartitionData();
@@ -286,8 +299,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_CanMakePayment) {
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(1U, registrationIds.size());
 
-  bool can_make_payment =
-      CanMakePaymentWithTestData(registrationIds[0], "basic-card");
+  bool can_make_payment = CanMakePaymentWithTestData(
+      registrationIds[0], GetTestServerOrigin(), "id", "basic-card");
   ASSERT_TRUE(can_make_payment);
 
   ClearStoragePartitionData();
@@ -322,8 +335,9 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
   // Remove all payment apps and service workers to cause error.
   ClearStoragePartitionData();
 
-  PaymentHandlerResponsePtr response(InvokePaymentAppWithTestData(
-      registrationIds[0], "basic-card", "basic-card-payment-app-id"));
+  PaymentHandlerResponsePtr response(
+      InvokePaymentAppWithTestData(registrationIds[0], GetTestServerOrigin(),
+                                   "basic-card", "basic-card-payment-app-id"));
   ASSERT_EQ("", response->method_name);
 
   ClearStoragePartitionData();
@@ -341,8 +355,9 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_PaymentAppInvocation) {
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(1U, registrationIds.size());
 
-  PaymentHandlerResponsePtr response(InvokePaymentAppWithTestData(
-      registrationIds[0], "basic-card", "basic-card-payment-app-id"));
+  PaymentHandlerResponsePtr response(
+      InvokePaymentAppWithTestData(registrationIds[0], GetTestServerOrigin(),
+                                   "basic-card", "basic-card-payment-app-id"));
   ASSERT_EQ("test", response->method_name);
 
   ClearStoragePartitionData();
@@ -384,7 +399,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
   ASSERT_EQ(1U, registrationIds.size());
 
   PaymentHandlerResponsePtr response(InvokePaymentAppWithTestData(
-      registrationIds[0], "https://bobpay.com", "bobpay-payment-app-id"));
+      registrationIds[0], GetTestServerOrigin(), "https://bobpay.com",
+      "bobpay-payment-app-id"));
   // InvokePaymentAppCallback returns empty method_name in case of failure, like
   // in PaymentRequestRespondWithObserver::OnResponseRejected.
   ASSERT_EQ("", response->method_name);

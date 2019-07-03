@@ -65,6 +65,7 @@ public interface PaymentApp {
      * cards for the current profile. Can return null or empty list, e.g., if user has no locally
      * stored credit cards.
      *
+     * @param id               The unique identifier of the PaymentRequest.
      * @param methodDataMap    The map from methods to method specific data. The data contains such
      *                         information as whether the app should be invoked in test or
      *                         production mode, merchant identifier, or a public key.
@@ -76,7 +77,7 @@ public interface PaymentApp {
      * @param modifiers        The relevant payment details modifiers.
      * @param callback         The object that will receive the list of instruments.
      */
-    void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
+    void getInstruments(String id, Map<String, PaymentMethodData> methodDataMap, String origin,
             String iframeOrigin, @Nullable byte[][] certificateChain,
             Map<String, PaymentDetailsModifier> modifiers, InstrumentsCallback callback);
 

@@ -34,7 +34,8 @@ namespace {
 constexpr long kSystemTrayRequestDock = 0;
 
 constexpr int kXembedInfoProtocolVersion = 0;
-constexpr int kXembedInfoFlags = 0;
+constexpr int kXembedFlagMap = 1 << 0;
+constexpr int kXembedInfoFlags = kXembedFlagMap;
 
 const int16_t kInitialWindowPos = std::numeric_limits<int16_t>::min();
 
@@ -45,7 +46,7 @@ StatusIconLinuxX11::StatusIconLinuxX11() : Button(this) {}
 StatusIconLinuxX11::~StatusIconLinuxX11() = default;
 
 void StatusIconLinuxX11::SetIcon(const gfx::ImageSkia& image) {
-  // Nothing to do.
+  SchedulePaint();
 }
 
 void StatusIconLinuxX11::SetToolTip(const base::string16& tool_tip) {
@@ -76,6 +77,9 @@ void StatusIconLinuxX11::OnSetDelegate() {
       widget_.get(), native_widget.get());
   host_ = host.get();
 
+  // We outlive the host, so no need to remove ourselves as an observer.
+  host->AddObserver(this);
+
   int visual_id;
   if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
     host->SetVisualId(visual_id);
@@ -104,6 +108,21 @@ void StatusIconLinuxX11::OnSetDelegate() {
   Window window = host_->GetAcceleratedWidget();
   DCHECK(window);
 
+  ui::SetIntArrayProperty(window, "_XEMBED_INFO", "CARDINAL",
+                          {kXembedInfoProtocolVersion, kXembedInfoFlags});
+
+  XSetWindowAttributes attrs;
+  unsigned long flags = 0;
+  if (widget_->ShouldWindowContentsBeTransparent()) {
+    flags |= CWBackPixel;
+    attrs.background_pixel = 0;
+  } else {
+    ui::SetIntProperty(window, "CHROMIUM_COMPOSITE_WINDOW", "CARDINAL", 1);
+    flags |= CWBackPixmap;
+    attrs.background_pixmap = ParentRelative;
+  }
+  XChangeWindowAttributes(display, window, flags, &attrs);
+
   widget_->SetContentsView(this);
   set_owned_by_client();
 
@@ -111,11 +130,6 @@ void StatusIconLinuxX11::OnSetDelegate() {
   SetIcon(delegate_->GetImage());
   SetTooltipText(delegate_->GetToolTip());
   set_context_menu_controller(this);
-
-  widget_->Show();
-
-  ui::SetIntArrayProperty(window, "_XEMBED_INFO", "CARDINAL",
-                          {kXembedInfoProtocolVersion, kXembedInfoFlags});
 
   XEvent ev;
   memset(&ev, 0, sizeof(ev));
@@ -182,3 +196,12 @@ void StatusIconLinuxX11::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->DrawImageInt(image, 0, 0, image.width(), image.height(), 0, 0,
                        image.width(), image.height(), true, flags);
 }
+
+void StatusIconLinuxX11::OnWindowMapped(unsigned long xid) {
+  // The window gets mapped by the system tray implementation.  Show() the
+  // window (which will be a no-op) so aura is convinced the window is mapped
+  // and will begin drawing frames.
+  widget_->Show();
+}
+
+void StatusIconLinuxX11::OnWindowUnmapped(unsigned long xid) {}

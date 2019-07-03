@@ -76,6 +76,9 @@ void TestProxyAuth(Browser* browser, const GURL& test_page) {
     EXPECT_EQ(true, content::EvalJs(contents, "document.body === null"));
   }
 
+  // The URL should be hidden to avoid origin confusion issues.
+  EXPECT_TRUE(browser->location_bar_model()->GetFormattedFullURL().empty());
+
   // Cancel the prompt. On HTTPS pages, the error page content still shouldn't
   // be shown.
   {
@@ -86,6 +89,7 @@ void TestProxyAuth(Browser* browser, const GURL& test_page) {
     if (https) {
       EXPECT_EQ(true, content::EvalJs(contents, "document.body === null"));
     }
+    EXPECT_FALSE(browser->location_bar_model()->GetFormattedFullURL().empty());
   }
 
   // Reload; this time, supply credentials and check that the page loads.
@@ -95,6 +99,7 @@ void TestProxyAuth(Browser* browser, const GURL& test_page) {
                                    WindowOpenDisposition::CURRENT_TAB,
                                    ui::PAGE_TRANSITION_TYPED, false));
     auth_needed_waiter.Wait();
+    EXPECT_TRUE(browser->location_bar_model()->GetFormattedFullURL().empty());
   }
 
   WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
@@ -105,6 +110,7 @@ void TestProxyAuth(Browser* browser, const GURL& test_page) {
   base::string16 expected_title = base::ASCIIToUTF16("OK");
   content::TitleWatcher title_watcher(contents, expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  EXPECT_FALSE(browser->location_bar_model()->GetFormattedFullURL().empty());
 }
 
 content::InterstitialPageDelegate* GetInterstitialDelegate(

@@ -32,6 +32,8 @@ class ChromeSearchResult {
   using Tags = ash::SearchResultTags;
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
+  using DisplayIndex = ash::SearchResultDisplayIndex;
+  using DisplayLocation = ash::SearchResultDisplayLocation;
 
   ChromeSearchResult();
   virtual ~ChromeSearchResult();
@@ -47,6 +49,10 @@ class ChromeSearchResult {
   const std::string& id() const { return metadata_->id; }
   DisplayType display_type() const { return metadata_->display_type; }
   ResultType result_type() const { return metadata_->result_type; }
+  DisplayIndex display_index() const { return metadata_->display_index; }
+  DisplayLocation display_location() const {
+    return metadata_->display_location;
+  }
   const Actions& actions() const { return metadata_->actions; }
   double display_score() const { return metadata_->display_score; }
   bool is_installing() const { return metadata_->is_installing; }
@@ -73,6 +79,8 @@ class ChromeSearchResult {
   void SetFormattedPrice(const base::string16& formatted_price);
   void SetDisplayType(DisplayType display_type);
   void SetResultType(ResultType result_type);
+  void SetDisplayIndex(DisplayIndex display_index);
+  void SetDisplayLocation(DisplayLocation display_location);
   void SetDisplayScore(double display_score);
   void SetActions(const Actions& actions);
   void SetIsOmniboxSearch(bool is_omnibox_search);
@@ -86,6 +94,8 @@ class ChromeSearchResult {
 
   // The following methods call model updater to update Ash.
   void SetPercentDownloaded(int percent_downloaded);
+
+  void SetSearchResultMetadata();
   void NotifyItemInstalled();
 
   void SetMetadata(std::unique_ptr<ash::SearchResultMetadata> metadata) {

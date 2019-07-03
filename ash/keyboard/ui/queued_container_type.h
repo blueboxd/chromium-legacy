@@ -12,17 +12,17 @@
 
 namespace keyboard {
 
-class KeyboardController;
+class KeyboardUIController;
 
 // Tracks a queued ContainerType change request. Couples a container type with a
 // callback to invoke once the necessary animation and container changes are
 // complete.
 // The callback will be invoked once this object goes out of scope. Success
-// is defined as the KeyboardController's current container behavior matching
+// is defined as the KeyboardUIController's current container behavior matching
 // the same container type as the queued container type.
 class QueuedContainerType {
  public:
-  QueuedContainerType(KeyboardController* controller,
+  QueuedContainerType(KeyboardUIController* controller,
                       ContainerType container_type,
                       base::Optional<gfx::Rect> bounds,
                       base::OnceCallback<void(bool success)> callback);
@@ -31,7 +31,7 @@ class QueuedContainerType {
   base::Optional<gfx::Rect> target_bounds() { return bounds_; }
 
  private:
-  KeyboardController* controller_;
+  KeyboardUIController* controller_;
   ContainerType container_type_;
   base::Optional<gfx::Rect> bounds_;
   base::OnceCallback<void(bool success)> callback_;

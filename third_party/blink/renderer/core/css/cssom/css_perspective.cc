@@ -70,7 +70,7 @@ const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
     // Wrap out of range length with a calc.
     CSSCalcExpressionNode* node = length_->ToCalcExpressionNode();
     node->SetIsNestedCalc();
-    length = CSSMathFunctionValue::Create(CSSCalcValue::Create(node));
+    length = CSSMathFunctionValue::Create(node);
   } else {
     length = length_->ToCSSValue();
   }

@@ -26,6 +26,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -171,6 +172,54 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   return count;
+}
+
+size_t LocalSharedObjectsContainer::GetDomainCount() const {
+  std::set<base::StringPiece> hosts;
+
+  for (const auto& it : cookies()->origin_cookie_set_map()) {
+    for (const auto& cookie : *it.second) {
+      hosts.insert(cookie.Domain());
+    }
+  }
+
+  for (const auto& origin : local_storages()->GetOrigins())
+    hosts.insert(origin.host());
+
+  for (const auto& origin : session_storages()->GetOrigins())
+    hosts.insert(origin.host());
+
+  for (const auto& origin : indexed_dbs()->GetOrigins())
+    hosts.insert(origin.host());
+
+  for (const auto& origin : service_workers()->GetOrigins())
+    hosts.insert(origin.host());
+
+  for (const auto& info : shared_workers()->GetSharedWorkerInfo())
+    hosts.insert(info.constructor_origin.host());
+
+  for (const auto& origin : cache_storages()->GetOrigins())
+    hosts.insert(origin.host());
+
+  for (const auto& origin : file_systems()->GetOrigins())
+    hosts.insert(origin.host());
+
+  for (const auto& origin : databases()->GetOrigins())
+    hosts.insert(origin.host());
+
+  for (const auto& origin : appcaches()->GetOrigins())
+    hosts.insert(origin.host());
+
+  std::set<std::string> domains;
+  for (const base::StringPiece& host : hosts) {
+    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        host, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (!domain.empty())
+      domains.insert(std::move(domain));
+    else
+      domains.insert(host.as_string());
+  }
+  return domains.size();
 }
 
 void LocalSharedObjectsContainer::Reset() {

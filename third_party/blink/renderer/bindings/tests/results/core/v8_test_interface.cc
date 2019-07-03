@@ -1669,12 +1669,6 @@ static void OriginTrialWindowExposedMethodMethod(const v8::FunctionCallbackInfo<
   impl->originTrialWindowExposedMethod();
 }
 
-static void OriginTrialWindowExposedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
-
-  impl->originTrialWindowExposedMethod2();
-}
-
 static void AlwaysExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation::alwaysExposedStaticMethod();
 }
@@ -3348,12 +3342,6 @@ void V8TestInterface::OriginTrialWindowExposedMethodMethodCallback(const v8::Fun
   test_interface_implementation_v8_internal::OriginTrialWindowExposedMethodMethod(info);
 }
 
-void V8TestInterface::OriginTrialWindowExposedMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_originTrialWindowExposedMethod2");
-
-  test_interface_implementation_v8_internal::OriginTrialWindowExposedMethod2Method(info);
-}
-
 void V8TestInterface::AlwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_alwaysExposedStaticMethod");
 
@@ -4058,45 +4046,6 @@ void V8TestInterface::InstallTestFeature(
 
 void V8TestInterface::InstallTestFeature(ScriptState* script_state) {
   InstallTestFeature(script_state, v8::Local<v8::Object>());
-}
-
-void V8TestInterface::InstallOriginTrialFeature(
-    v8::Isolate* isolate,
-    const DOMWrapperWorld& world,
-    v8::Local<v8::Object> instance,
-    v8::Local<v8::Object> prototype,
-    v8::Local<v8::Function> interface) {
-  v8::Local<v8::FunctionTemplate> interface_template =
-      V8TestInterface::GetWrapperTypeInfo()->DomTemplate(isolate, world);
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
-  ALLOW_UNUSED_LOCAL(signature);
-  ExecutionContext* execution_context = ToExecutionContext(isolate->GetCurrentContext());
-  if (execution_context && (execution_context->IsDocument())) {
-    static constexpr V8DOMConfiguration::MethodConfiguration
-    kOriginTrialWindowExposedMethod2Configurations[] = {
-        {"originTrialWindowExposedMethod2", V8TestInterface::OriginTrialWindowExposedMethod2MethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
-    };
-    for (const auto& config : kOriginTrialWindowExposedMethod2Configurations) {
-      V8DOMConfiguration::InstallMethod(
-          isolate, world, instance, prototype,
-          interface, signature, config);
-    }
-  }
-}
-
-void V8TestInterface::InstallOriginTrialFeature(
-    ScriptState* script_state, v8::Local<v8::Object> instance) {
-  V8PerContextData* per_context_data = script_state->PerContextData();
-  v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
-      V8TestInterface::GetWrapperTypeInfo());
-  v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
-      V8TestInterface::GetWrapperTypeInfo());
-  ALLOW_UNUSED_LOCAL(interface);
-  InstallOriginTrialFeature(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
-}
-
-void V8TestInterface::InstallOriginTrialFeature(ScriptState* script_state) {
-  InstallOriginTrialFeature(script_state, v8::Local<v8::Object>());
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterface::DomTemplate(

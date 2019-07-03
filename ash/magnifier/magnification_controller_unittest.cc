@@ -4,7 +4,7 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/magnifier/magnifier_test_utils.h"
 #include "ash/magnifier/magnifier_utils.h"
@@ -949,7 +949,7 @@ TEST_F(MagnificationControllerTest, ZoomsIntoCenter) {
 TEST_F(MagnificationControllerTest, KeyboardOverscrollDisabled) {
   GetMagnificationController()->SetEnabled(false);
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   bool old_keyboard_overscroll_value =
       keyboard_controller->IsKeyboardOverscrollEnabled();
 
@@ -980,7 +980,7 @@ TEST_F(MagnificationControllerTest, DISABLED_TextfieldFocusedWithKeyboard) {
 
   // Set up and show the keyboard.
   keyboard::SetAccessibilityKeyboardEnabled(true);
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(true);
 
   // Focus on the text input field.

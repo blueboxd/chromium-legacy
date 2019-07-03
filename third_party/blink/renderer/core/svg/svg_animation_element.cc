@@ -469,7 +469,7 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
     return;
   }
 
-  CalcMode calc_mode = this->GetCalcMode();
+  CalcMode calc_mode = GetCalcMode();
   if (IsSVGAnimateElement(*this)) {
     SVGAnimateElement& animate_element = ToSVGAnimateElement(*this);
     if (!animate_element.AnimatedPropertyTypeSupportsAddition())
@@ -527,8 +527,8 @@ void SVGAnimationElement::StartedActiveInterval() {
       key_points_.size() != key_times_.size())
     return;
 
-  AnimationMode animation_mode = this->GetAnimationMode();
-  CalcMode calc_mode = this->GetCalcMode();
+  AnimationMode animation_mode = GetAnimationMode();
+  CalcMode calc_mode = GetCalcMode();
   if (calc_mode == kCalcModeSpline) {
     unsigned splines_count = key_splines_.size();
     if (!splines_count ||
@@ -601,8 +601,8 @@ void SVGAnimationElement::UpdateAnimation(float percent,
     return;
 
   float effective_percent;
-  CalcMode calc_mode = this->GetCalcMode();
-  AnimationMode animation_mode = this->GetAnimationMode();
+  CalcMode calc_mode = GetCalcMode();
+  AnimationMode animation_mode = GetAnimationMode();
   if (animation_mode == kValuesAnimation) {
     String from;
     String to;

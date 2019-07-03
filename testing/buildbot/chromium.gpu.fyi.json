@@ -2599,6 +2599,53 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "angle_deqp_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "P",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--enable-xml-result-parsing",
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "angle_deqp_gles3_vulkan_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -2679,6 +2726,53 @@
           ]
         },
         "test": "angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--enable-xml-result-parsing",
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "P",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "shards": 2
+        },
+        "test": "angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -2960,6 +3054,53 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "angle_deqp_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "P",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--enable-xml-result-parsing",
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "angle_deqp_gles3_vulkan_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -3040,6 +3181,53 @@
           ]
         },
         "test": "angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--enable-xml-result-parsing",
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "P",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "shards": 2
+        },
+        "test": "angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -12007,6 +12195,31 @@
       },
       {
         "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=400"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "linux-nvidia-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests"
+      },
+      {
+        "args": [
           "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-gl"
         ],
@@ -12078,6 +12291,31 @@
           ]
         },
         "test": "angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "linux-nvidia-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 2
+        },
+        "test": "angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -32018,6 +32256,40 @@
       },
       {
         "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=400"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
           "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
@@ -32141,6 +32413,40 @@
           ]
         },
         "test": "angle_deqp_khr_gles2_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 2
+        },
+        "test": "angle_deqp_khr_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -36905,6 +37211,41 @@
       },
       {
         "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=400"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
           "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
@@ -37032,6 +37373,41 @@
           "expiration": 21600
         },
         "test": "angle_deqp_khr_gles2_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-23.21.14.1195\", \"os\": \"Windows-2008ServerR2-SP1\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 2
+        },
+        "test": "angle_deqp_khr_gles31_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",

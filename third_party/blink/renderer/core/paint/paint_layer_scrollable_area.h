@@ -444,6 +444,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   LayoutScrollbarPart* Resizer() const { return resizer_; }
 
+  const IntPoint& CachedOverlayScrollbarOffset() {
+    return cached_overlay_scrollbar_offset_;
+  }
+  void SetCachedOverlayScrollbarOffset(const IntPoint& offset) {
+    cached_overlay_scrollbar_offset_ = offset;
+  }
+
   IntRect RectForHorizontalScrollbar(const IntRect& border_box_rect) const;
   IntRect RectForVerticalScrollbar(const IntRect& border_box_rect) const;
 
@@ -521,7 +528,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // scrollbar.
   int HypotheticalScrollbarThickness(ScrollbarOrientation) const;
 
-  void DidAddScrollbar(Scrollbar&, ScrollbarOrientation) override;
   void WillRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
 
   void InvalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
@@ -671,6 +677,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // This is the offset from the beginning of content flow.
   ScrollOffset scroll_offset_;
+
+  IntPoint cached_overlay_scrollbar_offset_;
 
   // LayoutObject to hold our custom scroll corner.
   LayoutScrollbarPart* scroll_corner_;

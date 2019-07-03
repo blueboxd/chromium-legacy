@@ -212,8 +212,6 @@ class CORE_EXPORT HTMLPlugInElement
 
   void SetPersistedPlugin(WebPluginContainerImpl*);
 
-  bool RequestObjectInternal(const PluginParameters& plugin_params);
-
   void UpdateServiceTypeIfEmpty();
 
   v8::Global<v8::Object> plugin_wrapper_;

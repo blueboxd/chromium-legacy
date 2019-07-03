@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,13 +21,13 @@ namespace {
 // https://crbug.com/84332.
 
 bool GetFlag(KeyboardEnableFlag flag) {
-  return KeyboardController::HasInstance()
-             ? KeyboardController::Get()->IsEnableFlagSet(flag)
+  return KeyboardUIController::HasInstance()
+             ? KeyboardUIController::Get()->IsEnableFlagSet(flag)
              : false;
 }
 
 void SetOrClearEnableFlag(KeyboardEnableFlag flag, bool enabled) {
-  auto* controller = KeyboardController::Get();
+  auto* controller = KeyboardUIController::Get();
   if (!controller)
     return;
   if (enabled)
@@ -63,7 +63,7 @@ bool GetTouchKeyboardEnabled() {
 }
 
 bool IsKeyboardEnabled() {
-  return KeyboardController::Get()->IsEnabled();
+  return KeyboardUIController::Get()->IsEnabled();
 }
 
 }  // namespace keyboard

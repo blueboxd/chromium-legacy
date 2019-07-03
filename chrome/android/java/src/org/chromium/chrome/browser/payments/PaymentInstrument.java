@@ -197,9 +197,10 @@ public abstract class PaymentInstrument extends EditableOption {
     /**
      * Abort invocation of the payment app.
      *
+     * @param id       The unique identifier of the PaymentRequest.
      * @param callback The callback to return abort result.
      */
-    public void abortPaymentApp(AbortCallback callback) {
+    public void abortPaymentApp(String id, AbortCallback callback) {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {

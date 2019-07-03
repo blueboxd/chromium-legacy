@@ -1028,7 +1028,7 @@ bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
 }
 
 bool DesktopWindowTreeHostX11::ShouldWindowContentsBeTransparent() const {
-  return use_argb_visual_;
+  return visual_has_alpha_;
 }
 
 void DesktopWindowTreeHostX11::FrameTypeChanged() {
@@ -1195,8 +1195,8 @@ bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
 
 bool DesktopWindowTreeHostX11::IsTranslucentWindowOpacitySupported() const {
   // This function may be called before InitX11Window() (which
-  // initializes |use_argb_visual_|), so we cannot simply return
-  // |use_argb_visual_|.
+  // initializes |visual_has_alpha_|), so we cannot simply return
+  // |visual_has_alpha_|.
   return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 }
 
@@ -1501,9 +1501,10 @@ void DesktopWindowTreeHostX11::InitX11Window(
   ui::XVisualManager* visual_manager = ui::XVisualManager::GetInstance();
   if (!visual_id_ ||
       !visual_manager->GetVisualInfo(visual_id_, &visual, &depth, &colormap,
-                                     &use_argb_visual_)) {
+                                     &visual_has_alpha_)) {
     visual_manager->ChooseVisualForWindow(enable_transparent_visuals, &visual,
-                                          &depth, &colormap, &use_argb_visual_);
+                                          &depth, &colormap,
+                                          &visual_has_alpha_);
   }
 
   if (colormap != CopyFromParent) {
@@ -2080,10 +2081,10 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {
-  compositor()->SetBackgroundColor(use_argb_visual_ ? SK_ColorTRANSPARENT
-                                                    : SK_ColorWHITE);
-  window()->SetTransparent(use_argb_visual_);
-  content_window()->SetTransparent(use_argb_visual_);
+  compositor()->SetBackgroundColor(visual_has_alpha_ ? SK_ColorTRANSPARENT
+                                                     : SK_ColorWHITE);
+  window()->SetTransparent(visual_has_alpha_);
+  content_window()->SetTransparent(visual_has_alpha_);
 }
 
 void DesktopWindowTreeHostX11::Relayout() {

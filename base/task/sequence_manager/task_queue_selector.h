@@ -251,6 +251,16 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   const bool random_task_selection_ = false;
 #endif
 
+  // If true, the scheduler will bypass the priority-based anti-starvation logic
+  // that prevents indefinite starvation of lower priority tasks in the presence
+  // of higher priority tasks by occasionally selecting lower priority task
+  // queues over higher priority task queues.
+  //
+  // Note: this does not affect the anti-starvation logic that is in place for
+  // preventing delayed tasks from starving immediate tasks, which is always
+  // enabled.
+  const bool anti_starvation_logic_for_priorities_disabled_;
+
   // Count of the number of sets (delayed or immediate) for each priority.
   // Should only contain 0, 1 or 2.
   std::array<int, TaskQueue::kQueuePriorityCount> non_empty_set_counts_ = {{0}};

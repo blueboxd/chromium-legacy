@@ -73,6 +73,9 @@ class SharingDeviceRegistration {
   // Computes and returns a bitmask of all capabilities supported by the device.
   int GetDeviceCapabilities() const;
 
+  // Returns if device supports telephony capability.
+  bool IsTelephonySupported() const;
+
   SharingSyncPreference* sharing_sync_preference_;
 
   instance_id::InstanceIDDriver* instance_id_driver_;

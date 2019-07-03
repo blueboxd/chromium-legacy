@@ -240,7 +240,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">PPD കണ്ടെത്താനാവുന്നില്ല. നിങ്ങളുടെ Chromebook ഓൺലൈനിലാണോ എന്നുറപ്പാക്കുക, വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> പ്ലഗിൻ ബ്ലോക്കുചെയ്‌തു</translation>
-<translation id="1357589289913453911">വിപുലീകരണ ഐഡി</translation>
 <translation id="1358741672408003399">സ്‌പെല്ലിംഗും വ്യാകരണവും</translation>
 <translation id="1361164813881551742">നേരിട്ട് ചേർക്കുക</translation>
 <translation id="1361655923249334273">ഉപയോഗിക്കാത്ത</translation>
@@ -320,7 +319,6 @@
 <translation id="1470967055429794975">സുരക്ഷാ കീയിലെ പിൻ ഉൾപ്പെടെയുള്ള എല്ലാ ഡാറ്റയും ഇത് മായ്‌ക്കും</translation>
 <translation id="1475502736924165259">മറ്റ് വിഭാഗങ്ങളിലൊന്നും യോജിക്കാത്ത സര്‍‌ട്ടിഫിക്കറ്റുകള്‍‌ നിങ്ങളുടെ ഫയലിലുണ്ട്</translation>
 <translation id="1476607407192946488">&amp;ഭാഷ ക്രമീകരണം</translation>
-<translation id="1477301030751268706">ഐഡന്റിറ്റി API ടോക്കൺ കാഷെ</translation>
 <translation id="1478340334823509079">വിശദാംശങ്ങൾ: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">ഇൻസ്റ്റലേഷൻ പ്രവർത്തനക്ഷമമാക്കിയിട്ടില്ല</translation>
 <translation id="1483493594462132177">അയയ്‌ക്കുക</translation>
@@ -725,7 +723,6 @@
 <translation id="2090876986345970080">സിസ്റ്റം സുരക്ഷ ക്രമീകരണങ്ങള്‍</translation>
 <translation id="2091887806945687916">ശബ്‌ദം</translation>
 <translation id="2097372108957554726">പുതിയ ഉപകരണങ്ങൾ രജിസ്റ്റർ ചെയ്യാൻ നിങ്ങൾ Chrome-ൽ സൈൻ ഇൻ ചെയ്യണം</translation>
-<translation id="2098305189700762159">കണ്ടെത്തിയില്ല</translation>
 <translation id="2099172618127234427">sshd daemon സജ്ജീകരിക്കുന്നതും USB ഡ്രൈവുകളിൽ നിന്ന് ബൂട്ട് ചെയ്യൽ പ്രവർത്തനക്ഷമമാക്കുന്നതുമായ Chrome OS ഡീബഗ് ചെയ്യൽ ഫീച്ചറുകൾ നിങ്ങൾ പ്രവർത്തനക്ഷമമാക്കുന്നു.</translation>
 <translation id="2099686503067610784">"<ph name="CERTIFICATE_NAME" />" എന്ന സെർവർ സർട്ടിഫിക്കറ്റ് ഇല്ലാതാക്കണോ?</translation>
 <translation id="2100273922101894616">സ്വയമേവയുള്ള സൈൻ ഇൻ</translation>
@@ -937,7 +934,6 @@
 <translation id="2386926718981642523">ഏതുസമയത്തും "Ok Google" എന്ന് പറഞ്ഞ് നിങ്ങളുടെ അസിസ്‌റ്റന്‍റ് ആക്‌സസ് ചെയ്യൂ</translation>
 <translation id="2387458720915042159">പ്രോക്‌സി കണക്ഷൻ തരം</translation>
 <translation id="2391419135980381625">സാധാരണ ഫോണ്ട്</translation>
-<translation id="2391762656119864333">റദ്ദാക്കുക</translation>
 <translation id="2392369802118427583">സജീവമാക്കുക</translation>
 <translation id="2394566832561516196">അടുത്ത തവണ വീണ്ടും ലോഡ് ചെയ്യുമ്പോൾ ക്രമീകരണങ്ങള്‍ മായ്‌ക്കപ്പെടും.</translation>
 <translation id="2395616325548404795">എന്റർപ്രൈസ് മാനേജ്‌മെന്റിന് വേണ്ടി നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> എൻറോൾ ചെയ്‌തെങ്കിലും അതിന്റെ അസറ്റും ലൊക്കേഷൻ വിവരങ്ങളും അയയ്‌ക്കാനായില്ല. ഈ ഉപകരണത്തിനുവേണ്ടി നിങ്ങളുടെ അഡ്‍മിൻ കൺസോളിൽ നിന്ന് ഈ വിവരങ്ങൾ നേരിട്ട് നൽകുക.</translation>
@@ -1954,7 +1950,6 @@
 <translation id="3894123633473837029">അടുത്തിടെയുള്ള അസിസ്‌റ്റൻ്റ് ചരിത്രം Sherlog വഴി ഉൾപ്പെടുത്തുക. ഇതിൽ നിങ്ങളുടെ ഐഡൻ്റിറ്റി, ലൊക്കേഷൻ, ഡീബഗ് വിവരം എന്നിവ ഉൾപ്പെട്ടേക്കാം. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">ഫോൾഡർ ചേർക്കുക</translation>
 <translation id="389589731200570180">അതിഥികളുമായി പങ്കിടുക</translation>
-<translation id="3898521660513055167">ടോക്കൺ നില</translation>
 <translation id="389901847090970821">കീബോർഡ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="3899879303189199559">ഒരു വർഷത്തിലേറെയായി ഓഫ്‌ലൈനിലാണ്</translation>
 <translation id="3900966090527141178">പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യുക</translation>
@@ -2789,7 +2784,6 @@
 <translation id="5235050375939235066">ആപ്പ് അൺഇൻസ്റ്റാൾ ചെയ്യണോ?</translation>
 <translation id="5235750401727657667">പുതിയ ടാബ് തുറക്കുമ്പോൾ കാണിക്കേണ്ട പേജ് മാറ്റുക</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ആപ്പ് യാന്ത്രികമായി നീക്കംചെയ്‌തു.</translation>
-<translation id="5238369540257804368">സ്‌കോപ്പുകൾ</translation>
 <translation id="5241128660650683457">നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളിലെ എല്ലാ വിവരവും വായിക്കുക</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" പ്രവർത്തനക്ഷമമാക്കണോ?</translation>
 <translation id="5243522832766285132">അൽപ്പസമയത്തിനുള്ളിൽ വീണ്ടും ശ്രമിക്കുക.</translation>
@@ -3229,7 +3223,6 @@
 <translation id="5870155679953074650">ഹാർഡ് ഫോൾട്ടുകൾ</translation>
 <translation id="5877064549588274448">ചാനൽ മാറ്റി. മാറ്റങ്ങൾ ബാധകമാകാൻ നിങ്ങളുടെ ഉപകരണം പുനരാരംഭിക്കുക.</translation>
 <translation id="5877584842898320529">തിരഞ്ഞെടുത്ത പ്രിന്റര്‍ ലഭ്യമല്ല, അല്ലെങ്കിൽ ശരിയായി ഇന്‌സ്‌റ്റാൾ ചെയ്‌തിട്ടില്ല. <ph name="BR" /> നിങ്ങളുടെ പ്രിന്റര്‍ പരിശോധിക്കുക അല്ലെങ്കില്‍ മറ്റൊരു പ്രിന്റര്‍ തിരഞ്ഞെടുക്കുക.</translation>
-<translation id="5880247576487732437">ടോക്കൺ ലഭ്യമാണ്</translation>
 <translation id="5882919346125742463">അറിയാവുന്ന നെറ്റ്‌വർക്കുകൾ</translation>
 <translation id="5884474295213649357">ഈ ടാബ് ഒരു USB ഉപകരണവുമായി കണക്‌റ്റ് ചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="5885324376209859881">മീഡിയ ക്രമീകരണങ്ങൾ നിയന്ത്രിക്കുക...</translation>
@@ -4695,7 +4688,6 @@
 <translation id="8045923671629973368">അപ്ലിക്കേഷൻ ഐഡി അല്ലെങ്കിൽ വെബ്സ്റ്റോർ URL നൽകുക</translation>
 <translation id="804786196054284061">അന്തിമ ഉപയോക്തൃ ലൈസൻസ് ഉടമ്പടി</translation>
 <translation id="8049705080247101012">"<ph name="EXTENSION_NAME" />" എന്നതിനെ Google ക്ഷുദ്രകരമെന്ന് ഫ്ലാഗ് ചെയ്‌തതിനാൽ ഇൻസ്റ്റലേഷൻ തടയപ്പെട്ടു</translation>
-<translation id="8049913480579063185">വിപുലീകരണത്തിന്റെ പേര്</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS #12 ഫയലുകള്‍</translation>
 <translation id="8053390638574070785">ഈ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
@@ -4946,7 +4938,6 @@
 <translation id="8449008133205184768">ശൈലി ഒട്ടിക്കുകയും പൊരുത്തപ്പെടുത്തുകയും ചെയ്യുക</translation>
 <translation id="8449036207308062757">സ്റ്റോറേജ് മാനേജുചെയ്യുക</translation>
 <translation id="8452135315243592079">സിം കാർഡ് കാണുന്നില്ല</translation>
-<translation id="845627346958584683">കാലഹരണപ്പെടല്‍ സമയം</translation>
 <translation id="845702320058262034">കണക്‌റ്റ് ചെയ്യാനാവുന്നില്ല. ഫോണിൻ്റെ Bluetooth ഓണാണന്ന് ഉറപ്പുവരുത്തുക.</translation>
 <translation id="8457451314607652708">ബുക്ക്‌മാർക്കുകൾ ഇമ്പോർട്ടുചെയ്യുക</translation>
 <translation id="8460336040822756677"><ph name="DEVICE_TYPE" />-നുള്ള Smart Lock ഓഫാക്കിയെങ്കിൽ, ഫോൺ ഉപയോഗിച്ച് നിങ്ങളുടെ Chrome ഉപകരണങ്ങൾ അൺലോക്ക് ചെയ്യാനാവില്ല. പാസ്‌വേഡ് നൽകേണ്ടതുണ്ട്.</translation>
@@ -5060,7 +5051,6 @@
 <translation id="8637542770513281060">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ, Chrome OS-ലെ നിർണ്ണായകമായ നിരവധി സുരക്ഷാ ഫീച്ചറുകൾ നടപ്പിലാക്കാൻ ഉപയോഗിക്കുന്ന സുരക്ഷാ മൊഡ്യൂൾ അടങ്ങിയിരിക്കുന്നു. കൂടുതലറിയാൻ Chromebook സഹായകേന്ദ്രം സന്ദർശിക്കുക: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">സിസ്റ്റം അപ്ഡേറ്റ് ലഭ്യമാണ്. ഡൌണ്‍ലോഡ് ചെയ്യുന്നതിന് തയ്യാറെടുക്കുന്നു...</translation>
 <translation id="8639047128869322042">ദോഷകരമായ സോഫ്‌റ്റ്‌വെയർ ഉണ്ടോയെന്ന് പരിശോധിക്കുന്നു...</translation>
-<translation id="8642171459927087831">ആക്‌സസ് ടോക്കൺ</translation>
 <translation id="8642900771896232685">2 സെക്കൻഡ്</translation>
 <translation id="8642947597466641025">പാഠത്തെ വലുതാക്കുക</translation>
 <translation id="8643418457919840804">തുടരാൻ, ഒരു ഓപ്ഷൻ തിരഞ്ഞെടുക്കുക:</translation>

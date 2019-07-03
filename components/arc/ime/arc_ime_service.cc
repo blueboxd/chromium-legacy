@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
@@ -162,8 +162,8 @@ ArcImeService::~ArcImeService() {
   // KeyboardController is destroyed before ArcImeService (except in tests),
   // so check whether there is a KeyboardController first before removing |this|
   // from KeyboardController observers.
-  if (keyboard::KeyboardController::HasInstance()) {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard::KeyboardUIController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
     if (keyboard_controller->HasObserver(this))
       keyboard_controller->RemoveObserver(this);
   }
@@ -202,8 +202,8 @@ void ArcImeService::ReattachInputMethod(aura::Window* old_window,
 // Overridden from aura::EnvObserver:
 
 void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
-  if (keyboard::KeyboardController::HasInstance()) {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard::KeyboardUIController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
     if (keyboard_controller->IsEnabled() &&
         !keyboard_controller->HasObserver(this)) {
       keyboard_controller->AddObserver(this);
@@ -354,8 +354,8 @@ void ArcImeService::RequestHideIme() {
   if (!focused_arc_window_)
     return;
 
-  if (keyboard::KeyboardController::HasInstance()) {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard::KeyboardUIController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
     if (keyboard_controller->IsEnabled())
       keyboard_controller->HideKeyboardImplicitlyBySystem();
   }

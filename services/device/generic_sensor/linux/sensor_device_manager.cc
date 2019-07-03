@@ -177,8 +177,6 @@ void SensorDeviceManager::OnDeviceRemoved(ScopedUdevDevicePtr dev) {
                                 delegate_, type, device_node));
 }
 
-void SensorDeviceManager::OnDeviceChanged(ScopedUdevDevicePtr) {
-  NOTIMPLEMENTED();
-}
+void SensorDeviceManager::OnDeviceChanged(ScopedUdevDevicePtr) {}
 
 }  // namespace device

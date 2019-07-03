@@ -372,6 +372,8 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
                                    NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
   AddAndNotifyObserversOfRTT(http_rtt_observation);
   throughput_analyzer_->NotifyBytesRead(request);
+  throughput_analyzer_->NotifyExpectedResponseContentSize(
+      request, request.GetExpectedContentSize());
 }
 
 void NetworkQualityEstimator::NotifyBytesRead(const URLRequest& request) {

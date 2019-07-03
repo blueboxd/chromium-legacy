@@ -40,10 +40,8 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case 7:
       return "PaintPhaseDescendantOutlinesOnly";
     case 8:
-      return "PaintPhaseOverlayScrollbars";
-    case 9:
       return "PaintPhaseSelection";
-    case 10:
+    case 9:
       return "PaintPhaseTextClip";
     case DisplayItem::kPaintPhaseMax:
       return "PaintPhaseMask";

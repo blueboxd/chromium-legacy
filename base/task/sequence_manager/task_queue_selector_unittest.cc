@@ -56,17 +56,18 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
   using TaskQueueSelector::SetOperationOldest;
   using TaskQueueSelector::SmallPriorityQueue;
 
-  TaskQueueSelectorForTest(scoped_refptr<AssociatedThreadId> associated_thread)
-      : TaskQueueSelector(associated_thread, SequenceManager::Settings()) {}
+  TaskQueueSelectorForTest(scoped_refptr<AssociatedThreadId> associated_thread,
+                           const SequenceManager::Settings& settings)
+      : TaskQueueSelector(associated_thread, settings) {}
 };
 
-class TaskQueueSelectorTest : public testing::Test {
+class TaskQueueSelectorTestBase : public testing::Test {
  public:
-  TaskQueueSelectorTest()
-      : test_closure_(BindRepeating(&TaskQueueSelectorTest::TestFunction)),
+  explicit TaskQueueSelectorTestBase(const SequenceManager::Settings& settings)
+      : test_closure_(BindRepeating(&TaskQueueSelectorTestBase::TestFunction)),
         associated_thread_(AssociatedThreadId::CreateBound()),
-        selector_(associated_thread_) {}
-  ~TaskQueueSelectorTest() override = default;
+        selector_(associated_thread_, settings) {}
+  ~TaskQueueSelectorTestBase() override = default;
 
   void PushTasks(const size_t queue_indices[], size_t num_tasks) {
     EnqueueOrder::Generator enqueue_order_generator;
@@ -149,6 +150,15 @@ class TaskQueueSelectorTest : public testing::Test {
   std::unique_ptr<TimeDomain> time_domain_;
   std::vector<std::unique_ptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
+};
+
+class TaskQueueSelectorTest : public TaskQueueSelectorTestBase {
+ public:
+  TaskQueueSelectorTest()
+      : TaskQueueSelectorTestBase(
+            SequenceManager::Settings::Builder()
+                .SetAntiStarvationLogicForPrioritiesDisabled(false)
+                .Build()) {}
 };
 
 TEST_F(TaskQueueSelectorTest, TestDefaultPriority) {
@@ -682,7 +692,8 @@ TEST_F(TaskQueueSelectorTest, ChooseWithPriority_OnlyImmediate) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
-  TaskQueueSelectorForTest selector(associated_thread_);
+  TaskQueueSelectorForTest selector(associated_thread_,
+                                    SequenceManager::Settings());
   MockObserver mock_observer;
   selector.SetTaskQueueSelectorObserver(&mock_observer);
 
@@ -707,7 +718,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
-  TaskQueueSelectorForTest selector(associated_thread_);
+  TaskQueueSelectorForTest selector(associated_thread_,
+                                    SequenceManager::Settings());
   MockObserver mock_observer;
   selector.SetTaskQueueSelectorObserver(&mock_observer);
 
@@ -748,6 +760,62 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   selector.RemoveQueue(task_queue2.get());
   task_queue2->UnregisterTaskQueue();
 }
+
+class DisabledAntiStarvationLogicTaskQueueSelectorTest
+    : public TaskQueueSelectorTestBase,
+      public testing::WithParamInterface<TaskQueue::QueuePriority> {
+ public:
+  DisabledAntiStarvationLogicTaskQueueSelectorTest()
+      : TaskQueueSelectorTestBase(
+            SequenceManager::Settings::Builder()
+                .SetAntiStarvationLogicForPrioritiesDisabled(true)
+                .Build()) {}
+};
+
+TEST_P(DisabledAntiStarvationLogicTaskQueueSelectorTest,
+       TestStarvedByHigherPriorities) {
+  TaskQueue::QueuePriority priority_to_test = GetParam();
+  size_t queue_order[] = {0, 1};
+  PushTasks(queue_order, 2);
+
+  // Setting the queue priority to its current value causes a check to fail.
+  if (task_queues_[0]->GetQueuePriority() != priority_to_test) {
+    selector_.SetQueuePriority(task_queues_[0].get(), priority_to_test);
+  }
+
+  // Test that |priority_to_test| is starved by all higher priorities.
+  for (int higher_priority = static_cast<int>(priority_to_test) - 1;
+       higher_priority >= 0; higher_priority--) {
+    // Setting the queue priority to its current value causes a check to fail.
+    if (task_queues_[1]->GetQueuePriority() != higher_priority) {
+      selector_.SetQueuePriority(
+          task_queues_[1].get(),
+          static_cast<TaskQueue::QueuePriority>(higher_priority));
+    }
+
+    for (int i = 0; i < 100; i++) {
+      WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
+      ASSERT_THAT(chosen_work_queue, NotNull());
+      EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
+      // Don't remove task from queue to simulate all queues still being full.
+    }
+  }
+}
+
+std::string GetPriorityTestNameSuffix(
+    const testing::TestParamInfo<TaskQueue::QueuePriority>& info) {
+  return TaskQueue::PriorityToString(info.param);
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         DisabledAntiStarvationLogicTaskQueueSelectorTest,
+                         testing::Values(TaskQueue::kHighestPriority,
+                                         TaskQueue::kVeryHighPriority,
+                                         TaskQueue::kHighPriority,
+                                         TaskQueue::kNormalPriority,
+                                         TaskQueue::kLowPriority,
+                                         TaskQueue::kBestEffortPriority),
+                         GetPriorityTestNameSuffix);
 
 struct ChooseWithPriorityTestParam {
   int delayed_task_enqueue_order;

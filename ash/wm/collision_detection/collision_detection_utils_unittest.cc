@@ -4,7 +4,7 @@
 
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/root_window_controller.h"
@@ -138,7 +138,7 @@ TEST_P(CollisionDetectionUtilsDisplayTest, MovementAreaIsInset) {
 
 TEST_P(CollisionDetectionUtilsDisplayTest,
        MovementAreaIncludesKeyboardIfKeyboardIsShown) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboardInDisplay(GetDisplay());
   ASSERT_TRUE(keyboard::WaitUntilShown());
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
@@ -220,7 +220,7 @@ TEST_P(CollisionDetectionUtilsDisplayTest,
        AvoidObstaclesAvoidsFloatingKeyboard) {
   auto display = GetDisplay();
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
                                         base::nullopt, base::DoNothing());
   keyboard_controller->ShowKeyboardInDisplay(display);
@@ -297,7 +297,7 @@ TEST_P(CollisionDetectionUtilsDisplayTest,
 TEST_P(CollisionDetectionUtilsDisplayTest, GetRestingPositionAvoidsKeyboard) {
   auto display = GetDisplay();
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboardInDisplay(display);
   ASSERT_TRUE(keyboard::WaitUntilShown());
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();

@@ -17,7 +17,7 @@
 #include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -1951,10 +1951,11 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
 }
 
 bool AppListView::CloseKeyboardIfVisible() {
-  // TODO(ginko) abstract this function to be in |keyboard::KeyboardController|
-  if (!keyboard::KeyboardController::HasInstance())
+  // TODO(ginko) abstract this function to be in
+  // |keyboard::KeyboardUIController*|
+  if (!keyboard::KeyboardUIController::HasInstance())
     return false;
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->IsKeyboardVisible()) {
     keyboard_controller->HideKeyboardByUser();
     return true;

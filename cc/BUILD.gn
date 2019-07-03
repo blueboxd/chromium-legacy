@@ -788,9 +788,8 @@ cc_test("cc_unittests") {
 
     # TODO(samans): Support more configurations.
     # CFI issue: https://crbug.com/967819
-    # x86 issue: https://crbug.com/967831
     # LSAN issue: https://crbug.com/971325
-    if (use_x11 && target_cpu != "x86" && !is_cfi && !is_lsan) {
+    if (use_x11 && !is_cfi && !is_lsan) {
       defines = [ "ENABLE_CC_VULKAN_TESTS" ]
     }
   }

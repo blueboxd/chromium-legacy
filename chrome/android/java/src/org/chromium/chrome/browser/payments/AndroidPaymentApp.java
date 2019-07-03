@@ -145,8 +145,8 @@ public class AndroidPaymentApp
     }
 
     @Override
-    public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
-            String iframeOrigin, @Nullable byte[][] certificateChain,
+    public void getInstruments(String unusedId, Map<String, PaymentMethodData> methodDataMap,
+            String origin, String iframeOrigin, @Nullable byte[][] certificateChain,
             Map<String, PaymentDetailsModifier> modifiers, InstrumentsCallback callback) {
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentsCallback

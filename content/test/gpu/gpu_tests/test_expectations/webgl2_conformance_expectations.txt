@@ -133,7 +133,6 @@ crbug.com/830046 [ opengl win passthrough nvidia        ] conformance2/rendering
 crbug.com/781668 [ opengl win nvidia-0x1cb3             ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb565-rgb-unsigned_byte.html [ Failure ]
 crbug.com/921055 [ opengl win passthrough nvidia-0x1cb3 ] conformance2/textures/image_bitmap_from_image_data/tex-2d-rgb9_e5-rgb-float.html [ RetryOnFailure ]
 crbug.com/905003 [ opengl win passthrough nvidia        ] conformance2/textures/misc/integer-cubemap-specification-order-bug.html [ Failure ]
-crbug.com/832238 [ opengl win no-passthrough nvidia     ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 crbug.com/887578 [ opengl win passthrough nvidia        ] deqp/data/gles3/shaders/conversions.html [ RetryOnFailure ]
 crbug.com/965648 [ opengl win passthrough nvidia-0x1cb3 ] deqp/functional/gles3/shaderstruct.html [ RetryOnFailure ]
 crbug.com/822733 [ opengl win nvidia-0x1cb3             ] deqp/functional/gles3/transformfeedback/* [ RetryOnFailure ]
@@ -304,6 +303,7 @@ crbug.com/811614 [ amd mac ] deqp/functional/gles3/negativeshaderapi.html [ Fail
 crbug.com/811614 [ intel mac ] deqp/functional/gles3/negativeshaderapi.html [ Failure ]
 
 # Mac Retina NVIDIA
+crbug.com/981101 [ mac nvidia-0xfe9 ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/mat_01.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/tmp.html [ Failure ]
 crbug.com/641209 [ mac nvidia-0xfe9 ] deqp/functional/gles3/fbomultisample* [ Failure ]
@@ -314,6 +314,7 @@ crbug.com/923080 [ mac nvidia-0xfe9 ] conformance/ogles/GL/exp2/exp2_001_to_008.
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-long-names-test.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-test.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance2/glsl3/loops-with-side-effects.html [ Failure ]
+crbug.com/981122 [ mac nvidia-0xfe9 ] conformance2/rendering/framebuffer-completeness-draw-framebuffer.html [ RetryOnFailure ]
 crbug.com/483282 [ no-angle mac nvidia-0xfe9 ] conformance2/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/682834 [ mac nvidia-0xfe9 ] conformance2/textures/image_bitmap_from_video/tex-2d-rgba16f-rgba-half_float.html [ RetryOnFailure ]
 crbug.com/922517 [ mac nvidia-0xfe9 ] conformance2/textures/canvas/tex-3d-rg16f-rg-float.html [ RetryOnFailure ]
@@ -533,7 +534,6 @@ crbug.com/905003 [ linux nvidia ] conformance2/textures/misc/integer-cubemap-spe
 crbug.com/680278 [ opengl linux nvidia ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]
 crbug.com/680282 [ linux nvidia-0xf02 ] conformance2/textures/image/tex-3d-rg8ui-rg_integer-unsigned_byte.html [ Failure ]
 crbug.com/694354 [ linux no-passthrough nvidia ] conformance2/textures/image_bitmap_from_image_data/tex-2d-srgb8-rgb-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/832238 [ linux no-passthrough nvidia ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 
 # Linux NVIDIA Quadro P400
 crbug.com/830046 [ linux passthrough nvidia-0x1cb3 ] conformance2/rendering/blitframebuffer-size-overflow.html [ Skip ]
@@ -591,6 +591,7 @@ crbug.com/844311 [ linux amd ] conformance/glsl/misc/fragcolor-fragdata-invarian
 crbug.com/766776 [ linux amd ] conformance2/attribs/gl-vertex-attrib-normalized-int.html [ Failure ]
 # TODO(kbr): re-add after global suppression is removed.
 # crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+crbug.com/981070 [ linux amd ] conformance2/glsl3/matrix-row-major.html [ Failure ]
 crbug.com/709351 [ linux amd ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/617290 [ linux amd ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/483282 [ linux amd ] deqp/data/gles3/shaders/conversions.html [ Failure ]
@@ -712,7 +713,6 @@ crbug.com/832864 [ no-angle linux amd-0x6613 ] conformance2/textures/misc/tex-im
 crbug.com/696345 [ no-angle linux amd-0x6613 ] conformance2/transform_feedback/switching-objects.html [ Failure ]
 crbug.com/851159 [ linux amd-0x6613 ] conformance2/buffers/get-buffer-sub-data-validity.html [ Failure ]
 crbug.com/913301 [ linux amd-0x6613 ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
-crbug.com/809237 [ linux amd-0x6613 ] conformance2/uniforms/incompatible-texture-type-for-sampler.html [ Skip ]
 
 ####################
 # Android failures #
@@ -727,7 +727,6 @@ crbug.com/809237 [ linux amd-0x6613 ] conformance2/uniforms/incompatible-texture
 
 # Basic failures that need to be investigated on multiple devices
 crbug.com/709351 [ android ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
-crbug.com/947236 [ android ] conformance2/uniforms/incompatible-texture-type-for-sampler.html [ Failure ]
 
 # Video tests are flaky. Sometimes the video is black.
 crbug.com/948894 [ android ] conformance/textures/video/* [ RetryOnFailure ]
@@ -752,9 +751,7 @@ crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/defa
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)
 # Seems to be an OpenGL ES bug.
 crbug.com/945903 [ android qualcomm ] conformance2/rendering/vertex-id.html [ Failure ]
-crbug.com/906745 [ android qualcomm ] deqp/functional/gles3/shaderderivate_dfdy.html [ Failure ]
 crbug.com/695742 [ android qualcomm ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
-crbug.com/832238 [ android qualcomm ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 
 # This test is flaky but can fail three times in a row so it must be
 # marked as Fail instead of Flaky.

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
@@ -51,7 +52,8 @@ struct CookieParams;
 
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
-class IdentityManager : public OAuth2AccessTokenManager::DiagnosticsObserver,
+class IdentityManager : public KeyedService,
+                        public OAuth2AccessTokenManager::DiagnosticsObserver,
                         public OAuth2TokenServiceObserver {
  public:
   class Observer {

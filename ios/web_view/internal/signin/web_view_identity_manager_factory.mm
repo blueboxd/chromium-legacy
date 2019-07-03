@@ -15,7 +15,6 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -114,7 +113,7 @@ WebViewIdentityManagerFactory::~WebViewIdentityManagerFactory() {}
 // static
 identity::IdentityManager* WebViewIdentityManagerFactory::GetForBrowserState(
     WebViewBrowserState* browser_state) {
-  return static_cast<IdentityManagerWrapper*>(
+  return static_cast<identity::IdentityManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
@@ -169,7 +168,7 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
           WebViewSigninClientFactory::GetForBrowserState(browser_state),
           token_service.get(), account_tracker_service.get());
 
-  return std::make_unique<IdentityManagerWrapper>(
+  return std::make_unique<identity::IdentityManager>(
       std::move(account_tracker_service), std::move(token_service),
       std::move(gaia_cookie_manager_service),
       std::move(primary_account_manager), std::move(account_fetcher_service),

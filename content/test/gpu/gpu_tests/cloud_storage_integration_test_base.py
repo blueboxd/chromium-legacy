@@ -466,15 +466,18 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                             build_id_args)
       subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
-      contents = ''
       try:
+        # The triage link for the image is output to the failure file, so report
+        # that if it's available so it shows up in Milo. If for whatever reason
+        # the file is not present or malformed, the triage link will still be
+        # present in the stdout of the goldctl command.
         with open(failure_file, 'r') as ff:
-          contents = ff.read()
+          self.artifacts.CreateLink('gold_triage_link', ff.read())
       except Exception:
         logging.error('Failed to read contents of goldctl failure file')
       logging.error('goldctl failed with output: %s', e.output)
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
-        raise Exception('goldctl command failed: ' + contents)
+        raise Exception('goldctl command failed')
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
                                              expectations, tolerance,

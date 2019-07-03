@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.HistoryProvider;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -241,7 +242,8 @@ class OpenLastTabMediator extends EmptyTabObserver
                     @Override
                     public boolean isItemSupported(
                             @ContextMenuManager.ContextMenuItemId int menuItemId) {
-                        return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
+                        return menuItemId == ContextMenuItemId.SEARCH
+                                || menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
                     }
 
                     @Override

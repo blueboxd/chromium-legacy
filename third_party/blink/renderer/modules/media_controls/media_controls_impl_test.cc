@@ -685,31 +685,6 @@ TEST_F(MediaControlsImplTest, TimeIndicatorsUpdatedOnSeeking) {
   EXPECT_EQ(duration / 4, timeline->valueAsNumber());
 }
 
-TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
-  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  test::RunPendingTasks();
-  SetReady();
-  EnsureSizing();
-  test::RunPendingTasks();
-
-  MediaControlTimelineElement* timeline = TimelineElement();
-  ASSERT_TRUE(IsElementVisible(*timeline));
-  ASSERT_LT(0, timeline->getBoundingClientRect()->width());
-
-  MediaControls().MediaElement().Play();
-  test::RunPendingTasks();
-
-  GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.Width.InlineLandscape",
-      timeline->getBoundingClientRect()->width(), 1);
-  GetHistogramTester().ExpectTotalCount("Media.Timeline.Width.InlinePortrait",
-                                        0);
-  GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.Width.FullscreenLandscape", 0);
-  GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.Width.FullscreenPortrait", 0);
-}
-
 TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);

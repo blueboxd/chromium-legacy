@@ -66,11 +66,11 @@ const char kPublicOfflineFileDir[] = "public_offline_pages";
 const GURL kUrl("http://test.org/page");
 const GURL kUrl2("http://test.org/another");
 const base::FilePath kFilename1(FILE_PATH_LITERAL("hello.mhtml"));
-const base::FilePath kFilename2(FILE_PATH_LITERAL("test.mhtml"));
+const base::FilePath kFilename2(FILE_PATH_LITERAL("welcome.mhtml"));
 const base::FilePath kNonexistentFilename(
     FILE_PATH_LITERAL("nonexistent.mhtml"));
 const int kFileSize1 = 471;  // Real size of hello.mhtml.
-const int kFileSize2 = 444;  // Real size of test.mhtml.
+const int kFileSize2 = 461;  // Real size of welcome.mhtml.
 const int kMismatchedFileSize = 99999;
 const std::string kDigest1(
     "\x43\x60\x62\x02\x06\x15\x0f\x3e\x77\x99\x3d\xed\xdc\xd4\xe2\x0d\xbe\xbd"
@@ -79,7 +79,7 @@ const std::string kDigest1(
 const std::string kDigest2(
     "\xBD\xD3\x37\x79\xDA\x7F\x4E\x6A\x16\x66\xED\x49\x67\x18\x54\x48\xC6\x8E"
     "\xA1\x47\x16\xA5\x44\x45\x43\xD0\x0E\x04\x9F\x4C\x45\xDC",
-    32);  // SHA256 Hash of test.mhtml.
+    32);  // SHA256 Hash of welcome.mhtml.
 const std::string kMismatchedDigest(
     "\xff\x64\xF9\x7C\x94\xE5\x9E\x91\x83\x3D\x41\xB0\x36\x90\x0A\xDF\xB3\xB1"
     "\x5C\x13\xBE\xB8\x35\x8C\xF6\x5B\xC4\xB5\x5A\xFC\x3A\xCC",
@@ -960,6 +960,9 @@ void OfflinePageURLLoaderBuilder::OnComplete() {
   }
   ReadCompletedOnIO(
       ResponseInfo(client_->completion_status().error_code, mime_type_, body_));
+  // Clear intermediate data in preparation for next potential page loading.
+  mime_type_.clear();
+  body_.clear();
 }
 
 void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
@@ -1316,9 +1319,7 @@ TEST_F(OfflinePageRequestHandlerTest, DoNotLoadOfflinePageOnConnectedNetwork) {
                       AGGREGATED_REQUEST_RESULT_MAX);
 }
 
-// TODO(https://crbug.com/830282): Flaky on "Marshmallow Phone Tester (rel)".
-TEST_F(OfflinePageRequestHandlerTest,
-       DISABLED_LoadMostRecentlyCreatedOfflinePage) {
+TEST_F(OfflinePageRequestHandlerTest, LoadMostRecentlyCreatedOfflinePage) {
   this->SimulateHasNetworkConnectivity(false);
 
   // Save 2 offline pages associated with same online URL, but pointing to
@@ -1382,9 +1383,7 @@ TEST_F(OfflinePageRequestHandlerTest, FailToLoadByOfflineIDOnUrlMismatch) {
                       PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
 }
 
-// TODO(https://crbug.com/830282): Flaky on "Marshmallow Phone Tester (rel)".
-TEST_F(OfflinePageRequestHandlerTest,
-       DISABLED_LoadOfflinePageForUrlWithFragment) {
+TEST_F(OfflinePageRequestHandlerTest, LoadOfflinePageForUrlWithFragment) {
   this->SimulateHasNetworkConnectivity(false);
 
   // Save an offline page associated with online URL without fragment.

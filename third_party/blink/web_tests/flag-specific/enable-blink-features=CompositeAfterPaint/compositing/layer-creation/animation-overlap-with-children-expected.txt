@@ -10,19 +10,20 @@ Should be composited
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='to-animate' class='container animating'",
+      "name": "LayoutNGBlockFlow DIV id='to-animate' class='container animating'",
       "bounds": [262, 212],
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow DIV class='composited banner'",
+      "name": "LayoutNGBlockFlow DIV class='composited banner'",
+      "position": [6, 6],
       "bounds": [250, 50],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 3
+      "transform": 2
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='test1 box'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='test1 box'",
       "position": [11, 21],
       "bounds": [220, 150],
       "backgroundColor": "#FFA500",
@@ -47,16 +48,6 @@ Should be composited
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [6, 6, 0, 1]
       ]
     }
   ]

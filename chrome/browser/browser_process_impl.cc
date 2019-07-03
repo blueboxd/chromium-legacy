@@ -1103,10 +1103,6 @@ void BrowserProcessImpl::PreCreateThreads(
       std::make_unique<SecureOriginPrefsObserver>(local_state());
   site_isolation_prefs_observer_ =
       std::make_unique<SiteIsolationPrefsObserver>(local_state());
-
-  // TODO(mmenke): This can be created on first use.
-  if (!SystemNetworkContextManager::GetInstance())
-    SystemNetworkContextManager::CreateInstance(local_state());
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

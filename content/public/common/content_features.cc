@@ -388,6 +388,15 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 const base::Feature kPrioritizeBootstrapTasks = {
     "PrioritizeBootstrapTasks", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable the ProactivelySwapBrowsingInstance experiment. A browsing instance
+// represents a set of frames that can script each other. Currently, Chrome does
+// not always switch BrowsingInstance when navigating in between two unrelated
+// pages. This experiment makes Chrome swap BrowsingInstances for cross-site
+// HTTP(S) navigations when the BrowsingInstance doesn't contain any other
+// windows.
+const base::Feature kProactivelySwapBrowsingInstance{
+    "kProactivelySwapBrowsingInstance", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable raster-inducing scroll.
 const base::Feature kRasterInducingScroll{"RasterInducingScroll",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

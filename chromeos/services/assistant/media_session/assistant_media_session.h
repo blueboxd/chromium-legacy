@@ -42,8 +42,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // media_session.mojom.MediaSession overrides:
   void Suspend(SuspendType suspend_type) override;
   void Resume(SuspendType suspend_type) override;
-  void StartDucking() override {}
-  void StopDucking() override {}
+  void StartDucking() override;
+  void StopDucking() override;
   void GetMediaSessionInfo(GetMediaSessionInfoCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
   void AddObserver(

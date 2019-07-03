@@ -157,17 +157,8 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
   viz::CopyOutputResult::Format format;
   gfx::Rect rect;
 
-  // TODO(crbug.com/967856): Removed detailed logging for deserialization
-  // failures after bug is fixed.
-
-  if (!data.ReadFormat(&format)) {
-    LOG(ERROR) << "CopyOutputResult: Failed to read |format|";
+  if (!data.ReadFormat(&format) || !data.ReadRect(&rect))
     return false;
-  }
-  if (!data.ReadRect(&rect)) {
-    LOG(ERROR) << "CopyOutputResult: Failed to read |rect|.";
-    return false;
-  }
 
   if (rect.IsEmpty()) {
     // An empty rect implies an empty result.
@@ -178,10 +169,8 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
   switch (format) {
     case viz::CopyOutputResult::Format::RGBA_BITMAP: {
       SkBitmap bitmap;
-      if (!data.ReadBitmap(&bitmap) || !bitmap.readyToDraw()) {
-        LOG(ERROR) << "CopyOutputResult: Failed to read |bitmap|";
+      if (!data.ReadBitmap(&bitmap) || !bitmap.readyToDraw())
         return false;
-      }
 
       *out_p = std::make_unique<viz::CopyOutputSkBitmapResult>(
           rect, std::move(bitmap));
@@ -190,20 +179,14 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
 
     case viz::CopyOutputResult::Format::RGBA_TEXTURE: {
       base::Optional<gpu::Mailbox> mailbox;
-      if (!data.ReadMailbox(&mailbox) || !mailbox) {
-        LOG(ERROR) << "CopyOutputResult: Failed to read |mailbox|";
+      if (!data.ReadMailbox(&mailbox) || !mailbox)
         return false;
-      }
       base::Optional<gpu::SyncToken> sync_token;
-      if (!data.ReadSyncToken(&sync_token) || !sync_token) {
-        LOG(ERROR) << "CopyOutputResult: Failed to read |sync_token|";
+      if (!data.ReadSyncToken(&sync_token) || !sync_token)
         return false;
-      }
       base::Optional<gfx::ColorSpace> color_space;
-      if (!data.ReadColorSpace(&color_space) || !color_space) {
-        LOG(ERROR) << "CopyOutputResult: Failed to read |color_space|";
+      if (!data.ReadColorSpace(&color_space) || !color_space)
         return false;
-      }
 
       if (mailbox->IsZero()) {
         // Returns an empty result.
@@ -214,10 +197,8 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
 
       viz::mojom::TextureReleaserPtr releaser =
           data.TakeReleaser<viz::mojom::TextureReleaserPtr>();
-      if (!releaser) {
-        LOG(ERROR) << "CopyOutputResult: Failed to take |releaser|";
+      if (!releaser)
         return false;  // Illegal to provide texture without Releaser.
-      }
 
       // Returns a result with a SingleReleaseCallback that will return
       // here and proxy the callback over mojo to the CopyOutputResult's

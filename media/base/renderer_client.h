@@ -46,12 +46,6 @@ class RendererClient {
   // Executed for the first video frame and whenever opacity changes.
   // Only used if media stream contains a video track.
   virtual void OnVideoOpacityChange(bool opaque) = 0;
-
-  // Executed when the status of a video playing remotely is changed, without
-  // the change originating from the media::Pipeline that owns |this|.
-  // Only used with the FlingingRenderer, when an external device play/pauses
-  // videos, and WMPI needs to be updated accordingly.
-  virtual void OnRemotePlayStateChange(media::MediaStatus::State state) = 0;
 };
 
 }  // namespace media

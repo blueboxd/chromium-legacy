@@ -376,8 +376,6 @@ jumbo_component("base") {
     "mac/mach_port_broker.mm",
     "mac/mach_port_rendezvous.cc",
     "mac/mach_port_rendezvous.h",
-    "mac/mach_port_util.cc",
-    "mac/mach_port_util.h",
     "mac/objc_release_properties.h",
     "mac/objc_release_properties.mm",
     "mac/os_crash_dumps.cc",

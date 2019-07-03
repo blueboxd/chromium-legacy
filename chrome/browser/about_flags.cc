@@ -3019,12 +3019,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
 
-#if defined(TOOLKIT_VIEWS)
-    {"views-cast-dialog", flag_descriptions::kViewsCastDialogName,
-     flag_descriptions::kViewsCastDialogDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kViewsCastDialog)},
-#endif  // defined(TOOLKIT_VIEWS)
-
 #if defined(OS_ANDROID)
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,
@@ -3824,7 +3818,8 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
     {"enable-skia-renderer", flag_descriptions::kSkiaRendererName,
-     flag_descriptions::kSkiaRendererDescription, kOsLinux | kOsAndroid,
+     flag_descriptions::kSkiaRendererDescription,
+     kOsLinux | kOsWin | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
@@ -4056,6 +4051,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(media::kGlobalMediaControls)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+#if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
+    {"win-use-native-spellchecker",
+     flag_descriptions::kWinUseBrowserSpellCheckerName,
+     flag_descriptions::kWinUseBrowserSpellCheckerDescription, kOsWin,
+     FEATURE_VALUE_TYPE(spellcheck::kWinUseBrowserSpellChecker)},
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

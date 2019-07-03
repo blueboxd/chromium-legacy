@@ -468,7 +468,7 @@ void AshTestBase::SetTouchKeyboardEnabled(bool enabled) {
   else
     Shell::Get()->keyboard_controller()->ClearEnableFlag(flag);
   // Ensure that observer methods and mojo calls between KeyboardControllerImpl,
-  // keyboard::KeyboardController, and AshKeyboardUI complete.
+  // keyboard::KeyboardUIController*, and AshKeyboardUI complete.
   base::RunLoop().RunUntilIdle();
 }
 

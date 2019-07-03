@@ -4103,6 +4103,35 @@ IFACEMETHODIMP AXPlatformNodeWin::QueryService(REFGUID guidService,
   return E_FAIL;
 }
 
+//
+// Methods used by the ATL COM map.
+//
+
+// static
+STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
+    void* this_ptr,
+    const _ATL_INTMAP_ENTRY* entries,
+    REFIID riid,
+    void** object) {
+  if (!object)
+    return E_INVALIDARG;
+  *object = nullptr;
+  AXPlatformNodeWin* accessible =
+      reinterpret_cast<AXPlatformNodeWin*>(this_ptr);
+  DCHECK(accessible);
+
+  if (riid == IID_IAccessibleTable || riid == IID_IAccessibleTable2) {
+    if (!IsTableLike(accessible->GetData().role))
+      return E_NOINTERFACE;
+  } else if (riid == IID_IAccessibleTableCell) {
+    if (!IsCellOrTableHeader(accessible->GetData().role))
+      return E_NOINTERFACE;
+  }
+
+  return CComObjectRootBase::InternalQueryInterface(this_ptr, entries, riid,
+                                                    object);
+}
+
 HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
                                                  VARIANT* result) {
   // Text attributes of kInlineTextBox nodes are stored on the parent node

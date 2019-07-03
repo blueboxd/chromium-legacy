@@ -9,7 +9,7 @@
 #include "components/omnibox/browser/location_bar_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
-#include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
+#include "ios/chrome/browser/infobars/legacy_infobar_badge_tab_helper_delegate.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
@@ -34,7 +34,7 @@
 #endif
 
 @interface LocationBarMediator () <CRWWebStateObserver,
-                                   InfobarBadgeTabHelperDelegate,
+                                   LegacyInfobarBadgeTabHelperDelegate,
                                    SearchEngineObserving,
                                    WebStateListObserving>
 
@@ -187,7 +187,7 @@
       InfobarBadgeTabHelper* infobarBadgeTabHelper =
           InfobarBadgeTabHelper::FromWebState(_webState);
       DCHECK(infobarBadgeTabHelper);
-      infobarBadgeTabHelper->SetDelegate(self);
+      infobarBadgeTabHelper->SetLegacyDelegate(self);
       if (self.consumer) {
         // Whenever the WebState changes ask the corresponding
         // InfobarBadgeTabHelper if a badge should be displayed, and if its

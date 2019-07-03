@@ -441,9 +441,6 @@ crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-edge-clippi
 crbug.com/940033 virtual/fractional_scrolling_threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 crbug.com/940033 virtual/threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 
-crbug.com/918155 scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
-crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer.html [ Failure ]
-
 crbug.com/979389 ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
 
 # Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.

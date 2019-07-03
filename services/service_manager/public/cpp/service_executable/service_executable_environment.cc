@@ -25,20 +25,11 @@
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "mojo/core/embedder/default_mach_broker.h"
-#endif
-
 namespace service_manager {
 
 ServiceExecutableEnvironment::ServiceExecutableEnvironment()
     : ipc_thread_("IPC Thread") {
   DCHECK(!base::MessageLoopCurrent::Get());
-
-#if defined(OS_MACOSX)
-  // Send our task port to the parent.
-  mojo::core::DefaultMachBroker::SendTaskPortToParent();
-#endif
 
 #if defined(OS_LINUX)
   const base::CommandLine& command_line =

@@ -21,21 +21,15 @@ namespace media_router {
 MediaRouterDialogControllerImplBase*
 MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
-  if (ShouldUseViewsDialog()) {
     return MediaRouterDialogControllerViews::GetOrCreateForWebContents(
         web_contents);
-  }
-  return MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
-      web_contents);
 }
 
 // static
 MediaRouterDialogControllerImplBase*
 MediaRouterDialogControllerImplBase::FromWebContents(
     content::WebContents* web_contents) {
-  if (ShouldUseViewsDialog())
     return MediaRouterDialogControllerViews::FromWebContents(web_contents);
-  return MediaRouterDialogControllerWebUIImpl::FromWebContents(web_contents);
 }
 
 MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {

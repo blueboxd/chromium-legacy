@@ -30,6 +30,7 @@ class LengthInterpolationFunctions {
                                                  InterpolationValue&& end);
   static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
                                                  const NonInterpolableValue*);
+  static bool HasPercentage(const NonInterpolableValue*);
   static void Composite(std::unique_ptr<InterpolableValue>&,
                         scoped_refptr<NonInterpolableValue>&,
                         double underlying_fraction,

@@ -24,3 +24,7 @@ if (enable_vr) {
     "//chrome/android/features/vr/java/src/org/chromium/chrome/browser/vr/VrConsentListener.java",
   ]
 }
+
+if (enable_arcore) {
+  public_vr_java_sources += [ "//chrome/android/features/vr/java/src/org/chromium/chrome/browser/vr/ArConsentDialog.java" ]
+}

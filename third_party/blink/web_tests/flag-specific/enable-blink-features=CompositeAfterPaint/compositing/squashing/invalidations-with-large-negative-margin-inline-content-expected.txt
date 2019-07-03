@@ -11,7 +11,7 @@
       "bounds": [600, 200],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='chip'",
+          "object": "LayoutNGBlockFlow DIV id='chip'",
           "rect": [400, 100, 20, 20],
           "reason": "background"
         }

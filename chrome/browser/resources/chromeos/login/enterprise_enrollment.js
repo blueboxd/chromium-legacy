@@ -60,6 +60,14 @@ Polymer({
     },
 
     /**
+     * Indicates if authenticator have shown internal dialog.
+     */
+    authenticatorDialogDisplayed_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Domain the device was enrolled to.
      */
     enrolledDomain_: {
@@ -223,15 +231,13 @@ Polymer({
 
     this.authenticator_.addEventListener(
         'dialogShown', (function(e) {
-                         this.navigation_.disabled = true;
-                         this.$['oobe-signin-back-button'].disabled = true;
+                         this.authenticatorDialogDisplayed_ = true;
                          // TODO(alemate): update the visual style.
                        }).bind(this));
 
     this.authenticator_.addEventListener(
         'dialogHidden', (function(e) {
-                          this.navigation_.disabled = false;
-                          this.$['oobe-signin-back-button'].disabled = false;
+                          this.authenticatorDialogDisplayed_ = false;
                           // TODO(alemate): update the visual style.
                         }).bind(this));
 
@@ -247,21 +253,6 @@ Polymer({
           this.showError(
               loadTimeData.getString('fatalEnrollmentError'), false);
         }).bind(this);
-
-    this.$['enroll-success-done-button']
-        .addEventListener('tap', this.onEnrollmentFinished_.bind(this));
-
-    this.$['enroll-attributes-skip-button']
-        .addEventListener('tap', this.onSkipButtonClicked.bind(this));
-    this.$['enroll-attributes-submit-button']
-        .addEventListener('tap', this.onAttributesSubmitted.bind(this));
-
-    this.navigation_.addEventListener('close', this.cancel.bind(this));
-    this.navigation_.addEventListener('refresh', this.cancel.bind(this));
-
-    this.$['oobe-signin-back-button'].addEventListener(
-        'click', this.onBackButtonClicked_.bind(this));
-
 
     this.$['oauth-enroll-learn-more-link']
         .addEventListener('click', function(event) {
@@ -317,7 +308,7 @@ Polymer({
           'mode-' + modes[i], data.enrollment_mode == modes[i]);
     }
     this.isManualEnrollment_ = data.enrollment_mode === 'manual';
-    this.navigation_.disabled = false;
+    this.authenticatorDialogDisplayed_ = false;
 
     this.offlineAdUi_.onBeforeShow();
     if (!this.currentStep_) {
@@ -449,6 +440,7 @@ Polymer({
 
   doReload: function() {
     this.lastBackMessageValue_ = false;
+    this.authenticatorDialogDisplayed_ = false;
     this.authenticator_.reload();
     this.updateControlsState();
   },
@@ -493,8 +485,17 @@ Polymer({
    * Skips the device attribute update,
    * shows the successful enrollment step.
    */
-  onSkipButtonClicked: function() {
+  skipAttributes_: function() {
     this.showStep(ENROLLMENT_STEP.SUCCESS);
+  },
+
+  /**
+   * Uploads the device attributes to server. This goes to C++ side through
+   * |chrome| and launches the device attribute update negotiation.
+   */
+  submitAttributes_: function() {
+    this.screen.onAttributesEntered_(this.$['oauth-enroll-asset-id'].value,
+        this.$['oauth-enroll-location'].value);
   },
 
   /**
@@ -510,16 +511,6 @@ Polymer({
         this.cancel();
       }
     }
-  },
-
-
-  /**
-   * Uploads the device attributes to server. This goes to C++ side through
-   * |chrome| and launches the device attribute update negotiation.
-   */
-  onAttributesSubmitted: function() {
-    this.screen.onAttributesEntered_(this.$['oauth-enroll-asset-id'].value,
-        this.$['oauth-enroll-location'].value);
   },
 
   /**

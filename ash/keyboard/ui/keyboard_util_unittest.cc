@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/keyboard/ui/test/test_keyboard_controller_observer.h"
@@ -60,7 +60,7 @@ class KeyboardUtilTest : public aura::test::AuraTestBase {
 
     layout_delegate_ =
         std::make_unique<TestKeyboardLayoutDelegate>(root_window());
-    keyboard_controller_.Initialize(
+    keyboard_ui_controller_.Initialize(
         std::make_unique<TestKeyboardUIFactory>(&input_method_),
         layout_delegate_.get());
 
@@ -75,15 +75,15 @@ class KeyboardUtilTest : public aura::test::AuraTestBase {
 
  protected:
   void SetEnableFlag(KeyboardEnableFlag flag) {
-    keyboard_controller_.SetEnableFlag(flag);
+    keyboard_ui_controller_.SetEnableFlag(flag);
   }
 
   void ClearEnableFlag(KeyboardEnableFlag flag) {
-    keyboard_controller_.ClearEnableFlag(flag);
+    keyboard_ui_controller_.ClearEnableFlag(flag);
   }
 
   // Used indirectly by keyboard utils.
-  KeyboardController keyboard_controller_;
+  KeyboardUIController keyboard_ui_controller_;
   ui::DummyInputMethod input_method_;
   std::unique_ptr<TestKeyboardLayoutDelegate> layout_delegate_;
 
@@ -160,42 +160,42 @@ TEST_F(KeyboardUtilTest, HideKeyboardWhenTouchEnabled) {
 
 TEST_F(KeyboardUtilTest, UpdateKeyboardConfig) {
   ResetAllFlags();
-  KeyboardConfig config = keyboard_controller_.keyboard_config();
+  KeyboardConfig config = keyboard_ui_controller_.keyboard_config();
   EXPECT_TRUE(config.spell_check);
-  EXPECT_FALSE(keyboard_controller_.UpdateKeyboardConfig(config));
+  EXPECT_FALSE(keyboard_ui_controller_.UpdateKeyboardConfig(config));
 
   config.spell_check = false;
-  EXPECT_TRUE(keyboard_controller_.UpdateKeyboardConfig(config));
-  EXPECT_FALSE(keyboard_controller_.keyboard_config().spell_check);
+  EXPECT_TRUE(keyboard_ui_controller_.UpdateKeyboardConfig(config));
+  EXPECT_FALSE(keyboard_ui_controller_.keyboard_config().spell_check);
 
-  EXPECT_FALSE(keyboard_controller_.UpdateKeyboardConfig(config));
+  EXPECT_FALSE(keyboard_ui_controller_.UpdateKeyboardConfig(config));
 }
 
 TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   ResetAllFlags();
 
   // Return false when keyboard is disabled.
-  EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+  EXPECT_FALSE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
   // Enable the virtual keyboard.
   keyboard::SetTouchKeyboardEnabled(true);
-  EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+  EXPECT_TRUE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
   // Set overscroll enabled flag.
-  KeyboardConfig config = keyboard_controller_.keyboard_config();
+  KeyboardConfig config = keyboard_ui_controller_.keyboard_config();
   config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDisabled;
-  keyboard_controller_.UpdateKeyboardConfig(config);
-  EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+  keyboard_ui_controller_.UpdateKeyboardConfig(config);
+  EXPECT_FALSE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
   // Set default overscroll flag.
   config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDefault;
-  keyboard_controller_.UpdateKeyboardConfig(config);
-  EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+  keyboard_ui_controller_.UpdateKeyboardConfig(config);
+  EXPECT_TRUE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
   // Set keyboard_locked() to true.
-  keyboard_controller_.set_keyboard_locked(true);
-  EXPECT_TRUE(keyboard_controller_.keyboard_locked());
-  EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+  keyboard_ui_controller_.set_keyboard_locked(true);
+  EXPECT_TRUE(keyboard_ui_controller_.keyboard_locked());
+  EXPECT_FALSE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 }
 
 // See https://crbug.com/946358.
@@ -204,7 +204,7 @@ TEST_F(KeyboardUtilTest, RebuildsWhenChangingAccessibilityFlag) {
   keyboard::SetTouchKeyboardEnabled(true);
 
   keyboard::TestKeyboardControllerObserver observer;
-  keyboard_controller_.AddObserver(&observer);
+  keyboard_ui_controller_.AddObserver(&observer);
 
   // Virtual keyboard should rebuild to switch to a11y layout.
   keyboard::SetAccessibilityKeyboardEnabled(true);
@@ -216,7 +216,7 @@ TEST_F(KeyboardUtilTest, RebuildsWhenChangingAccessibilityFlag) {
   EXPECT_EQ(2, observer.disabled_count);
   EXPECT_EQ(2, observer.enabled_count);
 
-  keyboard_controller_.RemoveObserver(&observer);
+  keyboard_ui_controller_.RemoveObserver(&observer);
 }
 
 }  // namespace keyboard

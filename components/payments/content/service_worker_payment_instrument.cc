@@ -97,15 +97,14 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
 }
 
 ServiceWorkerPaymentInstrument::~ServiceWorkerPaymentInstrument() {
-  // TODO(crbug.com/782270): Implement abort InstallAndInvokePaymentApp for
-  // payment app that needs installation.
   if (delegate_ && !needs_installation_) {
-    // If there's a payment in progress, abort it before destroying this
-    // so that it can close its window. Since the PaymentRequest will be
+    // If there's a payment in progress, abort it before destroying this so that
+    // it can update its internal state. Since the PaymentRequest will be
     // destroyed, pass an empty callback to the payment app.
     content::PaymentAppProvider::GetInstance()->AbortPayment(
         browser_context_, stored_payment_app_info_->registration_id,
-        base::DoNothing());
+        url::Origin::Create(stored_payment_app_info_->scope),
+        *spec_->details().id, base::DoNothing());
   }
 }
 
@@ -143,7 +142,8 @@ void ServiceWorkerPaymentInstrument::ValidateCanMakePayment(
 
   content::PaymentAppProvider::GetInstance()->CanMakePayment(
       browser_context_, stored_payment_app_info_->registration_id,
-      std::move(event_data),
+      url::Origin::Create(stored_payment_app_info_->scope),
+      *spec_->details().id, std::move(event_data),
       base::BindOnce(
           &ServiceWorkerPaymentInstrument::OnCanMakePaymentEventResponded,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -237,6 +237,7 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
   } else {
     content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
         browser_context_, stored_payment_app_info_->registration_id,
+        url::Origin::Create(stored_payment_app_info_->scope),
         CreatePaymentRequestEventData(),
         base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));

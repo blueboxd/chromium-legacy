@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_widget.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_features.h"
@@ -527,17 +527,17 @@ class ShelfWidgetVirtualKeyboardTest : public AshTestBase {
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.
     const gfx::Rect keyboard_bounds(0, 0, 1, 1);
-    keyboard_controller()->SetContainerType(keyboard::ContainerType::kFloating,
-                                            keyboard_bounds, base::DoNothing());
+    keyboard_ui_controller()->SetContainerType(
+        keyboard::ContainerType::kFloating, keyboard_bounds, base::DoNothing());
   }
 
-  keyboard::KeyboardController* keyboard_controller() {
-    return keyboard::KeyboardController::Get();
+  keyboard::KeyboardUIController* keyboard_ui_controller() {
+    return keyboard::KeyboardUIController::Get();
   }
 };
 
 TEST_F(ShelfWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
-  keyboard_controller()->ShowKeyboard(false /* locked */);
+  keyboard_ui_controller()->ShowKeyboard(false /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -550,7 +550,7 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
 }
 
 TEST_F(ShelfWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
-  keyboard_controller()->ShowKeyboard(false /* locked */);
+  keyboard_ui_controller()->ShowKeyboard(false /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -563,7 +563,7 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
 }
 
 TEST_F(ShelfWidgetVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
-  keyboard_controller()->ShowKeyboard(true /* locked */);
+  keyboard_ui_controller()->ShowKeyboard(true /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();

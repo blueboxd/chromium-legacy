@@ -9,45 +9,25 @@ This tests that squashed layers' offset from renderer is updated properly. If no
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='background'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='background'",
+      "position": [8, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFF00",
-      "transform": 1
+      "backgroundColor": "#FFFF00"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='host'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='host'",
+      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 2
+      "backgroundColor": "#008000"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='squashed'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='squashed'",
       "position": [8, 8],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF"
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 50, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
     }
   ]
 }

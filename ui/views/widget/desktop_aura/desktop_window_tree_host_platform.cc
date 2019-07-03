@@ -333,12 +333,12 @@ void DesktopWindowTreeHostPlatform::Restore() {
 
 bool DesktopWindowTreeHostPlatform::IsMaximized() const {
   return platform_window()->GetPlatformWindowState() ==
-         ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+         ui::PlatformWindowState::kMaximized;
 }
 
 bool DesktopWindowTreeHostPlatform::IsMinimized() const {
   return platform_window()->GetPlatformWindowState() ==
-         ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+         ui::PlatformWindowState::kMinimized;
 }
 
 bool DesktopWindowTreeHostPlatform::HasCapture() const {
@@ -419,7 +419,7 @@ void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
 
 bool DesktopWindowTreeHostPlatform::IsFullscreen() const {
   return platform_window()->GetPlatformWindowState() ==
-         ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+         ui::PlatformWindowState::kFullScreen;
 }
 
 void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
@@ -519,8 +519,7 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
   // Propagate minimization/restore to compositor to avoid drawing 'blank'
   // frames that could be treated as previews, which show content even if a
   // window is minimized.
-  bool visible =
-      new_state != ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+  bool visible = new_state != ui::PlatformWindowState::kMinimized;
   if (visible != compositor()->IsVisible()) {
     compositor()->SetVisible(visible);
     native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);

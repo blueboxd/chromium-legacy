@@ -240,7 +240,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />：<ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">找不到 PPD。请确保您的 Chromebook 已连接到网络，然后重试。</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> 已被屏蔽</translation>
-<translation id="1357589289913453911">扩展程序 ID</translation>
 <translation id="1358741672408003399">拼写和语法</translation>
 <translation id="1361164813881551742">手动添加</translation>
 <translation id="1361655923249334273">未使用</translation>
@@ -320,7 +319,6 @@
 <translation id="1470967055429794975">这会清空该安全密钥上的所有数据，包括它的 PIN 码</translation>
 <translation id="1475502736924165259">您有一些证书不属于前面的任何类别</translation>
 <translation id="1476607407192946488">语言设置(&amp;L)</translation>
-<translation id="1477301030751268706">Identity API 令牌缓存</translation>
 <translation id="1478340334823509079">详细信息：<ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">未启用安装功能</translation>
 <translation id="1483493594462132177">发送</translation>
@@ -725,7 +723,6 @@
 <translation id="2090876986345970080">系统安全设置</translation>
 <translation id="2091887806945687916">声音</translation>
 <translation id="2097372108957554726">您需要登录 Chrome 才能注册新设备</translation>
-<translation id="2098305189700762159">未找到</translation>
 <translation id="2099172618127234427">您正在启用 Chrome 操作系统调试功能，此功能将设置 sshd 守护程序并允许从 U 盘启动设备。</translation>
 <translation id="2099686503067610784">要删除服务器证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="2100273922101894616">自动登录</translation>
@@ -937,7 +934,6 @@
 <translation id="2386926718981642523">随时访问您的 Google 助理，只需说“Ok Google”即可</translation>
 <translation id="2387458720915042159">代理连接类型</translation>
 <translation id="2391419135980381625">标准字体</translation>
-<translation id="2391762656119864333">撤消</translation>
 <translation id="2392369802118427583">激活</translation>
 <translation id="2394566832561516196">系统将在您下次重新加载网页后清除设置。</translation>
 <translation id="2395616325548404795">您的 <ph name="DEVICE_TYPE" /> 已成功注册企业管理服务，但未能发送其资产和位置信息。请通过管理控制台为此设备手动输入这些信息。</translation>
@@ -1950,7 +1946,6 @@
 <translation id="3894123633473837029">通过 Sherlog 将最近的 Google 助理历史记录包含在内。这可能包括您的身份、地理位置和调试信息。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="389589731200570180">与访客共享</translation>
-<translation id="3898521660513055167">令牌状态</translation>
 <translation id="389901847090970821">选择键盘</translation>
 <translation id="3899879303189199559">离线超过 1 年</translation>
 <translation id="3900966090527141178">导出密码</translation>
@@ -2785,7 +2780,6 @@
 <translation id="5235050375939235066">要卸载该应用吗？</translation>
 <translation id="5235750401727657667">替换您在打开新标签页时看到的页面</translation>
 <translation id="5238278114306905396">已自动删除应用“<ph name="EXTENSION_NAME" />”。</translation>
-<translation id="5238369540257804368">范围</translation>
 <translation id="5241128660650683457">读取您在访问的网站上的所有数据</translation>
 <translation id="5242724311594467048">要启用“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="5243522832766285132">请稍后重试</translation>
@@ -3224,7 +3218,6 @@
 <translation id="5870155679953074650">硬故障数</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5877584842898320529">所选打印机不可用或未正确安装。<ph name="BR" />请检查打印机，或尝试另选一台打印机。</translation>
-<translation id="5880247576487732437">已提供令牌</translation>
 <translation id="5882919346125742463">已知网络</translation>
 <translation id="5884474295213649357">此标签页已连接到 USB 设备。</translation>
 <translation id="5885324376209859881">管理媒体设置...</translation>
@@ -4687,7 +4680,6 @@
 <translation id="8045923671629973368">输入应用 ID 或网上应用店网址</translation>
 <translation id="804786196054284061">最终用户许可协议</translation>
 <translation id="8049705080247101012">Google 已将“<ph name="EXTENSION_NAME" />”标记为恶意扩展程序并已阻止系统安装它</translation>
-<translation id="8049913480579063185">扩展程序名称</translation>
 <translation id="8050038245906040378">Microsoft 商业代码签名</translation>
 <translation id="8053278772142718589">PKCS #12 文件</translation>
 <translation id="8053390638574070785">重新加载此页</translation>
@@ -4937,7 +4929,6 @@
 <translation id="8449008133205184768">粘贴并匹配样式</translation>
 <translation id="8449036207308062757">管理存储空间</translation>
 <translation id="8452135315243592079">缺少 SIM 卡</translation>
-<translation id="845627346958584683">失效时间</translation>
 <translation id="845702320058262034">无法连接。请确保您手机的蓝牙已开启。</translation>
 <translation id="8457451314607652708">导入书签</translation>
 <translation id="8460336040822756677">如果您关闭了 Smart Lock（<ph name="DEVICE_TYPE" /> 版），将不能使用配对手机为 Chrome 设备解锁。在这种情况下，您需要输入密码才能解锁。</translation>
@@ -5051,7 +5042,6 @@
 <translation id="8637542770513281060">您的计算机包含一个安全模块，该模块可用于在 Chrome 操作系统中实施许多关键的安全功能。要了解详情，请访问 Chromebook 帮助中心：https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">有系统更新，开始下载...</translation>
 <translation id="8639047128869322042">正在查找有害软件…</translation>
-<translation id="8642171459927087831">访问令牌</translation>
 <translation id="8642900771896232685">2 秒</translation>
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">要继续，请选择一个选项：</translation>

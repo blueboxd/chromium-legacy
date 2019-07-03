@@ -43,8 +43,8 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String unusedOrigin,
-            String unusedIFRameOrigin, byte[][] unusedCertificateChain,
+    public void getInstruments(String unusedId, Map<String, PaymentMethodData> methodDataMap,
+            String unusedOrigin, String unusedIFRameOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentDetailsModifier> unusedModifiers,
             final InstrumentsCallback callback) {
         new Handler().post(

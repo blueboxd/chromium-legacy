@@ -240,6 +240,8 @@ target(link_target_type, "gles2_sources") {
     "shared_image_manager.h",
     "shared_image_representation.cc",
     "shared_image_representation.h",
+    "shared_image_representation_skia_gl.cc",
+    "shared_image_representation_skia_gl.h",
     "skia_utils.cc",
     "skia_utils.h",
     "texture_definition.cc",

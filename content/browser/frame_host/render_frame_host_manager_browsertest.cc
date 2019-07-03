@@ -51,6 +51,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -624,10 +625,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Should have the same SiteInstance unless we're in site-per-process mode.
   scoped_refptr<SiteInstance> noref_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  if (AreAllSitesIsolatedForTesting())
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_NE(orig_site_instance, noref_site_instance);
-  else
+  } else {
     EXPECT_EQ(orig_site_instance, noref_site_instance);
+  }
 }
 
 // Same as above, but for 'noopener'
@@ -661,10 +664,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Should have the same SiteInstance unless we're in site-per-process mode.
   scoped_refptr<SiteInstance> noref_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  if (AreAllSitesIsolatedForTesting())
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_NE(orig_site_instance, noref_site_instance);
-  else
+  } else {
     EXPECT_EQ(orig_site_instance, noref_site_instance);
+  }
 }
 
 // Test for crbug.com/116192.  Targeted links should still work after the
@@ -3975,7 +3980,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> a_site_instance(
       shell()->web_contents()->GetSiteInstance());
 
-  // Open a popup for b.com.  This should stay in the current BrowsingInstance.
+  // Open a popup for b.com. This should stay in the current BrowsingInstance.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   Shell* popup = OpenPopup(shell(), b_url, "foo");
   EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
@@ -3983,14 +3988,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       popup->web_contents()->GetSiteInstance());
   EXPECT_TRUE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
 
-  // Same-site browser-initiated navigations shouldn't swap BrowsingInstances
-  // or SiteInstances.
+  // 1. Same-site browser-initiated navigations shouldn't swap BrowsingInstances
+  //    or SiteInstances.
   EXPECT_TRUE(NavigateToURL(
       popup, embedded_test_server()->GetURL("b.com", "/title2.html")));
   EXPECT_EQ(b_site_instance, popup->web_contents()->GetSiteInstance());
 
-  // A cross-site browser-initiated navigation should swap BrowsingInstances,
-  // despite having an opener in the same site as the destination URL.
+  // 2. A cross-site browser-initiated navigation should swap BrowsingInstances,
+  //    despite having an opener in the same site as the destination URL.
   EXPECT_TRUE(NavigateToURL(
       popup, embedded_test_server()->GetURL("a.com", "/title3.html")));
   EXPECT_NE(b_site_instance, popup->web_contents()->GetSiteInstance());
@@ -4000,16 +4005,58 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_FALSE(b_site_instance->IsRelatedSiteInstance(
       popup->web_contents()->GetSiteInstance()));
 
-  // Perform several cross-site browser-initiated navigations in the popup, all
-  // using page transitions that allow BrowsingInstance swaps:
-  auto transitions_that_swap_browsing_instances = {
-      ui::PAGE_TRANSITION_TYPED,         /* user typing URL into address bar */
+  auto transitions_forcing_browsing_instance_swap = {
       ui::PAGE_TRANSITION_AUTO_BOOKMARK, /* user clicking on a bookmark */
       ui::PAGE_TRANSITION_GENERATED,     /* search query */
       ui::PAGE_TRANSITION_KEYWORD, /* search within a site from address bar */
+      ui::PAGE_TRANSITION_TYPED,   /* user typing URL into address bar */
+  };
+  auto transitions_not_forcing_browsing_instance_swap = {
+      ui::PAGE_TRANSITION_LINK, /* user clicked on a link in the document */
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      ui::PAGE_TRANSITION_FORM_SUBMIT,
+      ui::PAGE_TRANSITION_KEYWORD_GENERATED,
+      ui::PAGE_TRANSITION_RELOAD,
   };
   int current_site = 0;
-  for (auto transition : transitions_that_swap_browsing_instances) {
+  scoped_refptr<SiteInstance> curr_instance(
+      popup->web_contents()->GetSiteInstance());
+
+  // 3. Perform several cross-site browser-initiated navigations in the popup
+  //    that do not force a BrowsingInstance swap.
+  //
+  // When ProactivelySwapBrowsingInstance is disabled, the BrowsingInstance
+  // isn't swapped, even if it could be.
+  //
+  // When ProactivelySwapBrowsingInstance is enabled, the BrowsingInstance is
+  // now swapped. It can be swapped, because (2) caused the popup to live in a
+  // different BrowsingInstance. The window and the popup are no longer related.
+  for (auto transition : transitions_not_forcing_browsing_instance_swap) {
+    GURL cross_site_url(embedded_test_server()->GetURL(
+        base::StringPrintf("site%d.com", current_site++), "/title1.html"));
+    SCOPED_TRACE(base::StringPrintf(
+        "... wrong BrowsingInstance for '%s' transition to %s",
+        ui::PageTransitionGetCoreTransitionString(transition),
+        cross_site_url.spec().c_str()));
+
+    TestNavigationObserver observer(popup->web_contents());
+    NavigationController::LoadURLParams params(cross_site_url);
+    params.transition_type = transition;
+    popup->web_contents()->GetController().LoadURLWithParams(params);
+    observer.Wait();
+
+    if (IsProactivelySwapBrowsingInstanceEnabled()) {
+      EXPECT_FALSE(curr_instance->IsRelatedSiteInstance(
+          popup->web_contents()->GetSiteInstance()));
+    } else {
+      EXPECT_TRUE(curr_instance->IsRelatedSiteInstance(
+          popup->web_contents()->GetSiteInstance()));
+    }
+  }
+
+  // 4. Perform several cross-site browser-initiated navigations in the popup,
+  //    all using page transitions that force BrowsingInstance swaps:
+  for (auto transition : transitions_forcing_browsing_instance_swap) {
     GURL cross_site_url(embedded_test_server()->GetURL(
         base::StringPrintf("site%d.com", current_site++), "/title1.html"));
     scoped_refptr<SiteInstance> prev_instance(
@@ -4032,32 +4079,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(curr_instance.get()));
     EXPECT_NE(prev_instance, curr_instance);
     EXPECT_FALSE(prev_instance->IsRelatedSiteInstance(curr_instance.get()));
-  }
-
-  // Ensure that other page transitions don't cause a BrowsingInstance swap.
-  auto transitions_that_dont_swap_browsing_instances = {
-      ui::PAGE_TRANSITION_LINK, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      ui::PAGE_TRANSITION_FORM_SUBMIT,
-  };
-  scoped_refptr<SiteInstance> curr_instance(
-      popup->web_contents()->GetSiteInstance());
-  for (auto transition : transitions_that_dont_swap_browsing_instances) {
-    GURL cross_site_url(embedded_test_server()->GetURL(
-        base::StringPrintf("site%d.com", current_site++), "/title1.html"));
-    SCOPED_TRACE(base::StringPrintf(
-        "... expected no BrowsingInstance swap for '%s' transition to %s",
-        ui::PageTransitionGetCoreTransitionString(transition),
-        cross_site_url.spec().c_str()));
-
-    TestNavigationObserver observer(popup->web_contents());
-    NavigationController::LoadURLParams params(cross_site_url);
-    params.transition_type = transition;
-    popup->web_contents()->GetController().LoadURLWithParams(params);
-    observer.Wait();
-
-    // This should stay in the current BrowsingInstance.
-    EXPECT_TRUE(curr_instance->IsRelatedSiteInstance(
-        popup->web_contents()->GetSiteInstance()));
   }
 }
 
@@ -4118,7 +4139,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Since this is a browser-initiated, cross-site navigation, it will swap
   // BrowsingInstances, and create a new foo.com SiteInstance, distinct from
   // the initial one.
-  if (!AreAllSitesIsolatedForTesting()) {
+  if (!AreAllSitesIsolatedForTesting() &&
+      !IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_EQ(site_instance, shell()->web_contents()->GetSiteInstance());
   } else {
     EXPECT_NE(site_instance, shell()->web_contents()->GetSiteInstance());
@@ -5999,6 +6021,36 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   SetBrowserClientForTesting(old_client);
 }
 
+// When ProactivelySwapBrowsingInstance is enabled, the browser switch to a new
+// BrowsingInstance on cross-site HTTP(S) main frame navigations, when there are
+// no other windows in the BrowsingInstance.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ProactivelySwapBrowsingInstance) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  scoped_refptr<SiteInstance> a_site_instance =
+      web_contents->GetMainFrame()->GetSiteInstance();
+
+  // Navigate to B. The navigation is document initiated. It swaps
+  // BrowsingInstance only if  ProactivelySwapBrowsingInstance is enabled.
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("location.href = $1", b_url)));
+  WaitForLoadStop(web_contents);
+  scoped_refptr<SiteInstance> b_site_instance =
+      web_contents->GetMainFrame()->GetSiteInstance();
+
+  if (IsProactivelySwapBrowsingInstanceEnabled())
+    EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  else
+    EXPECT_TRUE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+}
+
 // Tests specific to the "default process" mode (which creates strict
 // SiteInstances that can share a default process per BrowsingInstance).
 class RenderFrameHostManagerDefaultProcessTest
@@ -6054,6 +6106,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerDefaultProcessTest,
   EXPECT_EQ(original_process, web_contents->GetMainFrame()
                                   ->GetSiteInstance()
                                   ->GetDefaultProcessIfUsable());
+
+  // This test expect a cross-site navigation to by same BrowsingInstance. With
+  // ProactivelySwapBrowsingInstance, it won't be the case. Opening a popup
+  // prevent the BrowsingInstance to change.
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    GURL popup_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(OpenPopup(web_contents->GetMainFrame(), popup_url, ""));
+  }
 
   // Set up a URL for which ShouldAssignSiteForURL will return false.  The
   // corresponding SiteInstance's site will be left unassigned, and its process

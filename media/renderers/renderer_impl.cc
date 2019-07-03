@@ -65,10 +65,6 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
     DCHECK(type_ == DemuxerStream::VIDEO);
     renderer_->OnVideoOpacityChange(opaque);
   }
-  void OnRemotePlayStateChange(MediaStatus::State state) override {
-    // Only used with FlingingRenderer.
-    NOTREACHED();
-  }
 
  private:
   DemuxerStream::Type type_;

@@ -16,6 +16,7 @@
     MeasureAs=WorkletAnimationConstructor,
     RuntimeEnabled=AnimationWorklet
 ] interface WorkletAnimation {
+  readonly attribute DOMString animatorName;
   readonly attribute AnimationEffect? effect;
   readonly attribute AnimationTimeline? timeline;
   readonly attribute AnimationPlayState playState;

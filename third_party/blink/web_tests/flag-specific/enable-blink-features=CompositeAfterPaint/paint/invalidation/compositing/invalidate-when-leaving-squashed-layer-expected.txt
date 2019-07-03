@@ -7,58 +7,38 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
+      "position": [8, 8],
       "bounds": [200, 200],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
-      "transform": 1
+      "backgroundColor": "#D3D3D3"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "position": [50, 50],
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
           "reason": "disappeared"
         }
       ]
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='target'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='target'",
+      "position": [50, 50],
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
           "reason": "full layer"
         }
-      ],
-      "transform": 2
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [50, 50, 0, 1]
       ]
     }
   ]

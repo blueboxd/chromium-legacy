@@ -11,7 +11,7 @@
 
 namespace ui {
 
-class AXPlatformNodeWin;
+class AXFragmentRootDelegateWin;
 class AXFragmentRootPlatformNodeWin;
 
 // UI Automation on Windows requires the root of a multi-element provider to
@@ -29,7 +29,7 @@ class AXFragmentRootPlatformNodeWin;
 class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
  public:
   AXFragmentRootWin(gfx::AcceleratedWidget widget,
-                    gfx::NativeViewAccessible child);
+                    AXFragmentRootDelegateWin* delegate);
   ~AXFragmentRootWin() override;
 
   // Fragment roots register themselves in a map upon creation and unregister
@@ -41,15 +41,6 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   // Return the NativeViewAccessible for this fragment root.
   gfx::NativeViewAccessible GetNativeViewAccessible();
 
-  // The legacy window needs to provide navigation to its parent for tree
-  // linkage to be correct.
-  void SetParent(gfx::NativeViewAccessible parent);
-
-  // The sole child of a fragment root is permitted to change during the
-  // fragment root's lifetime. This will happen, for example, on a web content
-  // navigation.
-  void SetChild(gfx::NativeViewAccessible child);
-
  private:
   // AXPlatformNodeDelegate overrides.
   gfx::NativeViewAccessible GetParent() override;
@@ -60,11 +51,13 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   const ui::AXUniqueId& GetUniqueId() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
-  Microsoft::WRL::ComPtr<ui::AXFragmentRootPlatformNodeWin> platform_node_;
-  Microsoft::WRL::ComPtr<ui::AXPlatformNodeWin> parent_;
-  Microsoft::WRL::ComPtr<ui::AXPlatformNodeWin> child_;
-  ui::AXUniqueId unique_id_;
+  // If a child node is available, return its delegate.
+  AXPlatformNodeDelegate* GetChildNodeDelegate();
+
   gfx::AcceleratedWidget widget_;
+  AXFragmentRootDelegateWin* const delegate_;
+  Microsoft::WRL::ComPtr<ui::AXFragmentRootPlatformNodeWin> platform_node_;
+  ui::AXUniqueId unique_id_;
 };
 
 }  // namespace ui

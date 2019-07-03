@@ -22,6 +22,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/win/window_event_target.h"
@@ -81,7 +82,8 @@ constexpr int WM_WINDOWSIZINGFINISHED = WM_USER;
 // TODO(beng): This object should eventually *become* the WindowImpl.
 class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                         public ui::InputMethodObserver,
-                                        public ui::WindowEventTarget {
+                                        public ui::WindowEventTarget,
+                                        public ui::AXFragmentRootDelegateWin {
  public:
   // See WindowImpl for details on |debugging_id|.
   HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
@@ -240,6 +242,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   void ApplyPanGestureScrollEnd() override;
   void ApplyPanGestureFlingBegin() override;
   void ApplyPanGestureFlingEnd() override;
+
+  // Overridden from AXFragmentRootDelegateWin.
+  gfx::NativeViewAccessible GetChildOfAXFragmentRoot() override;
+  gfx::NativeViewAccessible GetParentOfAXFragmentRoot() override;
 
   void ApplyPanGestureEvent(int scroll_x,
                             int scroll_y,

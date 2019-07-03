@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -41,14 +41,15 @@ base::Optional<display::Display> GetFirstTouchDisplay() {
 KeyboardControllerImpl::KeyboardControllerImpl(
     SessionControllerImpl* session_controller)
     : session_controller_(session_controller),
-      keyboard_controller_(std::make_unique<keyboard::KeyboardController>()) {
+      keyboard_ui_controller_(
+          std::make_unique<keyboard::KeyboardUIController>()) {
   if (session_controller_)  // May be null in tests.
     session_controller_->AddObserver(this);
-  keyboard_controller_->AddObserver(this);
+  keyboard_ui_controller_->AddObserver(this);
 }
 
 KeyboardControllerImpl::~KeyboardControllerImpl() {
-  keyboard_controller_->RemoveObserver(this);
+  keyboard_ui_controller_->RemoveObserver(this);
   if (session_controller_)  // May be null in tests.
     session_controller_->RemoveObserver(this);
 }
@@ -57,18 +58,18 @@ void KeyboardControllerImpl::CreateVirtualKeyboard(
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
   DCHECK(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
-  keyboard_controller_->Initialize(std::move(keyboard_ui_factory), this);
+  keyboard_ui_controller_->Initialize(std::move(keyboard_ui_factory), this);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           keyboard::switches::kEnableVirtualKeyboard)) {
-    keyboard_controller_->SetEnableFlag(
+    keyboard_ui_controller_->SetEnableFlag(
         KeyboardEnableFlag::kCommandLineEnabled);
   }
 }
 
 void KeyboardControllerImpl::DestroyVirtualKeyboard() {
   virtual_keyboard_controller_.reset();
-  keyboard_controller_->Shutdown();
+  keyboard_ui_controller_->Shutdown();
 }
 
 void KeyboardControllerImpl::SendOnKeyboardVisibleBoundsChanged(
@@ -91,64 +92,64 @@ void KeyboardControllerImpl::SendOnKeyboardUIDestroyed() {
 // ash::KeyboardController
 
 void KeyboardControllerImpl::KeyboardContentsLoaded(const gfx::Size& size) {
-  keyboard_controller()->KeyboardContentsLoaded(size);
+  keyboard_ui_controller()->KeyboardContentsLoaded(size);
 }
 
 keyboard::KeyboardConfig KeyboardControllerImpl::GetKeyboardConfig() {
-  return keyboard_controller_->keyboard_config();
+  return keyboard_ui_controller_->keyboard_config();
 }
 
 void KeyboardControllerImpl::SetKeyboardConfig(
     const KeyboardConfig& keyboard_config) {
-  keyboard_controller_->UpdateKeyboardConfig(keyboard_config);
+  keyboard_ui_controller_->UpdateKeyboardConfig(keyboard_config);
 }
 
 bool KeyboardControllerImpl::IsKeyboardEnabled() {
-  return keyboard_controller_->IsEnabled();
+  return keyboard_ui_controller_->IsEnabled();
 }
 
 void KeyboardControllerImpl::SetEnableFlag(KeyboardEnableFlag flag) {
-  keyboard_controller_->SetEnableFlag(flag);
+  keyboard_ui_controller_->SetEnableFlag(flag);
 }
 
 void KeyboardControllerImpl::ClearEnableFlag(KeyboardEnableFlag flag) {
-  keyboard_controller_->ClearEnableFlag(flag);
+  keyboard_ui_controller_->ClearEnableFlag(flag);
 }
 
 const std::set<keyboard::KeyboardEnableFlag>&
 KeyboardControllerImpl::GetEnableFlags() {
-  return keyboard_controller_->keyboard_enable_flags();
+  return keyboard_ui_controller_->keyboard_enable_flags();
 }
 
 void KeyboardControllerImpl::ReloadKeyboardIfNeeded() {
-  keyboard_controller_->Reload();
+  keyboard_ui_controller_->Reload();
 }
 
 void KeyboardControllerImpl::RebuildKeyboardIfEnabled() {
   // Test IsKeyboardEnableRequested in case of an unlikely edge case where this
   // is called while after the enable state changed to disabled (in which case
   // we do not want to override the requested state).
-  keyboard_controller_->RebuildKeyboardIfEnabled();
+  keyboard_ui_controller_->RebuildKeyboardIfEnabled();
 }
 
 bool KeyboardControllerImpl::IsKeyboardVisible() {
-  return keyboard_controller_->IsKeyboardVisible();
+  return keyboard_ui_controller_->IsKeyboardVisible();
 }
 
 void KeyboardControllerImpl::ShowKeyboard() {
-  if (keyboard_controller_->IsEnabled())
-    keyboard_controller_->ShowKeyboard(false /* lock */);
+  if (keyboard_ui_controller_->IsEnabled())
+    keyboard_ui_controller_->ShowKeyboard(false /* lock */);
 }
 
 void KeyboardControllerImpl::HideKeyboard(HideReason reason) {
-  if (!keyboard_controller_->IsEnabled())
+  if (!keyboard_ui_controller_->IsEnabled())
     return;
   switch (reason) {
     case HideReason::kUser:
-      keyboard_controller_->HideKeyboardByUser();
+      keyboard_ui_controller_->HideKeyboardByUser();
       break;
     case HideReason::kSystem:
-      keyboard_controller_->HideKeyboardExplicitlyBySystem();
+      keyboard_ui_controller_->HideKeyboardExplicitlyBySystem();
       break;
   }
 }
@@ -157,29 +158,29 @@ void KeyboardControllerImpl::SetContainerType(
     keyboard::ContainerType container_type,
     const base::Optional<gfx::Rect>& target_bounds,
     SetContainerTypeCallback callback) {
-  keyboard_controller_->SetContainerType(container_type, target_bounds,
-                                         std::move(callback));
+  keyboard_ui_controller_->SetContainerType(container_type, target_bounds,
+                                            std::move(callback));
 }
 
 void KeyboardControllerImpl::SetKeyboardLocked(bool locked) {
-  keyboard_controller_->set_keyboard_locked(locked);
+  keyboard_ui_controller_->set_keyboard_locked(locked);
 }
 
 void KeyboardControllerImpl::SetOccludedBounds(
     const std::vector<gfx::Rect>& bounds) {
   // TODO(https://crbug.com/826617): Support occluded bounds with multiple
   // rectangles.
-  keyboard_controller_->SetOccludedBounds(bounds.empty() ? gfx::Rect()
-                                                         : bounds[0]);
+  keyboard_ui_controller_->SetOccludedBounds(bounds.empty() ? gfx::Rect()
+                                                            : bounds[0]);
 }
 
 void KeyboardControllerImpl::SetHitTestBounds(
     const std::vector<gfx::Rect>& bounds) {
-  keyboard_controller_->SetHitTestBounds(bounds);
+  keyboard_ui_controller_->SetHitTestBounds(bounds);
 }
 
 void KeyboardControllerImpl::SetDraggableArea(const gfx::Rect& bounds) {
-  keyboard_controller_->SetDraggableArea(bounds);
+  keyboard_ui_controller_->SetDraggableArea(bounds);
 }
 
 void KeyboardControllerImpl::AddObserver(KeyboardControllerObserver* observer) {
@@ -189,7 +190,7 @@ void KeyboardControllerImpl::AddObserver(KeyboardControllerObserver* observer) {
 // SessionObserver
 void KeyboardControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
-  if (!keyboard_controller_->IsEnabled())
+  if (!keyboard_ui_controller_->IsEnabled())
     return;
 
   switch (state) {
@@ -208,10 +209,10 @@ void KeyboardControllerImpl::OnSessionStateChanged(
 }
 
 void KeyboardControllerImpl::OnRootWindowClosing(aura::Window* root_window) {
-  if (keyboard_controller_->GetRootWindow() == root_window) {
+  if (keyboard_ui_controller_->GetRootWindow() == root_window) {
     aura::Window* new_parent = GetContainerForDefaultDisplay();
     DCHECK_NE(root_window, new_parent);
-    keyboard_controller_->MoveToParentContainer(new_parent);
+    keyboard_ui_controller_->MoveToParentContainer(new_parent);
   }
 }
 

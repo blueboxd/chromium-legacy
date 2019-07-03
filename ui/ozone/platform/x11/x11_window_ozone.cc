@@ -44,7 +44,7 @@ X11WindowOzone::X11WindowOzone(X11WindowManagerOzone* window_manager,
       xwindow_(x11::None),
       mapped_(false),
       bounds_(bounds),
-      state_(ui::PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {
+      state_(PlatformWindowState::kUnknown) {
   DCHECK(delegate_);
   DCHECK(window_manager_);
 
@@ -492,22 +492,22 @@ void X11WindowOzone::OnWMStateUpdated() {
   // Propagate the window state information to the client.
   // Note that the order of checks is important here, because window can have
   // several proprties at the same time.
-  ui::PlatformWindowState old_state = state_;
+  PlatformWindowState old_state = state_;
   if (ui::HasWMSpecProperty(window_properties_,
                             gfx::GetAtom("_NET_WM_STATE_HIDDEN"))) {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+    state_ = PlatformWindowState::kMinimized;
   } else if (ui::HasWMSpecProperty(window_properties_,
                                    gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"))) {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+    state_ = PlatformWindowState::kFullScreen;
   } else if (ui::HasWMSpecProperty(
                  window_properties_,
                  gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")) &&
              ui::HasWMSpecProperty(
                  window_properties_,
                  gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"))) {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+    state_ = PlatformWindowState::kMaximized;
   } else {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
+    state_ = PlatformWindowState::kNormal;
   }
 
   if (old_state != state_)
@@ -515,11 +515,11 @@ void X11WindowOzone::OnWMStateUpdated() {
 }
 
 bool X11WindowOzone::IsMaximized() const {
-  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+  return state_ == PlatformWindowState::kMaximized;
 }
 
 bool X11WindowOzone::IsFullscreen() const {
-  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+  return state_ == PlatformWindowState::kFullScreen;
 }
 
 }  // namespace ui

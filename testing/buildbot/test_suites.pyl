@@ -2946,6 +2946,26 @@
       },
     },
 
+    'gpu_angle_deqp_gles31_vulkan_gtests': {
+      'angle_deqp_gles31_vulkan_tests': {
+        'android_args': [
+          '--enable-xml-result-parsing',
+          '--shard-timeout=500'
+        ],
+        'args': [
+          '--deqp-egl-display-type=angle-vulkan',
+        ],
+        'desktop_args': [
+          '--test-launcher-batch-limit=400',
+        ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 4,
+        },
+        'test': 'angle_deqp_gles31_tests',
+      },
+    },
+
     'gpu_angle_deqp_gles3_d3d11_gtests': {
       # TODO(jmadill): Run this on ANGLE roll tryservers.
       # Temporarily disabled on AMD Win 7 to prevent a recipe engine crash.
@@ -3052,6 +3072,26 @@
         ],
         'should_retry_with_patch': False,
         'test': 'angle_deqp_khr_gles2_tests',
+      },
+    },
+
+    'gpu_angle_deqp_khr_gles31_vulkan_gtests': {
+      'angle_deqp_khr_gles31_vulkan_tests': {
+        'android_args': [
+          '--enable-xml-result-parsing',
+          '--shard-timeout=500'
+        ],
+        'args': [
+          '--deqp-egl-display-type=angle-vulkan',
+        ],
+        'desktop_args': [
+          '--test-launcher-batch-limit=0',
+        ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 2,
+        },
+        'test': 'angle_deqp_khr_gles31_tests',
       },
     },
 
@@ -4894,8 +4934,10 @@
       'gpu_angle_deqp_egl_vulkan_gtests',
       'gpu_angle_deqp_gles2_vulkan_gtests',
       'gpu_angle_deqp_gles3_vulkan_gtests',
+      'gpu_angle_deqp_gles31_vulkan_gtests',
       'gpu_angle_deqp_khr_gles2_vulkan_gtests',
       'gpu_angle_deqp_khr_gles3_vulkan_gtests',
+      'gpu_angle_deqp_khr_gles31_vulkan_gtests',
     ],
 
     'gpu_angle_deqp_linux_nvidia_gtests': [
@@ -4906,8 +4948,10 @@
       'gpu_angle_deqp_gles3_gl_gtests',
       'gpu_angle_deqp_gles3_vulkan_gtests',
       'gpu_angle_deqp_gles31_gl_gtests',
+      'gpu_angle_deqp_gles31_vulkan_gtests',
       'gpu_angle_deqp_khr_gles2_vulkan_gtests',
       'gpu_angle_deqp_khr_gles3_vulkan_gtests',
+      'gpu_angle_deqp_khr_gles31_vulkan_gtests',
     ],
 
     'gpu_angle_deqp_mac_gtests': [
@@ -4933,8 +4977,10 @@
       'gpu_angle_deqp_gles3_vulkan_gtests',
       'gpu_angle_deqp_gles31_d3d11_gtests',
       'gpu_angle_deqp_gles31_gl_gtests',
+      'gpu_angle_deqp_gles31_vulkan_gtests',
       'gpu_angle_deqp_khr_gles2_vulkan_gtests',
       'gpu_angle_deqp_khr_gles3_vulkan_gtests',
+      'gpu_angle_deqp_khr_gles31_vulkan_gtests',
     ],
 
     'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts': [

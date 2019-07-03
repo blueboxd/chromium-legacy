@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -82,6 +83,7 @@ SearchController::~SearchController() {}
 
 void SearchController::Start(const base::string16& query) {
   dispatching_query_ = true;
+  RecordLauncherIssuedSearchQueryLength(query.length());
   for (const auto& provider : providers_)
     provider->Start(query);
 

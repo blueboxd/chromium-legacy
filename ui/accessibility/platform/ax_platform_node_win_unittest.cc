@@ -226,6 +226,15 @@ void AXPlatformNodeWinTest::TearDown() {
   ASSERT_EQ(0U, AXPlatformNodeBase::GetInstanceCountForTesting());
 }
 
+AXPlatformNode* AXPlatformNodeWinTest::AXPlatformNodeFromNode(AXNode* node) {
+  const TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+  if (!wrapper)
+    return nullptr;
+
+  return wrapper->ax_platform_node();
+}
+
 template <typename T>
 ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNodeId(int32_t id) {
   const TestAXNodeWrapper* wrapper =
@@ -243,12 +252,9 @@ ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNodeId(int32_t id) {
 
 template <typename T>
 ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNode(AXNode* node) {
-  const TestAXNodeWrapper* wrapper =
-      TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
-  if (!wrapper)
+  AXPlatformNode* ax_platform_node = AXPlatformNodeFromNode(node);
+  if (!ax_platform_node)
     return ComPtr<T>();
-
-  AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
   ComPtr<T> result;
   EXPECT_HRESULT_SUCCEEDED(
       ax_platform_node->GetNativeViewAccessible()->QueryInterface(__uuidof(T),
@@ -359,12 +365,12 @@ ComPtr<IAccessibleTableCell> AXPlatformNodeWinTest::GetCellInTable() {
 }
 
 void AXPlatformNodeWinTest::InitFragmentRoot() {
-  TestAXNodeWrapper* wrapper =
-      TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+  test_fragment_root_delegate_ = std::make_unique<TestFragmentRootDelegate>();
+  test_fragment_root_delegate_->child_ =
+      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
 
   ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(
-      gfx::kMockAcceleratedWidget,
-      static_cast<ui::AXPlatformNodeWin*>(wrapper->ax_platform_node()));
+      gfx::kMockAcceleratedWidget, test_fragment_root_delegate_.get());
 }
 
 ComPtr<IRawElementProviderFragmentRoot>
@@ -400,6 +406,19 @@ AXPlatformNodeWinTest::GetSupportedPatternsFromNodeId(int32_t id) {
     }
   }
   return supported_patterns;
+}
+
+TestFragmentRootDelegate::TestFragmentRootDelegate() = default;
+
+TestFragmentRootDelegate::~TestFragmentRootDelegate() = default;
+
+gfx::NativeViewAccessible TestFragmentRootDelegate::GetChildOfAXFragmentRoot() {
+  return child_;
+}
+
+gfx::NativeViewAccessible
+TestFragmentRootDelegate::GetParentOfAXFragmentRoot() {
+  return parent_;
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
@@ -1373,6 +1392,37 @@ TEST_F(AXPlatformNodeWinTest,
     EXPECT_EQ(E_INVALIDARG,
               result->get_accessibleAt(10, 10, cell.GetAddressOf()));
   }
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableQueryInterfaceOnNonTable) {
+  ComPtr<IAccessibleTable> table;
+  ComPtr<IAccessibleTable2> table2;
+
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWebArea;
+  Init(root);
+
+  ComPtr<IAccessible> root_obj = GetRootIAccessible();
+  EXPECT_EQ(E_NOINTERFACE, root_obj->QueryInterface(IID_PPV_ARGS(&table)));
+  EXPECT_EQ(E_NOINTERFACE, root_obj->QueryInterface(IID_PPV_ARGS(&table2)));
+
+  AXTreeUpdate update = Build3X3Table();
+  update.node_id_to_clear = 1;
+  Init(update);
+
+  ComPtr<IAccessibleTableCell> cell = GetCellInTable();
+  ASSERT_NE(nullptr, cell.Get());
+  EXPECT_EQ(E_NOINTERFACE, cell->QueryInterface(IID_PPV_ARGS(&table)));
+  EXPECT_EQ(E_NOINTERFACE, cell->QueryInterface(IID_PPV_ARGS(&table2)));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellQueryInterfaceOnNonCell) {
+  Init(Build3X3Table());
+
+  ComPtr<IAccessible> root_obj = GetRootIAccessible();
+  ComPtr<IAccessibleTableCell> cell;
+  EXPECT_EQ(E_NOINTERFACE, root_obj->QueryInterface(IID_PPV_ARGS(&cell)));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollToPoint) {

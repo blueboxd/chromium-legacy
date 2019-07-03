@@ -8,13 +8,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
-import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.action.ViewActions;
+import android.support.test.espresso.contrib.RecyclerViewActions;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
@@ -31,6 +34,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
@@ -45,6 +49,7 @@ import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -187,6 +192,12 @@ public class GridTabSwitcherLayoutPerfTest {
             MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                     mActivityTestRule.getActivity(), R.id.new_tab_menu_id);
             if (url != null) mActivityTestRule.loadUrl(url);
+
+            Tab previousTab = mActivityTestRule.getActivity()
+                                      .getTabModelSelector()
+                                      .getCurrentModel()
+                                      .getTabAt(i);
+            checkThumbnailsExist(previousTab);
         }
         ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,
                 null, WAIT_TIMEOUT_SECONDS * 10);
@@ -227,8 +238,7 @@ public class GridTabSwitcherLayoutPerfTest {
             mGtsLayout.setPerfListenerForTesting(null);
             // Make sure the fading animation is done.
             Thread.sleep(1000);
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> gts.getGridController().hideOverview(false));
+            TestThreadUtils.runOnUiThreadBlocking(() -> gts.getGridController().hideOverview(true));
             Thread.sleep(1000);
             CriteriaHelper.pollInstrumentationThread(
                     () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
@@ -292,7 +302,7 @@ public class GridTabSwitcherLayoutPerfTest {
         for (int i = 0; i < mRepeat; i++) {
             mGtsLayout.setPerfListenerForTesting(null);
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+                    () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
             assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
             Thread.sleep(1000);
 
@@ -307,10 +317,9 @@ public class GridTabSwitcherLayoutPerfTest {
 
             mGtsLayout.setPerfListenerForTesting(collector);
             Thread.sleep(mWaitingTime);
-            TestThreadUtils.runOnUiThreadBlocking(
-                    ()
-                            -> mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
-                                    targetIndex, FROM_USER));
+            Espresso.onView(ViewMatchers.withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .perform(RecyclerViewActions.actionOnItemAtPosition(
+                            targetIndex, ViewActions.click()));
 
             final int expectedSize = i + 1;
             CriteriaHelper.pollInstrumentationThread(() -> frameRates.size() == expectedSize,
@@ -324,6 +333,18 @@ public class GridTabSwitcherLayoutPerfTest {
         assertEquals(mRepeat, frameRates.size());
         Log.i(TAG, "%s: fps = %.2f, maxFrameInterval = %.0f", description, median(frameRates),
                 median(frameInterval));
+    }
+
+    private void checkThumbnailsExist(Tab tab) {
+        File etc1File = TabContentManager.getTabThumbnailFileEtc1(tab);
+        CriteriaHelper.pollInstrumentationThread(etc1File::exists,
+                "The thumbnail " + etc1File.getName() + " is not found",
+                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
+
+        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab);
+        CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
+                "The thumbnail " + jpegFile.getName() + " is not found",
+                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
     }
 
     private float median(List<Float> list) {

@@ -37,7 +37,7 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
@@ -219,7 +219,7 @@ class AppListViewTest : public views::ViewsTestBase,
   std::unique_ptr<AppsGridViewTestApi> test_api_;
 
   // Used by AppListFolderView::UpdatePreferredBounds.
-  keyboard::KeyboardController keyboard_controller_;
+  keyboard::KeyboardUIController keyboard_ui_controller_;
 
   bool is_rtl_ = false;
 
@@ -616,7 +616,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   base::test::ScopedRestoreICUDefaultLocale restore_locale_;
 
   // Used by AppListFolderView::UpdatePreferredBounds.
-  keyboard::KeyboardController keyboard_controller_;
+  keyboard::KeyboardUIController keyboard_ui_controller_;
 
   // A fake NavigableContents implementation to back card navigation requests.
   content::FakeNavigableContents fake_card_contents_;

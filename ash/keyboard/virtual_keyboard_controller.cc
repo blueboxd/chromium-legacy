@@ -8,7 +8,7 @@
 
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -64,7 +64,7 @@ VirtualKeyboardController::VirtualKeyboardController()
       base::Unretained(this),
       chromeos::input_method::mojom::ImeKeyset::kEmoji));
 
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 
   bluetooth_devices_observer_ =
       std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
@@ -73,7 +73,7 @@ VirtualKeyboardController::VirtualKeyboardController()
 }
 
 VirtualKeyboardController::~VirtualKeyboardController() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
 
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
@@ -159,7 +159,7 @@ void VirtualKeyboardController::UpdateKeyboardEnabled() {
 
 void VirtualKeyboardController::ForceShowKeyboard() {
   // If the virtual keyboard is enabled, show the keyboard directly.
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->IsEnabled()) {
     keyboard_controller->ShowKeyboard(false /* locked */);
     return;

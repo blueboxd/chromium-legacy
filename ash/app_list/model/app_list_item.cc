@@ -67,13 +67,6 @@ size_t AppListItem::ChildItemCount() const {
   return 0;
 }
 
-bool AppListItem::CompareForTest(const AppListItem* other) const {
-  return id() == other->id() && folder_id() == other->folder_id() &&
-         name() == other->name() && short_name_ == other->short_name_ &&
-         GetItemType() == other->GetItemType() &&
-         position().Equals(other->position());
-}
-
 std::string AppListItem::ToDebugString() const {
   return id().substr(0, 8) + " '" + name() + "'" + " [" +
          position().ToDebugString() + "]";

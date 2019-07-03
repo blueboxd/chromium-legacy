@@ -19,6 +19,8 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,8 +29,6 @@
 #endif
 
 namespace {
-// Text color for the Cancel button.
-const CGFloat kSendButtonBackgroundColorBlue = 0x1A73E8;
 
 // Accessibility identifier of the Modal Cancel Button.
 NSString* const kSendTabToSelfModalCancelButton =
@@ -84,8 +84,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = [UIColor whiteColor];
-  self.styler.cellBackgroundColor = [UIColor whiteColor];
+  self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
+  self.styler.cellBackgroundColor = UIColor.cr_systemBackgroundColor;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
   [self.tableView
@@ -158,9 +158,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.sendToDevice.buttonText =
       l10n_util::GetNSString(IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ACTION);
   self.sendToDevice.buttonTextColor = [UIColor whiteColor];
-  ;
-  self.sendToDevice.buttonBackgroundColor =
-      UIColorFromRGB(kSendButtonBackgroundColorBlue);
+  self.sendToDevice.buttonBackgroundColor = [UIColor colorNamed:kTintColor];
   self.sendToDevice.boldButtonText = NO;
   self.sendToDevice.accessibilityIdentifier = kSendTabToSelfModalSendButton;
   [model addItem:self.sendToDevice

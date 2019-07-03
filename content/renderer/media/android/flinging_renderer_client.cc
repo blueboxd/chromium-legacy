@@ -14,9 +14,11 @@ namespace content {
 FlingingRendererClient::FlingingRendererClient(
     ClientExtentionRequest client_extension_request,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    std::unique_ptr<media::MojoRenderer> mojo_renderer)
+    std::unique_ptr<media::MojoRenderer> mojo_renderer,
+    media::RemotePlayStateChangeCB remote_play_state_change_cb)
     : MojoRendererWrapper(std::move(mojo_renderer)),
       media_task_runner_(std::move(media_task_runner)),
+      remote_play_state_change_cb_(remote_play_state_change_cb),
       delayed_bind_client_extension_request_(
           std::move(client_extension_request)),
       client_extension_binding_(this) {}
@@ -40,7 +42,7 @@ void FlingingRendererClient::Initialize(
 void FlingingRendererClient::OnRemotePlayStateChange(
     media::MediaStatus::State state) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  client_->OnRemotePlayStateChange(state);
+  remote_play_state_change_cb_.Run(state);
 }
 
 }  // namespace content

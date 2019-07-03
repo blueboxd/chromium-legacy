@@ -18,7 +18,6 @@
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/jni_headers/NonPresentingGvrContext_jni.h"
-#include "device/vr/vr_display_impl.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"

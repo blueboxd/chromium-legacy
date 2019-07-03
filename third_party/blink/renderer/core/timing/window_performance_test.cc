@@ -342,7 +342,7 @@ TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
             performance_->getEntriesByName("click", "event").size());
 }
 
-// Test for existence of 'firstInput' given different types of first events.
+// Test for existence of 'first-input' given different types of first events.
 TEST_F(WindowPerformanceTest, FirstInput) {
   struct {
     AtomicString event_type;
@@ -352,14 +352,14 @@ TEST_F(WindowPerformanceTest, FirstInput) {
                 {"mousedown", true}, {"mousemove", false},
                 {"mouseover", false}};
   for (const auto& input : inputs) {
-    // firstInput does not have a |duration| threshold so use close values.
+    // first-input does not have a |duration| threshold so use close values.
     performance_->RegisterEventTiming(
         input.event_type, GetTimeOrigin(),
         GetTimeOrigin() + base::TimeDelta::FromMilliseconds(1),
         GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2), false);
     SimulateSwapPromise(GetTimeOrigin() + base::TimeDelta::FromMilliseconds(3));
     PerformanceEntryVector firstInputs =
-        performance_->getEntriesByType("firstInput");
+        performance_->getEntriesByType("first-input");
     EXPECT_GE(1u, firstInputs.size());
     EXPECT_EQ(input.should_report, firstInputs.size() == 1u);
     ResetPerformance();
@@ -377,9 +377,9 @@ TEST_F(WindowPerformanceTest, FirstInputAfterIgnored) {
         GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2), false);
   }
   SimulateSwapPromise(GetTimeOrigin() + base::TimeDelta::FromMilliseconds(3));
-  ASSERT_EQ(1u, performance_->getEntriesByType("firstInput").size());
+  ASSERT_EQ(1u, performance_->getEntriesByType("first-input").size());
   EXPECT_EQ("mousedown",
-            performance_->getEntriesByType("firstInput")[0]->name());
+            performance_->getEntriesByType("first-input")[0]->name());
 }
 
 // Test that pointerdown followed by pointerup works as a 'firstInput'.
@@ -394,14 +394,14 @@ TEST_F(WindowPerformanceTest, FirstPointerUp) {
   performance_->RegisterEventTiming("pointerdown", start_time, processing_start,
                                     processing_end, false);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(0u, performance_->getEntriesByType("firstInput").size());
+  EXPECT_EQ(0u, performance_->getEntriesByType("first-input").size());
   performance_->RegisterEventTiming("pointerup", start_time, processing_start,
                                     processing_end, false);
   SimulateSwapPromise(swap_time);
-  EXPECT_EQ(1u, performance_->getEntriesByType("firstInput").size());
+  EXPECT_EQ(1u, performance_->getEntriesByType("first-input").size());
   // The name of the entry should be "pointerdown".
-  EXPECT_EQ(1u,
-            performance_->getEntriesByName("pointerdown", "firstInput").size());
+  EXPECT_EQ(
+      1u, performance_->getEntriesByName("pointerdown", "first-input").size());
 }
 
 }  // namespace blink

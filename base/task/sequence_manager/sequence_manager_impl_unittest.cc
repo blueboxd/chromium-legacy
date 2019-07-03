@@ -78,6 +78,11 @@ enum class TestType {
   kMessagePump,
 };
 
+enum class AntiStarvationLogic {
+  kEnabled,
+  kDisabled,
+};
+
 std::string ToString(TestType type) {
   switch (type) {
     case TestType::kMockTaskRunner:
@@ -89,8 +94,21 @@ std::string ToString(TestType type) {
   }
 }
 
-std::string GetTestNameSuffix(const testing::TestParamInfo<TestType>& info) {
-  return StrCat({"With", ToString(info.param).substr(1)});
+std::string ToString(AntiStarvationLogic type) {
+  switch (type) {
+    case AntiStarvationLogic::kEnabled:
+      return "AntiStarvationLogicEnabled";
+    case AntiStarvationLogic::kDisabled:
+      return "AntiStarvationLogicDisabled";
+  }
+}
+
+using SequenceManagerTestParams = std::pair<TestType, AntiStarvationLogic>;
+
+std::string GetTestNameSuffix(
+    const testing::TestParamInfo<SequenceManagerTestParams>& info) {
+  return StrCat({"With", ToString(info.param.first).substr(1), "And",
+                 ToString(info.param.second)});
 }
 
 void PrintTo(const TestType type, std::ostream* os) {
@@ -147,6 +165,9 @@ class CallCountingTickClock : public TickClock {
 class FixtureWithMockTaskRunner final : public Fixture {
  public:
   FixtureWithMockTaskRunner()
+      : FixtureWithMockTaskRunner(AntiStarvationLogic::kEnabled) {}
+
+  explicit FixtureWithMockTaskRunner(AntiStarvationLogic anti_starvation_logic)
       : test_task_runner_(MakeRefCounted<TestMockTimeTaskRunner>(
             TestMockTimeTaskRunner::Type::kBoundToThread)),
         call_counting_clock_(BindRepeating(&TestMockTimeTaskRunner::NowTicks,
@@ -159,6 +180,8 @@ class FixtureWithMockTaskRunner final : public Fixture {
                 .SetMessagePumpType(MessagePump::Type::DEFAULT)
                 .SetRandomisedSamplingEnabled(false)
                 .SetTickClock(mock_tick_clock())
+                .SetAntiStarvationLogicForPrioritiesDisabled(
+                    anti_starvation_logic == AntiStarvationLogic::kDisabled)
                 .Build())) {
     // A null clock triggers some assertions.
     AdvanceMockTickClock(TimeDelta::FromMilliseconds(1));
@@ -220,17 +243,21 @@ class FixtureWithMockTaskRunner final : public Fixture {
 
 class FixtureWithMockMessagePump : public Fixture {
  public:
-  FixtureWithMockMessagePump() : call_counting_clock_(&mock_clock_) {
+  explicit FixtureWithMockMessagePump(AntiStarvationLogic anti_starvation_logic)
+      : call_counting_clock_(&mock_clock_) {
     // A null clock triggers some assertions.
     mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
 
     auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
     pump_ = pump.get();
-    auto settings = SequenceManager::Settings::Builder()
-                        .SetMessagePumpType(MessagePump::Type::DEFAULT)
-                        .SetRandomisedSamplingEnabled(false)
-                        .SetTickClock(mock_tick_clock())
-                        .Build();
+    auto settings =
+        SequenceManager::Settings::Builder()
+            .SetMessagePumpType(MessagePump::Type::DEFAULT)
+            .SetRandomisedSamplingEnabled(false)
+            .SetTickClock(mock_tick_clock())
+            .SetAntiStarvationLogicForPrioritiesDisabled(
+                anti_starvation_logic == AntiStarvationLogic::kDisabled)
+            .Build();
     sequence_manager_ = SequenceManagerForTest::Create(
         std::make_unique<ThreadControllerWithMessagePumpImpl>(std::move(pump),
                                                               settings),
@@ -299,7 +326,7 @@ class FixtureWithMockMessagePump : public Fixture {
 
 class FixtureWithMessageLoop : public Fixture {
  public:
-  FixtureWithMessageLoop()
+  explicit FixtureWithMessageLoop(AntiStarvationLogic anti_starvation_logic)
       : call_counting_clock_(&mock_clock_),
         auto_reset_global_clock_(&global_clock_, &call_counting_clock_) {
     // A null clock triggers some assertions.
@@ -317,6 +344,8 @@ class FixtureWithMessageLoop : public Fixture {
             .SetMessagePumpType(MessagePump::Type::DEFAULT)
             .SetRandomisedSamplingEnabled(false)
             .SetTickClock(mock_tick_clock())
+            .SetAntiStarvationLogicForPrioritiesDisabled(
+                anti_starvation_logic == AntiStarvationLogic::kDisabled)
             .Build());
 
     // The SequenceManager constructor calls Now() once for setting up
@@ -391,19 +420,24 @@ TickClock* FixtureWithMessageLoop::global_clock_;
 // Convenience wrapper around the fixtures so that we can use parametrized tests
 // instead of templated ones. The latter would be more verbose as all method
 // calls to the fixture would need to be like this->method()
-class SequenceManagerTest : public testing::TestWithParam<TestType>,
-                            public Fixture {
+class SequenceManagerTest
+    : public testing::TestWithParam<SequenceManagerTestParams>,
+      public Fixture {
  public:
   SequenceManagerTest() {
-    switch (GetParam()) {
+    AntiStarvationLogic anti_starvation_logic = GetAntiStarvationLogicType();
+    switch (GetUnderlyingRunnerType()) {
       case TestType::kMockTaskRunner:
-        fixture_ = std::make_unique<FixtureWithMockTaskRunner>();
+        fixture_ =
+            std::make_unique<FixtureWithMockTaskRunner>(anti_starvation_logic);
         break;
       case TestType::kMessagePump:
-        fixture_ = std::make_unique<FixtureWithMockMessagePump>();
+        fixture_ =
+            std::make_unique<FixtureWithMockMessagePump>(anti_starvation_logic);
         break;
       case TestType::kMessageLoop:
-        fixture_ = std::make_unique<FixtureWithMessageLoop>();
+        fixture_ =
+            std::make_unique<FixtureWithMessageLoop>(anti_starvation_logic);
         break;
       default:
         NOTREACHED();
@@ -474,16 +508,27 @@ class SequenceManagerTest : public testing::TestWithParam<TestType>,
     return fixture_->GetNowTicksCallCount();
   }
 
+  TestType GetUnderlyingRunnerType() { return GetParam().first; }
+
+  AntiStarvationLogic GetAntiStarvationLogicType() { return GetParam().second; }
+
  private:
   std::unique_ptr<Fixture> fixture_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
-                         SequenceManagerTest,
-                         testing::Values(TestType::kMockTaskRunner,
-                                         TestType::kMessageLoop,
-                                         TestType::kMessagePump),
-                         GetTestNameSuffix);
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    SequenceManagerTest,
+    testing::Values(
+        std::make_pair(TestType::kMockTaskRunner,
+                       AntiStarvationLogic::kEnabled),
+        std::make_pair(TestType::kMockTaskRunner,
+                       AntiStarvationLogic::kDisabled),
+        std::make_pair(TestType::kMessageLoop, AntiStarvationLogic::kEnabled),
+        std::make_pair(TestType::kMessageLoop, AntiStarvationLogic::kDisabled),
+        std::make_pair(TestType::kMessagePump, AntiStarvationLogic::kEnabled),
+        std::make_pair(TestType::kMessagePump, AntiStarvationLogic::kDisabled)),
+    GetTestNameSuffix);
 
 void PostFromNestedRunloop(scoped_refptr<TestTaskQueue> runner,
                            std::vector<std::pair<OnceClosure, bool>>* tasks) {
@@ -655,7 +700,7 @@ TEST_P(SequenceManagerTest, NonNestableTaskExecutesInExpectedOrder) {
 }
 
 TEST_P(SequenceManagerTest, NonNestableTasksDoesntExecuteInNestedLoop) {
-  if (GetParam() == TestType::kMockTaskRunner)
+  if (GetUnderlyingRunnerType() == TestType::kMockTaskRunner)
     return;
   auto queue = CreateTaskQueue();
 
@@ -701,7 +746,7 @@ void InsertFenceAndPostTestTask(int id,
 }  // namespace
 
 TEST_P(SequenceManagerTest, TaskQueueDisabledFromNestedLoop) {
-  if (GetParam() == TestType::kMockTaskRunner)
+  if (GetUnderlyingRunnerType() == TestType::kMockTaskRunner)
     return;
   auto queue = CreateTaskQueue();
   std::vector<EnqueueOrder> run_order;
@@ -1445,7 +1490,7 @@ TEST_P(SequenceManagerTest, NoTasksAfterShutdown) {
   DestroySequenceManager();
   queue->task_runner()->PostTask(FROM_HERE, counter.WrapCallback(task.Get()));
 
-  if (GetParam() != TestType::kMessagePump) {
+  if (GetUnderlyingRunnerType() != TestType::kMessagePump) {
     RunLoop().RunUntilIdle();
   }
 
@@ -1897,7 +1942,7 @@ void PostAndQuitFromNestedRunloop(RunLoop* run_loop,
 }
 
 TEST_P(SequenceManagerTest, QuitWhileNested) {
-  if (GetParam() == TestType::kMockTaskRunner)
+  if (GetUnderlyingRunnerType() == TestType::kMockTaskRunner)
     return;
   // This test makes sure we don't continue running a work batch after a nested
   // run loop has been exited in the middle of the batch.
@@ -2808,7 +2853,7 @@ TEST_P(SequenceManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
 }
 
 TEST_P(SequenceManagerTest, BlameContextAttribution) {
-  if (GetParam() == TestType::kMessagePump)
+  if (GetUnderlyingRunnerType() == TestType::kMessagePump)
     return;
   using trace_analyzer::Query;
 
@@ -3167,7 +3212,7 @@ void MessageLoopTaskWithDelayedQuit(Fixture* fixture,
 }  // namespace
 
 TEST_P(SequenceManagerTest, DelayedTaskRunsInNestedMessageLoop) {
-  if (GetParam() == TestType::kMockTaskRunner)
+  if (GetUnderlyingRunnerType() == TestType::kMockTaskRunner)
     return;
   auto queue = CreateTaskQueue();
   RunLoop run_loop;
@@ -3191,7 +3236,7 @@ void MessageLoopTaskWithImmediateQuit(OnceClosure non_nested_quit_closure,
 }  // namespace
 
 TEST_P(SequenceManagerTest, DelayedNestedMessageLoopDoesntPreventTasksRunning) {
-  if (GetParam() == TestType::kMockTaskRunner)
+  if (GetUnderlyingRunnerType() == TestType::kMockTaskRunner)
     return;
   auto queue = CreateTaskQueue();
   RunLoop run_loop;
@@ -3259,7 +3304,7 @@ TEST_P(SequenceManagerTest, DelayedDoWorkNotPostedForDisabledQueue) {
       queue->CreateQueueEnabledVoter();
   voter->SetVoteToEnable(false);
 
-  switch (GetParam()) {
+  switch (GetUnderlyingRunnerType()) {
     case TestType::kMessagePump:
       EXPECT_EQ(TimeDelta::FromDays(1), NextPendingTaskDelay());
       break;
@@ -3299,21 +3344,21 @@ TEST_P(SequenceManagerTest, DisablingQueuesChangesDelayTillNextDoWork) {
   EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
 
   voter0->SetVoteToEnable(false);
-  if (GetParam() == TestType::kMessageLoop) {
+  if (GetUnderlyingRunnerType() == TestType::kMessageLoop) {
     EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
   } else {
     EXPECT_EQ(TimeDelta::FromMilliseconds(10), NextPendingTaskDelay());
   }
 
   voter1->SetVoteToEnable(false);
-  if (GetParam() == TestType::kMessageLoop) {
+  if (GetUnderlyingRunnerType() == TestType::kMessageLoop) {
     EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
   } else {
     EXPECT_EQ(TimeDelta::FromMilliseconds(100), NextPendingTaskDelay());
   }
 
   voter2->SetVoteToEnable(false);
-  switch (GetParam()) {
+  switch (GetUnderlyingRunnerType()) {
     case TestType::kMessagePump:
       EXPECT_EQ(TimeDelta::FromDays(1), NextPendingTaskDelay());
       break;
@@ -3648,8 +3693,8 @@ TEST_P(SequenceManagerTest, GracefulShutdown_ManagerDeletedInFlight) {
   // thread.
   DestroySequenceManager();
 
-  if (GetParam() != TestType::kMessagePump &&
-      GetParam() != TestType::kMessageLoop) {
+  if (GetUnderlyingRunnerType() != TestType::kMessagePump &&
+      GetUnderlyingRunnerType() != TestType::kMessageLoop) {
     FastForwardUntilNoTasksRemain();
   }
 
@@ -3692,8 +3737,8 @@ TEST_P(SequenceManagerTest,
   // Ensure that all queues-to-gracefully-shutdown are properly unregistered.
   DestroySequenceManager();
 
-  if (GetParam() != TestType::kMessagePump &&
-      GetParam() != TestType::kMessageLoop) {
+  if (GetUnderlyingRunnerType() != TestType::kMessagePump &&
+      GetUnderlyingRunnerType() != TestType::kMessageLoop) {
     FastForwardUntilNoTasksRemain();
   }
 
@@ -4237,7 +4282,7 @@ TEST_P(SequenceManagerTest, DestructionObserverTest) {
 }
 
 TEST_P(SequenceManagerTest, GetMessagePump) {
-  switch (GetParam()) {
+  switch (GetUnderlyingRunnerType()) {
     default:
       EXPECT_THAT(sequence_manager()->GetMessagePump(), testing::IsNull());
       break;
@@ -4278,7 +4323,7 @@ class MockTimeDomain : public TimeDomain {
 }  // namespace
 
 TEST_P(SequenceManagerTest, OnSystemIdleTimeDomainNotification) {
-  if (GetParam() != TestType::kMessagePump)
+  if (GetUnderlyingRunnerType() != TestType::kMessagePump)
     return;
 
   auto queue = CreateTaskQueue();
@@ -4439,14 +4484,28 @@ TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
 
   RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(order,
-            "000000000000000000000000000000000000000000000000000000000000"
-            "111121311214131215112314121131211151234112113121114123511211"
-            "312411123115121341211131211145123111211314211352232423222322"
-            "452322232423222352423222322423252322423222322452322232433353"
-            "343333334353333433333345333334333354444445444444544444454444"
-            "445444444544444454445555555555555555555555555555555555555555"
-            "666666666666666666666666666666666666666666666666666666666666");
+  switch (GetAntiStarvationLogicType()) {
+    case AntiStarvationLogic::kDisabled:
+      EXPECT_EQ(order,
+                "000000000000000000000000000000000000000000000000000000000000"
+                "111111111111111111111111111111111111111111111111111111111111"
+                "222222222222222222222222222222222222222222222222222222222222"
+                "333333333333333333333333333333333333333333333333333333333333"
+                "444444444444444444444444444444444444444444444444444444444444"
+                "555555555555555555555555555555555555555555555555555555555555"
+                "666666666666666666666666666666666666666666666666666666666666");
+      break;
+    case AntiStarvationLogic::kEnabled:
+      EXPECT_EQ(order,
+                "000000000000000000000000000000000000000000000000000000000000"
+                "111121311214131215112314121131211151234112113121114123511211"
+                "312411123115121341211131211145123111211314211352232423222322"
+                "452322232423222352423222322423252322423222322452322232433353"
+                "343333334353333433333345333334333354444445444444544444454444"
+                "445444444544444454445555555555555555555555555555555555555555"
+                "666666666666666666666666666666666666666666666666666666666666");
+      break;
+  }
 }
 
 class CancelableTaskWithDestructionObserver {

@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='container'",
+          "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [8, 108, 210, 210],
           "reason": "style change"
         }
@@ -18,7 +18,7 @@
       "bounds": [210, 210],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='container'",
+          "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [0, 0, 210, 210],
           "reason": "style change"
         }

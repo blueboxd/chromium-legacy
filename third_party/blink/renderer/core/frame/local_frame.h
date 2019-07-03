@@ -356,6 +356,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return remote_viewport_intersection_;
   }
   FrameOcclusionState GetOcclusionState() const;
+  bool NeedsOcclusionTracking() const;
 
   // Replaces the initial empty document with a Document suitable for
   // |mime_type| and populated with the contents of |data|. Only intended for

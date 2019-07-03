@@ -9,7 +9,7 @@
       width: 300px;
       height: 300px;
       top: 100px;
-      left: 50px;
+      left: 100px;
       border: 0;
       position: absolute;
       background: green;
@@ -22,34 +22,55 @@
 </style>
 <body onload="run()">
     <div id='outerFrame'>
-        <iframe id='innerFrameElement' src="resources/pointerevent_mouse_pointercapture_inactivate_pointer-iframe.html"></iframe>
+        <iframe id='iframe' src="resources/pointerevent_mouse_pointercapture_inactivate_pointer-iframe.html"></iframe>
     </div>
 </body>
 
 <script type="text/javascript">
-    var test_pointerEvent = async_test("setPointerCapture: outer frame capture pointer active in inner frame");
+    function run() {
+    capture_count = 0;
 
     document.addEventListener("gotpointercapture", function(){
-        test_pointerEvent.step(function() {
-            assert_unreached("It should not be possible to capture mouse pointer when it's activate in inner frame");
-        });
+        capture_count ++;
     })
 
-    function captureMousePointer(event) {
+    iframe.contentDocument.addEventListener("gotpointercapture", function(){
+        capture_count ++;
+    })
+
+    document.addEventListener("pointerdown", function(event){
+        // Outer frame got pointer down, set capture to inner frame.
+        iframe.contentDocument.getElementById("target").setPointerCapture(event.pointerId);
+    });
+
+
+    iframe.contentDocument.addEventListener("pointerdown", function(event){
+        // Inner frame got pointer down, set capture to outer frame.
         outerFrame.setPointerCapture(event.pointerId);
-    }
+    });
 
-    function finishTest() {
-        test_pointerEvent.done();
-    }
 
-    function run() {
-        new test_driver.Actions()
-            .pointerMove(200, 200)
+    promise_test(async() => {
+      await injectEvent(50, 50);
+      assert_equals(capture_count, 0, "Inner frame can not capture when pointer is activate in outer frame")
+    }, "setPointerCapture: pointer active in outer frame, set capture to inner frame");
+
+
+    promise_test(async() => {
+      await injectEvent(250, 250);
+      assert_equals(capture_count, 0, "Outer frame can not capture when pointer is activate in inner frame")
+    }, "setPointerCapture: pointer active in inner frame, set capture to outer frame");
+
+
+
+    function injectEvent(x, y) {
+        return new test_driver.Actions()
+            .pointerMove(x, y)
             .pointerDown()
-            .pointerMove(250, 250)
+            .pointerMove(x, y)
             .pointerUp()
             .send();
     }
+}
 </script>
 </html>

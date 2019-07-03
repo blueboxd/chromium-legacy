@@ -44,6 +44,20 @@ class StyleDifference {
         scroll_anchor_disabling_property_changed_(false),
         compositing_reasons_changed_(false) {}
 
+  void Merge(StyleDifference other) {
+    paint_invalidation_type_ =
+        std::max(paint_invalidation_type_, other.paint_invalidation_type_);
+    layout_type_ = std::max(layout_type_, other.layout_type_);
+    needs_collect_inlines_ |= other.needs_collect_inlines_;
+    needs_reshape_ |= other.needs_reshape_;
+    recompute_overflow_ |= other.recompute_overflow_;
+    visual_rect_update_ |= other.visual_rect_update_;
+    property_specific_differences_ |= other.property_specific_differences_;
+    scroll_anchor_disabling_property_changed_ |=
+        other.scroll_anchor_disabling_property_changed_;
+    compositing_reasons_changed_ |= other.compositing_reasons_changed_;
+  }
+
   bool HasDifference() const {
     return paint_invalidation_type_ || layout_type_ || needs_collect_inlines_ ||
            needs_reshape_ || property_specific_differences_ ||

@@ -357,6 +357,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XScopedCursor {
   DISALLOW_COPY_AND_ASSIGN(XScopedCursor);
 };
 
+struct COMPONENT_EXPORT(UI_BASE_X) XImageDeleter {
+  void operator()(XImage* image) const;
+};
+
 namespace test {
 
 // Returns the cached XcursorImage for |cursor|.

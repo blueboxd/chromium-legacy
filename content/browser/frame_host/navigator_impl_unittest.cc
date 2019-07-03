@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/frame_host/navigator_impl.h"
+
 #include <stdint.h>
 
 #include "base/feature_list.h"
@@ -13,7 +15,6 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame.mojom.h"
@@ -21,6 +22,7 @@
 #include "content/common/navigation_params.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
@@ -189,7 +191,8 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
   EXPECT_EQ(kUrl2, request->common_params().url);
   EXPECT_FALSE(request->browser_initiated());
   EXPECT_FALSE(main_test_rfh()->is_loading());
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
     EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -197,7 +200,8 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
 
   // Have the current RenderFrameHost commit the navigation.
   navigation->ReadyToCommit();
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_EQ(navigation->GetFinalRenderFrameHost(),
               GetSpeculativeRenderFrameHost(node));
   }
@@ -211,7 +215,8 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
   // The SiteInstance did not change unless site-per-process is enabled.
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_NE(site_instance_id_1, main_test_rfh()->GetSiteInstance()->GetId());
   } else {
     EXPECT_EQ(site_instance_id_1, main_test_rfh()->GetSiteInstance()->GetId());
@@ -606,7 +611,8 @@ TEST_F(NavigatorTest, RendererUserInitiatedNavigationCancel) {
 
   // Confirm that the speculative RenderFrameHost was destroyed in the non
   // SitePerProcess case.
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
     EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -645,7 +651,8 @@ TEST_F(NavigatorTest,
   EXPECT_EQ(kUrl1, request1->common_params().url);
   EXPECT_FALSE(request1->browser_initiated());
   EXPECT_TRUE(request1->common_params().has_user_gesture);
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
     EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -665,7 +672,8 @@ TEST_F(NavigatorTest,
   EXPECT_EQ(kUrl2, request2->common_params().url);
   EXPECT_FALSE(request2->browser_initiated());
   EXPECT_FALSE(request2->common_params().has_user_gesture);
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
     EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -745,7 +753,8 @@ TEST_F(NavigatorTest,
   EXPECT_EQ(kUrl1, request1->common_params().url);
   EXPECT_FALSE(request1->browser_initiated());
   EXPECT_FALSE(request1->common_params().has_user_gesture);
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
     EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -765,7 +774,8 @@ TEST_F(NavigatorTest,
   EXPECT_EQ(kUrl2, request2->common_params().url);
   EXPECT_FALSE(request2->browser_initiated());
   EXPECT_FALSE(request2->common_params().has_user_gesture);
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
     EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -779,7 +789,8 @@ TEST_F(NavigatorTest,
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
 
   // The SiteInstance did not change unless site-per-process is enabled.
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_NE(site_instance_id_0, main_test_rfh()->GetSiteInstance()->GetId());
   } else {
     EXPECT_EQ(site_instance_id_0, main_test_rfh()->GetSiteInstance()->GetId());

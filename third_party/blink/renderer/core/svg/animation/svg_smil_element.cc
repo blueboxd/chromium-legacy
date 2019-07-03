@@ -710,7 +710,7 @@ static void InsertSorted(Vector<SMILTimeWithOrigin>& list,
 void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
                                      SMILTime time,
                                      SMILTimeWithOrigin::Origin origin) {
-  SMILTime elapsed = this->Elapsed();
+  SMILTime elapsed = Elapsed();
   if (elapsed.IsUnresolved())
     return;
   SMILTimeWithOrigin time_with_origin(time, origin);
@@ -788,8 +788,8 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin,
     preliminary_active_duration =
         std::min(RepeatingDuration(), resolved_end - resolved_begin);
 
-  SMILTime min_value = this->MinValue();
-  SMILTime max_value = this->MaxValue();
+  SMILTime min_value = MinValue();
+  SMILTime max_value = MaxValue();
   if (min_value > max_value) {
     // Ignore both.
     // http://www.w3.org/TR/2001/REC-smil-animation-20010904/#MinMax
@@ -903,7 +903,7 @@ void SVGSMILElement::BeginListChanged(SMILTime event_time) {
 }
 
 void SVGSMILElement::EndListChanged(SMILTime) {
-  SMILTime elapsed = this->Elapsed();
+  SMILTime elapsed = Elapsed();
   if (is_waiting_for_first_interval_) {
     ResolveFirstInterval();
   } else if (elapsed < interval_.end && interval_.begin.IsFinite()) {
@@ -1048,7 +1048,7 @@ SMILTime SVGSMILElement::CalculateNextProgressTime(double elapsed) const {
   if (GetActiveState() == kActive) {
     // If duration is indefinite the value does not actually change over time.
     // Same is true for <set>.
-    SMILTime simple_duration = this->SimpleDuration();
+    SMILTime simple_duration = SimpleDuration();
     if (simple_duration.IsIndefinite() || IsSVGSetElement(*this)) {
       SMILTime repeating_duration_end = interval_.begin + RepeatingDuration();
       // We are supposed to do freeze semantics when repeating ends, even if the

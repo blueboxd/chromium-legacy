@@ -7,30 +7,9 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='composited-box'",
-      "bounds": [102, 102],
-      "transform": 2
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
+      "name": "LayoutNGBlockFlow DIV id='composited-box'",
+      "position": [108, 108],
+      "bounds": [102, 102]
     }
   ]
 }

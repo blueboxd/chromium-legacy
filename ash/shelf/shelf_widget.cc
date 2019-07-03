@@ -8,7 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -605,7 +605,7 @@ void ShelfWidget::ShowIfHidden() {
 
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED) {
-    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+    keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
 
     // If the shelf receives the mouse pressing event, the RootView of the shelf
     // will reset the gesture handler. As a result, if the shelf is in drag
@@ -619,7 +619,7 @@ void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
 
 void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN)
-    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+    keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
   views::Widget::OnGestureEvent(event);
 }
 

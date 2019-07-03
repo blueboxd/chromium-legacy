@@ -871,7 +871,8 @@ void XRSession::OnSelectStart(XRInputSource* input_source) {
   event->frame()->Deactivate();
 }
 
-void XRSession::OnSelectEnd(XRInputSource* input_source) {
+void XRSession::OnSelectEnd(XRInputSource* input_source,
+                            UserActivation user_activation) {
   // Discard duplicate events, or events after the session has ended.
   if (!input_source->primaryInputPressed() || ended_)
     return;
@@ -883,7 +884,9 @@ void XRSession::OnSelectEnd(XRInputSource* input_source) {
     return;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frame);
+      user_activation == UserActivation::kEnabled
+          ? LocalFrame::NotifyUserActivation(frame)
+          : nullptr;
 
   XRInputSourceEvent* event =
       CreateInputSourceEvent(event_type_names::kSelectend, input_source);
@@ -907,6 +910,13 @@ void XRSession::OnSelect(XRInputSource* input_source) {
   // If SelectStart caused the session to end, we shouldn't try to fire the
   // select event.
   if (!input_source->selectionCancelled() && !ended_) {
+    LocalFrame* frame = xr_->GetFrame();
+    if (!frame)
+      return;
+
+    std::unique_ptr<UserGestureIndicator> gesture_indicator =
+        LocalFrame::NotifyUserActivation(frame);
+
     XRInputSourceEvent* event =
         CreateInputSourceEvent(event_type_names::kSelect, input_source);
     DispatchEvent(*event);
@@ -942,7 +952,7 @@ void XRSession::UpdateSelectState(
     // treat this as a cancelled selection, firing the selectend event so the
     // page stays in sync with the controller state but won't fire the
     // usual select event.
-    OnSelectEnd(input_source);
+    OnSelectEnd(input_source, UserActivation::kDisabled);
   }
 }
 

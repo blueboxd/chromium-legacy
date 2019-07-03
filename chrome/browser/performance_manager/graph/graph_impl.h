@@ -60,6 +60,10 @@ class GraphImpl : public Graph {
   void RemoveSystemNodeObserver(SystemNodeObserver* observer) override;
   void PassToGraph(std::unique_ptr<GraphOwned> graph_owned) override;
   std::unique_ptr<GraphOwned> TakeFromGraph(GraphOwned* graph_owned) override;
+  const SystemNode* FindOrCreateSystemNode() override;
+  std::vector<const FrameNode*> GetAllFrameNodes() const override;
+  std::vector<const PageNode*> GetAllPageNodes() const override;
+  std::vector<const ProcessNode*> GetAllProcessNodes() const override;
   uintptr_t GetImplType() const override;
   const void* GetImpl() const override;
 
@@ -79,10 +83,10 @@ class GraphImpl : public Graph {
   // unregister |observer| from any nodes it's subscribed to.
   void UnregisterObserver(GraphImplObserver* observer);
 
-  SystemNodeImpl* FindOrCreateSystemNode();
-  std::vector<ProcessNodeImpl*> GetAllProcessNodes();
-  std::vector<FrameNodeImpl*> GetAllFrameNodes();
-  std::vector<PageNodeImpl*> GetAllPageNodes();
+  SystemNodeImpl* FindOrCreateSystemNodeImpl();
+  std::vector<ProcessNodeImpl*> GetAllProcessNodeImpls() const;
+  std::vector<FrameNodeImpl*> GetAllFrameNodeImpls() const;
+  std::vector<PageNodeImpl*> GetAllPageNodeImpls() const;
   const NodeSet& nodes() { return nodes_; }
 
   // Retrieves the process node with PID |pid|, if any.
@@ -135,8 +139,8 @@ class GraphImpl : public Graph {
   void BeforeProcessPidChange(ProcessNodeImpl* process,
                               base::ProcessId new_pid);
 
-  template <typename NodeType>
-  std::vector<NodeType*> GetAllNodesOfType();
+  template <typename NodeType, typename ReturnNodeType>
+  std::vector<ReturnNodeType> GetAllNodesOfType() const;
 
   void ReleaseSystemNode();
 

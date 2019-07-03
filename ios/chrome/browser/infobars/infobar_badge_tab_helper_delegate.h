@@ -7,29 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/infobars/infobar_type.h"
-
-// States for the InfobarBadge.
-typedef NS_OPTIONS(NSUInteger, InfobarBadgeState) {
-  // Default state. e.g. the Banner is being displayed or there's nothing
-  // presenting.
-  InfobarBadgeStateNone = 0,
-  // The InfobarBadge is selected. e.g. The InfobarBadge was tapped so the
-  // InfobarModal has been presented.
-  InfobarBadgeStateSelected = 1 << 0,
-  // The InfobarBadge is accepted. e.g. The Infobar was accepted/confirmed, and
-  // the Infobar action has taken place.
-  InfobarBadgeStateAccepted = 1 << 1,
-};
+@protocol BadgeItem;
 
 // Delegate used by InfobarBadgeTabHelper to manage the Infobar badges.
 @protocol InfobarBadgeTabHelperDelegate
 
-// Asks the delegate to display or stop displaying a badge.
-- (void)displayBadge:(BOOL)display type:(InfobarType)infobarType;
-
-// Current state for the displayed InfobarBadge.
-@property(nonatomic, assign) InfobarBadgeState badgeState;
+// Asks the delegate to add a badge with the configuration of |badgeItem|.
+- (void)addInfobarBadge:(id<BadgeItem>)badgeItem;
+// Asks the delegate to remove a badge matching the badgeType of |badgeItem|.
+- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem;
+// Asks the delegate to update the configuration of |badgeItem|.
+- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem;
 
 @end
 

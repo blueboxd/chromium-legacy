@@ -400,6 +400,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   if (frame_->IsAdSubframe())
     media_metrics_provider_->SetIsAdMedia();
+
+#if defined(OS_ANDROID)
+  renderer_factory_selector_->SetRemotePlayStateChangeCB(base::BindRepeating(
+      &WebMediaPlayerImpl::OnRemotePlayStateChange, weak_this_));
+#endif  // defined (OS_ANDROID)
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -2269,18 +2274,6 @@ void WebMediaPlayerImpl::OnVideoDecoderChange(const std::string& name) {
   UpdateSecondaryProperties();
 }
 
-void WebMediaPlayerImpl::OnRemotePlayStateChange(MediaStatus::State state) {
-  DCHECK(is_flinging_);
-
-  if (state == MediaStatus::State::PLAYING && Paused()) {
-    DVLOG(1) << __func__ << " requesting PLAY.";
-    client_->RequestPlay();
-  } else if (state == MediaStatus::State::PAUSED && !Paused()) {
-    DVLOG(1) << __func__ << " requesting PAUSE.";
-    client_->RequestPause();
-  }
-}
-
 void WebMediaPlayerImpl::OnFrameHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -2455,6 +2448,18 @@ void WebMediaPlayerImpl::FlingingStopped() {
   CreateVideoDecodeStatsReporter();
 
   ScheduleRestart();
+}
+
+void WebMediaPlayerImpl::OnRemotePlayStateChange(MediaStatus::State state) {
+  DCHECK(is_flinging_);
+
+  if (state == MediaStatus::State::PLAYING && Paused()) {
+    DVLOG(1) << __func__ << " requesting PLAY.";
+    client_->RequestPlay();
+  } else if (state == MediaStatus::State::PAUSED && !Paused()) {
+    DVLOG(1) << __func__ << " requesting PAUSE.";
+    client_->RequestPause();
+  }
 }
 #endif  // defined(OS_ANDROID)
 

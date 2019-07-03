@@ -87,7 +87,7 @@ class StyleResolver;
 class StyleSelfAlignmentData;
 class TransformationMatrix;
 
-typedef Vector<scoped_refptr<ComputedStyle>, 4> PseudoStyleCache;
+typedef Vector<scoped_refptr<const ComputedStyle>, 4> PseudoStyleCache;
 
 namespace css_longhand {
 
@@ -364,11 +364,18 @@ class ComputedStyle : public ComputedStyleBase,
                                IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
-  PseudoId StyleType() const { return static_cast<PseudoId>(StyleTypeInternal()); }
+  PseudoId StyleType() const {
+    return static_cast<PseudoId>(StyleTypeInternal());
+  }
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
   const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  const ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>) const;
+  const ComputedStyle* AddCachedPseudoStyle(
+      scoped_refptr<const ComputedStyle>) const;
+  void ClearCachedPseudoStyles() const {
+    if (cached_pseudo_styles_)
+      cached_pseudo_styles_->clear();
+  }
 
   /**
    * ComputedStyle properties
@@ -2677,6 +2684,10 @@ class ComputedStyle : public ComputedStyleBase,
     return PhysicalToLogical<const Length&>(GetWritingMode(), Direction(),
                                             Top(), Right(), Bottom(), Left());
   }
+
+  static Difference ComputeDifferenceIgnoringInheritedFirstLineStyle(
+      const ComputedStyle& old_style,
+      const ComputedStyle& new_style);
 
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -40,8 +40,8 @@ TextInput::TextInput(std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)) {}
 
 TextInput::~TextInput() {
-  if (keyboard_controller_)
-    keyboard_controller_->RemoveObserver(this);
+  if (keyboard_ui_controller_)
+    keyboard_ui_controller_->RemoveObserver(this);
   if (input_method_)
     Deactivate();
 }
@@ -69,8 +69,8 @@ void TextInput::ShowVirtualKeyboardIfEnabled() {
 }
 
 void TextInput::HideVirtualKeyboard() {
-  if (keyboard_controller_)
-    keyboard_controller_->HideKeyboardByUser();
+  if (keyboard_ui_controller_)
+    keyboard_ui_controller_->HideKeyboardByUser();
   pending_vk_visible_ = false;
 }
 
@@ -338,11 +338,12 @@ void TextInput::AttachInputMethod() {
   input_method_->SetFocusedTextInputClient(this);
   delegate_->Activated();
 
-  if (!keyboard_controller_ && keyboard::KeyboardController::HasInstance()) {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->IsEnabled()) {
-      keyboard_controller_ = keyboard_controller;
-      keyboard_controller_->AddObserver(this);
+  if (!keyboard_ui_controller_ &&
+      keyboard::KeyboardUIController::HasInstance()) {
+    auto* keyboard_ui_controller = keyboard::KeyboardUIController::Get();
+    if (keyboard_ui_controller->IsEnabled()) {
+      keyboard_ui_controller_ = keyboard_ui_controller;
+      keyboard_ui_controller_->AddObserver(this);
     }
   }
 

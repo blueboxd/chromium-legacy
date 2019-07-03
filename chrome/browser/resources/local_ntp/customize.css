@@ -2,7 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#custom-bg {
+#custom-bg,
+#custom-bg-preview {
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;

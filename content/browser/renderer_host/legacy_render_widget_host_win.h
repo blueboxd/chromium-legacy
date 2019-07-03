@@ -17,6 +17,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -59,7 +60,8 @@ class RenderWidgetHostViewAura;
 class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     : public ATL::CWindowImpl<LegacyRenderWidgetHostHWND,
                               ATL::CWindow,
-                              ATL::CWinTraits<WS_CHILD>> {
+                              ATL::CWinTraits<WS_CHILD>>,
+      public ui::AXFragmentRootDelegateWin {
  public:
   DECLARE_WND_CLASS_EX(L"Chrome_RenderWidgetHostHWND", CS_DBLCLKS, 0)
 
@@ -170,6 +172,12 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnDestroy(UINT message, WPARAM w_param, LPARAM l_param);
 
   LRESULT OnPointerHitTest(UINT message, WPARAM w_param, LPARAM l_param);
+
+  // Overridden from AXFragmentRootDelegateWin.
+  gfx::NativeViewAccessible GetChildOfAXFragmentRoot() override;
+  gfx::NativeViewAccessible GetParentOfAXFragmentRoot() override;
+
+  gfx::NativeViewAccessible GetOrCreateBrowserAccessibilityRoot();
 
   void CreateAnimationObserver();
 

@@ -25,7 +25,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -472,7 +472,7 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   // keyboard, but there's no easy way to do so, thus we block Alt+Tab when the
   // virtual keyboard is showing, even if it came from a real keyboard. See
   // http://crbug.com/638269
-  return !keyboard::KeyboardController::Get()->IsKeyboardVisible();
+  return !keyboard::KeyboardUIController::Get()->IsKeyboardVisible();
 }
 
 void HandleSwitchToNextIme(const ui::Accelerator& accelerator) {

@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 
+// TODO(xiaochengh): Rename to css_math_expression_node.cc
+
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -127,39 +129,6 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
   };
   NOTREACHED();
   return false;
-}
-
-static String BuildCSSText(const String& expression) {
-  StringBuilder result;
-  result.Append("calc");
-  bool expression_has_single_term = expression[0] != '(';
-  if (expression_has_single_term)
-    result.Append('(');
-  result.Append(expression);
-  if (expression_has_single_term)
-    result.Append(')');
-  return result.ToString();
-}
-
-String CSSCalcValue::CustomCSSText() const {
-  return BuildCSSText(expression_->CustomCSSText());
-}
-
-bool CSSCalcValue::Equals(const CSSCalcValue& other) const {
-  return DataEquivalent(expression_, other.expression_);
-}
-
-double CSSCalcValue::ClampToPermittedRange(double value) const {
-  return non_negative_ && value < 0 ? 0 : value;
-}
-
-double CSSCalcValue::DoubleValue() const {
-  return ClampToPermittedRange(expression_->DoubleValue());
-}
-
-double CSSCalcValue::ComputeLengthPx(
-    const CSSToLengthConversionData& conversion_data) const {
-  return ClampToPermittedRange(expression_->ComputeLengthPx(conversion_data));
 }
 
 // ------ Start of CSSCalcPrimitiveValue member functions ------
@@ -802,44 +771,27 @@ class CSSCalcExpressionNodeParser {
   }
 };
 
-CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(
-    CSSPrimitiveValue* value,
-    bool is_integer) {
-  return CSSCalcPrimitiveValue::Create(value, is_integer);
-}
-
-CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(
-    CSSCalcExpressionNode* left_side,
-    CSSCalcExpressionNode* right_side,
-    CSSMathOperator op) {
-  return CSSCalcBinaryOperation::Create(left_side, right_side, op);
-}
-
-CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(double pixels,
-                                                          double percent) {
-  return CreateExpressionNode(
-      CreateExpressionNode(
+// static
+CSSCalcExpressionNode* CSSCalcExpressionNode::CreateFromPixelsAndPercent(
+    double pixels,
+    double percent) {
+  return CSSCalcBinaryOperation::Create(
+      CSSCalcPrimitiveValue::Create(
           CSSNumericLiteralValue::Create(
               percent, CSSPrimitiveValue::UnitType::kPercentage),
           percent == trunc(percent)),
-      CreateExpressionNode(CSSNumericLiteralValue::Create(
-                               pixels, CSSPrimitiveValue::UnitType::kPixels),
-                           pixels == trunc(pixels)),
+      CSSCalcPrimitiveValue::Create(
+          CSSNumericLiteralValue::Create(pixels,
+                                         CSSPrimitiveValue::UnitType::kPixels),
+          pixels == trunc(pixels)),
       CSSMathOperator::kAdd);
 }
 
-CSSCalcValue* CSSCalcValue::Create(const CSSParserTokenRange& tokens,
-                                   ValueRange range) {
+// static
+CSSCalcExpressionNode* CSSCalcExpressionNode::ParseCalc(
+    const CSSParserTokenRange& tokens) {
   CSSCalcExpressionNodeParser parser;
-  CSSCalcExpressionNode* expression = parser.ParseCalc(tokens);
-
-  return expression ? MakeGarbageCollected<CSSCalcValue>(expression, range)
-                    : nullptr;
-}
-
-CSSCalcValue* CSSCalcValue::Create(CSSCalcExpressionNode* expression,
-                                   ValueRange range) {
-  return MakeGarbageCollected<CSSCalcValue>(expression, range);
+  return parser.ParseCalc(tokens);
 }
 
 }  // namespace blink

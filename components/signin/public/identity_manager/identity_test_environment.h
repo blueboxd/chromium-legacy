@@ -16,7 +16,6 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 
 class FakeProfileOAuth2TokenService;
-class IdentityManagerWrapper;
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
@@ -373,7 +372,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   std::vector<AccessTokenRequestState> requesters_;
 
   // Create an IdentityManager instance for tests.
-  static std::unique_ptr<IdentityManagerWrapper> BuildIdentityManagerForTests(
+  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
       SigninClient* signin_client,
       PrefService* pref_service,
       base::FilePath user_data_dir,

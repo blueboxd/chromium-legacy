@@ -47,6 +47,11 @@ class TextPaintTimingDetectorTest
     return GetPaintTimingDetector().GetTextPaintTimingDetector();
   }
 
+  base::Optional<LargestTextPaintManager>& GetLargestTextPaintManager() {
+    return GetTextPaintTimingDetector()
+        ->records_manager_.GetLargestTextPaintManager();
+  }
+
   wtf_size_t CountVisibleTexts() {
     DCHECK(GetTextPaintTimingDetector());
     return GetTextPaintTimingDetector()
@@ -54,10 +59,29 @@ class TextPaintTimingDetectorTest
   }
 
   wtf_size_t CountRankingSetSize() {
-    return GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
+    DCHECK(GetTextPaintTimingDetector());
+    return GetTextPaintTimingDetector()
         ->records_manager_.GetLargestTextPaintManager()
         ->size_ordered_set_.size();
+  }
+
+  wtf_size_t CountInvisibleTexts() {
+    return GetTextPaintTimingDetector()
+        ->records_manager_.invisible_objects_.size();
+  }
+
+  wtf_size_t TextQueuedForPaintTimeSize() {
+    return GetTextPaintTimingDetector()
+        ->records_manager_.texts_queued_for_paint_time_.size();
+  }
+
+  wtf_size_t ContainerTotalSize() {
+    return CountVisibleTexts() + CountRankingSetSize() + CountInvisibleTexts() +
+           TextQueuedForPaintTimeSize();
+  }
+
+  void SimulateInputEvent() {
+    GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::Type::kMouseDown);
   }
 
   void InvokeCallback() {
@@ -404,6 +428,56 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_IgnoreRemovedText) {
             DOMNodeIds::ExistingIdForNode(small_text));
 }
 
+TEST_F(TextPaintTimingDetectorTest,
+       RemoveRecordFromAllContainerAfterTextRemoval) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  Element* text = AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(ContainerTotalSize(), 2u);
+
+  RemoveElement(text);
+  EXPECT_EQ(ContainerTotalSize(), 0u);
+}
+
+TEST_F(TextPaintTimingDetectorTest,
+       RemoveRecordFromAllContainerAfterRepeatedAttachAndDetach) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  Element* text1 = AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(ContainerTotalSize(), 2u);
+
+  Element* text2 = AppendDivElementToBody("text2");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(ContainerTotalSize(), 4u);
+
+  RemoveElement(text1);
+  EXPECT_EQ(ContainerTotalSize(), 2u);
+
+  GetDocument().body()->AppendChild(text1);
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(ContainerTotalSize(), 4u);
+
+  RemoveElement(text1);
+  EXPECT_EQ(ContainerTotalSize(), 2u);
+
+  RemoveElement(text2);
+  EXPECT_EQ(ContainerTotalSize(), 0u);
+}
+
+TEST_F(TextPaintTimingDetectorTest,
+       DestroyLargestTextPaintMangerAfterUserInput) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_TRUE(GetLargestTextPaintManager());
+
+  SimulateInputEvent();
+  EXPECT_FALSE(GetLargestTextPaintManager());
+}
+
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
@@ -430,7 +504,6 @@ TEST_F(TextPaintTimingDetectorTest,
             DOMNodeIds::ExistingIdForNode(short_text));
 }
 
-// Depite that the l
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_CompareSizesAtFirstPaint) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
@@ -496,22 +569,6 @@ TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {
   EXPECT_EQ(CountVisibleTexts(), 1u);
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
             DOMNodeIds::ExistingIdForNode(elem));
-}
-
-TEST_F(TextPaintTimingDetectorTest, StopRecordingOverNodeLimit) {
-  SetBodyInnerHTML(R"HTML(
-  )HTML");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  for (int i = 1; i <= 4999; i++)
-    AppendDivElementToBody(WTF::String::Number(i), "position:fixed;left:0px");
-
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  AppendDivElementToBody(WTF::String::Number(5000));
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  // Reached limit, so stopped recording and now should have 0 texts.
-  EXPECT_FALSE(GetTextPaintTimingDetector());
 }
 
 // This is for comparison with the ClippedByViewport test.

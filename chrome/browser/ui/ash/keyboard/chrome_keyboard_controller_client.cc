@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -115,10 +115,10 @@ void ChromeKeyboardControllerClient::Shutdown() {
   if (session_manager::SessionManager::Get())
     session_manager::SessionManager::Get()->RemoveObserver(this);
   pref_change_registrar_.RemoveAll();
-  if (keyboard::KeyboardController::HasInstance()) {
+  if (keyboard::KeyboardUIController::HasInstance()) {
     // In classic Ash, keyboard::KeyboardController owns ChromeKeyboardUI which
     // accesses this class, so make sure that the UI has been destroyed.
-    keyboard::KeyboardController::Get()->Shutdown();
+    keyboard::KeyboardUIController::Get()->Shutdown();
   }
   keyboard_contents_.reset();
 }
@@ -244,7 +244,7 @@ GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {
 }
 
 aura::Window* ChromeKeyboardControllerClient::GetKeyboardWindow() const {
-  return keyboard::KeyboardController::Get()->GetKeyboardWindow();
+  return keyboard::KeyboardUIController::Get()->GetKeyboardWindow();
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardEnableFlagsChanged(

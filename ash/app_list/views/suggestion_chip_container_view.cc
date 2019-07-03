@@ -12,6 +12,8 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -25,6 +27,18 @@ namespace {
 
 // The spacing between chips.
 constexpr int kChipSpacing = 8;
+
+// Sort suggestion chip results by |display_index| value in ascending order.
+bool IndexOrdering(const SearchResult* result1, const SearchResult* result2) {
+  return result1->display_index() < result2->display_index();
+}
+
+bool IsPolicySuggestionChip(const SearchResult* result) {
+  return result->display_location() ==
+             ash::SearchResultDisplayLocation::kSuggestionChipContainer &&
+         result->display_index() !=
+             ash::SearchResultDisplayIndex::kPlacementUndefined;
+}
 
 }  // namespace
 
@@ -70,17 +84,41 @@ int SuggestionChipContainerView::DoUpdate() {
   if (IgnoreUpdateAndLayout())
     return num_results();
 
+  // Filter out priority suggestion chips with a non-default value
+  // for |display_index|.
+  auto filter_indexed_policy_chips = [](const SearchResult& r) -> bool {
+    return IsPolicySuggestionChip(&r);
+  };
+  std::vector<SearchResult*> indexed_policy_results =
+      SearchModel::FilterSearchResultsByFunction(
+          results(), base::BindRepeating(filter_indexed_policy_chips),
+          AppListConfig::instance().num_start_page_tiles());
+
+  std::sort(indexed_policy_results.begin(), indexed_policy_results.end(),
+            &IndexOrdering);
+
   // Need to filter out kArcAppShortcut since it will be confusing to users
-  // if shortcuts are displayed as suggestion chips.
+  // if shortcuts are displayed as suggestion chips. Also filter out any
+  // duplicate policy chip results.
   auto filter_reinstall_and_shortcut = [](const SearchResult& r) -> bool {
     return r.display_type() == ash::SearchResultDisplayType::kRecommendation &&
            r.result_type() != ash::SearchResultType::kPlayStoreReinstallApp &&
-           r.result_type() != ash::SearchResultType::kArcAppShortcut;
+           r.result_type() != ash::SearchResultType::kArcAppShortcut &&
+           !IsPolicySuggestionChip(&r);
   };
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByFunction(
           results(), base::BindRepeating(filter_reinstall_and_shortcut),
-          AppListConfig::instance().num_start_page_tiles());
+          AppListConfig::instance().num_start_page_tiles() -
+              indexed_policy_results.size());
+
+  // Update display results list by placing policy result chips at their
+  // specified |display_index|.
+  for (auto* result : indexed_policy_results) {
+    std::vector<SearchResult*>::iterator desired_index =
+        display_results.begin() + result->display_index();
+    display_results.emplace(desired_index, result);
+  }
 
   // Update search results here, but wait until layout to add them as child
   // views when we know this view's bounds.

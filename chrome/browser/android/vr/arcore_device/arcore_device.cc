@@ -20,7 +20,6 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
-#include "device/vr/vr_display_impl.h"
 #include "ui/display/display.h"
 
 using base::android::JavaRef;

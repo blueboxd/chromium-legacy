@@ -91,7 +91,6 @@
     [Exposed=Worker] void workerExposedMethod();
     [Exposed=Window] void windowExposedMethod();
     [Exposed=Window,RuntimeEnabled=TestFeature] void originTrialWindowExposedMethod();
-    [Exposed=Window,RuntimeEnabled=OriginTrialFeature] void originTrialWindowExposedMethod2();
 
     static void alwaysExposedStaticMethod();
     [Exposed=Worker] static void workerExposedStaticMethod();

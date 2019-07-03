@@ -118,6 +118,21 @@ void LoginTabHelper::DidFinishNavigation(
           // callback, it's safe to use base::Unretained here; the |delegate_|
           // cannot outlive its owning LoginTabHelper.
           base::Unretained(this)));
+
+  // If the challenge comes from a proxy, the URL should be hidden in the
+  // omnibox to avoid origin confusion. Call DidChangeVisibleSecurityState() to
+  // trigger the omnibox to update, picking up the result of ShouldDisplayURL().
+  if (challenge_.is_proxy) {
+    navigation_handle->GetWebContents()->DidChangeVisibleSecurityState();
+  }
+}
+
+bool LoginTabHelper::ShouldDisplayURL() const {
+  return !delegate_ || !challenge_.is_proxy;
+}
+
+bool LoginTabHelper::IsShowingPrompt() const {
+  return !!delegate_;
 }
 
 LoginTabHelper::LoginTabHelper(content::WebContents* web_contents)
@@ -128,19 +143,25 @@ void LoginTabHelper::HandleCredentials(
   delegate_.reset();
   url_for_delegate_ = GURL();
 
-  if (!credentials.has_value()) {
-    return;
+  if (credentials.has_value()) {
+    // Pass a weak pointer for the callback, as the WebContents (and thus this
+    // LoginTabHelper) could be destroyed while the network service is
+    // processing the new cache entry.
+    content::BrowserContext::GetDefaultStoragePartition(
+        web_contents()->GetBrowserContext())
+        ->GetNetworkContext()
+        ->AddAuthCacheEntry(challenge_, credentials.value(),
+                            base::BindOnce(&LoginTabHelper::Reload,
+                                           weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Pass a weak pointer for the callback, as the WebContents (and thus this
-  // LoginTabHelper) could be destroyed while the network service is processing
-  // the new cache entry.
-  content::BrowserContext::GetDefaultStoragePartition(
-      web_contents()->GetBrowserContext())
-      ->GetNetworkContext()
-      ->AddAuthCacheEntry(challenge_, credentials.value(),
-                          base::BindOnce(&LoginTabHelper::Reload,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  // Once credentials have been provided, in the case of proxy auth where the
+  // URL is hidden when the prompt is showing, trigger
+  // DidChangeVisibleSecurityState() to re-show the URL now that the prompt is
+  // gone.
+  if (challenge_.is_proxy) {
+    web_contents()->DidChangeVisibleSecurityState();
+  }
 }
 
 void LoginTabHelper::Reload() {

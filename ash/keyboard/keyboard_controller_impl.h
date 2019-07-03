@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_layout_delegate.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/session/session_observer.h"
@@ -23,7 +23,7 @@ class Rect;
 }
 
 namespace keyboard {
-class KeyboardController;
+class KeyboardUIController;
 class KeyboardUIFactory;
 }  // namespace keyboard
 
@@ -32,10 +32,9 @@ namespace ash {
 class SessionControllerImpl;
 class VirtualKeyboardController;
 
-// Contains and observes a keyboard::KeyboardController instance. Ash specific
+// Contains and observes a keyboard::KeyboardUIController instance. Ash specific
 // behavior, including implementing the public interface, is implemented in this
-// class. TODO(shend): Consider re-factoring keyboard::KeyboardController so
-// that this can inherit from that class instead.
+// class.
 class ASH_EXPORT KeyboardControllerImpl
     : public KeyboardController,
       public keyboard::KeyboardLayoutDelegate,
@@ -89,8 +88,8 @@ class ASH_EXPORT KeyboardControllerImpl
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
-  keyboard::KeyboardController* keyboard_controller() {
-    return keyboard_controller_.get();
+  keyboard::KeyboardUIController* keyboard_ui_controller() {
+    return keyboard_ui_controller_.get();
   }
 
   VirtualKeyboardController* virtual_keyboard_controller() {
@@ -113,7 +112,7 @@ class ASH_EXPORT KeyboardControllerImpl
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
   SessionControllerImpl* session_controller_;  // unowned
-  std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
+  std::unique_ptr<keyboard::KeyboardUIController> keyboard_ui_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   base::ObserverList<KeyboardControllerObserver>::Unchecked observers_;
 

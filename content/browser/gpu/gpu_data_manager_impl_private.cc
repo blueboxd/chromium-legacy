@@ -639,6 +639,12 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 #endif
       (kind == GPU_PROCESS_KIND_SANDBOXED &&
        command_line->HasSwitch(switches::kGpuStartupDialog));
+
+#if defined(OS_WIN)
+  if (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
+    gpu_preferences->disable_gpu_watchdog = true;
+  }
+#endif
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {

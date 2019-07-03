@@ -1154,8 +1154,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         }
 
         @Override
-        public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-                String iframeOrigin, byte[][] certificateChain,
+        public void getInstruments(String id, Map<String, PaymentMethodData> methodData,
+                String origin, String iframeOrigin, byte[][] certificateChain,
                 Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentsCallback instrumentsCallback) {
             mCallback = instrumentsCallback;

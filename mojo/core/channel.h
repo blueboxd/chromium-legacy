@@ -66,7 +66,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       // TODO(https://crbug.com/695645): remove legacy support when Arc++ has
       // updated to Mojo with normal versioned messages.
       NORMAL_LEGACY = 0,
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
       // A control message containing handles to echo back.
       HANDLES_SENT,
       // A control message containing handles that can now be closed.
@@ -111,27 +111,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     };
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    union MachPortsEntry {
-      // Used with ChannelPosix.
-      struct {
-        // Index of Mach port in the original vector of
-        // PlatformHandleInTransits.
-        uint16_t index;
-
-        // Mach port name.
-        uint32_t mach_port;
-      } posix_entry;
-
-      // Used with ChannelMac.
-      struct {
-        // The PlatformHandle::Type.
-        uint8_t type;
-      } mach_entry;
-      static_assert(sizeof(mach_port_t) <= sizeof(uint32_t),
-                    "mach_port_t must be no larger than uint32_t");
+    struct MachPortsEntry {
+      // The PlatformHandle::Type.
+      uint8_t type;
     };
-    static_assert(sizeof(MachPortsEntry) == 6,
-                  "sizeof(MachPortsEntry) must be 6 bytes");
+    static_assert(sizeof(MachPortsEntry) == 1,
+                  "sizeof(MachPortsEntry) must be 1 byte");
 
     // Structure of the extra header field when present on OSX.
     struct MachPortsExtraHeader {

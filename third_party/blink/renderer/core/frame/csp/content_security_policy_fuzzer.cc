@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -43,6 +44,18 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                         ? kContentSecurityPolicyHeaderSourceMeta
                         : kContentSecurityPolicyHeaderSourceOriginPolicy;
   }
+
+  // Set loader sandbox flags and install a new document so the document
+  // has all possible sandbox flags set on the document already when the
+  // CSP is bound. CSP from Meta tags sources shouldn't have sandbox flags
+  // so we set it to kNone.
+  scoped_refptr<SharedBuffer> empty_document_data = SharedBuffer::Create();
+  g_page_holder->GetFrame().Loader().ForceSandboxFlags(
+      header_source == kContentSecurityPolicyHeaderSourceMeta
+          ? WebSandboxFlags::kNone
+          : WebSandboxFlags::kAll);
+  g_page_holder->GetFrame().ForceSynchronousDocumentInstall(
+      "text/html", empty_document_data);
 
   // Construct and initialize a policy from the string.
   auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();

@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -236,7 +236,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 TEST_F(AshPopupAlignmentDelegateTest, KeyboardShowing) {
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(
-      keyboard::KeyboardController::Get()->IsKeyboardOverscrollEnabled());
+      keyboard::KeyboardUIController::Get()->IsKeyboardOverscrollEnabled());
 
   UpdateDisplay("600x600");
   int baseline = alignment_delegate()->GetBaseline();

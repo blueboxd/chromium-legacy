@@ -12,7 +12,7 @@
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/toast_data.h"
@@ -546,8 +546,8 @@ void AssistantUiController::OnEvent(const ui::Event& event) {
 
   const gfx::Rect screen_bounds =
       container_view_->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect keyboard_bounds =
-      keyboard::KeyboardController::Get()->GetWorkspaceOccludedBoundsInScreen();
+  const gfx::Rect keyboard_bounds = keyboard::KeyboardUIController::Get()
+                                        ->GetWorkspaceOccludedBoundsInScreen();
 
   // Pressed events outside our widget bounds should result in hiding of the
   // Assistant UI. The exception to this rule is if the user is interacting
@@ -598,11 +598,12 @@ void AssistantUiController::CreateContainerView() {
 
   // To save resources, only watch these events while Assistant UI exists.
   display::Screen::GetScreen()->AddObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 
   // Retrieve the current keyboard occluded bounds.
   keyboard_workspace_occluded_bounds_ =
-      keyboard::KeyboardController::Get()->GetWorkspaceOccludedBoundsInScreen();
+      keyboard::KeyboardUIController::Get()
+          ->GetWorkspaceOccludedBoundsInScreen();
 
   // Set the initial usable work area for Assistant views.
   aura::Window* root_window =
@@ -612,7 +613,7 @@ void AssistantUiController::CreateContainerView() {
 
 void AssistantUiController::ResetContainerView() {
   // Remove observers when the Assistant UI is closed.
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 
   container_view_->GetWidget()->RemoveObserver(this);

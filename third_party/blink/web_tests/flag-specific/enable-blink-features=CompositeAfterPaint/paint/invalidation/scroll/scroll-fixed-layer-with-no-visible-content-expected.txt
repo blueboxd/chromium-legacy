@@ -8,19 +8,18 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "position": [150, 100],
+      "name": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
           "rect": [0, 0, 100, 100],
           "reason": "full layer"
         }
       ],
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -40,16 +39,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [100, 150, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-150, -100, 0, 1]
       ]
     }
   ]

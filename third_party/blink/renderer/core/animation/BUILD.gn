@@ -8,6 +8,8 @@ blink_core_sources("animation") {
   split_count = 5
 
   sources = [
+    "animatable.cc",
+    "animatable.h",
     "animation.cc",
     "animation.h",
     "animation_clock.cc",
@@ -52,6 +54,8 @@ blink_core_sources("animation") {
     "css_clip_interpolation_type.h",
     "css_color_interpolation_type.cc",
     "css_color_interpolation_type.h",
+    "css_custom_length_interpolation_type.cc",
+    "css_custom_length_interpolation_type.h",
     "css_custom_list_interpolation_type.cc",
     "css_custom_list_interpolation_type.h",
     "css_default_interpolation_type.cc",
@@ -87,6 +91,8 @@ blink_core_sources("animation") {
     "css_paint_interpolation_type.h",
     "css_path_interpolation_type.cc",
     "css_path_interpolation_type.h",
+    "css_percentage_interpolation_type.cc",
+    "css_percentage_interpolation_type.h",
     "css_position_axis_list_interpolation_type.cc",
     "css_position_axis_list_interpolation_type.h",
     "css_position_interpolation_type.h",
@@ -126,8 +132,6 @@ blink_core_sources("animation") {
     "effect_model.h",
     "effect_stack.cc",
     "effect_stack.h",
-    "element_animation.cc",
-    "element_animation.h",
     "element_animations.cc",
     "element_animations.h",
     "filter_interpolation_functions.cc",

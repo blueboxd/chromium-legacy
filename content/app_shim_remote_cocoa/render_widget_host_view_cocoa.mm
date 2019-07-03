@@ -91,6 +91,8 @@ class DummyHostHelper : public RenderWidgetHostNSViewHostHelper {
 // Touch bar identifier.
 NSString* const kWebContentTouchBarId = @"web-content";
 
+constexpr int wrap_around_distance = 10000;
+
 // Whether a keyboard event has been reserved by OSX.
 BOOL EventIsReservedBySystem(NSEvent* event) {
   return content::GetSystemHotkeyMap()->IsEventReserved(event);
@@ -784,6 +786,43 @@ void ExtractUnderlines(NSAttributedString* string,
   if (!send_touch) {
     WebMouseEvent event =
         WebMouseEventBuilder::Build(theEvent, self, pointerType_);
+
+    if (mouse_locked_ &&
+        base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)) {
+      // When mouse is locked, we keep increasing |last_mouse_screen_position|
+      // by movement_x/y so that we can still use PositionInScreen to calculate
+      // movements in blink. We need to keep |last_mouse_screen_position_| from
+      // getting too large because it will lose some precision. So whenever it
+      // exceed the |wrap_around_distance|, we start again from the current
+      // mouse position (locked position), and also send a synthesized event to
+      // update the blink-side status.
+      if (std::abs(last_mouse_screen_position_.x()) > wrap_around_distance ||
+          std::abs(last_mouse_screen_position_.y()) > wrap_around_distance) {
+        NSWindow* window = [self window];
+        NSPoint location = [window mouseLocationOutsideOfEventStream];
+        int window_number = window ? [window windowNumber] : -1;
+        NSEvent* nsevent = [NSEvent mouseEventWithType:NSMouseMoved
+                                              location:location
+                                         modifierFlags:[theEvent modifierFlags]
+                                             timestamp:[theEvent timestamp]
+                                          windowNumber:window_number
+                                               context:nil
+                                           eventNumber:0
+                                            clickCount:[theEvent clickCount]
+                                              pressure:0];
+        WebMouseEvent wrap_around_event =
+            WebMouseEventBuilder::Build(nsevent, self, pointerType_);
+        last_mouse_screen_position_ = wrap_around_event.PositionInScreen();
+        wrap_around_event.SetModifiers(
+            event.GetModifiers() |
+            blink::WebInputEvent::Modifiers::kRelativeMotionEvent);
+        hostHelper_->RouteOrProcessMouseEvent(wrap_around_event);
+      }
+      event.SetPositionInScreen(
+          last_mouse_screen_position_ +
+          gfx::Vector2dF(event.movement_x, event.movement_y));
+    }
+
     last_mouse_screen_position_ = event.PositionInScreen();
     hostHelper_->RouteOrProcessMouseEvent(event);
   } else {

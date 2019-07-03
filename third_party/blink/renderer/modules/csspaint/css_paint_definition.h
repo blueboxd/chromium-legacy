@@ -54,7 +54,8 @@ class MODULES_EXPORT CSSPaintDefinition final
   sk_sp<PaintRecord> Paint(const FloatSize& container_size,
                            float zoom,
                            StylePropertyMapReadOnly*,
-                           const CSSStyleValueVector*);
+                           const CSSStyleValueVector*,
+                           float device_scale_factor);
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;
   }

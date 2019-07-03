@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 
 namespace keyboard {
 
 QueuedContainerType::QueuedContainerType(
-    KeyboardController* controller,
+    KeyboardUIController* controller,
     ContainerType container_type,
     base::Optional<gfx::Rect> bounds,
     base::OnceCallback<void(bool success)> callback)

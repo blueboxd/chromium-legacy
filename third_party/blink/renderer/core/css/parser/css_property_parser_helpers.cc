@@ -195,16 +195,18 @@ class CalcParser {
     const CSSParserToken& token = range.Peek();
     if (token.FunctionId() == CSSValueID::kCalc ||
         token.FunctionId() == CSSValueID::kWebkitCalc) {
-      calc_value_ = CSSCalcValue::Create(ConsumeFunction(range_), value_range);
+      calc_value_ = CSSMathFunctionValue::Create(
+          CSSCalcExpressionNode::ParseCalc(ConsumeFunction(range_)),
+          value_range);
     }
   }
 
-  const CSSCalcValue* Value() const { return calc_value_.Get(); }
+  const CSSMathFunctionValue* Value() const { return calc_value_; }
   CSSPrimitiveValue* ConsumeValue() {
     if (!calc_value_)
       return nullptr;
     source_range_ = range_;
-    return CSSMathFunctionValue::Create(calc_value_.Release());
+    return calc_value_.Release();
   }
 
   CSSPrimitiveValue* ConsumeRoundedInt() {
@@ -213,7 +215,7 @@ class CalcParser {
     source_range_ = range_;
     CSSPrimitiveValue::UnitType unit_type =
         CSSPrimitiveValue::UnitType::kInteger;
-    double rounded_value = floor(calc_value_->DoubleValue() + 0.5);
+    double rounded_value = floor(calc_value_->GetDoubleValue() + 0.5);
     return CSSNumericLiteralValue::Create(rounded_value, unit_type);
   }
 
@@ -224,7 +226,7 @@ class CalcParser {
     CSSPrimitiveValue::UnitType unit_type =
         calc_value_->IsInt() ? CSSPrimitiveValue::UnitType::kInteger
                              : CSSPrimitiveValue::UnitType::kNumber;
-    return CSSNumericLiteralValue::Create(calc_value_->DoubleValue(),
+    return CSSNumericLiteralValue::Create(calc_value_->GetDoubleValue(),
                                           unit_type);
   }
 
@@ -232,14 +234,14 @@ class CalcParser {
     if (!calc_value_ || calc_value_->Category() != kCalcNumber)
       return false;
     source_range_ = range_;
-    result = calc_value_->DoubleValue();
+    result = calc_value_->GetDoubleValue();
     return true;
   }
 
  private:
   CSSParserTokenRange& source_range_;
   CSSParserTokenRange range_;
-  Member<CSSCalcValue> calc_value_;
+  Member<CSSMathFunctionValue> calc_value_;
 };
 
 CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
@@ -254,12 +256,12 @@ CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
         CSSPrimitiveValue::UnitType::kInteger);
   }
   CalcParser calc_parser(range);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     if (!RuntimeEnabledFeatures::CSSCalcAsIntEnabled() && !calculation->IsInt())
       return nullptr;
     if (calculation->Category() != kCalcNumber)
       return nullptr;
-    double value = calculation->DoubleValue();
+    double value = calculation->GetDoubleValue();
     if (value < minimum_value)
       return nullptr;
     if (!RuntimeEnabledFeatures::CSSCalcAsIntEnabled())
@@ -287,7 +289,7 @@ CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(CSSParserTokenRange& range) {
     return value;
   }
   CalcParser calc_parser(range);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     if (calculation->Category() != kCalcNumber)
       return nullptr;
     return calc_parser.ConsumeValue();
@@ -319,7 +321,7 @@ CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange& range,
         range.ConsumeIncludingWhitespace().NumericValue(), token.GetUnitType());
   }
   CalcParser calc_parser(range, kValueRangeAll);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     // TODO(rwlbuis) Calcs should not be subject to parse time range checks.
     // spec: https://drafts.csswg.org/css-values-3/#calc-range
     if (calculation->Category() != kCalcNumber ||
@@ -405,7 +407,7 @@ CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange& range,
         CSSPrimitiveValue::UnitType::kPercentage);
   }
   CalcParser calc_parser(range, value_range);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     if (calculation->Category() == kCalcPercent)
       return calc_parser.ConsumeValue();
   }
@@ -438,7 +440,7 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
   if (token.GetType() == kPercentageToken)
     return ConsumePercent(range, value_range);
   CalcParser calc_parser(range, value_range);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     if (CanConsumeCalcValue(calculation->Category(), css_parser_mode))
       return calc_parser.ConsumeValue();
   }
@@ -506,7 +508,7 @@ CSSPrimitiveValue* ConsumeAngle(
         0, CSSPrimitiveValue::UnitType::kDegrees);
   }
   CalcParser calc_parser(range, kValueRangeAll);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     if (calculation->Category() != kCalcAngle)
       return nullptr;
     if (CSSPrimitiveValue* result = calc_parser.ConsumeValue()) {
@@ -548,7 +550,7 @@ CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange& range,
     return nullptr;
   }
   CalcParser calc_parser(range, value_range);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     if (calculation->Category() == kCalcTime)
       return calc_parser.ConsumeValue();
   }
@@ -1252,7 +1254,7 @@ static CSSPrimitiveValue* ConsumeGradientAngleOrPercent(
   if (token.GetType() == kPercentageToken)
     return ConsumePercent(range, value_range);
   CalcParser calc_parser(range, value_range);
-  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+  if (const CSSMathFunctionValue* calculation = calc_parser.Value()) {
     CalculationCategory category = calculation->Category();
     // TODO(fs): Add and support kCalcPercentAngle?
     if (category == kCalcAngle || category == kCalcPercent)

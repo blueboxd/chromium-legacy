@@ -8,27 +8,15 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [21, 0],
       "bounds": [12, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 12, 12],
           "reason": "paint property change"
         }
-      ],
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [11, 0, 0, 1]
       ]
     }
   ]
@@ -43,27 +31,15 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-      "position": [9, 0],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [20, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }
-      ],
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [11, 0, 0, 1]
       ]
     }
   ]
@@ -78,27 +54,15 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [20, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }
-      ],
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [10, 0, 0, 1]
       ]
     }
   ]
@@ -113,27 +77,15 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [21, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }
-      ],
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [11, 0, 0, 1]
       ]
     }
   ]
@@ -148,27 +100,15 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [20, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }
-      ],
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [10, 0, 0, 1]
       ]
     }
   ]

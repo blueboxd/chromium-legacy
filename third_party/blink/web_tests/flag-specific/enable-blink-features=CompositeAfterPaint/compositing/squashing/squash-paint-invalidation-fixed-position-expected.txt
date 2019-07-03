@@ -8,10 +8,10 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV",
-      "bounds": [100, 5000],
+      "position": [8, 8],
+      "bounds": [100, 592],
       "contentsOpaque": true,
-      "backgroundColor": "#ADD8E6",
-      "transform": 1
+      "backgroundColor": "#ADD8E6"
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV",
@@ -24,17 +24,6 @@
           "rect": [0, 25, 100, 100],
           "reason": "background"
         }
-      ]
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
       ]
     }
   ]
@@ -49,10 +38,10 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV",
-      "bounds": [100, 5000],
+      "position": [8, 8],
+      "bounds": [100, 592],
       "contentsOpaque": true,
-      "backgroundColor": "#ADD8E6",
-      "transform": 1
+      "backgroundColor": "#ADD8E6"
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV",
@@ -65,17 +54,6 @@
           "rect": [0, 25, 100, 100],
           "reason": "background"
         }
-      ]
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
       ]
     }
   ]

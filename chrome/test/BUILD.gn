@@ -1390,6 +1390,12 @@ if (!is_android) {
           [ "../browser/ssl/captive_portal_blocking_page_browsertest.cc" ]
     }
 
+    if (!is_android) {
+      sources += [
+        "../browser/external_protocol/external_protocol_handler_browsertest.cc",
+      ]
+    }
+
     if (enable_dice_support) {
       sources += [
         "../browser/signin/dice_browsertest.cc",
@@ -2204,7 +2210,6 @@ if (!is_android) {
         "base/interactive_test_utils.h",
         "base/interactive_test_utils_aura.cc",
         "base/interactive_test_utils_aura.h",
-        "base/interactive_test_utils_common_views.cc",
         "base/interactive_test_utils_views.cc",
       ]
       if (enable_cros_assistant) {
@@ -5111,7 +5116,7 @@ if (!is_android) {
         "base/interactive_test_utils.h",
         "base/interactive_test_utils_aura.cc",
         "base/interactive_test_utils_aura.h",
-        "base/interactive_test_utils_common_views.cc",
+        "base/interactive_test_utils_views.cc",
         "base/interactive_ui_tests_main.cc",
       ]
       configs += [ "//build/config:precompiled_headers" ]
@@ -5241,8 +5246,8 @@ if (!is_android) {
       "base/interactive_test_utils.h",
       "base/interactive_test_utils_aura.cc",
       "base/interactive_test_utils_aura.h",
-      "base/interactive_test_utils_common_views.cc",
       "base/interactive_test_utils_mac.mm",
+      "base/interactive_test_utils_views.cc",
       "base/interactive_test_utils_win.cc",
       "base/interactive_ui_tests_main.cc",
       "base/save_desktop_snapshot_win.cc",
@@ -5402,7 +5407,6 @@ if (!is_android) {
         "../browser/ui/views/toolbar/toolbar_button_interactive_uitest.cc",
         "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
-        "base/interactive_test_utils_views.cc",
       ]
       deps += [
         "//ui/views",
@@ -6027,8 +6031,8 @@ if (!is_android && !is_fuchsia) {
       "../browser/password_manager/password_manager_test_base.h",
       "base/interactive_test_utils.cc",
       "base/interactive_test_utils.h",
-      "base/interactive_test_utils_common_views.cc",
       "base/interactive_test_utils_mac.mm",
+      "base/interactive_test_utils_views.cc",
       "base/interactive_test_utils_win.cc",
       "base/interactive_ui_tests_main.cc",
       "base/window_contents_as_string_win.cc",

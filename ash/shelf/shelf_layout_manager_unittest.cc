@@ -17,8 +17,8 @@
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
@@ -3157,7 +3157,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfNotMoveOnKeyboardOpen) {
 
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
-  auto* kb_controller = keyboard::KeyboardController::Get();
+  auto* kb_controller = keyboard::KeyboardUIController::Get();
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   NotifyKeyboardChanging(layout_manager, false, keyboard_bounds());
@@ -3172,7 +3172,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
        ShelfIgnoreWorkAreaChangeInNonStickyMode) {
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
-  auto* kb_controller = keyboard::KeyboardController::Get();
+  auto* kb_controller = keyboard::KeyboardUIController::Get();
   gfx::Rect orig_work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
@@ -3194,7 +3194,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
 TEST_F(ShelfLayoutManagerKeyboardTest, ShelfShouldChangeWorkAreaInStickyMode) {
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
-  auto* kb_controller = keyboard::KeyboardController::Get();
+  auto* kb_controller = keyboard::KeyboardUIController::Get();
   gfx::Rect orig_work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 

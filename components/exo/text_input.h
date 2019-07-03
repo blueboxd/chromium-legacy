@@ -18,7 +18,7 @@ class InputMethod;
 }
 
 namespace keyboard {
-class KeyboardController;
+class KeyboardUIController;
 }
 
 namespace exo {
@@ -147,7 +147,7 @@ class TextInput : public ui::TextInputClient,
   void DetachInputMethod();
 
   std::unique_ptr<Delegate> delegate_;
-  keyboard::KeyboardController* keyboard_controller_ = nullptr;
+  keyboard::KeyboardUIController* keyboard_ui_controller_ = nullptr;
 
   bool pending_vk_visible_ = false;
   aura::Window* window_ = nullptr;

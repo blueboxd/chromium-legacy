@@ -161,6 +161,39 @@ class AppSearchProviderTest : public AppListTestBase {
     return result_str;
   }
 
+  // Used for testing Continue Reading. Because the result is placed in the
+  // container based on index flags instead of relevance, use this methodology
+  // to generate list of test results.
+  std::string RunQueryNotSortingByRelevance(const std::string& query) {
+    app_search_->Start(base::UTF8ToUTF16(query));
+
+    std::vector<ChromeSearchResult*> non_relevance_results;
+    std::vector<ChromeSearchResult*> priority_results;
+    for (const auto& result : app_search_->results()) {
+      if (result->display_index() == ash::kFirstIndex &&
+          result->display_location() == ash::kSuggestionChipContainer) {
+        priority_results.emplace_back(result.get());
+      } else {
+        non_relevance_results.emplace_back(result.get());
+      }
+    }
+
+    if (priority_results.size() != 0) {
+      non_relevance_results.insert(non_relevance_results.begin(),
+                                   priority_results.begin(),
+                                   priority_results.end());
+    }
+
+    std::string result_str;
+    for (auto* result : non_relevance_results) {
+      if (!result_str.empty())
+        result_str += ',';
+
+      result_str += base::UTF16ToUTF8(result->title());
+    }
+    return result_str;
+  }
+
   std::string AddArcApp(const std::string& name,
                         const std::string& package,
                         const std::string& activity) {
@@ -466,7 +499,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_PHONE;
 
     EXPECT_EQ("title2,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 2: test that ContinueReading is not recommended for local session.
@@ -491,7 +524,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_PHONE;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 3: test that ContinueReading is not recommended for foreign tab more
@@ -517,7 +550,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_PHONE;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 4: test that ContinueReading is recommended for foreign tab with
@@ -543,7 +576,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_TABLET;
 
     EXPECT_EQ("title1,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 5: test that ContinueReading is not recommended for foreign tab with
@@ -569,7 +602,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_CROS;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 6: test that ContinueReading is not recommended for foreign tab which
@@ -595,7 +628,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_CROS;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 7: test that ContinueReading is not recommended when searching.
@@ -618,7 +651,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->device_type =
         sync_pb::SyncEnums::TYPE_PHONE;
-    EXPECT_EQ("Settings", RunQuery("ti"));
+    EXPECT_EQ("Settings", RunQueryNotSortingByRelevance("ti"));
   }
 }
 

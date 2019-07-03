@@ -8,7 +8,7 @@
 #include <set>
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/common/ime.mojom.h"
@@ -184,7 +184,7 @@ class ArcImeServiceTest : public testing::Test {
   std::unique_ptr<aura::Window> arc_win_;
 
   // Needed by ArcImeService.
-  keyboard::KeyboardController keyboard_controller_;
+  keyboard::KeyboardUIController keyboard_ui_controller_;
 
  private:
   void SetUp() override {

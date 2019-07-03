@@ -21,6 +21,10 @@
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "crypto/ec_private_key.h"
 
+#if defined(ANDROID_OS)
+#include "chrome/android/chrome_jni_headers/SharingJNIBridge_jni.h"
+#endif
+
 SharingDeviceRegistration::SharingDeviceRegistration(
     SharingSyncPreference* sharing_sync_preference,
     instance_id::InstanceIDDriver* instance_id_driver,
@@ -98,5 +102,18 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
 
 int SharingDeviceRegistration::GetDeviceCapabilities() const {
   int device_capabilities = static_cast<int>(SharingDeviceCapability::kNone);
+  if (IsTelephonySupported()) {
+    device_capabilities |=
+        static_cast<int>(SharingDeviceCapability::kTelephony);
+  }
   return device_capabilities;
+}
+
+bool SharingDeviceRegistration::IsTelephonySupported() const {
+#if defined(ANDROID_OS)
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_SharingJNIBridge_isTelephonySupported(env);
+#endif
+
+  return false;
 }

@@ -8,7 +8,7 @@
 #include <tuple>
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/metrics/pip_uma.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -504,7 +504,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
 TEST_P(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
   PreparePipWindow(gfx::Rect(200, 200, 75, 75));
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
                                         gfx::Rect(0, 0, 1, 1),
                                         base::DoNothing());

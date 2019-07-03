@@ -40,6 +40,12 @@ class AutofillCounterTest : public InProcessBrowserTest {
     SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   }
 
+  void TearDownOnMainThread() override {
+    // Release our ref to let browser tear down of services complete in the same
+    // order as usual.
+    web_data_service_ = nullptr;
+  }
+
   // Autocomplete suggestions --------------------------------------------------
 
   void AddAutocompleteSuggestion(const std::string& name,

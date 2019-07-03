@@ -21,7 +21,7 @@ public class TabManagementModuleProvider {
     public static @Nullable TabManagementDelegate getDelegate() {
         if (!TabManagementModule.isInstalled()) {
             TabManagementModule.installDeferred();
-            if (ChromeFeatureList.isInitialized()) {
+            if (UmaSessionStats.isMetricsServiceAvailable()) {
                 UmaSessionStats.registerSyntheticFieldTrial(
                         ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
                         "DownloadAttempted");
@@ -31,7 +31,7 @@ public class TabManagementModuleProvider {
             }
             return null;
         }
-        if (ChromeFeatureList.isInitialized()) {
+        if (UmaSessionStats.isMetricsServiceAvailable()) {
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)) {
                 UmaSessionStats.registerSyntheticFieldTrial(
                         ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,

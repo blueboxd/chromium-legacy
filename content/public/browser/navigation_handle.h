@@ -266,7 +266,7 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns the SSLInfo for a request that succeeded or failed due to a
   // certificate error. In the case of other request failures or of a non-secure
   // scheme, returns an empty object.
-  virtual const base::Optional<net::SSLInfo> GetSSLInfo() = 0;
+  virtual const base::Optional<net::SSLInfo>& GetSSLInfo() = 0;
 
   // Returns the AuthChallengeInfo for the request, if the response contained an
   // authentication challenge.

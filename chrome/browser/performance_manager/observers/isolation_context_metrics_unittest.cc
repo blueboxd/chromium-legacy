@@ -77,16 +77,15 @@ class IsolationContextMetricsTest : public GraphTestHarness {
   static constexpr int32_t kSID3 = 3;
 
   void SetUp() override {
-    metrics_ = std::make_unique<TestIsolationContextMetrics>();
+    metrics_ = new TestIsolationContextMetrics();
     PerformanceManagerClock::SetClockForTesting(task_env().GetMockTickClock());
 
     // Sets a valid starting time.
     task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
-    graph()->RegisterObserver(metrics_.get());
+    graph()->PassToGraph(base::WrapUnique(metrics_));
   }
 
   void TearDown() override {
-    graph()->UnregisterObserver(metrics_.get());
     PerformanceManagerClock::ResetClockForTesting();
   }
 
@@ -128,7 +127,7 @@ class IsolationContextMetricsTest : public GraphTestHarness {
   }
 
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<TestIsolationContextMetrics> metrics_;
+  TestIsolationContextMetrics* metrics_;
 };
 
 // static

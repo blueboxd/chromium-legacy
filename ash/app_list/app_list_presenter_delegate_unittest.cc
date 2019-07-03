@@ -20,7 +20,7 @@
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -393,7 +393,7 @@ TEST_F(PopulatedAppListWithVKEnabledTest,
                                ui::GestureEventDetails(ui::ET_GESTURE_TAP));
 
   // Manually show the virtual keyboard.
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(true /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
@@ -2037,7 +2037,7 @@ TEST_P(AppListPresenterDelegateVirtualKeyboardTest,
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
 
   // Manually show the virtual keyboard.
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(true);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 

@@ -46,10 +46,6 @@ const int kDefaultAudioReadyForPlaybackThresholdMs = 70;
 const int64_t kCommsInputQueueMs = 200;
 const int64_t kCommsStartThresholdMs = 150;
 
-// Maximum amount that we can be late for starting playback (if a start time
-// is specified).
-constexpr base::TimeDelta kMaxStartDelay = base::TimeDelta::FromSeconds(5);
-
 std::string AudioContentTypeToString(media::AudioContentType type) {
   switch (type) {
     case media::AudioContentType::kAlarm:
@@ -346,6 +342,10 @@ void BufferingMixerSource::SetPaused(bool paused) {
   LOG(INFO) << (paused ? "Pausing " : "Unpausing ") << device_id_ << " ("
             << this << ")";
   auto locked = locked_members_.Lock();
+  // Clear start timestamp, since a pause should invalidate the start timestamp
+  // anyway. The AV sync code can restart (hard correction) on resume if
+  // needed.
+  locked->playback_start_timestamp_ = INT64_MIN;
   locked->mixer_rendering_delay_ = RenderingDelay();
   locked->paused_ = paused;
 }
@@ -437,14 +437,6 @@ void BufferingMixerSource::CheckAndStartPlaybackIfNecessary(
     locked->started_ = (locked->queued_frames_ >= start_threshold_frames_ &&
                         locked->queued_frames_ >=
                             locked->fader_.FramesNeededFromSource(num_frames));
-
-    // Error out if we have taken too long to start.
-    if (!locked->started_ &&
-        playback_absolute_timestamp - locked->playback_start_timestamp_ >
-            kMaxStartDelay.InMicroseconds()) {
-      LOG(ERROR) << "Took too long to start playing";
-      POST_TASK_TO_CALLER_THREAD(PostError, MixerError::kInternalError);
-    }
 
     if (locked->started_) {
       int64_t start_pts = locked->queue_.front()->timestamp() +

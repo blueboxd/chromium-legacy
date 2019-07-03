@@ -18,7 +18,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -26,6 +25,7 @@
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 #include "components/signin/internal/identity_manager/primary_account_mutator_impl.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
@@ -170,7 +170,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 }
 
 // static
-std::unique_ptr<IdentityManagerWrapper>
+std::unique_ptr<IdentityManager>
 IdentityTestEnvironment::BuildIdentityManagerForTests(
     SigninClient* signin_client,
     PrefService* pref_service,
@@ -235,7 +235,7 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
   auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
       gaia_cookie_manager_service.get(), account_tracker_service.get());
 
-  return std::make_unique<IdentityManagerWrapper>(
+  return std::make_unique<IdentityManager>(
       std::move(account_tracker_service), std::move(token_service),
       std::move(gaia_cookie_manager_service),
       std::move(primary_account_manager), std::move(account_fetcher_service),

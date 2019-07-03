@@ -4,7 +4,7 @@
 
 #include "components/exo/keyboard.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/app_types.h"
 #include "base/bind.h"
@@ -123,8 +123,8 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
 bool IsVirtualKeyboardEnabled() {
   return keyboard::GetAccessibilityKeyboardEnabled() ||
          keyboard::GetTouchKeyboardEnabled() ||
-         (keyboard::KeyboardController::HasInstance() &&
-          keyboard::KeyboardController::Get()->IsEnableFlagSet(
+         (keyboard::KeyboardUIController::HasInstance() &&
+          keyboard::KeyboardUIController::Get()->IsEnableFlagSet(
               keyboard::KeyboardEnableFlag::kCommandLineEnabled));
 }
 
@@ -170,7 +170,7 @@ Keyboard::Keyboard(KeyboardDelegate* delegate, Seat* seat)
       weak_ptr_factory_(this) {
   AddEventHandler();
   seat_->AddObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
   OnSurfaceFocused(seat_->GetFocusedSurface());
 }
 
@@ -181,7 +181,7 @@ Keyboard::~Keyboard() {
     focus_->RemoveSurfaceObserver(this);
   RemoveEventHandler();
   seat_->RemoveObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
 }
 
 bool Keyboard::HasDeviceConfigurationDelegate() const {

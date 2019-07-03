@@ -5598,11 +5598,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-// Test for https://crbug.com/515302.  Perform two navigations, A->B->A, and
-// drop the SwapOut ACK from the A->B navigation, so that the second B->A
-// navigation is initiated before the first page receives the SwapOut ACK.
-// Ensure that this doesn't crash and that the RVH(A) is not reused in that
-// case.
+// Test for https://crbug.com/515302. Perform two navigations, A1 -> B2 -> A3,
+// and drop the SwapOut ACK from the A1 -> B2 navigation, so that the second
+// B2 -> A3 navigation is initiated before the first page receives the SwapOut
+// ACK. Ensure that this doesn't crash and that the RVH(A1) is not reused in
+// that case.
 #if defined(OS_MACOSX)
 #define MAYBE_RenderViewHostIsNotReusedAfterDelayedSwapOutACK \
   DISABLED_RenderViewHostIsNotReusedAfterDelayedSwapOutACK
@@ -5662,7 +5662,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
   RenderViewHostImpl* pending_rvh =
       root->render_manager()->speculative_frame_host()->render_view_host();
-  EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
+
+  // When ProactivelySwapBrowsingInstance A1 and A3 aren't using the same
+  // BrowsingInstance.
+  if (IsProactivelySwapBrowsingInstanceEnabled())
+    EXPECT_NE(site_instance, pending_rvh->GetSiteInstance());
+  else
+    EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
+
   EXPECT_FALSE(rvh_routing_id == pending_rvh->GetRoutingID() &&
                rvh_process_id == pending_rvh->GetProcess()->GetID());
 
@@ -7419,6 +7426,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   WebContentsImpl* contents = web_contents();
   FrameTreeNode* root = contents->GetFrameTree()->root();
   EXPECT_EQ(1U, root->child_count());
+
+  // The test expect the BrowsingInstance to be kept across cross-site main
+  // frame navigations. ProactivelySwapBrowsingInstance will provide a new one.
+  // To prevent this, a popup is opened.
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    GURL popup_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(OpenPopup(root, popup_url, "foo"));
+  }
 
   // Ensure the RenderViewHost for the SiteInstance of the child is considered
   // in swapped out state.
@@ -10071,24 +10086,30 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* root_speculative_rfh =
       root->render_manager()->speculative_frame_host();
   EXPECT_TRUE(root_speculative_rfh);
-  scoped_refptr<SiteInstanceImpl> b_site_instance(
+  scoped_refptr<SiteInstanceImpl> b_root_site_instance(
       root_speculative_rfh->GetSiteInstance());
 
   // There should now be a live b.com proxy for the root, since it is doing a
   // cross-process navigation.
   RenderFrameProxyHost* root_proxy =
-      root->render_manager()->GetRenderFrameProxyHost(b_site_instance.get());
+      root->render_manager()->GetRenderFrameProxyHost(
+          b_root_site_instance.get());
   EXPECT_TRUE(root_proxy);
   EXPECT_TRUE(root_proxy->is_render_frame_proxy_live());
 
   // Wait for subframe request, but don't commit it yet.
   ASSERT_TRUE(manager2.WaitForRequestStart());
+  RenderFrameHostImpl* subframe_speculative_rfh =
+      child->render_manager()->speculative_frame_host();
   EXPECT_TRUE(child->render_manager()->speculative_frame_host());
+  scoped_refptr<SiteInstanceImpl> b_subframe_site_instance(
+      subframe_speculative_rfh->GetSiteInstance());
 
   // Similarly, the subframe should also have a b.com proxy (unused in this
   // test), since it is also doing a cross-process navigation.
   RenderFrameProxyHost* child_proxy =
-      child->render_manager()->GetRenderFrameProxyHost(b_site_instance.get());
+      child->render_manager()->GetRenderFrameProxyHost(
+          b_subframe_site_instance.get());
   EXPECT_TRUE(child_proxy);
   EXPECT_TRUE(child_proxy->is_render_frame_proxy_live());
 
@@ -10096,7 +10117,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   manager1.WaitForNavigationFinished();
 
   // Make sure the process is live and at the new URL.
-  EXPECT_TRUE(b_site_instance->GetProcess()->IsInitializedAndNotDead());
+  EXPECT_TRUE(b_root_site_instance->GetProcess()->IsInitializedAndNotDead());
   EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
   EXPECT_EQ(root_speculative_rfh, root->current_frame_host());
   EXPECT_EQ(new_url_1, root->current_frame_host()->GetLastCommittedURL());
@@ -10113,8 +10134,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(0, length);
 
   // The root proxy should be gone.
-  EXPECT_FALSE(
-      root->render_manager()->GetRenderFrameProxyHost(b_site_instance.get()));
+  EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(
+      b_subframe_site_instance.get()));
 }
 
 // Similar to TwoCrossSitePendingNavigationsAndMainFrameWins, but checks the
@@ -10173,16 +10194,30 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scoped_refptr<SiteInstanceImpl> b_site_instance(
       child_speculative_rfh->GetSiteInstance());
 
-  // Check that all frames have proxies for b.com at this point.  The proxy for
+  // Check that all frames have proxies for b.com at this point. The proxy for
   // |child2| is important to create since |child| has to use it to communicate
   // with |child2| if |child| commits first.
-  EXPECT_EQ(
-      " Site A (B speculative) -- proxies for B\n"
-      "   |--Site A (B speculative) -- proxies for B\n"
-      "   +--Site A ------- proxies for B\n"
-      "Where A = http://a.com/\n"
-      "      B = http://b.com/",
-      DepictFrameTree(root));
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    // With ProactivelySwapBrowsingInstance, the new main document and the new
+    // iframe don't have the same SiteInstance, because they belong to two
+    // unrelated pages. The two page use different BrowsingInstances.
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B C\n"
+        "   |--Site A (C speculative) -- proxies for C\n"
+        "   +--Site A ------- proxies for C\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/\n"
+        "      C = http://b.com/",
+        DepictFrameTree(root));
+  } else {
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B\n"
+        "   |--Site A (B speculative) -- proxies for B\n"
+        "   +--Site A ------- proxies for B\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/",
+        DepictFrameTree(root));
+  }
 
   // Now let the subframe commit.
   manager2.WaitForNavigationFinished();
@@ -10195,13 +10230,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(new_url_2, child->current_frame_host()->GetLastCommittedURL());
 
   // Recheck the proxies.  Main frame should still be pending.
-  EXPECT_EQ(
-      " Site A (B speculative) -- proxies for B\n"
-      "   |--Site B ------- proxies for A\n"
-      "   +--Site A ------- proxies for B\n"
-      "Where A = http://a.com/\n"
-      "      B = http://b.com/",
-      DepictFrameTree(root));
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B C\n"
+        "   |--Site C ------- proxies for A\n"
+        "   +--Site A ------- proxies for C\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/\n"
+        "      C = http://b.com/",
+        DepictFrameTree(root));
+  } else {
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B\n"
+        "   |--Site B ------- proxies for A\n"
+        "   +--Site A ------- proxies for B\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/",
+        DepictFrameTree(root));
+  }
 
   // Make sure the subframe can communicate to both the root remote frame
   // (where the postMessage should go to the current RenderFrameHost rather

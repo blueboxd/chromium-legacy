@@ -11,8 +11,8 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -1748,7 +1748,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
        IgnoreWorkAreaChangeinNonStickyMode) {
   keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
-  auto* kb_controller = keyboard::KeyboardController::Get();
+  auto* kb_controller = keyboard::KeyboardUIController::Get();
 
   gfx::Rect work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
@@ -1945,7 +1945,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
 // change event.
 TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
        SystemUiAreaChangeOnVirtualKeyboardVisibilityChange) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   EXPECT_EQ(0, test_state()->num_system_ui_area_changes());
 
   keyboard_controller->ShowKeyboard(/*lock=*/true);
@@ -1961,7 +1961,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
 // change event.
 TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
        SystemUiAreaChangeOnVirtualKeyboardSizeChange) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   EXPECT_EQ(0, test_state()->num_system_ui_area_changes());
 
   keyboard_controller->ShowKeyboard(/*lock=*/true);
@@ -1979,7 +1979,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
 // change event.
 TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
        SystemUiAreaChangeOnVirtualKeyboardContainerTypeChange) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   EXPECT_EQ(0, test_state()->num_system_ui_area_changes());
 
   keyboard_controller->ShowKeyboard(/*lock=*/true);

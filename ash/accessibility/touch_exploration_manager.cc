@@ -10,7 +10,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/touch_exploration_controller.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/root_window_controller.h"
@@ -43,7 +43,7 @@ TouchExplorationManager::TouchExplorationManager(
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   UpdateTouchExplorationState();
 }
@@ -53,7 +53,7 @@ TouchExplorationManager::~TouchExplorationManager() {
   if (Shell::Get()->accessibility_controller())
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   if (observing_window_)
@@ -226,7 +226,7 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
     }
 
     // Virtual keyboard.
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
     if (keyboard_controller->IsEnabled()) {
       touch_exploration_controller_->SetLiftActivationBounds(
           keyboard_controller->GetVisualBoundsInScreen());

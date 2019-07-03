@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -79,7 +79,7 @@ class LockLayoutManagerTest : public AshTestBase {
 
   // Show or hide the keyboard.
   void ShowKeyboard(bool show) {
-    auto* keyboard = keyboard::KeyboardController::Get();
+    auto* keyboard = keyboard::KeyboardUIController::Get();
     ASSERT_TRUE(keyboard->IsEnabled());
     if (show == keyboard->IsKeyboardVisible())
       return;
@@ -96,9 +96,9 @@ class LockLayoutManagerTest : public AshTestBase {
 
   void SetKeyboardOverscrollBehavior(
       keyboard::KeyboardOverscrollBehavior overscroll_behavior) {
-    auto config = keyboard::KeyboardController::Get()->keyboard_config();
+    auto config = keyboard::KeyboardUIController::Get()->keyboard_config();
     config.overscroll_behavior = overscroll_behavior;
-    keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+    keyboard::KeyboardUIController::Get()->UpdateKeyboardConfig(config);
   }
 };
 
@@ -229,7 +229,8 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
 
   // When virtual keyboard overscroll is enabled keyboard bounds should not
   // affect window bounds.
-  keyboard::KeyboardController* keyboard = keyboard::KeyboardController::Get();
+  keyboard::KeyboardUIController* keyboard =
+      keyboard::KeyboardUIController::Get();
   SetKeyboardOverscrollBehavior(keyboard::KeyboardOverscrollBehavior::kEnabled);
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());

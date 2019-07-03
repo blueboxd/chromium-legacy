@@ -488,9 +488,8 @@ viz_source_set("unit_tests") {
 
     # TODO(samans): Support more configurations.
     # CFI issue: https://crbug.com/967819
-    # x86 issue: https://crbug.com/967831
     # LSAN issue: https://crbug.com/971357
-    if (use_x11 && target_cpu != "x86" && !is_cfi && !is_lsan) {
+    if (use_x11 && !is_cfi && !is_lsan) {
       defines = [ "ENABLE_VIZ_VULKAN_TESTS" ]
     }
   }

@@ -6,7 +6,7 @@
 <org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:tabIndicatorHeight="@dimen/divider_height"
+    app:tabIndicatorHeight="0dp"
     app:tabTextColor="@color/default_icon_color"
     app:tabMaxWidth="@dimen/keyboard_accessory_tab_icon_width"
     app:tabPaddingStart="@dimen/keyboard_accessory_bar_item_padding"

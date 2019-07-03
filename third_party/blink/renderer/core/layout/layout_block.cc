@@ -1046,19 +1046,12 @@ void LayoutBlock::ImageChanged(WrappedImagePtr image,
   if (!StyleRef().HasPseudoStyle(kPseudoIdFirstLine))
     return;
 
-  // ImageChanged() is also called when we add image observers. Don't use
-  // FirstLineStyleRef() here because it will update the first line style cache
-  // too early. We should just access the current cached style and bail out if
-  // it's not ready (and we'll update pending image observer when the cache is
-  // updated).
-  const auto* cached_first_line_style =
-      StyleRef().GetCachedPseudoStyle(kPseudoIdFirstLine);
-  if (!cached_first_line_style)
+  const auto* first_line_style = FirstLineStyleWithoutFallback();
+  if (!first_line_style)
     return;
-
   if (auto* first_line_container = NearestInnerBlockWithFirstLine()) {
-    for (const auto* layer = &cached_first_line_style->BackgroundLayers();
-         layer; layer = layer->Next()) {
+    for (const auto* layer = &first_line_style->BackgroundLayers(); layer;
+         layer = layer->Next()) {
       if (layer->GetImage() && image == layer->GetImage()->Data()) {
         first_line_container->SetShouldDoFullPaintInvalidationForFirstLine();
         break;

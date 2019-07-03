@@ -12,6 +12,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
@@ -1022,7 +1023,15 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
         page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 2);
 }
 
-TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMACoinFlipHoldback) {
+// TODO(crbug.com/981058): Re-enable this test on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_TestPageEndReasonUMACoinFlipHoldback \
+  DISABLED_TestPageEndReasonUMACoinFlipHoldback
+#else
+#define MAYBE_TestPageEndReasonUMACoinFlipHoldback \
+  TestPageEndReasonUMACoinFlipHoldback
+#endif
+TEST_F(PreviewsUKMObserverTest, MAYBE_TestPageEndReasonUMACoinFlipHoldback) {
   base::HistogramTester tester;
 
   // No preview:

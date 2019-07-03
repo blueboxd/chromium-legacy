@@ -15,9 +15,13 @@ namespace performance_manager {
 
 class GraphObserver;
 class GraphOwned;
+class FrameNode;
 class FrameNodeObserver;
+class PageNode;
 class PageNodeObserver;
+class ProcessNode;
 class ProcessNodeObserver;
+class SystemNode;
 class SystemNodeObserver;
 
 // Represents a graph of the nodes representing a single browser. Maintains a
@@ -59,6 +63,12 @@ class Graph {
     return base::WrapUnique(
         static_cast<DerivedType*>(TakeFromGraph(graph_owned).release()));
   }
+
+  // Returns a collection of all known nodes of the given type.
+  virtual const SystemNode* FindOrCreateSystemNode() = 0;
+  virtual std::vector<const FrameNode*> GetAllFrameNodes() const = 0;
+  virtual std::vector<const PageNode*> GetAllPageNodes() const = 0;
+  virtual std::vector<const ProcessNode*> GetAllProcessNodes() const = 0;
 
   // The following functions are implementation detail and should not need to be
   // used by external clients. They provide the ability to safely downcast to

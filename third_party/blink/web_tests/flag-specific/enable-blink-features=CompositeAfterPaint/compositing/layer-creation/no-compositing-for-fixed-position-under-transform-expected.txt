@@ -8,22 +8,11 @@ TEST
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV class='transform'",
+      "name": "LayoutNGBlockFlow DIV class='transform'",
+      "position": [8, 8],
       "bounds": [100, 30],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
+      "backgroundColor": "#0000FF"
     }
   ]
 }

@@ -77,7 +77,9 @@ class MockNavigationHandle : public NavigationHandle {
     return response_headers_.get();
   }
   MOCK_METHOD0(GetConnectionInfo, net::HttpResponseInfo::ConnectionInfo());
-  const base::Optional<net::SSLInfo> GetSSLInfo() override { return ssl_info_; }
+  const base::Optional<net::SSLInfo>& GetSSLInfo() override {
+    return ssl_info_;
+  }
   const base::Optional<net::AuthChallengeInfo>& GetAuthChallengeInfo()
       override {
     return auth_challenge_info_;

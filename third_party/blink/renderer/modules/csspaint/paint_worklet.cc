@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_messaging_proxy.h"
@@ -119,14 +120,26 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   const LayoutObject& layout_object =
       static_cast<const LayoutObject&>(observer);
   float zoom = layout_object.StyleRef().EffectiveZoom();
+
+  // TODO(crbug.com/716231): Remove this hack once zoom_for_dsf is enabled on
+  // all platforms (currently not enabled on Mac).
+  float device_scale_factor = 1;
+  if (layout_object.GetFrame() && layout_object.GetFrame()->GetPage()) {
+    // The value of DeviceScaleFactorDeprecated would be 1 on a platform where
+    // zoom_for_dsf is enabled, even if we run chrome with
+    // --force-device-scale-factor with a value that is not 1.
+    device_scale_factor =
+        layout_object.GetFrame()->GetPage()->DeviceScaleFactorDeprecated();
+  }
+
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_object.GetDocument(), layout_object.StyleRef(),
           layout_object.GetNode(),
           paint_definition->NativeInvalidationProperties(),
           paint_definition->CustomInvalidationProperties());
-  sk_sp<PaintRecord> paint_record =
-      paint_definition->Paint(container_size, zoom, style_map, data);
+  sk_sp<PaintRecord> paint_record = paint_definition->Paint(
+      container_size, zoom, style_map, data, device_scale_factor);
   if (!paint_record)
     return nullptr;
   return PaintGeneratedImage::Create(paint_record, container_size);

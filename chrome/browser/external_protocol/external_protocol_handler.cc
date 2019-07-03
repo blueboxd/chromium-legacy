@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -22,6 +23,11 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
 
 namespace {
 
@@ -103,6 +109,20 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
 
   platform_util::OpenExternal(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
+
+#if !defined(OS_ANDROID)
+  // If the protocol navigation occurs in a new tab, close it.
+  // Avoid calling CloseContents if the tab is not in this browser's tab strip
+  // model; this can happen if the protocol was initiated by something
+  // internal to Chrome.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser && web_contents->GetController().IsInitialNavigation() &&
+      browser->tab_strip_model()->count() > 1 &&
+      browser->tab_strip_model()->GetIndexOfWebContents(web_contents) !=
+          TabStripModel::kNoTab) {
+    web_contents->Close();
+  }
+#endif
 }
 
 // When we are about to launch a URL with the default OS level application, we

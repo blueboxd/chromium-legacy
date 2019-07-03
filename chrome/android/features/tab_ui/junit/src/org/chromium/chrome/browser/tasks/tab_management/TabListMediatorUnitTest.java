@@ -634,7 +634,9 @@ public class TabListMediatorUnitTest {
         // Setup the mediator with a DialogHandler.
         mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
-                true, null, null, null, mTabGridDialogHandler, getClass().getSimpleName());
+                false, null, null, null, mTabGridDialogHandler, getClass().getSimpleName());
+        // Assume that filter is already updated.
+        doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION1);
 
         assertThat(mModel.size(), equalTo(2));
         assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB1_ID));
@@ -647,6 +649,31 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.size(), equalTo(1));
         assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
         assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+        verify(mTabGridDialogHandler).updateDialogContent(TAB2_ID);
+    }
+
+    @Test
+    public void tabMoveOutOfGroup_Strip() {
+        setUpForTabGroupOperation();
+
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
+                mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
+                false, null, null, null, null, getClass().getSimpleName());
+        // Assume that filter is already updated.
+        doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION1);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB1_TITLE));
+        assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+
+        mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(mTab1, POSITION1);
+
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+        verify(mTabGridDialogHandler, never()).updateDialogContent(anyInt());
     }
 
     @Test

@@ -4,7 +4,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
 #include "ui/aura/window.h"
@@ -40,7 +40,7 @@ void KeyboardUI::KeyboardContentsLoaded(const gfx::Size& size) {
                << size.ToString();
 }
 
-void KeyboardUI::SetController(KeyboardController* controller) {
+void KeyboardUI::SetController(KeyboardUIController* controller) {
   keyboard_controller_ = controller;
 }
 

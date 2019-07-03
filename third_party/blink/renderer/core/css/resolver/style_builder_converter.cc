@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
@@ -301,10 +302,11 @@ static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
                              const FontDescription::Size& parent_size) {
   if (primitive_value.IsLength())
     return primitive_value.ComputeLength<float>(conversion_data);
-  if (primitive_value.IsCalculatedPercentageWithLength())
-    return primitive_value.CssCalcValue()
-        ->ToCalcValue(conversion_data)
+  if (primitive_value.IsCalculatedPercentageWithLength()) {
+    return To<CSSMathFunctionValue>(primitive_value)
+        .ToCalcValue(conversion_data)
         ->Evaluate(parent_size.value);
+  }
 
   NOTREACHED();
   return 0;
@@ -1111,8 +1113,8 @@ Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
     }
     if (primitive_value->IsCalculated()) {
       Length zoomed_length =
-          Length(primitive_value->CssCalcValue()->ToCalcValue(
-              LineHeightToLengthConversionData(state)));
+          Length(To<CSSMathFunctionValue>(primitive_value)
+                     ->ToCalcValue(LineHeightToLengthConversionData(state)));
       return Length::Fixed(ValueForLength(
           zoomed_length, LayoutUnit(state.Style()->ComputedFontSize())));
     }
@@ -1735,13 +1737,16 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     // an integer. Such calc()-for-integers must be rounded at computed value
     // time.
     // https://drafts.csswg.org/css-values-4/#calc-type-checking
-    if (primitive_value->IsCalculated() &&
-        (primitive_value->TypeWithCalcResolved() ==
-         CSSPrimitiveValue::UnitType::kNumber)) {
-      double double_value = primitive_value->CssCalcValue()->DoubleValue();
-      auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
-      return *CSSNumericLiteralValue::Create(std::round(double_value),
-                                             unit_type);
+    if (primitive_value->IsCalculated()) {
+      const CSSMathFunctionValue& math_value =
+          To<CSSMathFunctionValue>(*primitive_value);
+      if (math_value.TypeWithMathFunctionResolved() ==
+          CSSPrimitiveValue::UnitType::kNumber) {
+        double double_value = math_value.GetDoubleValue();
+        auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
+        return *CSSNumericLiteralValue::Create(std::round(double_value),
+                                               unit_type);
+      }
     }
 
     if (primitive_value->IsAngle()) {

@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.ViewGroup;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -82,9 +84,14 @@ public class NoTouchActivity extends SingleTabActivity {
                     // TODO(mthiesse): For now, let's just clobber current tab always. Are the other
                     // tab open types meaningful when we only have a single tab?
 
-                    // When we get a view intent, create a new tab to reset history state so that
-                    // back returns you to the sender.
-                    if (tabOpenType != TabOpenType.BRING_TAB_TO_FRONT) createAndShowTab();
+                    boolean stopped = ApplicationStatus.getStateForActivity(NoTouchActivity.this)
+                            == ActivityState.STOPPED;
+
+                    // When we get a view intent while stopped, create a new tab to reset history
+                    // state so that back returns you to the sender.
+                    if (tabOpenType != TabOpenType.BRING_TAB_TO_FRONT && stopped) {
+                        createAndShowTab();
+                    }
                     Tab currentTab = getActivityTab();
                     TabRedirectHandler.from(currentTab).updateIntent(intent);
                     int transitionType = PageTransition.LINK | PageTransition.FROM_API;

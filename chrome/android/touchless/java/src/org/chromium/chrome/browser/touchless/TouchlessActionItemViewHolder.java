@@ -59,7 +59,8 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
 
                     @Override
                     public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
-                        return menuItemId == ContextMenuItemId.LEARN_MORE;
+                        return menuItemId == ContextMenuItemId.SEARCH
+                                || menuItemId == ContextMenuItemId.LEARN_MORE;
                     }
                 });
     }

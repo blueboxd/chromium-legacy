@@ -250,6 +250,17 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // been removed
   void FlingingStarted() override;
   void FlingingStopped() override;
+
+  // Called when the play/pause state of media playing on a remote cast device
+  // changes, and WMPI wasn't the originator of that change (e.g. a phone on the
+  // same network paused the cast device via the casting notification).
+  // This is only used by the FlingingRenderer/FlingingRendererClient, when we
+  // are flinging media (a.k.a. RemotePlayback).
+  // The consistency between the WMPI state and the cast device state is not
+  // guaranteed, and it a best effort, which can always be fixed by the user by
+  // tapping play/pause once. Attempts to enfore stronger consistency guarantees
+  // have lead to unstable states, and a worse user experience.
+  void OnRemotePlayStateChange(MediaStatus::State state);
 #endif
 
   // MediaObserverClient implementation.
@@ -338,7 +349,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVideoAverageKeyframeDistanceUpdate() override;
   void OnAudioDecoderChange(const std::string& name) override;
   void OnVideoDecoderChange(const std::string& name) override;
-  void OnRemotePlayStateChange(MediaStatus::State state) override;
 
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.

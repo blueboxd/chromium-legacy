@@ -254,10 +254,10 @@ class WaylandWindow : public PlatformWindow,
   int32_t buffer_scale_ = 1;
 
   // Stores current states of the window.
-  ui::PlatformWindowState state_;
+  PlatformWindowState state_;
   // Stores a pending state of the window, which is used before the surface is
   // activated.
-  ui::PlatformWindowState pending_state_;
+  PlatformWindowState pending_state_;
 
   // Stores current opacity of the window. Set on ::Initialize call.
   ui::PlatformWindowOpacity opacity_;

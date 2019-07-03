@@ -66,7 +66,7 @@ public class TabGroupUiCoordinator
     @Override
     public void initializeWithNative(ChromeActivity activity,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController) {
-        if (ChromeFeatureList.isInitialized()) {
+        if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GROUPS_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
                     "Downloaded_Enabled");

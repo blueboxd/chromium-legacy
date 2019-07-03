@@ -137,7 +137,6 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
-  void OnRemotePlayStateChange(MediaStatus::State state) final;
 
   // Common handlers for notifications from renderers and demuxer.
   void OnPipelineError(PipelineStatus error);
@@ -756,15 +755,6 @@ void PipelineImpl::RendererWrapper::OnVideoConfigChange(
   main_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(&PipelineImpl::OnVideoConfigChange,
                                              weak_pipeline_, config));
-}
-
-void PipelineImpl::RendererWrapper::OnRemotePlayStateChange(
-    MediaStatus::State state) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PipelineImpl::OnRemotePlayStateChange,
-                                weak_pipeline_, state));
 }
 
 void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {
@@ -1396,15 +1386,6 @@ void PipelineImpl::OnVideoDecoderChange(const std::string& name) {
 
   DCHECK(client_);
   client_->OnVideoDecoderChange(name);
-}
-
-void PipelineImpl::OnRemotePlayStateChange(MediaStatus::State state) {
-  DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsRunning());
-
-  DCHECK(client_);
-  client_->OnRemotePlayStateChange(state);
 }
 
 void PipelineImpl::OnSeekDone(bool is_suspended) {

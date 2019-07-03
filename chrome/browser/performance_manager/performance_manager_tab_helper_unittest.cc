@@ -76,21 +76,21 @@ void PerformanceManagerTabHelperTest::CheckGraphTopology(
       FROM_HERE,
       base::BindLambdaForTesting([quit_closure, &process_nodes, num_hosts,
                                   grandchild_url](GraphImpl* graph) {
-        EXPECT_GE(num_hosts, graph->GetAllProcessNodes().size());
-        EXPECT_EQ(4u, graph->GetAllFrameNodes().size());
+        EXPECT_GE(num_hosts, graph->GetAllProcessNodeImpls().size());
+        EXPECT_EQ(4u, graph->GetAllFrameNodeImpls().size());
 
         // Expect all frame nodes to be current. This fails if our
         // implementation of RenderFrameHostChanged is borked.
-        for (auto* frame : graph->GetAllFrameNodes())
+        for (auto* frame : graph->GetAllFrameNodeImpls())
           EXPECT_TRUE(frame->is_current());
 
-        ASSERT_EQ(1u, graph->GetAllPageNodes().size());
-        auto* page = graph->GetAllPageNodes()[0];
+        ASSERT_EQ(1u, graph->GetAllPageNodeImpls().size());
+        auto* page = graph->GetAllPageNodeImpls()[0];
 
         // Extra RPHs can and most definitely do exist.
         auto associated_process_nodes =
             GraphImplOperations::GetAssociatedProcessNodes(page);
-        EXPECT_GE(graph->GetAllProcessNodes().size(),
+        EXPECT_GE(graph->GetAllProcessNodeImpls().size(),
                   associated_process_nodes.size());
         EXPECT_GE(num_hosts, associated_process_nodes.size());
 
@@ -100,7 +100,7 @@ void PerformanceManagerTabHelperTest::CheckGraphTopology(
         EXPECT_EQ(4u, GraphImplOperations::GetFrameNodes(page).size());
         ASSERT_EQ(1u, page->main_frame_nodes().size());
 
-        auto* main_frame = page->GetMainFrameNode();
+        auto* main_frame = page->GetMainFrameNodeImpl();
         EXPECT_EQ(kParentUrl, main_frame->url().spec());
         EXPECT_EQ(2u, main_frame->child_frame_nodes().size());
 
@@ -179,9 +179,9 @@ TEST_F(PerformanceManagerTabHelperTest, FrameHierarchyReflectsToGraph) {
 
     PerformanceManager::GetInstance()->CallOnGraph(
         FROM_HERE, base::BindLambdaForTesting([num_hosts](GraphImpl* graph) {
-          EXPECT_GE(num_hosts, graph->GetAllProcessNodes().size());
-          EXPECT_EQ(0u, graph->GetAllFrameNodes().size());
-          ASSERT_EQ(0u, graph->GetAllPageNodes().size());
+          EXPECT_GE(num_hosts, graph->GetAllProcessNodeImpls().size());
+          EXPECT_EQ(0u, graph->GetAllFrameNodeImpls().size());
+          ASSERT_EQ(0u, graph->GetAllPageNodeImpls().size());
         }));
 
     thread_bundle()->RunUntilIdle();

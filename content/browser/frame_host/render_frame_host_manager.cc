@@ -54,6 +54,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mime_handler_view_mode.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -108,6 +109,46 @@ bool ShouldSwapBrowsingInstancesForDynamicIsolation(
       current_instance->GetBrowserContext());
   return SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
       future_isolation_context, dest_url);
+}
+
+bool ShouldProactivelySwapBrowsingInstance(RenderFrameHostImpl* current_rfh,
+                                           const GURL& dest_url) {
+  if (!IsProactivelySwapBrowsingInstanceEnabled())
+    return false;
+
+  // Only main frames are eligible to swap BrowsingInstances.
+  if (!current_rfh->frame_tree_node()->IsMainFrame())
+    return false;
+
+  // Skip cases when there are other windows that might script this one.
+  SiteInstanceImpl* current_instance = current_rfh->GetSiteInstance();
+  if (current_instance->GetRelatedActiveContentsCount() > 1u)
+    return false;
+
+  // "about:blank" and chrome-native-URL do not "use" a SiteInstance. This
+  // allows the SiteInstance to be reused cross-site. Starting a new
+  // BrowsingInstance would prevent the SiteInstance to be reused, that's why
+  // this case is excluded here.
+  if (!current_instance->HasSite())
+    return false;
+
+  // Exclude non http(s) schemes. Some tests don't expect navigations to
+  // data-URL or to about:blank to switch to a different BrowsingInstance.
+  const GURL& current_url = current_rfh->GetLastCommittedURL();
+  if (!current_url.SchemeIsHTTPOrHTTPS() || !dest_url.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  // Nothing prevents two pages with the same website to live in different
+  // BrowsingInstance. However many tests are making this assumption. The scope
+  // of ProactivelySwapBrowsingInstance experiment doesn't include them. The
+  // cost of getting a new process on same-site navigation would (probably?) be
+  // too high.
+  if (SiteInstanceImpl::IsSameWebSite(current_instance->GetIsolationContext(),
+                                      current_url, dest_url, true)) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -1133,6 +1174,13 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     return true;
   }
 
+  // Experimental mode to swap BrowsingInstances on most cross-site navigations
+  // when there are no other windows in the BrowsingInstance.
+  if (ShouldProactivelySwapBrowsingInstance(render_frame_host_.get(),
+                                            new_effective_url)) {
+    return true;
+  }
+
   return false;
 }
 
@@ -1642,6 +1690,11 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // check before IsCurrentlySameSite() below, since in this case we might swap
   // BrowsingInstances even for same-site navigations.
   if (ShouldSwapBrowsingInstancesForDynamicIsolation(rfh, dest_url))
+    return true;
+
+  // Experimental mode to swap BrowsingInstances on most cross-site navigations
+  // when there are no other windows in the BrowsingInstance.
+  if (ShouldProactivelySwapBrowsingInstance(rfh, dest_url))
     return true;
 
   // TODO(nasko, nick): These following --site-per-process checks are

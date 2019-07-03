@@ -26,6 +26,8 @@ echo "]
 echo "feed_conformance_test_lib_sources = [" >> java_sources.gni
 find src/src/main/java/com/google/android/libraries/feed -regex ".*/common/\(.*/\)*testing/.*\.java" |\
     env LC_COLLATE=en_US.ASCII sort | sed 's/^\(.*\)$/  "\1",/g' >> java_sources.gni
+find src/src/main/java/com/google/android/libraries/feed -regex ".*/hostimpl/\(.*/\)*testing/.*\.java" |\
+    env LC_COLLATE=en_US.ASCII sort | sed 's/^\(.*\)$/  "\1",/g' >> java_sources.gni
 find src/src/main/java/com/google/android/libraries/feed/testing/conformance -wholename "*.java" |\
     env LC_COLLATE=en_US.ASCII sort | sed 's/^\(.*\)$/  "\1",/g' >> java_sources.gni
 find src/src/main/java/com/google/android/libraries/feed/testing/requestmanager -wholename "*.java" |\

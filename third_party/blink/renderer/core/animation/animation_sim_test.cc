@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/web/web_script_source.h"
-#include "third_party/blink/renderer/core/animation/element_animation.h"
+#include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/property_descriptor.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
@@ -75,7 +75,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   keyframes.push_back(keyframe);
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  ElementAnimation::animateInternal(
+  Animatable::animateInternal(
       *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
       timing);
 
@@ -97,7 +97,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   keyframes.push_back(std::move(keyframe));
   timing = Timing();
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  ElementAnimation::animateInternal(
+  Animatable::animateInternal(
       *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
       timing);
 

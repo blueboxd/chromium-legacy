@@ -4,7 +4,7 @@
 
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -119,7 +119,7 @@ std::vector<gfx::Rect> CollectCollisionRects(
     }
   }
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->IsEnabled() &&
       keyboard_controller->GetActiveContainerType() ==
           keyboard::ContainerType::kFloating &&

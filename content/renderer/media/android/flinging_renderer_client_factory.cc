@@ -32,6 +32,7 @@ std::unique_ptr<media::Renderer> FlingingRendererClientFactory::CreateRenderer(
     const media::RequestOverlayInfoCB& /* request_overlay_info_cb */,
     const gfx::ColorSpace& /* target_color_space */) {
   DCHECK(IsFlingingActive());
+  DCHECK(remote_play_state_change_cb_);
 
   // Used to send messages from the FlingingRenderer (Browser process),
   // to the FlingingRendererClient (Renderer process). The
@@ -45,7 +46,12 @@ std::unique_ptr<media::Renderer> FlingingRendererClientFactory::CreateRenderer(
 
   return std::make_unique<FlingingRendererClient>(
       std::move(client_extension_request), media_task_runner,
-      std::move(mojo_renderer));
+      std::move(mojo_renderer), remote_play_state_change_cb_);
+}
+
+void FlingingRendererClientFactory::SetRemotePlayStateChangeCB(
+    media::RemotePlayStateChangeCB callback) {
+  remote_play_state_change_cb_ = std::move(callback);
 }
 
 std::string FlingingRendererClientFactory::GetActivePresentationId() {

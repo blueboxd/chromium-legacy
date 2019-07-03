@@ -7,22 +7,10 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV class='box'",
-      "position": [-30, -30],
+      "name": "LayoutNGBlockFlow DIV class='box'",
+      "position": [28, 20],
       "bounds": [160, 160],
-      "backgroundColor": "#0000FF",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [58, 50, 0, 1]
-      ]
+      "backgroundColor": "#0000FF"
     }
   ]
 }

@@ -255,7 +255,7 @@ NavigationHandleImpl::GetConnectionInfo() {
              : net::HttpResponseInfo::ConnectionInfo();
 }
 
-const base::Optional<net::SSLInfo> NavigationHandleImpl::GetSSLInfo() {
+const base::Optional<net::SSLInfo>& NavigationHandleImpl::GetSSLInfo() {
   return navigation_request_->ssl_info();
 }
 

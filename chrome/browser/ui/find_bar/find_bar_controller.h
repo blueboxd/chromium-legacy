@@ -48,11 +48,7 @@ class FindBarController : public content::NotificationObserver {
   ~FindBarController() override;
 
   // Shows the find bar. Any previous search string will again be visible.
-  // The find operation will also be started depending on |find_next| and
-  // if there is currently a text selection. |find_next| means the user
-  // used a command to advance the search and |forward_direction| indicates if
-  // the find should be forward or backwards.
-  void Show(bool find_next = false, bool forward_direction = true);
+  void Show();
 
   // Ends the current session. |selection_action| specifies what to do with the
   // selection on the page created by the find operation. |results_action|
@@ -107,9 +103,6 @@ class FindBarController : public content::NotificationObserver {
   // tab. Mac has a global value for search, so this function does nothing on
   // Mac.
   void MaybeSetPrepopulateText();
-
-  // Gets the text that is selected in the current tab, or an empty string.
-  base::string16 GetSelectedText();
 
   content::NotificationRegistrar registrar_;
 

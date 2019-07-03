@@ -36,7 +36,10 @@ public class AssistantFormCoordinator {
         mModel.getInputsModel().addObserver(new AbstractListObserver<Void>() {
             @Override
             public void onDataSetChanged() {
-                mView.removeAllViews();
+                for (int i = 0; i < mView.getChildCount(); i++) {
+                    mView.getChildAt(i).setVisibility(View.GONE);
+                }
+
                 for (AssistantFormInput input : mModel.getInputsModel()) {
                     View view = input.createView(context, mView);
                     mView.addView(view);

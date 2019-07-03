@@ -8,11 +8,9 @@
 #include "base/mac/mach_logging.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/test/scoped_feature_list.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/entrypoints.h"
 #include "mojo/core/test/data/channel_mac/channel_mac.pb.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "testing/libfuzzer/fuzzers/mach/mach_message_converter.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
@@ -22,8 +20,6 @@ namespace {
 class ChannelMacFuzzer {
  public:
   ChannelMacFuzzer() {
-    feature_list_.InitAndEnableFeature(mojo::features::kMojoChannelMac);
-
     mojo::core::InitializeCore();
 
     logging::SetMinLogLevel(logging::LOG_FATAL);
@@ -34,7 +30,6 @@ class ChannelMacFuzzer {
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::SingleThreadTaskExecutor io_task_executor_{base::MessagePump::Type::IO};
 };
 

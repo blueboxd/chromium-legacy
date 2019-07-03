@@ -7,46 +7,23 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
-      "position": [-10, -10],
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box'",
+      "position": [10, 10],
       "bounds": [120, 120],
-      "backgroundColor": "#008000",
-      "transform": 1
+      "backgroundColor": "#008000"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
-      "position": [-10, -10],
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box'",
+      "position": [60, 60],
       "bounds": [220, 120],
-      "backgroundColor": "#FF000099",
-      "transform": 2
+      "backgroundColor": "#FF000099"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='indicator'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='indicator'",
       "position": [75, 75],
       "bounds": [56, 56],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF"
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [50, 50, 0, 1]
-      ]
     }
   ]
 }

@@ -271,3 +271,69 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   content_settings->OnWebDatabaseAccessed(GURL("http://google.com"),
                                           blocked_by_policy);
 }
+
+TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainer) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  bool blocked_by_policy = false;
+  auto cookie =
+      net::CanonicalCookie::Create(GURL("http://google.com"), "k=v",
+                                   base::Time::Now(), net::CookieOptions());
+  content_settings->OnCookiesRead(GURL("http://google.com"),
+                                  GURL("http://google.com"), {*cookie},
+                                  blocked_by_policy);
+  content_settings->OnFileSystemAccessed(GURL("https://www.google.com"),
+                                         blocked_by_policy);
+  content_settings->OnIndexedDBAccessed(GURL("https://localhost"),
+                                        blocked_by_policy);
+  content_settings->OnLocalStorageAccessed(GURL("http://maps.google.com:8080"),
+                                           true, blocked_by_policy);
+  content_settings->OnWebDatabaseAccessed(GURL("http://192.168.0.1"),
+                                          blocked_by_policy);
+  content_settings->OnSharedWorkerAccessed(
+      GURL("http://youtube.com/worker.js"), "worker",
+      url::Origin::Create(GURL("https://youtube.com")), blocked_by_policy);
+
+  const auto& objects = content_settings->allowed_local_shared_objects();
+  EXPECT_EQ(6u, objects.GetObjectCount());
+  EXPECT_EQ(3u, objects.GetObjectCountForDomain(GURL("http://google.com")));
+  EXPECT_EQ(1u, objects.GetObjectCountForDomain(GURL("http://youtube.com")));
+  EXPECT_EQ(1u, objects.GetObjectCountForDomain(GURL("http://localhost")));
+  EXPECT_EQ(1u, objects.GetObjectCountForDomain(GURL("http://192.168.0.1")));
+  // google.com, youtube.com, localhost and 192.168.0.1 should be counted as
+  // domains.
+  EXPECT_EQ(4u, objects.GetDomainCount());
+}
+
+TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  bool blocked_by_policy = false;
+  auto cookie1 =
+      net::CanonicalCookie::Create(GURL("http://google.com"), "k1=v",
+                                   base::Time::Now(), net::CookieOptions());
+  auto cookie2 = net::CanonicalCookie::Create(
+      GURL("http://www.google.com"), "k2=v; Domain=google.com",
+      base::Time::Now(), net::CookieOptions());
+  auto cookie3 = net::CanonicalCookie::Create(
+      GURL("http://www.google.com"), "k3=v; Domain=.google.com",
+      base::Time::Now(), net::CookieOptions());
+  auto cookie4 = net::CanonicalCookie::Create(
+      GURL("http://www.google.com"), "k4=v; Domain=.www.google.com",
+      base::Time::Now(), net::CookieOptions());
+  content_settings->OnCookiesRead(
+      GURL("http://www.google.com"), GURL("http://www.google.com"),
+      {*cookie1, *cookie2, *cookie3, *cookie4}, blocked_by_policy);
+
+  auto cookie5 =
+      net::CanonicalCookie::Create(GURL("https://www.google.com"), "k5=v",
+                                   base::Time::Now(), net::CookieOptions());
+  content_settings->OnCookiesRead(GURL("https://www.google.com"),
+                                  GURL("https://www.google.com"), {*cookie5},
+                                  blocked_by_policy);
+
+  const auto& objects = content_settings->allowed_local_shared_objects();
+  EXPECT_EQ(5u, objects.GetObjectCount());
+  EXPECT_EQ(5u, objects.GetObjectCountForDomain(GURL("http://google.com")));
+  EXPECT_EQ(1u, objects.GetDomainCount());
+}

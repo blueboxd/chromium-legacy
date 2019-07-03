@@ -169,6 +169,60 @@ communication between `MediaInterfaceProxy` and `MediaService`.
 `media::mojom::InterfaceFactory` to make it clear which interfaces are used
 where.
 
+#### Specialized Out-of-Process media::Renderers
+
+The `media::Renderer` interface is a simple API, which is general enough to
+capture the essence of high level media playback commands. This allows us to
+extend the functionality of the `WebMediaPlayer` via **specialized renderers**.
+Specifically, we can build a sub-component that encapsulates the complexities of
+an advanced scenario, write a small adapter layer that exposes the component as
+a `media::Renderer`, and embed it within the existing `media::Pipeline` state
+machine. Specialized Renderers reduce technical complexity costs, by limiting
+the scope of details to the files and classes need them, by requiring little
+control flow boilerplate, and by generally having little impact on the default
+paths that `WebMediaPlayer` uses most of the time.
+
+Two examples of complex scenarios enabled by specialized renderers are: handling
+HLS playback on Android by delegating it to the Android Media Player (see
+`MediaPlayerRenderer`) and casting "src=" media from an Android phone to a cast
+device (see `FlingingRenderer`). Both of these examples have sub-components that
+need to live in the Browser process. We therefore proxy the
+`MediaPlayerRenderer` and `FlingingRenderer` to the Browser process, using the
+Mojo interfaces defined in renderer.mojom and renderer_extensions.mojom. This
+idea can be generalized to handle any special case *Foo scenario* as a
+**specialized OOP FooRenderer**.
+
+The classes required to create a *specialized OOP FooRenderer* come in pairs,
+serving similar purposes in their respective processes. By convention, the
+`FooRenderer` lives in the target process and the `FooRendererClient` lives in
+the Renderer process. The `MojoRenderer` and `MojoRendererService` proxies
+`media::Renderer` and `media::RendererClient` calls to/from the
+`FooRenderer[Client]`. One-off commands and events that can't be expressed as a
+`media::Renderer[Client]` call are carried across process boundaries by
+*renderer extensions* instead (see `renderer_extension.mojom`). The
+`FooRenderer[Client]Extension` mojo interfaces are implemented by their
+respective `FooRenderer[Client]` instances directly. The
+`FooRenderer[Client]Factory` sets up the scenario specific boilerplate, and all
+of the mojo interface pointers/requests needed to talk to the other process.
+Interface pointers and requests are connected across process boundaries when
+mojom::InterfaceFactory::CreateFooRenderer() is called. The end result is
+illustrated below:
+
+![Communication diagram for an OOP Renderer](./renderer_extension_diagram.png)
+
+To allow the creation and use of a FooRenderer within WebMediaPlayer, a
+`FooRendererClientFactory` must be built and passed to the
+`RendererFactorySelector`. The `RendererFactorySelector` must also be given a
+way to query if we are currently in a scenario that requires the use of the
+`FooRenderer`. When we enter a *Foo scenario*, cycling the `media::Pipeline` via
+suspend()/resume() should be enough for the next call to
+`RendererFactorySelector::GetCurrentFactory()` to return the
+`FooRendererClientFactory`. When `RendererFactory::CreateRenderer()` is called,
+the pipeline will receive a `FooRendererClient` as an opaque `media::Renderer`.
+The default pipeline state machine will control the OOP `FooRenderer`.
+When we exit the *Foo scenario*, cycling the pipeline once more should bring us
+back into the right state.
+
 #### Support Other Clients
 
 `MediaService`, as a `service_manager::Service`, can be used by clients other
@@ -285,6 +339,11 @@ currently supported services:
 * `MojoVideoDecoder` + `MediaCodecVideoDecoder` (in progress)
 * HLS support:
     * `MojoRenderer` + `MediaPlayerRenderer`
+    * NOT using `MediaService`. Instead, `MojoRendererService` is hosted by
+      `RenderFrameHostImpl`/`MediaInterfaceProxy`  in the browser process
+      directly.
+* Flinging media to cast devices (RemotePlayback API):
+    * `MojoRenderer` + `FlingingRenderer`
     * NOT using `MediaService`. Instead, `MojoRendererService` is hosted by
       `RenderFrameHostImpl`/`MediaInterfaceProxy`  in the browser process
       directly.

@@ -7,7 +7,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -351,7 +351,7 @@ ImeMenuTray::~ImeMenuTray() {
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->HasObserver(this))
     keyboard_controller->RemoveObserver(this);
 }
@@ -459,7 +459,7 @@ void ImeMenuTray::CloseBubble() {
 }
 
 void ImeMenuTray::ShowBubble(bool show_by_click) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->IsKeyboardVisible()) {
     show_bubble_after_keyboard_hidden_ = true;
     keyboard_controller->AddObserver(this);
@@ -511,7 +511,7 @@ void ImeMenuTray::HideBubble(const TrayBubbleView* bubble_view) {
 void ImeMenuTray::OnKeyboardHidden(bool is_temporary_hide) {
   if (show_bubble_after_keyboard_hidden_) {
     show_bubble_after_keyboard_hidden_ = false;
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
     keyboard_controller->RemoveObserver(this);
 
     ShowImeMenuBubbleInternal(false /* show_by_click */);

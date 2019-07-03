@@ -124,10 +124,6 @@ bool CastMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kCastMediaRouteProvider);
 }
 
-bool ShouldUseViewsDialog() {
-  return base::FeatureList::IsEnabled(features::kViewsCastDialog);
-}
-
 bool ShouldUseMirroringService() {
   // The native Cast MRP requires the mirroring service to do mirroring, so try
   // to enable the service if the native Cast MRP is being used.

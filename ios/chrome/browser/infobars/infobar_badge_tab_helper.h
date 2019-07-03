@@ -5,17 +5,22 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_BADGE_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_BADGE_TAB_HELPER_H_
 
+#include <unordered_map>
+
 #include "base/scoped_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/ui/badges/badge_item.h"
 
 namespace web {
 class WebState;
 }
 
 @protocol InfobarBadgeTabHelperDelegate;
+@protocol LegacyInfobarBadgeTabHelperDelegate;
+@class InfobarBadgeModel;
 
 // TabHelper that observes InfoBarManager. It updates an InfobarBadge delegate
 // for relevant Infobar changes.
@@ -27,18 +32,26 @@ class InfobarBadgeTabHelper
   static void CreateForWebState(web::WebState* web_state);
   // Sets the InfobarBadgeTabHelperDelegate to |delegate|.
   void SetDelegate(id<InfobarBadgeTabHelperDelegate> delegate);
-  // Updates Infobar badge for the case where an Infobar banner of |infobarType|
-  // was dismissed.
-  void UpdateBadgeForInfobarBannerDismissed(InfobarType infobarType);
-  // Updates Infobar badge for the case where an Infobar modal of |infobarType|
+  // Sets the LegacyInfobarBadgeTabHelperDelegate to |delegate|.
+  // TODO(crbug.com/980800): Remove once BadgeMediator is the receiver of
+  // |delegate_|.
+  void SetLegacyDelegate(
+      id<LegacyInfobarBadgeTabHelperDelegate> legacy_delegate);
+  // Updates Infobar badge for the case where an Infobar banner of
+  // |infobar_type| was dismissed.
+  void UpdateBadgeForInfobarBannerDismissed(InfobarType infobar_type);
+  // Updates Infobar badge for the case where an Infobar modal of |infobar_type|
   // was presented.
-  void UpdateBadgeForInfobarModalPresented(InfobarType infobarType);
-  // Updates Infobar badge for the case where an Infobar modal of |infobarType|
+  void UpdateBadgeForInfobarModalPresented(InfobarType infobar_type);
+  // Updates Infobar badge for the case where an Infobar modal of |infobar_type|
   // was dismissed.
-  void UpdateBadgeForInfobarModalDismissed(InfobarType infobarType);
-  // Updates Infobar badge for the case where Infobar of |infobarType| was
+  void UpdateBadgeForInfobarModalDismissed(InfobarType infobar_type);
+  // Updates Infobar badge for the case where Infobar of |infobar_type| was
   // accepted.
-  void UpdateBadgeForInfobarAccepted(InfobarType infobarType);
+  void UpdateBadgeForInfobarAccepted(InfobarType infobar_type);
+
+  // Returns all BadgeItems for the TabHelper Webstate.
+  std::vector<id<BadgeItem>> GetInfobarBadgeItems();
 
   // Returns wheter an Infobar badge is being displayed for the TabHelper
   // Webstate.
@@ -64,14 +77,20 @@ class InfobarBadgeTabHelper
   // Manages this object as an observer of infobars.
   ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
       infobar_observer_;
+
   // Delegate which displays the Infobar badge.
   __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
+  // Holds the state of each displaying badge keyed by its InfobarType.
+  std::unordered_map<InfobarType, InfobarBadgeModel*> infobar_badge_models_;
+
   // Returns wheter an Infobar is being displayed.
   bool is_infobar_displaying_;
   // The type of the Infobar being displayed.
   InfobarType infobar_type_;
   // Returns whether the Infobar badge is accepted.
   bool is_badge_accepted_ = false;
+  // Legacy delegate which displays the Infobar badge.
+  __weak id<LegacyInfobarBadgeTabHelperDelegate> legacy_delegate_ = nil;
 
   WEB_STATE_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(InfobarBadgeTabHelper);

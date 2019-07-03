@@ -61,13 +61,15 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
  public:
   explicit FileTraceDataEndpoint(const base::FilePath& trace_file_path,
-                                 const base::Closure& callback)
+                                 const base::Closure& callback,
+                                 base::TaskPriority write_priority)
       : file_path_(trace_file_path),
         completion_callback_(callback),
-        file_(nullptr) {}
+        may_block_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), write_priority})) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
-    background_task_runner_->PostTask(
+    may_block_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &FileTraceDataEndpoint::ReceiveTraceChunkOnBlockingThread, this,
@@ -76,7 +78,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue>) override {
-    background_task_runner_->PostTask(
+    may_block_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&FileTraceDataEndpoint::CloseOnBlockingThread, this));
   }
@@ -118,10 +120,8 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
   base::FilePath file_path_;
   base::Closure completion_callback_;
-  FILE* file_;
-  const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  FILE* file_ = nullptr;
+  const scoped_refptr<base::SequencedTaskRunner> may_block_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FileTraceDataEndpoint);
 };
@@ -240,8 +240,9 @@ TracingController::CreateStringEndpoint(
 
 scoped_refptr<TracingController::TraceDataEndpoint>
 TracingController::CreateFileEndpoint(const base::FilePath& file_path,
-                                      const base::Closure& callback) {
-  return new FileTraceDataEndpoint(file_path, callback);
+                                      const base::Closure& callback,
+                                      base::TaskPriority write_priority) {
+  return new FileTraceDataEndpoint(file_path, callback, write_priority);
 }
 
 scoped_refptr<TracingController::TraceDataEndpoint>

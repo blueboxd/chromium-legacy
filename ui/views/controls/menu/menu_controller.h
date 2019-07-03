@@ -350,8 +350,9 @@ class VIEWS_EXPORT MenuController
                                  const ui::LocatedEvent* event);
   void StartDrag(SubmenuView* source, const gfx::Point& location);
 
-  // Key processing.
-  void OnKeyDown(ui::KeyboardCode key_code);
+  // Handles |key_code| as a keypress. Returns true if OnKeyPressed handled the
+  // key code.
+  bool OnKeyPressed(ui::KeyboardCode key_code);
 
   // Creates a MenuController. See |for_drop_| member for details on |for_drop|.
   MenuController(bool for_drop, internal::MenuControllerDelegate* delegate);

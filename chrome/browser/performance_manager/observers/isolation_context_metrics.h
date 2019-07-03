@@ -10,7 +10,10 @@
 #include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 
@@ -24,7 +27,10 @@ namespace performance_manager {
 // (2) How common it is for pages to be in browsing instances with other pages,
 //     as opposed to in browsing instances on their own. This is for estimating
 //     the impact of extending freezing logic to entire browsing instances.
-class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
+class IsolationContextMetrics : public FrameNode::ObserverDefaultImpl,
+                                public GraphOwned,
+                                public PageNode::ObserverDefaultImpl,
+                                public ProcessNode::ObserverDefaultImpl {
  public:
   IsolationContextMetrics();
   ~IsolationContextMetrics() override;
@@ -73,8 +79,8 @@ class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
     ~ProcessData();
 
     // Factories/accessors for node attached data.
-    static ProcessData* Get(const ProcessNodeImpl* process_node);
-    static ProcessData* GetOrCreate(const ProcessNodeImpl* process_node);
+    static ProcessData* Get(const ProcessNode* process_node);
+    static ProcessData* GetOrCreate(const ProcessNode* process_node);
 
     // A map between site instance ID and the number of frames with that site
     // instance in the process. This is typically small for most processes, but
@@ -135,14 +141,26 @@ class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
     kMaxValue = kMultiPageBackground  // Must be maintained as the max value.
   };
 
-  // GraphObserver implementation:
-  void OnRegistered() override;
-  void OnUnregistered() override;
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnNodeAdded(NodeBase* node) override;
-  void OnBeforeNodeRemoved(NodeBase* node) override;
-  void OnIsCurrentChanged(FrameNodeImpl* frame_node) override;
-  void OnIsVisibleChanged(PageNodeImpl* page_node) override;
+  // FrameNodeObserver implementation:
+  void OnFrameNodeAdded(const FrameNode* frame_node) override;
+  void OnBeforeFrameNodeRemoved(const FrameNode* frame_node) override;
+  void OnIsCurrentChanged(const FrameNode* frame_node) override;
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
+
+  // PageNodeObserver implementation:
+  void OnIsVisibleChanged(const PageNode* page_node) override;
+
+  // ProcessNodeObserver implementation:
+  void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override;
+
+  // (Un)registers the various node observer flavors of this object with the
+  // graph. These are invoked by OnPassedIntoGraph and OnTakenFromGraph, but
+  // hoisted to their own functions for testing.
+  void RegisterObservers(Graph* graph);
+  void UnregisterObservers(Graph* graph);
 
   // Returns the state associated with a ProcessData.
   static ProcessDataState GetProcessDataState(const ProcessData* process_data);
@@ -157,7 +175,7 @@ class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
 
   // Adds or removes a frame from the relevant process data. The |delta| should
   // be +/- 1.
-  void ChangeFrameCount(const FrameNodeImpl* frame_node, int delta);
+  void ChangeFrameCount(const FrameNode* frame_node, int delta);
 
   // Returns the state associated with a BrowsingInstanceData.
   static BrowsingInstanceDataState GetBrowsingInstanceDataState(
@@ -175,16 +193,19 @@ class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
 
   // Updates |browsing_instance_data_| as pages are added and removed from
   // a browsing instance. The |delta| must be +/- 1.
-  void ChangePageCount(const PageNodeImpl* page_node,
+  void ChangePageCount(const PageNode* page_node,
                        int32_t browsing_instance_id,
                        int delta);
-  void OnPageAddedToBrowsingInstance(const PageNodeImpl* page_node,
+  void OnPageAddedToBrowsingInstance(const PageNode* page_node,
                                      int32_t browsing_instance_id);
-  void OnPageRemovedFromBrowsingInstance(const PageNodeImpl* page_node,
+  void OnPageRemovedFromBrowsingInstance(const PageNode* page_node,
                                          int32_t browsing_instance_id);
 
   // This is virtual in order to provide a testing seam.
   virtual void OnReportingTimerFired();
+
+  // The graph to which this object belongs.
+  Graph* graph_ = nullptr;
 
   // Timer that is used to periodically flush metrics. This ensures that they
   // are mostly up to date in the event of a catastrophic browser crash. We

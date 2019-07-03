@@ -367,6 +367,11 @@
           Kung naka-disable o hindi nakatakda ang patakarang ito, naka-disable ang mga setting ng Mga Kerberos Account. Walang maidaragdag na Kerberos account at hindi magagamit ang pag-authenticate ng Kerberos. Ide-delete ang lahat ng kasalukuyang Kerberos account, ide-delete ang lahat ng naka-store na password.</translation>
 <translation id="1561424797596341174">Mga pag-override ng patakaran para sa Mga build sa pag-debug ng host ng malayuang access</translation>
 <translation id="1561967320164410511">U2F kasama ang mga extension para sa pagpapatunay ng indibidwal</translation>
+<translation id="1566329065312331399">
+      Kapag nakatakda ang patakarang ito sa False, hindi pinapayagan ang device na i-trigger ang powerwash.
+      Kapag nakatakda sa True, pinapayagan nito ang device na i-trigger ang powerwash.
+      Kung hinayaang hindi nakatakda, magiging default ito sa False, ang ibig sabihin ay hindi nito pinapayagan ang device na mag-powerwash.
+      </translation>
 <translation id="1574554504290354326">Hindi na ginagamit ang setting na ito, gamitin na lang ang SafeBrowsingExtendedReportingEnabled. Katumbas ng pag-enable o pag-disable ng SafeBrowsingExtendedReportingEnabled ang pagtakda ng SafeBrowsingExtendedReportingOptInAllowed sa False.
 
       Kapag itinakda ang patakarang ito sa false, mapipigilan ang mga user na piliing magpadala ng ilang impormasyon ng system at content ng page sa mga server ng Google. Kung ang setting na ito ay true o hindi na-configure, papayagan ang mga user na magpadala ng ilang impormasyon ng system at content ng page sa Ligtas na Pag-browse para makatulong sa pag-detect ng mga mapanganib na app at site.
@@ -406,6 +411,7 @@
 
       Babala: Hindi inirerekomenda ang pagtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" /> sa isang kiosk app dahil maaari nitong pigilan ang pagtanggap ng device ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung magtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="1675002386741412210">Suportado sa:</translation>
+<translation id="1700811900332333712">Payagan ang device na humiling ng powerwash</translation>
 <translation id="1704516734140344991">Kino-configure ang availability at gawi ng functionality ng pag-update sa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware.
 
       Matutukoy ang mga indibidwal na setting sa mga JSON property:
@@ -2071,6 +2077,15 @@
       Sa yugto ng panahong ito, paulit-ulit na ipapaalam sa user ang pangangailangang mag-update. Para sa mga <ph name="PRODUCT_OS_NAME" /> device, lalabas sa system tray ang notification sa pag-restart alinsunod sa patakarang <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Para sa mga <ph name="PRODUCT_NAME" /> browser, magbabago ang menu ng app para isaad na kinakailangan ng muling paglulunsad kapag lumipas ang one third ng yugto ng panahon ng notification. Magbabago ng kulay ang notification na ito kapag lumipas ang two thirds ng yugto ng panahon ng notification, at muli kapag lumipas ang buong yugto ng panahon ng notification. Ang mga karagdagang notification na na-enable ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ay sumusunod sa kaparehong iskedyul na ito.
 
       Kung hindi itatakda, ang default na yugto ng panahong 345600000 millisecond (apat na araw) ang gagamitin para sa mga <ph name="PRODUCT_OS_NAME" /> device at 604800000 millisecond (isang linggo) ang gagamitin para sa <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Magagamit ang setting na SitePerProcess para huwag payagan ang mga user na mag-opt out sa default na gawi ng pag-isolate ng lahat ng site. Tandaang puwede ring maging kapaki-pakinabang ang patakarang IsolateOrigins sa pag-isolate ng karagdagang mas mahuhusay na pinagmulan.
+      Kung naka-enable ang patakaran, hindi makakapag-opt out ang mga user sa default na gawi kung saan tumatakbo ang bawat site sa sarili nitong proseso.
+      Kung hindi naka-configure o naka-disable ang patakaran, makakapag-opt out ang user sa pag-isolate ng site
+      (hal. paggamit ng entry na "I-disable ang pag-isolate ng site" sa chrome://flags).  Hindi mao-off ang Pag-isolate ng Site kapag itinakda ang patakaran sa naka-disable at/o hindi na-configure ang patakaran.
+      Sa <ph name="PRODUCT_OS_NAME" /> bersyon 76 at mas luma, inirerekomendang itakda rin ang patakaran ng device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magkatugma ang mga value na tinukoy ng dalawang patakaran, puwedeng magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+
+      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para i-enable ang SitePerProcess sa Android, gamitin ang setting ng patakarang SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang impormasyon ng credit card sa mga web form gamit ang dati nang na-store na impormasyon.
 
       Kung idi-disable ang setting na ito, hindi kailanman magmumungkahi o magkukumpleto ang AutoFill ng impormasyon ng credit card, o hindi nito ise-save ang karagdagang impormasyon ng credit card na maaaring isumite ng user habang nagba-browse siya sa web.
@@ -2219,6 +2234,7 @@
 <translation id="5148753489738115745">Binibigyang-daan kang tukuyin ang mga karagdagang parameter na ginagamit kapag nilunsad ng <ph name="PRODUCT_FRAME_NAME" /> ang <ph name="PRODUCT_NAME" />.
 
           Kung hindi naitakda ang patakarang ito, ang default na command line ang gagamitin.</translation>
+<translation id="5152787786897382519">Ang parehong Chromium at Google Chrome ay may ilang pangkat ng mga patakaran na nakadepende sa isa't isa para makapagbigay ng kontrol sa isang feature. Ang mga hanay na ito ay kinakatawan ng mga sumusunod na pangkat ng patakaran. Dahil puwedeng magkaroon ng maraming pinagmulan ang mga patakaran, ang mga value lang na mula sa pinagmulang may pinakamataas na priyoridad ang ilalapat. Babalewalain ang mga value na mula sa pinagmulang may mababang priyoridad. Tutukuyin ang pagkakasunud-sunod ng priyoridad sa <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Gaano kadalas ipinapadala ang mga sinusubaybayang network packet, sa millisecond.
 
       Kung hindi nakatakda ang patakarang ito, ang default na pagitan ay 3 minuto.
@@ -2761,6 +2777,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5983708779415553259">Default na pagkilos para sa mga site na wala sa anumang pack ng nilalaman</translation>
 <translation id="5997543603646547632">Gamitin ang 24 na oras na orasan bilang default</translation>
 <translation id="5997846976342452720">Tumutukoy kung dapat i-disable ang finder ng plugin (hindi na ginagamit)</translation>
+<translation id="5998198091336830580">Bahagi ang patakarang ito ng sumusunod na atomic na pangkat (mga patakaran lang mula sa pinagmulang may pinakamataas na priyoridad na nasa pangkat ang ilalapat) :</translation>
 <translation id="6017568866726630990">Ipakita ang dialog ng system sa pag-print sa halip na ang preview sa pag-print.
 
       Kapag pinagana ang setting na ito, bubuksan ng <ph name="PRODUCT_NAME" /> ang dialog ng system sa pag-print sa halip na ang built-in na preview sa pag-print kapag humihiling ang isang user na mag-print ng isang pahina.
@@ -3514,6 +3531,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyong magagamit sa pagkilala ng mga machine.
 
       May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
+<translation id="7359307926583593395">
+      Nalalapat ang patakarang ito sa screen sa pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa parehong value. Kung hindi magkatugma ang mga value, puwedeng magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      </translation>
 <translation id="737655323154569539">Pinaghihigpitan ang laki ng page ng pag-print. Itinuturing na walang paghihigpit ang hindi nakatakdang patakaran at empty set.</translation>
 <translation id="7389872682701720082">Kung ie-enable mo ang setting na ito, palaging tatakbo ang mga plugin na hindi outdated.
 
@@ -3852,6 +3872,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Tingnan din ang mga patakarang 'CookiesAllowedForUrls' at 'CookiesSessionOnlyForUrls.' Tandaang wala dapat magkakasalungat na pattern ng URL sa tatlong patakarang ito - hindi tinutukoy kung aling patakaran ang nangingibabaw.</translation>
 <translation id="8099880303030573137">Idle delay kapag tumatakbo gamit ang power ng baterya</translation>
+<translation id="8101381354936029836">Atomic na pangkat ng patakaran:</translation>
 <translation id="8102913158860568230">Default na setting ng mediastream</translation>
 <translation id="8104186956182795918">Binibigyang-daan kang itakda kung papayagan ang mga website na magpakita ng mga larawan. Ang pagpapakita ng mga larawan ay maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website.
 
@@ -4060,6 +4081,15 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Huwag paganahin ang pag-save ng kasaysayan ng browser</translation>
 <translation id="8499172469244085141">Mga Default na Setting (maaaring i-override ng mga user)</translation>
+<translation id="849962487677588458">Hindi na ginagamit ang patakarang ito, at nasa slate para alisin sa Chrome 78, nang walang kapalit.
+
+      Pinapagana ng patakarang ito ang HTTP/0.9 sa mga port bukod sa 80 para sa HTTP at 443 para sa HTTPS.
+
+      Naka-disable bilang default ang patakarang ito, at kung naka-enable, puwedeng makaranas ang mga user ng mga isyu sa seguridad https://crbug.com/600352.
+
+      Ginawa ang patakarang ito para bigyan ang mga enterprise ng pagkakataong mag-migrate ng mga kasalukuyang server mula sa HTTP/0.9, at aalisin ito sa hinaharap.
+
+      Kung hindi nakatakda ang patakarang ito, idi-disable ang HTTP/0.9 sa mga hindi default na port.</translation>
 <translation id="8507835864888987300">Nagtatakda ng target na bersyon para sa Mga Awtomatikong Pag-update.
 
       Tinutukoy ang prefix ng isang target na bersyon kung saan dapat ma-update ang <ph name="PRODUCT_OS_NAME" />. Kung nagpapatakbo ang device ng bersyon bago ang natukoy na prefix, maa-update ito sa pinakabagong bersyon gamit ang ibinigay na prefix. Kung nasa mas bagong bersyon na ang device, nakadepende ang mga epekto sa value ng <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Gumagana ang format ng prefix ayon sa bahagi gaya ng ipinapakita sa sumusunod na halimbawa: 

@@ -73,7 +73,6 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -326,7 +325,23 @@ SystemNetworkContextManager* SystemNetworkContextManager::CreateInstance(
 }
 
 // static
+bool SystemNetworkContextManager::HasInstance() {
+  return !!g_system_network_context_manager;
+}
+
+// static
 SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
+  if (!g_system_network_context_manager) {
+    // Initialize the network service, which will trigger
+    // ChromeContentBrowserClient::OnNetworkServiceCreated(), which calls
+    // CreateInstance() to initialize |g_system_network_context_manager|.
+    content::GetNetworkService();
+
+    // TODO(crbug.com/981057): There should be a DCHECK() here to make sure
+    // |g_system_network_context_manager| has been created, but that is not
+    // true in many unit tests.
+  }
+
   return g_system_network_context_manager;
 }
 

@@ -35,7 +35,8 @@ class CONTENT_EXPORT FlingingRendererClient
   FlingingRendererClient(
       ClientExtentionRequest client_extension_request,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-      std::unique_ptr<media::MojoRenderer> mojo_renderer);
+      std::unique_ptr<media::MojoRenderer> mojo_renderer,
+      media::RemotePlayStateChangeCB remote_play_state_change_cb);
 
   ~FlingingRendererClient() override;
 
@@ -51,6 +52,8 @@ class CONTENT_EXPORT FlingingRendererClient
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   media::RendererClient* client_;
+
+  media::RemotePlayStateChangeCB remote_play_state_change_cb_;
 
   // Used temporarily, to delay binding to |client_extension_binding_| until we
   // are on the right sequence, when Initialize() is called.

@@ -31,16 +31,11 @@
 #include "mojo/core/system_impl_export.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 
-namespace base {
-class PortProvider;
-}
-
 namespace mojo {
 namespace core {
 
 class Broker;
 class Core;
-class MachPortRelay;
 
 // The owner of ports::Node which facilitates core EDK implementation. All
 // public interface methods are safe to call from any thread.
@@ -65,11 +60,6 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   scoped_refptr<base::TaskRunner> io_task_runner() const {
     return io_task_runner_;
   }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Create the relay used to transfer mach ports between processes.
-  void CreateMachPortRelay(base::PortProvider* port_provider);
-#endif
 
   // Called exactly once, shortly after construction, and before any other
   // methods are called on this object.
@@ -233,10 +223,6 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   void OnChannelError(const ports::NodeName& from_node,
                       NodeChannel* channel) override;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortRelay* GetMachPortRelay();
-#endif
-
   // Cancels all pending port merges. These are merges which are supposed to
   // be requested from the inviter ASAP, and they may be cancelled if the
   // connection to the inviter is broken or never established.
@@ -333,12 +319,6 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
   // Broker for sync shared buffer creation on behalf of broker clients.
   std::unique_ptr<Broker> broker_;
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  base::Lock mach_port_relay_lock_;
-  // Relay for transferring mach ports to/from broker clients.
-  std::unique_ptr<MachPortRelay> mach_port_relay_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NodeController);

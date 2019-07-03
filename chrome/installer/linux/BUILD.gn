@@ -164,6 +164,7 @@ action("strip_chrome_binary") {
   ]
   script = "//build/gn_run_binary.py"
   sources = [
+    "//buildtools/third_party/eu-strip/bin/eu-strip",
     prog_name,
   ]
   outputs = [

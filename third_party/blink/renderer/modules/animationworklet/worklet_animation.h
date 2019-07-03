@@ -71,6 +71,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                    scoped_refptr<SerializedScriptValue>);
   ~WorkletAnimation() override = default;
 
+  String animatorName() { return animator_name_; }
   AnimationEffect* effect() { return GetEffect(); }
   AnimationTimeline* timeline() { return timeline_; }
   String playState();

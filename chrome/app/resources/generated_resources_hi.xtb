@@ -240,7 +240,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">PPD नहीं मिला. पक्का करें कि आपका Chromebook ऑनलाइन है और दोबारा आज़माएं.</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> अवरोधित है</translation>
-<translation id="1357589289913453911">एक्सटेंशन आईडी</translation>
 <translation id="1358741672408003399">वर्तनी और व्याकरण</translation>
 <translation id="1361164813881551742">मैन्युअल रूप से जोड़ें</translation>
 <translation id="1361655923249334273">अप्रयुक्त</translation>
@@ -320,7 +319,6 @@
 <translation id="1470967055429794975">ऐसा करने से सुरक्षा कुंजी पर मौजूद सभी डेटा और इसका पिन भी मिट जाएगा</translation>
 <translation id="1475502736924165259">आपके पास फ़ाइल पर ऐसे प्रमाणपत्र हैं जो किसी भी अन्य श्रेणी में फ़िट नहीं होते</translation>
 <translation id="1476607407192946488">&amp;भाषा सेटिंग</translation>
-<translation id="1477301030751268706">पहचान API (एपीआई) टोकन कैश</translation>
 <translation id="1478340334823509079">विवरण: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">इंस्टॉलेशन चालू नहीं है</translation>
 <translation id="1483493594462132177">भेजें</translation>
@@ -541,7 +539,7 @@
 <translation id="1792619191750875668">बढ़ाया हुआ डिसप्ले</translation>
 <translation id="1794791083288629568">इस समस्या को ठीक करने में हमारी सहायता करने के लिए फ़ीडबैक भेजें.</translation>
 <translation id="1795214765651529549">क्लासिक का उपयोग करें</translation>
-<translation id="1797738254362176886">अपनी सुरक्षा कुंजी डिवाइस में लगाकर उसे छुएं और साइन-इन का डेटा देखें.</translation>
+<translation id="1797738254362176886">अपनी सुरक्षा कुंजी डिवाइस में लगाकर उसे छुएं और साइन इन का डेटा देखें.</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" एक्सटेंशन अपने आप अक्षम हो गया था.</translation>
 <translation id="1802687198411089702">पेज काम नहीं कर रहा है. आप इंतज़ार कर सकते हैं या बाहर निकल सकते हैं.</translation>
 <translation id="1802931390041703523">इस पेज पर फ़्लैश ब्लॉक कर दिया गया था</translation>
@@ -618,7 +616,7 @@
 <translation id="1895934970388272448">यह प्रोसेस पूरा करने के लिए आपको अपने प्रिंटर पर रजिस्ट्रेशन की पुष्टि करनी होगी - इसे अभी चुनें.</translation>
 <translation id="1899826437968063457">प्लग इन VM को चलाने के लिए अनुमति की ज़रूरत है</translation>
 <translation id="1901303067676059328">&amp;सभी को चुनें</translation>
-<translation id="1901984611178952431">साइन-इन का डेटा प्रबंधित करें</translation>
+<translation id="1901984611178952431">साइन इन का डेटा प्रबंधित करें</translation>
 <translation id="1902576642799138955">मान्यता अवधि</translation>
 <translation id="1904394285866191268">{NUM_TABS,plural, =1{टैब म्यूट करें}one{टैब म्यूट करें}other{टैब म्यूट करें}}</translation>
 <translation id="1905375423839394163">Chromebook डिवाइस का नाम</translation>
@@ -728,7 +726,6 @@
 <translation id="2090876986345970080">सिस्‍टम सुरक्षा सेटिंग</translation>
 <translation id="2091887806945687916">आवाज़</translation>
 <translation id="2097372108957554726">नए डिवाइस रजिस्टर करने के लिए आपको Chrome में साइन इन करना होगा.</translation>
-<translation id="2098305189700762159">नहीं मिला</translation>
 <translation id="2099172618127234427">आप Chrome OS की डीबग करने वाली सुविधाएं चालू कर रहे हैं जिससे sshd daemon सेट हो जाएगा और यूएसबी डिवाइस से बूट करना चालू हो जाएगा.</translation>
 <translation id="2099686503067610784">सर्वर प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" मिटाएं?</translation>
 <translation id="2100273922101894616">अपने आप साइन इन करने की सुविधा</translation>
@@ -940,12 +937,11 @@
 <translation id="2386926718981642523">बस "Ok Google" कहें और अपनी Assistant सेवा एक्सेस करें</translation>
 <translation id="2387458720915042159">प्रॉक्सी कनेक्शन प्रकार</translation>
 <translation id="2391419135980381625">मानक फ़ॉन्ट</translation>
-<translation id="2391762656119864333">निरस्‍त करें</translation>
 <translation id="2392369802118427583">सक्रिय करें</translation>
 <translation id="2394566832561516196">अगली बार फिर से लोड करने पर सेटिंग साफ़ हो जाएंगी.</translation>
 <translation id="2395616325548404795">आपका <ph name="DEVICE_TYPE" /> डिवाइस एंटरप्राइज़ प्रबंधन के लिए सफलतापूर्वक नामांकित हो गया है, लेकिन वह अपनी एसेट और स्‍थान की जानकारी भेजने में विफल रहा है. कृपया इस डिवाइस के लिए अपने Admin console से यह जानकारी मैन्‍युअल रूप से डालें.</translation>
 <translation id="2396783860772170191">चार अंकों वाला पिन (0000-9999) डालें</translation>
-<translation id="2399939490305346086">सुरक्षा कुंजी पर साइन-इन का डेटा</translation>
+<translation id="2399939490305346086">सुरक्षा कुंजी पर साइन इन का डेटा</translation>
 <translation id="2408955596600435184">अपना पिन डालें</translation>
 <translation id="241082044617551207">अज्ञात प्लग इन</translation>
 <translation id="2412593942846481727">अपडेट मौजूद है</translation>
@@ -1567,7 +1563,7 @@
 <translation id="3348038390189153836">निकालने योग्‍य डिवाइस का पता चला</translation>
 <translation id="3349933790966648062">मेमोरी फ़ुटप्रिंट</translation>
 <translation id="3350117557200012647">दूसरे डिवाइस से जोड़ने के मोड में जाएं</translation>
-<translation id="3350263973613584174">इस सुरक्षा कुंजी में साइन-इन का कोई डेटा सेव नहीं है</translation>
+<translation id="3350263973613584174">इस सुरक्षा कुंजी में साइन इन का कोई डेटा सेव नहीं है</translation>
 <translation id="3355936511340229503">कनेक्शन गड़बड़ी</translation>
 <translation id="3356580349448036450">पूरा हुआ</translation>
 <translation id="3359256513598016054">प्रमाणपत्र नीति बाध्यताएं</translation>
@@ -1957,7 +1953,6 @@
 <translation id="3894123633473837029">Sherlog की मदद से हाल ही का Assistant इतिहास शामिल करें. इसमें आपकी पहचान, जगह, और डीबग की जानकारी शामिल हो सकती है. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="389589731200570180">अतिथियों से शेयर करें</translation>
-<translation id="3898521660513055167">टोकन स्थिति</translation>
 <translation id="389901847090970821">कीबोर्ड चुनें</translation>
 <translation id="3899879303189199559">एक वर्ष से ज़्यादा समय से ऑफ़लाइन</translation>
 <translation id="3900966090527141178">पासवर्ड निर्यात करें</translation>
@@ -2137,7 +2132,7 @@
 <translation id="4147911968024186208">कृपया फिर से कोशिश करें. अगर आपको यह गड़बड़ी फिर से दिखाई देती है, तो कृपया अपने सहायता प्रतिनिधि से संपर्क करें.</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">डिसप्ले</translation>
-<translation id="4150234330364554482">ऐसा OEM डॉकिंग स्टेशन इस्तेमाल करें जो इस Chromebook के साथ काम करने के लिए बनाया गया हो.</translation>
+<translation id="4150234330364554482">ऐसा OEM डॉकिंग स्टेशन इस्तेमाल करें जिसे इस Chromebook के साथ काम करने के लिए बनाया गया हो.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 टैब}one{# टैब}other{# टैब}}</translation>
 <translation id="4154664944169082762">फ़िंगरप्रिंट</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
@@ -2284,7 +2279,7 @@
 <translation id="4412698727486357573">सहायता केंद्र</translation>
 <translation id="44141919652824029">"<ph name="APP_NAME" />" को आपके अटैच किए हुए USB डिवाइसों की सूची पाने दें?</translation>
 <translation id="4414232939543644979">नई &amp;गुप्त विंडो</translation>
-<translation id="4414386768539506503">अपनी सुरक्षा कुंजी पर मौजूद साइन-इन का डेटा देखने के लिए, उसका पिन डालें. अगर आपको पिन नहीं पता है, तो सुरक्षा कुंजी रीसेट करनी होगी.</translation>
+<translation id="4414386768539506503">अपनी सुरक्षा कुंजी पर मौजूद साइन इन का डेटा देखने के लिए, उसका पिन डालें. अगर आपको पिन नहीं पता है, तो सुरक्षा कुंजी रीसेट करनी होगी.</translation>
 <translation id="4415245286584082850">कोई डिवाइस नहीं मिला. नए टैब में सहायता केंद्र लेख खोलें.</translation>
 <translation id="4415276339145661267">अपना Google खाता प्रबंधित करें</translation>
 <translation id="4415748029120993980">SECG अंडाकार वक्र secp384r1 (अर्थात NIST P-384)</translation>
@@ -2697,7 +2692,7 @@
 <translation id="5072836811783999860">प्रबंधित बुकमार्क दिखाएं</translation>
 <translation id="5074318175948309511">नई सेटिंग के प्रभावी होने से पहले इस पृष्‍ठ को रीलोड करने की आवश्‍यकता हो सकती है.</translation>
 <translation id="5075131525758602494">सिम PIN डालें</translation>
-<translation id="507514548843781244">अपनी सुरक्षा कुंजी पर सेव किया गया साइन-इन का डेटा देखें और हमेशा के लिए मिटाएं</translation>
+<translation id="507514548843781244">अपनी सुरक्षा कुंजी पर सेव किया गया साइन इन का डेटा देखें और हमेशा के लिए मिटाएं</translation>
 <translation id="5078638979202084724">सभी टैब बुकमार्क करें</translation>
 <translation id="5078796286268621944">गलत पिन</translation>
 <translation id="5079950360618752063">सुझाए गए पासवर्ड का इस्तेमाल करें</translation>
@@ -2792,7 +2787,6 @@
 <translation id="5235050375939235066">ऐप्लिकेशन अनइंस्टॉल करें?</translation>
 <translation id="5235750401727657667">नया टैब खोलते समय दिखाई देने वाला पेज बदलें</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ऐप्लिकेशन को अपने आप हटा दिया गया था.</translation>
-<translation id="5238369540257804368">सीमाएं</translation>
 <translation id="5241128660650683457">जिन वेबसाइट पर आप जाते हैं, उन पर मौजूद अपना सारा डेटा पढ़ें</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" को चालू करें?</translation>
 <translation id="5243522832766285132">कृपया कुछ देर बाद कोशिश करें</translation>
@@ -3057,7 +3051,7 @@
 <translation id="5618075537869101857">अरे नहीं, कियोस्क ऐप्स  लॉन्च नहीं किया जा सका.</translation>
 <translation id="5618333180342767515">(इसमें कुछ मिनट लग सकते हैं.)</translation>
 <translation id="56197088284879152">दूरस्थ डिवाइस के लिए कनेक्शन अत्यधिक धीमा है: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="5620568081365989559">DevTools <ph name="FOLDER_PATH" /> का पूरा एक्सेस चाहता है. पक्का करें कि आप किसी भी संवेदनशील जानकारी का खुलासा ना करें.</translation>
+<translation id="5620568081365989559">DevTools <ph name="FOLDER_PATH" /> का पूरा एक्सेस चाहता है. पक्का करें कि आप किसी भी संवेदनशील जानकारी न बताएं.</translation>
 <translation id="5620612546311710611">इस्तेमाल के आंकड़े</translation>
 <translation id="5620655347161642930">पासवर्ड निर्यात करें...</translation>
 <translation id="5623282979409330487">यह साइट आपके हलचल पकड़ने वाले सेंसर को एक्सेस कर रही है.</translation>
@@ -3231,7 +3225,6 @@
 <translation id="5870155679953074650">हार्ड फ़ॉल्ट</translation>
 <translation id="5877064549588274448">चैनल बदल दिया गया है. बदलावों का लागू करने के लिए अपने डिवाइस को फिर से प्रारंभ करें.</translation>
 <translation id="5877584842898320529">चुना गया प्रिंटर उपलब्ध नहीं है या ठीक से इंस्टॉल नहीं किया गया है. <ph name="BR" /> अपना प्रिंटर जाँचें या कोई दूसरा प्रिंटर चुनकर देखें.</translation>
-<translation id="5880247576487732437">टोकन उपस्थित</translation>
 <translation id="5882919346125742463">ज्ञात नेटवर्क</translation>
 <translation id="5884474295213649357">यह टैब किसी USB डिवाइस से कनेक्ट है.</translation>
 <translation id="5885324376209859881">मीडिया सेटिंग प्रबंधित करें...</translation>
@@ -3398,7 +3391,7 @@
 <translation id="6122081475643980456">आपका इंटरनेट कनेक्शन नियंत्रित किया जा रहा है</translation>
 <translation id="6122095009389448667">इस साइट को क्लिपबोर्ड देखने से ब्लॉक करते रहें</translation>
 <translation id="6122875415561139701">लिखें कार्रवाई की इस पर अनुमति नहीं है: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="6123292156101652890">इस सुरक्षा कुंजी में साइन-इन डेटा सेव नहीं किया जा सकता.</translation>
+<translation id="6123292156101652890">इस सुरक्षा कुंजी में साइन इन डेटा सेव नहीं किया जा सकता.</translation>
 <translation id="6124650939968185064">निम्न एक्सटेंशन इस एक्सटेंशन पर निर्भर हैं:</translation>
 <translation id="6124698108608891449">इस साइट को ज़्यादा अनुमतियां चाहिए.</translation>
 <translation id="6125479973208104919">दुर्भाग्यवश, आपको इस <ph name="DEVICE_TYPE" /> में अपना खाता फिर से जोड़ना होगा.</translation>
@@ -3941,7 +3934,7 @@
 <translation id="6974609594866392343">ऑफ़लाइन डेमो मोड</translation>
 <translation id="6977381486153291903">फ़र्मवेयर पुनरीक्षण</translation>
 <translation id="6978121630131642226">सर्च इंजन</translation>
-<translation id="6979044105893951891">मेहमान के तौर पर ब्राउज़ करने के प्रबंधित किए गए सेशन लॉन्च करें और उनसे बाहर आएं</translation>
+<translation id="6979044105893951891">मेहमान के तौर पर ब्राउज़ करने के लिए प्रबंधित किए गए सेशन लॉन्च करें और उनसे बाहर आएं</translation>
 <translation id="6979440798594660689">म्यूट करें (डिफ़ॉल्ट)</translation>
 <translation id="6979737339423435258">हमेशा</translation>
 <translation id="6981982820502123353">सुलभता</translation>
@@ -4067,7 +4060,7 @@
 <translation id="7143092389027215216">डेमो मोड चालू किया जा रहा है</translation>
 <translation id="7143207342074048698">कनेक्‍ट हो रहा है</translation>
 <translation id="7144878232160441200">फिर से प्रयास करें</translation>
-<translation id="714687768418476028">आपकी सुरक्षा कुंजी को पिन से सुरक्षित नहीं किया गया है. साइन-इन का डेटा प्रबंधित करने के लिए, पहले पिन बनाएं.</translation>
+<translation id="714687768418476028">आपकी सुरक्षा कुंजी को पिन से सुरक्षित नहीं किया गया है. साइन इन का डेटा प्रबंधित करने के लिए, पहले पिन बनाएं.</translation>
 <translation id="7149893636342594995">पिछले 24 घंटे</translation>
 <translation id="715118844758971915">क्‍लासि‍क प्रिंटर</translation>
 <translation id="7152478047064750137">इस एक्‍सटेंशन को कोई खास अनुमति नहीं चाहिए</translation>
@@ -4431,7 +4424,7 @@
 <translation id="7704521324619958564">Play स्टोर खोलें</translation>
 <translation id="7704628569466676326">अपनी 'सुरक्षा चाबी' को इस डिवाइस से जोड़ें ताकि आप अपने खाते में साइन इन करने के लिए इसका इस्तेमाल कर सकें</translation>
 <translation id="7705276765467986571">बुकमार्क मॉडल लोड नहीं कर सका.</translation>
-<translation id="7705524343798198388">VPN</translation>
+<translation id="7705524343798198388">वीपीएन</translation>
 <translation id="7707108266051544351">इस साइट को हलचल वाले सेंसर का इस्तेमाल करने से रोक दिया गया है.</translation>
 <translation id="7707922173985738739">मोबाइल डेटा का उपयोग करें</translation>
 <translation id="7709152031285164251">विफल - <ph name="INTERRUPT_REASON" /></translation>
@@ -4695,7 +4688,6 @@
 <translation id="8045923671629973368">ऐप्लिकेशन आईडी या वेबस्टोर यूआरएल डालें</translation>
 <translation id="804786196054284061">असली उपयोगकर्ता के लाइसेंस का समझौता</translation>
 <translation id="8049705080247101012">Google ने <ph name="EXTENSION_NAME" /> को नुकसान पहुंचाने वाले के रूप में फ़्लैग किया है और इंस्टॉलेशन रोक दिया गया है</translation>
-<translation id="8049913480579063185">एक्सटेंशन का नाम</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS #12 फ़ाइलें</translation>
 <translation id="8053390638574070785">यह पेज फिर से लोड करें</translation>
@@ -4946,7 +4938,6 @@
 <translation id="8449008133205184768">चिपकाएं और शैली का मिलान करें</translation>
 <translation id="8449036207308062757">जगह प्रबंधित करें</translation>
 <translation id="8452135315243592079">अनुपलब्ध SIM कार्ड</translation>
-<translation id="845627346958584683">समाप्ति समय</translation>
 <translation id="845702320058262034">कनेक्ट नहीं किया जा सकता. देखें कि आपके फ़ोन का ब्लूटूथ चालू है या नहीं.</translation>
 <translation id="8457451314607652708">बुकमार्क आयात करें</translation>
 <translation id="8460336040822756677">अगर आप <ph name="DEVICE_TYPE" /> के लिए Smart Lock बंद कर देते हैं, तो आप अपने फ़ोन का उपयोग करके अपने Chrome डिवाइस अनलॉक नहीं कर सकेंगे. आपको अपना पासवर्ड लिखना होगा.</translation>
@@ -4956,7 +4947,7 @@
 <translation id="8463215747450521436">इस निगरानी में रखे गए उपयोगकर्ता को प्रबंधक ने मिटा दिया है या बंद कर दिया है. अगर आप इस उपयोगकर्ता के रूप में साइन इन किए हुए रहना चाहते हैं, तो कृपया प्रबंधक से संपर्क करें.</translation>
 <translation id="846374874681391779">डाउनलोड बार</translation>
 <translation id="8463807869745732775">"&gt;
-    सुरक्षा कुंजी पर साइन-इन का डेटा सेव किया गया</translation>
+    सुरक्षा कुंजी पर साइन इन का डेटा सेव किया गया</translation>
 <translation id="8463955938112983119"><ph name="PLUGIN_NAME" /> बंद किया गया.</translation>
 <translation id="8464132254133862871">यह उपयोगकर्ता खाता सेवा के लिए योग्‍य नहीं है.</translation>
 <translation id="8465252176946159372">मान्य नहीं है</translation>
@@ -5060,7 +5051,6 @@
 <translation id="8637542770513281060">आपके कंप्यूटर में एक ऐसा सुरक्षित मॉड्यूल है, जिसका उपयोग Chrome OS की कई महत्वपूर्ण सुरक्षा सुविधाओं को लागू करने में किया जाता है. ज़्यादा जानने के लिए Chromebook सहायता केंद्र पर जाएं: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">सिस्टम अपडेट उपलब्ध है. डाउनलोड करने के लिए तैयार हो रहा है...</translation>
 <translation id="8639047128869322042">नुकसान पहुंचाने वाला सॉफ़्टवेयर ढूंढा जा रहा है...</translation>
-<translation id="8642171459927087831">एक्सेस टोकन</translation>
 <translation id="8642900771896232685">2 सेकंड</translation>
 <translation id="8642947597466641025">लेख को बड़ा करें</translation>
 <translation id="8643418457919840804">जारी रखने के लिए, कोई विकल्प चुनें:</translation>
@@ -5242,7 +5232,7 @@
 <translation id="8876307312329369159">यह सेटिंग किसी डेमो सत्र में बदली नहीं जा सकती है.</translation>
 <translation id="8877448029301136595">[मूल निर्देशिका]</translation>
 <translation id="8879284080359814990">टैब के रूप में &amp;दिखाएं</translation>
-<translation id="8879921471468674457">साइन-इन की जानकारी याद रखें</translation>
+<translation id="8879921471468674457">साइन इन की जानकारी याद रखें</translation>
 <translation id="8883847527783433352">'किसी दूसरे खाते से सिंक करें'</translation>
 <translation id="8884570509232205463">आपका डिवाइस अब <ph name="UNLOCK_TIME" /> बजे अनलॉक होगा.</translation>
 <translation id="8885197664446363138">Smart Lock अनुपलब्‍ध है</translation>

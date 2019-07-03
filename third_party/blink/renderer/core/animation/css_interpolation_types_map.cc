@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/animation/css_border_image_length_box_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_clip_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_color_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/css_custom_length_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_custom_list_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_filter_list_interpolation_type.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/renderer/core/animation/css_offset_rotate_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_paint_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_path_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/css_percentage_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_position_axis_list_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_position_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_ray_interpolation_type.h"
@@ -383,10 +385,14 @@ CreateInterpolationTypeForCSSSyntax(CSSSyntaxType syntax,
       return std::make_unique<CSSColorInterpolationType>(property,
                                                          &registration);
     case CSSSyntaxType::kLength:
+      return std::make_unique<CSSCustomLengthInterpolationType>(property,
+                                                                &registration);
     case CSSSyntaxType::kLengthPercentage:
-    case CSSSyntaxType::kPercentage:
       return std::make_unique<CSSLengthInterpolationType>(property,
                                                           &registration);
+    case CSSSyntaxType::kPercentage:
+      return std::make_unique<CSSPercentageInterpolationType>(property,
+                                                              &registration);
     case CSSSyntaxType::kNumber:
       return std::make_unique<CSSNumberInterpolationType>(property,
                                                           &registration);

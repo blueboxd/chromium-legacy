@@ -15,6 +15,7 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
+      "position": [50, 0],
       "bounds": [600, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
@@ -25,7 +26,7 @@
           "reason": "appeared"
         }
       ],
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -46,16 +47,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [-365, 0, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [50, 0, 0, 1]
       ]
     }
   ]

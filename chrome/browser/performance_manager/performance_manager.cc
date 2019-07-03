@@ -17,7 +17,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
@@ -263,11 +265,11 @@ void PerformanceManager::OnStartImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
+  graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
+  graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
 
   // Register new |GraphImplObserver| implementations here.
   RegisterObserver(std::make_unique<MetricsCollector>());
-  RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
-  RegisterObserver(std::make_unique<IsolationContextMetrics>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))

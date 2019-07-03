@@ -11,34 +11,23 @@
       "bounds": [800, 600]
     },
     {
-      "name": "LayoutBlockFlow DIV",
+      "name": "LayoutNGBlockFlow DIV",
+      "position": [8, 8],
       "bounds": [800, 800],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
-      "transform": 1
+      "backgroundColor": "#D3D3D3"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "position": [400, 400],
       "bounds": [200, 200],
       "contentsOpaque": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='imgElement'",
+          "object": "LayoutNGBlockFlow DIV id='imgElement'",
           "rect": [0, 0, 200, 200],
           "reason": "background"
         }
-      ]
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
       ]
     }
   ]

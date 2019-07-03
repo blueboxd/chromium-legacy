@@ -86,7 +86,7 @@ class X11WindowOzone : public PlatformWindow,
   bool mapped_;
   gfx::Rect bounds_;
   base::string16 window_title_;
-  ui::PlatformWindowState state_;
+  PlatformWindowState state_;
   base::flat_set<XAtom> window_properties_;
 
   // Tells if this dispatcher can process next translated event based on a

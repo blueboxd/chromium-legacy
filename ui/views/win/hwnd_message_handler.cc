@@ -446,6 +446,16 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
   delegate_->GetHWNDMessageDelegateInputMethod()->AddObserver(this);
 
+  // The usual way for UI Automation to obtain a fragment root is through
+  // WM_GETOBJECT. However, if there's a relation such as "Controller For"
+  // between element A in one window and element B in another window, UIA might
+  // call element A to discover the relation, receive a pointer to element B,
+  // then ask element B for its fragment root, without having sent WM_GETOBJECT
+  // to element B's window.
+  // So we create the fragment root now to ensure it's ready if asked for.
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), this);
+
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());
 }
@@ -1217,6 +1227,14 @@ void HWNDMessageHandler::ApplyPanGestureFlingEnd() {
                        ui::ScrollEventPhase::kNone);
 }
 
+gfx::NativeViewAccessible HWNDMessageHandler::GetChildOfAXFragmentRoot() {
+  return delegate_->GetNativeViewAccessible();
+}
+
+gfx::NativeViewAccessible HWNDMessageHandler::GetParentOfAXFragmentRoot() {
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
 
@@ -1770,9 +1788,6 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
     if (is_uia_request &&
         ::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
       // Retrieve UIA object for the root view.
-      if (!ax_fragment_root_)
-        ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(
-            hwnd(), delegate_->GetNativeViewAccessible());
       Microsoft::WRL::ComPtr<IRawElementProviderSimple> root;
       ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
           IID_PPV_ARGS(&root));

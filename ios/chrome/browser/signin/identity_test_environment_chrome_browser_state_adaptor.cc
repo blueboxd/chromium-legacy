@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/device_accounts_provider_impl.h"

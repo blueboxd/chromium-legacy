@@ -8,13 +8,106 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "base/macros.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace viz {
+
+namespace {
+
+class ScopedPixmap {
+ public:
+  ScopedPixmap(XDisplay* display, Pixmap pixmap)
+      : display_(display), pixmap_(pixmap) {}
+
+  ~ScopedPixmap() {
+    if (pixmap_)
+      XFreePixmap(display_, pixmap_);
+  }
+
+  operator Pixmap() const { return pixmap_; }
+
+ private:
+  XDisplay* display_;
+  Pixmap pixmap_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedPixmap);
+};
+
+// Draw |data| over |widget|'s parent-relative background, and write the
+// resulting image to |widget|.  Returns true on success.
+bool CompositeBitmap(XDisplay* display,
+                     XID widget,
+                     int x,
+                     int y,
+                     int width,
+                     int height,
+                     int depth,
+                     GC gc,
+                     const void* data) {
+  XClearArea(display, widget, x, y, width, height, false);
+
+  std::unique_ptr<XImage, ui::XImageDeleter> bg;
+  {
+    gfx::X11ErrorTracker ignore_x_errors;
+    bg.reset(
+        XGetImage(display, widget, x, y, width, height, AllPlanes, ZPixmap));
+  }
+
+  // XGetImage() may fail if the drawable is a window and the window is not
+  // fully in the bounds of its parent.
+  if (!bg) {
+    ScopedPixmap pixmap(display,
+                        XCreatePixmap(display, widget, width, height, depth));
+    if (!pixmap)
+      return false;
+
+    XGCValues gcv;
+    gcv.subwindow_mode = IncludeInferiors;
+    XChangeGC(display, gc, GCSubwindowMode, &gcv);
+
+    XCopyArea(display, widget, pixmap, gc, x, y, width, height, 0, 0);
+
+    gcv.subwindow_mode = ClipByChildren;
+    XChangeGC(display, gc, GCSubwindowMode, &gcv);
+
+    bg.reset(
+        XGetImage(display, pixmap, 0, 0, width, height, AllPlanes, ZPixmap));
+  }
+
+  if (!bg)
+    return false;
+
+  SkBitmap bg_bitmap;
+  SkImageInfo image_info =
+      SkImageInfo::Make(bg->width, bg->height,
+                        bg->byte_order == LSBFirst ? kBGRA_8888_SkColorType
+                                                   : kRGBA_8888_SkColorType,
+                        kPremul_SkAlphaType);
+  if (!bg_bitmap.installPixels(image_info, bg->data, bg->bytes_per_line))
+    return false;
+  SkCanvas canvas(bg_bitmap);
+
+  SkBitmap fg_bitmap;
+  image_info = SkImageInfo::Make(width, height, kBGRA_8888_SkColorType,
+                                 kPremul_SkAlphaType);
+  if (!fg_bitmap.installPixels(image_info, const_cast<void*>(data), 4 * width))
+    return false;
+  canvas.drawBitmap(fg_bitmap, 0, 0);
+  canvas.flush();
+
+  XPutImage(display, widget, gc, bg.get(), x, y, x, y, width, height);
+
+  XFlush(display);
+  return true;
+}
+
+}  // namespace
 
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
     : widget_(widget), display_(gfx::GetXDisplay()), gc_(nullptr) {
@@ -25,6 +118,7 @@ SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
     LOG(ERROR) << "XGetWindowAttributes failed for window " << widget_;
     return;
   }
+  ui::GetIntProperty(widget_, "CHROMIUM_COMPOSITE_WINDOW", &composite_);
 }
 
 SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
@@ -45,6 +139,15 @@ void SoftwareOutputDeviceX11::EndPaint() {
   rect.Intersect(gfx::Rect(viewport_pixel_size_));
   if (rect.IsEmpty())
     return;
+
+  if (composite_) {
+    SkPixmap pixmap;
+    surface_->peekPixels(&pixmap);
+    if (CompositeBitmap(display_, widget_, rect.x(), rect.y(), rect.width(),
+                        rect.height(), attributes_.depth, gc_, pixmap.addr())) {
+      return;
+    }
+  }
 
   int bpp = gfx::BitsPerPixelForPixmapDepth(display_, attributes_.depth);
 

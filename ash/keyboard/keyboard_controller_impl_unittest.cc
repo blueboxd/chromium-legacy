@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/keyboard/ui/container_behavior.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
@@ -113,8 +113,8 @@ class KeyboardControllerImplTest : public AshTestBase {
   KeyboardControllerImpl* keyboard_controller() {
     return Shell::Get()->keyboard_controller();
   }
-  keyboard::KeyboardController* keyboard_ui_controller() {
-    return keyboard_controller()->keyboard_controller();
+  keyboard::KeyboardUIController* keyboard_ui_controller() {
+    return keyboard_controller()->keyboard_ui_controller();
   }
   TestKeyboardControllerObserver* test_observer() {
     return ash_test_helper()->test_keyboard_controller_observer();

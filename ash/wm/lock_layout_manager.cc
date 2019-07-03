@@ -4,7 +4,7 @@
 
 #include "ash/wm/lock_layout_manager.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_window_state.h"
@@ -23,12 +23,12 @@ LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
       shelf_observer_(this) {
   Shell::Get()->AddShellObserver(this);
   root_window_->AddObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
   shelf_observer_.Add(shelf);
 }
 
 LockLayoutManager::~LockLayoutManager() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
 
   if (root_window_)
     root_window_->RemoveObserver(this);
@@ -58,9 +58,9 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   // Disable virtual keyboard overscroll because it interferes with scrolling
   // login/lock content. See crbug.com/363635.
   keyboard::KeyboardConfig config =
-      keyboard::KeyboardController::Get()->keyboard_config();
+      keyboard::KeyboardUIController::Get()->keyboard_config();
   config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDisabled;
-  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+  keyboard::KeyboardUIController::Get()->UpdateKeyboardConfig(config);
 }
 
 void LockLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
@@ -69,9 +69,9 @@ void LockLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 
 void LockLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   keyboard::KeyboardConfig config =
-      keyboard::KeyboardController::Get()->keyboard_config();
+      keyboard::KeyboardUIController::Get()->keyboard_config();
   config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDefault;
-  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+  keyboard::KeyboardUIController::Get()->UpdateKeyboardConfig(config);
 }
 
 void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,

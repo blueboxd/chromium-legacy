@@ -62,7 +62,7 @@ namespace {
 const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
     "Omnibox.QueryIosLocationAuthorizationStatus";
 // The number of possible CLAuthorizationStatus values to report.
-const int kLocationAuthorizationStatusCount = 4;
+const int kLocationAuthorizationStatusCount = 5;
 }  // namespace
 
 @interface LocationBarCoordinator ()<LoadQueryCommands,

@@ -18,10 +18,6 @@
 #include "build/build_config.h"
 #include "mojo/core/embedder/configuration.h"
 
-namespace base {
-class PortProvider;
-}
-
 namespace mojo {
 namespace core {
 
@@ -49,15 +45,6 @@ void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback);
 // Retrieves the TaskRunner used for IPC I/O, as set by ScopedIPCSupport.
 COMPONENT_EXPORT(MOJO_CORE_EMBEDDER)
 scoped_refptr<base::TaskRunner> GetIOTaskRunner();
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-// Set the |base::PortProvider| for this process. Can be called on any thread,
-// but must be set in the root process before any Mach ports can be transferred.
-//
-// If called at all, this must be called while a ScopedIPCSupport exists.
-COMPONENT_EXPORT(MOJO_CORE_EMBEDDER)
-void SetMachPortProvider(base::PortProvider* port_provider);
-#endif
 
 }  // namespace core
 }  // namespace mojo

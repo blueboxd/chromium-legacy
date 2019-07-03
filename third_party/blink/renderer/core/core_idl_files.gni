@@ -519,8 +519,8 @@ core_idl_with_modules_dependency_files =
 # interfaces with static bindings (in bindings/core/v8/)
 core_dependency_idl_files =
     get_path_info([
+                    "animation/animatable.idl",
                     "animation/document_animation.idl",
-                    "animation/element_animation.idl",
                     "css/font_face_source.idl",
                     "css/property_registration.idl",
                     "css/cssom/css_unit_values.idl",

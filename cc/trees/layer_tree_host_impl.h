@@ -258,7 +258,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
-      const gfx::ScrollOffset& root_offset) override;
+      const gfx::ScrollOffset& root_content_offset) override;
   void ScrollEnd(ScrollState* scroll_state, bool should_snap = false) override;
 
   InputHandlerPointerResult MouseDown(

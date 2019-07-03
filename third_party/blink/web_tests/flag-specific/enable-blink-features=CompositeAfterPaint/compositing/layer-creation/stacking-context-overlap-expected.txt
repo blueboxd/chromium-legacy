@@ -7,27 +7,16 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV class='trigger'",
+      "name": "LayoutNGBlockFlow DIV class='trigger'",
+      "position": [8, 8],
       "bounds": [20, 20],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 1
+      "backgroundColor": "#0000FF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='container'",
       "position": [8, 18],
       "bounds": [142, 142]
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
     }
   ]
 }

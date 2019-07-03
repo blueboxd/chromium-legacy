@@ -17,11 +17,6 @@ namespace vr {
 // Immersive AR sessions use callbacks in the following sequence:
 //
 // RequestArSession
-// [show consent prompt]
-// if consent declined, or if camera permission refused after consent:
-//   DestroyedCallback
-//
-// if accepted:
 //   SurfaceReadyCallback
 //   SurfaceTouchCallback (repeated for each touch)
 //   [exit session via "back" button, or via JS session exit]

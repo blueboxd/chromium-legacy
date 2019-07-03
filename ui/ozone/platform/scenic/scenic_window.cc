@@ -135,7 +135,7 @@ void ScenicWindow::Restore() {
 }
 
 PlatformWindowState ScenicWindow::GetPlatformWindowState() const {
-  return PLATFORM_WINDOW_STATE_NORMAL;
+  return PlatformWindowState::kNormal;
 }
 
 void ScenicWindow::SetCursor(PlatformCursor cursor) {

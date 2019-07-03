@@ -506,6 +506,10 @@ void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
   // complete. See also crbug.com/944107.
   // TODO(eseckler): Avoid the nestedRunLoop here somehow.
   base::RunLoop run_loop;
+  // We may not have completed startup yet when we attempt to write the trace,
+  // and thus tasks with BEST_EFFORT may not be run. Choose a non-background
+  // priority to avoid blocking forever.
+  const base::TaskPriority kWritePriority = base::TaskPriority::USER_VISIBLE;
   bool success = StopTracing(CreateFileEndpoint(
       startup_trace_file.value(),
       base::BindRepeating(
@@ -513,7 +517,8 @@ void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
             OnStoppedStartupTracing(trace_file);
             std::move(quit_closure).Run();
           },
-          startup_trace_file.value(), run_loop.QuitClosure())));
+          startup_trace_file.value(), run_loop.QuitClosure()),
+      kWritePriority));
   if (!success)
     return;
   run_loop.Run();

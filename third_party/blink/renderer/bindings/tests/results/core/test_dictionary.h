@@ -242,13 +242,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   void setObjectOrNullMember(ScriptValue);
   void setObjectOrNullMemberToNull();
 
-  bool hasOriginTrialFourthMember() const { return has_origin_trial_fourth_member_; }
-  bool originTrialFourthMember() const {
-    DCHECK(has_origin_trial_fourth_member_);
-    return origin_trial_fourth_member_;
-  }
-  inline void setOriginTrialFourthMember(bool);
-
   bool hasOriginTrialMember() const { return has_origin_trial_member_; }
   bool originTrialMember() const {
     DCHECK(has_origin_trial_member_);
@@ -262,13 +255,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return origin_trial_second_member_;
   }
   inline void setOriginTrialSecondMember(bool);
-
-  bool hasOriginTrialThirdMember() const { return has_origin_trial_third_member_; }
-  bool originTrialThirdMember() const {
-    DCHECK(has_origin_trial_third_member_);
-    return origin_trial_third_member_;
-  }
-  inline void setOriginTrialThirdMember(bool);
 
   bool hasOtherDoubleOrStringMember() const { return !other_double_or_string_member_.IsNull(); }
   const DoubleOrString& otherDoubleOrStringMember() const {
@@ -488,10 +474,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_is_public_ = false;
   bool has_long_member_ = false;
   bool has_member_with_hyphen_in_name_ = false;
-  bool has_origin_trial_fourth_member_ = false;
   bool has_origin_trial_member_ = false;
   bool has_origin_trial_second_member_ = false;
-  bool has_origin_trial_third_member_ = false;
   bool has_record_member_ = false;
   bool has_restricted_double_member_ = false;
   bool has_runtime_member_ = false;
@@ -537,10 +521,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool member_with_hyphen_in_name_;
   ScriptValue object_member_;
   ScriptValue object_or_null_member_;
-  bool origin_trial_fourth_member_;
   bool origin_trial_member_;
   bool origin_trial_second_member_;
-  bool origin_trial_third_member_;
   DoubleOrString other_double_or_string_member_;
   Vector<std::pair<String, int8_t>> record_member_;
   Member<V8VoidCallbackFunction> required_callback_function_member_;
@@ -648,11 +630,6 @@ void TestDictionary::setMemberWithHyphenInName(bool value) {
   has_member_with_hyphen_in_name_ = true;
 }
 
-void TestDictionary::setOriginTrialFourthMember(bool value) {
-  origin_trial_fourth_member_ = value;
-  has_origin_trial_fourth_member_ = true;
-}
-
 void TestDictionary::setOriginTrialMember(bool value) {
   origin_trial_member_ = value;
   has_origin_trial_member_ = true;
@@ -661,11 +638,6 @@ void TestDictionary::setOriginTrialMember(bool value) {
 void TestDictionary::setOriginTrialSecondMember(bool value) {
   origin_trial_second_member_ = value;
   has_origin_trial_second_member_ = true;
-}
-
-void TestDictionary::setOriginTrialThirdMember(bool value) {
-  origin_trial_third_member_ = value;
-  has_origin_trial_third_member_ = true;
 }
 
 void TestDictionary::setRestrictedDoubleMember(double value) {

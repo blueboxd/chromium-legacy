@@ -14,39 +14,17 @@
     },
     {
       "name": "LayoutImage (positioned) IMG",
-      "position": [10, 10],
+      "position": [10, 260],
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "backgroundColor": "#000000",
-      "transform": 1
+      "backgroundColor": "#000000"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner box'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited inner box'",
+      "position": [500, 370],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 2
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 250, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [500, 120, 0, 1]
-      ]
+      "backgroundColor": "#0000FF"
     }
   ]
 }

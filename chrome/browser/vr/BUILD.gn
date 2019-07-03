@@ -267,6 +267,13 @@ component("vr_common") {
     "platform_controller_for_testing.h",
   ]
 
+  if (enable_arcore) {
+    sources += [
+      "service/arcore_consent_prompt_interface.cc",
+      "service/arcore_consent_prompt_interface.h",
+    ]
+  }
+
   public_deps = [
     ":vr_base",
   ]

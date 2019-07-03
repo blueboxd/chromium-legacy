@@ -87,6 +87,12 @@ class BASE_EXPORT SequenceManager {
     // If true, add the timestamp the task got queued to the task.
     bool add_queue_time_to_tasks = false;
 
+    // If true, the scheduler will bypass the priority-based anti-starvation
+    // logic that prevents indefinite starvation of lower priority tasks in the
+    // presence of higher priority tasks by occasionally selecting lower
+    // priority task queues over higher priority task queues.
+    bool anti_starvation_logic_for_priorities_disabled = false;
+
 #if DCHECK_IS_ON()
     // TODO(alexclarke): Consider adding command line flags to control these.
     enum class TaskLogging {
@@ -249,6 +255,18 @@ class BASE_EXPORT SequenceManager::Settings::Builder {
 
   // Whether or not queueing timestamp will be added to tasks.
   Builder& SetAddQueueTimeToTasks(bool add_queue_time_to_tasks);
+
+  // Sets whether priority-based anti-starvation logic is disabled. By default,
+  // the scheduler uses priority-based anti-starvation logic that prevents
+  // indefinite starvation of lower priority tasks in the presence of higher
+  // priority tasks by occasionally selecting lower priority task queues over
+  // higher priority task queues.
+  //
+  // Note: this does not affect the anti-starvation logic that is in place for
+  // preventing delayed tasks from starving immediate tasks, which is always
+  // enabled.
+  Builder& SetAntiStarvationLogicForPrioritiesDisabled(
+      bool anti_starvation_logic_for_priorities_disabled);
 
 #if DCHECK_IS_ON()
   // Controls task execution logging.

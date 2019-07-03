@@ -33,6 +33,7 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -503,12 +504,13 @@ void CSSGradientValue::AddStops(
       } else if (stop.offset_->IsLength() ||
                  stop.offset_->IsCalculatedPercentageWithLength()) {
         float length;
-        if (stop.offset_->IsLength())
+        if (stop.offset_->IsLength()) {
           length = stop.offset_->ComputeLength<float>(conversion_data);
-        else
-          length = stop.offset_->CssCalcValue()
+        } else {
+          length = To<CSSMathFunctionValue>(stop.offset_.Get())
                        ->ToCalcValue(conversion_data)
                        ->Evaluate(gradient_length);
+        }
         stops[i].offset = (gradient_length > 0) ? length / gradient_length : 0;
       } else if (stop.offset_->IsAngle()) {
         stops[i].offset = stop.offset_->ComputeDegrees() / 360.0f;
@@ -682,7 +684,7 @@ static float PositionFromValue(const CSSValue* value,
            sign * primitive_value->GetFloatValue() / 100.f * edge_distance;
 
   if (primitive_value->IsCalculatedPercentageWithLength())
-    return origin + sign * primitive_value->CssCalcValue()
+    return origin + sign * To<CSSMathFunctionValue>(primitive_value)
                                ->ToCalcValue(conversion_data)
                                ->Evaluate(edge_distance);
 

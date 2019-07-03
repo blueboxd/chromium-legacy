@@ -9,7 +9,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -107,7 +107,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   root_window_->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   backdrop_controller_ = std::make_unique<BackdropController>(window_);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
   settings_bubble_container_ = window->GetRootWindow()->GetChildById(
       kShellWindowId_SettingBubbleContainer);
   autoclick_bubble_container_ =
@@ -131,7 +131,7 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
 }
 
 void WorkspaceLayoutManager::SetBackdropDelegate(
@@ -217,7 +217,7 @@ void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
 void WorkspaceLayoutManager::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& new_bounds) {
   auto* keyboard_window =
-      keyboard::KeyboardController::Get()->GetKeyboardWindow();
+      keyboard::KeyboardUIController::Get()->GetKeyboardWindow();
   if (keyboard_window && keyboard_window->GetRootWindow() == root_window_)
     NotifySystemUiAreaChanged();
 }

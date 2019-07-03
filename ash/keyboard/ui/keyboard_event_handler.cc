@@ -4,7 +4,7 @@
 
 #include "ash/keyboard/ui/keyboard_event_handler.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/vector2d.h"
 
@@ -31,7 +31,7 @@ void KeyboardEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void KeyboardEventHandler::ProcessPointerEvent(ui::LocatedEvent* event) {
-  auto* controller = KeyboardController::Get();
+  auto* controller = KeyboardUIController::Get();
   if (controller->IsEnabled() && controller->HandlePointerEvent(*event))
     event->SetHandled();
 }

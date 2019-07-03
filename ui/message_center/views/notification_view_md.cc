@@ -638,6 +638,7 @@ void NotificationViewMD::Layout() {
   }
 
   // The animation is needed to run inside of the border.
+  ink_drop_container_->SetBoundsRect(GetLocalBounds());
   if (ink_drop_layer_)
     ink_drop_layer_->SetBounds(GetContentsBounds());
   if (ink_drop_mask_)

@@ -2037,7 +2037,7 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
     value = self._driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
-  def testSendKeysToElementAppend(self):
+  def testSendKeysToElementDoesNotAppend(self):
       self._driver.Load(self.GetHttpUrlForFile(
           '/chromedriver/empty.html'))
       textControlTypes = ["text", "search", "tel", "url",  "password"]
@@ -2052,7 +2052,7 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
           element.SendKeys('hello')
           value = self._driver.ExecuteScript('return arguments[0].value;',
                                              element)
-          self.assertEquals('send_this_valuehello', value)
+          self.assertEquals('hellosend_this_value', value)
 
   def testSendKeysToEditableElement(self):
       self._driver.Load(self.GetHttpUrlForFile(

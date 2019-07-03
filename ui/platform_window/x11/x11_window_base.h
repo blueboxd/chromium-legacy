@@ -91,7 +91,7 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   base::flat_set<::Atom> window_properties_;
 
   // Stores current state of this window.
-  ui::PlatformWindowState state_;
+  PlatformWindowState state_;
 
   // Keep track of barriers to confine cursor.
   bool has_pointer_barriers_ = false;

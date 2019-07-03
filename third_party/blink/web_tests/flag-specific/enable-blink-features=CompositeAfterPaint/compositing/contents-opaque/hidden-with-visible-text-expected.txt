@@ -8,21 +8,10 @@ Caption
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='caption'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='caption'",
+      "position": [8, 13],
       "bounds": [50, 19],
-      "backgroundColor": "#0000FF",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 13, 0, 1]
-      ]
+      "backgroundColor": "#0000FF"
     }
   ]
 }

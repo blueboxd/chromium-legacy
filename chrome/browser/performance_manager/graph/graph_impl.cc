@@ -165,6 +165,22 @@ std::unique_ptr<GraphOwned> GraphImpl::TakeFromGraph(GraphOwned* graph_owned) {
   return object;
 }
 
+const SystemNode* GraphImpl::FindOrCreateSystemNode() {
+  return FindOrCreateSystemNodeImpl();
+}
+
+std::vector<const ProcessNode*> GraphImpl::GetAllProcessNodes() const {
+  return GetAllNodesOfType<ProcessNodeImpl, const ProcessNode*>();
+}
+
+std::vector<const FrameNode*> GraphImpl::GetAllFrameNodes() const {
+  return GetAllNodesOfType<FrameNodeImpl, const FrameNode*>();
+}
+
+std::vector<const PageNode*> GraphImpl::GetAllPageNodes() const {
+  return GetAllNodesOfType<PageNodeImpl, const PageNode*>();
+}
+
 void GraphImpl::RegisterObserver(GraphImplObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer->SetGraph(this);
@@ -292,7 +308,7 @@ int64_t GraphImpl::GetNextNodeSerializationId() {
   return ++current_node_serialization_id_;
 }
 
-SystemNodeImpl* GraphImpl::FindOrCreateSystemNode() {
+SystemNodeImpl* GraphImpl::FindOrCreateSystemNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!system_node_) {
     // Create the singleton system node instance. Ownership is taken by the
@@ -319,16 +335,16 @@ ProcessNodeImpl* GraphImpl::GetProcessNodeByPid(base::ProcessId pid) {
   return ProcessNodeImpl::FromNodeBase(it->second);
 }
 
-std::vector<ProcessNodeImpl*> GraphImpl::GetAllProcessNodes() {
-  return GetAllNodesOfType<ProcessNodeImpl>();
+std::vector<ProcessNodeImpl*> GraphImpl::GetAllProcessNodeImpls() const {
+  return GetAllNodesOfType<ProcessNodeImpl, ProcessNodeImpl*>();
 }
 
-std::vector<FrameNodeImpl*> GraphImpl::GetAllFrameNodes() {
-  return GetAllNodesOfType<FrameNodeImpl>();
+std::vector<FrameNodeImpl*> GraphImpl::GetAllFrameNodeImpls() const {
+  return GetAllNodesOfType<FrameNodeImpl, FrameNodeImpl*>();
 }
 
-std::vector<PageNodeImpl*> GraphImpl::GetAllPageNodes() {
-  return GetAllNodesOfType<PageNodeImpl>();
+std::vector<PageNodeImpl*> GraphImpl::GetAllPageNodeImpls() const {
+  return GetAllNodesOfType<PageNodeImpl, PageNodeImpl*>();
 }
 
 size_t GraphImpl::GetNodeAttachedDataCountForTesting(const Node* node,
@@ -393,11 +409,11 @@ void GraphImpl::BeforeProcessPidChange(ProcessNodeImpl* process,
     processes_by_pid_[new_pid] = process;
 }
 
-template <typename NodeType>
-std::vector<NodeType*> GraphImpl::GetAllNodesOfType() {
+template <typename NodeType, typename ReturnNodeType>
+std::vector<ReturnNodeType> GraphImpl::GetAllNodesOfType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto type = NodeType::Type();
-  std::vector<NodeType*> ret;
+  std::vector<ReturnNodeType> ret;
   for (auto* node : nodes_) {
     if (node->type() == type)
       ret.push_back(NodeType::FromNodeBase(node));

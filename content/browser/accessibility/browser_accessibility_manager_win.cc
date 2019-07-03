@@ -573,21 +573,6 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
                                                       changes);
 
-  if (root_changed && IsRootTree() &&
-      switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
-    // If a fragment root has been created, inform it that the content root has
-    // changed.
-    BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-    if (root_delegate) {
-      ui::AXFragmentRootWin* fragment_root =
-          ui::AXFragmentRootWin::GetForAcceleratedWidget(
-              root_delegate->AccessibilityGetAcceleratedWidget());
-      if (fragment_root) {
-        fragment_root->SetChild(ToBrowserAccessibilityWin(GetRoot())->GetCOM());
-      }
-    }
-  }
-
   // Do a sequence of Windows-specific updates on each node. Each one is
   // done in a single pass that must complete before the next step starts.
   // The nodes that need to be updated are all of the nodes that were changed,

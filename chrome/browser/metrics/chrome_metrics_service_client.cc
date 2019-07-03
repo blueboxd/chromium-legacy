@@ -27,6 +27,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -75,6 +76,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
@@ -178,6 +180,9 @@ const int kMaxHistogramStorageKiB = 500 << 10;  // 500 MiB
 // This specifies the amount of time to wait for all renderers to send their
 // data.
 const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
+
+// The minimum time in seconds between consecutive metrics report uploads.
+const int kMetricsUploadIntervalSecMinimum = 20;
 
 // Needs to be kept in sync with the writer in
 // third_party/crashpad/crashpad/handler/handler_main.cc.
@@ -523,6 +528,21 @@ ChromeMetricsServiceClient::CreateUploader(
 }
 
 base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
+  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  // If an upload interval is set from the command line, use that value but
+  // subject it to a minimum threshold to mitigate the risk of DDoS attack.
+  if (command_line->HasSwitch(metrics::switches::kMetricsUploadIntervalSec)) {
+    const std::string switchValue = command_line->GetSwitchValueASCII(
+        metrics::switches::kMetricsUploadIntervalSec);
+    int custom_upload_interval;
+    if (base::StringToInt(switchValue, &custom_upload_interval)) {
+      return base::TimeDelta::FromSeconds(
+          std::max(custom_upload_interval, kMetricsUploadIntervalSecMinimum));
+    } else {
+      LOG(DFATAL) << "Malformed value for --metrics-upload-interval. "
+                  << "Expected int, got: " << switchValue;
+    }
+  }
   return metrics::GetUploadInterval();
 }
 

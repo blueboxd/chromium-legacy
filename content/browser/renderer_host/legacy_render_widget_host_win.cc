@@ -183,6 +183,14 @@ bool LegacyRenderWidgetHostHWND::Init() {
     hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
                                      IID_PPV_ARGS(&window_accessible_));
   } else {
+    // The usual way for UI Automation to obtain a fragment root is through
+    // WM_GETOBJECT. However, if there's a relation such as "Controller For"
+    // between element A in one window and element B in another window, UIA
+    // might call element A to discover the relation, receive a pointer to
+    // element B, then ask element B for its fragment root, without having sent
+    // WM_GETOBJECT to element B's window. So we create the fragment root now to
+    // ensure it's ready if asked for.
+    ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), this);
     hr = S_OK;
   }
 
@@ -255,10 +263,6 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
       BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
     }
 
-    gfx::NativeViewAccessible root = GetOrCreateWindowRootAccessible();
-    if (root == nullptr)
-      return static_cast<LRESULT>(0L);
-
     if (is_uia_request) {
       Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_uia;
       ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
@@ -266,6 +270,10 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
       return UiaReturnRawElementProvider(hwnd(), w_param, l_param,
                                          root_uia.Get());
     } else {
+      gfx::NativeViewAccessible root = GetOrCreateBrowserAccessibilityRoot();
+      if (root == nullptr)
+        return static_cast<LRESULT>(0L);
+
       Microsoft::WRL::ComPtr<IAccessible> root_msaa(root);
       return LresultFromObject(IID_IAccessible, w_param, root_msaa.Get());
     }
@@ -563,7 +571,28 @@ void LegacyRenderWidgetHostHWND::PollForNextEvent() {
 }
 
 gfx::NativeViewAccessible
+LegacyRenderWidgetHostHWND::GetChildOfAXFragmentRoot() {
+  return GetOrCreateBrowserAccessibilityRoot();
+}
+
+gfx::NativeViewAccessible
+LegacyRenderWidgetHostHWND::GetParentOfAXFragmentRoot() {
+  if (host_)
+    return host_->GetParentNativeViewAccessible();
+  return nullptr;
+}
+
+gfx::NativeViewAccessible
 LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible() {
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    return ax_fragment_root_->GetNativeViewAccessible();
+  }
+
+  return GetOrCreateBrowserAccessibilityRoot();
+}
+
+gfx::NativeViewAccessible
+LegacyRenderWidgetHostHWND::GetOrCreateBrowserAccessibilityRoot() {
   if (!host_)
     return nullptr;
 
@@ -578,19 +607,7 @@ LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible() {
   if (!manager || !manager->GetRoot())
     return nullptr;
 
-  BrowserAccessibilityComWin* root =
-      ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
-
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
-    if (!ax_fragment_root_) {
-      ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), root);
-      ax_fragment_root_->SetParent(host_->GetParentNativeViewAccessible());
-    }
-
-    return ax_fragment_root_->GetNativeViewAccessible();
-  }
-
-  return root->GetNativeViewAccessible();
+  return manager->GetRoot()->GetNativeViewAccessible();
 }
 
 void LegacyRenderWidgetHostHWND::CreateAnimationObserver() {

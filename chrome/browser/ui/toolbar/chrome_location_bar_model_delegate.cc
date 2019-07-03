@@ -12,6 +12,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ui/login/login_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"
@@ -94,11 +95,18 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   if (!entry)
     return true;
 
-  security_interstitials::SecurityInterstitialTabHelper* tab_helper =
-      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-          GetActiveWebContents());
-  if (tab_helper && tab_helper->IsDisplayingInterstitial())
-    return tab_helper->ShouldDisplayURL();
+  security_interstitials::SecurityInterstitialTabHelper*
+      security_interstitial_tab_helper =
+          security_interstitials::SecurityInterstitialTabHelper::
+              FromWebContents(GetActiveWebContents());
+  if (security_interstitial_tab_helper &&
+      security_interstitial_tab_helper->IsDisplayingInterstitial())
+    return security_interstitial_tab_helper->ShouldDisplayURL();
+
+  LoginTabHelper* login_tab_helper =
+      LoginTabHelper::FromWebContents(GetActiveWebContents());
+  if (login_tab_helper && login_tab_helper->IsShowingPrompt())
+    return login_tab_helper->ShouldDisplayURL();
 
   if (entry->IsViewSourceMode() ||
       entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {

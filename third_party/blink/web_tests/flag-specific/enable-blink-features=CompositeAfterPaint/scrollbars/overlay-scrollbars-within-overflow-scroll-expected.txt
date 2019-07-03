@@ -7,18 +7,18 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='inner'",
+      "name": "LayoutNGBlockFlow DIV id='inner'",
       "bounds": [102, 102],
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow DIV id='inner'",
+      "name": "LayoutNGBlockFlow DIV id='inner'",
       "position": [94, 1],
       "bounds": [7, 100],
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow DIV id='outer'",
+      "name": "LayoutNGBlockFlow DIV id='outer'",
       "position": [394, 1],
       "bounds": [7, 300]
     }

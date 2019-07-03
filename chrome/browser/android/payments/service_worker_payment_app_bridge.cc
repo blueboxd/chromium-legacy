@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace {
@@ -351,6 +352,8 @@ static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
+    const JavaParamRef<jstring>& jservice_worker_scope,
+    const JavaParamRef<jstring>& jpayment_request_id,
     const JavaParamRef<jstring>& jtop_origin,
     const JavaParamRef<jstring>& jpayment_request_origin,
     const JavaParamRef<jobjectArray>& jmethod_data,
@@ -401,7 +404,10 @@ static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(
   }
 
   content::PaymentAppProvider::GetInstance()->CanMakePayment(
-      web_contents->GetBrowserContext(), registration_id, std::move(event_data),
+      web_contents->GetBrowserContext(), registration_id,
+      url::Origin::Create(
+          GURL(ConvertJavaStringToUTF8(env, jservice_worker_scope))),
+      ConvertJavaStringToUTF8(env, jpayment_request_id), std::move(event_data),
       base::BindOnce(&OnCanMakePayment,
                      ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
@@ -411,6 +417,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
+    const JavaParamRef<jstring>& jservice_worker_scope,
     const JavaParamRef<jstring>& jtop_origin,
     const JavaParamRef<jstring>& jpayment_request_origin,
     const JavaParamRef<jstring>& jpayment_request_id,
@@ -424,6 +431,8 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
 
   content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
       web_contents->GetBrowserContext(), registration_id,
+      url::Origin::Create(
+          GURL(ConvertJavaStringToUTF8(env, jservice_worker_scope))),
       ConvertPaymentRequestEventDataFromJavaToNative(
           env, jtop_origin, jpayment_request_origin, jpayment_request_id,
           jmethod_data, jtotal, jmodifiers, payment_handler_host),
@@ -475,12 +484,17 @@ static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
+    const JavaParamRef<jstring>& jservice_worker_scope,
+    const JavaParamRef<jstring>& jpayment_request_id,
     const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
   content::PaymentAppProvider::GetInstance()->AbortPayment(
       web_contents->GetBrowserContext(), registration_id,
+      url::Origin::Create(
+          GURL(ConvertJavaStringToUTF8(env, jservice_worker_scope))),
+      ConvertJavaStringToUTF8(env, jpayment_request_id),
       base::BindOnce(&OnPaymentAppAborted,
                      ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));

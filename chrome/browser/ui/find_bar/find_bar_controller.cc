@@ -26,7 +26,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
@@ -104,7 +103,7 @@ FindBarController::~FindBarController() {
   DCHECK(!web_contents_);
 }
 
-void FindBarController::Show(bool find_next, bool forward_direction) {
+void FindBarController::Show() {
   FindTabHelper* find_tab_helper =
       FindTabHelper::FromWebContents(web_contents_);
 
@@ -117,24 +116,6 @@ void FindBarController::Show(bool find_next, bool forward_direction) {
     find_bar_->Show(true);
   }
   find_bar_->SetFocusAndSelection();
-
-  base::string16 find_text = GetSelectedText();
-
-#if defined(OS_MACOSX)
-  // We always want to search for the current contents of the find bar on
-  // OS X. For regular profile it's always the current find pboard. For
-  // Incognito window it's the newest value of the find pboard content and
-  // user-typed text.
-  find_text = find_bar_->GetFindText();
-#endif
-
-  if (!find_text.empty() || find_next) {
-    // Don't update the local input if we're using the global pasteboard.
-    if (!find_bar_->HasGlobalFindPasteboard())
-      find_bar_->SetFindTextAndSelectedRange(find_text,
-                                             find_tab_helper->selected_range());
-    find_tab_helper->StartFinding(find_text, forward_direction, false);
-  }
 }
 
 void FindBarController::EndFindSession(SelectionAction selection_action,
@@ -367,11 +348,4 @@ void FindBarController::MaybeSetPrepopulateText() {
   // clear the result count display when there's nothing in the box.
   find_bar_->SetFindTextAndSelectedRange(find_string,
                                          find_tab_helper->selected_range());
-}
-
-base::string16 FindBarController::GetSelectedText() {
-  auto* host_view = web_contents_->GetRenderWidgetHostView();
-  return host_view
-             ? base::CollapseWhitespace(host_view->GetSelectedText(), false)
-             : base::string16();
 }

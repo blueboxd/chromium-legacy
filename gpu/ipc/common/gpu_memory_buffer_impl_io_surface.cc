@@ -75,6 +75,12 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
     }
     return nullptr;
   }
+  int64_t io_surface_width = IOSurfaceGetWidth(io_surface);
+  int64_t io_surface_height = IOSurfaceGetHeight(io_surface);
+  if (io_surface_width < size.width() || io_surface_height < size.height()) {
+    DLOG(ERROR) << "IOSurface size does not match handle.";
+    return nullptr;
+  }
 
   return base::WrapUnique(new GpuMemoryBufferImplIOSurface(
       handle.id, size, format, std::move(callback), io_surface.release(),

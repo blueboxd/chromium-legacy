@@ -213,18 +213,6 @@ void Core::ConnectIsolated(ConnectionParams connection_params,
                                        connection_name);
 }
 
-void Core::SetMachPortProvider(base::PortProvider* port_provider) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  GetNodeController()->CreateMachPortRelay(port_provider);
-#endif
-}
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-MachPortRelay* Core::GetMachPortRelay() {
-  return GetNodeController()->GetMachPortRelay();
-}
-#endif
-
 MojoHandle Core::AddDispatcher(scoped_refptr<Dispatcher> dispatcher) {
   base::AutoLock lock(handles_->GetLock());
   return handles_->AddDispatcher(dispatcher);

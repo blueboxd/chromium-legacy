@@ -22,11 +22,6 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
-namespace {
-constexpr SkColor kInstallableInkDropPlaceholderColor =
-    SkColorSetA(SK_ColorBLACK, 0.08 * SK_AlphaOPAQUE);
-}  // namespace
-
 namespace views {
 
 const base::Feature kInstallableInkDropFeature{
@@ -34,8 +29,11 @@ const base::Feature kInstallableInkDropFeature{
 
 InstallableInkDrop::InstallableInkDrop(View* view)
     : view_(view),
+      layer_(std::make_unique<ui::Layer>()),
       event_handler_(view_, this),
-      layer_(std::make_unique<ui::Layer>()) {
+      animator_(&painter_,
+                base::Bind(&InstallableInkDrop::SchedulePaint,
+                           base::Unretained(this))) {
   // Catch if |view_| is destroyed out from under us.
   if (DCHECK_IS_ON())
     view_->AddObserver(this);
@@ -64,11 +62,11 @@ void InstallableInkDrop::HostSizeChanged(const gfx::Size& new_size) {
 }
 
 InkDropState InstallableInkDrop::GetTargetInkDropState() const {
-  return current_state_;
+  return animator_.target_state();
 }
 
 void InstallableInkDrop::AnimateToState(InkDropState ink_drop_state) {
-  current_state_ = ink_drop_state;
+  animator_.AnimateToState(ink_drop_state);
 }
 
 void InstallableInkDrop::SetHoverHighlightFadeDurationMs(int duration_ms) {
@@ -79,16 +77,28 @@ void InstallableInkDrop::UseDefaultHoverHighlightFadeDuration() {
   NOTREACHED();
 }
 
-void InstallableInkDrop::SnapToActivated() {}
+void InstallableInkDrop::SnapToActivated() {
+  // TODO(crbug.com/933384): do this without animation.
+  animator_.AnimateToState(InkDropState::ACTIVATED);
+}
 
-void InstallableInkDrop::SnapToHidden() {}
+void InstallableInkDrop::SnapToHidden() {
+  // TODO(crbug.com/933384): do this without animation.
+  animator_.AnimateToState(InkDropState::HIDDEN);
+}
 
-void InstallableInkDrop::SetHovered(bool is_hovered) {}
+void InstallableInkDrop::SetHovered(bool is_hovered) {
+  is_hovered_ = is_hovered;
+  UpdatePainterForCurrentState();
+}
 
-void InstallableInkDrop::SetFocused(bool is_focused) {}
+void InstallableInkDrop::SetFocused(bool is_focused) {
+  is_focused_ = is_focused;
+  UpdatePainterForCurrentState();
+}
 
 bool InstallableInkDrop::IsHighlightFadingInOrVisible() const {
-  return false;
+  return is_hovered_ || is_focused_;
 }
 
 void InstallableInkDrop::SetShowHighlightOnHover(bool show_highlight_on_hover) {
@@ -121,12 +131,9 @@ void InstallableInkDrop::OnPaintLayer(const ui::PaintContext& context) {
 
   ui::PaintRecorder paint_recorder(context, layer_->size());
   gfx::Canvas* canvas = paint_recorder.canvas();
+  canvas->ClipPath(GetHighlightPathForView(view_), true);
 
-  cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(kInstallableInkDropPlaceholderColor);
-
-  canvas->DrawPath(GetHighlightPathForView(view_), flags);
+  painter_.Paint(canvas, view_->size());
 }
 
 void InstallableInkDrop::OnDeviceScaleFactorChanged(
@@ -149,6 +156,15 @@ SkPath InstallableInkDrop::GetHighlightPathForView(const View* view) {
   path.addRoundRect(gfx::RectToSkRect(view->GetLocalBounds()), radius, radius);
 
   return path;
+}
+
+void InstallableInkDrop::SchedulePaint() {
+  layer_->SchedulePaint(gfx::Rect(layer_->size()));
+}
+
+void InstallableInkDrop::UpdatePainterForCurrentState() {
+  painter_.SetHighlighted(IsHighlightFadingInOrVisible());
+  SchedulePaint();
 }
 
 }  // namespace views

@@ -109,14 +109,14 @@
       <message name="IDS_KEYBOARD_ACCESSORY_SHEET_HIDE" desc="Description for the active icon button that closes an accessory sheet and brings back the keyboard.">
           Show keyboard
       </message>
-      <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_ADDRESS" desc="Text in In-Product-Help bubble suggesting to fill an address with Chrome.">
-          Tap to fill address with Chrome
+      <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_ADDRESS" desc="Text in In-Product-Help bubble suggesting to fill a physical address with Chrome.">
+          Fill address
       </message>
       <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_PASSWORD" desc="Text in In-Product-Help bubble suggesting to fill a password with Chrome.">
-          Tap to fill password with Chrome
+          Fill password
       </message>
       <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_PAYMENT" desc="Text in In-Product-Help bubble suggesting to fill a credit card with Chrome.">
-          Tap to fill credit card with Chrome
+          Fill payment method
       </message>
       <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON" desc="Text for the button used to generate a password.">
           Suggest strong password

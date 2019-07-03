@@ -12,14 +12,14 @@
 
 namespace keyboard {
 
-class KeyboardController;
+class KeyboardUIController;
 
 // LayoutManager for the virtual keyboard container. Manages a single window
 // (the virtual keyboard) and keeps it positioned at the bottom of the
 // owner window.
 class KEYBOARD_EXPORT KeyboardLayoutManager : public aura::LayoutManager {
  public:
-  explicit KeyboardLayoutManager(KeyboardController* controller);
+  explicit KeyboardLayoutManager(KeyboardUIController* controller);
   ~KeyboardLayoutManager() override;
 
   // Overridden from aura::LayoutManager
@@ -33,7 +33,7 @@ class KEYBOARD_EXPORT KeyboardLayoutManager : public aura::LayoutManager {
                       const gfx::Rect& requested_bounds) override;
 
  private:
-  KeyboardController* controller_;
+  KeyboardUIController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardLayoutManager);
 };

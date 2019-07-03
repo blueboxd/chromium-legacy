@@ -142,7 +142,7 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         // Here we filter out any item IDs that don't make sense in touchless.
         switch (itemId) {
             case ContextMenuItemId.SEARCH:
-                return true;
+                return delegate.isItemSupported(itemId);
             case ContextMenuItemId.REMOVE:
                 // fall through
             case ContextMenuItemId.LEARN_MORE:

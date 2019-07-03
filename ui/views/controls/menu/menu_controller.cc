@@ -1138,30 +1138,35 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
 
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   if (event->type() == ui::ET_KEY_PRESSED) {
+    bool key_handled = false;
 #if defined(OS_MACOSX)
     // Special handling for Option-Up and Option-Down, which should behave like
     // Home and End respectively in menus.
     if ((event->flags() & ui::EF_ALT_DOWN)) {
       if (event->key_code() == ui::VKEY_UP) {
-        OnKeyDown(ui::VKEY_HOME);
+        key_handled = OnKeyPressed(ui::VKEY_HOME);
       } else if (event->key_code() == ui::VKEY_DOWN) {
-        OnKeyDown(ui::VKEY_END);
+        key_handled = OnKeyPressed(ui::VKEY_END);
       } else {
-        OnKeyDown(event->key_code());
+        key_handled = OnKeyPressed(event->key_code());
       }
     } else {
-      OnKeyDown(event->key_code());
+      key_handled = OnKeyPressed(event->key_code());
     }
 #else
-    OnKeyDown(event->key_code());
+    key_handled = OnKeyPressed(event->key_code());
 #endif
+
+    if (key_handled)
+      event->StopPropagation();
+
     // Key events can lead to this being deleted.
     if (!this_ref) {
       event->StopPropagation();
       return ui::POST_DISPATCH_NONE;
     }
 
-    if (!IsEditableCombobox()) {
+    if (!IsEditableCombobox() && !event->stopped_propagation()) {
       // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
       // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
       const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
@@ -1419,10 +1424,12 @@ void MenuController::StartDrag(SubmenuView* source,
     did_initiate_drag_ = false;
 }
 
-void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
+bool MenuController::OnKeyPressed(ui::KeyboardCode key_code) {
   // Do not process while performing drag-and-drop
   if (for_drop_)
-    return;
+    return false;
+
+  bool handled_key_code = false;
 
   switch (key_code) {
     case ui::VKEY_HOME:
@@ -1499,6 +1506,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
           else
             OpenSubmenuChangeSelectionIfCan();
         } else {
+          handled_key_code = true;
           if (!SendAcceleratorToHotTrackedView() &&
               pending_state_.item->GetEnabled()) {
             Accept(pending_state_.item, 0);
@@ -1555,6 +1563,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     default:
       break;
   }
+  return handled_key_code;
 }
 
 MenuController::MenuController(bool for_drop,

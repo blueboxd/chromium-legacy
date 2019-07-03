@@ -13,7 +13,7 @@ const CSSValue* CSSMathValue::ToCSSValue() const {
   CSSCalcExpressionNode* node = ToCalcExpressionNode();
   if (!node)
     return nullptr;
-  return CSSMathFunctionValue::Create(CSSCalcValue::Create(node));
+  return CSSMathFunctionValue::Create(node);
 }
 
 }  // namespace blink

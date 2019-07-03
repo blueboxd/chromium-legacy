@@ -34,6 +34,12 @@ bool IsBackForwardCacheEnabled() {
   return base::FeatureList::IsEnabled(features::kBackForwardCache);
 }
 
+bool IsProactivelySwapBrowsingInstanceEnabled() {
+  return base::FeatureList::IsEnabled(
+             features::kProactivelySwapBrowsingInstance) ||
+         IsBackForwardCacheEnabled();
+}
+
 bool IsNavigationImmediateResponseBodyEnabled() {
   return base::FeatureList::IsEnabled(
       features::kNavigationImmediateResponseBody);

@@ -438,17 +438,11 @@ class TabListMediator {
 
                 @Override
                 public void didMoveTabOutOfGroup(Tab movedTab, int prevFilterIndex) {
+                    assert !(mActionsOnAllRelatedTabs && mTabGridDialogHandler != null);
+
                     TabGroupModelFilter filter =
                             (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                     .getCurrentTabModelFilter();
-                    if (mTabGridDialogHandler != null) {
-                        int curIndex = mModel.indexFromId(movedTab.getId());
-                        if (!isValidMovePosition(curIndex)) return;
-                        mModel.removeAt(curIndex);
-                        mTabGridDialogHandler.updateDialogContent(
-                                filter.getTabAt(prevFilterIndex).getId());
-                        return;
-                    }
                     if (mActionsOnAllRelatedTabs) {
                         Tab currentSelectedTab = mTabModelSelector.getCurrentTab();
                         int index = TabModelUtils.getTabIndexById(
@@ -461,6 +455,14 @@ class TabListMediator {
                                 == filter.getTabAt(prevFilterIndex).getId();
                         updateTab(prevFilterIndex, filter.getTabAt(prevFilterIndex), isSelected,
                                 true, false);
+                    } else {
+                        int curIndex = mModel.indexFromId(movedTab.getId());
+                        if (!isValidMovePosition(curIndex)) return;
+                        mModel.removeAt(curIndex);
+                        if (mTabGridDialogHandler != null) {
+                            mTabGridDialogHandler.updateDialogContent(
+                                    filter.getTabAt(prevFilterIndex).getId());
+                        }
                     }
                 }
 

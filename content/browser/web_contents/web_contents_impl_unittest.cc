@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -44,6 +45,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
@@ -891,8 +893,10 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
 TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
   // The assumptions this test makes aren't valid with --site-per-process.  For
   // example, a cross-site URL won't ever commit in the old RFH.
-  if (AreAllSitesIsolatedForTesting())
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     return;
+  }
 
   TestRenderFrameHost* orig_rfh = main_test_rfh();
   SiteInstance* instance1 = contents()->GetSiteInstance();
@@ -2879,6 +2883,13 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
 
   // Navigate to a URL which sort of looks like a chrome:// url.
   contents->NavigateAndCommit(GURL("http://gpu"));
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    // The navigation from "a.com" to "gpu" is using a new BrowsingInstance.
+    EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
+    // The rest of the test expects |instance| to match the one in the main
+    // frame.
+    instance = contents->GetMainFrame()->GetSiteInstance();
+  }
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL with WebUI. This will change BrowsingInstances.

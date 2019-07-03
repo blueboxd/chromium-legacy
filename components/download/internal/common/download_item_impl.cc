@@ -1494,6 +1494,8 @@ void DownloadItemImpl::Start(
     DownloadUkmHelper::RecordDownloadStarted(
         ukm_download_id_, new_create_info.ukm_source_id, file_type,
         download_source_, state, is_same_host_download);
+    RecordDownloadValidationMetrics(DownloadMetricsCallsite::kDownloadItem,
+                                    state, file_type);
 
     if (!delegate_->IsOffTheRecord()) {
       RecordDownloadCountWithSource(NEW_DOWNLOAD_COUNT_NORMAL_PROFILE,

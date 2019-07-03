@@ -31,6 +31,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -138,36 +139,41 @@ class AppListItemView::IconImageView : public views::ImageView {
   ~IconImageView() override = default;
 
   // views::View:
+  const char* GetClassName() const override {
+    return "AppListItemView::IconImageView";
+  }
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
     views::ImageView::OnBoundsChanged(previous_bounds);
-    if (icon_mask_)
-      icon_mask_->layer()->SetBounds(GetLocalBounds());
+    if (size() != previous_bounds.size() && !insets_.IsEmpty())
+      SetRoundedCornerAndInsets(corner_radius_, insets_);
   }
 
   // ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override {
     std::unique_ptr<ui::Layer> old_layer = views::View::RecreateLayer();
 
-    // ui::Layer::Clone() does not copy mask layer, so set it explicitly here.
-    if (mask_corner_radius_ != 0 || !mask_insets_.IsEmpty())
-      SetRoundedRectMaskLayer(mask_corner_radius_, mask_insets_);
+    // ui::Layer::Clone() does not copy the clip rect, so set it explicitly
+    // here.
+    if (corner_radius_ != 0 || !insets_.IsEmpty())
+      SetRoundedCornerAndInsets(corner_radius_, insets_);
     return old_layer;
   }
 
-  // Sets a rounded rect mask layer with |corner_radius| and |insets| to clip
-  // the icon.
-  void SetRoundedRectMaskLayer(int corner_radius, const gfx::Insets& insets) {
+  // Sets the rounded corner and the clip insets.
+  void SetRoundedCornerAndInsets(int corner_radius, const gfx::Insets& insets) {
     EnsureLayer();
-    icon_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    corner_radius, insets));
-    icon_mask_->layer()->SetFillsBoundsOpaquely(false);
-    icon_mask_->layer()->SetBounds(GetLocalBounds());
-    layer()->SetMaskLayer(icon_mask_->layer());
+    layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
+    if (insets.IsEmpty()) {
+      layer()->SetClipRect(GetLocalBounds());
+    } else {
+      gfx::Rect bounds = GetLocalBounds();
+      bounds.Inset(insets);
+      layer()->SetClipRect(bounds);
+    }
 
     // Save the attributes in case the layer is recreated.
-    mask_corner_radius_ = corner_radius;
-    mask_insets_ = insets;
+    corner_radius_ = corner_radius;
+    insets_ = insets;
   }
 
   // Ensure that the view has a layer.
@@ -179,14 +185,11 @@ class AppListItemView::IconImageView : public views::ImageView {
   }
 
  private:
-  // The owner of a mask layer to clip the icon into circle.
-  std::unique_ptr<ui::LayerOwner> icon_mask_;
+  // The rounded corner radius.
+  int corner_radius_ = 0;
 
-  // The corner radius of mask layer.
-  int mask_corner_radius_ = 0;
-
-  // The insets of the mask layer.
-  gfx::Insets mask_insets_;
+  // The insets to be clipped.
+  gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(IconImageView);
 };
@@ -220,7 +223,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // smoothness.
     if (apps_grid_view_->IsTabletMode())
       SetBackgroundBlurEnabled(true);
-    icon_->SetRoundedRectMaskLayer(
+    icon_->SetRoundedCornerAndInsets(
         AppListConfig::instance().folder_icon_radius(),
         gfx::Insets(AppListConfig::instance().folder_icon_insets()));
   }
@@ -792,7 +795,7 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
         AppListConfig::instance().folder_unclipped_icon_dimension() / 2);
     const int insets = gfx::Tween::IntValueBetween(
         progress, AppListConfig::instance().folder_icon_insets(), 0);
-    icon_->SetRoundedRectMaskLayer(corner_radius, gfx::Insets(insets));
+    icon_->SetRoundedCornerAndInsets(corner_radius, gfx::Insets(insets));
     return;
   }
 

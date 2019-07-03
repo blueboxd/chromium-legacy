@@ -376,7 +376,7 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     mouse_capture_target_ = nullptr;
 
   if (view == touchscreen_gesture_target_)
-    touchscreen_gesture_target_ = nullptr;
+    SetTouchscreenGestureTarget(nullptr);
 
   if (view == touchpad_gesture_target_)
     touchpad_gesture_target_ = nullptr;
@@ -417,6 +417,9 @@ void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
   for (auto entry : owner_map_)
     entry.second->RemoveObserver(this);
   owner_map_.clear();
+  viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
+  if (manager)
+    manager->RemoveHitTestRegionObserver(this);
 }
 
 RenderWidgetHostInputEventRouter::HittestDelegate::HittestDelegate(
@@ -451,7 +454,11 @@ RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
       event_targeter_(std::make_unique<RenderWidgetTargeter>(this)),
       use_viz_hit_test_(features::IsVizHitTestingEnabled()),
       touch_event_ack_queue_(new TouchEventAckQueue(this)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
+  DCHECK(manager);
+  manager->AddHitTestRegionObserver(this);
+}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
   // We may be destroyed before some of the owners in the map, so we must
@@ -1522,7 +1529,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // unique_touch_event_id of 0. They must have a non-null target in order
     // to get the coordinate transform.
     DCHECK(target);
-    touchscreen_gesture_target_ = target;
     fallback_target_location = target_location;
   } else if (no_matching_id && is_gesture_start) {
     // A long-standing Windows issues where occasionally a GestureStart is
@@ -1542,20 +1548,27 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // Re https://crbug.com/796656): Since we are already in an error case,
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
-    touchscreen_gesture_target_ = result.view;
+    target = result.view;
     fallback_target_location = transformed_point;
   } else if (is_gesture_start) {
-    touchscreen_gesture_target_ = gesture_target_it->second;
+    target = gesture_target_it->second;
     touchscreen_gesture_target_map_.erase(gesture_target_it);
 
     // Abort any scroll bubbling in progress to avoid double entry.
-    CancelScrollBubblingIfConflicting(touchscreen_gesture_target_);
+    CancelScrollBubblingIfConflicting(target);
+  }
+
+  if (gesture_event.unique_touch_event_id == 0 || is_gesture_start) {
+    bool moved_recently = touchscreen_gesture_target_moved_recently_;
+    if (is_gesture_start)
+      moved_recently = target->ScreenRectIsUnstableFor(gesture_event);
+    SetTouchscreenGestureTarget(target, moved_recently);
   }
 
   // If we set a target and it's not in the map, we won't get notified if the
   // target goes away, so drop the target and the resulting events.
   if (touchscreen_gesture_target_ && !IsViewInMap(touchscreen_gesture_target_))
-    touchscreen_gesture_target_ = nullptr;
+    SetTouchscreenGestureTarget(nullptr);
 
   if (!touchscreen_gesture_target_) {
     root_view->GestureEventAck(gesture_event,
@@ -1564,6 +1577,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   }
 
   blink::WebGestureEvent event(gesture_event);
+  if (touchscreen_gesture_target_moved_recently_)
+    event.SetTargetFrameMovedRecently();
 
   gfx::PointF point_in_target;
   // This |fallback_target_location| is fast path when
@@ -1601,7 +1616,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
       gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart;
 
   if (is_gesture_end)
-    touchscreen_gesture_target_ = nullptr;
+    SetTouchscreenGestureTarget(nullptr);
 }
 
 void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
@@ -1789,12 +1804,21 @@ void RenderWidgetHostInputEventRouter::SetEventsBeingFlushed(
   events_being_flushed_ = events_being_flushed;
 }
 
+void RenderWidgetHostInputEventRouter::SetTouchscreenGestureTarget(
+    RenderWidgetHostViewBase* target,
+    bool moved_recently) {
+  touchscreen_gesture_target_ = target;
+  touchscreen_gesture_target_moved_recently_ = moved_recently;
+}
+
 void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
+  if (target && target->ScreenRectIsUnstableFor(event))
+    event.SetTargetFrameMovedRecently();
   if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
     DispatchMouseEvent(root_view, target,
                        static_cast<const blink::WebMouseEvent&>(event), latency,
@@ -1907,6 +1931,16 @@ void RenderWidgetHostInputEventRouter::ShowContextMenuAtPoint(
       last_mouse_move_target_->GetRenderWidgetHost());
   DCHECK(rwhi);
   rwhi->ShowContextMenuAtPoint(point, source_type);
+}
+
+void RenderWidgetHostInputEventRouter::OnAggregatedHitTestRegionListUpdated(
+    const viz::FrameSinkId& frame_sink_id,
+    const std::vector<viz::AggregatedHitTestRegion>& hit_test_data) {
+  for (auto& region : hit_test_data) {
+    auto iter = owner_map_.find(region.frame_sink_id);
+    if (iter != owner_map_.end())
+      iter->second->NotifyHitTestRegionUpdated(region);
+  }
 }
 
 void RenderWidgetHostInputEventRouter::SetMouseCaptureTarget(

@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='target'",
+          "object": "LayoutNGBlockFlow DIV class='target'",
           "rect": [172, 173, 75, 75],
           "reason": "style change"
         }
@@ -18,7 +18,7 @@
       "bounds": [130, 130],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='target'",
+          "object": "LayoutNGBlockFlow DIV class='target'",
           "rect": [10, 10, 75, 75],
           "reason": "style change"
         }
@@ -30,7 +30,7 @@
       "bounds": [130, 130],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='target'",
+          "object": "LayoutNGBlockFlow DIV class='target'",
           "rect": [30, 10, 75, 75],
           "reason": "style change"
         }
@@ -42,7 +42,7 @@
       "bounds": [130, 130],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='target'",
+          "object": "LayoutNGBlockFlow DIV class='target'",
           "rect": [10, 10, 75, 75],
           "reason": "style change"
         }
@@ -54,7 +54,7 @@
       "bounds": [130, 130],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='target'",
+          "object": "LayoutNGBlockFlow DIV class='target'",
           "rect": [45, 10, 75, 75],
           "reason": "style change"
         }
@@ -66,7 +66,7 @@
       "bounds": [130, 130],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='target'",
+          "object": "LayoutNGBlockFlow DIV class='target'",
           "rect": [10, 30, 75, 75],
           "reason": "style change"
         }

@@ -24,6 +24,7 @@ source_set("identity_manager") {
 
   public_deps = [
     "//base",
+    "//components/keyed_service/core",
     "//components/signin/core/browser:shared",
     "//components/signin/core/browser:signin_buildflags",
     "//google_apis",
@@ -94,7 +95,6 @@ source_set("test_support") {
 
   deps = [
     "//components/image_fetcher/core:test_support",
-    "//components/signin/core/browser",
     "//components/signin/core/browser:internals",
     "//components/signin/core/browser:internals_test_support",
     "//components/signin/internal/identity_manager",

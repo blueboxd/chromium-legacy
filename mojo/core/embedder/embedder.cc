@@ -39,12 +39,5 @@ scoped_refptr<base::TaskRunner> GetIOTaskRunner() {
   return Core::Get()->GetNodeController()->io_task_runner();
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void SetMachPortProvider(base::PortProvider* port_provider) {
-  DCHECK(port_provider);
-  Core::Get()->SetMachPortProvider(port_provider);
-}
-#endif
-
 }  // namespace core
 }  // namespace mojo

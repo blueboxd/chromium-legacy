@@ -150,4 +150,9 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
     "java/src/org/chromium/chrome/browser/vr/keyboard/TextEditAction.java",
   ]
+
+  if (enable_arcore) {
+    sources +=
+        [ "java/src/org/chromium/chrome/browser/vr/ArConsentDialog.java" ]
+  }
 }

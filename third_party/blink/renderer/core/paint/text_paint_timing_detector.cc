@@ -27,8 +27,6 @@ namespace blink {
 
 namespace {
 
-constexpr size_t kTextObjectNumberLimit = 5000;
-
 bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
                     const base::WeakPtr<TextRecord>& b) {
   DCHECK(a);
@@ -200,7 +198,6 @@ void TextPaintTimingDetector::RecordAggregatedText(
     const IntRect& aggregated_visual_rect,
     const PropertyTreeState& property_tree_state) {
   DCHECK(ShouldWalkObject(aggregator));
-  DCHECK(!records_manager_.HasTooManyObjects());
 
   // The caller should check this.
   DCHECK(!aggregated_visual_rect.IsEmpty());
@@ -218,15 +215,6 @@ void TextPaintTimingDetector::RecordAggregatedText(
         TextElementTiming::ComputeIntersectionRect(
             aggregator, aggregated_visual_rect, property_tree_state,
             frame_view_));
-  }
-
-  if (records_manager_.HasTooManyObjects()) {
-    TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverRecordLimit",
-                         TRACE_EVENT_SCOPE_THREAD, "count_visible_objects",
-                         records_manager_.CountVisibleObjects(),
-                         "count_invisible_objects",
-                         records_manager_.CountInvisibleObjects());
-    StopRecordEntries();
   }
 }
 
@@ -305,7 +293,6 @@ void TextRecordsManager::RecordVisibleObject(
     const LayoutObject& object,
     const uint64_t& visual_size,
     const FloatRect& element_timing_rect) {
-  DCHECK(!HasTooManyObjects());
   DCHECK_GT(visual_size, 0u);
 
   Node* node = object.GetNode();
@@ -320,11 +307,6 @@ void TextRecordsManager::RecordVisibleObject(
 
   QueueToMeasurePaintTime(record_weak_ptr);
   visible_objects_.insert(&object, std::move(record));
-}
-
-bool TextRecordsManager::HasTooManyObjects() const {
-  return visible_objects_.size() + invisible_objects_.size() >=
-         kTextObjectNumberLimit;
 }
 
 base::WeakPtr<TextRecord> LargestTextPaintManager::FindLargestPaintCandidate() {

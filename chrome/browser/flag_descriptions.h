@@ -11,6 +11,7 @@
 #include "build/buildflag.h"
 #include "chrome/common/buildflags.h"
 #include "components/nacl/common/buildflags.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -664,9 +665,6 @@ extern const char kHorizontalTabSwitcherAndroidDescription[];
 
 extern const char kTabSwitcherOnReturnName[];
 extern const char kTabSwitcherOnReturnDescription[];
-
-extern const char kViewsCastDialogName[];
-extern const char kViewsCastDialogDescription[];
 
 extern const char kHideActiveAppsFromShelfName[];
 extern const char kHideActiveAppsFromShelfDescription[];
@@ -1657,6 +1655,11 @@ extern const char kUseAngleD3D9[];
 
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+extern const char kWinUseBrowserSpellCheckerName[];
+extern const char kWinUseBrowserSpellCheckerDescription[];
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #endif  // defined(OS_WIN)
 

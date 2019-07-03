@@ -455,6 +455,17 @@ function runAfterDoubleTapTimerFired(func) {
   setTimeout(func, doubleTapTimeoutMs);
 }
 
+// Requests an animation frame.
+function waitForHoverEffectUpdate(func) {
+  // The hover effect is updated at the next animation frame after the layout
+  // changes.
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      resolve();
+    });
+  });
+}
+
 function hoverMuteButton(video, func) {
   // Wait for hover timer fires
   const delayedCallback = function() { setTimeout(func); };

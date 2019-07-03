@@ -12858,6 +12858,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Background Sync"/>
   <int value="4" label="Push Messaging"/>
   <int value="5" label="Notifications"/>
+  <int value="6" label="Payment Handler"/>
 </enum>
 
 <enum name="DevToolsPanel">
@@ -23818,6 +23819,7 @@ Called by update_net_error_codes.py.-->
   <int value="2949" label="CredentialManagerGetWithUVM"/>
   <int value="2950" label="CredentialManagerCreateSuccessWithUVM"/>
   <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
+  <int value="2952" label="DiscardInputEventToMovingIframe"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31355,10 +31357,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IosLocationAuthorizationStatus">
-  <int value="0" label="NotDetermined"/>
+  <int value="0" label="User has not made a choice"/>
   <int value="1" label="Restricted"/>
-  <int value="2" label="Denied"/>
-  <int value="3" label="Authorized"/>
+  <int value="2" label="User explicitly denied"/>
+  <int value="3" label="Authorized always"/>
+  <int value="4" label="Authorized when Chrome is in use"/>
 </enum>
 
 <enum name="IOSNTPImpression">
@@ -34042,6 +34045,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1382671832" label="OmniboxUIExperimentVerticalMargin:enabled"/>
   <int value="-1377186702" label="DesktopIOSPromotion:disabled"/>
   <int value="-1376510363" label="ServiceWorkerScriptFullCodeCache:disabled"/>
+  <int value="-1376006534" label="WinUseBrowserSpellChecker:disabled"/>
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1373942769" label="WebAuthenticationCtap2:disabled"/>
   <int value="-1373705581" label="ManualSaving:enabled"/>
@@ -34323,6 +34327,7 @@ from previous Chrome versions.
   <int value="-1010588306" label="SlideTopChromeWithPageScrolls:disabled"/>
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
   <int value="-1001837588" label="EnableAppReinstallZeroState:enabled"/>
+  <int value="-998731974" label="WinUseBrowserSpellChecker:enabled"/>
   <int value="-998255750" label="ExperimentalKeyboardLockUI:enabled"/>
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-994558985" label="EnableNotificationIndicator:disabled"/>

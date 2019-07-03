@@ -34,7 +34,7 @@ void Viewport::Pan(const gfx::Vector2dF& delta) {
                          host_impl_->active_tree());
 }
 
-Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
+Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& physical_delta,
                                           const gfx::Point& viewport_point,
                                           bool is_direct_manipulation,
                                           bool affect_browser_controls,
@@ -42,28 +42,30 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
   if (!OuterScrollNode())
     return ScrollResult();
 
-  gfx::Vector2dF content_delta = delta;
+  gfx::Vector2dF scroll_node_delta = physical_delta;
 
-  if (affect_browser_controls && ShouldBrowserControlsConsumeScroll(delta))
-    content_delta -= ScrollBrowserControls(delta);
+  if (affect_browser_controls &&
+      ShouldBrowserControlsConsumeScroll(physical_delta))
+    scroll_node_delta -= ScrollBrowserControls(physical_delta);
 
-  gfx::Vector2dF pending_content_delta = content_delta;
+  gfx::Vector2dF pending_scroll_node_delta = scroll_node_delta;
 
   // Attempt to scroll inner viewport first.
-  pending_content_delta -= host_impl_->ScrollSingleNode(
-      InnerScrollNode(), pending_content_delta, viewport_point,
+  pending_scroll_node_delta -= host_impl_->ScrollSingleNode(
+      InnerScrollNode(), pending_scroll_node_delta, viewport_point,
       is_direct_manipulation, &scroll_tree());
 
   // Now attempt to scroll the outer viewport.
   if (scroll_outer_viewport) {
-    pending_content_delta -= host_impl_->ScrollSingleNode(
-        OuterScrollNode(), pending_content_delta, viewport_point,
+    pending_scroll_node_delta -= host_impl_->ScrollSingleNode(
+        OuterScrollNode(), pending_scroll_node_delta, viewport_point,
         is_direct_manipulation, &scroll_tree());
   }
 
   ScrollResult result;
-  result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
-  result.content_scrolled_delta = content_delta - pending_content_delta;
+  result.consumed_delta =
+      physical_delta - AdjustOverscroll(pending_scroll_node_delta);
+  result.content_scrolled_delta = scroll_node_delta - pending_scroll_node_delta;
   return result;
 }
 

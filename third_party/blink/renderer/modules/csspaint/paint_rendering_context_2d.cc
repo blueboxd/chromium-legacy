@@ -12,10 +12,12 @@ namespace blink {
 PaintRenderingContext2D::PaintRenderingContext2D(
     const IntSize& container_size,
     const PaintRenderingContext2DSettings* context_settings,
-    float zoom)
+    float zoom,
+    float device_scale_factor)
     : container_size_(container_size),
       context_settings_(context_settings),
-      effective_zoom_(zoom) {
+      effective_zoom_(zoom),
+      device_scale_factor_(device_scale_factor) {
   InitializePaintRecorder();
 
   clip_antialiasing_ = kAntiAliased;
@@ -34,8 +36,12 @@ void PaintRenderingContext2D::InitializePaintRecorder() {
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
-  canvas->scale(effective_zoom_, effective_zoom_);
   canvas->save();
+
+  // No need to apply |device_scale_factor_| here. On the platform where the
+  // zoom_for_dsf is not enabled (currently Mac), the recording methods (e.g.
+  // setTransform) have their own logic to account for the device scale factor.
+  scale(effective_zoom_, effective_zoom_);
 
   did_record_draw_commands_in_paint_recorder_ = false;
 }
@@ -131,6 +137,29 @@ void PaintRenderingContext2D::WillOverwriteCanvas() {
     paint_recorder_->finishRecordingAsPicture();
     InitializePaintRecorder();
   }
+}
+
+// On a platform where zoom_for_dsf is not enabled, the recording canvas has its
+// logic to account for the device scale factor. Therefore, when the transform
+// of the canvas happen, we must divide the transformation matrix by the device
+// scale factor such that the recording canvas would have the correct behavior.
+void PaintRenderingContext2D::setTransform(double m11,
+                                           double m12,
+                                           double m21,
+                                           double m22,
+                                           double dx,
+                                           double dy) {
+  BaseRenderingContext2D::setTransform(
+      m11 / device_scale_factor_, m12 / device_scale_factor_,
+      m21 / device_scale_factor_, m22 / device_scale_factor_,
+      dx / device_scale_factor_, dy / device_scale_factor_);
+}
+
+void PaintRenderingContext2D::setTransform(DOMMatrix2DInit* transform,
+                                           ExceptionState& exception_state) {
+  // The PaintRenderingContext2D APIs are running on worklet thread, therefore
+  // it is not possible to construct a DOMMatrix.
+  NOTREACHED();
 }
 
 sk_sp<PaintRecord> PaintRenderingContext2D::GetRecord() {

@@ -14,6 +14,7 @@ class GURL;
 
 namespace performance_manager {
 
+class FrameNode;
 class PageNodeObserver;
 
 // A PageNode represents the root of a FrameTree, or equivalently a WebContents.
@@ -54,6 +55,11 @@ class PageNode : public Node {
   // event for the main frame of this page.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual int64_t GetNavigationID() const = 0;
+
+  // Returns the current main frame node (if there is one), otherwise returns
+  // any of the potentially multiple main frames that currently exist. If there
+  // are no main frames at the moment, returns nullptr.
+  virtual const FrameNode* GetMainFrameNode() const = 0;
 
   // Returns the URL the main frame last committed a navigation to.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.

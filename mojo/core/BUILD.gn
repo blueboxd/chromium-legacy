@@ -128,12 +128,8 @@ template("core_impl_source_set") {
       }
     }
 
-    if (is_mac && !is_ios) {
-      sources += [
-        "channel_mac.cc",
-        "mach_port_relay.cc",
-        "mach_port_relay.h",
-      ]
+    if (is_mac) {
+      sources += [ "channel_mac.cc" ]
     }
 
     if (!is_nacl || is_nacl_nonsfi) {

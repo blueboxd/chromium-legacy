@@ -75,10 +75,6 @@ class V8TestInterface {
   static void InstallTestFeature(ScriptState*, v8::Local<v8::Object> instance);
   static void InstallTestFeature(ScriptState*);
 
-  static void InstallOriginTrialFeature(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void InstallOriginTrialFeature(ScriptState*, v8::Local<v8::Object> instance);
-  static void InstallOriginTrialFeature(ScriptState*);
-
   // Callback functions
 
   CORE_EXPORT static void TestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -195,7 +191,6 @@ class V8TestInterface {
   CORE_EXPORT static void WorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void WindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void OriginTrialWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void OriginTrialWindowExposedMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void AlwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void WorkerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void WindowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

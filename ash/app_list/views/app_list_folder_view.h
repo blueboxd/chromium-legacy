@@ -19,10 +19,6 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
-namespace gfx {
-class SlideAnimation;
-}  // namespace gfx
-
 namespace app_list {
 
 class AppsContainerView;
@@ -108,12 +104,6 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // ContentsContainerAnimation.
   void RecordAnimationSmoothness();
 
-  // Sets the layer mask's corner radius and insets in background.
-  void UpdateBackgroundMask(int corner_radius, const gfx::Insets& insets);
-
-  // Updates the |background_mask_| layer bounds.
-  void UpdateBackgroundMaskBounds();
-
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
@@ -191,13 +181,10 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
 
   bool hide_for_reparent_ = false;
 
-  std::unique_ptr<gfx::SlideAnimation> background_animation_;
-  std::unique_ptr<gfx::SlideAnimation> folder_item_title_animation_;
+  std::unique_ptr<Animation> background_animation_;
+  std::unique_ptr<Animation> folder_item_title_animation_;
   std::unique_ptr<Animation> top_icon_animation_;
   std::unique_ptr<Animation> contents_container_animation_;
-
-  // The layer mask to create rounded corner.
-  std::unique_ptr<ui::LayerOwner> background_mask_ = nullptr;
 
   // The compositor frame number when animation starts.
   base::Optional<int> animation_start_frame_number_;

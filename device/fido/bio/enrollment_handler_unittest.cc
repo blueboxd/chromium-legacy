@@ -50,6 +50,21 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
   test::VirtualFidoDeviceFactory virtual_device_factory_;
 };
 
+// Tests bio enrollment handler against device without PIN support.
+TEST_F(BioEnrollmentHandlerTest, NoPINSupport) {
+  VirtualCtap2Device::Config config;
+  config.pin_support = false;
+  config.bio_enrollment_preview_support = true;
+
+  virtual_device_factory_.SetCtap2Config(config);
+
+  auto handler = MakeHandler();
+  error_callback_.WaitForCallback();
+
+  EXPECT_EQ(error_callback_.value(),
+            FidoReturnCode::kAuthenticatorMissingUserVerification);
+}
+
 // Tests getting authenticator modality without pin auth.
 TEST_F(BioEnrollmentHandlerTest, Modality) {
   VirtualCtap2Device::Config config;

@@ -864,6 +864,13 @@
       </intent-filter>
     </activity>
     <activity
+        android:enabled="false"
+        android:exported="false"
+        android:launchMode="singleInstance"
+        android:name="com.google.android.play.core.missingsplits.PlayCoreMissingSplitsActivity"
+        android:process=":playcore_missing_splits_activity"
+        android:stateNotNeeded="true"/>
+    <activity
         android:excludeFromRecents="true"
         android:exported="false"
         android:launchMode="singleInstance"

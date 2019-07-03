@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/webrtc/rtc_base/physical_socket_server.h"
 
@@ -38,10 +39,10 @@ base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper>>::
 // static
 void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
   if (JingleThreadWrapper::current() == nullptr) {
-    base::MessageLoopCurrent message_loop = base::MessageLoopCurrent::Get();
     std::unique_ptr<JingleThreadWrapper> wrapper =
-        JingleThreadWrapper::WrapTaskRunner(message_loop->task_runner());
-    message_loop->AddDestructionObserver(wrapper.release());
+        JingleThreadWrapper::WrapTaskRunner(
+            base::ThreadTaskRunnerHandle::Get());
+    base::MessageLoopCurrent::Get()->AddDestructionObserver(wrapper.release());
   }
 
   DCHECK_EQ(rtc::Thread::Current(), current());

@@ -11,51 +11,29 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='composited block'",
-      "position": [-5, -5],
+      "position": [14, 164],
       "bounds": [210, 60],
-      "backgroundColor": "#0000FF",
-      "transform": 1
+      "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited box'",
+      "position": [19, 169],
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 1
+      "backgroundColor": "#008000"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited block'",
-      "position": [-5, -5],
+      "position": [272, 89],
       "bounds": [210, 60],
-      "backgroundColor": "#0000FF",
-      "transform": 2
+      "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited box'",
+      "position": [277, 94],
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 2
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [19, 169, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [277, 94, 0, 1]
-      ]
+      "backgroundColor": "#008000"
     }
   ]
 }

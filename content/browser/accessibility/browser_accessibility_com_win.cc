@@ -1630,8 +1630,8 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
     }
   }
 
-  return CComObjectRootBase::InternalQueryInterface(this_ptr, entries, iid,
-                                                    object);
+  return AXPlatformNodeWin::InternalQueryInterface(this_ptr, entries, iid,
+                                                   object);
 }
 
 void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {

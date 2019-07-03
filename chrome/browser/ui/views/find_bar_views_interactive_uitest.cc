@@ -21,7 +21,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -35,7 +34,7 @@ using content::WebContents;
 using ui_test_utils::IsViewFocused;
 
 namespace {
-const char kSimplePage[] = "/find_in_page/simple.html";
+static const char kSimplePage[] = "/find_in_page/simple.html";
 }  // namespace
 
 class FindInPageTest : public InProcessBrowserTest {
@@ -582,38 +581,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CtrlEnter) {
   observer.Wait();
 }
 
-// FindInPage on Mac doesn't use prepopulated values. Search there is global.
-#if !defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionDuringFind) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  // Make sure Chrome is in the foreground, otherwise sending input
-  // won't do anything and the test will hang.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/find_in_page/find_from_selection.html"));
-
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Tab to the input (which selects the text inside)
-  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-      browser(), ui::VKEY_TAB, false, false, false, false,
-      content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-      content::Source<content::RenderViewHost>(
-          web_contents->GetRenderViewHost())));
-
-  browser()->GetFindBarController()->Show();
-  EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
-
-  // verify the text matches the selection
-  EXPECT_EQ(ASCIIToUTF16("text"), GetFindBarText());
-  FindNotificationDetails details = WaitForFindResult();
-  EXPECT_TRUE(details.number_of_matches() > 0);
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(FindInPageTest, GlobalEscapeClosesFind) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
@@ -624,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, GlobalEscapeClosesFind) {
                                embedded_test_server()->GetURL(kSimplePage));
 
   // Open find
-  browser()->GetFindBarController()->Show(false, true);
+  browser()->GetFindBarController()->Show();
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Put focus into location bar

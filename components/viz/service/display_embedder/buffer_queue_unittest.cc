@@ -120,7 +120,7 @@ class MockBufferQueue : public BufferQueue {
 
 class BufferQueueTest : public ::testing::Test {
  public:
-  BufferQueueTest() : doublebuffering_(true), first_frame_(true) {}
+  BufferQueueTest() {}
 
   void SetUp() override {
     InitWithContext(std::make_unique<TestGLES2Interface>());
@@ -196,9 +196,7 @@ class BufferQueueTest : public ::testing::Test {
     unsigned stencil;
     EXPECT_GT(output_surface_->GetCurrentBuffer(&stencil), 0u);
     SwapBuffers(damage);
-    if (doublebuffering_ || !first_frame_)
-      output_surface_->PageFlipComplete();
-    first_frame_ = false;
+    output_surface_->PageFlipComplete();
   }
 
   void SendFullFrame() { SendDamagedFrame(gfx::Rect(output_surface_->size_)); }
@@ -217,8 +215,6 @@ class BufferQueueTest : public ::testing::Test {
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BufferQueue> output_surface_;
   MockBufferQueue* mock_output_surface_;
-  bool doublebuffering_;
-  bool first_frame_;
 };
 
 namespace {
@@ -332,7 +328,6 @@ TEST(BufferQueueStandaloneTest, CopyBufferDamage) {
 TEST_F(BufferQueueTest, PartialSwapReuse) {
   EXPECT_TRUE(
       output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
-  ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
       .Times(1);
@@ -353,7 +348,6 @@ TEST_F(BufferQueueTest, PartialSwapReuse) {
 TEST_F(BufferQueueTest, PartialSwapFullFrame) {
   EXPECT_TRUE(
       output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
-  ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
       .Times(1);
@@ -367,7 +361,6 @@ TEST_F(BufferQueueTest, PartialSwapFullFrame) {
 TEST_F(BufferQueueTest, PartialSwapOverlapping) {
   EXPECT_TRUE(
       output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false));
-  ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
       .Times(1);

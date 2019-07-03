@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/navigation_controller_impl.h"
-
 #include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -26,6 +25,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -50,6 +50,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -5526,8 +5527,10 @@ class RenderProcessKilledObserver : public WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
   // TODO(lukasza): https://crbug.com/417518: Get tests working with
   // --site-per-process.
-  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     return;
+  }
 
   GURL original_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));

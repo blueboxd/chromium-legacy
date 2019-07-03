@@ -110,11 +110,29 @@ class Port : public base::RefCountedThreadSafe<Port> {
   // originating from this port.
   uint64_t next_sequence_num_to_send;
 
+  // The largest acknowledged user message event sequence number.
+  uint64_t last_sequence_num_acknowledged;
+
+  // The interval for which acknowledge requests will be sent. A value of N will
+  // cause an acknowledge request for |last_sequence_num_acknowledged| + N when
+  // initially set and on received acknowledge. This means that the lower bound
+  // for unread or in-transit messages is |next_sequence_num_to_send| -
+  // |last_sequence_num_acknowledged| + |sequence_number_acknowledge_interval|.
+  // If zero, no acknowledge requests are sent.
+  uint64_t sequence_num_acknowledge_interval;
+
   // The sequence number of the last message this Port should ever expect to
   // receive in its lifetime. May be used to determine that a proxying port is
   // ready to be destroyed or that a receiving port's conjugate has been closed
   // and we know the sequence number of the last message it sent.
   uint64_t last_sequence_num_to_receive;
+
+  // The sequence number of the message for which this Port should send an
+  // acknowledge message. In the buffering state, holds the acknowledge request
+  // value that is forwarded to the peer on transition to proxying.
+  // This is zero in any port that's never received an acknowledge request, and
+  // in proxies that have forwarded a stored acknowledge.
+  uint64_t sequence_num_to_acknowledge;
 
   // The queue of incoming user messages received by this Port. Only non-empty
   // for buffering or receiving Ports. When a buffering port enters the proxying

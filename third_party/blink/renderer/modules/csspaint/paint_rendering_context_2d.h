@@ -34,7 +34,8 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
  public:
   PaintRenderingContext2D(const IntSize& container_size,
                           const PaintRenderingContext2DSettings*,
-                          float zoom);
+                          float zoom,
+                          float device_scale_factor);
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(context_settings_);
@@ -84,6 +85,14 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   bool CanCreateCanvas2dResourceProvider() const final { return false; }
   bool IsAccelerated() const final { return false; }
 
+  void setTransform(double m11,
+                    double m12,
+                    double m21,
+                    double m22,
+                    double dx,
+                    double dy) final;
+  void setTransform(DOMMatrix2DInit*, ExceptionState&) final;
+
   sk_sp<PaintRecord> GetRecord();
 
  protected:
@@ -103,7 +112,11 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   // the HTML canvas which operates on physical pixels. In other words, the
   // paint worklet canvas needs to handle device scale factor and browser zoom,
   // and this is designed for that purpose.
-  float effective_zoom_;
+  const float effective_zoom_;
+  // On platforms where zoom_for_dsf is enabled, the |effective_zoom_|
+  // accounts for the device scale factor. For platforms where the feature is
+  // not enabled (currently Mac only), we need this extra variable.
+  const float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRenderingContext2D);
 };

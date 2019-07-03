@@ -33,6 +33,7 @@
 <translation id="2185166372312820725">ወደ ቀዳሚው ትር ሂድ</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> ይጫኑ እና አገናኝ ጠቅ ያድርጉ</translation>
 <translation id="2246352309084894470">የሙሉ ማያ ገጽ አስጀማሪውን ይክፈቱ/ይዝጉ</translation>
+<translation id="2354531887393764880">ነጥብ</translation>
 <translation id="2382644247745281995">በአሁኑ የቁልፍ ሰሌዳ አቀማመጥ አይደገፍም</translation>
 <translation id="2397416548179033562">የChrome ምናሌ አሳይ</translation>
 <translation id="2424073332829844142">Caps Lock ያብሩ እና ያጥፉ</translation>
@@ -78,6 +79,7 @@
 <translation id="3792178297143798024">በእርስዎ መደርደሪያ ላይ የደመቀውን ንጥል ይክፈቱ</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ከ1 እስከ 8</translation>
 <translation id="3837047332182291558">የቁልፍ ሰሌዳን ይበልጥ ብሩህ ያድርጉ (የጀርባ ብርሃን ላላቸው ቁልፍ ሰሌዳዎች ብቻ)</translation>
+<translation id="3949671998904569433">ኮማ</translation>
 <translation id="3976863468609830880">በእርስዎ መደርደሪያ ላይ የመጨረሻውን አዶ ጠቅ ያድርጉ</translation>
 <translation id="3994783594793697310">የማሳያ ማጉላት ደረጃውን ዳግም አስጀምር</translation>
 <translation id="4026843240379844265">በማሳያዎች መካከል ንቁ መስኮትን ያንቀሳቅሱ</translation>
@@ -159,8 +161,10 @@
 <translation id="7422707470576323858">ወደ ቀጣዩ የግቤት ስልት ይቀይሩ</translation>
 <translation id="743754632698445141">አንድ መተግበሪያን ይንቀሉ</translation>
 <translation id="7439718573248533901">ቀጣዩን ፊደል ይሰርዙ (ወደፊት ስረዛ)</translation>
+<translation id="7500368597227394048">ሰረዝ</translation>
 <translation id="7611271430932669992">ትኩረቱን ወደ ብቅ-ባዮች እና መገናኛዎች ይውሰዱ</translation>
 <translation id="766326951329901120">ይዘትን ከቅንጥብ ሰሌዳው ላይ እንደ ዝርግ ጽሑፍ ለጥፍ</translation>
+<translation id="7703010453515335249">ቅንፍ ግራ</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="SPACE" /> ወይም <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">አንድ ፋይል በአሳሹ ውስጥ ይክፈቱ</translation>
@@ -170,6 +174,7 @@
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ወይም <ph name="E" /></translation>
 <translation id="8232835244134740473">በእነዚህ መካከል ትኩረትን ቀያይር፦ የሁኔታ አካባቢ (የእርስዎ መለያ ሥዕል ብቅ የሚልበት ቦታ) አስጀማሪ፣ የአድራሻ አሞሌ፣ የእልባቶች አሞሌ (የሚታይ ከሆነ)፣ የተከፈተው ድረ-ገጽ፣ የውርዶች አሞሌ (የሚታይ ከሆነ)።</translation>
 <translation id="8234414138295101081">ማያ ገጽን 90 ዲግሪ አሽከርክር</translation>
+<translation id="8241665785394195545">ቅንፍ ቀኝ</translation>
 <translation id="8264941229485248811">የገንቢ መሣሪያዎች መርማሪን አሳይ ወይም ደብቅ</translation>
 <translation id="836869401750819675">የውርዶች ገጽን ይክፈቱ</translation>
 <translation id="8388247778047144397">አገናኙን በትሩ ድርድር ላይ ወዳለ ባዶ ቦታ ይጎትቱት</translation>

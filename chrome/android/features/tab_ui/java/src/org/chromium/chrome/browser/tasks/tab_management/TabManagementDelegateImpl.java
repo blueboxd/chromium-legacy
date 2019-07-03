@@ -31,7 +31,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
 
     @Override
     public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity) {
-        if (ChromeFeatureList.isInitialized()) {
+        if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
                     "Downloaded_Enabled");

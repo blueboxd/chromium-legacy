@@ -17,7 +17,6 @@
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_request_utils.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/system_connector.h"
 
 #if defined(OS_ANDROID)
@@ -95,7 +94,6 @@ DownloadManagerUtils::GetInProgressDownloadManager(SimpleFactoryKey* key) {
             base::BindRepeating(&IgnoreOriginSecurityCheck),
             base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
             connector);
-    content::GetNetworkServiceFromConnector(connector);
     download::SimpleDownloadManagerCoordinator* coordinator =
         SimpleDownloadManagerCoordinatorFactory::GetForKey(key);
     coordinator->SetSimpleDownloadManager(in_progress_manager.get(),

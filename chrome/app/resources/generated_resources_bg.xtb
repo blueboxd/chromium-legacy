@@ -240,7 +240,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: „<ph name="NETWORK_NAME" />“</translation>
 <translation id="1353980523955420967">PPD файлът не може да бъде намерен. Уверете се, че вашият Chromebook е онлайн, и опитайте отново.</translation>
 <translation id="1355466263109342573">Приставката <ph name="PLUGIN_NAME" /> е блокирана</translation>
-<translation id="1357589289913453911">Идент. № на разширението</translation>
 <translation id="1358741672408003399">Правопис и граматика</translation>
 <translation id="1361164813881551742">Ръчно добавяне</translation>
 <translation id="1361655923249334273">Не се използва</translation>
@@ -320,7 +319,6 @@
 <translation id="1470967055429794975">Това ще изтрие всички данни на ключа за сигурност, включително ПИН кода му</translation>
 <translation id="1475502736924165259">Разполагате със сертификати, които не отговарят на нито една от другите категории</translation>
 <translation id="1476607407192946488">&amp;Езикови настройки</translation>
-<translation id="1477301030751268706">Кеш на означенията за приложния програмен интерфейс (API) за самоличност</translation>
 <translation id="1478340334823509079">Подробности: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Инсталирането не е активирано</translation>
 <translation id="1483493594462132177">Изпращане</translation>
@@ -725,7 +723,6 @@
 <translation id="2090876986345970080">Системни защитни настройки</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2097372108957554726">За да регистрирате нови устройства, трябва да влезете в Chrome</translation>
-<translation id="2098305189700762159">Не е намерен</translation>
 <translation id="2099172618127234427">Активирате функциите за отстраняване на грешки в Chrome OS, които ще настроят демон sshd и ще позволят стартирането от USB дискове.</translation>
 <translation id="2099686503067610784">Да се изтрие ли сертификатът на сървър „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
@@ -937,7 +934,6 @@
 <translation id="2386926718981642523">Осъществявайте достъп до Асистент всеки път, когато кажете „Ok Google“</translation>
 <translation id="2387458720915042159">Тип на връзката през прокси сървър</translation>
 <translation id="2391419135980381625">Стандартен шрифт</translation>
-<translation id="2391762656119864333">Оттегляне</translation>
 <translation id="2392369802118427583">Активиране</translation>
 <translation id="2394566832561516196">Настройките ще бъдат изчистени при следващото презареждане.</translation>
 <translation id="2395616325548404795">Устройството ви <ph name="DEVICE_TYPE" /> е успешно записано за корпоративно управление, но не успя да изпрати идентификатора на актива и информацията за местоположението си. Моля, въведете ръчно съответните данни от Admin Console.</translation>
@@ -1956,7 +1952,6 @@
 <translation id="3894123633473837029">Включване на скорошната история в Асистент посредством Sherlog. Тя може да включва самоличността ви, местоположението и информация за отстраняване на грешки. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="389589731200570180">Споделяне с гости</translation>
-<translation id="3898521660513055167">Състояние на означението</translation>
 <translation id="389901847090970821">Изберете клавиатура</translation>
 <translation id="3899879303189199559">Офлайн за повече от една година</translation>
 <translation id="3900966090527141178">Експортиране на паролите</translation>
@@ -2792,7 +2787,6 @@
 <translation id="5235050375939235066">Да се деинсталира ли приложението?</translation>
 <translation id="5235750401727657667">Замяна на страницата, която виждате, при отваряне на нов раздел</translation>
 <translation id="5238278114306905396">Приложението <ph name="EXTENSION_NAME" /> бе премахнато автоматично.</translation>
-<translation id="5238369540257804368">Обхвати</translation>
 <translation id="5241128660650683457">Четене на всичките ви данни от посещаваните от вас уебсайтове</translation>
 <translation id="5242724311594467048">Да се активира ли <ph name="EXTENSION_NAME" />?</translation>
 <translation id="5243522832766285132">Моля, опитайте отново след малко</translation>
@@ -3232,7 +3226,6 @@
 <translation id="5870155679953074650">Съществени грешки</translation>
 <translation id="5877064549588274448">Каналът бе променен. Рестартирайте устройството си, за да се приложат промените.</translation>
 <translation id="5877584842898320529">Избраният принтер не е налице или не е инсталиран правилно.<ph name="BR" /> Проверете го или опитайте да изберете друг.</translation>
-<translation id="5880247576487732437">Съществува означение</translation>
 <translation id="5882919346125742463">Известни мрежи</translation>
 <translation id="5884474295213649357">Този раздел е свързан с USB устройство.</translation>
 <translation id="5885324376209859881">Управление на настройките за медия...</translation>
@@ -4697,7 +4690,6 @@
 <translation id="8045923671629973368">Въведете идентификационен номер на приложение или URL адрес в уеб магазина</translation>
 <translation id="804786196054284061">Лицензионно споразумение с крайния потребител</translation>
 <translation id="8049705080247101012">Google сигнализира, че разширението <ph name="EXTENSION_NAME" /> е злонамерено, и инсталирането бе предотвратено</translation>
-<translation id="8049913480579063185">Име на разширението</translation>
 <translation id="8050038245906040378">Подписване от Microsoft на код за търговски цели</translation>
 <translation id="8053278772142718589">Файлове PKCS #12</translation>
 <translation id="8053390638574070785">Презареждане на тази страница</translation>
@@ -4948,7 +4940,6 @@
 <translation id="8449008133205184768">Поставяне и съобразяване със стила</translation>
 <translation id="8449036207308062757">Управление на хранилището</translation>
 <translation id="8452135315243592079">SIM картата липсва</translation>
-<translation id="845627346958584683">Час на изтичане</translation>
 <translation id="845702320058262034">Не може да бъде установена връзка. Уверете се, че функцията за Bluetooth на телефона ви е включена.</translation>
 <translation id="8457451314607652708">Импортиране на отметки</translation>
 <translation id="8460336040822756677">Ако изключите Smart Lock за <ph name="DEVICE_TYPE" />, няма да можете да отключвате устройствата си с Chrome чрез телефона си. Ще трябва да въвеждате паролата си.</translation>
@@ -5062,7 +5053,6 @@
 <translation id="8637542770513281060">Компютърът ви съдържа модул за сигурност, който служи за реализиране на множество критични защитни функции в Chrome OS. За да научите повече, посетете Помощния център на Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Налице е системна актуализация. Подготвя се за изтегляне...</translation>
 <translation id="8639047128869322042">Извършва се проверка за опасен софтуер...</translation>
-<translation id="8642171459927087831">Означение за достъп</translation>
 <translation id="8642900771896232685">2 секунди</translation>
 <translation id="8642947597466641025">Шрифтът на текста се уголемява</translation>
 <translation id="8643418457919840804">За да продължите, изберете опция:</translation>

@@ -65,7 +65,6 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
   const char* GetItemType() const override;
   AppListItem* FindChildItem(const std::string& id) override;
   size_t ChildItemCount() const override;
-  bool CompareForTest(const AppListItem* other) const override;
 
   // Persistent folders will be retained even if there is 1 app in them.
   bool IsPersistent() const;

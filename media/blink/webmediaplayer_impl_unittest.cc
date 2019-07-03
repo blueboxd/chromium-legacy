@@ -334,6 +334,9 @@ class WebMediaPlayerImplTest : public testing::Test {
             DefaultRendererFactory::GetGpuFactoriesCB()));
     factory_selector->SetBaseFactoryType(
         RendererFactorySelector::FactoryType::DEFAULT);
+#if defined(OS_ANDROID)
+    factory_selector->StartRequestRemotePlayStateCB(base::DoNothing());
+#endif
 
     mojom::MediaMetricsProviderPtr provider;
     MediaMetricsProvider::Create(

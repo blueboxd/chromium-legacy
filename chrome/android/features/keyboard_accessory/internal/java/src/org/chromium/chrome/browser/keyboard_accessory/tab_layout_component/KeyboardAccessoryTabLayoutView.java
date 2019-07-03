@@ -66,9 +66,6 @@ class KeyboardAccessoryTabLayoutView extends TabLayout {
      * @param activeTab The active tab to change. If null, all tabs are reset.
      */
     void setActiveTabColor(@Nullable Integer activeTab) {
-        setSelectedTabIndicatorHeight(activeTab == null
-                        ? 0
-                        : getResources().getDimensionPixelSize(R.dimen.divider_height));
         for (int i = getTabCount() - 1; i >= 0; i--) {
             TabLayout.Tab t = getTabAt(i);
             if (t == null || t.getIcon() == null) continue;

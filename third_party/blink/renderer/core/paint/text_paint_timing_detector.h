@@ -104,7 +104,6 @@ class CORE_EXPORT TextRecordsManager {
   void RemoveVisibleRecord(const LayoutObject&);
   void RemoveInvisibleRecord(const LayoutObject&);
   inline void RecordInvisibleObject(const LayoutObject& object) {
-    DCHECK(!HasTooManyObjects());
     invisible_objects_.insert(&object);
   }
   void RecordVisibleObject(const LayoutObject&,
@@ -115,7 +114,6 @@ class CORE_EXPORT TextRecordsManager {
   }
   void AssignPaintTimeToQueuedRecords(const base::TimeTicks&);
 
-  bool HasTooManyObjects() const;
   inline bool HasRecorded(const LayoutObject& object) const {
     return visible_objects_.Contains(&object) ||
            invisible_objects_.Contains(&object);

@@ -240,7 +240,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">Can’t find PPD. Make sure that your Chromebook is online and try again.</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> is blocked</translation>
-<translation id="1357589289913453911">Extension ID</translation>
 <translation id="1358741672408003399">Spelling and Grammar</translation>
 <translation id="1361164813881551742">Add Manually</translation>
 <translation id="1361655923249334273">Unused</translation>
@@ -320,7 +319,6 @@
 <translation id="1470967055429794975">This will erase all data on the security key, including its PIN</translation>
 <translation id="1475502736924165259">You have certificates on file that do not fit into any of the other categories</translation>
 <translation id="1476607407192946488">&amp;Language Settings</translation>
-<translation id="1477301030751268706">Identity API Token Cache</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installation is not enabled</translation>
 <translation id="1483493594462132177">Send</translation>
@@ -728,7 +726,6 @@
 <translation id="2090876986345970080">System security setting</translation>
 <translation id="2091887806945687916">Sound</translation>
 <translation id="2097372108957554726">You need to sign in to Chrome to register new devices</translation>
-<translation id="2098305189700762159">Not Found</translation>
 <translation id="2099172618127234427">You are enabling Chrome OS debugging features which will set up sshd daemon and enable booting from USB drives.</translation>
 <translation id="2099686503067610784">Delete server certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
@@ -940,7 +937,6 @@
 <translation id="2386926718981642523">Access your Assistant any time that you say "Ok Google"</translation>
 <translation id="2387458720915042159">Proxy connection type</translation>
 <translation id="2391419135980381625">Standard font</translation>
-<translation id="2391762656119864333">Revoke</translation>
 <translation id="2392369802118427583">Activate</translation>
 <translation id="2394566832561516196">Settings will be cleared on next reload.</translation>
 <translation id="2395616325548404795">Your <ph name="DEVICE_TYPE" /> has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.</translation>
@@ -1956,7 +1952,6 @@
 <translation id="3894123633473837029">Include recent Assistant history via Sherlog. This may include your identity, location and debug info. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="389589731200570180">Share with guests</translation>
-<translation id="3898521660513055167">Token Status</translation>
 <translation id="389901847090970821">Select keyboard</translation>
 <translation id="3899879303189199559">Offline for more than a year</translation>
 <translation id="3900966090527141178">Export passwords</translation>
@@ -2792,7 +2787,6 @@
 <translation id="5235050375939235066">Uninstall app?</translation>
 <translation id="5235750401727657667">Replace the page that you see when opening a new tab</translation>
 <translation id="5238278114306905396">The app "<ph name="EXTENSION_NAME" />" was automatically removed.</translation>
-<translation id="5238369540257804368">Scopes</translation>
 <translation id="5241128660650683457">Read all your data on the websites that you visit</translation>
 <translation id="5242724311594467048">Enable "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Please try again in a few moments</translation>
@@ -3231,7 +3225,6 @@
 <translation id="5870155679953074650">Hard faults</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="5877584842898320529">The selected printer is not available or not installed correctly. <ph name="BR" /> Check your printer or try selecting another printer.</translation>
-<translation id="5880247576487732437">Token Present</translation>
 <translation id="5882919346125742463">Known Networks</translation>
 <translation id="5884474295213649357">This tab is connected to a USB device.</translation>
 <translation id="5885324376209859881">Manage media settings...</translation>
@@ -4696,7 +4689,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8045923671629973368">Enter application ID or web store URL</translation>
 <translation id="804786196054284061">End User Licence Agreement</translation>
 <translation id="8049705080247101012">Google has flagged '<ph name="EXTENSION_NAME" />' as malicious, and installation has been prevented</translation>
-<translation id="8049913480579063185">Extension Name</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS No.12 Files</translation>
 <translation id="8053390638574070785">Reload This Page</translation>
@@ -4947,7 +4939,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8449008133205184768">Paste and Match Style</translation>
 <translation id="8449036207308062757">Manage storage</translation>
 <translation id="8452135315243592079">Missing SIM card</translation>
-<translation id="845627346958584683">Expiry Time</translation>
 <translation id="845702320058262034">Can’t connect. Make sure that your phone’s Bluetooth is turned on.</translation>
 <translation id="8457451314607652708">Import bookmarks</translation>
 <translation id="8460336040822756677">If you turn off Smart Lock for <ph name="DEVICE_TYPE" />, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.</translation>
@@ -5061,7 +5052,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8637542770513281060">Your computer contains a secure module, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Centre to learn more: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">System update available. Preparing to download…</translation>
 <translation id="8639047128869322042">Checking for harmful software…</translation>
-<translation id="8642171459927087831">Access Token</translation>
 <translation id="8642900771896232685">2 seconds</translation>
 <translation id="8642947597466641025">Make Text Larger</translation>
 <translation id="8643418457919840804">To continue, choose an option:</translation>

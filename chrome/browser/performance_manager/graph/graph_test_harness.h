@@ -116,7 +116,7 @@ template <>
 class TestNodeWrapper<SystemNodeImpl> {
  public:
   static TestNodeWrapper<SystemNodeImpl> Create(GraphImpl* graph) {
-    return TestNodeWrapper<SystemNodeImpl>(graph->FindOrCreateSystemNode());
+    return TestNodeWrapper<SystemNodeImpl>(graph->FindOrCreateSystemNodeImpl());
   }
 
   explicit TestNodeWrapper(SystemNodeImpl* impl) : impl_(impl) {}
@@ -150,7 +150,8 @@ class GraphTestHarness : public ::testing::Test {
   }
 
   TestNodeWrapper<SystemNodeImpl> GetSystemNode() {
-    return TestNodeWrapper<SystemNodeImpl>(graph()->FindOrCreateSystemNode());
+    return TestNodeWrapper<SystemNodeImpl>(
+        graph()->FindOrCreateSystemNodeImpl());
   }
 
   // testing::Test:

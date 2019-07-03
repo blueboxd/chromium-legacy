@@ -20,7 +20,7 @@
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
@@ -156,9 +156,9 @@ void SearchBoxView::ModelChanged() {
 }
 
 void SearchBoxView::UpdateKeyboardVisibility() {
-  if (!keyboard::KeyboardController::HasInstance())
+  if (!keyboard::KeyboardUIController::HasInstance())
     return;
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   bool should_show_keyboard =
       is_search_box_active() && search_box()->HasFocus();
   if (!keyboard_controller->IsEnabled() ||

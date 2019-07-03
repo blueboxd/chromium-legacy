@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_invert.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_max.h"
@@ -235,12 +236,11 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
     case kFunctionToken:
       if (range.Peek().FunctionId() == CSSValueID::kCalc ||
           range.Peek().FunctionId() == CSSValueID::kWebkitCalc) {
-        CSSCalcValue* calc_value = CSSCalcValue::Create(range, kValueRangeAll);
-        if (!calc_value)
+        CSSCalcExpressionNode* expression =
+            CSSCalcExpressionNode::ParseCalc(range);
+        if (!expression)
           break;
-
-        DCHECK(calc_value->ExpressionNode());
-        return CalcToNumericValue(*calc_value->ExpressionNode());
+        return CalcToNumericValue(*expression);
       }
       break;
     default:
@@ -253,8 +253,10 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
 }
 
 CSSNumericValue* CSSNumericValue::FromCSSValue(const CSSPrimitiveValue& value) {
-  if (value.IsCalculated())
-    return CalcToNumericValue(*value.CssCalcValue()->ExpressionNode());
+  if (value.IsCalculated()) {
+    return CalcToNumericValue(
+        *To<CSSMathFunctionValue>(value).ExpressionNode());
+  }
   return CSSUnitValue::FromCSSValue(value);
 }
 

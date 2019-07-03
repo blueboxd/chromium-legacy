@@ -115,10 +115,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_ietf_draft_version, 0)
 // instead rely on the existing check that bytes_in_flight > 0
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
 
-// When you\'re app-limited entering recovery, stay app-limited until you exit
-// recovery in QUIC BBR.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_app_limited_recovery, false)
-
 // If true, stop resetting ideal_next_packet_send_time_ in pacing sender.
 QUIC_FLAG(
     bool,
@@ -153,13 +149,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stop_reading_when_level_triggered,
           false)
 
-// If true, QuicSession::HasPendingCryptoData checks whether the crypto stream's
-// send buffer is empty. This flag fixes a bug where the retransmission alarm
-// mode is wrong for the first CHLO packet.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_has_pending_crypto_data,
-          true)
-
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
@@ -180,13 +169,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)
 // packets as no longer inflight when they're retransmitted.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_loss_removes_from_inflight,
-          false)
+          true)
 
 // If true, QuicEpollClock::Now() will monotonically increase.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
-
-// If true, public reset packets sent from GFE will include a kEPID tag.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
 
 // If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
 // pacing rate in STARTUP as more losses occur as a fraction of CWND.
@@ -286,7 +272,7 @@ QUIC_FLAG(int64_t, FLAGS_quic_headers_stream_id_in_v99, 0)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_drop_invalid_small_initial_connection_id,
-    false)
+    true)
 
 // When true, QUIC Version Negotiation packets will randomly include fake
 // versions.
@@ -296,3 +282,28 @@ QUIC_FLAG(bool,
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
+
+// Fixes quic::GetPacketHeaderSize and callsites when
+// QuicVersionHasLongHeaderLengths is false.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_get_packet_header_size,
+          false)
+
+// Calls ClearQueuedPackets after sending a connection close packet.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_clear_queued_packets_on_connection_close,
+    true)
+
+// If true, QuicConnection will be closed if a WindowUpdate frame is received on
+// a READ_UNIDIRECTIONAL stream.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_window_update_on_read_only_stream,
+          false)
+
+// If true and --quic_lumpy_pacing_size is 1, QUIC will use a lumpy size of two
+// for pacing.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_change_default_lumpy_pacing_size_to_two,
+    false)

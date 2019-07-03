@@ -87,8 +87,9 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
     context->set_host_resolver(&mock_host_resolver_);
   }
 
-  using internal::ThroughputAnalyzer::disable_throughput_measurements;
   using internal::ThroughputAnalyzer::CountInFlightRequests;
+  using internal::ThroughputAnalyzer::
+      disable_throughput_measurements_for_testing;
   using internal::ThroughputAnalyzer::EraseHangingRequests;
   using internal::ThroughputAnalyzer::IsHangingWindow;
 
@@ -126,7 +127,8 @@ TEST_F(ThroughputAnalyzerTest, MaximumRequests) {
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
 
-    ASSERT_FALSE(throughput_analyzer.disable_throughput_measurements());
+    ASSERT_FALSE(
+        throughput_analyzer.disable_throughput_measurements_for_testing());
     base::circular_deque<std::unique_ptr<URLRequest>> requests;
 
     // Start more requests than the maximum number of requests that can be held

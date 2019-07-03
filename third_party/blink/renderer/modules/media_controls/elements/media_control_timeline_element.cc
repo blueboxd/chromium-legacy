@@ -87,15 +87,6 @@ void MediaControlTimelineElement::SetDuration(double duration) {
   RenderBarSegments();
 }
 
-void MediaControlTimelineElement::OnPlaying() {
-  Frame* frame = GetDocument().GetFrame();
-  if (!frame)
-    return;
-  metrics_.RecordPlaying(
-      frame->GetChromeClient().GetScreenInfo().orientation_type,
-      MediaElement().IsFullscreen(), TrackWidth());
-}
-
 const char* MediaControlTimelineElement::GetNameForHistograms() const {
   return "TimelineSlider";
 }

@@ -465,6 +465,7 @@ void RenderWidgetTargeter::FoundTarget(
     FlushEventQueue(true);
     return;
   }
+
   delegate_->DispatchEventToTarget(root_view, target, event, latency,
                                    target_location);
   FlushEventQueue(false);

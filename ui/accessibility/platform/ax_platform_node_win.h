@@ -997,6 +997,16 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                               REFIID riid,
                               void** object) override;
 
+  //
+  // Methods used by the ATL COM map.
+  //
+
+  // Called by BEGIN_COM_MAP() / END_COM_MAP().
+  static STDMETHODIMP InternalQueryInterface(void* this_ptr,
+                                             const _ATL_INTMAP_ENTRY* entries,
+                                             REFIID riid,
+                                             void** object);
+
   // Support method for ITextRangeProvider::GetAttributeValue
   HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id, VARIANT* result);
 

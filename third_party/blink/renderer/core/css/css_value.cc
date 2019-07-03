@@ -217,9 +217,9 @@ bool CSSValue::operator==(const CSSValue& other) const {
       case kPathClass:
         return CompareCSSValues<CSSPathValue>(*this, other);
       case kNumericLiteralClass:
+        return CompareCSSValues<CSSNumericLiteralValue>(*this, other);
       case kMathFunctionClass:
-        // TODO(crbug.com/979895): Should call into the subclasses.
-        return CompareCSSValues<CSSPrimitiveValue>(*this, other);
+        return CompareCSSValues<CSSMathFunctionValue>(*this, other);
       case kRayClass:
         return CompareCSSValues<CSSRayValue>(*this, other);
       case kIdentifierClass:
@@ -329,9 +329,9 @@ String CSSValue::CssText() const {
     case kPathClass:
       return To<CSSPathValue>(this)->CustomCSSText();
     case kNumericLiteralClass:
+      return To<CSSNumericLiteralValue>(this)->CustomCSSText();
     case kMathFunctionClass:
-      // TODO(crbug.com/979895): Should call into the subclasses.
-      return To<CSSPrimitiveValue>(this)->CustomCSSText();
+      return To<CSSMathFunctionValue>(this)->CustomCSSText();
     case kRayClass:
       return To<CSSRayValue>(this)->CustomCSSText();
     case kIdentifierClass:

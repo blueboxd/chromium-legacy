@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/bind_helpers.h"
@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
   ChromeKeyboardControllerClient::Get()->SetContainerType(
       keyboard::ContainerType::kFloating, base::nullopt, base::DoNothing());
 
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
   controller->ShowKeyboard(false);
   KeyboardVisibleWaiter(true).Wait();
 
@@ -375,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, OpenAndCloseAndOpen) {
 // whether this needs to be tested in a keyboard::KeyboardController unit test.
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
   KeyboardLoadedWaiter().Wait();
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kHidden);
@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
                        OpenAndCloseAndOpenInternal) {
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
   controller->ShowKeyboard(false);
   // Need to wait the extension to be loaded. Hence LOADING_EXTENSION.
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
 // See crbug.com/755354.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
                        DisablingKeyboardGoesToInitialState) {
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
 
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
 

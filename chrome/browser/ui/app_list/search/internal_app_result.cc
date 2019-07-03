@@ -59,6 +59,12 @@ InternalAppResult::InternalAppResult(Profile* profile,
     large_icon_service_ =
         LargeIconServiceFactory::GetForBrowserContext(profile);
     UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
+
+    // Set these values to make sure that the chip will show up
+    // in the proper position.
+    SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
+    SetDisplayLocation(
+        ash::SearchResultDisplayLocation::kSuggestionChipContainer);
   }
 
   RecordShowHistogram(app_id);

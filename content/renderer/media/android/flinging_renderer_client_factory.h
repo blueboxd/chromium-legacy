@@ -9,6 +9,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "media/base/media_status.h"
 #include "media/base/renderer_factory.h"
 #include "media/renderers/remote_playback_client_wrapper.h"
 
@@ -30,6 +31,11 @@ class CONTENT_EXPORT FlingingRendererClientFactory
           remote_playback_client);
   ~FlingingRendererClientFactory() override;
 
+  // Sets a callback that renderers created by |this| will use to propagate
+  // Play/Pause state changes on remote devices.
+  // NOTE: This must be called before CreateRenderer().
+  void SetRemotePlayStateChangeCB(media::RemotePlayStateChangeCB callback);
+
   std::unique_ptr<media::Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
@@ -48,6 +54,8 @@ class CONTENT_EXPORT FlingingRendererClientFactory
 
   std::unique_ptr<media::MojoRendererFactory> mojo_flinging_factory_;
   std::unique_ptr<media::RemotePlaybackClientWrapper> remote_playback_client_;
+
+  media::RemotePlayStateChangeCB remote_play_state_change_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingingRendererClientFactory);
 };

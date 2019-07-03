@@ -147,11 +147,11 @@ void WebUIGraphDumpImpl::SubscribeToChanges(
   change_subscriber_ = std::move(change_subscriber);
 
   // Send creation notifications for all existing nodes and subscribe to them.
-  for (ProcessNodeImpl* process_node : graph_->GetAllProcessNodes()) {
+  for (ProcessNodeImpl* process_node : graph_->GetAllProcessNodeImpls()) {
     SendProcessNotification(process_node, true);
     process_node->AddObserver(this);
   }
-  for (PageNodeImpl* page_node : graph_->GetAllPageNodes()) {
+  for (PageNodeImpl* page_node : graph_->GetAllPageNodeImpls()) {
     SendPageNotification(page_node, true);
     StartPageFaviconRequest(page_node);
     page_node->AddObserver(this);

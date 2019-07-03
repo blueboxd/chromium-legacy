@@ -11,7 +11,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/keyboard_util.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -660,8 +660,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
   }
 
   // Ensure the keyboard is hidden and stays hidden (as long as it isn't locked)
-  if (keyboard::KeyboardController::Get()->IsEnabled())
-    keyboard::KeyboardController::Get()->HideKeyboardExplicitlyBySystem();
+  if (keyboard::KeyboardUIController::Get()->IsEnabled())
+    keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
 
   // Close the overflow bubble if an item on either shelf is clicked. Press
   // events elsewhere will close the overflow shelf via OverflowBubble's

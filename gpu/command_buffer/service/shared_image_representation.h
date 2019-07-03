@@ -27,6 +27,12 @@ class Texture;
 class TexturePassthrough;
 }  // namespace gles2
 
+enum class RepresentationAccessMode {
+  kNone,
+  kRead,
+  kWrite,
+};
+
 // A representation of a SharedImageBacking for use with a specific use case /
 // api.
 class GPU_GLES2_EXPORT SharedImageRepresentation {
@@ -52,6 +58,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   }
 
  protected:
+  SharedImageManager* manager() const { return manager_; }
   SharedImageBacking* backing() const { return backing_; }
   bool has_context() const { return has_context_; }
 

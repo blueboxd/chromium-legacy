@@ -66,7 +66,7 @@ app_list::SearchBoxView* GetSearchBoxView() {
 aura::Window* GetVirtualKeyboardWindow() {
   return Shell::Get()
       ->keyboard_controller()
-      ->keyboard_controller()
+      ->keyboard_ui_controller()
       ->GetKeyboardWindow();
 }
 

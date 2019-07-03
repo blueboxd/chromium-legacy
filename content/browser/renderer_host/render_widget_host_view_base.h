@@ -336,6 +336,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const = 0;
 
+  // Called whenever the browser receives updated hit test data from viz.
+  virtual void NotifyHitTestRegionUpdated(
+      const viz::AggregatedHitTestRegion& region) {}
+
+  // Indicates whether the widget has resized or moved within its embedding
+  // page during the 500 milliseconds prior to the event.
+  virtual bool ScreenRectIsUnstableFor(const blink::WebInputEvent& event);
+
   // When there are multiple RenderWidgetHostViews for a single page, input
   // events need to be targeted to the correct one for handling. The following
   // methods are invoked on the RenderWidgetHostView that should be able to

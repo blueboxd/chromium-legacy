@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class CSSCalcValue;
 class CSSToLengthConversionData;
 class Length;
 
@@ -234,6 +233,8 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   double ComputeDotsPerPixel() const;
 
   // Computes a length in pixels, resolving relative lengths
+  // TODO(crbug.com/979895): This function is callable only when the length is a
+  // fixed value or is calculated without involving percentages. Enforce that.
   template <typename T>
   T ComputeLength(const CSSToLengthConversionData&) const;
 
@@ -251,9 +252,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return clampTo<T>(GetDoubleValue());
   }
 
-  // TODO(crbug.com/979895): Move this to |CSSMathFunctionValue|
-  CSSCalcValue* CssCalcValue() const;
-
   template <typename T>
   inline T ConvertTo() const;  // Defined in CSSPrimitiveValueMappings.h
 
@@ -265,8 +263,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   }
 
   String CustomCSSText() const;
-
-  bool Equals(const CSSPrimitiveValue&) const;
 
   void TraceAfterDispatch(blink::Visitor*);
 

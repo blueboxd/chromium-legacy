@@ -55,21 +55,6 @@ void AppListFolderItem::SetIsPersistent(bool is_persistent) {
   metadata()->is_persistent = is_persistent;
 }
 
-bool AppListFolderItem::CompareForTest(const AppListItem* other) const {
-  if (!AppListItem::CompareForTest(other))
-    return false;
-  const AppListFolderItem* other_folder =
-      static_cast<const AppListFolderItem*>(other);
-  if (other_folder->item_list()->item_count() != item_list_->item_count())
-    return false;
-  for (size_t i = 0; i < item_list_->item_count(); ++i) {
-    if (!item_list()->item_at(i)->CompareForTest(
-            other_folder->item_list()->item_at(i)))
-      return false;
-  }
-  return true;
-}
-
 bool AppListFolderItem::ShouldAutoRemove() const {
   return ChildItemCount() <= (IsPersistent() ? 0u : 1u);
 }

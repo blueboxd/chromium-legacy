@@ -51,6 +51,18 @@ RendererFactory* RendererFactorySelector::GetCurrentFactory() {
 void RendererFactorySelector::SetUseMediaPlayer(bool use_media_player) {
   use_media_player_ = use_media_player;
 }
+
+void RendererFactorySelector::StartRequestRemotePlayStateCB(
+    RequestRemotePlayStateChangeCB callback_request) {
+  DCHECK(!remote_play_state_change_cb_request_);
+  remote_play_state_change_cb_request_ = std::move(callback_request);
+}
+
+void RendererFactorySelector::SetRemotePlayStateChangeCB(
+    RemotePlayStateChangeCB callback) {
+  DCHECK(remote_play_state_change_cb_request_);
+  std::move(remote_play_state_change_cb_request_).Run(std::move(callback));
+}
 #endif
 
 void RendererFactorySelector::SetQueryIsRemotingActiveCB(

@@ -80,12 +80,6 @@ class MEDIA_EXPORT Pipeline {
     // during playback.
     virtual void OnAudioDecoderChange(const std::string& name) = 0;
     virtual void OnVideoDecoderChange(const std::string& name) = 0;
-
-    // Executed whenever an important status change has happened, and that this
-    // change was not initiated by Pipeline or Pipeline::Client.
-    // Only used with FlingingRenderer, when an external device pauses/resumes
-    // a video that is playing remotely.
-    virtual void OnRemotePlayStateChange(MediaStatus::State state) = 0;
   };
 
   virtual ~Pipeline() {}

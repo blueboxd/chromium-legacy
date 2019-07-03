@@ -24,11 +24,15 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
+#include "device/vr/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/vr/service/gvr_consent_helper.h"
+#if BUILDFLAG(ENABLE_ARCORE)
+#include "chrome/browser/vr/service/arcore_consent_prompt_interface.h"
+#endif
 #endif
 
 namespace vr {
@@ -199,12 +203,23 @@ void XRDeviceImpl::RequestSession(
 #if defined(OS_ANDROID)
 
   if (options->environment_integration) {
-    // The session has requested AR mode. This will only work if
-    // the ARCore-backed runtime is available and enabled, and that has
-    // its own separate consent prompt. Otherwise, the session request will
-    // fail since no other runtimes support environment integration. In
-    // either case, there's no need to show the VR-specific consent prompt.
-    DoRequestSession(std::move(options), std::move(callback));
+#if BUILDFLAG(ENABLE_ARCORE)
+    if (!render_frame_host_) {
+      // Reject promise.
+      std::move(callback).Run(nullptr);
+    } else {
+      if (IsXrDeviceConsentPromptDisabledForTesting()) {
+        DoRequestSession(std::move(options), std::move(callback));
+      } else {
+        ArcoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
+            render_frame_host_->GetProcess()->GetID(),
+            render_frame_host_->GetRoutingID(),
+            base::BindOnce(&XRDeviceImpl::OnConsentResult,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                           std::move(callback)));
+      }
+    }
+#endif
     return;
   } else {
     // GVR.

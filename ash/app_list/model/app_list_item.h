@@ -85,9 +85,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // Returns the number of child items if it has any (e.g. is a folder) or 0.
   virtual size_t ChildItemCount() const;
 
-  // Utility functions for sync integration tests.
-  virtual bool CompareForTest(const AppListItem* other) const;
-  virtual std::string ToDebugString() const;
+  std::string ToDebugString() const;
 
   bool is_folder() const { return metadata_->is_folder; }
 

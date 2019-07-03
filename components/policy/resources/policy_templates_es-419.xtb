@@ -360,6 +360,11 @@
           Si se inhabilita o no se establece, no se permitirá la configuración de las cuentas de Kerberos. No se podrán agregar cuentas de Kerberos ni usar la autenticación Kerberos. Se borrarán todas las cuentas de Kerberos existentes y todas las contraseñas almacenadas.</translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
 <translation id="1561967320164410511">U2F más extensiones para atestación individual</translation>
+<translation id="1566329065312331399">
+      Si se establece como falsa, esta política no permite que el dispositivo active Powerwash.
+      Si se establece como verdadera, permite que el dispositivo active Powerwash.
+      Si no se establece, su valor predeterminado es falso, lo que significa que no permite que el dispositivo active Powerwash.
+      </translation>
 <translation id="1574554504290354326">Esta configuración es obsoleta. En su lugar, usa SafeBrowsingExtendedReportingEnabled. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es equivalente a establecer SafeBrowsingExtendedReportingOptInAllowed como falsa.
 
       Si se establece esta política como falsa, los usuarios ya no podrán enviar cierta información del sistema ni contenido de páginas a los servidores de Google. Si se establece como verdadera o no se configura, los usuarios podrán enviar cierta información del sistema y contenido de páginas a la Navegación segura para detectar apps y sitios peligrosos.
@@ -401,6 +406,7 @@
 
       Advertencia: No se recomienda delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> a una Aplicación de kiosko ya que puede evitar que el dispositivo reciba actualizaciones de software y correcciones de seguridad críticas. Delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> puede poner en riesgo a los usuarios.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
+<translation id="1700811900332333712">Permite que el dispositivo solicite Powerwash</translation>
 <translation id="1704516734140344991">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Se pueden especificar opciones de configuración particulares en las propiedades de JSON:
@@ -2017,6 +2023,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       En este período, se le informará reiteradamente al usuario acerca de la necesidad de la actualización. En dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema, en conformidad con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadores <ph name="PRODUCT_NAME" />, el menú de la app indica que se debe reiniciar después de transcurrido un tercio del período de la notificación. Esta notificación cambia de color tras dos tercios del período de la notificación y una vez más cuando finaliza este período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen el mismo patrón.
 
       Si no se establece, se utiliza el período predeterminado de 345600000 milisegundos (cuatro días) para los dispositivos <ph name="PRODUCT_OS_NAME" /> y 604800000 milisegundos (una semana) para los dispositivos <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Esta configuración, SitePerProcess, se puede usar para impedir que los usuarios rechacen el comportamiento predeterminado del aislamiento de todos los sitios. Ten en cuenta que la política IsolateOrigins también puede ser útil para aislar los orígenes adicionales más precisos.
+      Si se habilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
+      Si se inhabilita la política o no se configura, el usuario podrá rechazar el aislamiento de sitios
+      (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).  Si se inhabilita la política o no se configura, no se desactivará el aislamiento de sitios.
+      En <ph name="PRODUCT_OS_NAME" /> 76 y versiones anteriores, se recomienda también establecer la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> en el mismo valor. Si los valores que especifican las dos políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
+
+      NOTA: Esta política no se aplica en Android. Para habilitar SitePerProcess en Android, usa la configuración de la política SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Habilita la función "Autocompletar" de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información ya almacenada de las tarjetas de crédito.
 
       Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará información de tarjetas de crédito. Tampoco guardará información adicional de tarjetas que el usuario haya enviado cuando navegaba en la Web.
@@ -2158,6 +2173,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no se configura esta política, se utilizará la línea de comandos predeterminada.</translation>
+<translation id="5152787786897382519">Chromium y Google Chrome tienen algunos grupos de políticas que dependen unos de otros para controlar una función. Los siguientes grupos de políticas representan estos conjuntos. Como las políticas pueden tener diferentes orígenes, solo se aplicarán los valores que provengan de la fuente de mayor prioridad. Se ignorarán los valores que provengan de una fuente de menor prioridad en el mismo grupo. El orden de prioridad se define en <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">La frecuencia de envío de paquetes de red de control, en milisegundos.
 
       Si esta política no se configura, el intervalo predeterminado es 3 minutos. El intervalo
@@ -2674,6 +2690,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5983708779415553259">Comportamiento predeterminado de los sitios que no forman parte de ningún paquete de contenido</translation>
 <translation id="5997543603646547632">Utilizar reloj con formato de 24 horas de forma predeterminada</translation>
 <translation id="5997846976342452720">Indicar si el buscador de complementos se debe inhabilitar (obsoleto)</translation>
+<translation id="5998198091336830580">Esta política es parte del siguiente grupo atómico (solo se aplican las políticas que provengan de la fuente de mayor prioridad del grupo):</translation>
 <translation id="6017568866726630990">Permite mostrar el cuadro de diálogo de impresión del sistema en lugar de la vista previa de impresión.
 
       Si esta opción se habilita, <ph name="PRODUCT_NAME" /> abrirá el cuadro de diálogo de impresión del sistema en lugar de la vista previa de impresión integrada cuando un usuario solicite que se imprima una página.
@@ -3404,6 +3421,9 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece como falsa, no se recopilará esta información.
 
       Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
+      </translation>
 <translation id="737655323154569539">Restringe el tamaño de la página de impresión. Si la política no se configura o se establece con un valor vacío, no se aplicará ninguna restricción.</translation>
 <translation id="7389872682701720082">Si habilitas esta opción, se ejecutarán siempre los complementos actualizados.
 
@@ -3729,6 +3749,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           También visita las políticas "CookiesAllowedForUrls" y "CookiesSessionOnlyForUrls". Ten en cuenta que no debe haber patrones de URL en conflicto entre estas tres políticas. No se especifica qué política tiene prioridad.</translation>
 <translation id="8099880303030573137">Demora de inactividad con batería</translation>
+<translation id="8101381354936029836">Grupo atómico de la política:</translation>
 <translation id="8102913158860568230">Configuración de mediastream predeterminada</translation>
 <translation id="8104186956182795918">Te permite configurar si los sitios web pueden mostrar imágenes. La visualización de imágenes se puede permitir o denegar para todos los sitios web.
 
@@ -3951,6 +3972,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Inhabilitar el almacenamiento del historial del navegador</translation>
 <translation id="8499172469244085141">Configuración predeterminada (los usuarios pueden modificarla)</translation>
+<translation id="849962487677588458">Esta política quedó obsoleta, se programó su eliminación en Chrome 78 y no se reemplazará.
+
+      Su función es habilitar HTTP/0.9 en puertos que no sean 80 para HTTP ni 443 para HTTPS.
+
+      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente al problema de seguridad que se indican en https://crbug.com/600352.
+
+      Esta política permite que las empresas migren a servidores existentes fuera de HTTP/0.9, y se eliminará en el futuro.
+
+      Si no se establece, se inhabilitará HTTP/0.9 en los puertos no predeterminados.</translation>
 <translation id="8507835864888987300">Establece una versión objetivo para las actualizaciones automáticas.
 
       Especifica el prefijo de la versión objetivo a la que debe actualizarse <ph name="PRODUCT_OS_NAME" />. Si el dispositivo ejecuta una versión anterior al prefijo indicado, se actualizará a la versión más reciente con dicho prefijo. Si el dispositivo ya cuenta con una versión posterior, los efectos dependerán del valor de <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. El formato del prefijo funciona en relación con el componente, como se demuestra en el siguiente ejemplo:

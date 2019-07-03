@@ -420,7 +420,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
 
   // The RenderFrameHost should not have changed unless site-per-process is
   // enabled.
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_NE(initial_rfh,
               static_cast<WebContentsImpl*>(shell()->web_contents())
                   ->GetFrameTree()

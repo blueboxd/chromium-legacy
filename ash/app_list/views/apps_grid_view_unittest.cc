@@ -29,7 +29,7 @@
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -304,7 +304,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   base::test::ScopedRestoreICUDefaultLocale restore_locale_;
 
   // Used by AppListFolderView::UpdatePreferredBounds.
-  keyboard::KeyboardController keyboard_controller_;
+  keyboard::KeyboardUIController keyboard_ui_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };

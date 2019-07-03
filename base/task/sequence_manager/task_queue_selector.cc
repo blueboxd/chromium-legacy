@@ -26,6 +26,8 @@ TaskQueueSelector::TaskQueueSelector(
 #if DCHECK_IS_ON()
       random_task_selection_(settings.random_task_selection_seed != 0),
 #endif
+      anti_starvation_logic_for_priorities_disabled_(
+          settings.anti_starvation_logic_for_priorities_disabled),
       delayed_work_queue_sets_("delayed", this, settings),
       immediate_work_queue_sets_("immediate", this, settings) {
 }
@@ -128,6 +130,8 @@ int64_t TaskQueueSelector::GetSortKeyForPriority(
       return std::numeric_limits<int64_t>::max();
 
     default:
+      if (anti_starvation_logic_for_priorities_disabled_)
+        return per_priority_starvation_tolerance_[priority];
       return selection_count_ + per_priority_starvation_tolerance_[priority];
   }
 }

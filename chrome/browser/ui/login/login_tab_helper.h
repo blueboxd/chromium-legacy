@@ -29,6 +29,13 @@ class LoginTabHelper : public content::WebContentsObserver,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+  // Returns false if the omnibox should hide the URL due to a proxy auth
+  // prompt, and true otherwise. The URL should not be shown during a proxy auth
+  // prompt to avoid origin confusion.
+  bool ShouldDisplayURL() const;
+  // Returns true if an auth prompt is currently visible.
+  bool IsShowingPrompt() const;
+
  private:
   friend class content::WebContentsUserData<LoginTabHelper>;
 

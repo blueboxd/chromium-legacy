@@ -32,10 +32,6 @@
 #include <windows.h>
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "mojo/core/mach_port_relay.h"
-#endif
-
 #if !defined(OS_NACL)
 #include "crypto/random.h"
 #endif
@@ -157,14 +153,6 @@ NodeController::NodeController(Core* core)
       node_(new ports::Node(name_, this)) {
   DVLOG(1) << "Initializing node " << name_;
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void NodeController::CreateMachPortRelay(base::PortProvider* port_provider) {
-  base::AutoLock lock(mach_port_relay_lock_);
-  DCHECK(!mach_port_relay_);
-  mach_port_relay_.reset(new MachPortRelay(port_provider));
-}
-#endif
 
 void NodeController::SetIOTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner) {
@@ -1220,20 +1208,6 @@ void NodeController::OnChannelError(const ports::NodeName& from_node,
                        from_node, base::RetainedRef(channel)));
   }
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-MachPortRelay* NodeController::GetMachPortRelay() {
-  {
-    base::AutoLock lock(inviter_lock_);
-    // Return null if we're not the root.
-    if (bootstrap_inviter_channel_ || inviter_name_ != ports::kInvalidNodeName)
-      return nullptr;
-  }
-
-  base::AutoLock lock(mach_port_relay_lock_);
-  return mach_port_relay_.get();
-}
-#endif
 
 void NodeController::CancelPendingPortMerges() {
   std::vector<ports::PortRef> ports_to_close;

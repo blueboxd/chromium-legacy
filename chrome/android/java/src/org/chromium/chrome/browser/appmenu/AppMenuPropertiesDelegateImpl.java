@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
@@ -264,7 +265,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 menu.findItem(R.id.close_all_tabs_menu_id)
                         .setEnabled(mTabModelSelector.getTotalTabCount() > 0);
             }
-            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                    || DeviceClassManager.enableAccessibilityLayout()) {
                 menu.findItem(R.id.menu_group_tabs).setVisible(false);
             }
         }

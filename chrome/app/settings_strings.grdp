@@ -5172,9 +5172,6 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DIALOG_TITLE" desc="The title of a dialog that lets users view and erase credentials on their security key (an authentication hardware device).">
     Security key sign-in data
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_SAVED_CREDENTIALS_TITLE" desc="The heading of a table that lists credentials stored on a security key (an authentication hardware device).">">
-    Stored security key sign-in data
-  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE" desc="A column heading of a table that lists credentials stored on a security key (an authentication hardware device). This column contains the domain name (e.g. google.com) for each credential.">
     Website
   </message>

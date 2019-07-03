@@ -240,7 +240,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">PPD सापडत नाही. तुमचे Chromebook ऑनलाइन असल्याची खात्री करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> अवरोधित केले आहे</translation>
-<translation id="1357589289913453911">एक्स्टेंशन Id</translation>
 <translation id="1358741672408003399">शुद्धलेखन आणि व्याकरण</translation>
 <translation id="1361164813881551742">व्यक्तिचलितपणे जोडा</translation>
 <translation id="1361655923249334273">न वापरलेले</translation>
@@ -320,7 +319,6 @@
 <translation id="1470967055429794975">हे सिक्युरिटी कीच्या पिनसह, तिच्यावरील सर्व डेटा मिटवेल</translation>
 <translation id="1475502736924165259">आपल्याकडे फाईलवर प्रमाणपत्रे आहेत जी अन्य कोणत्याही श्रेणींसाठी योग्य नाहीत</translation>
 <translation id="1476607407192946488">&amp;भाषा सेटिंग्ज</translation>
-<translation id="1477301030751268706">ओळख API टोकन कॅशे</translation>
 <translation id="1478340334823509079">तपशील: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">इंस्टॉल करणे सुरू केलेले नाही</translation>
 <translation id="1483493594462132177">पाठवा</translation>
@@ -727,7 +725,6 @@
 <translation id="2090876986345970080">सिस्टम सुरक्षा सेटिंग्ज</translation>
 <translation id="2091887806945687916">ध्वनी</translation>
 <translation id="2097372108957554726">नवीन डिव्हाइसेसची नोंदणी करण्यासाठी तुम्हाला Chrome वर साइन इन करणे आवश्यक आहे</translation>
-<translation id="2098305189700762159">आढळली नाही</translation>
 <translation id="2099172618127234427">तुम्ही Chrome OS डीबगिंग वैशिष्ट्ये सुरू करत आहात जी ssh केलेल्या daemon सेट आणि USB ड्राइव्हवरून बूट करणे सुरू करतील.</translation>
 <translation id="2099686503067610784">सर्व्हर सर्टिफिकेट "<ph name="CERTIFICATE_NAME" />" हटवायचे?</translation>
 <translation id="2100273922101894616">ऑटो साइन इन करा</translation>
@@ -939,7 +936,6 @@
 <translation id="2386926718981642523">कधीही "Ok Google" म्हणून तुमचे असिस्टंट अ‍ॅक्सेस करा</translation>
 <translation id="2387458720915042159">प्रॉक्सी कनेक्शन प्रकार</translation>
 <translation id="2391419135980381625">मानक फॉन्ट</translation>
-<translation id="2391762656119864333">मागे घ्या</translation>
 <translation id="2392369802118427583">सक्रिय करा</translation>
 <translation id="2394566832561516196">पुढील रीलोडच्या वेळी सेटिंग्ज साफ केली जातील.</translation>
 <translation id="2395616325548404795">एंटरप्राइझ व्यवस्‍थापनासाठी आपल्या <ph name="DEVICE_TYPE" /> ची यशस्वीरित्या नोंदणी केली आहे परंतु त्याची मालमत्ता आणि स्थान माहिती पाठविण्यात अयशस्वी झाले. कृपया या डिव्हाइससाठी आपल्या Admin console मधून ही माहिती व्यक्तीचलितरित्या प्रविष्‍ट करा.</translation>
@@ -1957,7 +1953,6 @@
 <translation id="3894123633473837029">शेरलॉग वरून अलीकडील असिस्टंट इतिहासाचा समावेश करा. यामध्ये कदाचित तुमची ओळख, स्थान आणि डीबग माहिती यांचा समावेश असू शकतो. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">फोल्डर जोडा</translation>
 <translation id="389589731200570180">अतिथींसह शेअर करा</translation>
-<translation id="3898521660513055167">टोकन स्थिती</translation>
 <translation id="389901847090970821">कीबोर्ड निवडा</translation>
 <translation id="3899879303189199559">एक वर्षापेक्षा जास्त ऑफलाइन</translation>
 <translation id="3900966090527141178">पासवर्ड एक्सपोर्ट करा</translation>
@@ -2792,7 +2787,6 @@
 <translation id="5235050375939235066">अॅप अनइंस्टॉल करायचे?</translation>
 <translation id="5235750401727657667">एखादा नवीन टॅब उघडताना दिसत असलेले पेज बदला</translation>
 <translation id="5238278114306905396">अ‍ॅप "<ph name="EXTENSION_NAME" />" स्वयंचलितपणे काढण्यात आला.</translation>
-<translation id="5238369540257804368">स्कोप</translation>
 <translation id="5241128660650683457">तुम्ही भेट देता त्या वेबसाइटवर तुमचा सर्व डेटा वाचा</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" सुरू करायचे?</translation>
 <translation id="5243522832766285132">कृपया थोड्या वेळानंतर पुन्हा प्रयत्न करा</translation>
@@ -3231,7 +3225,6 @@
 <translation id="5870155679953074650">हार्ड फॉल्‍ट</translation>
 <translation id="5877064549588274448">चॅनेल बदलले. बदल लागू करण्यासाठी तुमचे डिव्हाइस रीस्टार्ट करा.</translation>
 <translation id="5877584842898320529">निवडलेले प्रिंटर उपलब्ध नाही किंवा योग्यरीत्या इंस्टॉल केलेले नाही. <ph name="BR" /> तुमचा प्रिंटर तपासा किंवा दुसरा प्रिंटर निवडून पहा.</translation>
-<translation id="5880247576487732437">टोकन सादर</translation>
 <translation id="5882919346125742463">ज्ञात नेटवर्क</translation>
 <translation id="5884474295213649357">हा टॅब USB डिव्हाइसशी कनेक्ट केला आहे.</translation>
 <translation id="5885324376209859881">माध्यम सेटिंग्ज व्यवस्थापित करा...</translation>
@@ -4695,7 +4688,6 @@
 <translation id="8045923671629973368">ॲप्लिकेशन आयडी किंवा वेबस्टोअर URL टाका</translation>
 <translation id="804786196054284061">अंतिम वापरकर्ता परवाना करारनामा</translation>
 <translation id="8049705080247101012">Google ने "<ph name="EXTENSION_NAME" />" ला दुर्भावनापूर्ण म्हणून फ्लॅग केले आहे आणि इंस्टॉल करणे रोखले गेले आहे</translation>
-<translation id="8049913480579063185">एक्स्टेंशन नाव</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS #12 फायली</translation>
 <translation id="8053390638574070785">हे पृष्ठ रीलोड करा</translation>
@@ -4946,7 +4938,6 @@
 <translation id="8449008133205184768">पेस्ट करा आणि शैली जुळवा</translation>
 <translation id="8449036207308062757">स्टोरेज व्यवस्थापित करा</translation>
 <translation id="8452135315243592079">गहाळ सिम कार्ड</translation>
-<translation id="845627346958584683">कालावधी समाप्ती वेळ</translation>
 <translation id="845702320058262034">कनेक्ट करू शकत नाही. तुमच्या फोनचे ब्लूटूथ सुरू केले असल्याची खात्री करा</translation>
 <translation id="8457451314607652708">बुकमार्क इंपोर्ट करा</translation>
 <translation id="8460336040822756677">तुम्ही <ph name="DEVICE_TYPE" /> साठी Smart Lock बंद केल्यास, तुम्हाला तुमचा फोन वापरून तुमचे Chrome डिव्हाइस अनलॉक करता येणार नाही. तुम्हाला तुमचा पासवर्ड टाइप करणे आवश्यक आहे.</translation>
@@ -5060,7 +5051,6 @@
 <translation id="8637542770513281060">तुमच्या काँप्युटरमध्ये एक सुरक्षित मॉड्यूल आहे, जे Chrome OSमध्‍ये अनेक गंभीर सुरक्षितता वैशिष्‍ट्ये अंमलात आणण्‍यासाठी वापरले जाते. आणखी जाणून घेण्यासाठी Chromebook मदत केंद्राला भेट द्या: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">सिस्टम अपडेट उपलब्ध. डाउनलोड करण्याची तयारी करत आहे…</translation>
 <translation id="8639047128869322042">हानिकारक सॉफ्टवेअरसाठी तपासत आहे...</translation>
-<translation id="8642171459927087831">अॅक्सेस टोकन</translation>
 <translation id="8642900771896232685">दोन सेकंद</translation>
 <translation id="8642947597466641025">मजकूर मोठा करा</translation>
 <translation id="8643418457919840804">पुढे सुरू ठेवण्यासाठी, पर्याय निवडा:</translation>

@@ -67,7 +67,6 @@ js_library("welcome_app") {
     "./shared:nux_types",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:promise_resolver",
   ]
 }
 

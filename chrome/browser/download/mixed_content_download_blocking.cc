@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_features.h"
+#include "components/download/public/common/download_stats.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
@@ -142,6 +143,10 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
   base::UmaHistogramEnumeration(
       kInsecureDownloadHistogramName,
       GetDownloadBlockingEnum(initiator, is_download_secure));
+  download::RecordDownloadValidationMetrics(
+      download::DownloadMetricsCallsite::kMixContentDownloadBlocking,
+      download::CheckDownloadConnectionSecurity(dl_url, item.GetUrlChain()),
+      download::DownloadContentFromMimeType(item.GetMimeType(), false));
 
   if (!(initiator.has_value() && initiator->GetURL().SchemeIsCryptographic() &&
         !is_download_secure && found_blocked_extension &&

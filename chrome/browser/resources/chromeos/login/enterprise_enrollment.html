@@ -52,7 +52,9 @@
           </div>
           <div slot="bottom-buttons"
                class="flex layout horizontal center self-start">
-            <oobe-back-button id="oobe-signin-back-button"></oobe-back-button>
+            <oobe-back-button id="oobe-signin-back-button"
+                disabled="[[authenticatorDialogDisplayed_]]"
+                on-click="onBackButtonClicked_"></oobe-back-button>
           </div>
         </oobe-dialog>
       </div>
@@ -118,7 +120,8 @@
                  i18n-values="alt:enrollmentSuccessIllustrationTitle">
           </div>
           <div slot="bottom-buttons" class="layout horizontal end-justified">
-            <oobe-text-button inverse id="enroll-success-done-button"
+            <oobe-text-button inverse id="success-done-button"
+                on-tap="onEnrollmentFinished_"
                 class="focus-on-show">
               <div i18n-content="oauthEnrollDone"></div>
             </oobe-text-button>
@@ -154,12 +157,12 @@
             </gaia-input>
           </div>
           <div slot="bottom-buttons" class="layout horizontal end-justified">
-            <oobe-text-button id="enroll-attributes-skip-button">
+            <oobe-text-button id="attributes-skip" on-tap="skipAttributes_">
               <div i18n-content="oauthEnrollSkip"></div>
             </oobe-text-button>
             <div class="flex"></div>
-            <oobe-next-button
-                id="enroll-attributes-submit-button"></oobe-next-button>
+            <oobe-next-button id="attributes-submit"
+                on-tap="submitAttributes_"></oobe-next-button>
           </div>
         </oobe-dialog>
       </div>
@@ -167,6 +170,8 @@
     <div id="oauth-saml-notice-container">
       <span id="oauth-saml-notice-message"></span>
     </div>
-    <navigation-bar id="oauth-enroll-navigation"></navigation-bar>
+    <navigation-bar id="oauth-enroll-navigation"
+        disabled="[[authenticatorDialogDisplayed_]]"
+        on-close="cancel" on-refresh="cancel"></navigation-bar>
   </template>
 </dom-module>

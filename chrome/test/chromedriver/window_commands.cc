@@ -1480,7 +1480,6 @@ Status ExecutePerformActions(Session* session,
   size_t max_list_length =
       std::max({longest_mouse_list_size, longest_touch_list_size,
                 longest_key_list_size, tick_durations.size()});
-  int key_modifiers = 0;
   for (size_t i = 0; i < max_list_length; i++) {
     std::list<KeyEvent> dispatch_key_events;
     for (size_t j = 0; j < key_events_list.size(); j++) {
@@ -1491,9 +1490,9 @@ Status ExecutePerformActions(Session* session,
         if (event.type == kKeyDownEventType) {
           session->input_cancel_list.emplace_back(key_input_states[j], nullptr,
                                                   nullptr, &event);
-          key_modifiers |= KeyToKeyModifiers(event.key);
+          session->sticky_modifiers |= KeyToKeyModifiers(event.key);
         } else if (event.type == kKeyUpEventType) {
-          key_modifiers &= ~KeyToKeyModifiers(event.key);
+          session->sticky_modifiers &= ~KeyToKeyModifiers(event.key);
         }
       }
     }
@@ -1527,7 +1526,7 @@ Status ExecutePerformActions(Session* session,
           event.x = mouse_locations[j].x();
           event.y = mouse_locations[j].y();
         }
-        event.modifiers = key_modifiers;
+        event.modifiers = session->sticky_modifiers;
         if (event.type == kPressedMouseEventType) {
           base::TimeTicks timestamp = base::TimeTicks::Now();
           bool is_repeated_click = IsRepeatedClickEvent(
@@ -1658,6 +1657,7 @@ Status ExecuteReleaseActions(Session* session,
   session->mouse_position = WebPoint(0, 0);
   session->click_count = 0;
   session->mouse_click_timestamp = base::TimeTicks::Now();
+  session->sticky_modifiers = 0;
 
   return Status(kOk);
 }

@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -39,14 +39,14 @@ VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
   if (Shell::HasInstance()) {
     Shell::Get()->accessibility_controller()->AddObserver(this);
     Shell::Get()->AddShellObserver(this);
-    keyboard::KeyboardController::Get()->AddObserver(this);
+    keyboard::KeyboardUIController::Get()->AddObserver(this);
   }
 }
 
 VirtualKeyboardTray::~VirtualKeyboardTray() {
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance()) {
-    keyboard::KeyboardController::Get()->RemoveObserver(this);
+    keyboard::KeyboardUIController::Get()->RemoveObserver(this);
     Shell::Get()->RemoveShellObserver(this);
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   }
@@ -66,7 +66,7 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget::kVirtualKeyboardTray);
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
 
   // Keyboard may not always be enabled. https://crbug.com/749989
   if (!keyboard_controller->IsEnabled())

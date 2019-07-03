@@ -454,7 +454,6 @@
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -5115,10 +5114,13 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
   if (!data_use_measurement::ChromeDataUseMeasurement::GetInstance())
     data_use_measurement::ChromeDataUseMeasurement::CreateInstance(local_state);
 
-  if (!SystemNetworkContextManager::GetInstance())
+  // Create SystemNetworkContextManager if it has not been created yet. We need
+  // to set up global NetworkService state before anything else uses it and this
+  // is the first opportunity to initialize SystemNetworkContextManager with the
+  // NetworkService.
+  if (!SystemNetworkContextManager::HasInstance())
     SystemNetworkContextManager::CreateInstance(local_state);
 
-  // Need to set up global NetworkService state before anything else uses it.
   SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(
       network_service);
 }

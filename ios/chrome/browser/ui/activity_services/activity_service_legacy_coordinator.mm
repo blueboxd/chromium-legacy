@@ -103,8 +103,8 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 #pragma mark - Private Methods
 
 - (void)sharePageWithCanonicalURL:(const GURL&)canonicalURL {
-  ShareToData* data = activity_services::ShareToDataForTab(
-      [self.tabModel currentTab], canonicalURL);
+  ShareToData* data = activity_services::ShareToDataForWebState(
+      self.tabModel.webStateList->GetActiveWebState(), canonicalURL);
   if (!data)
     return;
 

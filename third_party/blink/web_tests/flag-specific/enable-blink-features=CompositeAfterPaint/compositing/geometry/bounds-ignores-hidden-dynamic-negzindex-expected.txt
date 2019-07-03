@@ -13,25 +13,14 @@
     },
     {
       "name": "LayoutImage (positioned) IMG",
+      "position": [0, 250],
       "bounds": [150, 150],
-      "backgroundColor": "#000000",
-      "transform": 1
+      "backgroundColor": "#000000"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='indicator box'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='indicator box'",
       "bounds": [100, 350],
       "backgroundColor": "#008000"
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 250, 0, 1]
-      ]
     }
   ]
 }

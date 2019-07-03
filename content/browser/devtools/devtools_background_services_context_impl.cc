@@ -51,6 +51,8 @@ constexpr devtools::proto::BackgroundService ServiceToProtoEnum(
       return devtools::proto::PUSH_MESSAGING;
     case DevToolsBackgroundService::kNotifications:
       return devtools::proto::NOTIFICATIONS;
+    case DevToolsBackgroundService::kPaymentHandler:
+      return devtools::proto::PAYMENT_HANDLER;
   }
 }
 

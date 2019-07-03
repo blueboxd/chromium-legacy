@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "ash/keyboard/keyboard_controller_impl.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
@@ -119,7 +119,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
 
   // Show or hide the keyboard.
   void ShowKeyboard(bool show) {
-    auto* keyboard = keyboard::KeyboardController::Get();
+    auto* keyboard = keyboard::KeyboardUIController::Get();
     ASSERT_TRUE(keyboard->IsEnabled());
     if (show == keyboard->IsKeyboardVisible())
       return;
@@ -303,7 +303,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(true);
 
   gfx::Rect keyboard_bounds =
-      keyboard::KeyboardController::Get()->GetVisualBoundsInScreen();
+      keyboard::KeyboardUIController::Get()->GetVisualBoundsInScreen();
   // Sanity check that the keyboard intersects with original window bounds - if
   // this is not true, the window bounds would remain unchanged.
   ASSERT_TRUE(keyboard_bounds.Intersects(initial_bounds));

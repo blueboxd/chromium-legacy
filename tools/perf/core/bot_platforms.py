@@ -24,9 +24,10 @@ def _IsPlatformSupported(benchmark, platform):
 
 class PerfPlatform(object):
   def __init__(self, name, description, benchmark_names,
-               num_shards=None, platform_os=None, is_fyi=False):
+               num_shards, platform_os, is_fyi=False):
     self._name = name
     self._description = description
+    self._platform_os = platform_os
     # For sorting ignore case and "segments" in the bot name.
     self._sort_key = name.lower().replace('-', ' ')
     self._is_fyi = is_fyi
@@ -36,10 +37,6 @@ class PerfPlatform(object):
     for benchmark_name in benchmark_names:
       benchmarks.append(_ALL_BENCHMARKS_BY_NAMES[benchmark_name])
     benchmarks_to_run = frozenset(benchmarks)
-    if platform_os:
-      self._platform_os = platform_os
-    else:
-      self._platform_os = self._sort_key.split(' ', 1)[0]
     # pylint: disable=redefined-outer-name
     self._benchmarks_to_run = frozenset([
         b for b in benchmarks_to_run if
@@ -143,75 +140,76 @@ _CHROMEOS_KEVIN_FYI_BENCHMARK_NAMES = frozenset([
 # Linux
 LINUX = PerfPlatform(
     'linux-perf', 'Ubuntu-14.04, 8 core, NVIDIA Quadro P400',
-    _LINUX_BENCHMARK_NAMES, num_shards=26)
+    _LINUX_BENCHMARK_NAMES, 26, 'linux')
 
 # Mac
 MAC_HIGH_END = PerfPlatform(
     'mac-10_13_laptop_high_end-perf',
     'MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55',
-    _MAC_HIGH_END_BENCHMARK_NAMES, num_shards=26)
+    _MAC_HIGH_END_BENCHMARK_NAMES, 26, 'mac')
 MAC_LOW_END = PerfPlatform(
     'mac-10_12_laptop_low_end-perf',
     'MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics',
-    _MAC_LOW_END_BENCHMARK_NAMES, num_shards=26)
+    _MAC_LOW_END_BENCHMARK_NAMES, 26, 'mac')
 
 # Win
 WIN_10 = PerfPlatform(
     'win-10-perf',
     'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
     ' Intel Kaby Lake HD Graphics 630', _WIN_10_BENCHMARK_NAMES,
-    num_shards=26)
+    26, 'win')
 WIN_7 = PerfPlatform(
     'Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_NAMES,
-    num_shards=5)
+    5, 'win')
 WIN_7_GPU = PerfPlatform(
     'Win 7 Nvidia GPU Perf', 'N/A', _WIN_7_GPU_BENCHMARK_NAMES,
-    num_shards=5)
+    5, 'win')
 
 # Android
 ANDROID_GO = PerfPlatform(
     'android-go-perf', 'Android O (gobo)', _ANDROID_GO_BENCHMARK_NAMES,
-    num_shards=19)
+    19, 'android')
 ANDROID_GO_WEBVIEW = PerfPlatform(
     'android-go_webview-perf', 'Android OPM1.171019.021 (gobo)',
-    _ANDROID_GO_WEBVIEW_BENCHMARK_NAMES, num_shards=25)
+    _ANDROID_GO_WEBVIEW_BENCHMARK_NAMES, 25, 'android')
 ANDROID_NEXUS_5 = PerfPlatform(
     'Android Nexus5 Perf', 'Android KOT49H', _ANDROID_NEXUS_5_BENCHMARK_NAMES,
-    num_shards=16)
+    16, 'android')
 ANDROID_NEXUS_5X = PerfPlatform(
     'android-nexus5x-perf', 'Android MMB29Q',
-    _ANDROID_NEXUS_5X_BENCHMARK_NAMES, num_shards=16)
+    _ANDROID_NEXUS_5X_BENCHMARK_NAMES, 16, 'android')
 ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
     'Android Nexus5X WebView Perf', 'Android AOSP MOB30K',
-    _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_NAMES, num_shards=16)
+    _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_NAMES, 16, 'android')
 ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     'Android Nexus6 WebView Perf', 'Android AOSP MOB30K',
     _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_NAMES,
-    num_shards=12)  # Reduced from 16 per crbug.com/891848.
+    12,  # Reduced from 16 per crbug.com/891848.
+    'android')
 ANDROID_PIXEL2 = PerfPlatform(
     'android-pixel2-perf', 'Android OPM1.171019.021',
-    _ANDROID_PIXEL2_BENCHMARK_NAMES, num_shards=35)
+    _ANDROID_PIXEL2_BENCHMARK_NAMES, 35, 'android')
 ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     'android-pixel2_webview-perf', 'Android OPM1.171019.021',
-    _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES, num_shards=28)
+    _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES, 28, 'android')
 
 # FYI bots
 WIN_10_LOW_END_HP_CANDIDATE = PerfPlatform(
     'win-10_laptop_low_end-perf_HP-Candidate', 'HP 15-BS121NR Laptop Candidate',
     _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES,
-    num_shards=1, platform_os='win', is_fyi=True)
+    1, 'win', is_fyi=True)
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q',
     _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES,
-    num_shards=3, is_fyi=True)
+    3, 'android', is_fyi=True)
 ANDROID_PIXEL2_PERF_FYI = PerfPlatform(
     'android-pixel2-perf-fyi', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_FYI_BENCHMARK_NAMES,
-    num_shards=4, platform_os='android', is_fyi=True)
+    4, 'android', is_fyi=True)
 CHROMEOS_KEVIN_PERF_FYI = PerfPlatform(
     'chromeos-kevin-perf-fyi', '',
     _CHROMEOS_KEVIN_FYI_BENCHMARK_NAMES,
-    num_shards=4, platform_os='chromeos', is_fyi=True)
+    4, 'chromeos', is_fyi=True)
 
 # TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use
 # the sharding map.

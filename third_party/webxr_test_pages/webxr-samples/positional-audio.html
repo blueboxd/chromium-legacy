@@ -297,6 +297,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               if (audioContext.state == 'running') {
                 pauseAudio();
               } else {
+                if("userActivation" in navigator) {
+                  console.debug(navigator.userActivation);
+                }
                 playAudio();
               }
             });

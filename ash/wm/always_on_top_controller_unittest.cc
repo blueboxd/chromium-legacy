@@ -5,8 +5,8 @@
 #include "ash/wm/always_on_top_controller.h"
 
 #include "ash/keyboard/keyboard_controller_impl.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -71,7 +71,7 @@ TEST_F(AlwaysOnTopControllerTest, NotifyKeyboardBoundsChanging) {
   always_on_top_controller->SetLayoutManagerForTest(base::WrapUnique(manager));
 
   // Show the keyboard.
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(false /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 

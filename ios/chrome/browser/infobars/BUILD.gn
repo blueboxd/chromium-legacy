@@ -42,6 +42,7 @@ source_set("badge") {
     "infobar_badge_tab_helper.h",
     "infobar_badge_tab_helper.mm",
     "infobar_badge_tab_helper_delegate.h",
+    "legacy_infobar_badge_tab_helper_delegate.h",
   ]
   deps = [
     ":infobars",
@@ -78,6 +79,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/ui/badges:public",
     "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/browser/ui/infobars:test_support",

@@ -15,7 +15,7 @@
 <translation id="1510238584712386396">راه‌انداز</translation>
 <translation id="152892567002884378">افزایش صدا</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="ESC" /></translation>
-<translation id="1652741121070700329">حرکت به ابتدای کلمه قبل</translation>
+<translation id="1652741121070700329">رفتن به ابتدای کلمه قبل</translation>
 <translation id="1679841710523778799">زیاد کردن روشنایی</translation>
 <translation id="168356808214100546"><ph name="ALT" /> را فشار دهید و نگه‌دارید، روی <ph name="TAB" /> ضربه بزنید تا به پنجره‌ای که می‌خواهید باز شود برسید، سپس آن را رها کنید.</translation>
 <translation id="169515659049020177">تبدیل</translation>
@@ -98,7 +98,7 @@
 <translation id="4628718545549558538">باز کردن ناحیه نشانگر وضعیت (جایی که تصویر حسابتان نشان داده می‌شود)</translation>
 <translation id="4642092649622328492">گرفتن عکس از قسمتی از صفحه‌نمایش</translation>
 <translation id="4698850295812410683">نمایش ابزار قلم</translation>
-<translation id="4801989101741319327">حرکت به انتهای کلمه بعد</translation>
+<translation id="4801989101741319327">رفتن به انتهای کلمه بعد</translation>
 <translation id="4916163929714267752">بازکردن پیوند در پنجره جدید</translation>
 <translation id="5030659775136592441">نمایش مدیر نشانک</translation>
 <translation id="5034421018520995080">رفتن به بالای صفحه</translation>

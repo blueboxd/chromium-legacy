@@ -206,9 +206,10 @@ class CC_EXPORT InputHandler {
   virtual void RequestUpdateForSynchronousInputHandler() = 0;
 
   // Called when the root scroll offset has been changed in the synchronous
-  // input handler by the application (outside of input event handling).
+  // input handler by the application (outside of input event handling). Offset
+  // is expected in "content/page coordinates".
   virtual void SetSynchronousInputHandlerRootScrollOffset(
-      const gfx::ScrollOffset& root_offset) = 0;
+      const gfx::ScrollOffset& root_content_offset) = 0;
 
   virtual void PinchGestureBegin() = 0;
   virtual void PinchGestureUpdate(float magnify_delta,

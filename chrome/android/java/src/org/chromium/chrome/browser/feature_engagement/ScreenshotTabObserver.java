@@ -59,7 +59,7 @@ public class ScreenshotTabObserver extends EmptyTabObserver implements UserData 
      */
     @Nullable
     public static ScreenshotTabObserver get(Tab tab) {
-        if (tab == null) return null;
+        if (tab == null || !tab.isInitialized()) return null;
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 

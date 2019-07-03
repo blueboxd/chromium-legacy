@@ -14,6 +14,11 @@ namespace switches {
 // performance tests.
 const char kMetricsRecordingOnly[] = "metrics-recording-only";
 
+// Override the standard time interval between each metrics report upload for
+// UMA and UKM. It is useful to set to a short interval for debugging. Unit in
+// seconds. (The default is 1800 seconds on desktop).
+const char kMetricsUploadIntervalSec[] = "metrics-upload-interval";
+
 // Forces a reset of the one-time-randomized FieldTrials on this client, also
 // known as the Chrome Variations state.
 const char kResetVariationState[] = "reset-variation-state";

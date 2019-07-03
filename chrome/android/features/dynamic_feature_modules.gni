@@ -15,7 +15,7 @@ resource_packages_id_mapping = [
   "vr=0x7d",
   "tab_ui=0x7c",
   "autofill_assistant=0x7b",
-  "devtools=0x7a",
+  "dev_ui=0x7a",
 ]
 
 # This variable indicates whether the native feature module system is engaged.

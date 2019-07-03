@@ -213,19 +213,18 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     // to the chunks as Skia commands.
     void Upcast(const PropertyTreeState&);
 
-    void DecompositeTransform();
-
     const PaintChunk& FirstPaintChunk(const PaintArtifact&) const;
 
+    // The rects are in the space of property_tree_state.
     FloatRect bounds;
-    Vector<wtf_size_t> paint_chunk_indices;
     FloatRect rect_known_to_be_opaque;
+    Vector<wtf_size_t> paint_chunk_indices;
     PropertyTreeState property_tree_state;
-    FloatPoint offset_to_transform_parent;
+    FloatPoint offset_of_decomposited_transforms;
     bool requires_own_layer;
   };
 
-  void DecompositeTransforms();
+  void DecompositeTransforms(const PaintArtifact&);
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.

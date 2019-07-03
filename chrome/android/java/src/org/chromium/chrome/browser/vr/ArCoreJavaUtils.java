@@ -18,7 +18,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
@@ -113,10 +112,10 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     }
 
     @CalledByNative
-    private void launchArConsentDialog(final Tab tab) {
-        if (DEBUG_LOGS) Log.i(TAG, "launchArConsentDialog");
-        final ChromeActivity activity = tab.getActivity();
-        ArConsentDialog.showDialog(activity, this);
+    private void startSession(final Tab tab) {
+        if (DEBUG_LOGS) Log.i(TAG, "startSession");
+        mArImmersiveOverlay = new ArImmersiveOverlay();
+        mArImmersiveOverlay.show(tab.getActivity(), this);
     }
 
     @CalledByNative
@@ -126,12 +125,6 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
             mArImmersiveOverlay.destroyDialog();
             mArImmersiveOverlay = null;
         }
-    }
-
-    public void onStartSession(ChromeActivity activity) {
-        if (DEBUG_LOGS) Log.i(TAG, "onSessionStarted");
-        mArImmersiveOverlay = new ArImmersiveOverlay();
-        mArImmersiveOverlay.show(activity, this);
     }
 
     public void onDrawingSurfaceReady(Surface surface, int rotation, int width, int height) {

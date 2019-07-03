@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
@@ -161,7 +162,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         return dialog;
     }
 
-    private List<Pair<Integer, PropertyModel>> getItemList(Activity activity,
+    @VisibleForTesting
+    List<Pair<Integer, PropertyModel>> getItemList(Activity activity,
             List<Pair<Integer, List<ContextMenuItem>>> items, ContextMenuParams params) {
         List<Pair<Integer, PropertyModel>> itemList = new ArrayList<>();
 
@@ -228,5 +230,10 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
 
     Callback<Bitmap> getOnImageThumbnailRetrievedReference() {
         return mHeaderCoordinator.getOnImageThumbnailRetrievedReference();
+    }
+
+    @VisibleForTesting
+    void initializeHeaderCoordinatorForTesting(Activity activity, ContextMenuParams params) {
+        mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(activity, params);
     }
 }

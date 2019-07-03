@@ -4,14 +4,14 @@
 
 #include "ash/keyboard/ui/keyboard_layout_manager.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace keyboard {
 
-KeyboardLayoutManager::KeyboardLayoutManager(KeyboardController* controller)
+KeyboardLayoutManager::KeyboardLayoutManager(KeyboardUIController* controller)
     : controller_(controller) {}
 
 KeyboardLayoutManager::~KeyboardLayoutManager() = default;

@@ -11,7 +11,7 @@
       "bounds": [300, 300],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='fixed'",
           "rect": [100, 100, 100, 100],
           "reason": "background"
         }

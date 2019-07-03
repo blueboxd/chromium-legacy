@@ -18,6 +18,8 @@ if (enable_vr) {
       "orientation/orientation_device.h",
       "orientation/orientation_device_provider.cc",
       "orientation/orientation_device_provider.h",
+      "orientation/orientation_session.cc",
+      "orientation/orientation_session.h",
       "util/fps_meter.cc",
       "util/fps_meter.h",
       "util/gamepad_builder.cc",
@@ -30,8 +32,6 @@ if (enable_vr) {
       "vr_device_base.cc",
       "vr_device_base.h",
       "vr_device_provider.h",
-      "vr_display_impl.cc",
-      "vr_display_impl.h",
       "vr_export.h",
     ]
     deps = [

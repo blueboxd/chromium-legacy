@@ -849,7 +849,7 @@ public class PaymentRequestImpl
 
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
             q.getKey().setPaymentMethodChangeCallback(this);
-            q.getKey().getInstruments(q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
+            q.getKey().getInstruments(mId, q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
                     mCertificateChain,
                     mModifiers == null ? new HashMap<>() : Collections.unmodifiableMap(mModifiers),
                     this);
@@ -1675,7 +1675,7 @@ public class PaymentRequestImpl
         if (mClient == null) return;
 
         if (mInvokedPaymentInstrument != null) {
-            mInvokedPaymentInstrument.abortPaymentApp(this);
+            mInvokedPaymentInstrument.abortPaymentApp(mId, this);
             return;
         }
         onInstrumentAbortResult(true);

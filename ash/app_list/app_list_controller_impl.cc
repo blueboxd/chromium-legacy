@@ -25,7 +25,7 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
@@ -140,7 +140,7 @@ AppListControllerImpl::AppListControllerImpl()
   shell->wallpaper_controller()->AddObserver(this);
   shell->AddShellObserver(this);
   shell->overview_controller()->AddObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
   VoiceInteractionController::Get()->AddLocalObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
@@ -1025,7 +1025,7 @@ void AppListControllerImpl::ViewClosing() {
     // the virtual keyboard is hidden for the wrong IME instance, which may
     // bring troubles when restoring the virtual keyboard (see
     // https://crbug.com/944233).
-    keyboard::KeyboardController::Get()->HideKeyboardExplicitlyBySystem();
+    keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
   }
 
   CloseAssistantUi(AssistantExitPoint::kLauncherClose);
@@ -1352,7 +1352,7 @@ void AppListControllerImpl::ResetHomeLauncherIfShown() {
   if (!IsHomeScreenAvailable() || !presenter_.IsVisible())
     return;
 
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->IsKeyboardVisible())
     keyboard_controller->HideKeyboardByUser();
   presenter_.GetView()->CloseOpenedPage();
@@ -1427,7 +1427,7 @@ void AppListControllerImpl::Shutdown() {
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
   VoiceInteractionController::Get()->RemoveLocalObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   shell->overview_controller()->RemoveObserver(this);
   shell->RemoveShellObserver(this);
   shell->wallpaper_controller()->RemoveObserver(this);

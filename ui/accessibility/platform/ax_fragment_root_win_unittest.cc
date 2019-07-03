@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
+#include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
 
 #include <UIAutomationClient.h>
@@ -171,6 +172,47 @@ TEST_F(AXFragmentRootTest, TestUIAErrorHandling) {
 
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             fragment_root_provider->GetFocus(&returned_fragment_provider));
+}
+
+TEST_F(AXFragmentRootTest, TestGetChildCount) {
+  AXNodeData root;
+  Init(root);
+  InitFragmentRoot();
+
+  AXPlatformNodeDelegate* fragment_root = ax_fragment_root_.get();
+  EXPECT_EQ(1, fragment_root->GetChildCount());
+
+  test_fragment_root_delegate_->child_ = nullptr;
+  EXPECT_EQ(0, fragment_root->GetChildCount());
+}
+
+TEST_F(AXFragmentRootTest, TestChildAtIndex) {
+  AXNodeData root;
+  Init(root);
+  InitFragmentRoot();
+
+  gfx::NativeViewAccessible native_view_accessible =
+      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
+  AXPlatformNodeDelegate* fragment_root = ax_fragment_root_.get();
+  EXPECT_EQ(native_view_accessible, fragment_root->ChildAtIndex(0));
+  EXPECT_EQ(nullptr, fragment_root->ChildAtIndex(1));
+
+  test_fragment_root_delegate_->child_ = nullptr;
+  EXPECT_EQ(nullptr, fragment_root->ChildAtIndex(0));
+}
+
+TEST_F(AXFragmentRootTest, TestGetParent) {
+  AXNodeData root;
+  Init(root);
+  InitFragmentRoot();
+
+  AXPlatformNodeDelegate* fragment_root = ax_fragment_root_.get();
+  EXPECT_EQ(nullptr, fragment_root->GetParent());
+
+  gfx::NativeViewAccessible native_view_accessible =
+      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
+  test_fragment_root_delegate_->parent_ = native_view_accessible;
+  EXPECT_EQ(native_view_accessible, fragment_root->GetParent());
 }
 
 }  // namespace ui

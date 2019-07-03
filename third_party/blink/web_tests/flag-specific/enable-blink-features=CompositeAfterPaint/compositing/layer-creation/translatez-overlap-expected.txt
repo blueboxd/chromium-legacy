@@ -7,22 +7,11 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='composited box'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited box'",
+      "position": [18, 10],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [18, 10, 0, 1]
-      ]
+      "backgroundColor": "#0000FF"
     }
   ]
 }

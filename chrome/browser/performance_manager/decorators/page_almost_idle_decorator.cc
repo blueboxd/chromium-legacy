@@ -6,8 +6,11 @@
 
 #include <algorithm>
 
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
@@ -62,47 +65,53 @@ PageAlmostIdleDecorator::PageAlmostIdleDecorator() {
 
 PageAlmostIdleDecorator::~PageAlmostIdleDecorator() = default;
 
-void PageAlmostIdleDecorator::OnRegistered() {
-  // This observer presumes that it's been added before any nodes exist in the
-  // graph.
-  DCHECK(graph()->nodes().empty());
-}
-
-bool PageAlmostIdleDecorator::ShouldObserve(const NodeBase* node) {
-  switch (node->type()) {
-    case FrameNodeImpl::Type():
-    case PageNodeImpl::Type():
-    case ProcessNodeImpl::Type():
-      return true;
-
-    default:
-      return false;
-  }
-  NOTREACHED();
-}
-
 void PageAlmostIdleDecorator::OnNetworkAlmostIdleChanged(
-    FrameNodeImpl* frame_node) {
-  UpdateLoadIdleStateFrame(frame_node);
+    const FrameNode* frame_node) {
+  UpdateLoadIdleStateFrame(FrameNodeImpl::FromNode(frame_node));
 }
 
-void PageAlmostIdleDecorator::OnIsLoadingChanged(PageNodeImpl* page_node) {
-  UpdateLoadIdleStatePage(page_node);
+void PageAlmostIdleDecorator::OnPassedToGraph(Graph* graph) {
+  RegisterObservers(graph);
+}
+
+void PageAlmostIdleDecorator::OnTakenFromGraph(Graph* graph) {
+  UnregisterObservers(graph);
+}
+
+void PageAlmostIdleDecorator::OnIsLoadingChanged(const PageNode* page_node) {
+  UpdateLoadIdleStatePage(PageNodeImpl::FromNode(page_node));
 }
 
 void PageAlmostIdleDecorator::OnMainFrameNavigationCommitted(
-    PageNodeImpl* page_node) {
+    const PageNode* page_node) {
   // Reset the load-idle state associated with this page as a new navigation has
   // started.
-  auto* data = DataImpl::GetOrCreate(page_node);
+  auto* page_impl = PageNodeImpl::FromNode(page_node);
+  auto* data = DataImpl::GetOrCreate(page_impl);
   data->load_idle_state_ = LoadIdleState::kLoadingNotStarted;
-  PageAlmostIdleAccess::SetPageAlmostIdle(page_node, false);
-  UpdateLoadIdleStatePage(page_node);
+  PageAlmostIdleAccess::SetPageAlmostIdle(page_impl, false);
+  UpdateLoadIdleStatePage(page_impl);
 }
 
 void PageAlmostIdleDecorator::OnMainThreadTaskLoadIsLow(
-    ProcessNodeImpl* process_node) {
-  UpdateLoadIdleStateProcess(process_node);
+    const ProcessNode* process_node) {
+  UpdateLoadIdleStateProcess(ProcessNodeImpl::FromNode(process_node));
+}
+
+void PageAlmostIdleDecorator::RegisterObservers(Graph* graph) {
+  // This observer presumes that it's been added before any nodes exist in the
+  // graph.
+  // TODO(chrisha): Add graph introspection functions to Graph.
+  DCHECK(GraphImpl::FromGraph(graph)->nodes().empty());
+  graph->AddFrameNodeObserver(this);
+  graph->AddPageNodeObserver(this);
+  graph->AddProcessNodeObserver(this);
+}
+
+void PageAlmostIdleDecorator::UnregisterObservers(Graph* graph) {
+  graph->RemoveFrameNodeObserver(this);
+  graph->RemovePageNodeObserver(this);
+  graph->RemoveProcessNodeObserver(this);
 }
 
 void PageAlmostIdleDecorator::UpdateLoadIdleStateFrame(
@@ -230,7 +239,7 @@ void PageAlmostIdleDecorator::TransitionToLoadedAndIdle(
 // static
 bool PageAlmostIdleDecorator::IsIdling(const PageNodeImpl* page_node) {
   // Get the frame node for the main frame associated with this page.
-  const FrameNodeImpl* main_frame_node = page_node->GetMainFrameNode();
+  const FrameNodeImpl* main_frame_node = page_node->GetMainFrameNodeImpl();
   if (!main_frame_node)
     return false;
 

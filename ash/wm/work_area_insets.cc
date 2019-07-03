@@ -4,7 +4,7 @@
 
 #include "ash/wm/work_area_insets.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -57,11 +57,11 @@ WorkAreaInsets* WorkAreaInsets::ForWindow(const aura::Window* window) {
 
 WorkAreaInsets::WorkAreaInsets(RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller) {
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 }
 
 WorkAreaInsets::~WorkAreaInsets() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
 }
 
 gfx::Insets WorkAreaInsets::GetAccessibilityInsets() const {

@@ -28,6 +28,9 @@ devtools::proto::BackgroundService ServiceNameToEnum(
   } else if (service_name ==
              BackgroundService::ServiceNameEnum::Notifications) {
     return devtools::proto::BackgroundService::NOTIFICATIONS;
+  } else if (service_name ==
+             BackgroundService::ServiceNameEnum::PaymentHandler) {
+    return devtools::proto::BackgroundService::PAYMENT_HANDLER;
   }
   return devtools::proto::BackgroundService::UNKNOWN;
 }
@@ -42,6 +45,8 @@ std::string ServiceEnumToName(devtools::proto::BackgroundService service_enum) {
       return BackgroundService::ServiceNameEnum::PushMessaging;
     case devtools::proto::BackgroundService::NOTIFICATIONS:
       return BackgroundService::ServiceNameEnum::Notifications;
+    case devtools::proto::BackgroundService::PAYMENT_HANDLER:
+      return BackgroundService::ServiceNameEnum::PaymentHandler;
     default:
       NOTREACHED();
   }

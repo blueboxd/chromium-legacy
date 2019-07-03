@@ -115,7 +115,7 @@ void DrmWindowHost::Restore() {
 }
 
 PlatformWindowState DrmWindowHost::GetPlatformWindowState() const {
-  return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+  return PlatformWindowState::kUnknown;
 }
 
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {

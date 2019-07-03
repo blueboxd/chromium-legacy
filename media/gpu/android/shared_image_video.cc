@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -222,6 +223,10 @@ class SharedImageRepresentationGLTextureVideo
   gpu::gles2::Texture* GetTexture() override { return texture_; }
 
   bool BeginAccess(GLenum mode) override {
+    // This representation should only be called for read.
+    DCHECK_EQ(mode,
+              static_cast<GLenum>(GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM));
+
     auto* video_backing = static_cast<SharedImageVideo*>(backing());
     DCHECK(video_backing);
     auto* codec_image = video_backing->codec_image_.get();
@@ -242,63 +247,6 @@ class SharedImageRepresentationGLTextureVideo
   gpu::gles2::Texture* texture_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureVideo);
-};
-
-// GL backed Skia representation of SharedImageVideo.
-class SharedImageRepresentationVideoSkiaGL
-    : public gpu::SharedImageRepresentationSkia {
- public:
-  SharedImageRepresentationVideoSkiaGL(gpu::SharedImageManager* manager,
-                                       gpu::SharedImageBacking* backing,
-                                       gpu::MemoryTypeTracker* tracker)
-      : gpu::SharedImageRepresentationSkia(manager, backing, tracker) {}
-
-  ~SharedImageRepresentationVideoSkiaGL() override = default;
-
-  sk_sp<SkSurface> BeginWriteAccess(
-      int final_msaa_count,
-      const SkSurfaceProps& surface_props,
-      std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
-    // Writes are not intended to used for video backed representations.
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  void EndWriteAccess(sk_sp<SkSurface> surface) override { NOTIMPLEMENTED(); }
-
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
-      std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
-    if (promise_texture_)
-      return promise_texture_;
-
-    auto* video_backing = static_cast<SharedImageVideo*>(backing());
-    DCHECK(video_backing);
-    auto* codec_image = video_backing->codec_image_.get();
-    auto* texture_owner = codec_image->texture_owner().get();
-
-    // Render the codec image.
-    codec_image->RenderToFrontBuffer();
-
-    // Bind the tex image if it's not already bound.
-    if (!texture_owner->binds_texture_on_update())
-      texture_owner->EnsureTexImageBound();
-    GrBackendTexture backend_texture;
-    if (!gpu::GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                                  GL_TEXTURE_EXTERNAL_OES, size(),
-                                  texture_owner->GetTextureId(), format(),
-                                  &backend_texture)) {
-      return nullptr;
-    }
-    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
-    return promise_texture_;
-  }
-
-  void EndReadAccess() override {}
-
- private:
-  sk_sp<SkPromiseImageTexture> promise_texture_;
 };
 
 // Vulkan backed Skia representation of SharedImageVideo.
@@ -495,9 +443,17 @@ SharedImageVideo::ProduceSkia(
   }
 
   DCHECK(context_state->GrContextIsGL());
-  // In GL mode, use the texture id of the TextureOwner.
-  return std::make_unique<SharedImageRepresentationVideoSkiaGL>(manager, this,
-                                                                tracker);
+  auto* texture = gpu::gles2::Texture::CheckedCast(
+      codec_image_->texture_owner()->GetTextureBase());
+  DCHECK(texture);
+
+  // In GL mode, create the SharedImageRepresentationGLTextureVideo
+  // representation to use with SharedImageRepresentationVideoSkiaGL.
+  auto gl_representation =
+      std::make_unique<SharedImageRepresentationGLTextureVideo>(
+          manager, this, tracker, texture);
+  return gpu::SharedImageRepresentationSkiaGL::Create(
+      std::move(gl_representation), nullptr, manager, this, tracker);
 }
 
 }  // namespace media

@@ -69,7 +69,7 @@ void IntersectionObserverController::DeliverIntersectionObservations(
 
 bool IntersectionObserverController::ComputeTrackedIntersectionObservations(
     unsigned flags) {
-  bool needs_occlusion_tracking = false;
+  needs_occlusion_tracking_ = false;
   if (Document* document = To<Document>(GetExecutionContext())) {
     TRACE_EVENT0("blink",
                  "IntersectionObserverController::"
@@ -77,11 +77,11 @@ bool IntersectionObserverController::ComputeTrackedIntersectionObservations(
     HeapVector<Member<Element>> elements_to_process;
     CopyToVector(tracked_observation_targets_, elements_to_process);
     for (auto& element : elements_to_process) {
-      needs_occlusion_tracking |=
+      needs_occlusion_tracking_ |=
           element->ComputeIntersectionObservations(flags);
     }
   }
-  return needs_occlusion_tracking;
+  return needs_occlusion_tracking_;
 }
 
 void IntersectionObserverController::AddTrackedTarget(Element& target,
@@ -89,6 +89,7 @@ void IntersectionObserverController::AddTrackedTarget(Element& target,
   tracked_observation_targets_.insert(&target);
   if (!track_occlusion)
     return;
+  needs_occlusion_tracking_ = true;
   if (LocalFrameView* frame_view = target.GetDocument().View()) {
     if (FrameOwner* frame_owner = frame_view->GetFrame().Owner()) {
       // Set this bit as early as possible, rather than waiting for a lifecycle

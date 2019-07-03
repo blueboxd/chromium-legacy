@@ -15,12 +15,12 @@ namespace ui {
 
 class Event;
 
-enum PlatformWindowState {
-  PLATFORM_WINDOW_STATE_UNKNOWN,
-  PLATFORM_WINDOW_STATE_MAXIMIZED,
-  PLATFORM_WINDOW_STATE_MINIMIZED,
-  PLATFORM_WINDOW_STATE_NORMAL,
-  PLATFORM_WINDOW_STATE_FULLSCREEN,
+enum class PlatformWindowState {
+  kUnknown,
+  kMaximized,
+  kMinimized,
+  kNormal,
+  kFullScreen,
 };
 
 class PlatformWindowDelegate {

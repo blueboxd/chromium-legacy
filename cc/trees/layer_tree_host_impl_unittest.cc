@@ -7904,6 +7904,9 @@ TEST_F(LayerTreeHostImplTest, SetRootScrollOffsetUserScrollable) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
+  // Ensure that the scroll offset is interpreted as a content offset so it
+  // should be unaffected by the page scale factor. See
+  // https://crbug.com/973771.
   float page_scale_factor = 2.f;
   host_impl_->active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, page_scale_factor);
@@ -7919,7 +7922,6 @@ TEST_F(LayerTreeHostImplTest, SetRootScrollOffsetUserScrollable) {
     host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
     EXPECT_VECTOR_EQ(gfx::ScrollOffset(),
                      scroll_tree.current_scroll_offset(inner_element_id));
-    scroll_offset.Scale(1.f / page_scale_factor);
     EXPECT_VECTOR_EQ(scroll_offset,
                      scroll_tree.current_scroll_offset(outer_element_id));
     EXPECT_TRUE(did_request_redraw_);

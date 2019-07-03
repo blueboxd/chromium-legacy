@@ -203,6 +203,8 @@ void ImagePaintTimingDetector::ReportSwapTime(
     unsigned last_queued_frame_index,
     WebWidgetClient::SwapResult result,
     base::TimeTicks timestamp) {
+  if (!is_recording_)
+    return;
   // The callback is safe from race-condition only when running on main-thread.
   DCHECK(ThreadState::Current()->IsMainThread());
   records_manager_.AssignPaintTimeToRegisteredQueuedNodes(

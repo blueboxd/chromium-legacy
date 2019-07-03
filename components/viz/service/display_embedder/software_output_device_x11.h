@@ -28,6 +28,9 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDeviceX11 : public SoftwareOutputDevice {
   XDisplay* display_;
   GC gc_;
   XWindowAttributes attributes_;
+  // If nonzero, indicates that the widget should be drawn over its
+  // parent-relative background.
+  int composite_ = 0;
   THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceX11);

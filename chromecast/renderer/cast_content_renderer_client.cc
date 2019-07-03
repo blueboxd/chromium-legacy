@@ -311,6 +311,9 @@ bool CastContentRendererClient::IsIdleMediaSuspendEnabled() {
 
 void CastContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
+  // Allow HtmlMediaElement.volume to be greater than 1, for normalization.
+  blink::WebRuntimeFeatures::EnableFeatureFromString(
+      "MediaElementVolumeGreaterThanOne", true);
   // Settings for ATV (Android defaults are not what we want).
   blink::WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(false);
 }

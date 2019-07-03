@@ -110,10 +110,6 @@ class TSFBridgeImpl : public TSFBridge {
   // An ITfThreadMgr object to be used in focus and document management.
   Microsoft::WRL::ComPtr<ITfThreadMgr> thread_manager_;
 
-  // An ITfInputProcessorProfiles object to be used to get current language
-  // locale profile.
-  Microsoft::WRL::ComPtr<ITfInputProcessorProfiles> input_processor_profiles_;
-
   // A map from TextInputType to an editable document for TSF. We use multiple
   // TSF documents that have different InputScopes and TSF attributes based on
   // the TextInputType associated with the target document. For a TextInputType
@@ -174,13 +170,6 @@ bool TSFBridgeImpl::Initialize() {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
   if (client_id_ != TF_CLIENTID_NULL) {
     DVLOG(1) << "Already initialized.";
-    return false;
-  }
-
-  if (FAILED(::CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr,
-                                CLSCTX_ALL,
-                                IID_PPV_ARGS(&input_processor_profiles_)))) {
-    DVLOG(1) << "Failed to create InputProcessorProfiles instance.";
     return false;
   }
 
@@ -345,14 +334,12 @@ void TSFBridgeImpl::RemoveInputMethodDelegate() {
 }
 
 bool TSFBridgeImpl::IsInputLanguageCJK() {
-  LANGID lang_locale;
-  if (SUCCEEDED(input_processor_profiles_->GetCurrentLanguage(&lang_locale))) {
-    lang_locale = PRIMARYLANGID(lang_locale);
-    return lang_locale == LANG_CHINESE || lang_locale == LANG_JAPANESE ||
-           lang_locale == LANG_KOREAN;
-  } else {
-    return false;
-  }
+  // See the following article about how LANGID in HKL is determined.
+  // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeyboardlayout
+  LANGID lang_locale =
+      PRIMARYLANGID(LOWORD(HandleToLong(GetKeyboardLayout(0))));
+  return lang_locale == LANG_CHINESE || lang_locale == LANG_JAPANESE ||
+         lang_locale == LANG_KOREAN;
 }
 
 TextInputClient* TSFBridgeImpl::GetFocusedTextInputClient() const {

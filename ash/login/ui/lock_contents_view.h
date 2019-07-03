@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
@@ -33,7 +33,7 @@
 #include "ui/views/view.h"
 
 namespace keyboard {
-class KeyboardController;
+class KeyboardUIController;
 }  // namespace keyboard
 
 namespace views {
@@ -316,7 +316,7 @@ class ASH_EXPORT LockContentsView
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
   // displayed in this window.
-  keyboard::KeyboardController* GetKeyboardControllerForView() const;
+  keyboard::KeyboardUIController* GetKeyboardControllerForView() const;
 
   // Called when the public account is tapped.
   void OnPublicAccountTapped(bool is_primary);

@@ -53,14 +53,6 @@ class V8TestConstants {
   static void InstallFeatureName2(ScriptState*, v8::Local<v8::Object> instance);
   static void InstallFeatureName2(ScriptState*);
 
-  static void InstallOriginTrialFeature1(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void InstallOriginTrialFeature1(ScriptState*, v8::Local<v8::Object> instance);
-  static void InstallOriginTrialFeature1(ScriptState*);
-
-  static void InstallOriginTrialFeature2(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void InstallOriginTrialFeature2(ScriptState*, v8::Local<v8::Object> instance);
-  static void InstallOriginTrialFeature2(ScriptState*);
-
   // Callback functions
   CORE_EXPORT static void DEPRECATEDCONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   CORE_EXPORT static void MEASUREDCONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);

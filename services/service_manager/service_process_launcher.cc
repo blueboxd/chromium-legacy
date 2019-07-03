@@ -43,10 +43,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "mojo/core/embedder/default_mach_broker.h"
-#endif
-
 namespace service_manager {
 
 // Thread-safe owner of state related to a service process. This facilitates
@@ -238,15 +234,7 @@ base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
   } else
 #endif
   {
-#if defined(OS_MACOSX)
-    mojo::core::DefaultMachBroker* mach_broker =
-        mojo::core::DefaultMachBroker::Get();
-    base::AutoLock locker(mach_broker->GetLock());
-#endif
     child_process_ = base::LaunchProcess(*child_command_line, options);
-#if defined(OS_MACOSX)
-    mach_broker->ExpectPid(child_process_.Handle());
-#endif
   }
 
   channel.RemoteProcessLaunchAttempted();

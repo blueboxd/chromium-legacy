@@ -7,22 +7,11 @@
       "backgroundColor": "#FF0000"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='positioned layer'",
+      "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [50, 50, 0, 1]
-      ]
+      "backgroundColor": "#008000"
     }
   ]
 }

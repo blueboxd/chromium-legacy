@@ -30,14 +30,9 @@
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
 
-namespace base {
-class PortProvider;
-}
-
 namespace mojo {
 namespace core {
 
-class MachPortRelay;
 class PlatformSharedMemoryMapping;
 
 // |Core| is an object that implements the Mojo system calls. All public methods
@@ -111,13 +106,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   void ConnectIsolated(ConnectionParams connection_params,
                        const ports::PortRef& port,
                        base::StringPiece connection_name);
-
-  // Sets the mach port provider for this process.
-  void SetMachPortProvider(base::PortProvider* port_provider);
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortRelay* GetMachPortRelay();
-#endif
 
   MojoHandle AddDispatcher(scoped_refptr<Dispatcher> dispatcher);
 

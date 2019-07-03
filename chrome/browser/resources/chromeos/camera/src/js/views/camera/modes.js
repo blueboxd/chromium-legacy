@@ -22,14 +22,14 @@ cca.views.camera = cca.views.camera || {};
 /**
  * Mode controller managing capture sequence of different camera mode.
  * @param {cca.views.camera.PhotoResolPreferrer} photoResolPreferrer
- * @param {cca.views.camera.VideoResolPreferrer} videoResolPreferrer
+ * @param {cca.views.camera.VideoConstraintsPreferrer} videoPreferrer
  * @param {function()} doSwitchMode Callback to trigger mode switching.
  * @param {function(?Blob, boolean, string): Promise} doSavePicture Callback for
  *     saving picture.
  * @constructor
  */
 cca.views.camera.Modes = function(
-    photoResolPreferrer, videoResolPreferrer, doSwitchMode, doSavePicture) {
+    photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePicture) {
   /**
    * @type {function()}
    * @private
@@ -78,7 +78,7 @@ cca.views.camera.Modes = function(
       captureFactory: () =>
           new cca.views.camera.Video(this.stream_, this.doSavePicture_),
       isSupported: async () => true,
-      resolutionConfig: videoResolPreferrer,
+      resolutionConfig: videoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, true),
       nextMode: 'photo-mode',
     },
@@ -227,7 +227,7 @@ cca.views.camera.Modes.prototype.getModeCandidates = function() {
  * @param {string} mode
  * @param {string} deviceId
  * @param {ResolList} previewResolutions
- * @return {Array<[?[number, number], Array<Object>]>} Result capture resolution
+ * @return {Array<[[number, number], Array<Object>]>} Result capture resolution
  *     width, height and constraints-candidates for its preview.
  */
 cca.views.camera.Modes.prototype.getResolutionCandidates = function(
@@ -298,8 +298,8 @@ cca.views.camera.Modes.prototype.updateMode =
   this.captureResolution_ = captureResolution;
   this.current = this.allModes_[mode].captureFactory();
   if (deviceId && this.captureResolution_) {
-    this.allModes_[mode].resolutionConfig.updateCurrentResolution(
-        deviceId, ...this.captureResolution_);
+    this.allModes_[mode].resolutionConfig.updateValues(
+        deviceId, stream, ...this.captureResolution_);
   }
 };
 

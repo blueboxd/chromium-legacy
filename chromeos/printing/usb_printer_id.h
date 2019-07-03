@@ -28,9 +28,9 @@ class CHROMEOS_EXPORT UsbPrinterId {
   explicit UsbPrinterId(const std::vector<uint8_t>& printer_id_data);
 
   // Accessors.
-  std::string make() const { return make_; }
-  std::string model() const { return model_; }
-  std::vector<std::string> command_set() const { return command_set_; }
+  const std::string& make() const { return make_; }
+  const std::string& model() const { return model_; }
+  const std::vector<std::string>& command_set() const { return command_set_; }
 
   // Setters (only used in testing).
   void set_make(std::string make) { make_ = make; }

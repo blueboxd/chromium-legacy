@@ -139,8 +139,8 @@ body.reordering .grid-tile {
 .reorder {
   background-color: white;
   border-radius: 4px;
-  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
-      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   color: rgb(var(--GG800-rgb));
   transition-duration: 200ms;
 }
@@ -148,8 +148,8 @@ body.reordering .grid-tile {
 @media (prefers-color-scheme: dark) {
   .reorder {
     background-color: rgb(var(--dark-mode-bg-rgb));
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4),
-        0 4px 8px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .4),
+        0 4px 8px 3px rgba(0, 0, 0, .25);
     color: rgb(var(--GG100-rgb));
   }
 }
@@ -164,19 +164,19 @@ body.reordering .grid-tile {
 
 body:not(.reordering) .md-tile:hover,
 .grid-reorder .md-tile {
-  background-color: rgba(var(--GG900-rgb), 0.06);
+  background-color: rgba(var(--GG900-rgb), .06);
 }
 
 @media (prefers-color-scheme: dark) {
   body:not(.reordering) .md-tile:hover,
   .grid-reorder .md-tile {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, .1);
   }
 }
 
 body.dark-theme:not(.reordering) .md-tile:hover,
 body.dark-theme .grid-reorder .md-tile {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, .1);
 }
 
 body:not(.reordering) .md-tile:hover .md-menu {
@@ -267,7 +267,7 @@ body.mac-chromeos .md-title {
 
 /* Apply when a custom background is set. */
 body.custom-background .md-tile:not(.reorder) .md-title {
-  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, .35));
 }
 
 /* Apply only when a theme with image is installed. */

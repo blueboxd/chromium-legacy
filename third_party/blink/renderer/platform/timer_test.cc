@@ -682,9 +682,8 @@ namespace {
 
 class TaskObserver : public base::MessageLoop::TaskObserver {
  public:
-  TaskObserver(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order)
+  TaskObserver(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+               Vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order)
       : task_runner_(std::move(task_runner)), run_order_(run_order) {}
 
   void WillProcessTask(const base::PendingTask&) override {}
@@ -695,13 +694,13 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order_;
+  Vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order_;
 };
 
 }  // namespace
 
 TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
-  std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
+  Vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
   scoped_refptr<MainThreadTaskQueue> task_queue1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
@@ -743,7 +742,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 }
 
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
-  std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
+  Vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
   scoped_refptr<MainThreadTaskQueue> task_queue1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(

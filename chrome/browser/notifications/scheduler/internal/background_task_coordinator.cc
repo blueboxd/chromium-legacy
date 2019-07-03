@@ -40,7 +40,7 @@ class BackgroundTaskCoordinatorHelper {
     int shown_total = 0;
     SchedulerClientType last_shown_type = SchedulerClientType::kUnknown;
     NotificationsShownToday(client_states, &shown_per_type, &shown_total,
-                            &last_shown_type);
+                            &last_shown_type, clock_);
     bool reach_max_today_all_type =
         shown_total >= config_->max_daily_shown_all_type;
     base::Time next_morning = NextMorning();

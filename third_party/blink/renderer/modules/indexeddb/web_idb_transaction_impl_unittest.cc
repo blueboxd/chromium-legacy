@@ -30,7 +30,7 @@ TEST_F(WebIDBTransactionImplTest, ValueSizeTest) {
   // of memory, which crashes on memory-constrained systems.
   const size_t kMaxValueSizeForTesting = 10 * 1024 * 1024;  // 10 MB
 
-  const std::vector<char> data(kMaxValueSizeForTesting + 1);
+  const Vector<char> data(kMaxValueSizeForTesting + 1);
   const scoped_refptr<SharedBuffer> value_data =
       SharedBuffer::Create(&data.front(), data.size());
   const Vector<WebBlobInfo> blob_info;
@@ -58,7 +58,7 @@ TEST_F(WebIDBTransactionImplTest, KeyAndValueSizeTest) {
   const size_t kMaxValueSizeForTesting = 10 * 1024 * 1024;  // 10 MB
   const size_t kKeySize = 1024 * 1024;
 
-  const std::vector<char> data(kMaxValueSizeForTesting - kKeySize);
+  const Vector<char> data(kMaxValueSizeForTesting - kKeySize);
   const scoped_refptr<SharedBuffer> value_data =
       SharedBuffer::Create(&data.front(), data.size());
   const Vector<WebBlobInfo> blob_info;

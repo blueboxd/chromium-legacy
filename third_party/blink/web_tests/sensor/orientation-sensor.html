@@ -4,6 +4,7 @@
 <script src="../http/tests/resources/sensor-helpers.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/services/device/public/mojom/sensor_provider.mojom.js"></script>
+<script src="resources/generic-sensor-utils.js"></script>
 <script src="resources/generic-sensor-tests.js"></script>
 <script>
 
@@ -12,7 +13,7 @@
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-const kQuaternion = [1, 0, 0, 0]; // 180 degrees around X axis.
+const kDefaultReading = [1, 0, 0, 0]; // 180 degrees around X axis.
 const kRotationMatrix = [1,  0,  0,  0,
                          0, -1,  0,  0,
                          0,  0, -1,  0,
@@ -21,13 +22,9 @@ const kRotationDOMMatrix = new DOMMatrix(kRotationMatrix);
 
 // For 'orientation.angle == 270', which is set for tests at
 // at SensorProxy::GetScreenOrientationAngle().
-const kMappedQuaternion = [-0.707107, 0.707107, 0, 0];
+const kMappedReading = [-0.707107, 0.707107, 0, 0];
 
-function update_sensor_reading(buffer) {
-  buffer.set(kQuaternion, 2);
-}
-
-async function checkPopulateMatrix(sensorProvider, sensorType, mojomSensorType) {
+async function checkPopulateMatrix(sensorProvider, sensorType) {
   let sensorObject = new sensorType();
 
   // Throws with insufficient buffer space.
@@ -43,8 +40,8 @@ async function checkPopulateMatrix(sensorProvider, sensorType, mojomSensorType) 
 
   sensorObject.start();
 
-  let mockSensor = await sensorProvider.getCreatedSensor(mojomSensorType);
-  await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+  let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
+  await mockSensor.setSensorReading(kDefaultReading);
   await new Promise((resolve, reject) => {
     let wrapper = new CallbackWrapper(() => {
       // Works for all supported types.
@@ -78,31 +75,27 @@ async function checkPopulateMatrix(sensorProvider, sensorType, mojomSensorType) 
 
 runGenericSensorTests(
     AbsoluteOrientationSensor,
-    device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION,
-    update_sensor_reading,
-    verify_quat_sensor_reading.bind(null, kQuaternion),
-    verify_quat_sensor_reading.bind(null, kMappedQuaternion),
+    kDefaultReading,
+    verifyQuatSensorReading.bind(null, kDefaultReading),
+    verifyQuatSensorReading.bind(null, kMappedReading),
     ['accelerometer', 'gyroscope', 'magnetometer']);
 
 sensor_test(sensorProvider => {
   return checkPopulateMatrix(
       sensorProvider,
-      AbsoluteOrientationSensor,
-      device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION);
+      AbsoluteOrientationSensor);
 }, 'Test AbsoluteOrientationSensor.populateMatrix() method works correctly.');
 
 runGenericSensorTests(
     RelativeOrientationSensor,
-    device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION,
-    update_sensor_reading,
-    verify_quat_sensor_reading.bind(null, kQuaternion),
-    verify_quat_sensor_reading.bind(null, kMappedQuaternion),
+    kDefaultReading,
+    verifyQuatSensorReading.bind(null, kDefaultReading),
+    verifyQuatSensorReading.bind(null, kMappedReading),
     ['accelerometer', 'gyroscope']);
 
 sensor_test(sensorProvider => {
   return checkPopulateMatrix(
       sensorProvider,
-      RelativeOrientationSensor,
-      device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION);
+      RelativeOrientationSensor);
 }, 'Test RelativeOrientationSensor.populateMatrix() method works correctly.');
 </script>

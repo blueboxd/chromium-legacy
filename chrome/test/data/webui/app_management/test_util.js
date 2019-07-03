@@ -19,7 +19,7 @@ function createApp(id, config) {
  */
 function setupFakeHandler() {
   const browserProxy = app_management.BrowserProxy.getInstance();
-  const callbackRouterProxy = browserProxy.callbackRouter.createProxy();
+  const callbackRouterProxy = browserProxy.callbackRouter.$.createProxy();
 
   const fakeHandler = new app_management.FakePageHandler(callbackRouterProxy);
   browserProxy.handler = fakeHandler;

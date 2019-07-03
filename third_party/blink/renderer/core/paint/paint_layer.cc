@@ -845,14 +845,8 @@ void PaintLayer::UpdateLayerPosition() {
     }
   }
 
-  if (GetLayoutObject().IsInFlowPositioned()) {
-    PhysicalOffset new_offset = GetLayoutObject().OffsetForInFlowPosition();
-    if (rare_data_ || !new_offset.IsZero())
-      EnsureRareData().offset_for_in_flow_position = new_offset;
-    local_point += new_offset;
-  } else if (rare_data_) {
-    rare_data_->offset_for_in_flow_position = PhysicalOffset();
-  }
+  if (GetLayoutObject().IsInFlowPositioned())
+    local_point += GetLayoutObject().OffsetForInFlowPosition();
 
   location_ = local_point;
 

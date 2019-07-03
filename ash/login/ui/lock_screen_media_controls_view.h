@@ -13,23 +13,30 @@
 
 namespace service_manager {
 class Connector;
-}  // namespace service_manager
+}
+
+namespace views {
+class ImageView;
+}
 
 namespace ash {
 
 class LockContentsView;
+class MediaControlsHeaderView;
 
-class LockScreenMediaControlsView
+class ASH_EXPORT LockScreenMediaControlsView
     : public views::View,
-      public media_session::mojom::MediaControllerObserver {
+      public media_session::mojom::MediaControllerObserver,
+      public media_session::mojom::MediaControllerImageObserver {
  public:
   LockScreenMediaControlsView(service_manager::Connector* connector,
                               LockContentsView* view);
   ~LockScreenMediaControlsView() override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
+  gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   views::View* GetMiddleSpacingView();
 
@@ -37,18 +44,29 @@ class LockScreenMediaControlsView
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
-      const base::Optional<media_session::MediaMetadata>& metadata) override {}
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
 
+  // media_session::mojom::MediaControllerImageObserver:
+  void MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType type,
+      const SkBitmap& bitmap) override;
+
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> test_timer) {
     hide_controls_timer_ = std::move(test_timer);
   }
 
  private:
+  friend class LockScreenMediaControlsViewTest;
+
+  // Sets the media artwork to |img|. If |img| is nullopt, the default artwork
+  // is set instead.
+  void SetArtwork(base::Optional<gfx::ImageSkia> img);
+
   // Lock screen view which this view belongs to.
   LockContentsView* const view_;
 
@@ -62,6 +80,14 @@ class LockScreenMediaControlsView
   mojo::Binding<media_session::mojom::MediaControllerObserver>
       observer_binding_{this};
 
+  // Used to receive updates to the active media's icon.
+  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
+      icon_observer_binding_{this};
+
+  // Used to receive updates to the active media's artwork.
+  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
+      artwork_observer_binding_{this};
+
   // The info about the current media session. It will be null if there is not
   // a current session.
   media_session::mojom::MediaSessionInfoPtr media_session_info_;
@@ -71,6 +97,14 @@ class LockScreenMediaControlsView
 
   // Automatically hides the controls a few seconds if no media playing.
   std::unique_ptr<base::OneShotTimer> hide_controls_timer_;
+
+  // Caches the text to be read by screen readers describing the media controls
+  // view.
+  base::string16 accessible_name_;
+
+  // Container views directly attached to this view.
+  MediaControlsHeaderView* header_row_ = nullptr;
+  views::ImageView* session_artwork_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };

@@ -10,12 +10,12 @@
 #include <limits>
 #include <numeric>
 #include <random>
-#include <vector>
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace vector_math {
@@ -440,7 +440,7 @@ TEST_F(VectorMathTest, Vsvesq) {
 
 TEST_F(VectorMathTest, Zvmul) {
   constexpr float kMax = std::numeric_limits<float>::max();
-  std::vector<std::array<float, kFloatArraySize + 1u>> sources(4u);
+  Vector<std::array<float, kFloatArraySize + 1u>> sources(4u);
   for (size_t i = 0u; i < sources.size(); ++i) {
     // Initialize a local source with a randomized test case source.
     std::copy_n(GetSource(i), kFloatArraySize, sources[i].begin());

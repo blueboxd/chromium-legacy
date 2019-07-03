@@ -13,7 +13,7 @@ cr.define('downloads', function() {
 
       const factory = downloads.mojom.PageHandlerFactory.getProxy();
       factory.createPageHandler(
-          this.callbackRouter.createProxy(), this.handler.$.createRequest());
+          this.callbackRouter.$.createProxy(), this.handler.$.createRequest());
     }
   }
 

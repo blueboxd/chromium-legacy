@@ -1425,7 +1425,8 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
     // get the right dirty rect. Since this is called from LayoutObject::
     // setStyle, the relative position flag on the LayoutObject has been
     // cleared, so use the one on the style().
-    transform_state.Move(Layer()->OffsetForInFlowPosition(), accumulation);
+    transform_state.Move(Layer()->GetLayoutObject().OffsetForInFlowPosition(),
+                         accumulation);
   }
 
   LayoutBox* container_box =

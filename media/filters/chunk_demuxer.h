@@ -119,6 +119,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   // DemuxerStream methods.
   void Read(const ReadCB& read_cb) override;
+  bool IsReadPending() const override;
   Type type() const override;
   Liveness liveness() const override;
   AudioDecoderConfig audio_decoder_config() override;

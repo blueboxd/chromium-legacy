@@ -162,10 +162,9 @@ Display::~Display() {
     observer.OnDisplayDestroyed();
   observers_.Clear();
 
-  for (auto& callback_list : pending_presented_callbacks_) {
-    for (auto& callback : callback_list.second)
-      std::move(callback).Run(gfx::PresentationFeedback::Failure());
-  }
+  // Send gfx::PresentationFeedback::Failure() to any surfaces expecting
+  // feedback.
+  pending_surfaces_with_presentation_helpers_.clear();
 
   // Only do this if Initialize() happened.
   if (client_) {
@@ -538,16 +537,17 @@ bool Display::DrawAndSwap() {
           scheduler_->current_frame_time(), 1);
     }
 
-    std::vector<Surface::PresentedCallback> callbacks;
+    std::vector<std::unique_ptr<Surface::PresentationHelper>>
+        presentation_helper_list;
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-      Surface::PresentedCallback callback;
-      if (surface && surface->TakePresentedCallback(&callback)) {
-        callbacks.emplace_back(std::move(callback));
+      if (surface) {
+        presentation_helper_list.push_back(
+            surface->TakePresentationHelperForPresentNotification());
       }
     }
-    pending_presented_callbacks_.emplace_back(
-        std::make_pair(now_time, std::move(callbacks)));
+    pending_surfaces_with_presentation_helpers_.emplace_back(
+        std::make_pair(now_time, std::move(presentation_helper_list)));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
@@ -615,12 +615,13 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   // and should not be popped until DidReceivePresentationFeedback. Therefore
   // we must not have an empty list when getting the SwapBuffers ACK (this is
   // required to happen between those two events).
-  DCHECK(!pending_presented_callbacks_.empty());
+  DCHECK(!pending_surfaces_with_presentation_helpers_.empty());
 
   // Check that the swap timings correspond with the timestamp from when
   // the swap was triggered. Note that not all output surfaces provide timing
   // information, hence the check for a valid swap_start.
-  const auto swap_time = pending_presented_callbacks_.front().first;
+  const auto swap_time =
+      pending_surfaces_with_presentation_helpers_.front().first;
   if (!timings.swap_start.is_null()) {
     DCHECK_LE(swap_time, timings.swap_start);
     base::TimeDelta delta =
@@ -652,7 +653,7 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
-  if (pending_presented_callbacks_.empty()) {
+  if (pending_surfaces_with_presentation_helpers_.empty()) {
     DLOG(ERROR) << "Received unexpected PresentationFeedback";
     return;
   }
@@ -660,16 +661,19 @@ void Display::DidReceivePresentationFeedback(
   TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
       last_presented_trace_id_, feedback.timestamp);
-  auto& callbacks = pending_presented_callbacks_.front().second;
-  const auto swap_time = pending_presented_callbacks_.front().first;
+  auto& presentation_helper_list =
+      pending_surfaces_with_presentation_helpers_.front().second;
+  const auto swap_time =
+      pending_surfaces_with_presentation_helpers_.front().first;
   auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
-  for (auto& callback : callbacks) {
-    std::move(callback).Run(copy_feedback);
+  for (auto& presentation_helper : presentation_helper_list) {
+    if (presentation_helper)
+      presentation_helper->DidPresent(feedback);
   }
-  pending_presented_callbacks_.pop_front();
+  pending_surfaces_with_presentation_helpers_.pop_front();
 }
 
 void Display::DidFinishLatencyInfo(

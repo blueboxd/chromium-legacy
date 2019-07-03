@@ -10,6 +10,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -201,9 +202,14 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::vector<ui::LatencyInfo> stored_latency_info_;
   std::vector<SurfaceId> surfaces_to_ack_on_next_draw_;
 
+  // |pending_surfaces_with_presentation_helpers_| is a list of lists of
+  // Surface::PresentationHelpers. The lists are grouped by swap (each surface
+  // involved in an individual Swap is added to the list. These are then
+  // notified of presentation after the appropriate Swap is completed.
   base::circular_deque<
-      std::pair<base::TimeTicks, std::vector<Surface::PresentedCallback>>>
-      pending_presented_callbacks_;
+      std::pair<base::TimeTicks,
+                std::vector<std::unique_ptr<Surface::PresentationHelper>>>>
+      pending_surfaces_with_presentation_helpers_;
 
   // Callback that will be run after all pending swaps have acked.
   base::OnceClosure no_pending_swaps_callback_;

@@ -1485,7 +1485,7 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
 
-  std::vector<unsigned> safe_to_break_positions;
+  Vector<unsigned> safe_to_break_positions;
 
 #if defined(OS_MACOSX)
   safe_to_break_positions = {0, 2, 3, 4, 11};

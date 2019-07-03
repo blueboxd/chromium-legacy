@@ -8,7 +8,7 @@ class TestDownloadsProxy {
     this.callbackRouter = new downloads.mojom.PageCallbackRouter();
 
     /** @type {!downloads.mojom.PageInterface} */
-    this.pageRouterProxy = this.callbackRouter.createProxy();
+    this.pageRouterProxy = this.callbackRouter.$.createProxy();
 
     /** @type {downloads.mojom.PageHandlerInterface} */
     this.handler = new TestDownloadsMojoHandler(this.pageRouterProxy);

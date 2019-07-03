@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 
 #include <memory>
-#include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"

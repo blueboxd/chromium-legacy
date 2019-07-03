@@ -119,7 +119,7 @@ TEST_F(HTMLVideoElementTest, EffectivelyFullscreen_DisplayType) {
   // This is testing all possible values of WebFullscreenVideoStatus and then
   // sets the value back to a value that should put the DisplayType back to
   // inline.
-  std::vector<std::pair<WebFullscreenVideoStatus, WebMediaPlayer::DisplayType>>
+  Vector<std::pair<WebFullscreenVideoStatus, WebMediaPlayer::DisplayType>>
       tests = {
           {WebFullscreenVideoStatus::kNotEffectivelyFullscreen,
            WebMediaPlayer::DisplayType::kInline},

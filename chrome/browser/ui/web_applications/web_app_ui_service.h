@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -22,6 +23,7 @@ class Browser;
 namespace web_app {
 
 class WebAppProvider;
+class WebAppDialogManager;
 
 // This KeyedService is a UI counterpart for WebAppProvider.
 class WebAppUiService : public KeyedService,
@@ -36,6 +38,8 @@ class WebAppUiService : public KeyedService,
   // KeyedService
   void Shutdown() override;
 
+  WebAppDialogManager& dialog_manager() { return *dialog_manager_; }
+
   // WebAppUiDelegate
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
@@ -48,6 +52,8 @@ class WebAppUiService : public KeyedService,
 
  private:
   base::Optional<AppId> GetAppIdForBrowser(Browser* browser);
+
+  std::unique_ptr<WebAppDialogManager> dialog_manager_;
 
   WebAppProvider* provider_;
   Profile* profile_;

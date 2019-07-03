@@ -55,6 +55,8 @@ copy("chrome_camera_app_images") {
     "src/images/browser_button_print.svg",
     "src/images/camera_app_icons_128.png",
     "src/images/camera_app_icons_48.png",
+    "src/images/camera_button_fps_30.svg",
+    "src/images/camera_button_fps_60.svg",
     "src/images/camera_button_grid_off.svg",
     "src/images/camera_button_grid_on.svg",
     "src/images/camera_button_mic_off.svg",
@@ -161,12 +163,12 @@ copy("chrome_camera_app_js_views") {
 
 copy("chrome_camera_app_js_views_camera") {
   sources = [
+    "src/js/views/camera/constraints_preferrer.js",
     "src/js/views/camera/layout.js",
     "src/js/views/camera/modes.js",
     "src/js/views/camera/options.js",
     "src/js/views/camera/preview.js",
     "src/js/views/camera/recordtime.js",
-    "src/js/views/camera/resolution_preference.js",
     "src/js/views/camera/timertick.js",
   ]
 

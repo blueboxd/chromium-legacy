@@ -33,7 +33,7 @@
 
 #edit-bg.ep-enhanced {
   background-color: rgb(255, 255, 255);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.23);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .16), 0 1px 2px rgba(0, 0, 0, .23);
 }
 
 #edit-bg:hover,
@@ -134,8 +134,8 @@ html[dir=rtl] #edit-bg {
   border-radius: 8px;
   border-width: thin;
   bottom: 44px;
-  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
-      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   left: auto;
   padding: 0;
   position: fixed;
@@ -145,8 +145,8 @@ html[dir=rtl] #edit-bg {
 @media (prefers-color-scheme: dark) {
   #edit-bg-dialog {
     background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
-        0 4px 8px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+        0 4px 8px 3px rgba(0, 0, 0, .15);
   }
 }
 
@@ -220,12 +220,12 @@ html[dir=rtl] .bg-option-img {
 }
 
 .bg-option.bg-option-disabled {
-  opacity: 0.28;
+  opacity: .28;
 }
 
 @media (prefers-color-scheme: dark) {
   .bg-option.bg-option-disabled {
-    opacity: 0.38;
+    opacity: .38;
   }
 }
 
@@ -254,7 +254,7 @@ html[dir=rtl] .bg-option-img {
 
 @media (prefers-color-scheme: dark) {
   #edit-bg-divider {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, .1);
   }
 }
 
@@ -286,8 +286,8 @@ html[dir=rtl] .bg-option-img {
   border: none;
   border-radius: 8px;
   bottom: 0;
-  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
-      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   height: 400px;
   padding: 0 0 0 0;
   position: fixed;
@@ -301,8 +301,8 @@ html[dir=rtl] .bg-option-img {
 @media (prefers-color-scheme: dark) {
   #bg-sel-menu {
     background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
-        0 4px 8px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+        0 4px 8px 3px rgba(0, 0, 0, .15);
     }
 }
 
@@ -339,7 +339,7 @@ right, so that every text can stay on its row even on the smallest window */
 
 @media (prefers-color-scheme: dark) {
   #bg-sel-title-bar {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, .1);
   }
 }
 
@@ -478,7 +478,7 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
 
 @media (prefers-color-scheme: dark) {
   #bg-sel-footer {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, .1);
   }
 }
 
@@ -629,7 +629,7 @@ html[dir=rtl] .selected-check {
 }
 
 .bg-sel-tile-title {
-  background-color: rgba(var(--GG900-rgb), 0.71);
+  background-color: rgba(var(--GG900-rgb), .71);
   bottom: 0;
   box-sizing: border-box;
   color: #FFF;
@@ -660,7 +660,7 @@ html[dir=rtl] .selected-check {
   max-width: 80%;
   padding: 8px 8px 8px 8px;
   position: fixed;
-  text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0 16px rgba(0, 0, 0, .3);
   z-index: -1;
 }
 

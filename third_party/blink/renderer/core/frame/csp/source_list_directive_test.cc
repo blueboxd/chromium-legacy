@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 
-#include <vector>
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"

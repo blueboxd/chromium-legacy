@@ -23,6 +23,7 @@ class FakeDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   MOCK_METHOD1(Read, void(const ReadCB& read_cb));
   void FakeRead(const ReadCB& read_cb);
+  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;

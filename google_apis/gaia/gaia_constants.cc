@@ -42,9 +42,9 @@ const char kChromeSyncOAuth2Scope[] =
 const char kChromeSyncSupervisedOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromesync_playpen";
 
-// OAuth2 scope for access to Google Family Link kid scope.
-const char kKidFamilyOAuth2Scope[] =
-    "https://www.googleapis.com/auth/kid.family.readonly";
+// OAuth2 scope for access to Google Family Link Supervision Setup.
+const char kKidsSupervisionSetupChildOAuth2Scope[] =
+    "https://www.googleapis.com/auth/kids.supervision.setup.child";
 
 // OAuth2 scope for access to Google Talk APIs (XMPP).
 const char kGoogleTalkOAuth2Scope[] =
@@ -55,7 +55,11 @@ const char kGoogleUserInfoEmail[] =
 const char kGoogleUserInfoProfile[] =
     "https://www.googleapis.com/auth/userinfo.profile";
 
- // Used to mint uber auth tokens when needed.
+// OAuth scope for access to the people API (read-only).
+const char kPeopleApiReadOnlyOAuth2Scope[] =
+    "https://www.googleapis.com/auth/peopleapi.readonly";
+
+// Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";
 const char kGaiaLsid[] = "lsid";
 const char kGaiaOAuthToken[] = "oauthToken";

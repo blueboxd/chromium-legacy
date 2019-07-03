@@ -143,6 +143,9 @@ class ArcSessionRunner : public ArcSession::Observer {
   // Parameters to upgrade request.
   ArcSession::UpgradeParams upgrade_params_;
 
+  // A hash string of the profile user ID.
+  std::string user_id_hash_;
+
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_;
 

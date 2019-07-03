@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"

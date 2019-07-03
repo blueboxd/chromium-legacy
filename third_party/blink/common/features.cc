@@ -80,7 +80,7 @@ const base::Feature kFastBorderRadius{"FastBorderRadius",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable LayoutNG.
-const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

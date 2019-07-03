@@ -408,6 +408,12 @@
           'shards': 5,
         },
       },
+      'linux-chromeos-google-rel': {
+        # TODO(crbug.com/980748): Remove this filter.
+        'args': [
+          '--gtest_filter=-CrashAnalyzerTest.StackTraceCollection',
+        ],
+      },
     },
   },
   'content_browsertests': {

@@ -139,6 +139,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
 
   // Number of physical planes the output buffers have.
   size_t output_buffer_num_planes_;
+  size_t output_bytesperlines_[VIDEO_MAX_PLANES];
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;

@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/net/proxy_test_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -51,6 +52,60 @@ using content::OpenURLParams;
 using content::Referrer;
 
 namespace {
+
+void TestProxyAuth(Browser* browser, const GURL& test_page) {
+  bool https = test_page.SchemeIs(url::kHttpsScheme);
+
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  {
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser->OpenURL(OpenURLParams(test_page, Referrer(),
+                                   WindowOpenDisposition::CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+    auth_needed_waiter.Wait();
+  }
+
+  // On HTTPS pages, no error page content should be renderer to avoid origin
+  // confusion issues.
+  if (https) {
+    EXPECT_EQ(true, content::EvalJs(contents, "document.body === null"));
+  }
+
+  // Cancel the prompt. On HTTPS pages, the error page content still shouldn't
+  // be shown.
+  {
+    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+    LoginHandler* handler = observer.handlers().front();
+    handler->CancelAuth();
+    auth_cancelled_waiter.Wait();
+    if (https) {
+      EXPECT_EQ(true, content::EvalJs(contents, "document.body === null"));
+    }
+  }
+
+  // Reload; this time, supply credentials and check that the page loads.
+  {
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser->OpenURL(OpenURLParams(test_page, Referrer(),
+                                   WindowOpenDisposition::CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+    auth_needed_waiter.Wait();
+  }
+
+  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+  LoginHandler* handler = observer.handlers().front();
+  handler->SetAuth(base::UTF8ToUTF16("foo"), base::UTF8ToUTF16("bar"));
+  auth_supplied_waiter.Wait();
+
+  base::string16 expected_title = base::ASCIIToUTF16("OK");
+  content::TitleWatcher title_watcher(contents, expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
 
 content::InterstitialPageDelegate* GetInterstitialDelegate(
     content::WebContents* tab) {
@@ -1697,6 +1752,28 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuthWithCache) {
   ui_test_utils::NavigateToURL(browser(), ftp_server.GetURL(""));
   EXPECT_EQ(kExpectedTitle, revisit_title_watcher.WaitAndGetTitle());
   EXPECT_EQ(0u, observer.handlers().size());
+}
+
+// Tests that basic proxy auth works as expected, for HTTPS pages.
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, ProxyAuthHTTPS) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kHTTPAuthCommittedInterstitials);
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  ASSERT_TRUE(https_server.Start());
+  ASSERT_NO_FATAL_FAILURE(
+      TestProxyAuth(browser(), https_server.GetURL("/simple.html")));
+}
+
+// Tests that basic proxy auth works as expected, for HTTP pages.
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, ProxyAuthHTTP) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kHTTPAuthCommittedInterstitials);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(
+      TestProxyAuth(browser(), embedded_test_server()->GetURL("/simple.html")));
 }
 
 }  // namespace

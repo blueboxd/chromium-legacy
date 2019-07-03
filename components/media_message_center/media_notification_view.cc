@@ -6,11 +6,11 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/media_message_center/media_notification_background.h"
 #include "components/media_message_center/media_notification_constants.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_notification_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -297,24 +297,16 @@ void MediaNotificationView::UpdateWithMediaMetadata(
   artist_label_->SetText(metadata.artist);
   header_row_->SetSummaryText(metadata.album);
 
-  std::vector<base::string16> text;
+  accessible_name_ = GetAccessibleNameFromMetadata(metadata);
 
-  if (!metadata.title.empty()) {
-    text.push_back(metadata.title);
+  if (!metadata.title.empty())
     RecordMetadataHistogram(Metadata::kTitle);
-  }
 
-  if (!metadata.artist.empty()) {
-    text.push_back(metadata.artist);
+  if (!metadata.artist.empty())
     RecordMetadataHistogram(Metadata::kArtist);
-  }
 
-  if (!metadata.album.empty()) {
-    text.push_back(metadata.album);
+  if (!metadata.album.empty())
     RecordMetadataHistogram(Metadata::kAlbum);
-  }
-
-  accessible_name_ = base::JoinString(text, base::ASCIIToUTF16(" - "));
 
   RecordMetadataHistogram(Metadata::kCount);
 

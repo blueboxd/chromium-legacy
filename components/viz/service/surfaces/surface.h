@@ -76,6 +76,20 @@ class SurfaceManager;
 // the event of missing dependencies at display time.
 class VIZ_SERVICE_EXPORT Surface final {
  public:
+  class PresentationHelper {
+   public:
+    PresentationHelper(base::WeakPtr<Surface> surface, uint32_t frame_token);
+    ~PresentationHelper();
+
+    void DidPresent(const gfx::PresentationFeedback& feedback);
+
+   private:
+    base::WeakPtr<Surface> surface_;
+    const uint32_t frame_token_;
+
+    DISALLOW_COPY_AND_ASSIGN(PresentationHelper);
+  };
+
   using PresentedCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   enum QueueFrameResult { REJECTED, ACCEPTED_ACTIVE, ACCEPTED_PENDING };
@@ -168,7 +182,10 @@ class VIZ_SERVICE_EXPORT Surface final {
   void TakeActiveLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   void TakeActiveAndPendingLatencyInfo(
       std::vector<ui::LatencyInfo>* latency_info);
-  bool TakePresentedCallback(PresentedCallback* callback);
+  // Callers of this function must call |DidPresent| on the returned
+  // PresentationHelper, at the appropriate point in the future.
+  std::unique_ptr<Surface::PresentationHelper>
+  TakePresentationHelperForPresentNotification();
   void DidPresentSurface(uint32_t presentation_token,
                          const gfx::PresentationFeedback& feedback);
   void SendAckToClient();
@@ -231,6 +248,8 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   void ActivateIfDeadlinePassed();
 
+  base::WeakPtr<Surface> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
  private:
   struct FrameData {
     FrameData(CompositorFrame&& frame, uint64_t frame_index);
@@ -243,10 +262,10 @@ class VIZ_SERVICE_EXPORT Surface final {
     // Whether the frame has been displayed or not.
     bool frame_drawn = false;
     bool frame_acked = false;
-    // Whether there is a presentation feedback callback bound to this frame.
+    // Whether there is a pending presentation callback (via DidPresentSurface).
     // This typically happens when a frame is swapped - the Display will ask
     // for a callback that will supply presentation feedback to the client.
-    bool is_presented_callback_bound = false;
+    bool will_be_notified_of_presentation = false;
   };
 
   // Updates surface references of the surface using the referenced

@@ -26,6 +26,7 @@
 // https://html.spec.whatwg.org/C/#application-cache-api
 
 [
+    Exposed=Window,
     DoNotCheckConstants,
     SecureContext=RestrictAppCacheToSecureContexts
     // TODO(foolip): Exposed=(Window,SharedWorker)

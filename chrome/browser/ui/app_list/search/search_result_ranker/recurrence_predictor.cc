@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 
+#include <utility>
+
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
@@ -35,6 +37,18 @@ void FakePredictor::Train(unsigned int target, unsigned int condition) {
 
 std::map<unsigned int, float> FakePredictor::Rank(unsigned int condition) {
   return counts_;
+}
+
+void FakePredictor::Cleanup(const std::vector<unsigned int>& valid_targets) {
+  std::map<unsigned int, float> new_counts;
+
+  for (unsigned int id : valid_targets) {
+    const auto& it = counts_.find(id);
+    if (it != counts_.end())
+      new_counts[id] = it->second;
+  }
+
+  counts_.swap(new_counts);
 }
 
 void FakePredictor::ToProto(RecurrencePredictorProto* proto) const {
@@ -117,6 +131,49 @@ std::map<unsigned int, float> ConditionalFrequencyPredictor::Rank(
   return result;
 }
 
+void ConditionalFrequencyPredictor::Cleanup(
+    const std::vector<unsigned int>& valid_targets) {
+  for (auto iter = table_.begin(); iter != table_.end();) {
+    auto& events = iter->second;
+
+    std::map<unsigned int, float> new_freqs;
+    float new_total = 0.0f;
+    for (unsigned int id : valid_targets) {
+      const auto& it = events.freqs.find(id);
+      if (it != events.freqs.end()) {
+        new_freqs[id] = it->second;
+        new_total += it->second;
+      }
+    }
+
+    // Delete the whole condition out of the table if it contains no valid
+    // targets.
+    if (new_freqs.empty()) {
+      // C++11: the return value of erase(iter) is an iterator pointing to the
+      // next element in the container.
+      iter = table_.erase(iter);
+    } else {
+      ++iter;
+      events.freqs.swap(new_freqs);
+      events.total = new_total;
+    }
+  }
+}
+
+void ConditionalFrequencyPredictor::CleanupConditions(
+    const std::vector<unsigned int>& valid_conditions) {
+  std::map<unsigned int, ConditionalFrequencyPredictor::Events> new_table;
+
+  for (unsigned int id : valid_conditions) {
+    const auto& it = table_.find(id);
+    if (it != table_.end()) {
+      new_table[id] = std::move(it->second);
+    }
+  }
+
+  table_.swap(new_table);
+}
+
 void ConditionalFrequencyPredictor::ToProto(
     RecurrencePredictorProto* proto) const {
   auto* predictor = proto->mutable_conditional_frequency_predictor();
@@ -167,6 +224,19 @@ std::map<unsigned int, float> FrecencyPredictor::Rank(unsigned int condition) {
     result[pair.first] = pair.second.last_score;
   }
   return result;
+}
+
+void FrecencyPredictor::Cleanup(
+    const std::vector<unsigned int>& valid_targets) {
+  std::map<unsigned int, FrecencyPredictor::TargetData> new_targets;
+
+  for (unsigned int id : valid_targets) {
+    const auto& it = targets_.find(id);
+    if (it != targets_.end())
+      new_targets[id] = it->second;
+  }
+
+  targets_.swap(new_targets);
 }
 
 void FrecencyPredictor::ToProto(RecurrencePredictorProto* proto) const {
@@ -280,6 +350,10 @@ std::map<unsigned int, float> HourBinPredictor::Rank(unsigned int condition) {
   return ranks;
 }
 
+// TODO(921444): Unify the hour bin predictor with the cleanup system used for
+// other predictors. This is different than other predictors so as to be exactly
+// the same as the Roselle predictor.
+
 void HourBinPredictor::ToProto(RecurrencePredictorProto* proto) const {
   *proto->mutable_hour_bin_predictor() = proto_;
 }
@@ -347,6 +421,11 @@ std::map<unsigned int, float> MarkovPredictor::Rank(unsigned int condition) {
   if (previous_target_)
     return frequencies_.Rank(previous_target_.value());
   return std::map<unsigned int, float>();
+}
+
+void MarkovPredictor::Cleanup(const std::vector<unsigned int>& valid_targets) {
+  frequencies_.CleanupConditions(valid_targets);
+  frequencies_.Cleanup(valid_targets);
 }
 
 void MarkovPredictor::ToProto(RecurrencePredictorProto* proto) const {

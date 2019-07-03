@@ -122,9 +122,6 @@ struct PaintLayerRareData {
   PaintLayerRareData();
   ~PaintLayerRareData();
 
-  // Our current relative position offset.
-  PhysicalOffset offset_for_in_flow_position;
-
   std::unique_ptr<TransformationMatrix> transform;
 
   // Pointer to the enclosing Layer that caused us to be paginated. It is 0 if
@@ -344,11 +341,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void UpdateTransformationMatrix();
   PaintLayer* RenderingContextRoot();
   const PaintLayer* RenderingContextRoot() const;
-
-  PhysicalOffset OffsetForInFlowPosition() const {
-    return rare_data_ ? rare_data_->offset_for_in_flow_position
-                      : PhysicalOffset();
-  }
 
   bool IsStackingContextWithNegativeZOrderChildren() const {
     DCHECK(!stacking_node_ || GetLayoutObject().StyleRef().IsStackingContext());

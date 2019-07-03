@@ -18,12 +18,12 @@
 
 namespace blink {
 
-void ensureHasNativeSmallCaps(const std::string& font_family_name) {
+void ensureHasNativeSmallCaps(const char* font_family_name) {
   sk_sp<SkTypeface> test_typeface =
-      SkTypeface::MakeFromName(font_family_name.c_str(), SkFontStyle());
-  FontPlatformData font_platform_data(test_typeface, font_family_name.c_str(),
-                                      16, false, false);
-  ASSERT_EQ(font_platform_data.FontFamilyName(), font_family_name.c_str());
+      SkTypeface::MakeFromName(font_family_name, SkFontStyle());
+  FontPlatformData font_platform_data(test_typeface, font_family_name, 16,
+                                      false, false);
+  ASSERT_EQ(font_platform_data.FontFamilyName(), font_family_name);
 
   OpenTypeCapsSupport caps_support(font_platform_data.GetHarfBuzzFace(),
                                    FontDescription::FontVariantCaps::kSmallCaps,
@@ -46,13 +46,13 @@ TEST(OpenTypeCapsSupportTest, MAYBE_SmallCapsForSFNSText) {
   if (!base::mac::IsAtLeastOS10_13())
     return;
 #endif
-  std::vector<std::string> test_fonts = {
+  Vector<const char*> test_fonts = {
       ".SF NS Text",     // has OpenType small-caps
       "Apple Chancery",  // has old-style (feature id 3,"Letter Case")
                          // small-caps
       "Baskerville"};    // has new-style (feature id 38, "Upper Case")
                          // small-case.
-  for (auto& test_font : test_fonts)
+  for (auto* test_font : test_fonts)
     ensureHasNativeSmallCaps(test_font);
 }
 

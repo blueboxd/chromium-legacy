@@ -100,6 +100,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   virtual void SetColor(SkColor color);
   SkColor GetTargetColor() const;
 
+  // Sets the clip rect on the delegate. May cause an implicit animation.
+  virtual void SetClipRect(const gfx::Rect& clip_rect);
+  gfx::Rect GetTargetClipRect() const;
+
   // Returns the default length of animations, including adjustment for slow
   // animation mode if set.
   base::TimeDelta GetTransitionDuration() const;

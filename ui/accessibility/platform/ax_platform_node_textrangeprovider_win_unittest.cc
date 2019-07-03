@@ -400,6 +400,8 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     ui::AXNodeData group1_data;
     group1_data.id = 2;
     group1_data.role = ax::mojom::Role::kGenericContainer;
+    group1_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
     ui::AXNodeData text_data;
     text_data.id = 3;
@@ -484,6 +486,8 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
         ax::mojom::IntListAttribute::kWordStarts, word_start_offsets);
     paragraph1_text_data.AddIntListAttribute(
         ax::mojom::IntListAttribute::kWordEnds, word_end_offsets);
+    paragraph1_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
     paragraph1_data.child_ids = {10};
 
     ui::AXNodeData paragraph2_data;
@@ -503,6 +507,8 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
         ax::mojom::IntListAttribute::kWordStarts, word_start_offsets);
     paragraph2_text_data.AddIntListAttribute(
         ax::mojom::IntListAttribute::kWordEnds, word_end_offsets);
+    paragraph1_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
     paragraph2_data.child_ids = {12};
 
     ui::AXNodeData root_data;
@@ -1049,6 +1055,67 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Line));
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"not line #1");
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderExpandToEnclosingParagraph) {
+  Init(BuildAXTreeForMove());
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* root_node = GetRootNode();
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  EXPECT_UIA_TEXTRANGE_EQ(
+      text_range_provider,
+      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2");
+
+  // Start endpoint is already on a paragraph's start boundary.
+  int count;
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Paragraph, /*count*/ -6, &count));
+  EXPECT_EQ(-6, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"First line of text");
+
+  // Moving the start by two lines will create a degenerate range positioned
+  // at the next paragraph (skipping the newline)
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ 2, &count));
+  EXPECT_EQ(2, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Standalone line\n");
+
+  // Move to the next paragraph via MoveEndpointByUnit (line), then move to
+  // the middle of the paragraph via Move (word), then expand by paragraph.
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ 1, &count));
+  EXPECT_EQ(1, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
+                  /*count*/ 1,
+                  /*expected_text*/
+                  L"",
+                  /*expected_count*/ 1);
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"bold text");
+
+  // Create a degenerate range at the end of the document, then expand by
+  // paragraph
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Document, /*count*/ 1, &count));
+  EXPECT_EQ(1, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Paragraph 2");
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1697,18 +1764,22 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   // Move forward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 1,
-                  /*expected_text*/ L"Standalone line\n",
+                  /*expected_text*/ L"\n",
                   /*expected_count*/ 1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 2,
-                  /*expected_text*/ L"Paragraph 1",
+                  /*expected_text*/ L"bold text",
                   /*expected_count*/ 2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 1,
+                  /*expected_text*/ L"Paragraph 1",
+                  /*expected_count*/ 1);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
+                  /*count*/ 2,
                   /*expected_text*/ L"Paragraph 2",
                   /*expected_count*/ 1);
 
-  // Trying to move past the last format should have no effect.
+  // Trying to move past the last paragraph should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 1,
                   /*expected_text*/ L"Paragraph 2",
@@ -1720,16 +1791,16 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_text*/ L"Standalone line\n",
                   /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
-                  /*count*/ -1,
-                  /*expected_text*/ L"First line of text\n",
-                  /*expected_count*/ -1);
+                  /*count*/ -2,
+                  /*expected_text*/ L"First line of text",
+                  /*expected_count*/ -2);
 
   // Moving backward by any number of paragraphs at the start of document
   // should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ -1,
                   /*expected_text*/
-                  L"First line of text\n",
+                  L"First line of text",
                   /*expected_count*/ 0);
 
   // Test degenerate range creation at the beginning of the document.
@@ -1741,14 +1812,14 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
       /*count*/ 1,
-      /*expected_text*/ L"First line of text\n",
+      /*expected_text*/ L"First line of text",
       /*expected_count*/ 1);
 
   // Test degenerate range creation at the end of the document.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
-                  /*count*/ 5,
+                  /*count*/ 6,
                   /*expected_text*/ L"Paragraph 2",
-                  /*expected_count*/ 4);
+                  /*expected_count*/ 5);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Paragraph,
       /*count*/ 1,
@@ -1772,9 +1843,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   // Degenerate range moves.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
-                  /*count*/ -6,
-                  /*expected_text*/ L"First line of text\n",
-                  /*expected_count*/ -5);
+                  /*count*/ -7,
+                  /*expected_text*/ L"First line of text",
+                  /*expected_count*/ -6);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
       /*count*/ -1,
@@ -1787,7 +1858,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 70,
                   /*expected_text*/ L"",
-                  /*expected_count*/ 2);
+                  /*expected_count*/ 3);
 
   // Trying to move past the last paragraph should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,

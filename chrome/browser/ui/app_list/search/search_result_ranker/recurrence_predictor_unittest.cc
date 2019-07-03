@@ -71,6 +71,15 @@ TEST_F(FrecencyPredictorTest, RecordAndRankComplex) {
   }
 }
 
+TEST_F(FrecencyPredictorTest, Cleanup) {
+  for (int i = 0; i < 6; ++i)
+    predictor_->Train(i, 0u);
+  predictor_->Cleanup({0u, 2u, 4u});
+
+  EXPECT_THAT(predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(0u, _), Pair(2u, _), Pair(4u, _)));
+}
+
 TEST_F(FrecencyPredictorTest, ToAndFromProto) {
   predictor_->Train(1u, 0u);
   predictor_->Train(3u, 0u);
@@ -106,6 +115,27 @@ TEST_F(ConditionalFrequencyPredictorTest, TrainAndRank) {
   EXPECT_THAT(cfp.Rank(50u),
               UnorderedElementsAre(Pair(1u, FloatEq(3.0f / 5.0f)),
                                    Pair(2u, FloatEq(2.0f / 5.0f))));
+}
+
+TEST_F(ConditionalFrequencyPredictorTest, Cleanup) {
+  ConditionalFrequencyPredictor cfp;
+
+  cfp.Train(0u, 0u);
+  for (int i = 0; i < 6; ++i) {
+    cfp.Train(i, 0u);
+    cfp.Train(2 * i, 1u);
+    cfp.Train(2 * i + 1, 2u);
+  }
+  cfp.Cleanup({0u, 2u, 4u});
+
+  EXPECT_THAT(cfp.Rank(0u), UnorderedElementsAre(Pair(0u, FloatEq(0.5f)),
+                                                 Pair(2u, FloatEq(0.25f)),
+                                                 Pair(4u, FloatEq(0.25f))));
+  EXPECT_THAT(cfp.Rank(1u),
+              UnorderedElementsAre(Pair(0u, FloatEq(1.0f / 3.0f)),
+                                   Pair(2u, FloatEq(1.0f / 3.0f)),
+                                   Pair(4u, FloatEq(1.0f / 3.0f))));
+  EXPECT_TRUE(cfp.Rank(2u).empty());
 }
 
 TEST_F(ConditionalFrequencyPredictorTest, ToFromProto) {
@@ -416,6 +446,33 @@ TEST_F(MarkovPredictorTest, RecordAndRank) {
   EXPECT_THAT(predictor_->Rank(0u),
               UnorderedElementsAre(Pair(1u, FloatEq(2.0f / 3.0f)),
                                    Pair(3u, FloatEq(1.0f / 3.0f))));
+}
+
+TEST_F(MarkovPredictorTest, Cleanup) {
+  // 0 -> {1, 3} and all i -> {i+1}.
+  for (int i = 0; i < 6; ++i)
+    predictor_->Train(i, 0u);
+  predictor_->Train(0, 0u);
+  predictor_->Train(3, 0u);
+
+  predictor_->Cleanup({0u, 1u, 2u});
+
+  // Expect 0 -> {1} with target 3 deleted.
+  predictor_->previous_target_ = 0u;
+  EXPECT_THAT(predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(1u, FloatEq(1.0f))));
+  // Expect 1 -> {2} with nothing deleted.
+  predictor_->previous_target_ = 1u;
+  EXPECT_THAT(predictor_->Rank(1u),
+              UnorderedElementsAre(Pair(2u, FloatEq(1.0f))));
+
+  // Conditions 2, 3, 4, 5 should have been cleaned up. For 2, all targets are
+  // deleted so the condition itself should be too. For the remainder, the
+  // condition is invalid so should be deleted directly.
+  for (int i = 3; i < 6; ++i) {
+    predictor_->previous_target_ = i;
+    EXPECT_TRUE(predictor_->Rank(0u).empty());
+  }
 }
 
 TEST_F(MarkovPredictorTest, ToAndFromProto) {

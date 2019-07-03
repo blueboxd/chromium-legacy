@@ -14,7 +14,7 @@ namespace chromeos {
 namespace {
 
 const char kOctetStream[] = "application/octet-stream";
-const char kEscPr[] = "ESC/P-R";
+const char kEscPr[] = "ESCPR1";
 const char kEpsonEscpr[] = "application/vnd.epson.escpr";
 
 using PrinterDiscoveryType = PrinterSearchData::PrinterDiscoveryType;
@@ -113,14 +113,14 @@ TEST(EpsonDriverMatchingTest, UsbDiscovery) {
   sd.printer_id.set_command_set(command_set);
   EXPECT_FALSE(CanUseEpsonGenericPPD(sd));
 
-  command_set.push_back(std::string(kEscPr) + ":asfd");
+  command_set.push_back("abcd" + std::string(kEscPr));
   sd.printer_id.set_command_set(command_set);
   EXPECT_FALSE(CanUseEpsonGenericPPD(sd));
 
   sd.supported_document_formats.push_back(kEscPr);
   EXPECT_FALSE(CanUseEpsonGenericPPD(sd));
 
-  command_set.push_back(kEscPr);
+  command_set.push_back(std::string(kEscPr) + "garbage");
   sd.printer_id.set_command_set(command_set);
   EXPECT_TRUE(CanUseEpsonGenericPPD(sd));
 }

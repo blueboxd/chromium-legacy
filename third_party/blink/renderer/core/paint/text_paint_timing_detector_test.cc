@@ -50,7 +50,7 @@ class TextPaintTimingDetectorTest
   wtf_size_t CountVisibleTexts() {
     DCHECK(GetTextPaintTimingDetector());
     return GetTextPaintTimingDetector()
-        ->records_manager_.visible_node_map_.size();
+        ->records_manager_.visible_objects_.size();
   }
 
   wtf_size_t CountRankingSetSize() {

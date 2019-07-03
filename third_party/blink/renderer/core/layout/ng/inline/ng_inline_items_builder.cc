@@ -684,10 +684,39 @@ template <typename OffsetMappingBuilder>
 bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
         const String& string,
-        const ComputedStyle& style) const {
-  return text_.IsEmpty() && string.length() > 0 &&
-         string[0] == kSpaceCharacter && !style.CollapseWhiteSpace() &&
-         style.AutoWrap();
+        const ComputedStyle& style,
+        unsigned index) const {
+  DCHECK_LE(index, string.length());
+  // Check if we are at a preserved space character and auto-wrap is enabled.
+  if (style.CollapseWhiteSpace() || !style.AutoWrap() || !string.length() ||
+      index >= string.length() || string[index] != kSpaceCharacter)
+    return false;
+
+  // Preserved leading spaces must be at the beginning of the first line or just
+  // after a forced break.
+  if (index)
+    return string[index - 1] == kNewlineCharacter;
+  return text_.IsEmpty() || text_[text_.length() - 1] == kNewlineCharacter;
+}
+
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
+    InsertBreakOpportunityAfterLeadingPreservedSpaces(
+        const String& string,
+        const ComputedStyle& style,
+        LayoutText* layout_object,
+        unsigned* start) {
+  DCHECK(start);
+  if (UNLIKELY(ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
+          string, style, *start))) {
+    wtf_size_t end = *start;
+    do {
+      ++end;
+    } while (end < string.length() && string[end] == kSpaceCharacter);
+    AppendTextItem(StringView(string, *start, end - *start), layout_object);
+    AppendGeneratedBreakOpportunity(layout_object);
+    *start = end;
+  }
 }
 
 // TODO(yosin): We should remove |style| and |string| parameter because of
@@ -707,21 +736,19 @@ void NGInlineItemsBuilderTemplate<
   // opportunity after leading preserved spaces needs a special code in the line
   // breaker. Generate an opportunity to make it easy.
   unsigned start = 0;
-  if (UNLIKELY(ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
-          string, *style))) {
-    do {
-      ++start;
-    } while (start < string.length() && string[start] == kSpaceCharacter);
-    AppendTextItem(StringView(string, 0, start), layout_object);
-    AppendGeneratedBreakOpportunity(layout_object);
-  }
-
+  InsertBreakOpportunityAfterLeadingPreservedSpaces(string, *style,
+                                                    layout_object, &start);
   for (; start < string.length();) {
     UChar c = string[start];
     if (IsControlItemCharacter(c)) {
       if (c == kNewlineCharacter) {
         AppendForcedBreak(layout_object);
         start++;
+        // A forced break is not a collapsible space, but following collapsible
+        // spaces are leading spaces and they need a special code in the line
+        // breaker. Generate an opportunity to make it easy.
+        InsertBreakOpportunityAfterLeadingPreservedSpaces(
+            string, *style, layout_object, &start);
       } else if (c == kTabulationCharacter) {
         wtf_size_t end = string.Find(
             [](UChar c) { return c != kTabulationCharacter; }, start + 1);

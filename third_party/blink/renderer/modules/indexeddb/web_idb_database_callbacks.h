@@ -28,7 +28,6 @@
 
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

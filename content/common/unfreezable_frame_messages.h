@@ -27,4 +27,7 @@ IPC_MESSAGE_ROUTED3(UnfreezableFrameMsg_SwapOut,
                     bool /* is_loading */,
                     content::FrameReplicationState /* replication_state */)
 
+// Instructs the renderer to delete the RenderFrame.
+IPC_MESSAGE_ROUTED1(UnfreezableFrameMsg_Delete, content::FrameDeleteIntention)
+
 #endif  // CONTENT_COMMON_UNFREEZABLE_FRAME_MESSAGES_H_

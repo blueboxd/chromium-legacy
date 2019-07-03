@@ -307,6 +307,11 @@ void ChunkDemuxerStream::Read(const ReadCB& read_cb) {
   CompletePendingReadIfPossible_Locked();
 }
 
+bool ChunkDemuxerStream::IsReadPending() const {
+  base::AutoLock auto_lock(lock_);
+  return !read_cb_.is_null();
+}
+
 DemuxerStream::Type ChunkDemuxerStream::type() const { return type_; }
 
 DemuxerStream::Liveness ChunkDemuxerStream::liveness() const {

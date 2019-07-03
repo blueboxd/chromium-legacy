@@ -455,7 +455,7 @@ body.remove-fakebox #user-content {
 @media (prefers-color-scheme: dark) {
   body:not(.light-chip)  #mv-notice {
     background-color: rgb(var(--GG900-rgb));
-    border-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, .1);
   }
 }
 
@@ -498,7 +498,7 @@ body.remove-fakebox #user-content {
 
 #mv-notice-links span:hover,
 #mv-notice-links span:active {
-  background-color: rgba(var(--GB600-rgb), 0.1);
+  background-color: rgba(var(--GB600-rgb), .1);
   text-decoration: none;
   transition: background-color 200ms;
 }
@@ -506,7 +506,7 @@ body.remove-fakebox #user-content {
 @media (prefers-color-scheme: dark) {
   body:not(.light-chip)  #mv-notice-links
   :-webkit-any(span:hover, span:active) {
-    background-color: rgba(var(--GB400-dark-rgb), 0.1);
+    background-color: rgba(var(--GB400-dark-rgb), .1);
   }
 }
 
@@ -566,7 +566,7 @@ html[dir=rtl] #attribution,
 
 @media (prefers-color-scheme: dark) {
   .customize-dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, .4);
   }
 }
 
@@ -631,7 +631,7 @@ html[dir=rtl] #attribution,
 @media (prefers-color-scheme: dark) {
   body:not(.light-chip) #error-notice {
     background-color: rgb(var(--GG900-rgb));
-    border-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, .1);
     color: rgb(var(--GR500-dark-rgb));
   }
 }
@@ -695,7 +695,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 #error-notice-link:hover,
 #error-notice-link:active {
-  background-color: rgba(var(--GB600-rgb), 0.1);
+  background-color: rgba(var(--GB600-rgb), .1);
   text-decoration: none;
   transition: background-color 200ms;
 }
@@ -703,7 +703,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 @media (prefers-color-scheme: dark) {
   body:not(.light-chip) #error-notice-link:hover,
   body:not(.light-chip) #error-notice-link:active {
-    background-color: rgba(var(--GB400-dark-rgb), 0.1);
+    background-color: rgba(var(--GB400-dark-rgb), .1);
   }
 }
 
@@ -743,7 +743,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 @media (prefers-color-scheme: dark) {
   body:not(.light-chip) #promo > div {
     background-color: rgb(var(--GG900-rgb));
-    border-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, .1);
     color: rgb(var(--GG200-rgb));
   }
 }
@@ -818,8 +818,8 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 @media (prefers-color-scheme: dark) {
   #customization-menu {
     background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
-        0 4px 8px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+        0 4px 8px 3px rgba(0, 0, 0, .15);
     color: rgb(var(--GG200-rgb));
   }
 }
@@ -947,7 +947,7 @@ html[dir=rtl] .menu-option {
 
 @media (prefers-color-scheme: dark) {
   #menu-footer {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, .1);
   }
 }
 

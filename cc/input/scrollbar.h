@@ -10,8 +10,15 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
-static const int kPixelsPerLineStep = 40;
-static const float kMinFractionToStepWhenPaging = 0.875f;
+static constexpr int kPixelsPerLineStep = 40;
+static constexpr float kMinFractionToStepWhenPaging = 0.875f;
+
+// Autoscrolling (on the main thread) happens by applying a delta every 50ms.
+// Hence, pixels per second for a autoscroll cc animation can be calculated as:
+// autoscroll velocity = delta / 0.05 sec = delta x 20
+static constexpr float kAutoscrollMultiplier = 20.f;
+static constexpr base::TimeDelta kInitialAutoscrollTimerDelay =
+    base::TimeDelta::FromMilliseconds(250);
 
 namespace cc {
 

@@ -39,11 +39,13 @@ TextElementTiming::TextElementTiming(LocalDOMWindow& window)
 
 // static
 FloatRect TextElementTiming::ComputeIntersectionRect(
-    Node* node,
+    const LayoutObject& object,
     const IntRect& aggregated_visual_rect,
     const PropertyTreeState& property_tree_state,
     const LocalFrameView* frame_view) {
-  if (!NeededForElementTiming(node))
+  Node* node = object.GetNode();
+  DCHECK(node);
+  if (!NeededForElementTiming(*node))
     return FloatRect();
 
   FloatClipRect float_clip_visual_rect =
@@ -55,7 +57,7 @@ FloatRect TextElementTiming::ComputeIntersectionRect(
   return float_clip_visual_rect.Rect();
 }
 
-void TextElementTiming::OnTextNodesPainted(
+void TextElementTiming::OnTextObjectsPainted(
     const Deque<base::WeakPtr<TextRecord>>& text_nodes_painted) {
   DCHECK(performance_);
   // If the entries cannot be exposed via PerformanceObserver nor added to the

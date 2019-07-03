@@ -40,23 +40,23 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     const FAKE_ACCELERATION_DATA = [1, 2, 3];
     const FAKE_LINEAR_ACCELERATION_DATA = [4, 5, 6];
     const FAKE_GYROSCOPE_DATA = [7, 8, 9];
-    setMockSensorDataForType(sensorProvider, device.mojom.SensorType.ACCELEROMETER, FAKE_ACCELERATION_DATA);
-    setMockSensorDataForType(sensorProvider, device.mojom.SensorType.LINEAR_ACCELERATION, FAKE_LINEAR_ACCELERATION_DATA);
-    setMockSensorDataForType(sensorProvider, device.mojom.SensorType.GYROSCOPE, FAKE_GYROSCOPE_DATA);
+    setMockSensorDataForType(sensorProvider, 'Accelerometer', FAKE_ACCELERATION_DATA);
+    setMockSensorDataForType(sensorProvider, 'LinearAccelerationSensor', FAKE_LINEAR_ACCELERATION_DATA);
+    setMockSensorDataForType(sensorProvider, 'Gyroscope', FAKE_GYROSCOPE_DATA);
 
     return waitForLackOfEvent('devicemotion');
   }, 'addEventListener() for `devicemotion` does not crash but the handler never fires.');
 
   sensor_test(sensorProvider => {
     const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
-    setMockSensorDataForType(sensorProvider, device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES, FAKE_ORIENTATION_DATA);
+    setMockSensorDataForType(sensorProvider, 'RelativeOrientationEulerAngles', FAKE_ORIENTATION_DATA);
 
     return waitForLackOfEvent('deviceorientation');
   }, 'addEventListener() for `deviceorientation` does not crash but the handler never fires.');
 
   sensor_test(sensorProvider => {
     const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
-    setMockSensorDataForType(sensorProvider, device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES, FAKE_ORIENTATION_DATA);
+    setMockSensorDataForType(sensorProvider, 'AbsoluteOrientationEulerAngles', FAKE_ORIENTATION_DATA);
 
     return waitForLackOfEvent('deviceorientationabsolute');
   }, 'addEventListener() for `deviceorientationabsolute` does not crash but the handler never fires.');

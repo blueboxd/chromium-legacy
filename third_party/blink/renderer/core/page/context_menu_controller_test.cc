@@ -136,7 +136,7 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -197,7 +197,7 @@ TEST_F(ContextMenuControllerTest, VideoWithAudioOnly) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeAudio, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -254,7 +254,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -311,7 +311,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -369,7 +369,7 @@ TEST_F(ContextMenuControllerTest, MediaStreamVideoLoaded) {
       GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -432,7 +432,7 @@ TEST_F(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},

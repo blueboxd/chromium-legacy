@@ -114,11 +114,19 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
    * @param {!{{module.namespace}}.{{interface.name}}Interface } impl
    */
   constructor(impl) {
-    this.receiver_ = new mojo.internal.interfaceSupport.InterfaceReceiver;
+    /** @private {!mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal<!{{module.namespace}}.{{interface.name}}Proxy>} */
+    this.helper_internal_ = new mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal(
+        {{module.namespace}}.{{interface.name}}Proxy);
+
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{module.namespace}}.{{interface.name}}Proxy>}
+     */
+    this.$ = new mojo.internal.interfaceSupport.InterfaceReceiverHelper(this.helper_internal_);
+
 {%  for method in interface.methods %}
 {%-   set interface_message_id =
           interface.mojom_name ~ "_" ~ method.mojom_name %}
-    this.receiver_.registerHandler(
+    this.helper_internal_.registerHandler(
         {{method.ordinal}},
         {{module.namespace}}.{{interface_message_id}}_ParamsSpec.$,
 {%-   if method.response_parameters != None %}
@@ -129,27 +137,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
         impl.{{method.name}}.bind(impl));
 {%- endfor %}
     /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
-    this.onConnectionError = this.receiver_.getConnectionErrorEventRouter();
-  }
-
-  /**
-   * Binds a new handle to this object. Messages which arrive on the handle will
-   * be read and dispatched to this object.
-   *
-   * @param {!MojoHandle} handle
-   * @export
-   */
-  bindHandle(handle) {
-    this.receiver_.bindHandle(handle);
-  }
-
-  /**
-   * Closes all bindings bound to this target.
-   *
-   * @export
-   */
-  closeBindings() {
-    this.receiver_.closeBindings();
+    this.onConnectionError = this.helper_internal_.getConnectionErrorEventRouter();
   }
 
   /**
@@ -164,19 +152,6 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
     let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
     Mojo.bindInterface('{{mojom_namespace}}.{{interface.name}}',
                        proxy.$.bindNewPipeAndPassReceiver().handle);
-    return proxy;
-  }
-
-  /**
-   * Returns a proxy for this interface which sends messages directly to this
-   * object. Any number of proxies may be created to the same object.
-   *
-   * @return {!{{module.namespace}}.{{interface.name}}Proxy}
-   * @export
-   */
-  createProxy() {
-    let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
-    this.receiver_.bindHandle(proxy.$.bindNewPipeAndPassReceiver().handle);
     return proxy;
   }
 };
@@ -206,7 +181,14 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
  */
 {{module.namespace}}.{{interface.name}}CallbackRouter = class {
   constructor() {
-    this.receiver_ = new mojo.internal.interfaceSupport.InterfaceReceiver;
+    this.helper_internal_ = new mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal(
+      {{module.namespace}}.{{interface.name}}Proxy);
+
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceReceiverHelper<!{{module.namespace}}.{{interface.name}}Proxy>}
+     */
+    this.$ = new mojo.internal.interfaceSupport.InterfaceReceiverHelper(this.helper_internal_);
+
     this.router_ = new mojo.internal.interfaceSupport.CallbackRouter;
 {%  for method in interface.methods %}
 {%-   set interface_message_id =
@@ -218,7 +200,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
         new mojo.internal.interfaceSupport.InterfaceCallbackReceiver(
             this.router_);
 
-    this.receiver_.registerHandler(
+    this.helper_internal_.registerHandler(
         {{method.ordinal}},
         {{module.namespace}}.{{interface_message_id}}_ParamsSpec.$,
 {%-   if method.response_parameters != None %}
@@ -230,39 +212,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
 {%-   endif %}
 {%- endfor %}
     /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
-    this.onConnectionError = this.receiver_.getConnectionErrorEventRouter();
-  }
-
-  /**
-   * Binds a new handle to this object. Messages which arrive on the handle will
-   * be read and dispatched as callbacks on this object.
-   *
-   * @param {!MojoHandle} handle
-   * @export
-   */
-  bindHandle(handle) {
-    this.receiver_.bindHandle(handle);
-  }
-
-  /**
-   * Closes all bindings bound to this receiver. The receiver will not receive any
-   * further message message events unless rebound to one or more handles.
-   */
-  closeBindings() {
-    this.receiver_.closeBindings();
-  }
-
-  /**
-   * Returns a proxy for this interface which sends messages directly to this
-   * object. Any number of proxies may be created to the same object.
-   *
-   * @return {!{{module.namespace}}.{{interface.name}}Proxy}
-   * @export
-   */
-  createProxy() {
-    let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
-    this.receiver_.bindHandle(proxy.$.bindNewPipeAndPassReceiver().handle);
-    return proxy;
+    this.onConnectionError = this.helper_internal_.getConnectionErrorEventRouter();
   }
 
   /**

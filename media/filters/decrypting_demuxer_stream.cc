@@ -89,6 +89,10 @@ void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
       base::Bind(&DecryptingDemuxerStream::DecryptBuffer, weak_this_));
 }
 
+bool DecryptingDemuxerStream::IsReadPending() const {
+  return !read_cb_.is_null();
+}
+
 void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
   DVLOG(2) << __func__ << " - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());

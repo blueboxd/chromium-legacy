@@ -30,6 +30,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
@@ -3042,6 +3043,44 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_SetPageFrozen) {
   EXPECT_GT(next_text_length, text_length);
 }
 
+// Checks that UnfreezableFrameMsg IPCs are executed even when the page is
+// frozen.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* rfh_a =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_c = rfh_a->child_at(1)->current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+  RenderFrameDeletedObserver delete_rfh_c(rfh_c);
+
+  // Delete an iframe when the page is active(not frozen), which should succeed.
+  rfh_b->Send(new UnfreezableFrameMsg_Delete(
+      rfh_b->routing_id(), FrameDeleteIntention::kNotMainFrame));
+  delete_rfh_b.WaitUntilDeleted();
+  EXPECT_TRUE(delete_rfh_b.deleted());
+  EXPECT_FALSE(delete_rfh_c.deleted());
+
+  // Freeze the blink page.
+  shell()->web_contents()->WasHidden();
+  shell()->web_contents()->SetPageFrozen(true);
+
+  // Try to delete an iframe, and succeeds because the message is unfreezable.
+  rfh_c->Send(new UnfreezableFrameMsg_Delete(
+      rfh_c->routing_id(), FrameDeleteIntention::kNotMainFrame));
+  delete_rfh_c.WaitUntilDeleted();
+  EXPECT_TRUE(delete_rfh_c.deleted());
+}
+
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        PopupWindowBrowserNavResumeLoad) {
   // This test verifies a pop up that requires navigation from browser side
@@ -3480,7 +3519,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   std::vector<int> deleted_routing_ids;
   auto watcher = base::BindRepeating(
       [](std::vector<int>* deleted_routing_ids, const IPC::Message& message) {
-        if (message.type() == FrameMsg_Delete::ID) {
+        if (message.type() == UnfreezableFrameMsg_Delete::ID) {
           deleted_routing_ids->push_back(message.routing_id());
         }
       },

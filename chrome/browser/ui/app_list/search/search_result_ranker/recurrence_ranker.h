@@ -70,9 +70,6 @@ class RecurrenceRanker {
       int n,
       const std::string& condition = std::string());
 
-  // TODO(921444): Create a system for cleaning up internal predictor state that
-  // is stored indepent of the target/condition frecency stores.
-
   // Force saving all model state to disk. If the user is an ephemeral user,
   // this does nothing. This is not necessary in normal operation, as the ranker
   // automatically saves at regular intervals. Example use: syncing to disk
@@ -95,6 +92,7 @@ class RecurrenceRanker {
                            SavedRankerRejectedIfConfigMismatched);
   FRIEND_TEST_ALL_PREFIXES(RecurrenceRankerTest, LoadFromDisk);
   FRIEND_TEST_ALL_PREFIXES(RecurrenceRankerTest, SaveToDisk);
+  FRIEND_TEST_ALL_PREFIXES(RecurrenceRankerTest, Cleanup);
 
   // Finishes initialisation by populating |this| with data from the given
   // proto.
@@ -104,6 +102,14 @@ class RecurrenceRanker {
   void MaybeSave();
   void ToProto(RecurrenceRankerProto* proto);
   void FromProto(const RecurrenceRankerProto& proto);
+
+  // Possibly triggers a cleanup of |prdictor_|'s internal state.
+  // |proportion_valid| should be the proportion of targets returned by the
+  // predictor that exist in the target frecency store. If a cleanup is
+  // triggered, RecurrencePredictor::Cleanup is called with a list of valid
+  // targets derived from |targets|.
+  void MaybeCleanup(float proportion_valid,
+                    const FrecencyStore::ScoreTable& targets);
 
   // Internal predictor that drives ranking.
   std::unique_ptr<RecurrencePredictor> predictor_;

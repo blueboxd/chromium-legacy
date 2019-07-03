@@ -436,6 +436,9 @@ bool V4L2MjpegDecodeAccelerator::CreateOutputBuffers() {
   output_buffer_coded_size_.SetSize(format.fmt.pix_mp.width,
                                     format.fmt.pix_mp.height);
   output_buffer_num_planes_ = format.fmt.pix_mp.num_planes;
+  for (size_t i = 0; i < output_buffer_num_planes_; ++i) {
+    output_bytesperlines_[i] = format.fmt.pix_mp.plane_fmt[i].bytesperline;
+  }
 
   VideoPixelFormat output_format =
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
@@ -714,12 +717,13 @@ bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
     }
   } else if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M ||
              output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M) {
+    DCHECK(output_buffer_num_planes_ == 3);
     uint8_t* src_y = static_cast<uint8_t*>(output_buffer.address[0]);
     uint8_t* src_u = static_cast<uint8_t*>(output_buffer.address[1]);
     uint8_t* src_v = static_cast<uint8_t*>(output_buffer.address[2]);
-    size_t src_y_stride = output_buffer_coded_size_.width();
-    size_t src_u_stride = output_buffer_coded_size_.width() / 2;
-    size_t src_v_stride = output_buffer_coded_size_.width() / 2;
+    size_t src_y_stride = output_bytesperlines_[0];
+    size_t src_u_stride = output_bytesperlines_[1];
+    size_t src_v_stride = output_bytesperlines_[2];
     if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M) {
       if (libyuv::I420Copy(src_y, src_y_stride, src_u, src_u_stride, src_v,
                            src_v_stride, dst_y, dst_y_stride, dst_u,

@@ -126,6 +126,7 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/swapped_out_messages.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -1027,10 +1028,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //    flight.
   // 3. The RenderFrame can be detached, as part of removing a subtree (due to
   //    navigation, swap out, or DOM mutation). In this case, the browser sends
-  //    a FrameMsg_Delete for the RenderFrame to detach itself and release its
-  //    associated resources. If the subframe contains an unload handler,
-  //    |unload_state_| is advanced to UnloadState::InProgress to track that the
-  //    detach is in progress; otherwise, it is advanced directly to
+  //    a UnfreezableFrameMsg_Delete for the RenderFrame to detach itself and
+  //    release its associated resources. If the subframe contains an unload
+  //    handler, |unload_state_| is advanced to UnloadState::InProgress to track
+  //    that the detach is in progress; otherwise, it is advanced directly to
   //    UnloadState::Completed.
   //
   // The browser side gives the renderer a small timeout to finish processing
@@ -1043,8 +1044,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //
   // TODO(dcheng): Due to how frame detach is signalled today, there are some
   // bugs in this area. In particular, subtree detach is reported from the
-  // bottom up, so the replicated FrameMsg_Delete messages actually operate on a
-  // node-by-node basis rather than detaching an entire subtree at once...
+  // bottom up, so the replicated UnfreezableFrameMsg_Delete messages actually
+  // operate on a node-by-node basis rather than detaching an entire subtree at
+  // once...
   //
   // Note that this logic is fairly subtle. It needs to include all subframes
   // and all speculative frames, but it should exclude case #1 (a main
@@ -1894,7 +1896,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
     return;
 
   if (render_frame_created_) {
-    Send(new FrameMsg_Delete(routing_id_, intent));
+    Send(new UnfreezableFrameMsg_Delete(routing_id_, intent));
 
     if (!frame_tree_node_->IsMainFrame() && IsCurrent()) {
       // If this subframe has an unload handler (and isn't speculative), ensure
@@ -2171,7 +2173,7 @@ void RenderFrameHostImpl::RemoveChild(FrameTreeNode* child) {
           FrameDeleteIntention::kNotMainFrame);
       // Speculative RenderFrameHosts are deleted by the FrameTreeNode's
       // RenderFrameHostManager's destructor. RenderFrameProxyHosts send
-      // FrameMsg_Delete automatically in the destructor.
+      // UnfreezableFrameMsg_Delete automatically in the destructor.
       // TODO(dcheng): This is horribly confusing. Refactor this logic so it's
       // more understandable.
       node_to_delete.reset();

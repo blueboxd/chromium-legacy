@@ -135,7 +135,8 @@ class MutatorHost {
       ElementId element_id,
       const gfx::ScrollOffset& target_offset,
       const gfx::ScrollOffset& current_offset,
-      float autoscroll_velocity) = 0;
+      float autoscroll_velocity,
+      base::TimeDelta animation_start_offset) = 0;
 
   virtual void ImplOnlyScrollAnimationCreate(
       ElementId element_id,

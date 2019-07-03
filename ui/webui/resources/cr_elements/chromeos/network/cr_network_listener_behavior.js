@@ -18,7 +18,7 @@ const CrNetworkListenerBehavior = {
         new chromeos.networkConfig.mojom.CrosNetworkConfigObserver(this);
     network_config.MojoInterfaceProviderImpl.getInstance()
         .getMojoServiceProxy()
-        .addObserver(this.observer_.createProxy());
+        .addObserver(this.observer_.$.createProxy());
   },
 
   // CrosNetworkConfigObserver methods. Override these in the implementation.

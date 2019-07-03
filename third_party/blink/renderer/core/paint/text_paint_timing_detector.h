@@ -104,33 +104,32 @@ class CORE_EXPORT TextRecordsManager {
   void RemoveVisibleRecord(const LayoutObject&);
   void RemoveInvisibleRecord(const LayoutObject&);
   inline void RecordInvisibleObject(const LayoutObject& object) {
-    DCHECK(!HasTooManyNodes());
-    invisible_node_ids_.insert(&object);
+    DCHECK(!HasTooManyObjects());
+    invisible_objects_.insert(&object);
   }
   void RecordVisibleObject(const LayoutObject&,
                            const uint64_t& visual_size,
-                           const FloatRect& element_timing_rect,
-                           DOMNodeId);
+                           const FloatRect& element_timing_rect);
   bool NeedMeausuringPaintTime() const {
     return !texts_queued_for_paint_time_.IsEmpty();
   }
-  void AssignPaintTimeToQueuedNodes(const base::TimeTicks&);
+  void AssignPaintTimeToQueuedRecords(const base::TimeTicks&);
 
-  bool HasTooManyNodes() const;
+  bool HasTooManyObjects() const;
   inline bool HasRecorded(const LayoutObject& object) const {
-    return visible_node_map_.Contains(&object) ||
-           invisible_node_ids_.Contains(&object);
+    return visible_objects_.Contains(&object) ||
+           invisible_objects_.Contains(&object);
   }
 
-  size_t CountVisibleObjects() const { return visible_node_map_.size(); }
-  size_t CountInvisibleObjects() const { return invisible_node_ids_.size(); }
+  size_t CountVisibleObjects() const { return visible_objects_.size(); }
+  size_t CountInvisibleObjects() const { return invisible_objects_.size(); }
 
   inline bool IsKnownVisible(const LayoutObject& object) const {
-    return visible_node_map_.Contains(&object);
+    return visible_objects_.Contains(&object);
   }
 
   inline bool IsKnownInvisible(const LayoutObject& object) const {
-    return invisible_node_ids_.Contains(&object);
+    return invisible_objects_.Contains(&object);
   }
 
   void CleanUp();
@@ -159,11 +158,11 @@ class CORE_EXPORT TextRecordsManager {
     texts_queued_for_paint_time_.push_back(std::move(record));
   }
 
-  // Once LayoutObject* is destroyed, |visible_node_map_| and
-  // |invisible_node_ids_| must immediately clear the corresponding record from
+  // Once LayoutObject* is destroyed, |visible_objects_| and
+  // |invisible_objects_| must immediately clear the corresponding record from
   // themselves.
-  HashMap<const LayoutObject*, std::unique_ptr<TextRecord>> visible_node_map_;
-  HashSet<const LayoutObject*> invisible_node_ids_;
+  HashMap<const LayoutObject*, std::unique_ptr<TextRecord>> visible_objects_;
+  HashSet<const LayoutObject*> invisible_objects_;
 
   Deque<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
   base::Optional<LargestTextPaintManager> ltp_manager_;

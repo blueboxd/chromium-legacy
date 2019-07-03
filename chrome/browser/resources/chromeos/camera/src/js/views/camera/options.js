@@ -20,14 +20,81 @@ cca.views = cca.views || {};
 cca.views.camera = cca.views.camera || {};
 
 /**
+ * Map of all available resolution to its maximal supported capture fps.
+ * @typedef {Object<[number, number], number>} MaxFpsInfo
+ */
+
+/**
+ * List of supported capture fps ranges.
+ * @typedef {Array<[number, number]>} FpsRangeInfo
+ */
+
+/**
+ * Video device information queried from HALv3 mojo private API.
+ * @param {MediaDeviceInfo} deviceInfo Information of the video device.
+ * @param {cros.mojom.CameraFacing} facing Camera facing of the video device.
+ * @param {ResolList} photoResols Supported available photo resolutions of the
+ *     video device.
+ * @param {Array<[number, number, number]>} videoResolFpses Supported available
+ *     video resolutions and maximal capture fps of the video device.
+ * @param {FpsRangeInfo} fpsRanges Supported fps ranges of the video device.
+ */
+cca.views.camera.Camera3DeviceInfo = function(
+    deviceInfo, facing, photoResols, videoResolFpses, fpsRanges) {
+  /**
+   * @type {string}
+   * @public
+   */
+  this.deviceId = deviceInfo.deviceId;
+
+  /**
+   * @type {cros.mojom.CameraFacing}
+   * @public
+   */
+  this.facing = facing;
+
+  /**
+   * @type {ResolList}
+   * @public
+   */
+  this.photoResols = photoResols;
+
+  /**
+   * @type {ResolList}
+   * @public
+   */
+  this.videoResols = [];
+
+  /**
+   * @type {MaxFpsInfo}
+   * @public
+   */
+  this.videoMaxFps = {};
+
+  /**
+   * @type {FpsRangeInfo}
+   * @public
+   */
+  this.fpsRanges = fpsRanges;
+
+  // End of properties, seal the object.
+  Object.seal(this);
+
+  videoResolFpses.filter(([, , fps]) => fps >= 24).forEach(([w, h, fps]) => {
+    this.videoResols.push([w, h]);
+    this.videoMaxFps[[w, h]] = fps;
+  });
+};
+
+/**
  * Creates a controller for the options of Camera view.
  * @param {cca.views.camera.PhotoResolPreferrer} photoResolPreferrer
- * @param {cca.views.camera.VideoResolPreferrer} videoResolPreferrer
+ * @param {cca.views.camera.VideoConstraintsPreferrer} videoPreferrer
  * @param {function()} doSwitchDevice Callback to trigger device switching.
  * @constructor
  */
 cca.views.camera.Options = function(
-    photoResolPreferrer, videoResolPreferrer, doSwitchDevice) {
+    photoResolPreferrer, videoPreferrer, doSwitchDevice) {
   /**
    * @type {cca.views.camera.PhotoResolPreferrer}
    * @private
@@ -35,10 +102,10 @@ cca.views.camera.Options = function(
   this.photoResolPreferrer_ = photoResolPreferrer;
 
   /**
-   * @type {cca.views.camera.VideoResolPreferrer}
+   * @type {cca.views.camera.VideoConstraintsPreferrer}
    * @private
    */
-  this.videoResolPreferrer_ = videoResolPreferrer;
+  this.videoPreferrer_ = videoPreferrer;
 
   /**
    * @type {function()}
@@ -80,16 +147,12 @@ cca.views.camera.Options = function(
   this.videoDevices_ = null;
 
   /**
-   * MediaDeviceInfo and additional information queried from private mojo api of
-   * all available video device. The additional fields in the array entry
-   * represent camera facing, supported photo resolutions, supported video
-   * resolutions. On HALv1 device, the promise will throw exception for its
-   * incapability of building mojo api connection.
-   * @type {Promise<!Array<[MediaDeviceInfo, cros.mojom.CameraFacing, ResolList,
-   *     ResolList]>>}
+   * Promise for querying Camera3DeviceInfo of all available video devices from
+   * mojo private API.
+   * @type {Promise<!Array<Camera3DeviceInfo>>}
    * @private
    */
-  this.devicePrivateInfo_ = null;
+  this.devicesPrivateInfo_ = null;
 
   /**
    * Whether the current device is HALv1 and lacks facing configuration.
@@ -287,36 +350,39 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
     this.refreshingVideoDeviceIds_ = false;
   });
 
-  this.devicePrivateInfo_ =
-      this.videoDevices_
-          .then((devices) => {
-            return Promise.all(devices.map((d) => Promise.all([
-              d,
-              cca.mojo.getCameraFacing(d.deviceId),
-              cca.mojo.getPhotoResolutions(d.deviceId),
-              cca.mojo.getVideoConfigs(d.deviceId)
-                  .then(
-                      (v) => v.filter(([, , fps]) => fps >= 24)
-                                 .map(([w, h]) => [w, h])),
-            ])));
-          })
-          .catch((e) => {
-            cca.state.set('no-resolution-settings', true);
-            throw e;
-          });
+  this.devicesPrivateInfo_ = (async () => {
+    const devices = await this.videoDevices_;
+    try {
+      var privateInfos = await Promise.all(devices.map((d) => Promise.all([
+        d,
+        cca.mojo.getCameraFacing(d.deviceId),
+        cca.mojo.getPhotoResolutions(d.deviceId),
+        cca.mojo.getVideoConfigs(d.deviceId),
+        cca.mojo.getSupportedFpsRange(d.deviceId),
+      ])));
+    } catch (e) {
+      cca.state.set('no-resolution-settings', true);
+      throw new Error('HALv1-api');
+    }
+    return privateInfos.map(
+        (info) => new cca.views.camera.Camera3DeviceInfo(...info));
+  })();
 
   (async () => {
     try {
-      var devicePrivateInfo = await this.devicePrivateInfo_;
+      var devicesPrivateInfo = await this.devicesPrivateInfo_;
     } catch (e) {
-      return;
+      if (e.message == 'HALv1-api') {
+        return;
+      }
+      throw e;
     }
     let frontSetting = null;
     let backSetting = null;
     let externalSettings = [];
-    devicePrivateInfo.forEach(([{deviceId}, facing, photoRs, videoRs]) => {
-      const setting = [deviceId, photoRs, videoRs];
-      switch (facing) {
+    devicesPrivateInfo.forEach((info) => {
+      const setting = [info.deviceId, info.photoResols, info.videoResols];
+      switch (info.facing) {
         case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
           frontSetting = setting;
           break;
@@ -327,17 +393,20 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
           externalSettings.push(setting);
           break;
         default:
-          console.error(`Ignore device of unknown facing: ${facing}`);
+          console.error(`Ignore device of unknown facing: ${info.facing}`);
       }
     });
     this.photoResolPreferrer_.updateResolutions(
         frontSetting && [frontSetting[0], frontSetting[1]],
         backSetting && [backSetting[0], backSetting[1]],
         externalSettings.map(([deviceId, photoRs]) => [deviceId, photoRs]));
-    this.videoResolPreferrer_.updateResolutions(
+    this.videoPreferrer_.updateResolutions(
         frontSetting && [frontSetting[0], frontSetting[2]],
         backSetting && [backSetting[0], backSetting[2]],
         externalSettings.map(([deviceId, , videoRs]) => [deviceId, videoRs]));
+
+    this.videoPreferrer_.updateFpses(devicesPrivateInfo.map(
+        (info) => [info.deviceId, info.videoMaxFps, info.fpsRanges]));
   })();
 };
 
@@ -354,14 +423,18 @@ cca.views.camera.Options.prototype.videoDeviceIds = async function() {
     throw new Error('Device list empty.');
   }
   try {
-    var facings = (await this.devicePrivateInfo_)
+    var facings = (await this.devicesPrivateInfo_)
                       .reduce(
-                          (facings, [d, facing]) =>
-                              Object.assign(facings, {[d.deviceId]: facing}),
+                          (facings, info) => Object.assign(
+                              facings, {[info.deviceId]: info.facing}),
                           {});
     this.isV1NoFacingConfig_ = false;
   } catch (e) {
-    facings = null;
+    if (e.message == 'HALv1-api') {
+      facings = null;
+    } else {
+      throw e;
+    }
   }
   // Put the selected video device id first.
   var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
@@ -395,8 +468,7 @@ cca.views.camera.Options.prototype.videoDeviceIds = async function() {
 cca.views.camera.Options.prototype.getDeviceResolutions =
     async function(deviceId) {
   // HALv1 device will thrown from here.
-  const devicePrivateInfo = await this.devicePrivateInfo_;
-  const [, , photoRs, videoRs] =
-      devicePrivateInfo.find(([d]) => d.deviceId === deviceId);
-  return [photoRs, videoRs];
+  const info = (await this.devicesPrivateInfo_)
+                   .find((info) => info.deviceId === deviceId);
+  return [info.photoResols, info.videoResols];
 };

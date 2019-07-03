@@ -15,8 +15,8 @@ body {
   border: none;
   border-radius: 8px;
   bottom: 0;
-  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
-      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   margin: auto;
   min-width: 320px;
   padding: 16px;
@@ -27,8 +27,8 @@ body {
 @media (prefers-color-scheme: dark) {
   #edit-link-dialog {
     background-color: rgb(41, 42, 45);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
-        0 4px 8px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+        0 4px 8px 3px rgba(0, 0, 0, .15);
   }
 }
 
@@ -95,14 +95,14 @@ html[dir=rtl] input {
 
 @media (prefers-color-scheme: dark) {
   input {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, .3);
     caret-color: rgb(var(--GB300-rgb));
     color: rgb(var(--GG200-rgb));
   }
 }
 
 input::placeholder {
-  color: rgba(var(--GG900-rgb), 0.38);
+  color: rgba(var(--GG900-rgb), .38);
 }
 
 @media (prefers-color-scheme: dark) {

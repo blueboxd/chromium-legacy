@@ -21,13 +21,65 @@ void LoginTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // When navigating away, the LoginHandler for the previous navigation (if any)
   // should get cleared.
+
+  // Do not clear the login prompt for subframe or same-document navigations;
+  // these could happen in the case of 401/407 error pages that have fancy
+  // response bodies that have subframes or can trigger same-document
+  // navigations.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument())
+    return;
+
+  if (!delegate_)
+    return;
+
+  // TODO(https://crbug.com/943610): this is a very hacky special-case for a
+  // particular issue that arises when the server sends an empty body for the
+  // 401 or 407 response. In this case, the renderer commits an error page for
+  // the HTTP status code (see
+  // ChromeContentRendererClient::PrepareErrorPageForHttpStatusError). Error
+  // pages are a second commit from the browser's perspective, which runs
+  // DidStartNavigation again and therefore would dismiss the prompt if this
+  // special case weren't here. To make matters worse, at the error page's
+  // second commit, the browser process does not have a NavigationRequest
+  // available (see |is_commit_allowed_to_proceed| in
+  // RenderFrameHostImpl::DidCommitNavigationInternal), and therefore no
+  // AuthChallengeInfo to use to re-show the prompt after it has been
+  // dismissed. This whole mess should be fixed in https://crbug.com/943610,
+  // which is about enforcing that the browser always has a NavigationRequest
+  // available at commit time; once error pages no longer have second commits
+  // for which NavigationRequests are manufactured, this special case will no
+  // longer be needed.
+  //
+  // For now, we can hack around it by preserving the login prompt when starting
+  // a navigation to the same URL for which we are currently showing a login
+  // prompt. There is a possibility that the starting navigation is actually due
+  // to the user refreshing rather than the error page committing, and when the
+  // user refreshes the server might no longer serve an auth challenge. But we
+  // can't distinguish the two scenarios (error page committing vs user
+  // refreshing) at this point, so we clear the prompt in DidFinishNavigation if
+  // it's not an error page. This behavior could lead to a slight oddness where
+  // the prompt lingers around for a bit too long, but this should only happen
+  // in the perfect storm where a server's auth response has an empty body,
+  // the user refreshes when the prompt is showing, and the server no longer
+  // requires auth on the refresh.
+  if (navigation_handle->GetURL() == url_for_delegate_)
+    return;
+
   delegate_.reset();
+  url_for_delegate_ = GURL();
 }
 
 void LoginTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(
       base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials));
+
+  // See TODO(https://crbug.com/943610) in DidStartNavigation().
+  if (delegate_ && !navigation_handle->IsErrorPage()) {
+    delegate_.reset();
+    url_for_delegate_ = GURL();
+  }
 
   if (!navigation_handle->GetAuthChallengeInfo()) {
     return;
@@ -50,6 +102,7 @@ void LoginTabHelper::DidFinishNavigation(
 
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();
 
+  url_for_delegate_ = navigation_handle->GetURL();
   delegate_ = CreateLoginPrompt(
       navigation_handle->GetAuthChallengeInfo().value(),
       navigation_handle->GetWebContents(),
@@ -72,10 +125,13 @@ LoginTabHelper::LoginTabHelper(content::WebContents* web_contents)
 
 void LoginTabHelper::HandleCredentials(
     const base::Optional<net::AuthCredentials>& credentials) {
+  delegate_.reset();
+  url_for_delegate_ = GURL();
+
   if (!credentials.has_value()) {
-    delegate_.reset();
     return;
   }
+
   // Pass a weak pointer for the callback, as the WebContents (and thus this
   // LoginTabHelper) could be destroyed while the network service is processing
   // the new cache entry.

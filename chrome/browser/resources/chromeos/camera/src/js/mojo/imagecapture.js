@@ -296,8 +296,8 @@ cca.mojo.getCameraFacing = function(deviceId) {
  * Gets supported fps ranges for specific camera.
  * @param {string} deviceId The renderer-facing device Id of the target camera
  *     which could be retrieved from MediaDeviceInfo.deviceId.
- * @return {Promise<Array<Object>>} Promise of supported fps ranges. Each range
- *     is represented as [min, max].
+ * @return {Promise<Array<[number, number]>>} Promise of supported fps ranges.
+ *     Each range is represented as [min, max].
  */
 cca.mojo.getSupportedFpsRanges = function(deviceId) {
   const numElementPerEntry = 2;

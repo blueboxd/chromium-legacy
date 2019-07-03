@@ -33,8 +33,16 @@ bool CanUseEpsonGenericPPD(const PrinterSearchData& sd) {
       return base::Contains(sd.supported_document_formats,
                             "application/octet-stream");
 
-    case PrinterSearchData::PrinterDiscoveryType::kUsb:
-      return base::Contains(sd.printer_id.command_set(), "ESC/P-R");
+    case PrinterSearchData::PrinterDiscoveryType::kUsb: {
+      // For USB printers, the command set is retrieved from the 'CMD' field of
+      // the printer's IEEE 1284 Device ID.
+      for (base::StringPiece format : sd.printer_id.command_set()) {
+        if (format.starts_with("ESCPR")) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     case PrinterSearchData::PrinterDiscoveryType::kZeroconf:
       // For printers found through mDNS/DNS-SD discovery,

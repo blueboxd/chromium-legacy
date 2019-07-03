@@ -68,11 +68,11 @@ TEST(BlinkTransferableMessageStructTraitsTest,
   ASSERT_EQ(out.message->GetArrayBufferContentsArray().size(), 1U);
   WTF::ArrayBufferContents& deserialized_contents =
       out.message->GetArrayBufferContentsArray()[0];
-  std::vector<uint8_t> deserialized_data(
-      static_cast<uint8_t*>(deserialized_contents.Data()),
-      static_cast<uint8_t*>(deserialized_contents.Data()) + 8);
+  Vector<uint8_t> deserialized_data;
+  deserialized_data.Append(static_cast<uint8_t*>(deserialized_contents.Data()),
+                           8);
   ASSERT_EQ(deserialized_data.size(), 8U);
-  for (uint8_t i = 0; i < deserialized_data.size(); i++) {
+  for (wtf_size_t i = 0; i < deserialized_data.size(); i++) {
     ASSERT_TRUE(deserialized_data[i] == i);
   }
 }

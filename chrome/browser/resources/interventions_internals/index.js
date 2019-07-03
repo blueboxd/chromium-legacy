@@ -704,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Set up client side mojo interface.
       pageImpl = new InterventionsInternalPageImpl();
       const client = new mojom.InterventionsInternalsPage(pageImpl);
-      pageHandler.setClientPage(client.createProxy());
+      pageHandler.setClientPage(client.$.createProxy());
     }
 
     interventions_internals.init(pageHandler);

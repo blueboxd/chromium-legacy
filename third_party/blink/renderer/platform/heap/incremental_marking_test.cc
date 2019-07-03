@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <initializer_list>
-#include <vector>
 
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +25,7 @@ namespace incremental_marking_test {
 // store to be in the set of provided objects.
 class BackingVisitor : public Visitor {
  public:
-  BackingVisitor(ThreadState* state, std::vector<void*>* objects)
+  BackingVisitor(ThreadState* state, Vector<void*>* objects)
       : Visitor(state), objects_(objects) {}
   ~BackingVisitor() final {}
 
@@ -41,7 +40,7 @@ class BackingVisitor : public Visitor {
 
   void Visit(void* obj, TraceDescriptor desc) final {
     EXPECT_TRUE(obj);
-    auto pos = std::find(objects_->begin(), objects_->end(), obj);
+    auto** pos = std::find(objects_->begin(), objects_->end(), obj);
     if (objects_->end() != pos)
       objects_->erase(pos);
     // The garbage collector will find those objects so we can mark them.
@@ -74,7 +73,7 @@ class BackingVisitor : public Visitor {
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
  private:
-  std::vector<void*>* objects_;
+  Vector<void*>* objects_;
 };
 
 // Base class for initializing worklists.
@@ -158,7 +157,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
       headers_.push_back(HeapObjectHeader::FromPayload(object));
       EXPECT_FALSE(headers_.back()->IsMarked());
     }
-    EXPECT_FALSE(objects_.empty());
+    EXPECT_FALSE(objects_.IsEmpty());
   }
 
   ~ExpectWriteBarrierFires() {
@@ -174,11 +173,11 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
             HeapObjectHeader::FromPayload(item.object));
         continue;
       }
-      auto pos = std::find(objects_.begin(), objects_.end(), item.object);
+      auto** pos = std::find(objects_.begin(), objects_.end(), item.object);
       if (objects_.end() != pos)
         objects_.erase(pos);
     }
-    EXPECT_TRUE(objects_.empty());
+    EXPECT_TRUE(objects_.IsEmpty());
     // All headers of objects watched should be marked at this point.
     for (HeapObjectHeader* header : headers_) {
       EXPECT_TRUE(header->IsMarked());
@@ -188,8 +187,8 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
   }
 
  private:
-  std::vector<void*> objects_;
-  std::vector<HeapObjectHeader*> headers_;
+  Vector<void*> objects_;
+  Vector<HeapObjectHeader*> headers_;
   BackingVisitor backing_visitor_;
 };
 
@@ -204,7 +203,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     for (void* object : objects_) {
       HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
-      headers_.push_back({header, header->IsMarked()});
+      headers_.push_back(std::make_pair(header, header->IsMarked()));
     }
   }
 
@@ -217,8 +216,8 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
   }
 
  private:
-  std::vector<void*> objects_;
-  std::vector<std::pair<HeapObjectHeader*, bool /* was marked */>> headers_;
+  Vector<void*> objects_;
+  Vector<std::pair<HeapObjectHeader*, bool /* was marked */>> headers_;
 };
 
 class Object : public LinkedObject {

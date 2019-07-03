@@ -31,7 +31,7 @@ function sensorMocks() {
       this.notifyOnReadingChange_ = true;
       this.reportingMode_ = reportingMode;
       this.sensorReadingTimerId_ = null;
-      this.updateReadingFunction_ = null;
+      this.readingData_ = null;
       this.suspendCalled_ = null;
       this.resumeCalled_ = null;
       this.addConfigurationCalled_ = null;
@@ -55,7 +55,7 @@ function sensorMocks() {
     }
 
     // Adds configuration for the sensor and starts reporting fake data
-    // through updateReadingFunction_ callback.
+    // through setSensorReading function.
     addConfiguration(configuration) {
       assert_not_equals(configuration, null, "Invalid sensor configuration.");
 
@@ -115,7 +115,7 @@ function sensorMocks() {
 
       this.startShouldFail_ = false;
       this.notifyOnReadingChange_ = true;
-      this.updateReadingFunction_ = null;
+      this.readingData_ = null;
       this.requestedFrequencies_ = [];
       this.suspendCalled_ = null;
       this.resumeCalled_ = null;
@@ -133,9 +133,9 @@ function sensorMocks() {
       }
     }
 
-    // Sets callback that is used to deliver sensor reading updates.
-    setUpdateSensorReadingFunction(updateReadingFunction) {
-      this.updateReadingFunction_ = updateReadingFunction;
+    // Sets fake data that is used to deliver sensor reading updates.
+    setSensorReading(readingData) {
+      this.readingData_ = readingData;
       return Promise.resolve(this);
     }
 
@@ -179,13 +179,13 @@ function sensorMocks() {
     }
 
     startReading() {
-      if (this.updateReadingFunction_ != null) {
+      if (this.readingData_ != null) {
         this.stopReading();
         let maxFrequencyUsed = this.requestedFrequencies_[0];
         let timeout = (1 / maxFrequencyUsed) * 1000;
         this.sensorReadingTimerId_ = window.setInterval(() => {
-          if (this.updateReadingFunction_) {
-            this.updateReadingFunction_(this.buffer_);
+          if (this.readingData_) {
+            this.buffer_.set(this.readingData_, 2);
             // For all tests sensor reading should have monotonically
             // increasing timestamp in seconds.
             this.buffer_[1] = window.performance.now() * 0.001;
@@ -230,6 +230,17 @@ function sensorMocks() {
       this.isContinuous_ = false;
       this.maxFrequency_ = 60;
       this.minFrequency_ = 1;
+      this.mojomSensorType_ = new Map([
+        ['Accelerometer', device.mojom.SensorType.ACCELEROMETER],
+        ['LinearAccelerationSensor', device.mojom.SensorType.LINEAR_ACCELERATION],
+        ['AmbientLightSensor', device.mojom.SensorType.AMBIENT_LIGHT],
+        ['Gyroscope', device.mojom.SensorType.GYROSCOPE],
+        ['Magnetometer', device.mojom.SensorType.MAGNETOMETER],
+        ['AbsoluteOrientationSensor', device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION],
+        ['AbsoluteOrientationEulerAngles', device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES],
+        ['RelativeOrientationSensor', device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION],
+        ['RelativeOrientationEulerAngles', device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES]
+      ]);
       this.binding_ = new mojo.Binding(device.mojom.SensorProvider, this);
 
       this.interceptor_ = new MojoInterfaceInterceptor(
@@ -329,16 +340,17 @@ function sensorMocks() {
 
     // Sets flag that forces mock SensorProvider to fail when getSensor() is
     // invoked.
-    setGetSensorShouldFail(type, shouldFail) {
-      this.getSensorShouldFail_.set(type, shouldFail);
+    setGetSensorShouldFail(sensorType, shouldFail) {
+      this.getSensorShouldFail_.set(this.mojomSensorType_.get(sensorType), shouldFail);
     }
 
-    setPermissionsDenied(type, permissionsDenied) {
-      this.permissionsDenied_.set(type, permissionsDenied);
+    setPermissionsDenied(sensorType, permissionsDenied) {
+      this.permissionsDenied_.set(this.mojomSensorType_.get(sensorType), permissionsDenied);
     }
 
     // Returns mock sensor that was created in getSensor to the layout test.
-    getCreatedSensor(type) {
+    getCreatedSensor(sensorType) {
+      const type = this.mojomSensorType_.get(sensorType);
       assert_equals(typeof type, "number", "A sensor type must be specified.");
 
       if (this.activeSensors_.has(type)) {
@@ -390,9 +402,7 @@ function sensor_test(func, name, properties) {
 
 async function setMockSensorDataForType(sensorProvider, sensorType, mockDataArray) {
   let createdSensor = await sensorProvider.getCreatedSensor(sensorType);
-  return createdSensor.setUpdateSensorReadingFunction(buffer => {
-    buffer.set(mockDataArray, 2);
-  });
+  return createdSensor.setSensorReading(mockDataArray);
 }
 
 // Returns a promise that will be resolved when an event equal to the given
@@ -442,27 +452,4 @@ function waitForEvent(expectedEvent, targetWindow = window) {
       reject(errorMessage);
     }, 500);
   });
-}
-
-// TODO(Mikhail): Refactor further to remove code duplication
-// in <concrete sensor>.html files.
-function verify_sensor_reading(pattern, values, timestamp, is_null) {
-  function round(val) {
-    return Number.parseFloat(val).toPrecision(6);
-  }
-
-  if (is_null) {
-    return (values === null || values.every(r => r === null)) &&
-           timestamp === null;
-  }
-  return values.every((r, i) => round(r) === round(pattern[i])) &&
-         timestamp !== null;
-}
-
-function verify_xyz_sensor_reading(pattern, {x, y, z, timestamp}, is_null) {
-  return verify_sensor_reading(pattern, [x, y, z], timestamp, is_null);
-}
-
-function verify_quat_sensor_reading(pattern, {quaternion, timestamp}, is_null) {
-  return verify_sensor_reading(pattern, quaternion, timestamp, is_null);
 }

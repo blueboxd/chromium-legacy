@@ -38,6 +38,7 @@
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/scroll_state.h"
+#include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scroller_size_metrics.h"
 #include "cc/input/snap_selection_strategy.h"
@@ -3939,14 +3940,31 @@ gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
   return gfx::Vector2dF(scrolled.x(), scrolled.y());
 }
 
+bool LayerTreeHostImpl::AutoScrollAnimationCreate(ScrollNode* scroll_node,
+                                                  const gfx::Vector2dF& delta,
+                                                  float autoscroll_velocity) {
+  return ScrollAnimationCreateInternal(scroll_node, delta, base::TimeDelta(),
+                                       autoscroll_velocity);
+}
+
 bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
                                               const gfx::Vector2dF& delta,
                                               base::TimeDelta delayed_by) {
+  return ScrollAnimationCreateInternal(scroll_node, delta, delayed_by,
+                                       base::nullopt);
+}
+
+bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
+    ScrollNode* scroll_node,
+    const gfx::Vector2dF& delta,
+    base::TimeDelta delayed_by,
+    base::Optional<float> autoscroll_velocity) {
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
 
   const float kEpsilon = 0.1f;
   bool scroll_animated =
-      (std::abs(delta.x()) > kEpsilon || std::abs(delta.y()) > kEpsilon);
+      (std::abs(delta.x()) > kEpsilon || std::abs(delta.y()) > kEpsilon) ||
+      autoscroll_velocity;
   if (!scroll_animated) {
     scroll_tree.ScrollBy(scroll_node, delta, active_tree());
     TRACE_EVENT_INSTANT0("cc", "no scroll animation due to small delta",
@@ -3966,9 +3984,15 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
   // input latency tracking architecture from working.
   base::TimeDelta animation_start_offset = CurrentBeginFrameArgs().interval;
 
-  mutator_host_->ImplOnlyScrollAnimationCreate(
-      scroll_node->element_id, target_offset, current_offset, delayed_by,
-      animation_start_offset);
+  if (autoscroll_velocity) {
+    mutator_host_->ImplOnlyAutoScrollAnimationCreate(
+        scroll_node->element_id, gfx::ScrollOffset(delta), current_offset,
+        autoscroll_velocity.value(), animation_start_offset);
+  } else {
+    mutator_host_->ImplOnlyScrollAnimationCreate(
+        scroll_node->element_id, target_offset, current_offset, delayed_by,
+        animation_start_offset);
+  }
 
   SetNeedsOneBeginImplFrame();
 

@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 
-#include <vector>
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -35,7 +33,7 @@ class DOMTimerTest : public RenderingTest {
   // Expected time between each iterator for setInterval(..., 1) or nested
   // setTimeout(..., 1) are 1, 1, 1, 1, 4, 4, ... as a minimum clamp of 4ms
   // is applied from the 5th iteration onwards.
-  const std::vector<Matcher<double>> kExpectedTimings = {
+  const Vector<Matcher<double>> kExpectedTimings = {
       DoubleNear(1., kThreshold), DoubleNear(1., kThreshold),
       DoubleNear(1., kThreshold), DoubleNear(1., kThreshold),
       DoubleNear(4., kThreshold), DoubleNear(4., kThreshold),

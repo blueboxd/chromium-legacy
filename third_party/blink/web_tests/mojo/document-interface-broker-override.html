@@ -25,7 +25,7 @@ promise_test(async t => {
   brokerProxy.getFrameHostTestInterface(testInterfaceProxyBeforeOverride.$.createRequest());
 
   setDocumentInterfaceBrokerOverrides({ getFrameHostTestInterface: request => {
-    frameHostTestImpl.bindHandle(request.handle);
+    frameHostTestImpl.$.bindHandle(request.handle);
   }});
 
   const testInterfaceProxyAfterOverride = new blink.mojom.FrameHostTestInterfaceProxy;

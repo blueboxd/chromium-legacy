@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
 
 #include <utility>
-#include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
@@ -47,7 +46,7 @@ inline const TestNonInterpolableValue& ToTestNonInterpolableValue(
 // Creates an InterpolationValue containing a list of interpolable and
 // non-interpolable values from the pairs of input.
 InterpolationValue CreateInterpolableList(
-    const std::vector<std::pair<double, int>>& values) {
+    const Vector<std::pair<double, int>>& values) {
   return ListInterpolationFunctions::CreateList(
       values.size(), [&values](size_t i) {
         return InterpolationValue(
@@ -58,7 +57,7 @@ InterpolationValue CreateInterpolableList(
 
 // Creates an InterpolationValue which contains a list of interpolable values,
 // but a non-interpolable list of nullptrs.
-InterpolationValue CreateInterpolableList(const std::vector<double>& values) {
+InterpolationValue CreateInterpolableList(const Vector<double>& values) {
   return ListInterpolationFunctions::CreateList(
       values.size(), [&values](size_t i) {
         return InterpolationValue(

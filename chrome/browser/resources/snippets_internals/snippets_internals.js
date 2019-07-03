@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
       snippetsInternals.mojom.PageHandlerFactory.getProxy();
 
   // Give backend mojo a reference to frontend mojo.
-  const client = new snippetsInternals.mojom.Page(page).createProxy();
+  const client = new snippetsInternals.mojom.Page(page).$.createProxy();
   pageHandlerFactory.createPageHandler(client).then((response) => {
 
     pageHandler = response.handler;

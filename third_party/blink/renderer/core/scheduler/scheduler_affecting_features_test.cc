@@ -30,8 +30,8 @@ class SchedulingAffectingFeaturesTest : public SimTest {
 
   // Some features (e.g. document.load) are expected to appear in almost
   // any output. Filter them out to make most of the tests simpler.
-  std::vector<SchedulingPolicy::Feature> GetNonTrivialMainFrameFeatures() {
-    std::vector<SchedulingPolicy::Feature> result;
+  Vector<SchedulingPolicy::Feature> GetNonTrivialMainFrameFeatures() {
+    Vector<SchedulingPolicy::Feature> result;
     for (SchedulingPolicy::Feature feature :
          MainFrameScheduler()
              ->GetActiveFeaturesTrackedForBackForwardCacheMetrics()) {

@@ -18,13 +18,23 @@ namespace cc {
 class CC_EXPORT ScrollbarController {
  public:
   explicit ScrollbarController(LayerTreeHostImpl*);
-  virtual ~ScrollbarController() = default;
+  virtual ~ScrollbarController();
 
   InputHandlerPointerResult HandleMouseDown(
       const gfx::PointF position_in_widget);
   InputHandlerPointerResult HandleMouseMove(
       const gfx::PointF position_in_widget);
   InputHandlerPointerResult HandleMouseUp(const gfx::PointF position_in_widget);
+
+  // scroll_offset is the delta from the initial click. This is needed to
+  // determine whether we should set up the autoscrolling in the forwards or the
+  // backwards direction and the speed of the animation.
+  void StartAutoScrollAnimation(gfx::ScrollOffset scroll_offset,
+                                ElementId element_id);
+  bool ScrollbarScrollIsActive() { return scrollbar_scroll_is_active_; }
+  ScrollbarOrientation orientation() {
+    return currently_captured_scrollbar_->orientation();
+  }
 
  private:
   // Returns a gfx::ScrollOffset object which contains scroll deltas for the
@@ -43,10 +53,17 @@ class CC_EXPORT ScrollbarController {
 
   // Used to tell if the scrollbar thumb is getting dragged.
   bool thumb_drag_in_progress_;
+
+  // "Autoscroll" here means the continuous scrolling that occurs when the
+  // pointer is held down on a hit-testable area of the scrollbar such as an
+  // arrows of the track itself.
+  bool autoscroll_in_progress_;
   const ScrollbarLayerImplBase* currently_captured_scrollbar_;
 
   // This is relative to the RenderWidget's origin.
   gfx::PointF previous_pointer_position_;
+
+  std::unique_ptr<base::CancelableClosure> cancelable_autoscroll_task_;
 };
 
 }  // namespace cc

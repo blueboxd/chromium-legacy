@@ -71,6 +71,10 @@ bool DemuxerStreamForTest::SupportsConfigChanges() {
   return true;
 }
 
+bool DemuxerStreamForTest::IsReadPending() const {
+  return has_pending_read_;
+}
+
 void DemuxerStreamForTest::DoRead(const ReadCB& read_cb) {
   has_pending_read_ = false;
 

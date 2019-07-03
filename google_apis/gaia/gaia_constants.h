@@ -26,10 +26,11 @@ extern const char kDeviceManagementServiceOAuth[];
 extern const char kAnyApiOAuth2Scope[];
 extern const char kChromeSyncOAuth2Scope[];
 extern const char kChromeSyncSupervisedOAuth2Scope[];
-extern const char kKidFamilyOAuth2Scope[];
+extern const char kKidsSupervisionSetupChildOAuth2Scope[];
 extern const char kGoogleTalkOAuth2Scope[];
 extern const char kGoogleUserInfoEmail[];
 extern const char kGoogleUserInfoProfile[];
+extern const char kPeopleApiReadOnlyOAuth2Scope[];
 
 // Used with uber auth tokens when needed.
 extern const char kGaiaSid[];

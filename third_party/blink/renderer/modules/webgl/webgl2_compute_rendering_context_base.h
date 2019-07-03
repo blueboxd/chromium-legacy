@@ -74,6 +74,18 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
       bool using_gpu_compositing,
       const CanvasContextCreationAttributesCore& requested_attributes);
 
+  virtual bool ValidateProgramInterface(const char* function_name,
+                                        GLenum program_interface);
+  virtual bool ValidateProgramResourceIndex(const char* function_name,
+                                            WebGLProgram*,
+                                            GLenum program_interface,
+                                            GLuint index);
+  virtual bool ValidateAndExtendProgramResourceProperties(
+      const char* function_name,
+      GLenum program_interface,
+      const Vector<GLenum>& props,
+      Vector<GLenum>& extended_props);
+
   ScriptValue WrapLocation(ScriptState*,
                            GLint location,
                            WebGLProgram* program,

@@ -168,7 +168,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       break;
     case TextUnit_Paragraph:
-      return E_NOTIMPL;
+      start_ = start_->CreatePreviousParagraphStartPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      end_ = start_->CreateNextParagraphEndPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      break;
     // Since web content is not paginated, TextUnit_Page is not supported.
     // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:

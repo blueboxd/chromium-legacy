@@ -5,13 +5,11 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_HOSTED_APP_BROWSER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_HOSTED_APP_BROWSER_CONTROLLER_H_
 
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -35,8 +33,7 @@ class Extension;
 
 // Class to encapsulate logic to control the browser UI for extension based web
 // apps.
-class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
-                                   public web_app::AppBrowserController {
+class HostedAppBrowserController : public web_app::AppBrowserController {
  public:
   // Functions to set preferences that are unique to app windows.
   static void SetAppPrefsForWebContents(
@@ -108,7 +105,6 @@ class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
 
   const std::string extension_id_;
   const bool created_for_installed_pwa_;
-  std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserController);
 };

@@ -57,7 +57,7 @@ BluetoothInternalsTest.prototype = {
 
       async getAdapter() {
         this.methodCalled('getAdapter');
-        return {adapter: this.adapterBinding_.createProxy()};
+        return {adapter: this.adapterBinding_.$.createProxy()};
       }
     }
 
@@ -82,7 +82,7 @@ BluetoothInternalsTest.prototype = {
         assert(this.deviceProxyMap.has(address), 'Device does not exist');
         return {
           result: this.connectResult_,
-          device: this.deviceProxyMap.get(address).router.createProxy(),
+          device: this.deviceProxyMap.get(address).router.$.createProxy(),
         };
       }
 
@@ -140,7 +140,7 @@ BluetoothInternalsTest.prototype = {
         // lots of methods we don't care to mock here. DeviceCallbackRouter
         // callback silently discards messages that have no listeners.
         this.router = new bluetooth.mojom.DeviceCallbackRouter;
-        this.router.disconnect.addListener(() => this.router.closeBindings());
+        this.router.disconnect.addListener(() => this.router.$.close());
         this.router.getInfo.addListener(() => this.getInfo());
         this.router.getServices.addListener(() => this.getServices());
       }
@@ -167,7 +167,7 @@ BluetoothInternalsTest.prototype = {
         this.adapterFactory = new TestAdapterFactoryProxy();
         this.adapterFactoryBinding_ =
             new mojom.BluetoothInternalsHandler(this.adapterFactory);
-        this.adapterFactoryBinding_.bindHandle(e.handle);
+        this.adapterFactoryBinding_.$.bindHandle(e.handle);
 
         this.adapterFactory.adapter.setTestDevices([
           this.fakeDeviceInfo1(),

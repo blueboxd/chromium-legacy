@@ -38,10 +38,10 @@ cca.views.Camera = function(model, resolBroker) {
       resolBroker, this.stop_.bind(this));
 
   /**
-   * @type {cca.views.camera.VideoResolPreferrer}
+   * @type {cca.views.camera.VideoConstraintsPreferrer}
    * @private
    */
-  this.videoResolPreferrer_ = new cca.views.camera.VideoResolPreferrer(
+  this.videoPreferrer_ = new cca.views.camera.VideoConstraintsPreferrer(
       resolBroker, this.stop_.bind(this));
 
   /**
@@ -64,8 +64,7 @@ cca.views.Camera = function(model, resolBroker) {
    * @private
    */
   this.options_ = new cca.views.camera.Options(
-      this.photoResolPreferrer_, this.videoResolPreferrer_,
-      this.stop_.bind(this));
+      this.photoResolPreferrer_, this.videoPreferrer_, this.stop_.bind(this));
 
   /**
    * @type {HTMLElement}
@@ -83,8 +82,8 @@ cca.views.Camera = function(model, resolBroker) {
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
-      this.photoResolPreferrer_, this.videoResolPreferrer_,
-      this.stop_.bind(this), async (blob, isMotionPicture, filename) => {
+      this.photoResolPreferrer_, this.videoPreferrer_, this.stop_.bind(this),
+      async (blob, isMotionPicture, filename) => {
         if (blob) {
           cca.metrics.log(
               cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins,
@@ -273,7 +272,7 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
     try {
       if (!deviceId) {
         // Null for requesting default camera on HALv1.
-        throw new Error;
+        throw new Error('HALv1-api');
       }
       const previewRs = (await this.options_.getDeviceResolutions(deviceId))[1];
       var resolCandidates =
@@ -281,7 +280,11 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
     } catch (e) {
       // Assume the exception here is thrown from error of HALv1 not support
       // resolution query, fallback to use v1 constraints-candidates.
-      resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
+      if (e.message == 'HALv1-api') {
+        resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
+      } else {
+        throw e;
+      }
     }
     for (const [captureResolution, previewCandidates] of resolCandidates) {
       if (supportedModes && !supportedModes.includes(mode)) {
@@ -289,7 +292,7 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
       }
       for (const constraints of previewCandidates) {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          const stream = await cca.mojo.getUserMedia(deviceId, constraints);
           if (!supportedModes) {
             supportedModes = await this.modes_.getSupportedModes(stream);
             if (!supportedModes.includes(mode)) {

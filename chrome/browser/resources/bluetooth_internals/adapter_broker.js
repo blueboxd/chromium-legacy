@@ -40,7 +40,7 @@ cr.define('adapter_broker', function() {
       super();
       this.adapterClient_ = new bluetooth.mojom.AdapterClient(this);
       this.adapter_ = adapter;
-      this.adapter_.setClient(this.adapterClient_.createProxy());
+      this.adapter_.setClient(this.adapterClient_.$.createProxy());
     }
 
     presentChanged(present) {

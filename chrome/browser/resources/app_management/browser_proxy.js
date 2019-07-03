@@ -16,7 +16,7 @@ cr.define('app_management', function() {
 
       if (useFake) {
         this.handler = new app_management.FakePageHandler(
-            this.callbackRouter.createProxy());
+            this.callbackRouter.$.createProxy());
 
         const permissionOptions = {};
         permissionOptions[PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION] =
@@ -98,7 +98,8 @@ cr.define('app_management', function() {
         this.handler = new appManagement.mojom.PageHandlerProxy();
         const factory = appManagement.mojom.PageHandlerFactory.getProxy();
         factory.createPageHandler(
-            this.callbackRouter.createProxy(), this.handler.$.createRequest());
+            this.callbackRouter.$.createProxy(),
+            this.handler.$.createRequest());
       }
     }
   }

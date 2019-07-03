@@ -168,7 +168,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       ElementId element_id,
       const gfx::ScrollOffset& target_offset,
       const gfx::ScrollOffset& current_offset,
-      float autoscroll_velocity) override;
+      float autoscroll_velocity,
+      base::TimeDelta animation_start_offset) override;
 
   void ImplOnlyScrollAnimationCreate(
       ElementId element_id,

@@ -221,8 +221,9 @@ void ArcSessionRunner::OnShutdown() {
 }
 
 void ArcSessionRunner::SetUserIdHashForProfile(const std::string& hash) {
+  user_id_hash_ = hash;
   if (arc_session_)
-    arc_session_->SetUserIdHashForProfile(hash);
+    arc_session_->SetUserIdHashForProfile(user_id_hash_);
 }
 
 void ArcSessionRunner::SetRestartDelayForTesting(
@@ -240,6 +241,8 @@ void ArcSessionRunner::StartArcSession() {
   VLOG(1) << "Starting ARC instance";
   if (!arc_session_) {
     arc_session_ = factory_.Run();
+    if (!user_id_hash_.empty())
+      arc_session_->SetUserIdHashForProfile(user_id_hash_);
     arc_session_->AddObserver(this);
     arc_session_->StartMiniInstance();
     // Record the UMA only when |restart_after_crash_count_| is zero to avoid

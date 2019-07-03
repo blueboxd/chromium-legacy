@@ -77,6 +77,8 @@ RESOURCES = \
 	src/images/browser_button_delete.svg \
 	src/images/browser_button_export.svg \
 	src/images/browser_button_print.svg \
+	src/images/camera_button_fps_30.svg \
+	src/images/camera_button_fps_60.svg \
 	src/images/camera_button_grid_off.svg \
 	src/images/camera_button_grid_on.svg \
 	src/images/camera_button_mic_off.svg \
@@ -133,12 +135,12 @@ RESOURCES = \
 	src/js/util.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
+	src/js/views/camera/constraints_preferrer.js \
 	src/js/views/camera/layout.js \
 	src/js/views/camera/modes.js \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
 	src/js/views/camera/recordtime.js \
-	src/js/views/camera/resolution_preference.js \
 	src/js/views/camera/timertick.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \

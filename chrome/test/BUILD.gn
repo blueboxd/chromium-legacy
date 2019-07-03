@@ -939,6 +939,8 @@ if (!is_android) {
       "../browser/net/nss_context_chromeos_browsertest.cc",
       "../browser/net/profile_network_context_service_browsertest.cc",
       "../browser/net/proxy_browsertest.cc",
+      "../browser/net/proxy_test_utils.cc",
+      "../browser/net/proxy_test_utils.h",
       "../browser/net/reporting_browsertest.cc",
       "../browser/net/system_network_context_manager_browsertest.cc",
       "../browser/net/variations_http_headers_browsertest.cc",

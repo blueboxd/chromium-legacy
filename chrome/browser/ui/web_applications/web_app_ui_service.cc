@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_service_factory.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -39,6 +40,8 @@ WebAppUiService::WebAppUiService(Profile* profile) : profile_(profile) {
 
   BrowserList::AddObserver(this);
   provider_->set_ui_delegate(this);
+
+  dialog_manager_ = std::make_unique<WebAppDialogManager>(profile);
 }
 
 WebAppUiService::~WebAppUiService() {

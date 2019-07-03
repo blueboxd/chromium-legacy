@@ -726,6 +726,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool ScrollAnimationCreate(ScrollNode* scroll_node,
                              const gfx::Vector2dF& scroll_amount,
                              base::TimeDelta delayed_by);
+  bool AutoScrollAnimationCreate(ScrollNode* scroll_node,
+                                 const gfx::Vector2dF& scroll_amount,
+                                 float autoscroll_velocity);
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
   void SetPaintWorkletLayerPainter(
@@ -817,6 +820,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       const gfx::PointF& viewport_point,
       const gfx::Vector2dF& viewport_delta,
       ScrollTree* scroll_tree);
+  bool ScrollAnimationCreateInternal(ScrollNode* scroll_node,
+                                     const gfx::Vector2dF& delta,
+                                     base::TimeDelta delayed_by,
+                                     base::Optional<float> autoscroll_velocity);
 
   void CleanUpTileManagerResources();
   void CreateTileManagerResources();

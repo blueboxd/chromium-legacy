@@ -520,20 +520,28 @@ mojo.internal.interfaceSupport.MessageHandler = class {
 };
 
 /**
- * Listens for incoming request messages on a message pipe, dispatching them to
- * any registered handlers. Handlers are registered against a specific ordinal
- * message number.
+ * Generic helper that listens for incoming request messages on a message pipe,
+ * dispatching them to any registered handlers. Handlers are registered against
+ * a specific ordinal message number. It has methods to perform operations
+ * related to the interface pipe e.g. bind the pipe, close it, etc. Should only
+ * be used by the generated receiver classes.
+ * @template T
  * @export
  */
-mojo.internal.interfaceSupport.InterfaceReceiver = class {
-  /** @public */
-  constructor() {
+mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal = class {
+  /**
+   * @param {!function(new:T)} remoteType
+   * @public
+   */
+  constructor(remoteType) {
     /**
      * @private {!Map<MojoHandle,
      *     !mojo.internal.interfaceSupport.HandleReader>}
      */
     this.readers_ = new Map;
 
+    /** @private {!function(new:T)} */
+    this.remoteType_ = remoteType;
     /**
      * @private {!Map<number, !mojo.internal.interfaceSupport.MessageHandler>}
      */
@@ -573,6 +581,16 @@ mojo.internal.interfaceSupport.InterfaceReceiver = class {
     reader.start();
     this.controlMessageHandler_ =
         new mojo.internal.interfaceSupport.ControlMessageHandler(handle);
+  }
+
+  /**
+   * @return {!T}
+   * @export
+   */
+  bindNewPipeAndPassRemote() {
+    let remote = new this.remoteType_;
+    this.bindHandle(remote.$.bindNewPipeAndPassReceiver().handle);
+    return remote;
   }
 
   /** @export */
@@ -663,9 +681,68 @@ mojo.internal.interfaceSupport.InterfaceReceiver = class {
 };
 
 /**
+ * Generic helper used to perform operations related to the interface pipe e.g.
+ * bind the pipe, close it, flush it for testing, etc. Wraps
+ * mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal and exposes a
+ * subset of methods that meant to be used by users of a receiver class.
+ *
+ * @template T
+ * @export
+ */
+mojo.internal.interfaceSupport.InterfaceReceiverHelper = class {
+  /**
+   * @param {!mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal<T>}
+   *     helper_internal
+   * @public
+   */
+  constructor(helper_internal) {
+    /**
+     * @private {!mojo.internal.interfaceSupport.InterfaceReceiverHelperInternal<T>}
+     */
+    this.helper_internal_ = helper_internal;
+  }
+
+  /**
+   * Binds a new handle to this object. Messages which arrive on the handle will
+   * be read and dispatched to this object.
+   *
+   * @param {!MojoHandle} handle
+   * @export
+   */
+  bindHandle(handle) {
+    this.helper_internal_.bindHandle(handle);
+  }
+
+  // TODO(ortuno): Remove once new names are used in the exposed interfaces.
+  /**
+   * Returns a remote for this interface which sends messages directly to this
+   * object. Any number of proxies may be created to the same object.
+   *
+   * @return {!T}
+   * @export
+   */
+  createProxy() {
+    return this.helper_internal_.bindNewPipeAndPassRemote();
+  }
+
+  /**
+   * @return {!T}
+   * @export
+   */
+  bindNewPipeAndPassRemote() {
+    return this.helper_internal_.bindNewPipeAndPassRemote();
+  }
+
+  /** @export */
+  close() {
+    this.helper_internal_.closeBindings();
+  }
+}
+
+/**
  * Watches a MojoHandle for readability or peer closure, forwarding either event
  * to one of two callbacks on the reader. Used by both InterfaceRemoteBase and
- * InterfaceReceiver to watch for incoming messages.
+ * InterfaceReceiverHelperInternal to watch for incoming messages.
  */
 mojo.internal.interfaceSupport.HandleReader = class {
   /**

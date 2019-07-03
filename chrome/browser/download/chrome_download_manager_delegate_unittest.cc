@@ -848,7 +848,14 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpPageOk) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(ChromeDownloadManagerDelegateTest, InterceptDownloadByOfflinePages) {
+#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
+#define MAYBE_InterceptDownloadByOfflinePages \
+  DISABLED_InterceptDownloadByOfflinePages
+#else
+#define MAYBE_InterceptDownloadByOfflinePages InterceptDownloadByOfflinePages
+#endif
+TEST_F(ChromeDownloadManagerDelegateTest,
+       MAYBE_InterceptDownloadByOfflinePages) {
   const GURL kUrl("http://example.com/foo");
   std::string mime_type = "text/html";
   bool should_intercept = delegate()->InterceptDownloadIfApplicable(

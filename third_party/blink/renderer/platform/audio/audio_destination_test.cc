@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/audio/audio_destination.h"
 
 #include <memory>
-#include <vector>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
@@ -75,7 +74,7 @@ void CountWASamplesProcessedForRate(base::Optional<float> sample_rate) {
   scoped_refptr<AudioDestination> destination = AudioDestination::Create(
       callback, channel_count, latency_hint, sample_rate);
 
-  std::vector<float> channels[channel_count];
+  Vector<float> channels[channel_count];
   WebVector<float*> dest_data(static_cast<size_t>(channel_count));
   for (int i = 0; i < channel_count; ++i) {
     channels[i].resize(request_frames);

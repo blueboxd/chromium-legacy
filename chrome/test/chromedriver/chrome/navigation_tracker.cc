@@ -195,6 +195,8 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     }
   } else if (method == "Inspector.targetCrashed") {
     loading_state_ = kNotLoading;
+  } else if (method == "Page.interstitialShown") {
+    client_->SendCommand("Page.stopLoading", base::DictionaryValue());
   }
   if (timed_out_)
     loading_state_ = kNotLoading;

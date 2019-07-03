@@ -1104,6 +1104,10 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
   if (delegate_->OverridePrint(web_frame))
     return;
 
+  // Detached documents can't be printed.
+  if (!web_frame->GetDocument().GetFrame())
+    return;
+
   if (g_is_preview_enabled) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     print_preview_context_.InitWithFrame(web_frame);

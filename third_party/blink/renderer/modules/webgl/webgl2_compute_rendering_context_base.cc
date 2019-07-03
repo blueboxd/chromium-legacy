@@ -75,6 +75,24 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     GLenum pname) {
   if (!ValidateWebGLProgramOrShader("getProgramInterfaceParameter", program))
     return ScriptValue::CreateNull(script_state);
+  if (!ValidateProgramInterface(
+      "getProgramInterfaceParameter", program_interface))
+    return ScriptValue::CreateNull(script_state);
+  if (program_interface == GL_ATOMIC_COUNTER_BUFFER &&
+      pname == GL_MAX_NAME_LENGTH) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "getProgramInterfaceParameter",
+                      "atomic counter resources are not assigned name strings");
+    return ScriptValue::CreateNull(script_state);
+  }
+  if (program_interface != GL_ATOMIC_COUNTER_BUFFER &&
+      program_interface != GL_SHADER_STORAGE_BLOCK &&
+      program_interface != GL_UNIFORM_BLOCK &&
+      pname == GL_MAX_NUM_ACTIVE_VARIABLES) {
+    SynthesizeGLError(
+        GL_INVALID_OPERATION, "getProgramInterfaceParameter",
+        "invalid parameter name for the specified program interface");
+    return ScriptValue::CreateNull(script_state);
+  }
 
   switch (pname) {
     case GL_ACTIVE_RESOURCES:
@@ -97,7 +115,16 @@ GLuint WebGL2ComputeRenderingContextBase::getProgramResourceIndex(
     GLenum program_interface,
     const String& name) {
   if (!ValidateWebGLProgramOrShader("getProgramResourceIndex", program))
-    return 0;
+    return GL_INVALID_INDEX;
+  if (!ValidateProgramInterface("getProgramResourceIndex", program_interface))
+    return GL_INVALID_INDEX;
+  if (program_interface == GL_ATOMIC_COUNTER_BUFFER) {
+    SynthesizeGLError(GL_INVALID_ENUM, "getProgramResourceIndex",
+                      "atomic counter resources are not assigned name strings");
+    return GL_INVALID_INDEX;
+  }
+  if (!ValidateString("getProgramResourceIndex", name))
+    return GL_INVALID_INDEX;
 
   return ContextGL()->GetProgramResourceIndex(
       ObjectOrZero(program), program_interface, name.Utf8().c_str());
@@ -109,15 +136,22 @@ String WebGL2ComputeRenderingContextBase::getProgramResourceName(
     GLuint index) {
   if (!ValidateWebGLProgramOrShader("getProgramResourceName", program))
     return String();
+  if (!ValidateProgramInterface("getProgramResourceName", program_interface))
+    return String();
+  if (program_interface == GL_ATOMIC_COUNTER_BUFFER) {
+    SynthesizeGLError(GL_INVALID_ENUM, "getProgramResourceName",
+                      "atomic counter resources are not assigned name strings");
+    return String();
+  }
+  if (!ValidateProgramResourceIndex(
+      "getProgramResourceName", program, program_interface, index))
+    return String();
 
   GLint max_name_length = -1;
   ContextGL()->GetProgramInterfaceiv(ObjectOrZero(program), program_interface,
                                      GL_MAX_NAME_LENGTH, &max_name_length);
-  if (max_name_length <= 0) {
-    SynthesizeGLError(GL_INVALID_VALUE, "getProgramResourceName",
-                      "invalid program interface");
+  if (max_name_length <= 0)
     return String();
-  }
   auto name = std::make_unique<GLchar[]>(max_name_length);
 
   GLsizei length = 0;
@@ -138,54 +172,34 @@ WebGL2ComputeRenderingContextBase::getProgramResource(
     const Vector<GLenum>& props) {
   if (!ValidateWebGLProgramOrShader("getProgramResource", program))
     return base::nullopt;
+  if (!ValidateProgramInterface("getProgramResource", program_interface))
+    return base::nullopt;
+  if (props.IsEmpty()) {
+    SynthesizeGLError(GL_INVALID_VALUE, "getProgramResource",
+                      "resource prop array is empty");
+    return base::nullopt;
+  }
+  if (!ValidateProgramResourceIndex(
+      "getProgramResource", program, program_interface, index))
+    return base::nullopt;
+
+  // For props with variable-length return values, their lengths will be queried
+  // first with |auxiliary_props|, and |extended_params| will be adequately
+  // sized for the whole result after that.
 
   Vector<GLenum> auxiliary_props;
   Vector<GLint> auxiliary_params;
   Vector<GLenum> extended_props;
   Vector<GLint> extended_params;
-  for (GLenum prop : props) {
-    switch (prop) {
-      // Handle props with fixed-length return values.
-      case GL_ARRAY_SIZE:
-      case GL_ARRAY_STRIDE:
-      case GL_ATOMIC_COUNTER_BUFFER_INDEX:
-      case GL_BLOCK_INDEX:
-      case GL_BUFFER_BINDING:
-      case GL_BUFFER_DATA_SIZE:
-      case GL_IS_ROW_MAJOR:
-      case GL_LOCATION:
-      case GL_MATRIX_STRIDE:
-      case GL_NAME_LENGTH:
-      case GL_NUM_ACTIVE_VARIABLES:
-      case GL_OFFSET:
-      case GL_REFERENCED_BY_COMPUTE_SHADER:
-      case GL_REFERENCED_BY_FRAGMENT_SHADER:
-      case GL_REFERENCED_BY_VERTEX_SHADER:
-      case GL_TOP_LEVEL_ARRAY_SIZE:
-      case GL_TOP_LEVEL_ARRAY_STRIDE:
-      case GL_TYPE:
-        extended_props.push_back(prop);
-        extended_params.push_back(0);
-        break;
-
-      // Handle props with variable-length return values. For these props, their
-      // lengths will be queried first by constructing |auxiliary_props| as the
-      // following, and |extended_params| will be adequately sized for the whole
-      // result after that.
-      case GL_ACTIVE_VARIABLES:
-        auxiliary_props.push_back(GL_NUM_ACTIVE_VARIABLES);
-        auxiliary_params.push_back(-1);
-        extended_props.push_back(GL_ACTIVE_VARIABLES);
-        break;
-
-      default:
-        SynthesizeGLError(GL_INVALID_ENUM, "getProgramResource",
-                          "invalid program resource property");
-        return base::nullopt;
-    }
+  if (!ValidateAndExtendProgramResourceProperties(
+      "getProgramResource", program_interface, props, extended_props))
+    return base::nullopt;
+  extended_params.resize(extended_props.size());
+  for (wtf_size_t i = 0; i < extended_props.size() - props.size(); ++i) {
+    auxiliary_props.push_back(extended_props[i]);
+    auxiliary_params.push_back(-1);
+    extended_params.pop_back();
   }
-  extended_props.PrependVector(auxiliary_props);
-  extended_params.PrependVector(auxiliary_params);
 
   if (auxiliary_props.size()) {
     ContextGL()->GetProgramResourceiv(ObjectOrZero(program), program_interface,
@@ -287,6 +301,20 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramResourceLocation(
     const String& name) {
   if (!ValidateWebGLProgramOrShader("getProgramResourceLocation", program))
     return WrapLocation(script_state, -1, program, program_interface);
+  if (!ValidateProgramInterface(
+      "getProgramResourceLocation", program_interface))
+    return WrapLocation(script_state, -1, program, program_interface);
+  if (!ValidateLocationLength("getProgramResourceLocation", name))
+    return WrapLocation(script_state, -1, program, program_interface);
+  if (!ValidateString("getProgramResourceLocation", name))
+    return WrapLocation(script_state, -1, program, program_interface);
+  if (IsPrefixReserved(name))
+    return WrapLocation(script_state, -1, program, program_interface);
+  if (!program->LinkStatus(this)) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "getProgramResourceLocation",
+                      "program not linked");
+    return WrapLocation(script_state, -1, program, program_interface);
+  }
 
   GLint location = ContextGL()->GetProgramResourceLocation(
       ObjectOrZero(program), program_interface, name.Utf8().c_str());
@@ -408,6 +436,172 @@ void WebGL2ComputeRenderingContextBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(bound_shader_storage_buffer_);
   visitor->Trace(bound_indexed_shader_storage_buffers_);
   WebGL2RenderingContextBase::Trace(visitor);
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateProgramInterface(
+    const char* function_name,
+    GLenum program_interface) {
+  switch (program_interface) {
+    case GL_ATOMIC_COUNTER_BUFFER:
+    case GL_BUFFER_VARIABLE:
+    case GL_PROGRAM_INPUT:
+    case GL_PROGRAM_OUTPUT:
+    case GL_SHADER_STORAGE_BLOCK:
+    case GL_TRANSFORM_FEEDBACK_VARYING:
+    case GL_UNIFORM:
+    case GL_UNIFORM_BLOCK:
+      return true;
+    default:
+      SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                        "invalid program interface");
+      return false;
+  }
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateProgramResourceIndex(
+    const char* function_name,
+    WebGLProgram* program,
+    GLenum program_interface,
+    GLuint index) {
+  DCHECK(program);
+  if (!program->LinkStatus(this)) {
+    SynthesizeGLError(GL_INVALID_OPERATION, function_name,
+                      "program not linked");
+    return false;
+  }
+  GLint active_resources = 0;
+  ContextGL()->GetProgramInterfaceiv(ObjectOrZero(program), program_interface,
+                                     GL_ACTIVE_RESOURCES, &active_resources);
+  if (index >= static_cast<GLuint>(active_resources)) {
+    SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                      "invalid program resource index");
+    return false;
+  }
+  return true;
+}
+
+bool
+WebGL2ComputeRenderingContextBase::ValidateAndExtendProgramResourceProperties(
+    const char* function_name,
+    GLenum program_interface,
+    const Vector<GLenum>& props,
+    Vector<GLenum>& extended_props) {
+  Vector<GLenum> auxiliary_props;
+
+  for (GLenum prop : props) {
+    GLenum error = GL_NO_ERROR;
+
+    switch (prop) {
+      // Handle props with fixed-length return values.
+      case GL_BUFFER_BINDING:
+      case GL_NUM_ACTIVE_VARIABLES:
+        if (program_interface != GL_ATOMIC_COUNTER_BUFFER &&
+            program_interface != GL_SHADER_STORAGE_BLOCK &&
+            program_interface != GL_UNIFORM_BLOCK)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_ARRAY_SIZE:
+        if (program_interface != GL_BUFFER_VARIABLE &&
+            program_interface != GL_PROGRAM_INPUT &&
+            program_interface != GL_PROGRAM_OUTPUT &&
+            program_interface != GL_TRANSFORM_FEEDBACK_VARYING &&
+            program_interface != GL_UNIFORM)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_ARRAY_STRIDE:
+      case GL_BLOCK_INDEX:
+      case GL_IS_ROW_MAJOR:
+      case GL_MATRIX_STRIDE:
+        if (program_interface != GL_BUFFER_VARIABLE &&
+            program_interface != GL_UNIFORM)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_ATOMIC_COUNTER_BUFFER_INDEX:
+        if (program_interface != GL_UNIFORM)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_BUFFER_DATA_SIZE:
+        if (program_interface != GL_ATOMIC_COUNTER_BUFFER &&
+            program_interface != GL_SHADER_STORAGE_BLOCK &&
+            program_interface != GL_UNIFORM_BLOCK)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_LOCATION:
+        if (program_interface != GL_PROGRAM_INPUT &&
+            program_interface != GL_PROGRAM_OUTPUT &&
+            program_interface != GL_UNIFORM)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_NAME_LENGTH:
+        if (program_interface == GL_ATOMIC_COUNTER_BUFFER)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_OFFSET:
+        if (program_interface != GL_BUFFER_VARIABLE &&
+            program_interface != GL_UNIFORM)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_REFERENCED_BY_VERTEX_SHADER:
+      case GL_REFERENCED_BY_FRAGMENT_SHADER:
+      case GL_REFERENCED_BY_COMPUTE_SHADER:
+        if (program_interface != GL_ATOMIC_COUNTER_BUFFER &&
+            program_interface != GL_BUFFER_VARIABLE &&
+            program_interface != GL_PROGRAM_INPUT &&
+            program_interface != GL_PROGRAM_OUTPUT &&
+            program_interface != GL_SHADER_STORAGE_BLOCK &&
+            program_interface != GL_UNIFORM &&
+            program_interface != GL_UNIFORM_BLOCK)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_TOP_LEVEL_ARRAY_SIZE:
+      case GL_TOP_LEVEL_ARRAY_STRIDE:
+        if (program_interface != GL_BUFFER_VARIABLE)
+          error = GL_INVALID_OPERATION;
+        break;
+      case GL_TYPE:
+        if (program_interface != GL_BUFFER_VARIABLE &&
+            program_interface != GL_PROGRAM_INPUT &&
+            program_interface != GL_PROGRAM_OUTPUT &&
+            program_interface != GL_TRANSFORM_FEEDBACK_VARYING &&
+            program_interface != GL_UNIFORM)
+          error = GL_INVALID_OPERATION;
+        break;
+
+      // Handle props with variable-length return values.
+      case GL_ACTIVE_VARIABLES:
+        if (program_interface != GL_ATOMIC_COUNTER_BUFFER &&
+            program_interface != GL_SHADER_STORAGE_BLOCK &&
+            program_interface != GL_UNIFORM_BLOCK) {
+          error = GL_INVALID_OPERATION;
+          break;
+        }
+        auxiliary_props.push_back(GL_NUM_ACTIVE_VARIABLES);
+        break;
+
+      default:
+        error = GL_INVALID_ENUM;
+    }
+
+    switch (error) {
+      case GL_NO_ERROR:
+        break;
+      case GL_INVALID_ENUM:
+        SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                          "invalid program resource prop");
+        return false;
+      case GL_INVALID_OPERATION:
+        SynthesizeGLError(
+            GL_INVALID_OPERATION, function_name,
+            "invalid resource prop for the specified program interface");
+        return false;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  extended_props = auxiliary_props;
+  extended_props.AppendVector(props);
+  return true;
 }
 
 ScriptValue WebGL2ComputeRenderingContextBase::WrapLocation(

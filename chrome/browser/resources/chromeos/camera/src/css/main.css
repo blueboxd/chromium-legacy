@@ -167,7 +167,7 @@ input:focus::after {
 }
 
 .bottom-stripe {
-  bottom: 56px;
+  bottom: var(--bottom-line);
   position: absolute;
   transform: translateY(50%);
 }
@@ -405,16 +405,17 @@ body.mode-switching:not(.streaming) #camera-mode {
 }
 
 #options-group {
-  bottom: calc((var(--bottom-line) + (var(--big-icon) / 2)) + 30px);
+  --option-item-vpadding: 12px;
+  bottom: calc(var(--bottom-line) + (var(--big-icon) / 2) + 32px - var(--option-item-vpadding));
   flex-direction: column-reverse;
 }
 
 body:not(.multi-camera) #options-group {
-  bottom: calc((var(--bottom-line) - 18px) - (var(--small-icon) / 2));
+  bottom: calc(var(--bottom-line) - var(--option-item-vpadding) - (var(--small-icon) / 2));
 }
 
 #options-group input {
-  margin: 18px 0;
+  margin: var(--option-item-vpadding) 0;
 }
 
 body._3sec #toggle-timer:checked {
@@ -451,6 +452,19 @@ body._10sec #toggle-timer:checked {
 
 #toggle-mic {
   background-image: url(../images/camera_button_mic_off.svg);
+}
+
+body:not(.multi-fps) #toggle-fps,
+body:not(.video-mode) #toggle-fps {
+  display: none;
+}
+
+body._30fps #toggle-fps {
+  background-image: url(../images/camera_button_fps_30.svg);
+}
+
+body._60fps #toggle-fps {
+  background-image: url(../images/camera_button_fps_60.svg);
 }
 
 #open-settings {
@@ -528,7 +542,7 @@ body.videoresolutionsettings #resolutionsettings {
 
 #camera {
   --big-icon: 48px;
-  --bottom-line: 56px;
+  --bottom-line: 40px;
   --mode-item-height: 48px;
   --modes-bottom: calc((var(--bottom-line) + (var(--big-icon) / 2)) + 24px);
   --modes-gradient-padding: 16px;

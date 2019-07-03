@@ -60,6 +60,8 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
                                  PropertyChangeReason reason) override;
   void SetColorFromAnimation(SkColor color,
                              PropertyChangeReason reason) override;
+  void SetClipRectFromAnimation(const gfx::Rect& clip_rect,
+                                PropertyChangeReason reason) override;
   void ScheduleDrawForAnimation() override;
   const gfx::Rect& GetBoundsForAnimation() const override;
   gfx::Transform GetTransformForAnimation() const override;
@@ -68,6 +70,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   float GetBrightnessForAnimation() const override;
   float GetGrayscaleForAnimation() const override;
   SkColor GetColorForAnimation() const override;
+  gfx::Rect GetClipRectForAnimation() const override;
   float GetDeviceScaleFactor() const override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
   ui::Layer* GetLayer() override;
@@ -92,6 +95,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   float brightness_;
   float grayscale_;
   SkColor color_;
+  gfx::Rect clip_rect_;
   scoped_refptr<cc::Layer> cc_layer_;
   int frame_number_ = 0;
 

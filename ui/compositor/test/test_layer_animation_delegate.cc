@@ -109,6 +109,14 @@ void TestLayerAnimationDelegate::SetColorFromAnimation(
   last_property_change_reason_is_set_ = true;
 }
 
+void TestLayerAnimationDelegate::SetClipRectFromAnimation(
+    const gfx::Rect& clip_rect,
+    PropertyChangeReason reason) {
+  clip_rect_ = clip_rect;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
+}
+
 void TestLayerAnimationDelegate::ScheduleDrawForAnimation() {
 }
 
@@ -138,6 +146,10 @@ float TestLayerAnimationDelegate::GetGrayscaleForAnimation() const {
 
 SkColor TestLayerAnimationDelegate::GetColorForAnimation() const {
   return color_;
+}
+
+gfx::Rect TestLayerAnimationDelegate::GetClipRectForAnimation() const {
+  return clip_rect_;
 }
 
 float TestLayerAnimationDelegate::GetDeviceScaleFactor() const {

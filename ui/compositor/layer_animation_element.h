@@ -46,10 +46,11 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     BRIGHTNESS = (1 << 4),
     GRAYSCALE = (1 << 5),
     COLOR = (1 << 6),
+    CLIP = (1 << 7),
 
     // Used when iterating over properties.
     FIRST_PROPERTY = TRANSFORM,
-    SENTINEL = (1 << 7)
+    SENTINEL = (1 << 8)
   };
 
   static AnimatableProperty ToAnimatableProperty(
@@ -67,6 +68,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     float brightness;
     float grayscale;
     SkColor color;
+    gfx::Rect clip_rect;
   };
 
   typedef uint32_t AnimatableProperties;
@@ -137,6 +139,12 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // return value.
   static std::unique_ptr<LayerAnimationElement> CreateColorElement(
       SkColor color,
+      base::TimeDelta duration);
+
+  // Creates an element that transitions the clip rect of the layer to the given
+  // bounds. The caller owns the return value.
+  static std::unique_ptr<LayerAnimationElement> CreateClipRectElement(
+      const gfx::Rect& clip_rect,
       base::TimeDelta duration);
 
   // Sets the start time for the animation. This must be called before the first

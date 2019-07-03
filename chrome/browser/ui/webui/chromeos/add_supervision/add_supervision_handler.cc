@@ -71,7 +71,8 @@ void AddSupervisionHandler::GetInstalledArcApps(
 
 void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
   identity::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kKidFamilyOAuth2Scope);
+  scopes.insert(GaiaConstants::kKidsSupervisionSetupChildOAuth2Scope);
+  scopes.insert(GaiaConstants::kPeopleApiReadOnlyOAuth2Scope);
 
   oauth2_access_token_fetcher_ =
       identity_manager_->CreateAccessTokenFetcherForAccount(

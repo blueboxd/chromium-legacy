@@ -269,6 +269,40 @@ class ColorTransition : public LayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(ColorTransition);
 };
 
+// ClipRectTransition ----------------------------------------------------------
+
+class ClipRectTransition : public LayerAnimationElement {
+ public:
+  ClipRectTransition(const gfx::Rect& target, base::TimeDelta duration)
+      : LayerAnimationElement(CLIP, duration), target_(target) {}
+  ~ClipRectTransition() override {}
+
+ protected:
+  std::string DebugName() const override { return "ClipRectTransition"; }
+  void OnStart(LayerAnimationDelegate* delegate) override {
+    start_ = delegate->GetClipRectForAnimation();
+  }
+
+  bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
+    delegate->SetClipRectFromAnimation(
+        gfx::Tween::RectValueBetween(t, start_, target_),
+        PropertyChangeReason::FROM_ANIMATION);
+    return true;
+  }
+
+  void OnGetTarget(TargetValue* target) const override {
+    target->clip_rect = target_;
+  }
+
+  void OnAbort(LayerAnimationDelegate* delegate) override {}
+
+ private:
+  gfx::Rect start_;
+  const gfx::Rect target_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClipRectTransition);
+};
+
 // ThreadedLayerAnimationElement -----------------------------------------------
 
 class ThreadedLayerAnimationElement : public LayerAnimationElement {
@@ -487,8 +521,8 @@ LayerAnimationElement::TargetValue::TargetValue(
       visibility(delegate ? delegate->GetVisibilityForAnimation() : false),
       brightness(delegate ? delegate->GetBrightnessForAnimation() : 0.0f),
       grayscale(delegate ? delegate->GetGrayscaleForAnimation() : 0.0f),
-      color(delegate ? delegate->GetColorForAnimation() : SK_ColorTRANSPARENT) {
-}
+      color(delegate ? delegate->GetColorForAnimation() : SK_ColorTRANSPARENT),
+      clip_rect(delegate ? delegate->GetClipRectForAnimation() : gfx::Rect()) {}
 
 // LayerAnimationElement -------------------------------------------------------
 
@@ -698,6 +732,9 @@ std::string LayerAnimationElement::AnimatablePropertiesToString(
         case COLOR:
           str.append("COLOR");
           break;
+        case CLIP:
+          str.append("CLIP");
+          break;
         case SENTINEL:
           NOTREACHED();
           break;
@@ -791,6 +828,12 @@ std::unique_ptr<LayerAnimationElement>
 LayerAnimationElement::CreateColorElement(SkColor color,
                                           base::TimeDelta duration) {
   return std::make_unique<ColorTransition>(color, duration);
+}
+
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateClipRectElement(const gfx::Rect& clip_rect,
+                                             base::TimeDelta duration) {
+  return std::make_unique<ClipRectTransition>(clip_rect, duration);
 }
 
 }  // namespace ui

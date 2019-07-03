@@ -6,7 +6,6 @@
 
 #include <atomic>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"

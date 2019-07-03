@@ -160,7 +160,7 @@ class DeviceTarget(target.Target):
 
     if self._node_name:
       # Handle the result of "dev_finder resolve".
-      self._host = output[0].strip()
+      self._host = output.pop().strip()
 
     else:
       name_host_pairs = [x.strip().split(' ') for x in output]

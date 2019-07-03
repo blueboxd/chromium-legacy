@@ -27,6 +27,7 @@
 
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "cc/input/scrollbar.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -363,11 +364,11 @@ void ScrollbarTheme::SplitTrack(const Scrollbar& scrollbar,
 }
 
 base::TimeDelta ScrollbarTheme::InitialAutoscrollTimerDelay() {
-  return base::TimeDelta::FromMilliseconds(250);
+  return kInitialAutoscrollTimerDelay;
 }
 
 base::TimeDelta ScrollbarTheme::AutoscrollTimerDelay() {
-  return base::TimeDelta::FromMilliseconds(50);
+  return base::TimeDelta::FromSecondsD(1.f / kAutoscrollMultiplier);
 }
 
 ScrollbarTheme& ScrollbarTheme::DeprecatedStaticGetTheme() {

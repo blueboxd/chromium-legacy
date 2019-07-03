@@ -16,7 +16,7 @@ namespace blink {
 
 namespace {
 constexpr int kTableSize = 16;
-using Seq = std::vector<char>;
+using Seq = Vector<char>;
 using Backtrack = std::pair<size_t, size_t>;
 }
 
@@ -28,9 +28,8 @@ class HTMLSlotElementTest : public testing::Test {
   std::array<std::array<Backtrack, kTableSize>, kTableSize> backtrack_table_;
 };
 
-std::vector<char> HTMLSlotElementTest::LongestCommonSubsequence(
-    const Seq& seq1,
-    const Seq& seq2) {
+Vector<char> HTMLSlotElementTest::LongestCommonSubsequence(const Seq& seq1,
+                                                           const Seq& seq2) {
   HTMLSlotElement::FillLongestCommonSubsequenceDynamicProgrammingTable(
       seq1, seq2, lcs_table_, backtrack_table_);
   Seq lcs;

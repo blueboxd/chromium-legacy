@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_SCHEDULER_UTILS_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_SCHEDULER_UTILS_H_
 
+#include <deque>
 #include <map>
 #include <memory>
 
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
@@ -32,10 +35,13 @@ void NotificationsShownToday(
     const std::map<SchedulerClientType, const ClientState*>& client_states,
     std::map<SchedulerClientType, int>* shown_per_type,
     int* shown_total,
-    SchedulerClientType* last_shown_type);
+    SchedulerClientType* last_shown_type,
+    base::Clock* clock = base::DefaultClock::GetInstance());
 
 // Counts the number of notifications shown today of a given |state|.
-int NotificationsShownToday(ClientState* state);
+int NotificationsShownToday(
+    const ClientState* state,
+    base::Clock* clock = base::DefaultClock::GetInstance());
 
 // Creates client state data for new registered client.
 std::unique_ptr<ClientState> CreateNewClientState(

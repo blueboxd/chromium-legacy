@@ -27,7 +27,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"

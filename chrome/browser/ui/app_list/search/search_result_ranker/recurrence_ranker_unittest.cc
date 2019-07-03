@@ -343,6 +343,42 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
                                       ConfigurationError::kHashMismatch, 1);
 }
 
+TEST_F(RecurrenceRankerTest, Cleanup) {
+  auto ranker = MakeSimpleRanker();
+
+  // Targets to forget.
+  ranker->Record("A");
+  ranker->Record("B");
+  ranker->Record("C");
+
+  // Valid proportion is 1 so cleanup shouldn't be called. Rank is called once
+  // on the ranker to possibly trigger the cleanup, and a second time on the
+  // predictor to observe the effects without ever triggering a cleanup.
+  ranker->Rank();
+  EXPECT_THAT(ranker->predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(0u, _), Pair(1u, _), Pair(2u, _)));
+
+  // Record enough times that A should be removed from the ranker's store.
+  for (int i = 0; i < 100; ++i) {
+    ranker->Record("B");
+    ranker->Record("C");
+  }
+
+  // Valid proportion is 2/3 so cleanup still shouldn't be called.
+  ranker->Rank();
+  EXPECT_THAT(ranker->predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(0u, _), Pair(1u, _), Pair(2u, _)));
+
+  // Record enough times that B and C be removed from the ranker's store
+  for (int i = 0; i < 100; ++i)
+    ranker->Record("D");
+
+  // Valid proportion is 1/4 so cleanup should be called. Examining the internal
+  // state, the predictor should only contain the ID for D.
+  ranker->Rank();
+  EXPECT_THAT(ranker->predictor_->Rank(0u), UnorderedElementsAre(Pair(3u, _)));
+}
+
 TEST_F(RecurrenceRankerTest, EphemeralUsersUseDefaultPredictor) {
   RecurrenceRanker ephemeral_ranker(ranker_filepath_, MakeSimpleConfig(), true);
   Wait();

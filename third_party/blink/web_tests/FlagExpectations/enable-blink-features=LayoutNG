@@ -25,10 +25,6 @@ crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Fa
 
 # rightsizing-grid.html is truly flaky, show flakiness on reload
 
-# CSS Text 3 test that pass in legacy layout
-crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
-
-
 # Needs rebaselining.
 
 # Features that do not have active plans to support or turn on.
@@ -138,7 +134,6 @@ crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-ic-003.ht
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-replaced-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-replaced-002.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-replaced-003.html [ Pass ]
-crbug.com/591099 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-005.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-001.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-000.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-001.html [ Pass ]
@@ -167,7 +162,6 @@ crbug.com/591099 external/wpt/css/css-text/white-space/control-chars-00C.html [ 
 crbug.com/591099 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-001.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-002.html [ Pass ]
 crbug.com/40634 external/wpt/css/css-text/white-space/trailing-space-before-br-001.html [ Pass ]
-crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-004.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-inline-006.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Failure Pass ]
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-010.html [ Pass ]

@@ -35,6 +35,7 @@ class MediaStream final : public DemuxerStream {
 
   // DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override;
+  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   DemuxerStream::Type type() const override;
@@ -313,6 +314,10 @@ void MediaStream::Read(const ReadCB& read_cb) {
   }
 
   CompleteRead(DemuxerStream::kOk);
+}
+
+bool MediaStream::IsReadPending() const {
+  return !read_complete_callback_.is_null();
 }
 
 void MediaStream::CompleteRead(DemuxerStream::Status status) {

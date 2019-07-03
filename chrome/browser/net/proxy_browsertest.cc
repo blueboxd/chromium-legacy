@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/net/proxy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -84,53 +85,6 @@ class LoginPromptObserver : public content::NotificationObserver {
   bool auth_handled_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPromptObserver);
-};
-
-class ProxyBrowserTest : public InProcessBrowserTest {
- public:
-  ProxyBrowserTest()
-      : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
-                      base::FilePath()) {
-  }
-
-  void SetUp() override {
-    ASSERT_TRUE(proxy_server_.Start());
-    // Block the GaiaAuthFetcher related requests, they somehow interfere with
-    // the test when the network service is running.
-    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-        base::BindLambdaForTesting(
-            [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
-              if (params->url_request.url.host() ==
-                  GaiaUrls::GetInstance()->gaia_url().host()) {
-                return true;
-              }
-              return false;
-            }));
-    InProcessBrowserTest::SetUp();
-  }
-
-  void PostRunTestOnMainThread() override {
-    url_loader_interceptor_.reset();
-    InProcessBrowserTest::PostRunTestOnMainThread();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kProxyServer,
-                                    proxy_server_.host_port_pair().ToString());
-
-    // TODO(https://crbug.com/901896): Don't rely on proxying localhost (Relied
-    // on by BasicAuthWSConnect)
-    command_line->AppendSwitchASCII(
-        switches::kProxyBypassList,
-        net::ProxyBypassRules::GetRulesToSubtractImplicit());
-  }
-
- protected:
-  net::SpawnedTestServer proxy_server_;
-
- private:
-  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
-  DISALLOW_COPY_AND_ASSIGN(ProxyBrowserTest);
 };
 
 // Test that the browser can establish a WebSocket connection via a proxy

@@ -103,7 +103,8 @@ base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
             kInverseDeltaMaxDuration);
         break;
       case DurationBehavior::CONSTANT_VELOCITY:
-        duration = MaximumDimension(delta) / velocity * kDurationDivisor;
+        duration =
+            std::abs(MaximumDimension(delta) / velocity * kDurationDivisor);
         break;
       default:
         NOTREACHED();

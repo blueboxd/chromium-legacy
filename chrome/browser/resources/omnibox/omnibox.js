@@ -68,7 +68,7 @@ class BrowserProxy {
 
     /** @private {!mojom.OmniboxPageHandlerProxy} */
     this.handler_ = mojom.OmniboxPageHandler.getProxy();
-    this.handler_.setClientPage(this.callbackRouter_.createProxy());
+    this.handler_.setClientPage(this.callbackRouter_.$.createProxy());
 
     /** @private {Request} */
     this.lastRequest;
@@ -260,7 +260,7 @@ class ExportDelegate {
             currentUrl: "",
             pageClassification: "4"
           }
-        ],        
+        ],
       };
       console.error(`Invalid batch specifier data.  Expected format: \n${
           JSON.stringify(expected, null, 2)}`);

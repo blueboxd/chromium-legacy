@@ -186,10 +186,10 @@ var mockCredentialManager = new MockCredentialManager();
 setDocumentInterfaceBrokerOverrides({
   getAuthenticator: request => {
     var authenticator = new blink.mojom.Authenticator(mockAuthenticator);
-    authenticator.bindHandle(request.handle);
+    authenticator.$.bindHandle(request.handle);
   },
   getCredentialManager: request => {
     var credentialManager = new blink.mojom.CredentialManager(mockCredentialManager);
-    credentialManager.bindHandle(request.handle);
+    credentialManager.$.bindHandle(request.handle);
   }
 });

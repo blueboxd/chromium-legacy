@@ -5,7 +5,6 @@
 #include <limits>
 #include <random>
 #include <thread>
-#include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -35,7 +34,7 @@ constexpr size_t kSizeKb = 20;
 constexpr size_t kCompressedSize = 55;
 
 String MakeLargeString(char c = 'a') {
-  std::vector<char> data(kSizeKb * 1000, c);
+  Vector<char> data(kSizeKb * 1000, c);
   return String(data.data(), data.size()).ReleaseImpl();
 }
 
@@ -140,7 +139,7 @@ TEST_F(ParkableStringTest, DontCompressRandomString) {
   // ensure its compressed size is larger than the initial size (at least from
   // gzip's header). Mersenne-Twister implementation is specified, making the
   // test deterministic.
-  std::vector<unsigned char> data(kSizeKb * 1000);
+  Vector<unsigned char> data(kSizeKb * 1000);
   std::mt19937 engine(42);
   // uniform_int_distribution<T> is undefined behavior for T = unsigned char.
   std::uniform_int_distribution<int> dist(
@@ -170,7 +169,7 @@ TEST_F(ParkableStringTest, DecompressUtf16String) {
   UChar emoji_grinning_face[2] = {0xd83d, 0xde00};
   size_t size_in_chars = 2 * kSizeKb * 1000 / sizeof(UChar);
 
-  std::vector<UChar> data(size_in_chars);
+  Vector<UChar> data(size_in_chars);
   for (size_t i = 0; i < size_in_chars / 2; ++i) {
     data[i * 2] = emoji_grinning_face[0];
     data[i * 2 + 1] = emoji_grinning_face[1];
@@ -614,13 +613,13 @@ TEST_F(ParkableStringTest, ManagerMultipleStrings) {
 TEST_F(ParkableStringTest, ShouldPark) {
   String empty_string("");
   EXPECT_FALSE(ParkableStringManager::ShouldPark(*empty_string.Impl()));
-  std::vector<char> data(20 * 1000, 'a');
+  Vector<char> data(20 * 1000, 'a');
 
   String parkable(String(data.data(), data.size()).ReleaseImpl());
   EXPECT_TRUE(ParkableStringManager::ShouldPark(*parkable.Impl()));
 
   std::thread t([]() {
-    std::vector<char> data(20 * 1000, 'a');
+    Vector<char> data(20 * 1000, 'a');
     String parkable(String(data.data(), data.size()).ReleaseImpl());
     EXPECT_FALSE(ParkableStringManager::ShouldPark(*parkable.Impl()));
   });
@@ -1004,7 +1003,7 @@ TEST_F(ParkableStringForegroundParkingTest, ReportTotalUnparkingTime) {
   // Need to make the string really large, otherwise unparking takes less than
   // 1ms, and the 0 bucket is populated.
   const size_t original_size = 5 * 1000 * 1000;
-  std::vector<char> data(original_size, 'a');
+  Vector<char> data(original_size, 'a');
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
 
   ParkAndWait(parkable);

@@ -10,6 +10,32 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 
 namespace notifications {
+namespace {
+using FirstAndLastIters = std::pair<std::deque<Impression>::const_iterator,
+                                    std::deque<Impression>::const_iterator>;
+
+base::Optional<FirstAndLastIters> FindFirstAndLastNotificationShownToday(
+    const std::deque<Impression>& impressions,
+    const base::Time& now,
+    const base::Time& beginning_of_today) {
+  if (impressions.empty() || impressions.cbegin()->create_time > now ||
+      impressions.crbegin()->create_time < beginning_of_today)
+    return base::nullopt;
+
+  auto last =
+      std::upper_bound(impressions.cbegin(), impressions.cend(), now,
+                       [](const base::Time& lhs, const Impression& rhs) {
+                         return lhs < rhs.create_time;
+                       });
+
+  auto first =
+      std::lower_bound(impressions.cbegin(), last, beginning_of_today,
+                       [](const Impression& lhs, const base::Time& rhs) {
+                         return lhs.create_time < rhs;
+                       });
+  return base::make_optional<FirstAndLastIters>(first, last - 1);
+}
+}  // namespace
 
 bool ToLocalHour(int hour,
                  const base::Time& today,
@@ -32,62 +58,50 @@ bool ToLocalHour(int hour,
   return base::Time::FromLocalExploded(another_day_exploded, out);
 }
 
+int NotificationsShownToday(const ClientState* state, base::Clock* clock) {
+  std::map<SchedulerClientType, const ClientState*> client_states;
+  std::map<SchedulerClientType, int> shown_per_type;
+  client_states.emplace(state->type, state);
+  int shown_total = 0;
+  SchedulerClientType last_shown_type = SchedulerClientType::kUnknown;
+  NotificationsShownToday(client_states, &shown_per_type, &shown_total,
+                          &last_shown_type, clock);
+  return shown_per_type[state->type];
+}
+
 void NotificationsShownToday(
     const std::map<SchedulerClientType, const ClientState*>& client_states,
     std::map<SchedulerClientType, int>* shown_per_type,
     int* shown_total,
-    SchedulerClientType* last_shown_type) {
+    SchedulerClientType* last_shown_type,
+    base::Clock* clock) {
   base::Time last_shown_time;
-  base::Time now(base::Time::Now());
+  base::Time now = clock->Now();
   base::Time beginning_of_today;
   bool success = ToLocalHour(0, now, 0, &beginning_of_today);
   DCHECK(success);
-
   for (const auto& state : client_states) {
-    const auto* client_state = state.second;
-    for (const auto& impression : client_state->impressions) {
-      // Tracks last notification shown to the user.
-      if (impression.create_time > last_shown_time) {
-        last_shown_time = impression.create_time;
-        *last_shown_type = client_state->type;
-      }
+    auto* client_state = state.second;
 
-      // Count notification shown today.
-      if (impression.create_time >= beginning_of_today) {
-        (*shown_per_type)[client_state->type]++;
-        ++(*shown_total);
-      }
+    auto iter_pair = FindFirstAndLastNotificationShownToday(
+        client_state->impressions, now, beginning_of_today);
+
+    if (!iter_pair)
+      continue;
+
+    if (iter_pair->second != client_state->impressions.cend())
+      DLOG(ERROR) << "Wrong format: time stamped to the future! "
+                  << iter_pair->second->create_time;
+
+    if (iter_pair->second->create_time > last_shown_time) {
+      last_shown_time = iter_pair->second->create_time;
+      *last_shown_type = client_state->type;
     }
-  }
-}
 
-int NotificationsShownToday(ClientState* state) {
-  int count = 0;
-  auto impressions = state->impressions;
-  base::Time now(base::Time::Now());
-  base::Time beginning_of_today, beginning_of_tomorrow;
-  bool success = ToLocalHour(0, now, 0, &beginning_of_today);
-  beginning_of_tomorrow += base::TimeDelta::FromDays(1);
-  DCHECK(success);
-  if (impressions.rbegin()->create_time < beginning_of_today) {
-    count = 0;
-  } else if (impressions.begin()->create_time > beginning_of_tomorrow) {
-    count = impressions.size();
-  } else {
-    auto right = lower_bound(impressions.rbegin(), impressions.rend(),
-                             beginning_of_today,
-                             [](const Impression& lhs, const base::Time& rhs) {
-                               return lhs.create_time < rhs;
-                             });
-    auto left = upper_bound(impressions.rbegin(), impressions.rend(),
-                            beginning_of_tomorrow,
-                            [](const base::Time& lhs, const Impression& rhs) {
-                              return lhs < rhs.create_time;
-                            });
-    count = right - left + 1;
+    int count = std::distance(iter_pair->first, iter_pair->second) + 1;
+    (*shown_per_type)[client_state->type] = count;
+    (*shown_total) += count;
   }
-  DCHECK_LE(count, state->current_max_daily_show);
-  return count;
 }
 
 std::unique_ptr<ClientState> CreateNewClientState(

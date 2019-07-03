@@ -38,7 +38,8 @@ void ScrollOffsetAnimationsImpl::AutoScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,
     const gfx::ScrollOffset& current_offset,
-    float autoscroll_velocity) {
+    float autoscroll_velocity,
+    base::TimeDelta animation_start_offset) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve =
       ScrollOffsetAnimationCurve::Create(
           target_offset, LinearTimingFunction::Create(),
@@ -46,7 +47,7 @@ void ScrollOffsetAnimationsImpl::AutoScrollAnimationCreate(
   curve->SetInitialValue(current_offset, base::TimeDelta(),
                          autoscroll_velocity);
   ScrollAnimationCreateInternal(element_id, std::move(curve),
-                                base::TimeDelta());
+                                animation_start_offset);
 }
 
 void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(

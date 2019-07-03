@@ -136,9 +136,6 @@ class PermissionsData {
       const URLPatternSet& default_policy_blocked_hosts,
       const URLPatternSet& default_policy_allowed_hosts);
 
-  // Sets the active permissions, leaving withheld the same.
-  void SetActivePermissions(std::unique_ptr<const PermissionSet> active) const;
-
   // Updates the tab-specific permissions of |tab_id| to include those from
   // |permissions|.
   void UpdateTabSpecificPermissions(int tab_id,

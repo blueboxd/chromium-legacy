@@ -35,7 +35,8 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
   void AutoScrollAnimationCreate(ElementId element_id,
                                  const gfx::ScrollOffset& target_offset,
                                  const gfx::ScrollOffset& current_offset,
-                                 float autoscroll_velocity);
+                                 float autoscroll_velocity,
+                                 base::TimeDelta animation_start_offset);
 
   // |delayed_by| shrinks the duration of the
   // animation. |animation_start_offset| causes us to start the animation

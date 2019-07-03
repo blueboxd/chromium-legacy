@@ -172,7 +172,7 @@ TEST_P(PushPullFIFOSmokeTest, SmokeTests) {
   std::unique_ptr<PushClient> push_client = std::make_unique<PushClient>(
       test_fifo.get(), param.push_buffer_size, param.push_jitter_range_ms);
 
-  std::vector<base::WaitableEvent*> done_events;
+  Vector<base::WaitableEvent*> done_events;
   done_events.push_back(
       pull_client->Start(param.test_duration_ms, pull_interval_ms));
   done_events.push_back(

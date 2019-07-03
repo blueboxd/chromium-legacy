@@ -49,6 +49,10 @@ void FakeDemuxerStream::FakeRead(const ReadCB& read_cb) {
   read_cb.Run(kOk, buffer);
 }
 
+bool FakeDemuxerStream::IsReadPending() const {
+  return !pending_read_cb_.is_null();
+}
+
 AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {
   return audio_config_;
 }

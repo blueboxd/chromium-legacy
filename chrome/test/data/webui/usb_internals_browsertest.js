@@ -56,7 +56,7 @@ UsbInternalsTest.prototype = {
         this.deviceManager = new FakeDeviceManagerProxy();
         this.deviceManagerBinding_ =
             new device.mojom.UsbDeviceManager(this.deviceManager);
-        this.deviceManagerBinding_.bindHandle(deviceManagerRequest.handle);
+        this.deviceManagerBinding_.$.bindHandle(deviceManagerRequest.handle);
       }
 
       async bindTestInterface(testDeviceManagerRequest) {
@@ -99,7 +99,7 @@ UsbInternalsTest.prototype = {
       async getDevice(guid, deviceRequest, deviceClient) {
         this.methodCalled('getDevice');
         const deviceProxy = this.deviceProxyMap.get(guid);
-        deviceProxy.router.bindHandle(deviceRequest.handle);
+        deviceProxy.router.$.bindHandle(deviceRequest.handle);
       }
 
       async getDevices() {
@@ -271,7 +271,7 @@ UsbInternalsTest.prototype = {
         this.pageHandler = new FakePageHandlerProxy();
         this.pageHandlerBinding_ =
             new mojom.UsbInternalsPageHandler(this.pageHandler);
-        this.pageHandlerBinding_.bindHandle(e.handle);
+        this.pageHandlerBinding_.$.bindHandle(e.handle);
       };
       this.pageHandlerInterceptor.start();
 

@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 
-#include <vector>
-
 #include "third_party/blink/renderer/modules/xr/xr_test_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 

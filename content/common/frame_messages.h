@@ -796,9 +796,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdateOpener, int /* opener_routing_id */)
 // commit, activation and frame swap of the current DOM tree in blink.
 IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 
-// Instructs the renderer to delete the RenderFrame.
-IPC_MESSAGE_ROUTED1(FrameMsg_Delete, content::FrameDeleteIntention)
-
 // Instructs the renderer to invoke the frame's beforeunload event handler.
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
 IPC_MESSAGE_ROUTED1(FrameMsg_BeforeUnload, bool /* is_reload */)

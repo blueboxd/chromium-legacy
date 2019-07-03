@@ -212,12 +212,6 @@ void PermissionsData::SetDefaultPolicyHostRestrictions(
       default_policy_allowed_hosts.Clone();
 }
 
-void PermissionsData::SetActivePermissions(
-    std::unique_ptr<const PermissionSet> active) const {
-  AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  active_permissions_unsafe_ = std::move(active);
-}
-
 void PermissionsData::UpdateTabSpecificPermissions(
     int tab_id,
     const PermissionSet& permissions) const {

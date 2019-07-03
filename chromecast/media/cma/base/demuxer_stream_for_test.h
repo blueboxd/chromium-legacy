@@ -46,8 +46,7 @@ class DemuxerStreamForTest : public ::media::DemuxerStream {
   ::media::VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
   bool SupportsConfigChanges() override;
-
-  bool has_pending_read() const { return has_pending_read_; }
+  bool IsReadPending() const override;
 
   // Frame duration
   static const int kDemuxerStreamForTestFrameDuration = 40;

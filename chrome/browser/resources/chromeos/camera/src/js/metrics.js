@@ -124,6 +124,7 @@ cca.metrics.captureType_ = function(facingMode, length, [width, height]) {
       .dimen(8, condState(['max-wnd']))
       .dimen(9, condState(['tall']))
       .dimen(10, `${width}x${height}`)
+      .dimen(11, condState(['_30fps', '_60fps'], 'video-mode', true))
       .value(length || 0);
 };
 

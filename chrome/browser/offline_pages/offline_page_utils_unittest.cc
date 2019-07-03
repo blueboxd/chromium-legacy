@@ -394,7 +394,14 @@ TEST_F(OfflinePageUtilsTest, ScheduleDownloadWithFailedFileAcecssRequest) {
 }
 #endif
 
-TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeBetween) {
+#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
+#define MAYBE_TestGetCachedOfflinePageSizeBetween \
+  DISABLED_TestGetCachedOfflinePageSizeBetween
+#else
+#define MAYBE_TestGetCachedOfflinePageSizeBetween \
+  TestGetCachedOfflinePageSizeBetween
+#endif
+TEST_F(OfflinePageUtilsTest, MAYBE_TestGetCachedOfflinePageSizeBetween) {
   // The clock will be at 03:00:00 after adding pages.
   CreateCachedOfflinePages();
 

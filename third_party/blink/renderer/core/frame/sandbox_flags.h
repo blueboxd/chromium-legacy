@@ -27,8 +27,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SANDBOX_FLAGS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SANDBOX_FLAGS_H_
 
-#include <vector>
-
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"

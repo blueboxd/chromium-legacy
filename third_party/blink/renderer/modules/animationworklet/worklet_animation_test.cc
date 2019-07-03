@@ -233,10 +233,10 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Last peek request fulfilled. No need to peek.
-  std::vector<base::Optional<base::TimeDelta>> local_times;
-  local_times.push_back(base::TimeDelta());
+  WebVector<base::Optional<base::TimeDelta>> local_times;
+  local_times.emplace_back(base::TimeDelta());
   AnimationWorkletOutput::AnimationState output_with_value(id);
-  output_with_value.local_times = local_times;
+  output_with_value.local_times = local_times.ReleaseVector();
   worklet_animation_->SetOutputState(output_with_value);
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.worklet_id);

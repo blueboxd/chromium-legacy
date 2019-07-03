@@ -44,6 +44,7 @@ class LoginTabHelper : public content::WebContentsObserver,
   void Reload();
 
   std::unique_ptr<content::LoginDelegate> delegate_;
+  GURL url_for_delegate_;
 
   net::AuthChallengeInfo challenge_;
 

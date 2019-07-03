@@ -541,6 +541,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
                                  PropertyChangeReason reason) override;
   void SetColorFromAnimation(SkColor color,
                              PropertyChangeReason reason) override;
+  void SetClipRectFromAnimation(const gfx::Rect& clip_rect,
+                                PropertyChangeReason reason) override;
   void ScheduleDrawForAnimation() override;
   const gfx::Rect& GetBoundsForAnimation() const override;
   gfx::Transform GetTransformForAnimation() const override;
@@ -549,6 +551,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   float GetBrightnessForAnimation() const override;
   float GetGrayscaleForAnimation() const override;
   SkColor GetColorForAnimation() const override;
+  gfx::Rect GetClipRectForAnimation() const override;
   float GetDeviceScaleFactor() const override;
   ui::Layer* GetLayer() override;
   cc::Layer* GetCcLayer() const override;

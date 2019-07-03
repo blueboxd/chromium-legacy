@@ -2435,12 +2435,17 @@ RenderThreadImpl::UnfreezableMessageFilter::UnfreezableMessageFilter(
 bool RenderThreadImpl::UnfreezableMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   if ((IPC_MESSAGE_CLASS(message) == UnfreezableFrameMsgStart)) {
-    return GetUnfreezableTaskRunner(message.routing_id())
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(
-                       base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
-                       base::Unretained(render_thread_impl_), message));
+    auto task_runner = GetUnfreezableTaskRunner(message.routing_id());
+    if (task_runner)
+      return task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
+              base::Unretained(render_thread_impl_), message));
   }
+  // If unfreezable task runner is not found or the message class is not
+  // UnfreezableFrameMsgStart, return false so that this filter is skipped and
+  // other handlers can continue executing and handle this message.
   return false;
 }
 
@@ -2464,7 +2469,7 @@ RenderThreadImpl::UnfreezableMessageFilter::GetUnfreezableTaskRunner(
   auto it = unfreezable_task_runners_.find(routing_id);
   if (it != unfreezable_task_runners_.end())
     return it->second;
-  return base::ThreadTaskRunnerHandle::Get();
+  return nullptr;
 }
 
 RenderThreadImpl::UnfreezableMessageFilter::~UnfreezableMessageFilter() {}

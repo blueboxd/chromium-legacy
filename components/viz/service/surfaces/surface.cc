@@ -26,6 +26,25 @@
 
 namespace viz {
 
+Surface::PresentationHelper::PresentationHelper(base::WeakPtr<Surface> surface,
+                                                uint32_t frame_token)
+    : surface_(std::move(surface)), frame_token_(frame_token) {}
+
+Surface::PresentationHelper::~PresentationHelper() {
+  // The class that called TakePresentationHelperForPresentNotification
+  // should have called present on this helper. If not, give a Failure feedback
+  // to the appropriate surface.
+  DidPresent(gfx::PresentationFeedback::Failure());
+}
+
+void Surface::PresentationHelper::DidPresent(
+    const gfx::PresentationFeedback& feedback) {
+  if (surface_ && frame_token_)
+    surface_->DidPresentSurface(frame_token_, feedback);
+
+  surface_ = nullptr;
+}
+
 Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  SurfaceAllocationGroup* allocation_group,
@@ -565,15 +584,15 @@ void Surface::TakeActiveAndPendingLatencyInfo(
   is_latency_info_taken_ = true;
 }
 
-bool Surface::TakePresentedCallback(PresentedCallback* callback) {
-  if (active_frame_data_ && !active_frame_data_->is_presented_callback_bound) {
-    *callback =
-        base::BindOnce(&Surface::DidPresentSurface, weak_factory_.GetWeakPtr(),
-                       active_frame_data_->frame.metadata.frame_token);
-    active_frame_data_->is_presented_callback_bound = true;
-    return true;
+std::unique_ptr<Surface::PresentationHelper>
+Surface::TakePresentationHelperForPresentNotification() {
+  if (active_frame_data_ &&
+      !active_frame_data_->will_be_notified_of_presentation) {
+    active_frame_data_->will_be_notified_of_presentation = true;
+    return std::make_unique<PresentationHelper>(
+        GetWeakPtr(), active_frame_data_->frame.metadata.frame_token);
   }
-  return false;
+  return nullptr;
 }
 
 void Surface::DidPresentSurface(uint32_t presentation_token,
@@ -622,9 +641,9 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
   if (!frame_data->frame_acked)
     surface_client_->OnSurfaceProcessed(this);
 
-  // If we have not bound a presented callback, we'll notify the client when
-  // the frame is unref'd.
-  if (!frame_data->is_presented_callback_bound)
+  // If we won't be getting a presented notification, we'll notify the client
+  // when the frame is unref'd.
+  if (!frame_data->will_be_notified_of_presentation)
     DidPresentSurface(frame_data->frame.metadata.frame_token,
                       gfx::PresentationFeedback::Failure());
 }

@@ -5,7 +5,6 @@
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
 
 #include <memory>
-#include <vector>
 
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"

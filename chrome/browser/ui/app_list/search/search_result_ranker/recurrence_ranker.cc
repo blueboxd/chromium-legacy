@@ -33,6 +33,11 @@ using base::Optional;
 using base::Time;
 using base::TimeDelta;
 
+// A predictor may return scores for target IDs that have been deleted. If less
+// than this proportion of IDs are valid, the ranker triggers a cleanup of the
+// predictor's state on a call to RecurrenceRanker::Rank.
+constexpr float kMinValidTargetProportionBeforeCleanup = 0.5f;
+
 void SaveProtoToDisk(const base::FilePath& filepath,
                      const RecurrenceRankerProto& proto) {
   std::string proto_str;
@@ -92,9 +97,25 @@ std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
   return sorted_ranks;
 }
 
-std::map<std::string, float> ZipTargetsWithScores(
+// Given a FrecencyStore's map from target names to IDs, and a
+// RecurrencePredictor's map of IDs to scores, returns a pair containing the
+// following:
+//
+//  - A map from target names to scores.
+//  - The proportion of IDs returned by the predictor that are 'valid', ie.
+//    that exist in the target frecency store.
+//
+// The second value can be used to decide when to trigger a cleanup of the
+// predictor's internal state.
+std::pair<std::map<std::string, float>, float> ZipTargetsWithScores(
     const FrecencyStore::ScoreTable& target_to_id,
     const std::map<unsigned int, float>& id_to_score) {
+  // Early exit if the predictor's ranks are empty. In this case make the
+  // proportion of valid IDs 1.0, as a cleanup would be a noop.
+  if (id_to_score.empty())
+    return {{}, 1.0f};
+
+  float num_valid_targets = 0.0f;
   std::map<std::string, float> target_to_score;
   for (const auto& pair : target_to_id) {
     DCHECK(pair.second.last_num_updates ==
@@ -102,10 +123,11 @@ std::map<std::string, float> ZipTargetsWithScores(
     const auto& it = id_to_score.find(pair.second.id);
     if (it != id_to_score.end()) {
       target_to_score[pair.first] = it->second;
+      num_valid_targets += 1.0f;
     }
   }
 
-  return target_to_score;
+  return {std::move(target_to_score), num_valid_targets / id_to_score.size()};
 }
 
 std::map<std::string, float> GetScoresFromFrecencyStore(
@@ -255,8 +277,22 @@ std::map<std::string, float> RecurrenceRanker::Rank(
   if (condition_id == base::nullopt)
     return {};
 
-  return ZipTargetsWithScores(targets_->GetAll(),
-                              predictor_->Rank(condition_id.value()));
+  const auto& targets = targets_->GetAll();
+  const auto& zipped =
+      ZipTargetsWithScores(targets, predictor_->Rank(condition_id.value()));
+  MaybeCleanup(zipped.second, targets);
+  return std::move(zipped.first);
+}
+
+void RecurrenceRanker::MaybeCleanup(float proportion_valid,
+                                    const FrecencyStore::ScoreTable& targets) {
+  if (proportion_valid > kMinValidTargetProportionBeforeCleanup)
+    return;
+
+  std::vector<unsigned int> valid_targets;
+  for (const auto& target_data : targets)
+    valid_targets.push_back(target_data.second.id);
+  predictor_->Cleanup(valid_targets);
 }
 
 std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(

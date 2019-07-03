@@ -760,6 +760,10 @@ void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
   SatisfyPendingRead();
 }
 
+bool FFmpegDemuxerStream::IsReadPending() const {
+  return !read_cb_.is_null();
+}
+
 void FFmpegDemuxerStream::EnableBitstreamConverter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 

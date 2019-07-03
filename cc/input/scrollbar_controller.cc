@@ -6,19 +6,30 @@
 
 #include <algorithm>
 
+#include "base/cancelable_callback.h"
 #include "cc/base/math_util.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_node.h"
 
 namespace cc {
+ScrollbarController::~ScrollbarController() {
+  if (cancelable_autoscroll_task_) {
+    cancelable_autoscroll_task_->Cancel();
+    cancelable_autoscroll_task_.reset();
+  }
+}
+
 ScrollbarController::ScrollbarController(
     LayerTreeHostImpl* layer_tree_host_impl)
     : layer_tree_host_impl_(layer_tree_host_impl),
       scrollbar_scroll_is_active_(false),
       thumb_drag_in_progress_(false),
+      autoscroll_in_progress_(false),
       currently_captured_scrollbar_(nullptr),
-      previous_pointer_position_(gfx::PointF(0, 0)) {}
+      previous_pointer_position_(gfx::PointF(0, 0)),
+      cancelable_autoscroll_task_(nullptr) {}
 
 // Performs hit test and prepares scroll deltas that will be used by GSB and
 // GSU.
@@ -49,6 +60,19 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
         ui::input_types::ScrollGranularity::kScrollByPixel;
   }
 
+  // Thumb drag is the only scrollbar manipulation that cannot produce an
+  // autoscroll. All other interactions like clicking on arrows/trackparts have
+  // the potential of initiating an autoscroll (if held down long enough).
+  if (!scroll_result.scroll_offset.IsZero() && !thumb_drag_in_progress_) {
+    cancelable_autoscroll_task_ = std::make_unique<base::CancelableClosure>(
+        base::Bind(&ScrollbarController::StartAutoScrollAnimation,
+                   base::Unretained(this), scroll_result.scroll_offset,
+                   currently_captured_scrollbar_->scroll_element_id()));
+    layer_tree_host_impl_->task_runner_provider()
+        ->ImplThreadTaskRunner()
+        ->PostDelayedTask(FROM_HERE, cancelable_autoscroll_task_->callback(),
+                          kInitialAutoscrollTimerDelay);
+  }
   return scroll_result;
 }
 
@@ -138,6 +162,52 @@ InputHandlerPointerResult ScrollbarController::HandleMouseMove(
   return scroll_result;
 }
 
+void ScrollbarController::StartAutoScrollAnimation(
+    gfx::ScrollOffset scroll_offset,
+    ElementId element_id) {
+  // scroll_node is set up while handling GSB. If there's no node to scroll, we
+  // don't need to create any animation for it.
+  ScrollTree& scroll_tree =
+      layer_tree_host_impl_->active_tree()->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.FindNodeFromElementId(element_id);
+
+  if (!(scroll_node && scrollbar_scroll_is_active_))
+    return;
+
+  layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
+  ScrollbarOrientation orientation =
+      currently_captured_scrollbar_->orientation();
+  // TODO(arakeri): The animation needs to be readjusted if the scroller length
+  // changes. Tracked here: crbug.com/972485
+  float scroll_layer_length =
+      currently_captured_scrollbar_->scroll_layer_length();
+
+  gfx::ScrollOffset current_offset =
+      scroll_tree.current_scroll_offset(scroll_node->element_id);
+  gfx::Vector2dF target_offset;
+
+  // Determine the max offset for the scroll based on the scrolling direction.
+  // Negative scroll_delta indicates backwards scrolling whereas a positive
+  // scroll_delta indicates forwards scrolling.
+  float scroll_delta = 0;
+  if (orientation == ScrollbarOrientation::VERTICAL) {
+    DCHECK_NE(scroll_offset.y(), 0);
+    scroll_delta = scroll_offset.y();
+    float final_offset = scroll_delta < 0 ? 0 : scroll_layer_length;
+    target_offset = gfx::Vector2dF(current_offset.x(), final_offset);
+  } else {
+    DCHECK_NE(scroll_offset.x(), 0);
+    scroll_delta = scroll_offset.x();
+    float final_offset = scroll_delta < 0 ? 0 : scroll_layer_length;
+    target_offset = gfx::Vector2dF(final_offset, current_offset.y());
+  }
+
+  float autoscroll_velocity = std::abs(scroll_delta) * kAutoscrollMultiplier;
+  autoscroll_in_progress_ = true;
+  layer_tree_host_impl_->AutoScrollAnimationCreate(scroll_node, target_offset,
+                                                   autoscroll_velocity);
+}
+
 // Performs hit test and prepares scroll deltas that will be used by GSE.
 InputHandlerPointerResult ScrollbarController::HandleMouseUp(
     const gfx::PointF position_in_widget) {
@@ -146,7 +216,20 @@ InputHandlerPointerResult ScrollbarController::HandleMouseUp(
     scrollbar_scroll_is_active_ = false;
     scroll_result.type = PointerResultType::kScrollbarScroll;
   }
+
+  // TODO(arakeri): This needs to be moved to ScrollOffsetAnimationsImpl as it
+  // has knowledge about what type of animation is running. crbug.com/976353
+  // Only abort the animation if it is an "autoscroll" animation.
+  if (autoscroll_in_progress_)
+    layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
+
+  if (cancelable_autoscroll_task_) {
+    cancelable_autoscroll_task_->Cancel();
+    cancelable_autoscroll_task_.reset();
+  }
+
   thumb_drag_in_progress_ = false;
+  autoscroll_in_progress_ = false;
   return scroll_result;
 }
 

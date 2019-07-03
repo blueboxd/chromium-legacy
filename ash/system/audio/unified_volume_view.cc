@@ -9,6 +9,7 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -73,9 +74,12 @@ class MoreButton : public views::Button {
 
     auto* more = new views::ImageView();
     more->set_can_process_events_within_subtree(false);
+    auto icon_rotation = base::i18n::IsRTL()
+                             ? SkBitmapOperations::ROTATION_270_CW
+                             : SkBitmapOperations::ROTATION_90_CW;
     more->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
         CreateVectorIcon(kUnifiedMenuExpandIcon, kUnifiedMenuIconColor),
-        SkBitmapOperations::ROTATION_90_CW));
+        icon_rotation));
     AddChildView(more);
 
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));

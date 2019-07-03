@@ -484,7 +484,7 @@ bool Layer::GetMasksToBounds() const {
 }
 
 void Layer::SetClipRect(const gfx::Rect& clip_rect) {
-  cc_layer_->SetClipRect(clip_rect);
+  GetAnimator()->SetClipRect(clip_rect);
 }
 
 void Layer::SetOpacity(float opacity) {
@@ -1416,6 +1416,11 @@ void Layer::SetColorFromAnimation(SkColor color, PropertyChangeReason reason) {
   SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
 }
 
+void Layer::SetClipRectFromAnimation(const gfx::Rect& clip_rect,
+                                     PropertyChangeReason reason) {
+  cc_layer_->SetClipRect(clip_rect);
+}
+
 void Layer::ScheduleDrawForAnimation() {
   ScheduleDraw();
 }
@@ -1449,6 +1454,12 @@ SkColor Layer::GetColorForAnimation() const {
   // been configured as LAYER_SOLID_COLOR.
   return solid_color_layer_.get() ?
       solid_color_layer_->background_color() : SK_ColorBLACK;
+}
+
+gfx::Rect Layer::GetClipRectForAnimation() const {
+  if (clip_rect().IsEmpty())
+    return gfx::Rect(size());
+  return clip_rect();
 }
 
 float Layer::GetDeviceScaleFactor() const {

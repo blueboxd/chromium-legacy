@@ -211,7 +211,7 @@ TEST_F(HTMLMediaElementEventListenersTest,
   Persistent<MediaCustomControlsFullscreenDetector> detector =
       FullscreenDetector();
 
-  std::vector<blink::WebFullscreenVideoStatus> observed_results;
+  Vector<blink::WebFullscreenVideoStatus> observed_results;
 
   ON_CALL(*WebMediaPlayer(), SetIsEffectivelyFullscreen(_))
       .WillByDefault(testing::Invoke(

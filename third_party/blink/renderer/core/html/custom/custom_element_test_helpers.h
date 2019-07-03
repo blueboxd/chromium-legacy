@@ -171,7 +171,7 @@ class CreateElement {
   AtomicString namespace_uri_;
   AtomicString local_name_;
   AtomicString is_value_;
-  std::vector<std::pair<QualifiedName, AtomicString>> attributes_;
+  Vector<std::pair<QualifiedName, AtomicString>> attributes_;
 };
 
 }  // namespace blink

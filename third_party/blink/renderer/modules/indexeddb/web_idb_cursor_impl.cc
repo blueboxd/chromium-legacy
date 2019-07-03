@@ -6,9 +6,6 @@
 
 #include <stddef.h>
 
-#include <string>
-#include <vector>
-
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"

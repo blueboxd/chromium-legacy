@@ -2779,7 +2779,7 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     // get the right dirty rect.  Since this is called from
     // LayoutObject::setStyle, the relative position flag on the LayoutObject
     // has been cleared, so use the one on the style().
-    container_offset += Layer()->OffsetForInFlowPosition();
+    container_offset += OffsetForInFlowPosition();
   }
 
   if (skip_info.FilterSkipped()) {

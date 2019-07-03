@@ -645,3 +645,11 @@ crbug.com/874695 virtual/blink-cors/http/tests/xmlhttprequest/timeout/xmlhttpreq
 crbug.com/874695 virtual/blink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-twice.html [ Slow ]
 crbug.com/874695 virtual/blink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Slow ]
 crbug.com/874695 virtual/blink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-twice.html [ Slow ]
+
+crbug.com/980804 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
+crbug.com/980804 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
+crbug.com/980804 virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
+crbug.com/980804 virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
+crbug.com/980804 virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
+crbug.com/980804 virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
+crbug.com/980804 virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]

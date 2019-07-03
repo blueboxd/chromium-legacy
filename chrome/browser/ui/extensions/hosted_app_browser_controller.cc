@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_service.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -30,8 +32,6 @@
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/management_policy.h"
-#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -309,17 +309,19 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 bool HostedAppBrowserController::CanUninstall() const {
-  return extensions::ExtensionSystem::Get(browser()->profile())
-      ->management_policy()
-      ->UserMayModifySettings(GetExtension(), nullptr);
+  auto* web_app_ui_service =
+      web_app::WebAppUiService::Get(browser()->profile());
+  DCHECK(web_app_ui_service);
+  return web_app_ui_service->dialog_manager().CanUninstallWebApp(extension_id_);
 }
 
 void HostedAppBrowserController::Uninstall() {
-  uninstall_dialog_ = ExtensionUninstallDialog::Create(
-      browser()->profile(), browser()->window()->GetNativeWindow(), this);
-  uninstall_dialog_->ConfirmUninstall(
-      GetExtension(), extensions::UNINSTALL_REASON_USER_INITIATED,
-      extensions::UNINSTALL_SOURCE_HOSTED_APP_MENU);
+  auto* web_app_ui_service =
+      web_app::WebAppUiService::Get(browser()->profile());
+  DCHECK(web_app_ui_service);
+  web_app_ui_service->dialog_manager().UninstallWebApp(
+      extension_id_, web_app::WebAppDialogManager::UninstallSource::kAppMenu,
+      browser()->window(), base::DoNothing());
 }
 
 bool HostedAppBrowserController::IsInstalled() const {

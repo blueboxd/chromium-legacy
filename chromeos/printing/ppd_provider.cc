@@ -490,10 +490,11 @@ class PpdProviderImpl : public PpdProvider {
         // Found a hit, satisfy this resolution.
         RunPpdReferenceResolutionSucceeded(std::move(next.cb),
                                            kEpsonGenericPPD);
+      } else {
+        // We don't have anything else left to try. We've reached unsupported
+        // USB printer, try to grab the manufacturer name.
+        ResolveUsbManufacturer(std::move(next.cb), search_data.usb_vendor_id);
       }
-      // We don't have anything else left to try. We've reached unsupported USB
-      // printer, try to grab the manufacturer name.
-      ResolveUsbManufacturer(std::move(next.cb), search_data.usb_vendor_id);
     }
     // Didn't start any fetches.
     return false;

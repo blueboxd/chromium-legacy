@@ -27,7 +27,7 @@ namespace blink {
 
 namespace {
 
-constexpr size_t kTextNodeNumberLimit = 5000;
+constexpr size_t kTextObjectNumberLimit = 5000;
 
 bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
                     const base::WeakPtr<TextRecord>& b) {
@@ -165,7 +165,7 @@ void TextPaintTimingDetector::ReportSwapTime(WebWidgetClient::SwapResult result,
       }
     }
   }
-  records_manager_.AssignPaintTimeToQueuedNodes(timestamp);
+  records_manager_.AssignPaintTimeToQueuedRecords(timestamp);
   if (records_manager_.GetLargestTextPaintManager())
     records_manager_.GetLargestTextPaintManager()->UpdateCandidate();
   awaiting_swap_promise_ = false;
@@ -184,7 +184,7 @@ bool TextPaintTimingDetector::ShouldWalkObject(
   // shadow element or has no elementtiming attribute, then we should not record
   // its text.
   if (!records_manager_.IsRecordingLargestTextPaint() &&
-      !TextElementTiming::NeededForElementTiming(node))
+      !TextElementTiming::NeededForElementTiming(*node))
     return false;
 
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(node);
@@ -200,12 +200,7 @@ void TextPaintTimingDetector::RecordAggregatedText(
     const IntRect& aggregated_visual_rect,
     const PropertyTreeState& property_tree_state) {
   DCHECK(ShouldWalkObject(aggregator));
-  DCHECK(!records_manager_.HasTooManyNodes());
-
-  Node* node = aggregator.GetNode();
-  DCHECK(node);
-  DOMNodeId node_id = DOMNodeIds::IdForNode(node);
-  DCHECK_NE(node_id, kInvalidDOMNodeId);
+  DCHECK(!records_manager_.HasTooManyObjects());
 
   // The caller should check this.
   DCHECK(!aggregated_visual_rect.IsEmpty());
@@ -221,15 +216,15 @@ void TextPaintTimingDetector::RecordAggregatedText(
     records_manager_.RecordVisibleObject(
         aggregator, aggregated_size,
         TextElementTiming::ComputeIntersectionRect(
-            node, aggregated_visual_rect, property_tree_state, frame_view_),
-        node_id);
+            aggregator, aggregated_visual_rect, property_tree_state,
+            frame_view_));
   }
 
-  if (records_manager_.HasTooManyNodes()) {
-    TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverNodeLimit",
-                         TRACE_EVENT_SCOPE_THREAD, "count_size_non_zero_nodes",
+  if (records_manager_.HasTooManyObjects()) {
+    TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverRecordLimit",
+                         TRACE_EVENT_SCOPE_THREAD, "count_visible_objects",
                          records_manager_.CountVisibleObjects(),
-                         "count_size_zero_nodes",
+                         "count_invisible_objects",
                          records_manager_.CountInvisibleObjects());
     StopRecordEntries();
   }
@@ -262,12 +257,12 @@ void LargestTextPaintManager::Trace(blink::Visitor* visitor) {
 }
 
 void TextRecordsManager::RemoveVisibleRecord(const LayoutObject& object) {
-  DCHECK(visible_node_map_.Contains(&object));
+  DCHECK(visible_objects_.Contains(&object));
   if (ltp_manager_) {
     ltp_manager_->RemoveVisibleRecord(
-        visible_node_map_.at(&object)->AsWeakPtr());
+        visible_objects_.at(&object)->AsWeakPtr());
   }
-  visible_node_map_.erase(&object);
+  visible_objects_.erase(&object);
   // We don't need to remove elements in |texts_queued_for_paint_time_| and
   // |cached_largest_paint_candidate_| as they are weak ptr.
 }
@@ -277,11 +272,11 @@ void TextRecordsManager::CleanUpLargestTextPaint() {
 }
 
 void TextRecordsManager::RemoveInvisibleRecord(const LayoutObject& object) {
-  DCHECK(invisible_node_ids_.Contains(&object));
-  invisible_node_ids_.erase(&object);
+  DCHECK(invisible_objects_.Contains(&object));
+  invisible_objects_.erase(&object);
 }
 
-void TextRecordsManager::AssignPaintTimeToQueuedNodes(
+void TextRecordsManager::AssignPaintTimeToQueuedRecords(
     const base::TimeTicks& timestamp) {
   // If texts_queued_for_paint_time_.size == 0, it means the array has been
   // consumed in a callback earlier than this one. That violates the assumption
@@ -300,7 +295,7 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
     record->paint_time = timestamp;
   }
   if (text_element_timing_)
-    text_element_timing_->OnTextNodesPainted(texts_queued_for_paint_time_);
+    text_element_timing_->OnTextObjectsPainted(texts_queued_for_paint_time_);
   texts_queued_for_paint_time_.clear();
   if (ltp_manager_)
     ltp_manager_->SetCachedResultInvalidated(true);
@@ -309,11 +304,14 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
 void TextRecordsManager::RecordVisibleObject(
     const LayoutObject& object,
     const uint64_t& visual_size,
-    const FloatRect& element_timing_rect,
-    DOMNodeId node_id) {
-  DCHECK(!HasTooManyNodes());
+    const FloatRect& element_timing_rect) {
+  DCHECK(!HasTooManyObjects());
   DCHECK_GT(visual_size, 0u);
 
+  Node* node = object.GetNode();
+  DCHECK(node);
+  DOMNodeId node_id = DOMNodeIds::IdForNode(node);
+  DCHECK_NE(node_id, kInvalidDOMNodeId);
   std::unique_ptr<TextRecord> record =
       std::make_unique<TextRecord>(node_id, visual_size, element_timing_rect);
   base::WeakPtr<TextRecord> record_weak_ptr = record->AsWeakPtr();
@@ -321,12 +319,12 @@ void TextRecordsManager::RecordVisibleObject(
     ltp_manager_->InsertRecord(record_weak_ptr);
 
   QueueToMeasurePaintTime(record_weak_ptr);
-  visible_node_map_.insert(&object, std::move(record));
+  visible_objects_.insert(&object, std::move(record));
 }
 
-bool TextRecordsManager::HasTooManyNodes() const {
-  return visible_node_map_.size() + invisible_node_ids_.size() >=
-         kTextNodeNumberLimit;
+bool TextRecordsManager::HasTooManyObjects() const {
+  return visible_objects_.size() + invisible_objects_.size() >=
+         kTextObjectNumberLimit;
 }
 
 base::WeakPtr<TextRecord> LargestTextPaintManager::FindLargestPaintCandidate() {
@@ -353,8 +351,8 @@ TextRecordsManager::TextRecordsManager(
 }
 
 void TextRecordsManager::CleanUp() {
-  visible_node_map_.clear();
-  invisible_node_ids_.clear();
+  visible_objects_.clear();
+  invisible_objects_.clear();
   texts_queued_for_paint_time_.clear();
   CleanUpLargestTextPaint();
 }

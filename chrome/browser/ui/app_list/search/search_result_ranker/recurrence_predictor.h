@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -45,6 +46,13 @@ class RecurrencePredictor {
   // under this predictor. Scores must be within the range [0,1].
   virtual std::map<unsigned int, float> Rank(unsigned int condition) = 0;
 
+  // Called when the ranker detects that the predictor's rankings are
+  // significantly different to the set of valid targets, and can optionally be
+  // used to clean up internal state. For efficiency reasons, Cleanup is
+  // supplied a const reference to the FrecencyStore's internal state. However
+  // it is likely that only id field in the values is of interest.
+  virtual void Cleanup(const std::vector<unsigned int>& valid_targets) {}
+
   virtual void ToProto(RecurrencePredictorProto* proto) const = 0;
   virtual void FromProto(const RecurrencePredictorProto& proto) = 0;
   virtual const char* GetPredictorName() const = 0;
@@ -64,6 +72,7 @@ class FakePredictor : public RecurrencePredictor {
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
   std::map<unsigned int, float> Rank(unsigned int condition) override;
+  void Cleanup(const std::vector<unsigned int>& valid_targets) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -128,9 +137,16 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
   void Train(unsigned int target, unsigned int condition) override;
   // The scores in the returned map sum to 1 if the map is non-empty.
   std::map<unsigned int, float> Rank(unsigned int condition) override;
+  void Cleanup(const std::vector<unsigned int>& valid_targets) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
+
+  // Deletes all information about conditions not in |valid_conditions|. This is
+  // analogous to Cleanup for targets. Note that Cleanup already deletes
+  // conditions if they have no associated targets, so CleanupTargets is useful
+  // only in the case of having extra information about invalid conditions.
+  void CleanupConditions(const std::vector<unsigned int>& valid_conditions);
 
   static const char kPredictorName[];
 
@@ -165,6 +181,7 @@ class FrecencyPredictor : public RecurrencePredictor {
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
   std::map<unsigned int, float> Rank(unsigned int condition) override;
+  void Cleanup(const std::vector<unsigned int>& valid_targets) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -250,6 +267,7 @@ class MarkovPredictor : public RecurrencePredictor {
   // RecurrencePredictor:
   void Train(unsigned int target, unsigned int condition) override;
   std::map<unsigned int, float> Rank(unsigned int condition) override;
+  void Cleanup(const std::vector<unsigned int>& valid_targets) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -257,6 +275,7 @@ class MarkovPredictor : public RecurrencePredictor {
   static const char kPredictorName[];
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MarkovPredictorTest, Cleanup);
   FRIEND_TEST_ALL_PREFIXES(MarkovPredictorTest, ToAndFromProto);
 
   // Stores transition probabilities: P(target | previous_target).

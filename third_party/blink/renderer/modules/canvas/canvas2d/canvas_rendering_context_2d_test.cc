@@ -855,10 +855,10 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
       canvas->GetCanvasRenderingContext("2d", attributes));
 
   // Prepare the png file path and call the test routine
-  std::vector<String> interlace_status = {"", "_interlaced"};
-  std::vector<String> color_profiles = {"_sRGB",      "_e-sRGB",   "_AdobeRGB",
-                                        "_DisplayP3", "_ProPhoto", "_Rec2020"};
-  std::vector<String> alpha_status = {"_opaque", "_transparent"};
+  Vector<String> interlace_status = {"", "_interlaced"};
+  Vector<String> color_profiles = {"_sRGB",      "_e-sRGB",   "_AdobeRGB",
+                                   "_DisplayP3", "_ProPhoto", "_Rec2020"};
+  Vector<String> alpha_status = {"_opaque", "_transparent"};
 
   StringBuilder path;
   path.Append(test::CoreTestDataPath());

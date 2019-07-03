@@ -379,6 +379,8 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   overview_bounds_.reset();
 }
 
+// TODO(sammiequon): Investigate if waiting till the end of the animation to set
+// these properties is still required.
 void ScopedOverviewTransformWindow::UpdateMask(bool show) {
   // Minimized windows have their corners rounded in CaptionContainerView.
   if (IsMinimized())
@@ -392,11 +394,13 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
                                         : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
-  int top_inset = GetTopInset();
-  if (top_inset > 0) {
-    gfx::Rect clip_rect(window_->bounds().size());
-    clip_rect.Inset(0, top_inset, 0, 0);
-    layer->SetClipRect(clip_rect);
+  if (!layer->GetAnimator()->is_animating()) {
+    int top_inset = GetTopInset();
+    if (top_inset > 0) {
+      gfx::Rect clip_rect(window_->bounds().size());
+      clip_rect.Inset(0, top_inset, 0, 0);
+      layer->SetClipRect(clip_rect);
+    }
   }
 }
 

@@ -16,15 +16,15 @@
 #include "services/network/network_service.h"
 #include "services/network/origin_policy/origin_policy_fetcher.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
+#include "services/network/origin_policy/origin_policy_parser.h"
+#include "services/network/public/cpp/origin_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
 
 namespace {
 
-void DummyRetrieveOriginPolicyCallback(
-    const network::mojom::OriginPolicyPtr result) {}
-
+void DummyRetrieveOriginPolicyCallback(const network::OriginPolicy& result) {}
 }  // namespace
 
 class OriginPolicyManagerTest : public testing::Test {
@@ -84,10 +84,12 @@ class OriginPolicyManagerTest : public testing::Test {
                                 "/.well-known/origin-policy/policy-1");
     } else if (request.relative_url == "/.well-known/origin-policy/policy-1") {
       response->set_code(net::HTTP_OK);
-      response->set_content("manifest-1");
+      response->set_content(
+          R"({ "feature-policy": ["geolocation http://example1.com"] })");
     } else if (request.relative_url == "/.well-known/origin-policy/policy-2") {
       response->set_code(net::HTTP_OK);
-      response->set_content("manifest-2");
+      response->set_content(
+          R"({ "feature-policy": ["geolocation http://example2.com"] })");
     } else if (request.relative_url ==
                "/.well-known/origin-policy/redirect-policy") {
       response->set_code(net::HTTP_FOUND);
@@ -97,7 +99,8 @@ class OriginPolicyManagerTest : public testing::Test {
     } else if (request.relative_url ==
                "/.well-known/origin-policy/policy/policy-3") {
       response->set_code(net::HTTP_OK);
-      response->set_content("manifest-3");
+      response->set_content(
+          R"({ "feature-policy": ["geolocation http://example3.com"] })");
     } else if (request.relative_url == "/.well-known/delayed") {
       return std::make_unique<net::test_server::HungResponse>();
     } else {
@@ -249,20 +252,20 @@ class TestOriginPolicyManagerResult {
     run_loop_.Run();
   }
 
-  const mojom::OriginPolicy* origin_policy_result() const {
+  const OriginPolicy* origin_policy_result() const {
     return origin_policy_result_.get();
   }
 
  private:
-  void Callback(const mojom::OriginPolicyPtr result) {
-    origin_policy_result_ = result.Clone();
+  void Callback(const OriginPolicy& result) {
+    origin_policy_result_ = std::make_unique<OriginPolicy>(result);
     run_loop_.Quit();
   }
 
   base::RunLoop run_loop_;
   OriginPolicyManagerTest* fixture_;
   OriginPolicyManager* manager_;
-  mojom::OriginPolicyPtr origin_policy_result_;
+  std::unique_ptr<OriginPolicy> origin_policy_result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOriginPolicyManagerResult);
 };
@@ -270,28 +273,26 @@ class TestOriginPolicyManagerResult {
 TEST_F(OriginPolicyManagerTest, EndToEndPolicyRetrieve) {
   const struct {
     std::string header;
-    mojom::OriginPolicyState expected_state;
+    OriginPolicyState expected_state;
     std::string expected_raw_policy;
   } kTests[] = {
-      {"policy=policy-1", mojom::OriginPolicyState::kLoaded, "manifest-1"},
-      {"policy=policy-2", mojom::OriginPolicyState::kLoaded, "manifest-2"},
-      {"policy=redirect-policy", mojom::OriginPolicyState::kInvalidRedirect,
-       ""},
-      {"policy=policy-2, report-to=endpoint", mojom::OriginPolicyState::kLoaded,
-       "manifest-2"},
+      {"policy=policy-1", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example1.com"] })"},
+      {"policy=policy-2", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })"},
+      {"policy=redirect-policy", OriginPolicyState::kInvalidRedirect, ""},
+      {"policy=policy-2, report-to=endpoint", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })"},
 
-      {"", mojom::OriginPolicyState::kNoPolicyApplies, ""},
-      {"unknown=keyword", mojom::OriginPolicyState::kCannotLoadPolicy, ""},
-      {"report_to=endpoint", mojom::OriginPolicyState::kCannotLoadPolicy, ""},
-      {"policy=policy/policy-3", mojom::OriginPolicyState::kCannotLoadPolicy,
-       ""},
+      {"", OriginPolicyState::kNoPolicyApplies, ""},
+      {"unknown=keyword", OriginPolicyState::kCannotLoadPolicy, ""},
+      {"report_to=endpoint", OriginPolicyState::kCannotLoadPolicy, ""},
+      {"policy=policy/policy-3", OriginPolicyState::kCannotLoadPolicy, ""},
 
-      {"policy=../some-policy", mojom::OriginPolicyState::kCannotLoadPolicy,
-       ""},
-      {"policy=..", mojom::OriginPolicyState::kCannotLoadPolicy, ""},
-      {"policy=.", mojom::OriginPolicyState::kCannotLoadPolicy, ""},
-      {"policy=something-else/..", mojom::OriginPolicyState::kCannotLoadPolicy,
-       ""},
+      {"policy=../some-policy", OriginPolicyState::kCannotLoadPolicy, ""},
+      {"policy=..", OriginPolicyState::kCannotLoadPolicy, ""},
+      {"policy=.", OriginPolicyState::kCannotLoadPolicy, ""},
+      {"policy=something-else/..", OriginPolicyState::kCannotLoadPolicy, ""},
   };
 
   for (const auto& test : kTests) {
@@ -306,8 +307,10 @@ TEST_F(OriginPolicyManagerTest, EndToEndPolicyRetrieve) {
     if (test.expected_raw_policy.empty()) {
       EXPECT_FALSE(tester.origin_policy_result()->contents);
     } else {
-      EXPECT_EQ(test.expected_raw_policy,
-                tester.origin_policy_result()->contents->raw_policy);
+      OriginPolicyContentsPtr expected_origin_policy_contents =
+          OriginPolicyParser::Parse(test.expected_raw_policy);
+      EXPECT_EQ(expected_origin_policy_contents,
+                tester.origin_policy_result()->contents);
     }
   }
 }
@@ -339,7 +342,7 @@ TEST_F(OriginPolicyManagerTest, DestroyWhileCallbackUninvoked) {
 TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
   const struct {
     std::string header;
-    mojom::OriginPolicyState expected_state;
+    OriginPolicyState expected_state;
     std::string expected_raw_policy;
     const url::Origin& origin;
   } kTests[] = {
@@ -348,66 +351,73 @@ TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
       // tests.
 
       // Nothing in the cache, no policy applies if header unspecified.
-      {"", mojom::OriginPolicyState::kNoPolicyApplies, "",
-       test_server_origin()},
+      {"", OriginPolicyState::kNoPolicyApplies, "", test_server_origin()},
 
       // An invalid header and nothing in the cache means an error.
-      {"invalid", mojom::OriginPolicyState::kCannotLoadPolicy, "",
+      {"invalid", OriginPolicyState::kCannotLoadPolicy, "",
        test_server_origin()},
 
       // A valid header results in loaded policy.
-      {"policy=policy-1", mojom::OriginPolicyState::kLoaded, "manifest-1",
+      {"policy=policy-1", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example1.com"] })",
        test_server_origin()},
 
       // With a valid header, we use that version if header unspecified.
-      {"", mojom::OriginPolicyState::kLoaded, "manifest-1",
+      {"", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example1.com"] })",
        test_server_origin()},
 
       // A second valid header results in loaded policy. Changes cached last
       // version.
-      {"policy=policy-2", mojom::OriginPolicyState::kLoaded, "manifest-2",
+      {"policy=policy-2", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })",
        test_server_origin()},
 
       // The latest version is correctly uses when header is unspecified.
-      {"", mojom::OriginPolicyState::kLoaded, "manifest-2",
+      {"", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })",
        test_server_origin()},
 
       // Same as above for invalid header.
-      {"invalid", mojom::OriginPolicyState::kLoaded, "manifest-2",
+      {"invalid", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })",
        test_server_origin()},
 
       // Delete the policy.
       {base::StrCat({"policy=", kOriginPolicyDeletePolicy}),
-       mojom::OriginPolicyState::kNoPolicyApplies, "", test_server_origin()},
+       OriginPolicyState::kNoPolicyApplies, "", test_server_origin()},
 
       // We are the back to the initial status quo, no policy applies if header
       // unspecified.
-      {"", mojom::OriginPolicyState::kNoPolicyApplies, "",
-       test_server_origin()},
+      {"", OriginPolicyState::kNoPolicyApplies, "", test_server_origin()},
 
       // Load a new policy to have something in the cache.
-      {"policy=policy-1", mojom::OriginPolicyState::kLoaded, "manifest-1",
+      {"policy=policy-1", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example1.com"] })",
        test_server_origin()},
 
       // Check that the version in the cache is used.
-      {"", mojom::OriginPolicyState::kLoaded, "manifest-1",
+      {"", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example1.com"] })",
        test_server_origin()},
 
       // In a different origin, it should not pick up the initial origin's
       // cached version.
-      {"", mojom::OriginPolicyState::kNoPolicyApplies, "",
-       test_server_origin_2()},
+      {"", OriginPolicyState::kNoPolicyApplies, "", test_server_origin_2()},
 
       // Load a new policy to have something in the cache for the second origin.
-      {"policy=policy-2", mojom::OriginPolicyState::kLoaded, "manifest-2",
+      {"policy=policy-2", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })",
        test_server_origin_2()},
 
       // Check that the version in the cache is used for the second origin.
-      {"", mojom::OriginPolicyState::kLoaded, "manifest-2",
+      {"", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example2.com"] })",
        test_server_origin_2()},
 
       // The initial origins cached state is unaffected.
-      {"", mojom::OriginPolicyState::kLoaded, "manifest-1",
+      {"", OriginPolicyState::kLoaded,
+       R"({ "feature-policy": ["geolocation http://example1.com"] })",
        test_server_origin()},
   };
 
@@ -418,8 +428,10 @@ TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
     if (test.expected_raw_policy.empty()) {
       EXPECT_FALSE(tester.origin_policy_result()->contents);
     } else {
-      EXPECT_EQ(test.expected_raw_policy,
-                tester.origin_policy_result()->contents->raw_policy);
+      OriginPolicyContentsPtr expected_origin_policy_contents =
+          OriginPolicyParser::Parse(test.expected_raw_policy);
+      EXPECT_EQ(expected_origin_policy_contents,
+                tester.origin_policy_result()->contents);
     }
   }
 }

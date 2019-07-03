@@ -12,8 +12,8 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/test_sync_service.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {

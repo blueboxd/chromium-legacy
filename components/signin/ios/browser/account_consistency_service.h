@@ -19,7 +19,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/ios/browser/active_state_manager.h"
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
-#import "services/identity/public/cpp/identity_manager.h"
+#import "components/signin/public/identity_manager/identity_manager.h"
 
 namespace web {
 class BrowserState;

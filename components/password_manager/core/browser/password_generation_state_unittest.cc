@@ -8,9 +8,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,6 +23,10 @@ namespace {
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using testing::_;
+using testing::ElementsAre;
+using testing::IsEmpty;
+using testing::Key;
+using testing::Pointee;
 
 constexpr char kURL[] = "https://example.in/login";
 constexpr char kSubdomainURL[] = "https://m.example.in/login";
@@ -35,6 +42,17 @@ PasswordForm CreateSaved() {
   form.username_value = ASCIIToUTF16("old_username");
   form.password_value = ASCIIToUTF16("12345");
   return form;
+}
+
+PasswordForm CreateSavedFederated() {
+  autofill::PasswordForm federated;
+  federated.origin = GURL(kURL);
+  federated.signon_realm = "federation://example.in/google.com";
+  federated.type = autofill::PasswordForm::Type::kApi;
+  federated.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
+  federated.username_value = ASCIIToUTF16("federated_username");
+  return federated;
 }
 
 // Creates a dummy saved PSL credential.
@@ -66,6 +84,35 @@ MATCHER_P(FormHasUniqueKey, key, "") {
   return ArePasswordFormUniqueKeysEqual(arg, key);
 }
 
+class MockPasswordManagerDriver : public StubPasswordManagerDriver {
+ public:
+  MOCK_METHOD1(GeneratedPasswordAccepted, void(const base::string16& password));
+};
+
+class MockPasswordManagerClient : public StubPasswordManagerClient {
+ public:
+  bool PromptUserToSaveOrUpdatePassword(
+      std::unique_ptr<PasswordFormManagerForUI> form_to_save,
+      bool update_password) override;
+
+  MOCK_METHOD1(PromptUserToSaveOrUpdatePasswordMock,
+               bool(bool update_password));
+
+  std::unique_ptr<PasswordFormManagerForUI> MoveForm() {
+    return std::move(form_to_save_);
+  }
+
+ private:
+  std::unique_ptr<PasswordFormManagerForUI> form_to_save_;
+};
+
+bool MockPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
+    std::unique_ptr<PasswordFormManagerForUI> form_to_save,
+    bool update_password) {
+  form_to_save_ = std::move(form_to_save);
+  return PromptUserToSaveOrUpdatePasswordMock(update_password);
+}
+
 class PasswordGenerationStateTest : public testing::Test {
  public:
   PasswordGenerationStateTest();
@@ -74,7 +121,12 @@ class PasswordGenerationStateTest : public testing::Test {
   MockPasswordStore& store() { return *mock_store_; }
   PasswordGenerationState& state() { return generation_state_; }
   FormSaverImpl& form_saver() { return form_saver_; }
-  StubPasswordManagerClient& client() { return client_; }
+  MockPasswordManagerClient& client() { return client_; }
+
+  // Immitates user accepting the password that can't be immediately presaved.
+  // The returned value represents the UI model for the update bubble.
+  std::unique_ptr<PasswordFormManagerForUI> SetUpOverwritingUI(
+      base::WeakPtr<PasswordManagerDriver> driver);
 
  private:
   // For the MockPasswordStore.
@@ -82,7 +134,7 @@ class PasswordGenerationStateTest : public testing::Test {
   scoped_refptr<MockPasswordStore> mock_store_;
   // Test with the real form saver for better robustness.
   FormSaverImpl form_saver_;
-  StubPasswordManagerClient client_;
+  MockPasswordManagerClient client_;
   PasswordGenerationState generation_state_;
 };
 
@@ -97,6 +149,111 @@ PasswordGenerationStateTest::PasswordGenerationStateTest()
 
 PasswordGenerationStateTest::~PasswordGenerationStateTest() {
   mock_store_->ShutdownOnUIThread();
+}
+
+std::unique_ptr<PasswordFormManagerForUI>
+PasswordGenerationStateTest::SetUpOverwritingUI(
+    base::WeakPtr<PasswordManagerDriver> driver) {
+  PasswordForm generated = CreateGenerated();
+  PasswordForm saved = CreateSaved();
+  generated.username_value = ASCIIToUTF16("");
+  saved.username_value = ASCIIToUTF16("");
+  const PasswordForm federated = CreateSavedFederated();
+  FakeFormFetcher fetcher;
+  fetcher.SetNonFederated({&saved});
+  fetcher.set_federated({&federated});
+
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordMock(true))
+      .WillOnce(testing::Return(true));
+  state().GeneratedPasswordAccepted(std::move(generated), fetcher,
+                                    std::move(driver));
+  return client_.MoveForm();
+}
+
+// Check that accepting a generated password simply relays the message to the
+// driver.
+TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_EmptyStore) {
+  PasswordForm generated = CreateGenerated();
+  MockPasswordManagerDriver driver;
+  FakeFormFetcher fetcher;
+
+  EXPECT_CALL(driver, GeneratedPasswordAccepted(generated.password_value));
+  state().GeneratedPasswordAccepted(std::move(generated), fetcher,
+                                    driver.AsWeakPtr());
+  EXPECT_FALSE(state().HasGeneratedPassword());
+}
+
+// In case of accepted password conflicts with an existing username the
+// credential can be presaved with an empty one. Thus, no conflict happens and
+// the driver should be notified directly.
+TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_Conflict) {
+  PasswordForm generated = CreateGenerated();
+  const PasswordForm saved = CreateSaved();
+  generated.username_value = saved.username_value;
+  MockPasswordManagerDriver driver;
+  FakeFormFetcher fetcher;
+  fetcher.SetNonFederated({&saved});
+
+  EXPECT_CALL(driver, GeneratedPasswordAccepted(generated.password_value));
+  state().GeneratedPasswordAccepted(std::move(generated), fetcher,
+                                    driver.AsWeakPtr());
+  EXPECT_FALSE(state().HasGeneratedPassword());
+}
+
+TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUI) {
+  MockPasswordManagerDriver driver;
+  EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
+  std::unique_ptr<PasswordFormManagerForUI> ui_form =
+      SetUpOverwritingUI(driver.AsWeakPtr());
+  ASSERT_TRUE(ui_form);
+  EXPECT_EQ(GURL(kURL), ui_form->GetOrigin());
+  EXPECT_THAT(ui_form->GetBestMatches(), ElementsAre(Key(ASCIIToUTF16(""))));
+  EXPECT_THAT(ui_form->GetFederatedMatches(),
+              ElementsAre(Pointee(CreateSavedFederated())));
+  EXPECT_EQ(ASCIIToUTF16(""), ui_form->GetPendingCredentials().username_value);
+  EXPECT_EQ(CreateGenerated().password_value,
+            ui_form->GetPendingCredentials().password_value);
+  EXPECT_THAT(ui_form->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_THAT(ui_form->GetInteractionsStats(), IsEmpty());
+  EXPECT_FALSE(ui_form->IsBlacklisted());
+}
+
+TEST_F(PasswordGenerationStateTest,
+       GeneratedPasswordAccepted_UpdateUIDismissed) {
+  MockPasswordManagerDriver driver;
+  EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
+  std::unique_ptr<PasswordFormManagerForUI> ui_form =
+      SetUpOverwritingUI(driver.AsWeakPtr());
+  ASSERT_TRUE(ui_form);
+  ui_form->OnNoInteraction(true);
+}
+
+TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUINope) {
+  MockPasswordManagerDriver driver;
+  EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
+  std::unique_ptr<PasswordFormManagerForUI> ui_form =
+      SetUpOverwritingUI(driver.AsWeakPtr());
+  ASSERT_TRUE(ui_form);
+  ui_form->OnNopeUpdateClicked();
+}
+
+TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUINever) {
+  MockPasswordManagerDriver driver;
+  EXPECT_CALL(driver, GeneratedPasswordAccepted(_)).Times(0);
+  std::unique_ptr<PasswordFormManagerForUI> ui_form =
+      SetUpOverwritingUI(driver.AsWeakPtr());
+  ASSERT_TRUE(ui_form);
+  ui_form->OnNeverClicked();
+}
+
+TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUISave) {
+  MockPasswordManagerDriver driver;
+  std::unique_ptr<PasswordFormManagerForUI> ui_form =
+      SetUpOverwritingUI(driver.AsWeakPtr());
+  ASSERT_TRUE(ui_form);
+  EXPECT_CALL(driver,
+              GeneratedPasswordAccepted(CreateGenerated().password_value));
+  ui_form->Save();
 }
 
 // Check that presaving a password for the first time results in adding it.

@@ -22,8 +22,8 @@
 #include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
 namespace autofill {

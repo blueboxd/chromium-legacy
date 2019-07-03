@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 
 namespace base {
 class Value;

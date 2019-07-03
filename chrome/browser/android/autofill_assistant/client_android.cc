@@ -29,12 +29,12 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;

@@ -23,9 +23,9 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 using sync_pb::UserConsentTypes;
 

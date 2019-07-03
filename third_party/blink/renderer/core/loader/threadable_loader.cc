@@ -110,7 +110,7 @@ class ThreadableLoader::DetachedClient final
 
  public:
   explicit DetachedClient(ThreadableLoader* loader)
-      : self_keep_alive_(this), loader_(loader) {}
+      : self_keep_alive_(PERSISTENT_FROM_HERE, this), loader_(loader) {}
   ~DetachedClient() override {}
 
   void DidFinishLoading(uint64_t identifier) override {

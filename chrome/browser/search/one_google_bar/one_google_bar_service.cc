@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 class OneGoogleBarService::SigninObserver
     : public identity::IdentityManager::Observer {

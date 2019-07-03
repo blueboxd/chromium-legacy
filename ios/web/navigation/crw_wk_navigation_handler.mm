@@ -1670,9 +1670,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     [self handleCancelledError:error
                  forNavigation:navigation
                provisionalLoad:provisionalLoad];
-    // TODO(crbug.com/957032): This might get fixed at some point. Check if
-    // there is a iOS version for which we don't need it any more.
-    if (@available(iOS 12.2, *)) {
+    if (@available(iOS 13, *)) {
+      // The bug has been fixed on iOS 13. The workaround is only needed for
+      // other versions.
+    } else if (@available(iOS 12.2, *)) {
       if (![webView.backForwardList.currentItem.URL isEqual:webView.URL] &&
           [self isCurrentNavigationItemPOST]) {
         UMA_HISTOGRAM_BOOLEAN("WebController.BackForwardListOutOfSync", true);

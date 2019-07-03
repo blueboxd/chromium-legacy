@@ -96,7 +96,11 @@ message NigoriSpecifics {
     // User provided custom passphrase.
     CUSTOM_PASSPHRASE = 4;
   }
-  optional PassphraseType passphrase_type = 30 [default = IMPLICIT_PASSPHRASE];
+  // An |int| field is used instead of enum PassphraseType so we can better
+  // handle unknown values coming from later versions. Prior to M77, this was an
+  // enum so old clients will assume IMPLICIT_PASSPHRASE for values greater than
+  // 4.
+  optional int32 passphrase_type = 30 [default = 1];
 
   // The keystore decryptor token blob. Encrypted with the keystore key, and
   // contains the encryption key used to decrypt |encryption_keybag|.

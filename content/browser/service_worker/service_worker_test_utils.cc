@@ -233,7 +233,6 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
 
 void ServiceWorkerRemoteProviderEndpoint::BindForServiceWorker(
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  client_request_ = std::move(info->client_request);
   host_ptr_.Bind(std::move(info->host_ptr_info));
 }
 

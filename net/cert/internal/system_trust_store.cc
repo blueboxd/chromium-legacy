@@ -5,6 +5,10 @@
 #include "net/cert/internal/system_trust_store.h"
 
 #if defined(USE_NSS_CERTS)
+#include "net/cert/internal/system_trust_store_nss.h"
+#endif  // defined(USE_NSS_CERTS)
+
+#if defined(USE_NSS_CERTS)
 #include <cert.h>
 #include <pk11pub.h>
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
@@ -73,8 +77,9 @@ namespace {
 
 class SystemTrustStoreNSS : public BaseSystemTrustStore {
  public:
-  explicit SystemTrustStoreNSS() : trust_store_nss_(trustSSL) {
-    trust_store_.AddTrustStore(&trust_store_nss_);
+  explicit SystemTrustStoreNSS(std::unique_ptr<TrustStoreNSS> trust_store_nss)
+      : trust_store_nss_(std::move(trust_store_nss)) {
+    trust_store_.AddTrustStore(trust_store_nss_.get());
 
     // When running in test mode, also layer in the test-only root certificates.
     //
@@ -112,13 +117,27 @@ class SystemTrustStoreNSS : public BaseSystemTrustStore {
   }
 
  private:
-  TrustStoreNSS trust_store_nss_;
+  std::unique_ptr<TrustStoreNSS> trust_store_nss_;
 };
 
 }  // namespace
 
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
-  return std::make_unique<SystemTrustStoreNSS>();
+  return std::make_unique<SystemTrustStoreNSS>(
+      std::make_unique<TrustStoreNSS>(trustSSL));
+}
+
+std::unique_ptr<SystemTrustStore>
+CreateSslSystemTrustStoreNSSWithUserSlotRestriction(
+    crypto::ScopedPK11Slot user_slot) {
+  return std::make_unique<SystemTrustStoreNSS>(
+      std::make_unique<TrustStoreNSS>(trustSSL, std::move(user_slot)));
+}
+
+std::unique_ptr<SystemTrustStore>
+CreateSslSystemTrustStoreNSSWithNoUserSlots() {
+  return std::make_unique<SystemTrustStoreNSS>(std::make_unique<TrustStoreNSS>(
+      trustSSL, TrustStoreNSS::DisallowTrustForCertsOnUserSlots()));
 }
 
 #elif defined(OS_MACOSX) && !defined(OS_IOS)

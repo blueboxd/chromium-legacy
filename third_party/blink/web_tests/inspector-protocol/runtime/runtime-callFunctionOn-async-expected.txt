@@ -14,7 +14,7 @@ Running test: testSyntaxErrorInFunction
         columnNumber : 2
         exception : {
             className : SyntaxError
-            description : SyntaxError: Unexpected token }
+            description : SyntaxError: Unexpected token '}'
             objectId : <number>
             subtype : error
             type : object
@@ -26,7 +26,7 @@ Running test: testSyntaxErrorInFunction
     }
     result : {
         className : SyntaxError
-        description : SyntaxError: Unexpected token }
+        description : SyntaxError: Unexpected token '}'
         objectId : <string>
         subtype : error
         type : object

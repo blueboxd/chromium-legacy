@@ -65,11 +65,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
   void FetchPolicy(mojom::URLLoaderFactory* factory);
 
   void WorkDone(std::unique_ptr<std::string> policy_content,
-                mojom::OriginPolicyState state);
+                OriginPolicyState state);
 
   bool IsValidRedirect(const net::RedirectInfo& redirect_info) const;
 
-  void Report(mojom::OriginPolicyState error_state);
+  void Report(OriginPolicyState error_state);
 
   // The owner of this object. When it is destroyed, this is destroyed too.
   OriginPolicyManager* const owner_policy_manager_;

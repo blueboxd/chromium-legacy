@@ -18,10 +18,10 @@
 #include "base/timer/timer.h"
 #include "chrome/common/buildflags.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace base {
 class DictionaryValue;

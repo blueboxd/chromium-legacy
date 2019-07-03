@@ -292,7 +292,7 @@ ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
                             error_message)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSecurityError, error_message));
+                          DOMExceptionCode::kNotAllowedError, error_message));
   }
 
   if (!nfc_) {

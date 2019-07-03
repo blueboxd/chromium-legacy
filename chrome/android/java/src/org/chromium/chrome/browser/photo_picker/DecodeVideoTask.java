@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.photo_picker;
 
 import android.content.ContentResolver;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -14,12 +15,14 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 
 /**
  * A worker task to decode video and extract information from it off of the UI thread.
  */
-class DecodeVideoTask extends AsyncTask<Pair<Bitmap, String>> {
+class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
     /**
      * An interface to use to communicate back the results to the client.
      */
@@ -27,10 +30,10 @@ class DecodeVideoTask extends AsyncTask<Pair<Bitmap, String>> {
         /**
          * A callback to define to receive the list of all images on disk.
          * @param uri The uri of the video decoded.
-         * @param bitmap A single frame (thumbnail) from the video.
+         * @param bitmaps An array of thumbnails extracted from the video.
          * @param duration The duration of the video.
          */
-        void videoDecodedCallback(Uri uri, Bitmap bitmap, String duration);
+        void videoDecodedCallback(Uri uri, List<Bitmap> bitmaps, String duration);
     }
 
     // The callback to use to communicate the results.
@@ -41,6 +44,12 @@ class DecodeVideoTask extends AsyncTask<Pair<Bitmap, String>> {
 
     // The desired width and height (in pixels) of the returned thumbnail from the video.
     int mSize;
+
+    // The number of frames to extract.
+    int mFrames;
+
+    // The interval between frames (in milliseconds).
+    int mIntervalMs;
 
     // The ContentResolver to use to retrieve image metadata from disk.
     private ContentResolver mContentResolver;
@@ -55,13 +64,17 @@ class DecodeVideoTask extends AsyncTask<Pair<Bitmap, String>> {
      * @param uri The URI of the video to decode.
      * @param size The desired width and height (in pixels) of the returned thumbnail from the
      *             video.
+     * @param frames The number of frames to extract.
+     * @param intervalMs The interval between frames (in milliseconds).
      */
-    public DecodeVideoTask(
-            VideoDecodingCallback callback, ContentResolver contentResolver, Uri uri, int size) {
+    public DecodeVideoTask(VideoDecodingCallback callback, ContentResolver contentResolver, Uri uri,
+            int size, int frames, int intervalMs) {
         mCallback = callback;
         mContentResolver = contentResolver;
         mUri = uri;
         mSize = size;
+        mFrames = frames;
+        mIntervalMs = intervalMs;
     }
 
     /**
@@ -90,19 +103,27 @@ class DecodeVideoTask extends AsyncTask<Pair<Bitmap, String>> {
      * @return A pair of bitmap (video thumbnail) and the duration of the video.
      */
     @Override
-    protected Pair<Bitmap, String> doInBackground() {
+    protected Pair<List<Bitmap>, String> doInBackground() {
         assert !ThreadUtils.runningOnUiThread();
 
         if (isCancelled()) return null;
 
+        AssetFileDescriptor afd = null;
         try {
-            Bitmap bitmap = BitmapUtils.decodeVideoFromFileDescriptor(mRetriever,
-                    mContentResolver.openAssetFileDescriptor(mUri, "r").getFileDescriptor(), mSize);
+            afd = mContentResolver.openAssetFileDescriptor(mUri, "r");
+            List<Bitmap> bitmaps = BitmapUtils.decodeVideoFromFileDescriptor(
+                    mRetriever, afd.getFileDescriptor(), mSize, mFrames, mIntervalMs);
             String duration =
                     mRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            return new Pair<Bitmap, String>(bitmap, formatDuration(duration));
+            return new Pair<List<Bitmap>, String>(bitmaps, formatDuration(duration));
         } catch (FileNotFoundException exception) {
             return null;
+        } finally {
+            try {
+                if (afd != null) afd.close();
+            } catch (IOException exception) {
+                return null;
+            }
         }
     }
 
@@ -111,7 +132,7 @@ class DecodeVideoTask extends AsyncTask<Pair<Bitmap, String>> {
      * @param results A pair of bitmap (video thumbnail) and the duration of the video.
      */
     @Override
-    protected void onPostExecute(Pair<Bitmap, String> results) {
+    protected void onPostExecute(Pair<List<Bitmap>, String> results) {
         if (isCancelled()) {
             return;
         }

@@ -453,6 +453,7 @@ source_set("blink_headers") {
     "web/web_navigation_type.h",
     "web/web_node.h",
     "web/web_option_element.h",
+    "web/web_origin_policy.h",
     "web/web_page_importance_signals.h",
     "web/web_page_popup.h",
     "web/web_pepper_socket.h",

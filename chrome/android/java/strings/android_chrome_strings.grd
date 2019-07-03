@@ -348,15 +348,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SIGN_IN_TO_CHROME_DISABLED_SUMMARY" desc="A descriptive line of text that appears under the 'Sign in to Chrome' option, in Chrome Settings on Android. The text explains why 'Sign in to Chrome' is disabled. 'Administrator' refers to the IT administrator of the company/organization that owns the user’s device.">
         Disabled by the administrator of this device
       </message>
-      <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_LEGACY" desc="Title of Google activity controls preference in signed in accounts settings screen">
-        Google Activity Controls
-      </message>
-      <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_MESSAGE_LEGACY" desc="Message of Google activity controls preference in signed in accounts settings screen">
-        Control how Google uses your browsing history to personalize Search, ads, and other Google services.
-      </message>
-      <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_MESSAGE_CHILD_ACCOUNT" desc="Message of Google activity controls preference in signed in accounts settings screen for child accounts">
-        Control how Google uses your browsing history to personalize Search and other Google services.
-      </message>
       <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_TITLE" desc="Title of Google activity controls preference in signed in accounts settings screen">
         Google activity controls
       </message>
@@ -698,18 +689,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">
         Privacy
       </message>
-      <message name="IDS_NAVIGATION_ERROR_TITLE" desc="Title for checkbox to enable or disable navigation error suggestions.">
-        Navigation error suggestions
-      </message>
-      <message name="IDS_NAVIGATION_ERROR_SUMMARY" desc="Summary for navigation error suggestions.">
-        Show suggestions when a web address does not resolve or a connection cannot be made
-      </message>
-      <message name="IDS_SEARCH_SUGGESTIONS_TITLE" desc="Title for search and url suggestions.">
-        Search and URL suggestions
-      </message>
-      <message name="IDS_SEARCH_SUGGESTIONS_SUMMARY" desc="Summary for search and url suggestions.">
-        Use a prediction service to show related queries and popular websites as you type in the address bar
-      </message>
       <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_TITLE" desc="Title for checkbox that controls reporting data to detect bad apps/sites. Please ensure ‘Safe Browsing’ in this message matches the ‘Safe Browsing’ settings title.">
         Help improve Chrome security
       </message>
@@ -721,12 +700,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_SAFE_BROWSING_SUMMARY" desc="Summary for safe browsing.">
         Sends URLs of some pages you visit to Google, when your security is at risk
-      </message>
-      <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title of a setting in Chrome settings. Followed by a body that describes the setting. If setting is turned on, Chrome will download certain pages to the user’s phone automatically for offline reading. 'predictions' convey the idea that Chrome is using predictive models to figure out pages likely of interest to the user.">
-        Use page predictions
-      </message>
-      <message name="IDS_NETWORK_PREDICTIONS_SUMMARY" desc="Body text for the “Use page predictions” setting in Chrome settings. Describes what happens if the setting is turned on. 'Preload' conveys the idea that Chrome is getting pages for the user without their explicit interaction or consent.">
-        Preload pages for faster loading and offline reading
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
         Tap to Search
@@ -1517,9 +1490,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_ACCOUNT_MANAGEMENT_TITLE" desc="Header title for the account management screen. [CHAR-LIMIT=32]">
         Signed in to Google as
       </message>
-      <message name="IDS_ACCOUNT_MANAGEMENT_SYNC_SUMMARY" desc="Description for which account the data is being synced to">
-        Syncing to <ph name="SYNC_ACCOUNT_USER_NAME">%1$s<ex>johndoe@gmail.com</ex></ph>
-      </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_SIGN_OUT" desc="Button text for signing out of Chrome">
         Sign out of Chrome
       </message>
@@ -1611,14 +1581,8 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
       <!-- Sign-in strings -->
-      <message name="IDS_SIGNOUT_TITLE_LEGACY" desc="Title for sign out of Chrome dialog [CHAR-LIMIT=40]">
-        Sign out of Chrome?
-      </message>
       <message name="IDS_SIGNOUT_TITLE" desc="Title for sign out of Chrome dialog [CHAR-LIMIT=40]">
         Sign out and turn off sync?
-      </message>
-      <message name="IDS_SIGNOUT_MESSAGE_LEGACY" desc="Message to display for sign out of Chrome dialog">
-        Changes to your bookmarks, history, passwords, and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google account.
       </message>
       <message name="IDS_SIGNOUT_MESSAGE_WITHOUT_REMOVE_LOCAL_DATA" desc="Message to display in 'Sign out and turn off sync?' dialog">
         Your bookmarks, history, passwords, and more will no longer be synced to your Google Account
@@ -1631,9 +1595,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_MESSAGE" desc="Message to display for sign out of Chrome dialog when the account has enterprise management, and all user data will be erased">
         You are signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.
-      </message>
-      <message name="IDS_SIGNOUT_DIALOG_POSITIVE_BUTTON" desc="Button to sign out of Chrome">
-        Sign out
       </message>
       <message name="IDS_SIGN_IN_GETTING_ACCOUNT_MANAGEMENT_POLICY" desc="Title of progress bar dialog for getting management policy">
         Contacting Google. This may take a minute…
@@ -2760,18 +2721,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Personalized Signin Promos Strings -->
-      <message name="IDS_SIGNIN_PROMO_DESCRIPTION_BOOKMARKS_LEGACY" desc="Description string for 'Continue as' signin promo shown in Bookmarks screen.">
-        To get your bookmarks on all your devices, sign in to Chrome.
-      </message>
-      <message name="IDS_SIGNIN_PROMO_DESCRIPTION_NTP_CONTENT_SUGGESTIONS_LEGACY" desc="Description string for 'Continue as' signin promo shown in NTP content suggestions screen.">
-        To get personalized content suggested by Google, sign in to Chrome.
-      </message>
-      <message name="IDS_SIGNIN_PROMO_DESCRIPTION_RECENT_TABS_LEGACY" desc="Description string for 'Continue as' signin promo shown in Recent Tabs screen.">
-        To get your tabs from your other devices, sign in to Chrome.
-      </message>
-      <message name="IDS_SIGNIN_PROMO_DESCRIPTION_SETTINGS_LEGACY" desc="Description string for 'Continue as' signin promo shown in Settings screen.">
-        Sign in to Chrome to get your bookmarks, passwords, and more on all your devices.
-      </message>
       <message name="IDS_SIGNIN_PROMO_CONTINUE_AS" desc="Button that the user can press to login without asking the password and continue using Chrome with this acccount.">
         Continue as <ph name="USER_FULL_NAME">%1$s<ex>John Doe</ex></ph>
       </message>
@@ -3951,6 +3900,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_DEVICE_LAST_ACTIVE_TODAY" desc="String displayed in the device picker indicating the last time the device was synced to the user's account today.">
         Active today
+      </message>
+
+      <!-- ClickToCall -->
+      <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification.">
+        Call <ph name="PHONE_NUMBER">%1$s<ex>+1234567890</ex></ph>
       </message>
 
       <!-- Chrome Duet -->

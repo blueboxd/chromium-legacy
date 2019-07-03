@@ -64,10 +64,10 @@ static_library("shared") {
 }
 
 # This target forms the core of the IdentityManager implementation
-# (//services/identity/public/cpp/identity_manager.*). We are actively
-# converting the codebase away from using the code in this target directly to
-# using IdentityManager (tracked in https://crbug.com/796544). Do not add code
-# to this target without consulting with blundell@chromium.org.
+# (//components/signin/public/identity_manager/identity_manager.*). We are
+# actively converting the codebase away from using the code in this target
+# directly to using IdentityManager (tracked in https://crbug.com/796544). Do
+# not add code to this target without consulting with blundell@chromium.org.
 static_library("internals") {
   sources = [
     "account_fetcher_service.cc",
@@ -201,9 +201,9 @@ static_library("browser") {
     "//components/google/core/browser",
     "//components/metrics",
     "//components/os_crypt",
+    "//components/signin/public/identity_manager",
     "//components/webdata/common",
     "//crypto",
-    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//skia",
     "//sql",
@@ -247,7 +247,8 @@ static_library("internals_test_support") {
     "fake_profile_oauth2_token_service.h",
 
     # TODO(https://crbug.com/907782): Move list_accounts_test_utils to
-    # //services/identity/public/cpp once FakeGCMS no longer depends on it.
+    # //components/signin/public/identity_manager once FakeGCMS no longer
+    # depends on it.
     "list_accounts_test_utils.cc",
     "list_accounts_test_utils.h",
     "test_signin_client.cc",
@@ -281,6 +282,7 @@ source_set("unit_tests") {
     "device_id_helper_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
+    "identity_utils_unittest.cc",
     "mice_account_reconcilor_delegate_unittest.cc",
     "mutable_profile_oauth2_token_service_delegate_unittest.cc",
     "oauth_multilogin_helper_unittest.cc",
@@ -307,12 +309,12 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/prefs:test_support",
     "//components/signin/core/browser/webdata",
+    "//components/signin/public/identity_manager:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/webdata/common",
     "//google_apis:test_support",
     "//net:test_support",
-    "//services/identity/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",

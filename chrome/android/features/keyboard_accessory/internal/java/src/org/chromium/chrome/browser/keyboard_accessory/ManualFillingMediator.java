@@ -255,7 +255,7 @@ class ManualFillingMediator extends EmptyTabObserver
     }
 
     void showWhenKeyboardIsVisible() {
-        if (!isInitialized() || mKeyboardAccessory.empty()) return;
+        if (!isInitialized()) return;
         mModel.set(SHOW_WHEN_VISIBLE, true);
         if (is(HIDDEN)) mModel.set(KEYBOARD_EXTENSION_STATE, FLOATING_BAR);
     }

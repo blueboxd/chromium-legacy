@@ -1298,6 +1298,9 @@
         android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TimeoutReceiver"/>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.upgrade.PackageReplacedBroadcastReceiver">
       <intent-filter>
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>

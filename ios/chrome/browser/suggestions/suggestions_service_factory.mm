@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/suggestions_service_impl.h"
 #include "components/suggestions/suggestions_store.h"
@@ -21,7 +22,6 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

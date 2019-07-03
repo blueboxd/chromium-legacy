@@ -107,6 +107,5 @@ bool PrimaryAccountPolicyManagerImpl::IsAllowedUsername(
   if (!local_state)
     return true;
 
-  return identity::IsUsernameAllowedByPatternFromPrefs(
-      local_state, username, prefs::kGoogleServicesUsernamePattern);
+  return identity::IsUsernameAllowedByPatternFromPrefs(local_state, username);
 }

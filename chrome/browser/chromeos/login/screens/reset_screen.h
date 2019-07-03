@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
@@ -51,6 +52,13 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   // have no effect.
   static void SetTpmFirmwareUpdateCheckerForTesting(
       TpmFirmwareUpdateAvailabilityChecker* checker);
+
+  // Checks if powerwash is allowed and passes the result to |callback|. In case
+  // TPM firmware update has to be installed, the mode of update will be passed
+  // as second parameter to |callback|.
+  static void CheckIfPowerwashAllowed(
+      base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
+          callback);
 
  private:
   // BaseScreen implementation:

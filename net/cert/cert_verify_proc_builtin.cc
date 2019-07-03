@@ -258,7 +258,9 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
 class CertVerifyProcBuiltin : public CertVerifyProc {
  public:
-  explicit CertVerifyProcBuiltin(scoped_refptr<CertNetFetcher> net_fetcher);
+  CertVerifyProcBuiltin(
+      scoped_refptr<CertNetFetcher> net_fetcher,
+      std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider);
 
   bool SupportsAdditionalTrustAnchors() const override;
 
@@ -276,11 +278,14 @@ class CertVerifyProcBuiltin : public CertVerifyProc {
                      CertVerifyResult* verify_result) override;
 
   scoped_refptr<CertNetFetcher> net_fetcher_;
+  std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider_;
 };
 
 CertVerifyProcBuiltin::CertVerifyProcBuiltin(
-    scoped_refptr<CertNetFetcher> net_fetcher)
-    : net_fetcher_(std::move(net_fetcher)) {}
+    scoped_refptr<CertNetFetcher> net_fetcher,
+    std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider)
+    : net_fetcher_(std::move(net_fetcher)),
+      system_trust_store_provider_(std::move(system_trust_store_provider)) {}
 
 CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
@@ -589,7 +594,9 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
   // Parse the additional trust anchors and setup trust store.
   std::unique_ptr<SystemTrustStore> ssl_trust_store =
-      CreateSslSystemTrustStore();
+      system_trust_store_provider_
+          ? system_trust_store_provider_->CreateSystemTrustStore()
+          : CreateSslSystemTrustStore();
 
   for (const auto& x509_cert : additional_trust_anchors) {
     scoped_refptr<ParsedCertificate> cert =
@@ -676,8 +683,10 @@ int CertVerifyProcBuiltin::VerifyInternal(
 }  // namespace
 
 scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
-    scoped_refptr<CertNetFetcher> net_fetcher) {
-  return base::MakeRefCounted<CertVerifyProcBuiltin>(std::move(net_fetcher));
+    scoped_refptr<CertNetFetcher> net_fetcher,
+    std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider) {
+  return base::MakeRefCounted<CertVerifyProcBuiltin>(
+      std::move(net_fetcher), std::move(system_trust_store_provider));
 }
 
 }  // namespace net

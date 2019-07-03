@@ -345,11 +345,8 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererOverrideTitleJsDisabled,
     "sanity/renderer-override-title-js-disabled.js")
-// TODO(crbug.com/943636): rebaseline and re-enable once
-// https://chromium-review.googlesource.com/c/v8/v8/+/1593307 is rolled into
-// chromium.
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
-    DISABLED_RendererJavaScriptConsoleErrors,
+    RendererJavaScriptConsoleErrors,
     "sanity/renderer-javascript-console-errors.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererDelayedCompletion,
                                   "sanity/renderer-delayed-completion.js")

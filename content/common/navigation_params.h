@@ -187,10 +187,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // as they are passed through content across navigations.
   std::vector<int> initiator_origin_trial_features;
 
-  // The current origin policy for this request's origin.
-  // (Empty if none applies.)
-  std::string origin_policy;
-
   // The value of the hrefTranslate attribute if this navigation was initiated
   // from a link that had that attribute set.
   std::string href_translate;

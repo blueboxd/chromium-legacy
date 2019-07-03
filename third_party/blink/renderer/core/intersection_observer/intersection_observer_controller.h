@@ -45,7 +45,6 @@ class IntersectionObserverController
   // observers for which observer->trackVisibility() is true.
   void AddTrackedTarget(Element&, bool);
   void RemoveTrackedTarget(Element&);
-  bool NeedsOcclusionTracking() const { return needs_occlusion_tracking_; }
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override {
@@ -69,9 +68,6 @@ class IntersectionObserverController
   // get supported by either of wrapper-tracing or unified GC.
   HeapVector<Member<IntersectionObserver>>
       intersection_observers_being_invoked_;
-  // This is 'true' if any tracked observation target is being tracked by an
-  // observer for which observer->trackVisibility() is true.
-  bool needs_occlusion_tracking_;
 };
 
 }  // namespace blink

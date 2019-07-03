@@ -15,13 +15,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -137,33 +134,6 @@ public class UkmTest {
 
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.UNIFIED_CONSENT)
-    public void secondaryPassphraseCheck() throws Exception {
-        // Keep in sync with UkmBrowserTest.SecondaryPassphraseCheck in
-        // chrome/browser/metrics/ukm_browsertest.cc.
-        // Make sure that UKM is disabled when an secondary passphrase is set.
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> UmaSessionStats.updateMetricsAndCrashReportingForTesting(true));
-
-        // Enable a Syncing account.
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
-        Tab normalTab = mSyncTestRule.getActivity().getActivityTab();
-        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
-
-        String clientId = getUkmClientId(normalTab);
-
-        // Add a passphrase. This should disable UKM.
-        SyncTestUtil.encryptWithPassphrase("passphrase");
-
-        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
-
-        // Client ID should have been reset.
-        Assert.assertNotEquals("Client id:", clientId, getUkmClientId(normalTab));
-    }
-
-    @Test
-    @SmallTest
     public void singleSyncSignoutCheck() throws Exception {
         // Keep in sync with UkmBrowserTest.SingleSyncSignoutCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
@@ -208,23 +178,7 @@ public class UkmTest {
         // Disable Sync for history.
         mSyncTestRule.disableDataType(ModelType.TYPED_URLS);
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            // Disable history sync does not disable UKM when unified consent is
-            // enabled.
-            Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
-        } else {
-            Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
-
-            // Client ID should have been reset.
-            Assert.assertNotEquals("Client id:", originalClientId, getUkmClientId(normalTab));
-
-            // Re-enable Sync for history.
-            mSyncTestRule.enableDataType(ModelType.TYPED_URLS);
-
-            Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
-
-            // Client ID should still be different.
-            Assert.assertNotEquals("Client id:", originalClientId, getUkmClientId(normalTab));
-        }
+        // Disable history sync does not disable UKM
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
     }
 }

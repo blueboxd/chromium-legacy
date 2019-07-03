@@ -16,7 +16,7 @@ Running test: testSyntaxErrorInScript
         columnNumber : 1
         exception : {
             className : SyntaxError
-            description : SyntaxError: Unexpected token }
+            description : SyntaxError: Unexpected token '}'
             objectId : <number>
             subtype : error
             type : object
@@ -34,7 +34,7 @@ Running test: testSyntaxErrorInEvalInScript
         columnNumber : 0
         exception : {
             className : SyntaxError
-            description : SyntaxError: Unexpected token }     at boo.js:2:2
+            description : SyntaxError: Unexpected token '}'     at boo.js:2:2
             objectId : <number>
             subtype : error
             type : object
@@ -57,7 +57,7 @@ Running test: testSyntaxErrorInEvalInScript
     }
     result : {
         className : SyntaxError
-        description : SyntaxError: Unexpected token }     at boo.js:2:2
+        description : SyntaxError: Unexpected token '}'     at boo.js:2:2
         objectId : <string>
         subtype : error
         type : object

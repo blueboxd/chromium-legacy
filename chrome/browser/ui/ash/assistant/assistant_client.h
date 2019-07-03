@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
 class AssistantImageDownloader;

@@ -16,7 +16,7 @@
 #include "components/gcm_driver/account_tracker.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
 
 namespace identity {
 class IdentityManager;

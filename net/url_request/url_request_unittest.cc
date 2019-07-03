@@ -12840,7 +12840,13 @@ TEST_F(URLRequestTestFTP, RawBodyBytes) {
   EXPECT_EQ(6, req->GetRawBodyBytes());
 }
 
-TEST_F(URLRequestTestFTP, FtpAuthCancellation) {
+// Flaky on Mac. See https://crbug.com/980821
+#if defined(OS_MACOSX)
+#define MAYBE_FtpAuthCancellation DISABLED_FtpAuthCancellation
+#else
+#define MAYBE_FtpAuthCancellation FtpAuthCancellation
+#endif
+TEST_F(URLRequestTestFTP, MAYBE_FtpAuthCancellation) {
   ftp_test_server_.set_no_anonymous_ftp_user(true);
   ASSERT_TRUE(ftp_test_server_.Start());
   TestDelegate d;

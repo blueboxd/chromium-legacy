@@ -150,6 +150,7 @@ suite('AppearanceHandler', function() {
   });
 
   if (cr.isChromeOS) {
+    // TODO(crbug/950007): Remove when SplitSettings is complete.
     test('wallpaperManager', function() {
       appearanceBrowserProxy.setIsWallpaperPolicyControlled(false);
       // TODO(dschuyler): This should notice the policy change without needing
@@ -165,6 +166,7 @@ suite('AppearanceHandler', function() {
           });
     });
 
+    // TODO(crbug/950007): Remove when SplitSettings is complete.
     test('wallpaperSettingVisible', function() {
       appearancePage.set('pageVisibility.setWallpaper', false);
       return appearanceBrowserProxy.whenCalled('isWallpaperSettingVisible')
@@ -174,6 +176,7 @@ suite('AppearanceHandler', function() {
           });
     });
 
+    // TODO(crbug/950007): Remove when SplitSettings is complete.
     test('wallpaperPolicyControlled', function() {
       // Should show the wallpaper policy indicator and disable the toggle
       // button if the wallpaper is policy controlled.

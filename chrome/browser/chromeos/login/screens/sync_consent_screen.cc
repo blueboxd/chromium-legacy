@@ -17,9 +17,9 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/user_manager/user_manager.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 namespace {

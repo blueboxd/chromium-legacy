@@ -1468,6 +1468,23 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
 }
 
+bool NGLineBreaker::ShouldHangTraillingSpaces(const NGInlineItem& item) {
+  if (!item.Length())
+    return false;
+
+  const ComputedStyle& style = *item.Style();
+  if (!auto_wrap_ || (!style.CollapseWhiteSpace() &&
+                      style.WhiteSpace() == EWhiteSpace::kBreakSpaces))
+    return false;
+
+  const String& text = Text();
+  for (unsigned i = item.StartOffset(); i < item.EndOffset(); ++i) {
+    if (!IsBreakableSpace(text[i]))
+      return false;
+  }
+  return true;
+}
+
 // Handles when the last item overflows.
 // At this point, item_results does not fit into the current line, and there
 // are no break opportunities in item_results.back().
@@ -1513,7 +1530,15 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
       DCHECK(item_result->shape_result ||
              (item_result->break_anywhere_if_overflow &&
               !override_break_anywhere_));
-      if (width_to_rewind < 0 && item_result->may_break_inside) {
+      if (width_to_rewind <= 0) {
+        if (!width_to_rewind || !item_result->may_break_inside) {
+          if (ShouldHangTraillingSpaces(item)) {
+            Rewind(i, line_info);
+            state_ = LineBreakState::kTrailing;
+            return;
+          }
+          continue;
+        }
         // When the text fits but its right margin does not, the break point
         // must not be at the end.
         LayoutUnit item_available_width =

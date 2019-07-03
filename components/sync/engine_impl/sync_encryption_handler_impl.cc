@@ -94,6 +94,10 @@ enum class KeyDerivationMethodStateForMetrics {
 // 2. Frozen keybag is true
 // 3. If passphrase state is keystore, keystore_decryptor_token is set.
 bool IsNigoriMigratedToKeystore(const sync_pb::NigoriSpecifics& nigori) {
+  // |passphrase_type| is always populated by modern clients, but may be missing
+  // in coming from an ancient client, from data that was never upgraded, or
+  // from the uninitialized NigoriSpecifics (e.g. sync was just enabled for this
+  // account).
   if (!nigori.has_passphrase_type())
     return false;
   if (!nigori.keybag_is_frozen())
@@ -385,6 +389,8 @@ bool SyncEncryptionHandlerImpl::Init() {
       // WriteEncryptionStateToNigori will do this for us.)
       ReplaceImplicitKeyDerivationMethodInNigori(&trans);
       break;
+    case ApplyNigoriUpdateResult::kUnsupportedRemoteState:
+      return false;
     case ApplyNigoriUpdateResult::kRemoteMustBeCorrected:
       WriteEncryptionStateToNigori(&trans, NigoriMigrationTrigger::kInit);
       break;
@@ -824,6 +830,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
                 weak_ptr_factory_.GetWeakPtr()));
       }
       break;
+    case ApplyNigoriUpdateResult::kUnsupportedRemoteState:
+      return false;
     case ApplyNigoriUpdateResult::kRemoteMustBeCorrected:
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -1063,6 +1071,17 @@ SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const base::Optional<PassphraseType> nigori_passphrase_type_optional =
+      ProtoPassphraseInt32ToEnum(nigori.passphrase_type());
+  if (!nigori_passphrase_type_optional) {
+    DVLOG(1) << "Ignoring nigori node update with unknown passphrase type.";
+    return ApplyNigoriUpdateResult::kUnsupportedRemoteState;
+  }
+
+  const PassphraseType nigori_passphrase_type =
+      *nigori_passphrase_type_optional;
+
   DVLOG(1) << "Applying nigori node update.";
   bool nigori_types_need_update =
       !UpdateEncryptedTypesFromNigori(nigori, trans);
@@ -1075,8 +1094,6 @@ SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   if (is_nigori_migrated) {
     keystore_migration_time_ =
         ProtoTimeToTime(nigori.keystore_migration_time());
-    PassphraseType nigori_passphrase_type =
-        ProtoPassphraseTypeToEnum(nigori.passphrase_type());
 
     // Only update the local passphrase state if it's a valid transition:
     // - implicit -> keystore
@@ -1135,8 +1152,7 @@ SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     // Else, since it was decryptable, it must not have been a new key.
     bool need_new_default_key = false;
     if (is_nigori_migrated) {
-      need_new_default_key = IsExplicitPassphrase(
-          ProtoPassphraseTypeToEnum(nigori.passphrase_type()));
+      need_new_default_key = IsExplicitPassphrase(nigori_passphrase_type);
     } else {
       need_new_default_key = nigori.keybag_is_frozen();
     }
@@ -1213,9 +1229,7 @@ SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     passphrase_type_matches =
         nigori.keybag_is_frozen() == IsExplicitPassphrase(*passphrase_type);
   } else {
-    passphrase_type_matches =
-        (ProtoPassphraseTypeToEnum(nigori.passphrase_type()) ==
-         *passphrase_type);
+    passphrase_type_matches = (nigori_passphrase_type == *passphrase_type);
   }
   if (!passphrase_type_matches ||
       nigori.encrypt_everything() != encrypt_everything_ ||

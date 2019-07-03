@@ -20,16 +20,15 @@
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
-#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
@@ -407,53 +406,25 @@ void CoreOobeHandler::HandleSkipToUpdateForTesting() {
 }
 
 void CoreOobeHandler::HandleToggleResetScreen() {
-  // TODO(igorcov): Move this logic in a static method in wizard_controller,
-  // passing as parameter a callback(bool). Here, call the newly created method
-  // and pass as a callback a simple function that will call LaunchResetScreen
-  // if the input bool parameter is true.
-  // Check the common case of a correctly enrolled device.
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged()) {
-    // Admin can explicitly allow to powerwash. If the policy is not loaded yet,
-    // we consider by default that the device is not allowed to powerwash.
-    bool is_powerwash_allowed = false;
-    CrosSettings::Get()->GetBoolean(kDevicePowerwashAllowed,
-                                    &is_powerwash_allowed);
-    if (is_powerwash_allowed) {
-      LaunchResetScreen();
-      return;
-    }
+  base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
+      callback =
+          base::BindOnce(&CoreOobeHandler::HandleToggleResetScreenCallback,
+                         weak_ptr_factory_.GetWeakPtr());
+  ResetScreen::CheckIfPowerwashAllowed(std::move(callback));
+}
 
-    // Check if powerwash is only allowed by the admin specifically for the
-    // purpose of installing a TPM firmware update.
-    tpm_firmware_update::GetAvailableUpdateModes(
-        base::BindOnce([](const std::set<tpm_firmware_update::Mode>& modes) {
-          using tpm_firmware_update::Mode;
-          for (Mode mode : {Mode::kPowerwash, Mode::kCleanup}) {
-            if (modes.count(mode) == 0)
-              continue;
-
-            // Force the TPM firmware update option to be enabled.
-            g_browser_process->local_state()->SetInteger(
-                prefs::kFactoryResetTPMFirmwareUpdateMode,
-                static_cast<int>(mode));
-            LaunchResetScreen();
-            return;
-          }
-        }),
-        base::TimeDelta());
+void CoreOobeHandler::HandleToggleResetScreenCallback(
+    bool is_reset_allowed,
+    base::Optional<tpm_firmware_update::Mode> tpm_firmware_update_mode) {
+  if (!is_reset_allowed)
     return;
+  if (tpm_firmware_update_mode.has_value()) {
+    // Force the TPM firmware update option to be enabled.
+    g_browser_process->local_state()->SetInteger(
+        prefs::kFactoryResetTPMFirmwareUpdateMode,
+        static_cast<int>(tpm_firmware_update_mode.value()));
   }
-
-  // Devices that are still in OOBE may be subject to forced re-enrollment (FRE)
-  // and thus pending for enterprise management. These should not be allowed to
-  // powerwash either. Note that taking consumer device ownership has the side
-  // effect of dropping the FRE requirement if it was previously in effect.
-  if (AutoEnrollmentController::GetFRERequirement() !=
-      AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
-    LaunchResetScreen();
-  }
+  LaunchResetScreen();
 }
 
 void CoreOobeHandler::HandleEnableDebuggingScreen() {

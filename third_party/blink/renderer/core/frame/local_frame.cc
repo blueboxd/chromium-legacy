@@ -83,7 +83,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -1324,16 +1323,6 @@ FrameOcclusionState LocalFrame::GetOcclusionState() const {
   if (IsLocalRoot())
     return occlusion_state_;
   return LocalFrameRoot().GetOcclusionState();
-}
-
-bool LocalFrame::NeedsOcclusionTracking() const {
-  if (Document* document = GetDocument()) {
-    if (IntersectionObserverController* controller =
-            document->GetIntersectionObserverController()) {
-      return controller->NeedsOcclusionTracking();
-    }
-  }
-  return false;
 }
 
 void LocalFrame::ForceSynchronousDocumentInstall(

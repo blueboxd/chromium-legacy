@@ -15,8 +15,8 @@
 #include "chrome/browser/search/background/ntp_background_data.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "net/base/url_util.h"
-#include "services/identity/public/cpp/access_token_info.h"
 #include "url/gurl.h"
 
 namespace network {

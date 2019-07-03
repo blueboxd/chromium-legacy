@@ -574,6 +574,7 @@ component("net") {
       "cert/ev_root_ca_metadata.h",
       "cert/internal/system_trust_store.cc",
       "cert/internal/system_trust_store.h",
+      "cert/internal/system_trust_store_nss.h",
       "cert/internal/trust_store_mac.cc",
       "cert/internal/trust_store_mac.h",
       "cert/internal/trust_store_nss.cc",
@@ -878,6 +879,8 @@ component("net") {
       "nqe/effective_connection_type_observer.h",
       "nqe/event_creator.cc",
       "nqe/event_creator.h",
+      "nqe/network_congestion_analyzer.cc",
+      "nqe/network_congestion_analyzer.h",
       "nqe/network_id.cc",
       "nqe/network_id.h",
       "nqe/network_qualities_prefs_manager.cc",
@@ -1952,6 +1955,7 @@ component("net") {
 
     if (!use_nss_certs) {
       sources -= [
+        "cert/internal/system_trust_store_nss.h",
         "cert/internal/trust_store_nss.cc",
         "cert/internal/trust_store_nss.h",
         "cert/known_roots_nss.cc",
@@ -5095,6 +5099,7 @@ test("net_unittests") {
     "cert/internal/revocation_util_unittest.cc",
     "cert/internal/signature_algorithm_unittest.cc",
     "cert/internal/simple_path_builder_delegate_unittest.cc",
+    "cert/internal/system_trust_store_nss_unittest.cc",
     "cert/internal/test_helpers.cc",
     "cert/internal/test_helpers.h",
     "cert/internal/trust_store_collection_unittest.cc",
@@ -5225,6 +5230,7 @@ test("net_unittests") {
     "log/trace_net_log_observer_unittest.cc",
     "nqe/effective_connection_type_unittest.cc",
     "nqe/event_creator_unittest.cc",
+    "nqe/network_congestion_analyzer_unittest.cc",
     "nqe/network_id_unittest.cc",
     "nqe/network_qualities_prefs_manager_unittest.cc",
     "nqe/network_quality_estimator_params_unittest.cc",
@@ -5862,6 +5868,7 @@ test("net_unittests") {
 
   if (!use_nss_certs) {
     sources -= [
+      "cert/internal/system_trust_store_nss_unittest.cc",
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "cert/x509_util_nss_unittest.cc",

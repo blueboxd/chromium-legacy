@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
@@ -19,7 +18,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
@@ -65,7 +63,6 @@ public class SigninPromoController {
     private final @Nullable String mImpressionsTilDismissHistogramName;
     private final @Nullable String mImpressionsTilSigninButtonsHistogramName;
     private final @Nullable String mImpressionsTilXButtonHistogramName;
-    private final @StringRes int mDescriptionStringIdLegacy;
     private final @StringRes int mDescriptionStringId;
     private final @StringRes int mDescriptionStringIdNoAccount;
     private boolean mWasDisplayed;
@@ -123,7 +120,6 @@ public class SigninPromoController {
                         "MobileSignInPromo.BookmarkManager.ImpressionsTilSigninButtons";
                 mImpressionsTilXButtonHistogramName =
                         "MobileSignInPromo.BookmarkManager.ImpressionsTilXButton";
-                mDescriptionStringIdLegacy = R.string.signin_promo_description_bookmarks_legacy;
                 mDescriptionStringId = R.string.signin_promo_description_bookmarks;
                 mDescriptionStringIdNoAccount =
                         R.string.signin_promo_description_bookmarks_no_account;
@@ -147,8 +143,6 @@ public class SigninPromoController {
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
                 mImpressionsTilXButtonHistogramName = null;
-                mDescriptionStringIdLegacy =
-                        R.string.signin_promo_description_ntp_content_suggestions_legacy;
                 mDescriptionStringId = R.string.signin_promo_description_ntp_content_suggestions;
                 mDescriptionStringIdNoAccount =
                         R.string.signin_promo_description_ntp_content_suggestions_no_account;
@@ -170,7 +164,6 @@ public class SigninPromoController {
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
                 mImpressionsTilXButtonHistogramName = null;
-                mDescriptionStringIdLegacy = R.string.signin_promo_description_recent_tabs_legacy;
                 mDescriptionStringId = R.string.signin_promo_description_recent_tabs;
                 mDescriptionStringIdNoAccount =
                         R.string.signin_promo_description_recent_tabs_no_account;
@@ -193,7 +186,6 @@ public class SigninPromoController {
                         "MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons";
                 mImpressionsTilXButtonHistogramName =
                         "MobileSignInPromo.SettingsManager.ImpressionsTilXButton";
-                mDescriptionStringIdLegacy = R.string.signin_promo_description_settings_legacy;
                 mDescriptionStringId = R.string.signin_promo_description_settings;
                 mDescriptionStringIdNoAccount =
                         R.string.signin_promo_description_settings_no_account;
@@ -269,7 +261,6 @@ public class SigninPromoController {
 
     /** @return the resource used for the text displayed as promo description. */
     public @StringRes int getDescriptionStringId() {
-        if (!isUnifiedConsent()) return mDescriptionStringIdLegacy;
         return mProfileData == null ? mDescriptionStringIdNoAccount : mDescriptionStringId;
     }
 
@@ -277,9 +268,7 @@ public class SigninPromoController {
         view.getImage().setImageResource(R.drawable.chrome_sync_logo);
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
 
-        @StringRes int descriptionTextId =
-                isUnifiedConsent() ? mDescriptionStringIdNoAccount : mDescriptionStringIdLegacy;
-        view.getDescription().setText(descriptionTextId);
+        view.getDescription().setText(mDescriptionStringIdNoAccount);
 
         view.getSigninButton().setText(R.string.sign_in_to_chrome);
         view.getSigninButton().setOnClickListener(v -> signinWithNewAccount(context));
@@ -288,30 +277,18 @@ public class SigninPromoController {
     }
 
     private void setupHotState(final Context context, PersonalizedSigninPromoView view) {
-        final @StringRes int descriptionTextId;
-        final String chooseAccountButtonText;
-        if (isUnifiedConsent()) {
-            descriptionTextId = mDescriptionStringId;
-            chooseAccountButtonText =
-                    context.getString(R.string.signin_promo_choose_another_account);
-        } else {
-            descriptionTextId = mDescriptionStringIdLegacy;
-            chooseAccountButtonText = context.getString(
-                    R.string.signin_promo_choose_account, mProfileData.getAccountName());
-        }
-
         Drawable accountImage = mProfileData.getImage();
         view.getImage().setImageDrawable(accountImage);
         setImageSize(context, view, R.dimen.signin_promo_account_image_size);
 
-        view.getDescription().setText(descriptionTextId);
+        view.getDescription().setText(mDescriptionStringId);
 
         String signinButtonText = context.getString(
                 R.string.signin_promo_continue_as, mProfileData.getFullNameOrEmail());
         view.getSigninButton().setText(signinButtonText);
         view.getSigninButton().setOnClickListener(v -> signinWithDefaultAccount(context));
 
-        view.getChooseAccountButton().setText(chooseAccountButtonText);
+        view.getChooseAccountButton().setText(R.string.signin_promo_choose_another_account);
         view.getChooseAccountButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
         view.getChooseAccountButton().setVisibility(View.VISIBLE);
     }
@@ -324,42 +301,22 @@ public class SigninPromoController {
     private void signinWithNewAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNewAccountUserActionName);
-        final Intent intent;
-        if (isUnifiedConsent()) {
-            intent = SigninActivity.createIntentForPromoAddAccountFlow(context, mAccessPoint);
-        } else {
-            intent = AccountSigninActivity.createIntentForAddAccountSigninFlow(
-                    context, mAccessPoint, true);
-        }
-        context.startActivity(intent);
+        context.startActivity(
+                SigninActivity.createIntentForPromoAddAccountFlow(context, mAccessPoint));
     }
 
     private void signinWithDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninWithDefaultUserActionName);
-        final Intent intent;
-        if (isUnifiedConsent()) {
-            intent = SigninActivity.createIntentForPromoDefaultFlow(
-                    context, mAccessPoint, mProfileData.getAccountName());
-        } else {
-            intent = AccountSigninActivity.createIntentForConfirmationOnlySigninFlow(
-                    context, mAccessPoint, mProfileData.getAccountName(), true, true);
-        }
-        context.startActivity(intent);
+        context.startActivity(SigninActivity.createIntentForPromoDefaultFlow(
+                context, mAccessPoint, mProfileData.getAccountName()));
     }
 
     private void signinWithNotDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNotDefaultUserActionName);
-        final Intent intent;
-        if (isUnifiedConsent()) {
-            intent = SigninActivity.createIntentForPromoChooseAccountFlow(
-                    context, mAccessPoint, mProfileData.getAccountName());
-        } else {
-            intent = AccountSigninActivity.createIntentForDefaultSigninFlow(
-                    context, mAccessPoint, true);
-        }
-        context.startActivity(intent);
+        context.startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
+                context, mAccessPoint, mProfileData.getAccountName()));
     }
 
     private void recordSigninButtonUsed() {
@@ -392,10 +349,6 @@ public class SigninPromoController {
             int numImpressions = preferences.getInt(mImpressionCountName, 0) + 1;
             preferences.edit().putInt(mImpressionCountName, numImpressions).apply();
         }
-    }
-
-    private static boolean isUnifiedConsent() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT);
     }
 
     @VisibleForTesting

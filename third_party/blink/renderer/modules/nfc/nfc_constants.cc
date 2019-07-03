@@ -16,7 +16,9 @@ const char kNfcProtocolHttps[] = "https";
 const char kNfcCharSetUTF8[] = ";charset=UTF-8";
 
 // Error messages.
-const char kNfcNotSupported[] = "WebNFC is not supported.";
+const char kNfcNotSupported[] = "NFC operation not supported.";
+const char kNfcNotReadable[] = "No NFC adapter or cannot establish connection.";
+const char kNfcNotAllowed[] = "NFC operation not allowed.";
 const char kNfcTextRecordTypeError[] =
     "The data for 'text' NDEFRecords must be of String or UnrestrctedDouble.";
 const char kNfcSetIdError[] = "Cannot set WebNFC Id.";
@@ -36,6 +38,7 @@ const char kNfcRecordDataError[] = "Nonempty NDEFRecord must have data.";
 const char kNfcRecordError[] = "Invalid NDEFRecordType was provided.";
 const char kNfcMsgTypeError[] = "Invalid NDEFMessageSource type was provided.";
 const char kNfcEmptyMsg[] = "Empty NDEFMessage was provided.";
+const char kNfcInvalidMsg[] = "Invalid NFC message was provided.";
 const char kNfcMsgConvertError[] = "Cannot convert NDEFMessage.";
 const char kNfcMsgMaxSizeError[] =
     "NDEFMessage exceeds maximum supported size.";
@@ -45,5 +48,10 @@ const char kNfcInvalidPushTimeout[] =
 const char kNfcWatchIdNotFound[] = "Provided watch id cannot be found.";
 const char kNfcAccessInNonTopFrame[] =
     "NFC interfaces are only avaliable in a top-level browsing context";
+const char kNfcCancelled[] = "The NFC operation was cancelled.";
+const char kNfcTimeout[] = "NFC operation has timed out.";
+const char kNfcUnknownError[] = "An unknown NFC error has occurred.";
+const char kNfcDataTransferError[] = "NFC data transfer error has occurred.";
+const char kNfcNoModificationAllowed[] = "NFC operation cannot be cancelled.";
 
 }  // namespace blink

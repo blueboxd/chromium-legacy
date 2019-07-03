@@ -28,7 +28,6 @@ enum class ContextType {
   WEBGL,
   WEBGPU,
   MEDIA,
-  MUS_CLIENT,
   UNKNOWN,
   FOR_TESTING,
   XR_COMPOSITING,

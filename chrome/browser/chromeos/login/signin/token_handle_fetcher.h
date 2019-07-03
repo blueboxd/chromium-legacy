@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 namespace identity {
 class IdentityManager;

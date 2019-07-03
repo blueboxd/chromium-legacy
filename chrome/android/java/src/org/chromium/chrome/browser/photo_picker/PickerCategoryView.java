@@ -63,11 +63,11 @@ public class PickerCategoryView extends RelativeLayout
      * photo picker (the data we store in the cache).
      */
     static public class Thumbnail {
-        public Bitmap bitmap;
+        public List<Bitmap> bitmaps;
         public String videoDuration;
 
-        Thumbnail(Bitmap bitmap, String videoDuration) {
-            this.bitmap = bitmap;
+        Thumbnail(List<Bitmap> bitmaps, String videoDuration) {
+            this.bitmaps = bitmaps;
             this.videoDuration = videoDuration;
         }
     }

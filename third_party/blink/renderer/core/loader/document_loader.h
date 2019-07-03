@@ -42,6 +42,7 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
+#include "third_party/blink/public/web/web_origin_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -330,8 +331,9 @@ class CORE_EXPORT DocumentLoader
 
   void CommitData(const char* bytes, size_t length);
 
-  ContentSecurityPolicy* CreateCSP(const ResourceResponse&,
-                                   const String& origin_policy_string);
+  ContentSecurityPolicy* CreateCSP(
+      const ResourceResponse&,
+      const base::Optional<WebOriginPolicy>& origin_policy);
   void StartLoadingInternal();
   void FinishedLoading(base::TimeTicks finish_time);
   void CancelLoadAfterCSPDenied(const ResourceResponse&);
@@ -393,7 +395,7 @@ class CORE_EXPORT DocumentLoader
   scoped_refptr<EncodedFormData> http_body_;
   AtomicString http_content_type_;
   WebURLRequest::PreviewsState previews_state_;
-  String origin_policy_;
+  base::Optional<WebOriginPolicy> origin_policy_;
   scoped_refptr<const SecurityOrigin> requestor_origin_;
   KURL unreachable_url_;
   int error_code_;

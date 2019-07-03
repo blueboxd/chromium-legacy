@@ -10508,6 +10508,13 @@ Called by update_net_error_codes.py.-->
   <int value="212" label="Nvmem Cipher Error"/>
 </enum>
 
+<enum name="Cr50U2FCommands">
+  <summary>List of U2F commands that can be handled by cr50.</summary>
+  <int value="1" label="Register"/>
+  <int value="2" label="Authenticate"/>
+  <int value="3" label="Version"/>
+</enum>
+
 <enum name="CrashExitCodes">
 <!-- These are abs() raw exit codes, so always positive. See MapCrashExitCodeForHistogram  function. See also the WindowsExitCode enum. -->
 
@@ -23811,7 +23818,6 @@ Called by update_net_error_codes.py.-->
   <int value="2949" label="CredentialManagerGetWithUVM"/>
   <int value="2950" label="CredentialManagerCreateSuccessWithUVM"/>
   <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
-  <int value="2952" label="DiscardInputEventToMovingIframe"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -56344,6 +56350,7 @@ would be helpful to identify which type is being sent.
   <int value="14" label="Offline Pages"/>
   <int value="15" label="Send Tab To Self"/>
   <int value="16" label="Updates"/>
+  <int value="17" label="Click To Call"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">

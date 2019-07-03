@@ -496,7 +496,7 @@ WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
     : WebRemoteFrame(scope),
       client_(client),
       frame_client_(MakeGarbageCollected<RemoteFrameClientImpl>(this)),
-      self_keep_alive_(this) {
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(client);
 }
 

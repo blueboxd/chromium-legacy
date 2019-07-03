@@ -19,10 +19,10 @@ class PrefService;
 namespace identity {
 
 // Returns true if the username is allowed based on a pattern registered
-// as |pattern_pref_name| with the preferences service referenced by |prefs|.
+// |prefs::kGoogleServicesUsernamePattern| with the preferences service
+// referenced by |prefs|.
 bool IsUsernameAllowedByPatternFromPrefs(const PrefService* prefs,
-                                         const std::string& username,
-                                         const std::string& pattern_pref_name);
+                                         const std::string& username);
 }  // namespace identity
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_IDENTITY_UTILS_H_

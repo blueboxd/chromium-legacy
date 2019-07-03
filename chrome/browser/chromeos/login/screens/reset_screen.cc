@@ -10,10 +10,13 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
@@ -79,12 +82,64 @@ void StartTPMFirmwareUpdate(
   SessionManagerClient::Get()->StartTPMFirmwareUpdate(mode_string);
 }
 
+// Checks if powerwash is allowed based on update modes and passes the result
+// to |callback|.
+void OnUpdateModesAvailable(
+    base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
+        callback,
+    const std::set<tpm_firmware_update::Mode>& modes) {
+  using tpm_firmware_update::Mode;
+  for (Mode mode : {Mode::kPowerwash, Mode::kCleanup}) {
+    if (modes.count(mode) == 0)
+      continue;
+
+    std::move(callback).Run(true, mode);
+    return;
+  }
+  std::move(callback).Run(false, base::nullopt);
+}
+
 }  // namespace
 
 // static
 void ResetScreen::SetTpmFirmwareUpdateCheckerForTesting(
     TpmFirmwareUpdateAvailabilityChecker* checker) {
   g_tpm_firmware_update_checker = checker;
+}
+
+// static
+void ResetScreen::CheckIfPowerwashAllowed(
+    base::OnceCallback<void(bool, base::Optional<tpm_firmware_update::Mode>)>
+        callback) {
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    // Admin can explicitly allow to powerwash. If the policy is not loaded yet,
+    // we consider by default that the device is not allowed to powerwash.
+    bool is_powerwash_allowed = false;
+    CrosSettings::Get()->GetBoolean(kDevicePowerwashAllowed,
+                                    &is_powerwash_allowed);
+    if (is_powerwash_allowed) {
+      std::move(callback).Run(true, base::nullopt);
+      return;
+    }
+
+    // Check if powerwash is only allowed by the admin specifically for the
+    // purpose of installing a TPM firmware update.
+    tpm_firmware_update::GetAvailableUpdateModes(
+        base::Bind(&OnUpdateModesAvailable, base::Passed(&callback)),
+        base::TimeDelta());
+    return;
+  }
+
+  // Devices that are still in OOBE may be subject to forced re-enrollment (FRE)
+  // and thus pending for enterprise management. These should not be allowed to
+  // powerwash either. Note that taking consumer device ownership has the side
+  // effect of dropping the FRE requirement if it was previously in effect.
+  std::move(callback).Run(
+      AutoEnrollmentController::GetFRERequirement() !=
+          AutoEnrollmentController::FRERequirement::kExplicitlyRequired,
+      base::nullopt);
 }
 
 ResetScreen::ResetScreen(ResetView* view,

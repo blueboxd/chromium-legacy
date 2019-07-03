@@ -712,10 +712,6 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     return result;
   }
 
-  if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
-                                                            *frame_))
-    return WebInputEventResult::kHandledSuppressed;
-
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::NotifyUserActivation(frame_);
   frame_->LocalFrameRoot()
@@ -1100,35 +1096,28 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   if (subframe)
     return PassMouseReleaseEventToSubframe(mev, subframe);
 
-  WebInputEventResult event_result = WebInputEventResult::kNotHandled;
-
+  // Mouse events will be associated with the Document where mousedown
+  // occurred. If, e.g., there is a mousedown, then a drag to a different
+  // Document and mouseup there, the mouseup's gesture will be associated with
+  // the mousedown's Document. It's not absolutely certain that this is the
+  // correct behavior.
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
-                                                            *frame_)) {
-    event_result = WebInputEventResult::kHandledSuppressed;
+  if (frame_->LocalFrameRoot()
+          .GetEventHandler()
+          .last_mouse_down_user_gesture_token_) {
+    gesture_indicator = std::make_unique<UserGestureIndicator>(
+        std::move(frame_->LocalFrameRoot()
+                      .GetEventHandler()
+                      .last_mouse_down_user_gesture_token_));
   } else {
-    // Mouse events will be associated with the Document where mousedown
-    // occurred. If, e.g., there is a mousedown, then a drag to a different
-    // Document and mouseup there, the mouseup's gesture will be associated with
-    // the mousedown's Document. It's not absolutely certain that this is the
-    // correct behavior.
-    if (frame_->LocalFrameRoot()
-            .GetEventHandler()
-            .last_mouse_down_user_gesture_token_) {
-      gesture_indicator = std::make_unique<UserGestureIndicator>(
-          std::move(frame_->LocalFrameRoot()
-                        .GetEventHandler()
-                        .last_mouse_down_user_gesture_token_));
-    } else {
-      gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
-    }
-
-    event_result = DispatchMousePointerEvent(
-        WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
-        mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
-        (GetSelectionController().HasExtendedSelection() &&
-         IsSelectionOverLink(mev)));
+    gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
   }
+
+  WebInputEventResult event_result = DispatchMousePointerEvent(
+      WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
+      mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
+      (GetSelectionController().HasExtendedSelection() &&
+       IsSelectionOverLink(mev)));
 
   scroll_manager_->ClearResizeScrollableArea(false);
 
@@ -1509,10 +1498,6 @@ WebInputEventResult EventHandler::HandleGestureEvent(
 
 WebInputEventResult EventHandler::HandleGestureEventInFrame(
     const GestureEventWithHitTestResults& targeted_event) {
-  if (event_handling_util::ShouldDiscardEventTargetingFrame(
-          targeted_event.Event(), *frame_)) {
-    return WebInputEventResult::kHandledSuppressed;
-  }
   return gesture_manager_->HandleGestureEventInFrame(targeted_event);
 }
 

@@ -185,7 +185,7 @@ bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) {
   if (instance_object->module()->permissions().HasPermission(
           ppapi::PERMISSION_BYPASS_USER_GESTURE))
     return true;
-  return instance_object->IsProcessingUserGesture();
+  return instance_object->HasTransientUserActivation();
 }
 
 int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) {

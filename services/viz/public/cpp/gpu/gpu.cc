@@ -14,11 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/common/scheduling_priority.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
-#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/interfaces/gpu.mojom.h"
 
 namespace viz {
@@ -275,32 +273,6 @@ std::unique_ptr<Gpu> Gpu::Create(
   mojom::GpuPtr gpu_ptr;
   connector->BindInterface(service_name, &gpu_ptr);
   return base::WrapUnique(new Gpu(std::move(gpu_ptr), std::move(task_runner)));
-}
-
-scoped_refptr<ContextProviderCommandBuffer> Gpu::CreateContextProvider(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
-  int32_t stream_id = 0;
-  gpu::SchedulingPriority stream_priority = gpu::SchedulingPriority::kNormal;
-
-  constexpr bool automatic_flushes = false;
-  constexpr bool support_locking = false;
-  constexpr bool support_grcontext = false;
-
-  gpu::ContextCreationAttribs attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-  attributes.lose_context_when_out_of_memory = true;
-  attributes.enable_raster_interface = true;
-  return base::MakeRefCounted<ContextProviderCommandBuffer>(
-      std::move(gpu_channel), GetGpuMemoryBufferManager(), stream_id,
-      stream_priority, gpu::kNullSurfaceHandle,
-      GURL("chrome://gpu/MusContextFactory"), automatic_flushes,
-      support_locking, support_grcontext, gpu::SharedMemoryLimits(), attributes,
-      command_buffer_metrics::ContextType::MUS_CLIENT);
 }
 
 #if defined(OS_CHROMEOS)

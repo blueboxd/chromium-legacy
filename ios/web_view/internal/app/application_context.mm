@@ -29,7 +29,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

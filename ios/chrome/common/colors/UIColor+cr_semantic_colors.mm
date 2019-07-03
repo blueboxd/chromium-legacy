@@ -21,6 +21,15 @@
   return UIColor.whiteColor;
 }
 
++ (UIColor*)cr_secondarySystemBackgroundColor {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return UIColor.secondarySystemBackgroundColor;
+  }
+#endif
+  return UIColor.whiteColor;
+}
+
 #pragma mark - System Grouped Background Colors
 
 + (UIColor*)cr_systemGroupedBackgroundColor {

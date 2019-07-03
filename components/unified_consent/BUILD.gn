@@ -21,9 +21,9 @@ static_library("unified_consent") {
     "//components/browser_sync",
     "//components/pref_registry",
     "//components/signin/core/browser",
+    "//components/signin/public/identity_manager",
     "//components/sync",
     "//components/sync_preferences",
-    "//services/identity/public/cpp",
   ]
 }
 
@@ -56,9 +56,9 @@ source_set("unit_tests") {
     ":test_support",
     ":unified_consent",
     "//base/test:test_support",
+    "//components/signin/public/identity_manager:test_support",
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
-    "//services/identity/public/cpp:test_support",
     "//testing/gtest",
   ]
 }

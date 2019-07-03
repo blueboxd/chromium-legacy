@@ -13,7 +13,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -137,12 +136,8 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void signIn(final Account account) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SigninManager.get().signIn(account, null, null);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
-                // Note: If unified consent is not enabled, then UKM will be enabled based on
-                // the history sync state.
-                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
-            }
+            // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
+            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
         });
         SyncTestUtil.waitForSyncActive();
         SyncTestUtil.triggerSyncAndWaitForCompletion();

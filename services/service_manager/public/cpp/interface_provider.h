@@ -6,6 +6,7 @@
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_PROVIDER_H_
 
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
@@ -92,6 +93,10 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
   template <typename Interface>
   void GetInterface(mojo::InterfaceRequest<Interface> request) {
     GetInterfaceByName(Interface::Name_, std::move(request.PassMessagePipe()));
+  }
+  template <typename Interface>
+  void GetInterface(mojo::PendingReceiver<Interface> receiver) {
+    GetInterfaceByName(Interface::Name_, receiver.PassPipe());
   }
   void GetInterfaceByName(const std::string& name,
                           mojo::ScopedMessagePipeHandle request_handle);

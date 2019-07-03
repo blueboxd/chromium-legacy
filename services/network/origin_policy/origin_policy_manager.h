@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
   // To be called by fetcher when it has finished its work.
   // This removes the fetcher which results in the fetcher being destroyed.
   void FetcherDone(OriginPolicyFetcher* fetcher,
-                   mojom::OriginPolicyPtr origin_policy,
+                   const OriginPolicy& origin_policy,
                    RetrieveOriginPolicyCallback callback);
 
   // Retrieves an origin's default origin policy by attempting to fetch it
@@ -91,7 +91,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
   // and the `policy_url` is the default policy url for the specified origin.
   static void InvokeCallbackWithPolicyState(
       const url::Origin& origin,
-      mojom::OriginPolicyState state,
+      OriginPolicyState state,
       RetrieveOriginPolicyCallback callback);
 
   // In memory cache of current policy version per origin.

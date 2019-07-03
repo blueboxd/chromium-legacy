@@ -13,9 +13,9 @@
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/backoff_entry.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace base {
 class Clock;

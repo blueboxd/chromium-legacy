@@ -29,8 +29,10 @@ struct ServiceWorkerProviderInfoForWorker {
 // Sent from the browser process to the renderer. Contains parameters for the
 // WebServiceWorkerNetworkProvider used for starting a service worker.
 struct ServiceWorkerProviderInfoForStartWorker {
+  // No methods on |host_ptr_info| are called, but it's needed to keep the host
+  // implementation in the browser process alive.
+  // TODO(https://crbug.com/931087): Use a separate interface.
   associated ServiceWorkerContainerHost host_ptr_info;
-  associated ServiceWorkerContainer& client_request;
 
   // The loader to use for loading the worker's main script and
   // importScripts().

@@ -19,7 +19,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -108,10 +107,7 @@ public class SyncPreferenceUtils {
             if (profileSyncService.isPassphraseRequiredForDecryption()) {
                 return res.getString(R.string.sync_need_passphrase);
             }
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                return context.getString(R.string.sync_and_services_summary_sync_on);
-            }
-            return context.getString(R.string.account_management_sync_summary, accountName);
+            return context.getString(R.string.sync_and_services_summary_sync_on);
         }
         return context.getString(R.string.sync_is_disabled);
     }

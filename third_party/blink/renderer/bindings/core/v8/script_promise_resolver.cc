@@ -20,7 +20,8 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       state_(kPending),
       script_state_(script_state),
-      resolver_(script_state) {
+      resolver_(script_state),
+      keep_alive_(PERSISTENT_FROM_HERE) {
   if (GetExecutionContext()->IsContextDestroyed()) {
     state_ = kDetached;
     resolver_.Clear();

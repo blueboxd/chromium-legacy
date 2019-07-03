@@ -187,6 +187,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // Enumeration of possible outcomes of ApplyNigoriUpdateImpl.
   enum class ApplyNigoriUpdateResult {
     kSuccess,
+    kUnsupportedRemoteState,
     kRemoteMustBeCorrected,
   };
 

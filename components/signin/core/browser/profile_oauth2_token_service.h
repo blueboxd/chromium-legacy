@@ -115,9 +115,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   // Exposes the ability to update auth errors to tests.
   void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
-                                 const GoogleServiceAuthError& error) {
-    UpdateAuthError(account_id, error);
-  }
+                                 const GoogleServiceAuthError& error);
 
  private:
   friend class identity::IdentityManager;

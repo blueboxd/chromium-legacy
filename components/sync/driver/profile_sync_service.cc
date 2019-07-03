@@ -17,6 +17,8 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
@@ -38,8 +40,6 @@
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {

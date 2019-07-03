@@ -26,11 +26,11 @@ def PostProcess(df):
   df['reference'] = df['timestamp'].dt.date == df.groupby(
       'quarter')['timestamp'].transform('max').dt.date
 
-  # Change unit for values in ms to seconds.
-  # TODO: Get and use unit information from the dashboard instead of trying to
-  # guess by the measurement name.
-  is_ms_unit = (df['measurement'].str.startswith('timeTo') |
-                df['measurement'].str.endswith(':duration'))
+  # Change units for values in ms to seconds, and percent values.
+  is_ms_unit = df['units'].str.startswith('ms_')
   df.loc[is_ms_unit, 'value'] = df['value'] / 1000
+
+  is_percentage = df['units'].str.startswith('n%_')
+  df.loc[is_percentage, 'value'] = df['value'] * 100
 
   return df

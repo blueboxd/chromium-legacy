@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 #include "remoting/host/client_session_details.h"
@@ -465,8 +464,7 @@ TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
   // exists. Creating the servers in a loop below will flakily fail because the
   // channel shutdown is a series of asynchronous tasks posted on the IO
   // thread, and there is not a way to synchronize it with the test main thread.
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac))
-    return;
+  return;
 #endif  // defined(OS_MACOSX)
 
   // Test that servers correctly close pending OS connections on

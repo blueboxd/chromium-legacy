@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/page_transition_types.h"
 
 const char kWelcomeReturningUserUrl[] = "chrome://welcome/returning-user";

@@ -15,9 +15,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {

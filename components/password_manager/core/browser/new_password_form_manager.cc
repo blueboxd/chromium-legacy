@@ -754,7 +754,7 @@ void NewPasswordFormManager::OnGeneratedPasswordAccepted(
   parsed_form->password_value = password;
   generation_state_ =
       std::make_unique<PasswordGenerationState>(form_saver_.get(), client_);
-  generation_state_->GeneratedPasswordAccepted(*parsed_form, GetAllMatches(),
+  generation_state_->GeneratedPasswordAccepted(*parsed_form, *form_fetcher_,
                                                driver_);
 }
 

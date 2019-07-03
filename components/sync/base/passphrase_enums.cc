@@ -13,9 +13,16 @@ bool IsExplicitPassphrase(PassphraseType type) {
          type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
 }
 
-PassphraseType ProtoPassphraseTypeToEnum(
-    sync_pb::NigoriSpecifics::PassphraseType type) {
-  switch (type) {
+sync_pb::NigoriSpecifics::PassphraseType ProtoPassphraseInt32ToProtoEnum(
+    ::google::protobuf::int32 type) {
+  return sync_pb::NigoriSpecifics::PassphraseType_IsValid(type)
+             ? static_cast<sync_pb::NigoriSpecifics::PassphraseType>(type)
+             : sync_pb::NigoriSpecifics::UNKNOWN;
+}
+
+base::Optional<PassphraseType> ProtoPassphraseInt32ToEnum(
+    ::google::protobuf::int32 type) {
+  switch (ProtoPassphraseInt32ToProtoEnum(type)) {
     case sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE:
       return PassphraseType::IMPLICIT_PASSPHRASE;
     case sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE:
@@ -25,13 +32,12 @@ PassphraseType ProtoPassphraseTypeToEnum(
     case sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
       return PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
     case sync_pb::NigoriSpecifics::UNKNOWN:
-      // It is expected that this value will never be encountered, as the
-      // protocol does not consider it valid.
+      // This must be an unknown value coming from future versions or a field
+      // actually being populated with UNKNOWN (which is a protocol violation).
       break;
   }
 
-  NOTREACHED();
-  return PassphraseType::IMPLICIT_PASSPHRASE;
+  return base::nullopt;
 }
 
 sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(

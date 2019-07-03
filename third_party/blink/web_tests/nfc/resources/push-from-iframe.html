@@ -6,7 +6,7 @@ window.onmessage = message => {
   if (message.data === 'Ready') {
     let onSuccess = () => { parent.postMessage('Failure', '*'); };
     let onError = error => {
-      if (error.name == 'SecurityError') {
+      if (error.name == 'NotAllowedError') {
         parent.postMessage('Success', '*');
       } else {
         parent.postMessage('Failure', '*');

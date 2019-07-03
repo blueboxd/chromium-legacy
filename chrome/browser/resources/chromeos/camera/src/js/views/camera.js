@@ -83,17 +83,27 @@ cca.views.Camera = function(model, resolBroker) {
    */
   this.modes_ = new cca.views.camera.Modes(
       this.photoResolPreferrer_, this.videoPreferrer_, this.stop_.bind(this),
-      async (blob, isMotionPicture, filename) => {
-        if (blob) {
+      async (result, filename) => {
+        if (result.blob) {
           cca.metrics.log(
-              cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins,
-              blob.resolution);
+              cca.metrics.Type.CAPTURE, this.facingMode_, 0, result.resolution);
           try {
-            await this.model_.savePicture(blob, isMotionPicture, filename);
+            await this.model_.savePhoto(result.blob, filename);
           } catch (e) {
             cca.toast.show('error_msg_save_file_failed');
             throw e;
           }
+        }
+      },
+      async (result, filename) => {
+        cca.metrics.log(
+            cca.metrics.Type.CAPTURE, this.facingMode_, result.duration,
+            result.resolution);
+        try {
+          await this.model_.saveVideo(result.chunkfile, filename);
+        } catch (e) {
+          cca.toast.show('error_msg_save_file_failed');
+          throw e;
         }
       });
 

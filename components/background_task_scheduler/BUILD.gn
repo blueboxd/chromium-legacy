@@ -64,6 +64,8 @@ if (is_android) {
     testonly = true
 
     java_files = [
+      "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerImplWithMockTest.java",
+      "android/javatests/src/org/chromium/components/background_task_scheduler/MockBackgroundTaskSchedulerDelegate.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerJobServiceTest.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/BundleToPersistableBundleConverterTest.java",
     ]
@@ -77,6 +79,7 @@ if (is_android) {
       "$google_play_services_package:google_play_services_tasks_java",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//content/public/test/android:content_java_test_support",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
     ]

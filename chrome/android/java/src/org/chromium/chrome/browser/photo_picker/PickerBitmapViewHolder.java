@@ -14,13 +14,14 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Holds on to a {@link PickerBitmapView} that displays information about a picker bitmap.
  */
 public class PickerBitmapViewHolder
-        extends ViewHolder implements DecoderServiceHost.ImageDecodedCallback {
+        extends ViewHolder implements DecoderServiceHost.ImagesDecodedCallback {
     // Our parent category.
     private PickerCategoryView mCategoryView;
 
@@ -42,29 +43,37 @@ public class PickerBitmapViewHolder
     // DecoderServiceHost.ImageDecodedCallback
 
     @Override
-    public void imageDecodedCallback(String filePath, Bitmap bitmap, String videoDuration) {
-        if (bitmap == null || bitmap.getWidth() == 0 || bitmap.getHeight() == 0) {
-            return;
+    public void imagesDecodedCallback(
+            String filePath, boolean isVideo, List<Bitmap> bitmaps, String videoDuration) {
+        if (bitmaps == null || bitmaps.size() == 0) return;
+
+        if (!isVideo) {
+            Bitmap bitmap = bitmaps.get(0);
+            if (bitmap == null || bitmap.getWidth() == 0 || bitmap.getHeight() == 0) return;
         }
 
-        if (mCategoryView.getHighResThumbnails().get(filePath) == null) {
+        PickerCategoryView.Thumbnail cachedThumbnail =
+                mCategoryView.getHighResThumbnails().get(filePath);
+        if (cachedThumbnail == null
+                || (cachedThumbnail.bitmaps != null
+                        && cachedThumbnail.bitmaps.size() < bitmaps.size())) {
             mCategoryView.getHighResThumbnails().put(
-                    filePath, new PickerCategoryView.Thumbnail(bitmap, videoDuration));
+                    filePath, new PickerCategoryView.Thumbnail(bitmaps, videoDuration));
         }
 
         if (mCategoryView.getLowResThumbnails().get(filePath) == null) {
             Resources resources = mItemView.getContext().getResources();
-            new BitmapScalerTask(mCategoryView.getLowResThumbnails(), bitmap, filePath,
+            new BitmapScalerTask(mCategoryView.getLowResThumbnails(), bitmaps.get(0), filePath,
                     videoDuration,
                     resources.getDimensionPixelSize(R.dimen.photo_picker_grainy_thumbnail_size))
                     .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
-        if (!TextUtils.equals(mBitmapDetails.getUri().getPath(), filePath)) {
+        if (!TextUtils.equals(getFilePath(), filePath)) {
             return;
         }
 
-        if (mItemView.setThumbnailBitmap(bitmap, videoDuration)) {
+        if (mItemView.setThumbnailBitmap(bitmaps, videoDuration)) {
             mItemView.fadeInThumbnail();
         }
     }
@@ -91,22 +100,24 @@ public class PickerBitmapViewHolder
         String filePath = mBitmapDetails.getUri().getPath();
         PickerCategoryView.Thumbnail original = mCategoryView.getHighResThumbnails().get(filePath);
         if (original != null) {
-            mItemView.initialize(mBitmapDetails, original.bitmap, original.videoDuration, false);
+            mItemView.initialize(mBitmapDetails, original.bitmaps, original.videoDuration, false);
             return PickerAdapter.DecodeActions.FROM_CACHE;
         }
 
         int size = mCategoryView.getImageSize();
         PickerCategoryView.Thumbnail payload = mCategoryView.getLowResThumbnails().get(filePath);
         if (payload != null) {
-            Bitmap placeholder = payload.bitmap;
+            Bitmap placeholder = payload.bitmaps.get(0);
             // For performance stats see http://crbug.com/719919.
             long begin = SystemClock.elapsedRealtime();
             placeholder = BitmapUtils.scale(placeholder, size, false);
             long scaleTime = SystemClock.elapsedRealtime() - begin;
             RecordHistogram.recordTimesHistogram(
                     "Android.PhotoPicker.UpscaleLowResBitmap", scaleTime);
+            List<Bitmap> bitmaps = new ArrayList<>(1);
+            bitmaps.add(placeholder);
 
-            mItemView.initialize(mBitmapDetails, placeholder, payload.videoDuration, true);
+            mItemView.initialize(mBitmapDetails, bitmaps, payload.videoDuration, true);
         } else {
             mItemView.initialize(mBitmapDetails, null, null, true);
         }
@@ -121,7 +132,9 @@ public class PickerBitmapViewHolder
      * holder.
      */
     public String getFilePath() {
-        if (mBitmapDetails == null || mBitmapDetails.type() != PickerBitmap.TileTypes.PICTURE)
+        if (mBitmapDetails == null
+                || (mBitmapDetails.type() != PickerBitmap.TileTypes.PICTURE
+                        && mBitmapDetails.type() != PickerBitmap.TileTypes.VIDEO))
             return null;
         return mBitmapDetails.getUri().getPath();
     }

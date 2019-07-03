@@ -23,6 +23,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -34,6 +35,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/display.h"
@@ -179,7 +181,7 @@ constexpr TabletModeController::TabletModeBehavior kOnBySensor{
     /*observe_display_events=*/true,
     /*observe_external_pointer_device_events=*/true,
     /*block_internal_input_device=*/true,
-    /*always_show_overview_button_in_tablet_mode=*/false,
+    /*always_show_overview_button=*/false,
 };
 
 // Defines the behavior that sticks to the current mode. Used to
@@ -189,7 +191,7 @@ constexpr TabletModeController::TabletModeBehavior kLockInCurrentMode{
     /*observe_display_events=*/false,
     /*observe_external_pointer_device_events=*/false,
     /*block_internal_input_device=*/false,
-    /*always_show_overview_button_in_tablet_mode=*/true,
+    /*always_show_overview_button=*/true,
 };
 
 // Defines the behavior used for testing. It prevents the device from
@@ -199,7 +201,7 @@ constexpr TabletModeController::TabletModeBehavior kOnForTest{
     /*observe_display_events=*/true,
     /*observe_external_pointer_device_events=*/true,
     /*block_internal_input_device=*/true,
-    /*always_show_overview_button_in_tablet_mode=*/false,
+    /*always_show_overview_button=*/false,
 };
 
 // Used for development purpose (currently debug shortcut shift-ctrl-alt). This
@@ -210,7 +212,7 @@ constexpr TabletModeController::TabletModeBehavior kOnForDev{
     /*observe_display_events=*/true,
     /*observe_external_pointer_device_events=*/true,
     /*block_internal_input_device=*/false,
-    /*always_show_overview_button_in_tablet_mode=*/true,
+    /*always_show_overview_button=*/true,
 };
 
 }  // namespace
@@ -240,6 +242,35 @@ class TabletModeController::TabletModeTransitionFpsCounter : public FpsCounter {
  private:
   bool enter_tablet_mode_;
   DISALLOW_COPY_AND_ASSIGN(TabletModeTransitionFpsCounter);
+};
+
+// An observer that observes the destruction of the |window_| and executes the
+// callback. Used to run cleanup when the window is destroyed in the middle of
+// certain operation.
+class TabletModeController::DestroyObserver : public aura::WindowObserver {
+ public:
+  DestroyObserver(aura::Window* window, base::OnceCallback<void(void)> callback)
+      : window_(window), callback_(std::move(callback)) {
+    window_->AddObserver(this);
+  }
+  ~DestroyObserver() override {
+    if (window_)
+      window_->RemoveObserver(this);
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(window_, window);
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+    std::move(callback_).Run();
+  }
+
+  aura::Window* window() { return window_; }
+
+ private:
+  aura::Window* window_;
+  base::OnceCallback<void(void)> callback_;
 };
 
 constexpr char TabletModeController::kLidAngleHistogramName[];
@@ -353,22 +384,25 @@ void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
     return;
   }
 
-  observed_window_ = window;
-  observed_layer_ = window->layer();
-  window->AddObserver(this);
-  observed_layer_->GetAnimator()->AddObserver(this);
+  destroy_observer_ = std::make_unique<DestroyObserver>(
+      window, base::Bind(&TabletModeController::StopObservingAnimation,
+                         weak_factory_.GetWeakPtr(),
+                         /*record_stats=*/false,
+                         /*delete_screenshot=*/true));
+  animating_layer_ = window->layer();
+  animating_layer_->GetAnimator()->AddObserver(this);
 }
 
 void TabletModeController::StopObservingAnimation(bool record_stats,
                                                   bool delete_screenshot) {
   StopObserving();
 
-  if (observed_layer_)
-    observed_layer_->GetAnimator()->RemoveObserver(this);
-  observed_layer_ = nullptr;
-  if (observed_window_)
-    observed_window_->RemoveObserver(this);
-  observed_window_ = nullptr;
+  ResetDestroyObserver();
+
+  if (animating_layer_)
+    animating_layer_->GetAnimator()->RemoveObserver(this);
+  animating_layer_ = nullptr;
+
   if (record_stats && fps_counter_)
     fps_counter_->LogUma();
   fps_counter_.reset();
@@ -529,12 +563,12 @@ void TabletModeController::TabletModeEventReceived(
     AttemptEnterTabletMode();
   } else if (!on && InTabletMode() && !can_detect_lid_angle_) {
     AttemptLeaveTabletMode();
+  } else {
+    // Even if we do not change its ui mode, we should update its input device
+    // blocker as tablet mode events may come in because of the lid angle/or
+    // folio keyboard state changes but ui mode might still stay the same.
+    UpdateInternalInputDevicesEventBlocker();
   }
-
-  // Even if we do not change its ui mode, we should update its input device
-  // blocker as tablet mode events may come in because of the lid angle/or folio
-  // keyboard state changes but ui mode might still stay the same.
-  UpdateInternalInputDevicesEventBlocker();
 }
 
 void TabletModeController::SuspendImminent(
@@ -618,18 +652,14 @@ void TabletModeController::OnLayerAnimationScheduled(
 
   if (!fps_counter_) {
     fps_counter_ = std::make_unique<TabletModeTransitionFpsCounter>(
-        observed_layer_->GetCompositor(), state_ == State::kEnteringTabletMode);
+        animating_layer_->GetCompositor(),
+        state_ == State::kEnteringTabletMode);
     return;
   }
 
   // If another animation is scheduled while the animation we were originally
   // watching is still animating, abort and do not log stats as the stats will
   // not be accurate.
-  StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
-}
-
-void TabletModeController::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(observed_window_, window);
   StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
 }
 
@@ -643,9 +673,8 @@ void TabletModeController::SetEnabledForDev(bool enabled) {
 }
 
 bool TabletModeController::ShouldShowOverviewButton() const {
-  return InTabletMode() &&
-         (AreInternalInputDeviceEventsBlocked() ||
-          tablet_mode_behavior_.always_show_overview_button_in_tablet_mode);
+  return AreInternalInputDeviceEventsBlocked() ||
+         tablet_mode_behavior_.always_show_overview_button;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -678,10 +707,7 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
         top_window &&
         top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
     if (use_screenshot_for_test && top_window_on_primary_display) {
-      screenshot_set_callback_.Reset(
-          base::BindOnce(&TabletModeController::FinishInitTabletMode,
-                         weak_factory_.GetWeakPtr()));
-      TakeScreenshot(top_window, screenshot_set_callback_.callback());
+      TakeScreenshot(top_window);
     } else {
       FinishInitTabletMode();
     }
@@ -702,9 +728,9 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
     if (toggle_observer_)  // Null at startup and in tests.
       toggle_observer_->OnTabletModeToggled(false);
     VLOG(1) << "Exit tablet mode.";
-  }
 
-  UpdateInternalInputDevicesEventBlocker();
+    UpdateInternalInputDevicesEventBlocker();
+  }
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -1001,6 +1027,9 @@ void TabletModeController::FinishInitTabletMode() {
   state_ = State::kInTabletMode;
   if (toggle_observer_)  // Null at startup and in tests.
     toggle_observer_->OnTabletModeToggled(true);
+
+  UpdateInternalInputDevicesEventBlocker();
+
   VLOG(1) << "Enter tablet mode.";
 }
 
@@ -1008,13 +1037,20 @@ void TabletModeController::DeleteScreenshot() {
   screenshot_layer_.reset();
   screenshot_taken_callback_.Cancel();
   screenshot_set_callback_.Cancel();
+  ResetDestroyObserver();
 }
 
-void TabletModeController::TakeScreenshot(
-    aura::Window* top_window,
-    base::OnceClosure on_screenshot_taken) {
-  DCHECK(top_window);
+void TabletModeController::ResetDestroyObserver() {
+  destroy_observer_.reset();
+}
+
+void TabletModeController::TakeScreenshot(aura::Window* top_window) {
   DCHECK(!top_window->IsRootWindow());
+  destroy_observer_ = std::make_unique<DestroyObserver>(
+      top_window, base::Bind(&TabletModeController::ResetDestroyObserver,
+                             weak_factory_.GetWeakPtr()));
+  screenshot_set_callback_.Reset(base::BindOnce(
+      &TabletModeController::FinishInitTabletMode, weak_factory_.GetWeakPtr()));
 
   auto* screenshot_window = top_window->GetRootWindow()->GetChildById(
       kShellWindowId_ScreenRotationContainer);
@@ -1025,11 +1061,13 @@ void TabletModeController::TakeScreenshot(
   for (auto* root : roots)
     root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
   top_window->layer()->SetOpacity(0.f);
+  base::OnceClosure callback = screenshot_set_callback_.callback();
 
   // Request a screenshot.
-  screenshot_taken_callback_.Reset(base::BindOnce(
-      &TabletModeController::OnScreenshotTaken, weak_factory_.GetWeakPtr(),
-      top_window, std::move(on_screenshot_taken)));
+  screenshot_taken_callback_.Reset(
+      base::BindOnce(&TabletModeController::OnScreenshotTaken,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+
   const gfx::Rect request_bounds(screenshot_window->layer()->size());
   auto screenshot_request = std::make_unique<viz::CopyOutputRequest>(
       viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
@@ -1045,10 +1083,13 @@ void TabletModeController::TakeScreenshot(
 }
 
 void TabletModeController::OnScreenshotTaken(
-    aura::Window* top_window,
     base::OnceClosure on_screenshot_taken,
     std::unique_ptr<viz::CopyOutputResult> copy_result) {
-  if (!copy_result || copy_result->IsEmpty()) {
+  aura::Window* top_window =
+      destroy_observer_ ? destroy_observer_->window() : nullptr;
+  ResetDestroyObserver();
+
+  if (!copy_result || copy_result->IsEmpty() || !top_window) {
     std::move(on_screenshot_taken).Run();
     return;
   }

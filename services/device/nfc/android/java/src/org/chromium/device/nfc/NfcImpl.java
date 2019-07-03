@@ -228,7 +228,7 @@ public class NfcImpl implements Nfc {
         }
 
         if (mPendingPushOperation == null) {
-            callback.call(createError(NfcErrorType.NOT_FOUND));
+            callback.call(createError(NfcErrorType.CANNOT_CANCEL));
         } else {
             completePendingPushOperation(createError(NfcErrorType.OPERATION_CANCELLED));
             callback.call(null);
@@ -376,11 +376,9 @@ public class NfcImpl implements Nfc {
      */
     private NfcError checkIfReady() {
         if (!mHasPermission || mActivity == null) {
-            return createError(NfcErrorType.SECURITY);
-        } else if (mNfcManager == null || mNfcAdapter == null) {
-            return createError(NfcErrorType.NOT_SUPPORTED);
-        } else if (!mNfcAdapter.isEnabled()) {
-            return createError(NfcErrorType.DEVICE_DISABLED);
+            return createError(NfcErrorType.NOT_ALLOWED);
+        } else if (mNfcManager == null || mNfcAdapter == null || !mNfcAdapter.isEnabled()) {
+            return createError(NfcErrorType.NOT_READABLE);
         }
         return null;
     }

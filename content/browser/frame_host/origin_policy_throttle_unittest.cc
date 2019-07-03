@@ -6,6 +6,7 @@
 
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -20,12 +21,18 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/origin_policy.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-constexpr const char kExampleManifestString[] = "{}";
+const network::OriginPolicyContentsPtr kExamplePolicyContents =
+    std::make_unique<network::OriginPolicyContents>(
+        std::vector<std::string>(
+            {"geolocation http://example.com"}) /* features */,
+        std::vector<std::string>() /* content_security_policies */,
+        std::vector<std::string>() /* content_security_policies_report_only */);
 }
 
 namespace content {
@@ -70,27 +77,26 @@ class TestOriginPolicyManager : public network::mojom::OriginPolicyManager {
   void RetrieveOriginPolicy(const url::Origin& origin,
                             const std::string& header_value,
                             RetrieveOriginPolicyCallback callback) override {
-    auto result = network::mojom::OriginPolicy::New();
+    network::OriginPolicy result;
 
     if (origin_exceptions_.find(origin) == origin_exceptions_.end()) {
-      result->state = network::mojom::OriginPolicyState::kLoaded;
-      result->contents = network::mojom::OriginPolicyContents::New();
-      result->contents->raw_policy = kExampleManifestString;
-      result->policy_url = origin.GetURL();
+      result.state = network::OriginPolicyState::kLoaded;
+      result.contents = kExamplePolicyContents->ClonePtr();
+      result.policy_url = origin.GetURL();
     } else {
-      result->state = network::mojom::OriginPolicyState::kNoPolicyApplies;
-      result->policy_url = origin.GetURL();
+      result.state = network::OriginPolicyState::kNoPolicyApplies;
+      result.policy_url = origin.GetURL();
     }
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&TestOriginPolicyManager::RunCallback,
-                                  base::Unretained(this), std::move(callback),
-                                  std::move(result)));
+        FROM_HERE,
+        base::BindOnce(&TestOriginPolicyManager::RunCallback,
+                       base::Unretained(this), std::move(callback), result));
   }
 
   void RunCallback(RetrieveOriginPolicyCallback callback,
-                   network::mojom::OriginPolicyPtr result) {
-    std::move(callback).Run(std::move(result));
+                   const network::OriginPolicy& result) {
+    std::move(callback).Run(result);
   }
 
   network::mojom::OriginPolicyManagerPtr GetPtr() {
@@ -188,8 +194,13 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
 
   // At the end of the navigation, the navigation handle should have a copy
   // of the origin policy.
-  EXPECT_EQ(kExampleManifestString,
-            nav_handle->navigation_request()->common_params().origin_policy);
+  EXPECT_TRUE(nav_handle->navigation_request()
+                  ->response()
+                  ->head.origin_policy.has_value());
+  EXPECT_EQ(kExamplePolicyContents, nav_handle->navigation_request()
+                                        ->response()
+                                        ->head.origin_policy.value()
+                                        .contents);
   static_cast<StoragePartitionImpl*>(
       BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),
                                           site_instance))
@@ -243,8 +254,9 @@ TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
 
   // At the end of the navigation, the navigation handle should have no policy
   // as this origin should be exempted.
-  EXPECT_EQ("",
-            nav_handle->navigation_request()->common_params().origin_policy);
+  EXPECT_FALSE(nav_handle->navigation_request()
+                   ->response()
+                   ->head.origin_policy.has_value());
 
   static_cast<StoragePartitionImpl*>(
       BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),

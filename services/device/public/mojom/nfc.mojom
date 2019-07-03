@@ -5,14 +5,19 @@
 module device.mojom;
 
 enum NFCErrorType {
-  SECURITY,
+  // No permssion.
+  NOT_ALLOWED,
+  // Operation is not supported by the NFC Adapter
   NOT_SUPPORTED,
-  DEVICE_DISABLED,
+  // No hardware support, no NFC adapter or the adapter is disabled,
+  // or the connection cannot be established.
+  NOT_READABLE,
   NOT_FOUND,
   INVALID_MESSAGE,
   OPERATION_CANCELLED,
   TIMER_EXPIRED,
   CANNOT_CANCEL,
+  // Transfer data error.
   IO_ERROR
 };
 

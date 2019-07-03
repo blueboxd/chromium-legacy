@@ -31,22 +31,15 @@ import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.sync.SyncPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.signin.SignOutDialogFragment.SignOutDialogListener;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
-import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.GAIAServiceType;
@@ -63,7 +56,7 @@ import java.util.List;
  * Note: This can be triggered from a web page, e.g. a GAIA sign-in page.
  */
 public class AccountManagementFragment extends PreferenceFragment
-        implements SignOutDialogListener, SyncStateChangedListener, SignInStateObserver,
+        implements SignOutDialogListener, SignInStateObserver,
                    ConfirmManagedSyncDataDialog.Listener, ProfileDataCache.Observer {
     private static final String TAG = "AcctManagementPref";
 
@@ -89,11 +82,6 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_PARENT_ACCOUNTS = "parent_accounts";
     public static final String PREF_CHILD_CONTENT = "child_content";
     public static final String PREF_CHILD_CONTENT_DIVIDER = "child_content_divider";
-    public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
-    public static final String PREF_GOOGLE_ACTIVITY_CONTROLS_DIVIDER =
-            "google_activity_controls_divider";
-    public static final String PREF_SYNC_SETTINGS = "sync_settings";
-    public static final String PREF_SYNC_SETTINGS_DIVIDER = "sync_settings_divider";
     public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
 
@@ -158,11 +146,6 @@ public class AccountManagementFragment extends PreferenceFragment
         super.onResume();
         SigninManager.get().addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
-        ProfileSyncService syncService = ProfileSyncService.get();
-        if (syncService != null) {
-            syncService.addSyncStateChangedListener(this);
-        }
-
         mProfileDataCache.update(AccountManagerFacade.get().tryGetGoogleAccountNames());
         update();
     }
@@ -172,10 +155,6 @@ public class AccountManagementFragment extends PreferenceFragment
         super.onPause();
         SigninManager.get().removeSignInStateObserver(this);
         mProfileDataCache.removeObserver(this);
-        ProfileSyncService syncService = ProfileSyncService.get();
-        if (syncService != null) {
-            syncService.removeSyncStateChangedListener(this);
-        }
     }
 
     public void update() {
@@ -200,8 +179,6 @@ public class AccountManagementFragment extends PreferenceFragment
 
         configureSignOutSwitch();
         configureChildAccountPreferences();
-        configureSyncSettings();
-        configureGoogleActivityControls();
 
         updateAccountsList();
     }
@@ -221,10 +198,7 @@ public class AccountManagementFragment extends PreferenceFragment
             getPreferenceScreen().removePreference(signOutSwitch);
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_OUT_DIVIDER));
         } else {
-            signOutSwitch.setTitle(ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)
-                            ? R.string.sign_out_and_turn_off_sync
-                            : R.string.account_management_sign_out);
-
+            signOutSwitch.setTitle(R.string.sign_out_and_turn_off_sync);
             signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue());
             signOutSwitch.setOnPreferenceClickListener(preference -> {
                 if (!isVisible() || !isResumed()) return false;
@@ -261,44 +235,6 @@ public class AccountManagementFragment extends PreferenceFragment
                 return false;
             });
         }
-    }
-
-    private void configureSyncSettings() {
-        Preference syncSettings = findPreference(PREF_SYNC_SETTINGS);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            getPreferenceScreen().removePreference(syncSettings);
-            getPreferenceScreen().removePreference(findPreference(PREF_SYNC_SETTINGS_DIVIDER));
-            return;
-        }
-        final Preferences preferences = (Preferences) getActivity();
-        syncSettings.setOnPreferenceClickListener(preference -> {
-            if (!isVisible() || !isResumed()) return false;
-
-            if (ProfileSyncService.get() == null) return true;
-
-            preferences.startFragment(SyncCustomizationFragment.class.getName(), new Bundle());
-            return true;
-        });
-    }
-
-    private void configureGoogleActivityControls() {
-        Preference pref = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            getPreferenceScreen().removePreference(pref);
-            getPreferenceScreen().removePreference(
-                    findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS_DIVIDER));
-            return;
-        }
-        if (mProfile.isChild()) {
-            pref.setSummary(R.string.sign_in_google_activity_controls_message_child_account);
-        }
-        pref.setOnPreferenceClickListener(preference -> {
-            Activity activity = getActivity();
-            AppHooks.get().createGoogleActivityController().openWebAndAppActivitySettings(
-                    activity, mSignedInAccountName);
-            RecordUserAction.record("Signin_AccountSettings_GoogleActivityControlsClicked");
-            return true;
-        });
     }
 
     private void configureChildAccountPreferences() {
@@ -472,18 +408,6 @@ public class AccountManagementFragment extends PreferenceFragment
     @Override
     public void onCancel() {
         onSignOutDialogDismissed(false);
-    }
-
-    // ProfileSyncServiceListener implementation:
-
-    @Override
-    public void syncStateChanged() {
-        SyncPreference pref = (SyncPreference) findPreference(PREF_SYNC_SETTINGS);
-        if (pref != null) {
-            pref.updateSyncSummaryAndIcon();
-        }
-
-        // TODO(crbug/557784): Show notification for sync error
     }
 
     // SignInStateObserver implementation:

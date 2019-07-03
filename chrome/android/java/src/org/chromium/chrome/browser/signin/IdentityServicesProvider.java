@@ -29,6 +29,14 @@ public final class IdentityServicesProvider {
         return result;
     }
 
+    public static SigninManager getSigninManager() {
+        ThreadUtils.assertOnUiThread();
+        SigninManager result = nativeGetSigninManager(Profile.getLastUsedProfile());
+        assert result != null;
+        return result;
+    }
+
     private static native AccountTrackerService nativeGetAccountTrackerService(Profile profile);
     private static native OAuth2TokenService nativeGetOAuth2TokenService(Profile profile);
+    private static native SigninManager nativeGetSigninManager(Profile profile);
 }

@@ -10,11 +10,11 @@
 
 @implementation SendTabToSelfCommand
 
-@synthesize targetDeviceId = _targetDeviceId;
+@synthesize targetDeviceID = _targetDeviceID;
 
-- (instancetype)initWithTargetDeviceId:(NSString*)targetDeviceId {
+- (instancetype)initWithTargetDeviceID:(NSString*)targetDeviceID {
   if (self = [super init]) {
-    _targetDeviceId = [targetDeviceId copy];
+    _targetDeviceID = [targetDeviceID copy];
   }
   return self;
 }

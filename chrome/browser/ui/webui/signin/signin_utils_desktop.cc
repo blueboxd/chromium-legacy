@@ -20,7 +20,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 bool CanOfferSignin(Profile* profile,
@@ -47,8 +47,7 @@ bool CanOfferSignin(Profile* profile,
 
     // Make sure this username is not prohibited by policy.
     if (!identity::IsUsernameAllowedByPatternFromPrefs(
-            g_browser_process->local_state(), email,
-            prefs::kGoogleServicesUsernamePattern)) {
+            g_browser_process->local_state(), email)) {
       if (error_message) {
         error_message->assign(
             l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED));

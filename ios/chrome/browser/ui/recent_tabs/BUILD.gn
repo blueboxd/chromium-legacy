@@ -19,6 +19,7 @@ source_set("recent_tabs") {
     "resources:show_history",
     "//base",
     "//components/sessions",
+    "//components/signin/public/identity_manager",
     "//components/sync",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
@@ -32,7 +33,6 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/url_loading",
-    "//services/identity/public/cpp",
     "//ui/base",
   ]
   public_deps = [
@@ -99,6 +99,8 @@ source_set("unit_tests") {
     ":recent_tabs_ui",
     "//base",
     "//components/browser_sync",
+    "//components/signin/public/identity_manager",
+    "//components/signin/public/identity_manager:test_support",
     "//components/sync:test_support_model",
     "//components/sync_sessions",
     "//components/sync_user_events",
@@ -109,8 +111,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/test:test_support",
     "//ios/web/public/test",
-    "//services/identity/public/cpp",
-    "//services/identity/public/cpp:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

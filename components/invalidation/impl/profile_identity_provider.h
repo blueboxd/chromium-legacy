@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/invalidation/public/identity_provider.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace invalidation {
 

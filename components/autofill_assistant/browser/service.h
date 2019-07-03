@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 

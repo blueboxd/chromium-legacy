@@ -746,7 +746,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Send Tab To Self
 // ----------------
 // Sends the current tab to the target device.
-- (void)sendTabToSelfTargetDeviceId:(NSString*)targetDeviceId;
+- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID;
 
 @end
 
@@ -2895,8 +2895,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - Private Methods: Send Tab To Self
 
-- (void)sendTabToSelfTargetDeviceId:(NSString*)targetDeviceId {
-  send_tab_to_self::CreateNewEntry(_browserState, targetDeviceId);
+- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID {
+  send_tab_to_self::CreateNewEntry(_browserState, targetDeviceID);
 
   [self.dispatcher triggerToolsMenuButtonAnimation];
 
@@ -4329,6 +4329,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.sendTabToSelfCoordinator = [[SendTabToSelfCoordinator alloc]
       initWithBaseViewController:self
                     browserState:self.browserState];
+  self.sendTabToSelfCoordinator.dispatcher = self.dispatcher;
   [self.sendTabToSelfCoordinator start];
 }
 
@@ -4390,7 +4391,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)sendTabToSelf:(SendTabToSelfCommand*)command {
-  [self sendTabToSelfTargetDeviceId:[command targetDeviceId]];
+  [self sendTabToSelfTargetDeviceID:[command targetDeviceID]];
 }
 
 #pragma mark - FindInPageResponseDelegate

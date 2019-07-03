@@ -12,7 +12,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/investigator_dependency_provider.h"
 #include "components/signin/core/browser/account_info.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;

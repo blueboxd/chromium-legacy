@@ -122,7 +122,7 @@ WebFormElementObserver* WebFormElementObserver::Create(
 WebFormElementObserverImpl::WebFormElementObserverImpl(
     HTMLElement& element,
     base::OnceClosure callback)
-    : self_keep_alive_(this) {
+    : self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   mutation_callback_ =
       MakeGarbageCollected<ObserverCallback>(element, std::move(callback));
 }

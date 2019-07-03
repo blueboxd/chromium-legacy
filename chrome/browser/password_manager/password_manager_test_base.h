@@ -137,6 +137,11 @@ class BubbleObserver {
   // PasswordManagerBrowserTestBase.
   void WaitForAutomaticSavePrompt() const;
 
+  // Returns once the update prompt pops up or it's already shown.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  void WaitForAutomaticUpdatePrompt() const;
+
   // Returns true if the browser shows the fallback for saving password within
   // the allotted timeout.
   // |web_contents| must be the custom one returned by

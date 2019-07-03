@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/identity/identity_accessor_impl.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 

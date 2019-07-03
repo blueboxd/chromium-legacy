@@ -39,6 +39,26 @@
 
 namespace blink {
 
+struct PriorityCompare {
+  PriorityCompare(double elapsed) : elapsed_(elapsed) {}
+  bool operator()(const Member<SVGSMILElement>& a,
+                  const Member<SVGSMILElement>& b) {
+    // FIXME: This should also consider possible timing relations between the
+    // elements.
+    SMILTime a_begin = a->IntervalBegin();
+    SMILTime b_begin = b->IntervalBegin();
+    // Frozen elements need to be prioritized based on their previous interval.
+    a_begin = a->IsFrozen() && elapsed_ < a_begin ? a->PreviousIntervalBegin()
+                                                  : a_begin;
+    b_begin = b->IsFrozen() && elapsed_ < b_begin ? b->PreviousIntervalBegin()
+                                                  : b_begin;
+    if (a_begin == b_begin)
+      return a->DocumentOrderIndex() < b->DocumentOrderIndex();
+    return a_begin < b_begin;
+  }
+  double elapsed_;
+};
+
 static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
     base::TimeDelta::FromSeconds(3);
 
@@ -79,15 +99,16 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
   DCHECK(!prevent_scheduled_animations_changes_);
 #endif
 
-  AttributeAnimationsMap& attribute_map =
-      scheduled_animations_.insert(target, AttributeAnimationsMap())
-          .stored_value->value;
-  Member<AnimationsLinkedHashSet>& scheduled =
+  auto& attribute_map =
+      scheduled_animations_.insert(target, AttributeMap()).stored_value->value;
+
+  auto& scheduled =
       attribute_map.insert(attribute_name, nullptr).stored_value->value;
   if (!scheduled)
-    scheduled = MakeGarbageCollected<AnimationsLinkedHashSet>();
+    scheduled = MakeGarbageCollected<ScheduledVector>();
+
   DCHECK(!scheduled->Contains(animation));
-  scheduled->insert(animation);
+  scheduled->push_back(animation);
 
   SMILTime next_fire_time = animation->NextProgressTime();
   if (next_fire_time.IsFinite())
@@ -103,18 +124,18 @@ void SMILTimeContainer::Unschedule(SVGSMILElement* animation,
   DCHECK(!prevent_scheduled_animations_changes_);
 #endif
 
-  GroupedAnimationsMap::iterator it = scheduled_animations_.find(target);
+  AnimationsMap::iterator it = scheduled_animations_.find(target);
   CHECK(it != scheduled_animations_.end());
-  AttributeAnimationsMap& attribute_map = it->value;
-  AttributeAnimationsMap::iterator attribute_map_it =
-      attribute_map.find(attribute_name);
+  AttributeMap& attribute_map = it->value;
+  AttributeMap::iterator attribute_map_it = attribute_map.find(attribute_name);
   DCHECK(attribute_map_it != attribute_map.end());
-  AnimationsLinkedHashSet* scheduled = attribute_map_it->value;
-  AnimationsLinkedHashSet::iterator it_animation = scheduled->find(animation);
-  DCHECK(it_animation != scheduled->end());
-  scheduled->erase(it_animation);
+  auto& scheduled = *(attribute_map_it->value);
 
-  if (scheduled->IsEmpty())
+  auto* position = std::find(scheduled.begin(), scheduled.end(), animation);
+  DCHECK(scheduled.end() != position);
+  scheduled.erase(position);
+
+  if (scheduled.IsEmpty())
     attribute_map.erase(attribute_map_it);
   if (attribute_map.IsEmpty())
     scheduled_animations_.erase(it);
@@ -237,8 +258,7 @@ void SMILTimeContainer::SetElapsed(double elapsed) {
 #endif
   for (const auto& attribute_entry : scheduled_animations_) {
     for (const auto& entry : attribute_entry.value) {
-      const AnimationsLinkedHashSet* scheduled = entry.value;
-      for (SVGSMILElement* element : *scheduled) {
+      for (SVGSMILElement* element : *entry.value) {
         element->Reset();
       }
     }
@@ -353,26 +373,6 @@ void SMILTimeContainer::UpdateDocumentOrderIndexes() {
   document_order_indexes_dirty_ = false;
 }
 
-struct PriorityCompare {
-  PriorityCompare(double elapsed) : elapsed_(elapsed) {}
-  bool operator()(const Member<SVGSMILElement>& a,
-                  const Member<SVGSMILElement>& b) {
-    // FIXME: This should also consider possible timing relations between the
-    // elements.
-    SMILTime a_begin = a->IntervalBegin();
-    SMILTime b_begin = b->IntervalBegin();
-    // Frozen elements need to be prioritized based on their previous interval.
-    a_begin = a->IsFrozen() && elapsed_ < a_begin ? a->PreviousIntervalBegin()
-                                                  : a_begin;
-    b_begin = b->IsFrozen() && elapsed_ < b_begin ? b->PreviousIntervalBegin()
-                                                  : b_begin;
-    if (a_begin == b_begin)
-      return a->DocumentOrderIndex() < b->DocumentOrderIndex();
-    return a_begin < b_begin;
-  }
-  double elapsed_;
-};
-
 SVGSVGElement& SMILTimeContainer::OwnerSVGElement() const {
   return *owner_svg_element_;
 }
@@ -426,7 +426,7 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
 
 #if DCHECK_IS_ON()
   // This boolean will catch any attempts to schedule/unschedule
-  // scheduledAnimations during this critical section.  Similarly, any elements
+  // scheduledAnimations during this critical section. Similarly, any elements
   // removed will unschedule themselves, so this will catch modification of
   // animationsToApply.
   prevent_scheduled_animations_changes_ = true;
@@ -435,37 +435,38 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
   if (document_order_indexes_dirty_)
     UpdateDocumentOrderIndexes();
 
-  using AnimationsVector = HeapVector<Member<SVGSMILElement>>;
-  AnimationsVector animations_to_apply;
-  AnimationsVector scheduled_animations_in_same_group;
   for (auto& attribute_entry : scheduled_animations_) {
-    AttributeAnimationsMap& attribute_map = attribute_entry.value;
+    AttributeMap& attribute_map = attribute_entry.value;
     Vector<QualifiedName> invalid_keys;
-    for (const auto& entry : attribute_map) {
-      DCHECK(entry.value);
-      if (entry.value->IsEmpty()) {
+    for (auto& entry : attribute_map) {
+      if (entry.value->IsEmpty())
         invalid_keys.push_back(entry.key);
-        continue;
+    }
+    attribute_map.RemoveAll(invalid_keys);
+  }
+
+  HeapVector<ScheduledVector> active_sandwiches;
+  active_sandwiches.ReserveInitialCapacity(scheduled_animations_.size());
+  for (auto& attribute_entry : scheduled_animations_) {
+    AttributeMap& attribute_map = attribute_entry.value;
+    for (auto& entry : attribute_map) {
+      auto& scheduled = *entry.value;
+      if (!std::is_sorted(scheduled.begin(), scheduled.end(),
+                          PriorityCompare(elapsed))) {
+        std::sort(scheduled.begin(), scheduled.end(), PriorityCompare(elapsed));
       }
-
-      // Sort according to priority. Elements with later begin time have higher
-      // priority.  In case of a tie, document order decides.
-      // FIXME: This should also consider timing relationships between the
-      // elements. Dependents have higher priority.
-      CopyToVector(*entry.value, scheduled_animations_in_same_group);
-      std::sort(scheduled_animations_in_same_group.begin(),
-                scheduled_animations_in_same_group.end(),
-                PriorityCompare(elapsed));
-
-      AnimationsVector sandwich;
-      for (const auto& it_animation : scheduled_animations_in_same_group) {
+      ScheduledVector sandwich;
+      for (const auto& it_animation : scheduled) {
         SVGSMILElement* animation = it_animation.Get();
         DCHECK_EQ(animation->TimeContainer(), this);
         DCHECK(animation->HasValidTarget());
 
         // This will calculate the contribution from the animation and update
         // timing.
-        if (animation->Progress(elapsed, seek_to_time)) {
+        if (animation->NeedsToProgress(elapsed, seek_to_time)) {
+          animation->Progress(elapsed, seek_to_time);
+          sandwich.push_back(animation);
+        } else if (animation->IsContributing(elapsed)) {
           sandwich.push_back(animation);
         } else {
           animation->ClearAnimatedType();
@@ -477,23 +478,64 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
       }
 
       if (!sandwich.IsEmpty()) {
-        // Results are accumulated to the first animation that animates and
-        // contributes to a particular element/attribute pair.
-        // Only reset the animated type to the base value once for
-        // the lowest priority animation that animates and
-        // contributes to a particular element/attribute pair.
-        SVGSMILElement* result_element = sandwich.front();
-        result_element->ResetAnimatedType();
-
-        // Go through the sandwich from lowest prio to highest and generate
-        // the animated value (if any.)
-        for (const auto& animation : sandwich)
-          animation->UpdateAnimatedValue(result_element);
-
-        animations_to_apply.push_back(result_element);
+        active_sandwiches.push_back(sandwich);
       }
     }
-    attribute_map.RemoveAll(invalid_keys);
+  }
+
+  if (active_sandwiches.IsEmpty()) {
+#if DCHECK_IS_ON()
+    prevent_scheduled_animations_changes_ = false;
+#endif
+    return earliest_fire_time;
+  }
+
+  ScheduledVector animations_to_apply;
+  for (auto& sandwich : active_sandwiches) {
+    if (seek_to_time) {
+      for (auto& animation : sandwich) {
+        animation->TriggerPendingEvents(elapsed);
+      }
+    }
+
+    for (auto& animation : sandwich) {
+      animation->UpdateNextProgressTime(elapsed);
+    }
+
+    auto* it = sandwich.begin();
+    while (it != sandwich.end()) {
+      auto* scheduled = it->Get();
+      if (scheduled->IsContributing(elapsed)) {
+        it++;
+        continue;
+      }
+      scheduled->ClearAnimatedType();
+      it = sandwich.erase(it);
+    }
+
+    if (sandwich.IsEmpty()) {
+      continue;
+    }
+
+    for (auto& animation : sandwich) {
+      SMILTime next_fire_time = animation->NextProgressTime();
+      if (next_fire_time.IsFinite())
+        earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
+    }
+
+    // Results are accumulated to the first animation that animates and
+    // contributes to a particular element/attribute pair.
+    // Only reset the animated type to the base value once for
+    // the lowest priority animation that animates and
+    // contributes to a particular element/attribute pair.
+    SVGSMILElement* result_element = sandwich.front();
+    result_element->ResetAnimatedType();
+    // Go through the sandwich from lowest prio to highest and generate
+    // the animated value (if any.)
+    for (auto& animation : sandwich) {
+      animation->UpdateAnimatedValue(result_element);
+    }
+    animations_to_apply.push_back(result_element);
   }
 
   if (animations_to_apply.IsEmpty()) {

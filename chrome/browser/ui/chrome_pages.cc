@@ -56,7 +56,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #endif
 
 using base::UserMetricsAction;

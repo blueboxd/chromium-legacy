@@ -153,7 +153,7 @@ bool ServerNigoriChecker::IsExitConditionSatisfied() {
       fake_server_->GetPermanentSyncEntitiesByModelType(syncer::NIGORI);
   EXPECT_LE(nigori_entities.size(), 1U);
   return !nigori_entities.empty() &&
-         syncer::ProtoPassphraseTypeToEnum(
+         syncer::ProtoPassphraseInt32ToEnum(
              nigori_entities[0].specifics().nigori().passphrase_type()) ==
              expected_passphrase_type_;
 }

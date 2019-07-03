@@ -917,7 +917,7 @@ int LargeHeapObject::destructor_calls_ = 0;
 class RefCountedAndGarbageCollected
     : public GarbageCollectedFinalized<RefCountedAndGarbageCollected> {
  public:
-  RefCountedAndGarbageCollected() : ref_count_(0) {}
+  RefCountedAndGarbageCollected() : keep_alive_(PERSISTENT_FROM_HERE) {}
   ~RefCountedAndGarbageCollected() { ++destructor_calls_; }
 
   void AddRef() {
@@ -942,7 +942,7 @@ class RefCountedAndGarbageCollected
   static int destructor_calls_;
 
  private:
-  int ref_count_;
+  int ref_count_ = 0;
   SelfKeepAlive<RefCountedAndGarbageCollected> keep_alive_;
 };
 
@@ -952,7 +952,7 @@ class RefCountedAndGarbageCollected2
     : public HeapTestOtherSuperClass,
       public GarbageCollectedFinalized<RefCountedAndGarbageCollected2> {
  public:
-  RefCountedAndGarbageCollected2() : ref_count_(0) {}
+  RefCountedAndGarbageCollected2() : keep_alive_(PERSISTENT_FROM_HERE) {}
   ~RefCountedAndGarbageCollected2() { ++destructor_calls_; }
 
   void Ref() {
@@ -977,7 +977,7 @@ class RefCountedAndGarbageCollected2
   static int destructor_calls_;
 
  private:
-  int ref_count_;
+  int ref_count_ = 0;
   SelfKeepAlive<RefCountedAndGarbageCollected2> keep_alive_;
 };
 

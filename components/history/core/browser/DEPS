@@ -1,5 +1,5 @@
 include_rules = [
   "+components/google/core/common/google_util.h",
+  "+components/signin/public/identity_manager",
   "+components/variations",
-  "+services/identity/public",
 ]

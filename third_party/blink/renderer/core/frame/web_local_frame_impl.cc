@@ -1714,7 +1714,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       interface_registry_(interface_registry),
       input_method_controller_(*this),
       spell_check_panel_host_client_(nullptr),
-      self_keep_alive_(this) {
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(client_);
   g_frame_count++;
   client_->BindToFrame(this);

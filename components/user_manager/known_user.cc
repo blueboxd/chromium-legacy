@@ -69,6 +69,9 @@ const char kProfileRequiresPolicy[] = "profile_requires_policy";
 // from the local state on logout.
 const char kIsEphemeral[] = "is_ephemeral";
 
+// Key of the list value that stores challenge-response authentication keys.
+const char kChallengeResponseKeys[] = "challenge_response_keys";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
@@ -82,7 +85,8 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kGaiaIdMigration,
                                kMinimalMigrationAttempted,
                                kProfileRequiresPolicy,
-                               kIsEphemeral};
+                               kIsEphemeral,
+                               kChallengeResponseKeys};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -584,6 +588,18 @@ void SetUserHomeMinimalMigrationAttempted(const AccountId& account_id,
                                           bool minimal_migration_attempted) {
   SetBooleanPref(account_id, kMinimalMigrationAttempted,
                  minimal_migration_attempted);
+}
+
+void SetChallengeResponseKeys(const AccountId& account_id, base::Value value) {
+  DCHECK(value.is_list());
+  SetPref(account_id, kChallengeResponseKeys, std::move(value));
+}
+
+base::Value GetChallengeResponseKeys(const AccountId& account_id) {
+  const base::Value* value = nullptr;
+  if (!GetPref(account_id, kChallengeResponseKeys, &value) || !value->is_list())
+    return base::Value();
+  return value->Clone();
 }
 
 void RemovePrefs(const AccountId& account_id) {

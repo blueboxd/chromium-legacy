@@ -10,8 +10,11 @@ var test_buffer_data = new ArrayBuffer(test_text_byte_array.length);
 var test_buffer_view = new Uint8Array(test_buffer_data).set(test_text_byte_array);
 
 var NFCHWStatus = {};
+// OS-level NFC setting is ON
 NFCHWStatus.ENABLED = 1;
+// no NFC chip
 NFCHWStatus.NOT_SUPPORTED = NFCHWStatus.ENABLED + 1;
+// OS-level NFC setting OFF
 NFCHWStatus.DISABLED = NFCHWStatus.NOT_SUPPORTED + 1;
 
 function noop() {}
@@ -378,9 +381,9 @@ class MockNFC {
 
   isReady() {
     if (this.hw_status_ === NFCHWStatus.DISABLED)
-      return createNFCError(device.mojom.NFCErrorType.DEVICE_DISABLED);
+      return createNFCError(device.mojom.NFCErrorType.NOT_READABLE);
     if (this.hw_status_ === NFCHWStatus.NOT_SUPPORTED)
-      return createNFCError(device.mojom.NFCErrorType.NOT_SUPPORTED);
+      return createNFCError(device.mojom.NFCErrorType.NOT_READABLE);
     return null;
   }
 

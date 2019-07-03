@@ -85,7 +85,12 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   void SeekToIntervalCorrespondingToTime(double elapsed);
-  bool Progress(double elapsed, bool seek_to_time);
+
+  bool NeedsToProgress(double elapsed, bool seek_to_time);
+  void TriggerPendingEvents(double elapsed);
+  void UpdateNextProgressTime(double elapsed);
+  void Progress(double elapsed, bool seek_to_time);
+
   SMILTime NextProgressTime() const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
     UpdateAnimation(last_percent_, last_repeat_, result_element);
@@ -240,8 +245,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     return static_cast<ActiveState>(active_state_);
   }
   ActiveState DetermineActiveState(SMILTime elapsed) const;
-  float CalculateAnimationPercentAndRepeat(double elapsed,
-                                           unsigned& repeat) const;
+  float CalculateAnimationPercent(double elapsed) const;
+  unsigned CalculateAnimationRepeat(double elapsed) const;
   SMILTime CalculateNextProgressTime(double elapsed) const;
 
   Member<SVGElement> target_element_;

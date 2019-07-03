@@ -26,8 +26,8 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 // Enables usage of Gaia Auth Multilogin endpoint for identity consistency.
 extern const base::Feature kUseMultiloginEndpoint;

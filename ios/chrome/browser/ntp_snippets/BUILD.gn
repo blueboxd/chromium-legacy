@@ -19,6 +19,7 @@ source_set("ntp_snippets") {
     "//components/ntp_snippets",
     "//components/pref_registry",
     "//components/reading_list/core",
+    "//components/signin/public/identity_manager",
     "//components/version_info",
     "//google_apis",
     "//ios/chrome/app:tests_hook",
@@ -35,6 +36,5 @@ source_set("ntp_snippets") {
     "//ios/chrome/common",
     "//ios/web",
     "//net",
-    "//services/identity/public/cpp",
   ]
 }

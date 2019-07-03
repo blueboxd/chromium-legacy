@@ -49,8 +49,10 @@ export class SwitchTrack {
   _initializeDOM(factory) {
     this[_trackElement] = factory.createElement('div');
     this[_trackElement].id = 'track';
+    this[_trackElement].part.add('track');
     this[_fillElement] = factory.createElement('span');
     this[_fillElement].id = 'trackFill';
+    this[_fillElement].part.add('trackFill');
     this[_trackElement].appendChild(this[_fillElement]);
     this[_slotElement] = factory.createElement('slot');
     this._addSlot();

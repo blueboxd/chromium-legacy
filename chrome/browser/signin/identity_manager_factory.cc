@@ -18,24 +18,25 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "services/identity/public/cpp/accounts_cookie_mutator.h"
-#include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/diagnostics_provider_impl.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
-#include "services/identity/public/cpp/primary_account_mutator_impl.h"
+#include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
+#include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
+#include "components/signin/internal/identity_manager/primary_account_mutator_impl.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
-#include "services/identity/public/cpp/accounts_mutator_impl.h"
+#include "components/signin/internal/identity_manager/accounts_mutator_impl.h"
 #endif
 
 namespace {

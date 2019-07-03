@@ -14,6 +14,8 @@
 
 // System Background Color
 @property(class, nonatomic, readonly) UIColor* cr_systemBackgroundColor;
+@property(class, nonatomic, readonly)
+    UIColor* cr_secondarySystemBackgroundColor;
 
 // System Grouped Background Colors
 @property(class, nonatomic, readonly) UIColor* cr_systemGroupedBackgroundColor;

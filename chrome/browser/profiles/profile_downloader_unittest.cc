@@ -13,9 +13,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

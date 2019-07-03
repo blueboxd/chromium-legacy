@@ -68,6 +68,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
+  bool HasRefreshToken(const CoreAccountId& account_id) const override;
   bool FixRequestErrorIfPossible() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
@@ -75,7 +76,8 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
                                 const std::string& client_id,
                                 const std::set<std::string>& scopes,
                                 const std::string& access_token) override;
-  bool HasRefreshToken(const CoreAccountId& account_id) const override;
+  void OnAccessTokenFetched(const CoreAccountId& account_id,
+                            const GoogleServiceAuthError& error) override;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);
@@ -207,10 +209,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
 
   // OAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
-
-  // Implement it in delegates if they want to report errors to the user.
-  void UpdateAuthError(const CoreAccountId& account_id,
-                       const GoogleServiceAuthError& error);
 
   // Add a new entry to the cache.
   // Subclasses can override if there are implementation-specific reasons

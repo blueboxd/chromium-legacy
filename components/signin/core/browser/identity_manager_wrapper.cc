@@ -10,10 +10,10 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "services/identity/public/cpp/accounts_cookie_mutator.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/diagnostics_provider.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/diagnostics_provider.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 
 IdentityManagerWrapper::IdentityManagerWrapper(
     std::unique_ptr<AccountTrackerService> account_tracker_service,

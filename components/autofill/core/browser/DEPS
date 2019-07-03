@@ -25,6 +25,7 @@ include_rules = [
   "-components/signin/core/browser/profile_oauth2_token_service.h",
   "-components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h",
   "-components/signin/core/browser/ubertoken_fetcher_impl.h",
+  "+components/signin/public",
 
   "+components/sync",
   "+components/variations",
@@ -36,7 +37,6 @@ include_rules = [
   "+google_apis/gaia",
   "+google_apis/google_api_keys.h",
   "+net",
-  "+services/identity/public",
   "+services/metrics/public",
   "+services/network/public",
   "+services/network/test",

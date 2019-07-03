@@ -70,7 +70,7 @@ void GeneratedImageCache::RemoveSize(const FloatSize& size) {
 }
 
 CSSImageGeneratorValue::CSSImageGeneratorValue(ClassType class_type)
-    : CSSValue(class_type) {}
+    : CSSValue(class_type), keep_alive_(PERSISTENT_FROM_HERE) {}
 
 CSSImageGeneratorValue::~CSSImageGeneratorValue() = default;
 

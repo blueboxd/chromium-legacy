@@ -13,12 +13,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
+#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "ui/events/event_source.h"
@@ -176,6 +178,12 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // Handles demo mode setup for tests. Accepts 'online' and 'offline' as
   // |demo_config|.
   void HandleStartDemoModeSetupForTesting(const std::string& demo_config);
+
+  // Shows the reset screen if |is_reset_allowed| and updates the
+  // tpm_firmware_update in settings.
+  void HandleToggleResetScreenCallback(
+      bool is_reset_allowed,
+      base::Optional<tpm_firmware_update::Mode> tpm_firmware_update_mode);
 
   // When keyboard_utils.js arrow key down event is reached, raise it
   // to tab/shift-tab event.

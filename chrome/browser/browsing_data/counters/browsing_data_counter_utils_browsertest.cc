@@ -23,7 +23,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #endif
 
 namespace browsing_data_counter_utils {

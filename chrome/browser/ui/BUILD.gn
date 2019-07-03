@@ -497,6 +497,7 @@ jumbo_split_static_library("ui") {
     "//components/sessions",
     "//components/signin/core/browser",
     "//components/signin/core/browser:signin_buildflags",
+    "//components/signin/public/identity_manager",
     "//components/spellcheck/browser",
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:lib",
@@ -539,7 +540,6 @@ jumbo_split_static_library("ui") {
     "//printing/buildflags",
     "//rlz/buildflags",
     "//services/device/public/cpp:device_features",
-    "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/mojom",
     "//skia",
@@ -1371,7 +1371,6 @@ jumbo_split_static_library("ui") {
       "//device/bluetooth",
       "//device/fido",
       "//services/device/public/mojom",
-      "//services/identity/public/cpp",
       "//services/metrics/public/cpp:metrics_cpp",
       "//third_party/libaddressinput",
       "//third_party/libaddressinput:strings",
@@ -3774,6 +3773,8 @@ jumbo_split_static_library("ui") {
         "webui/print_preview/local_printer_handler_chromeos.cc",
         "webui/print_preview/local_printer_handler_chromeos.h",
       ]
+
+      deps += [ "//services/identity/public/cpp:cpp_types" ]
     } else {
       sources += [
         "webui/print_preview/local_printer_handler_default.cc",

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 
 // Adaptor that supports identity::IdentityTestEnvironment's usage in testing
 // contexts where the relevant fake objects must be injected via the

@@ -145,7 +145,7 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
     : WebFrameWidgetBase(client),
-      self_keep_alive_(this) {}
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() = default;
 

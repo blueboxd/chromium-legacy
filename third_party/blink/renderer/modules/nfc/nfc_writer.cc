@@ -41,7 +41,7 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
   if (!execution_context || !To<Document>(execution_context)->IsInMainFrame()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
                                            kNfcAccessInNonTopFrame));
   }
 
@@ -102,7 +102,7 @@ void NFCWriter::OnMojoConnectionError() {
   // default error.
   for (ScriptPromiseResolver* resolver : requests_) {
     resolver->Reject(NFCError::Take(
-        resolver, device::mojom::blink::NFCErrorType::NOT_SUPPORTED));
+        resolver, device::mojom::blink::NFCErrorType::NOT_READABLE));
   }
   requests_.clear();
 }

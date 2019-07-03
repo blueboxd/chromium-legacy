@@ -59,13 +59,13 @@ public class SigninManagerTest {
         initMocks(this);
 
         mocker.mock(SigninManagerJni.TEST_HOOKS, mNativeMock);
-        doReturn(0l).when(mNativeMock).init(any());
+
         doReturn(true).when(mNativeMock).isSigninAllowedByPolicy(any(), anyLong());
 
         mAccountTrackerService = mock(AccountTrackerService.class);
 
-        mSigninManager = spy(new SigninManager(
-                ContextUtils.getApplicationContext(), mDelegateMock, mAccountTrackerService));
+        mSigninManager = spy(new SigninManager(ContextUtils.getApplicationContext(),
+                0 /* nativeSigninManagerAndroid */, mDelegateMock, mAccountTrackerService));
     }
 
     @Test

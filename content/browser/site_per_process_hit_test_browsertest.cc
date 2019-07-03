@@ -6534,8 +6534,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
+// Flaky on Linux. See https://crbug.com/980564
+#if defined(OS_LINUX)
+#define MAYBE_PointerEventsNoneOOPIF DISABLED_PointerEventsNoneOOPIF
+#else
+#define MAYBE_PointerEventsNoneOOPIF PointerEventsNoneOOPIF
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
-                       PointerEventsNoneOOPIF) {
+                       MAYBE_PointerEventsNoneOOPIF) {
   auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html", 0);
   float device_scale_factor = current_device_scale_factor();

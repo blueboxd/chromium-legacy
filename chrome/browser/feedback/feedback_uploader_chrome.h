@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "components/feedback/feedback_uploader.h"
-#include "services/identity/public/cpp/access_token_info.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;

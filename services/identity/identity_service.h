@@ -5,9 +5,8 @@
 #ifndef SERVICES_IDENTITY_IDENTITY_SERVICE_H_
 #define SERVICES_IDENTITY_IDENTITY_SERVICE_H_
 
-#include "components/signin/core/browser/primary_account_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"

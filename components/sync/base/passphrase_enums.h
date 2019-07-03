@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_BASE_PASSPHRASE_ENUMS_H_
 #define COMPONENTS_SYNC_BASE_PASSPHRASE_ENUMS_H_
 
+#include "base/optional.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 
 namespace syncer {
@@ -22,8 +23,22 @@ enum class PassphraseType {
 };
 
 bool IsExplicitPassphrase(PassphraseType type);
-PassphraseType ProtoPassphraseTypeToEnum(
-    sync_pb::NigoriSpecifics::PassphraseType type);
+
+// Function meant to convert |NigoriSpecifics.passphrase_type| into enum.
+// All unknown values are returned as UNKNOWN, which mainly represents future
+// values of the enum that are not currently supported. Note however that if the
+// field is not populated, it defaults to IMPLICIT_PASSPHRASE for backwards
+// compatibility reasons.
+sync_pb::NigoriSpecifics::PassphraseType ProtoPassphraseInt32ToProtoEnum(
+    ::google::protobuf::int32 type);
+
+// Returns base::nullopt if |type| represents an unknown value, likely coming
+// from a future version of the browser. Note however that if the field is not
+// populated, it defaults to IMPLICIT_PASSPHRASE for backwards compatibility
+// reasons.
+base::Optional<PassphraseType> ProtoPassphraseInt32ToEnum(
+    ::google::protobuf::int32 type);
+
 sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
     PassphraseType type);
 

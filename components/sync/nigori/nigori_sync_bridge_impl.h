@@ -102,6 +102,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   std::vector<std::string> keystore_keys_;
 
   Cryptographer cryptographer_;
+  // TODO(mmoskvitin): Consider adopting the C++ enum PassphraseType here and
+  // if so remove function ProtoPassphraseInt32ToProtoEnum() from
+  // passphrase_enums.h.
   sync_pb::NigoriSpecifics::PassphraseType passphrase_type_;
   bool encrypt_everything_;
   base::Time custom_passphrase_time_;

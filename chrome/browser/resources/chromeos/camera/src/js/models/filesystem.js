@@ -273,15 +273,44 @@ cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
 };
 
 /**
- * Saves the picture into the external or internal file system.
- * @param {Blob} blob Data of the picture to be saved.
- * @param {string} filename Filename of the Picture to be saved.
+ * Saves photo blob into predefined default location.
+ * @param {Blob} blob Data of the photo to be saved.
+ * @param {string} filename Filename of the photo to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  */
-cca.models.FileSystem.savePicture = function(blob, filename) {
+cca.models.FileSystem.savePhoto = function(blob, filename) {
   var dir =
       cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
   return cca.models.FileSystem.saveToFile_(dir, filename, blob);
+};
+
+/**
+ * Creates a file for saving temporary video recording result.
+ * @return {FileEntry} Newly created temporary file.
+ * @async
+ */
+cca.models.FileSystem.createTempVideoFile = async function() {
+  const dir =
+      cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
+  const filename = new cca.models.Filenamer().newVideoName();
+  return await cca.models.FileSystem.getFile(dir, filename, true);
+};
+
+/**
+ * Saves temporary video file to predefined default location.
+ * @param {FileEntry} tempfile Temporary video file to be saved.
+ * @param {string} filename Filename to be saved.
+ * @return {FileEntry} Saved video file.
+ * @async
+ */
+cca.models.FileSystem.saveVideo = async function(tempfile, filename) {
+  var dir =
+      cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
+  // Assuming content of tempfile contains all recorded chunks appended together
+  // and is a well-formed video. The work needed here is just to move the file
+  // to the correct directory and rename as the specified filename.
+  return await new Promise(
+      (resolve, reject) => tempfile.moveTo(dir, filename, resolve, reject));
 };
 
 /**

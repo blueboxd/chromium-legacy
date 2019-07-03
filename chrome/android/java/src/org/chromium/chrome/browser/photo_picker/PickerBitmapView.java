@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -40,6 +42,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
     // The length of the fade in animation (in ms).
     private static final int IMAGE_FADE_IN_DURATION = 200;
+
+    // The length of the image frame display (in ms).
+    private static final int IMAGE_FRAME_DISPLAY = 100;
 
     // Our context.
     private Context mContext;
@@ -262,11 +267,11 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * Completes the initialization of the PickerBitmapView. Must be called before the image can
      * respond to click events.
      * @param bitmapDetails The details about the bitmap represented by this PickerBitmapView.
-     * @param thumbnail The Bitmap to use for the thumbnail (or null).
+     * @param thumbnails The Bitmaps to use for the thumbnail (or null).
      * @param videoDuration The time-length of the video (human-friendly string).
      * @param placeholder Whether the image given is a placeholder or the actual image.
      */
-    public void initialize(PickerBitmap bitmapDetails, @Nullable Bitmap thumbnail,
+    public void initialize(PickerBitmap bitmapDetails, @Nullable List<Bitmap> thumbnails,
             String videoDuration, boolean placeholder) {
         resetTile();
 
@@ -276,7 +281,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             initializeSpecialTile(mBitmapDetails);
             mImageLoaded = true;
         } else {
-            setThumbnailBitmap(thumbnail, videoDuration);
+            setThumbnailBitmap(thumbnails, videoDuration);
             mImageLoaded = !placeholder;
         }
 
@@ -320,13 +325,25 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     /**
      * Sets a thumbnail bitmap for the current view and ensures the selection border is showing, if
      * the image has already been selected.
-     * @param thumbnail The Bitmap to use for the icon ImageView.
+     * @param thumbnails The Bitmaps to use for the icon ImageView.
      * @param videoDuration The time-length of the video (human-friendly string).
      * @return True if no image was loaded before (e.g. not even a low-res image).
      */
-    public boolean setThumbnailBitmap(Bitmap thumbnail, String videoDuration) {
-        mIconView.setImageBitmap(thumbnail);
-        if (videoDuration != null) mVideoDuration.setText(videoDuration);
+    public boolean setThumbnailBitmap(List<Bitmap> thumbnails, String videoDuration) {
+        assert thumbnails == null || thumbnails.size() > 0;
+        if (videoDuration == null) {
+            mIconView.setImageBitmap(thumbnails == null ? null : thumbnails.get(0));
+        } else {
+            mVideoDuration.setText(videoDuration);
+            final AnimationDrawable animationDrawable = new AnimationDrawable();
+            for (int i = 0; i < thumbnails.size(); ++i) {
+                animationDrawable.addFrame(
+                        new BitmapDrawable(thumbnails.get(i)), IMAGE_FRAME_DISPLAY);
+            }
+            animationDrawable.setOneShot(false);
+            mIconView.setImageDrawable(animationDrawable);
+            animationDrawable.start();
+        }
 
         // If the tile has been selected before the bitmap has loaded, make sure it shows up with
         // a selection border on load.

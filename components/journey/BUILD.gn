@@ -13,10 +13,10 @@ static_library("journey_info_fetcher") {
   deps = [
     "//base",
     "//components/journey/proto",
+    "//components/signin/public/identity_manager",
     "//components/variations/net:net",
     "//net",
     "//services/data_decoder/public/cpp",
-    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//url",
   ]
@@ -31,8 +31,8 @@ source_set("unit_tests") {
   deps = [
     ":journey_info_fetcher",
     "//base/test:test_support",
+    "//components/signin/public/identity_manager:test_support",
     "//services/data_decoder/public/cpp:test_support",
-    "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",

@@ -2436,6 +2436,10 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-text/word-break/word-break-norma
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-normal-lo-000.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.html [ Failure ]
 
+crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
+crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
+crbug.com/974371 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-006.html [ Failure ]
+
 # The 'overflow-wrap: anywhere' feature is not implemented yet
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-002.html [ Skip ]
@@ -3202,6 +3206,25 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-looped-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-auto-002.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-double-struck-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-initial-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-italic-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-italic-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-script-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-tailed-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-italic-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-sans-serif-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-monospace-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-fraktur-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-auto-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-script-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/swap-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-missed.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/attr-referrer/cross-origin/http-http/img-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
@@ -3791,9 +3814,7 @@ crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-end-of-
 crbug.com/626703 external/wpt/mediacapture-record/MediaRecorder-destroy-script-execution.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/trailing-ideographic-space-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/trailing-ideographic-space-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/variations/font-descriptor-range-reversed.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/replaced-elements/the-select-element/select-1-line-height.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
@@ -6112,48 +6133,12 @@ crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.http
 
 # Allow failure until its appearance gets stable.
 crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
+crbug.com/972476 std-switch/switch-appearance-customization.html [ Failure ]
 
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
-
-# TODO(crbug.com/943636): rebaseline and re-enable once https://chromium-review.googlesource.com/c/v8/v8/+/1593307 is rolled into chromium.
-crbug.com/943636 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
-crbug.com/943636 fast/dom/script-module-inline-error-gc.html [ Pass Failure ]
-crbug.com/943636 fast/dom/HTMLAnchorElement/anchor-ismap-crash.html [ Pass Failure ]
-crbug.com/943636 fast/dom/SelectorAPI/unknown-pseudo.html [ Pass Failure ]
-crbug.com/943636 fast/encoding/meta-in-script.html [ Pass Failure ]
-crbug.com/943636 fast/events/attribute-listener-deletion-crash.html [ Pass Failure ]
-crbug.com/943636 fast/events/set-attribute-listener-window-onerror-crash.html [ Pass Failure ]
-crbug.com/943636 fast/events/window-onerror-05.html [ Pass Failure ]
-crbug.com/943636 fast/js/postfix-syntax.html [ Pass Failure ]
-crbug.com/943636 fast/parser/entity-end-script-tag.html [ Pass Failure ]
-crbug.com/943636 fast/workers/worker-onerror-01.html [ Pass Failure ]
-crbug.com/943636 html5lib/generated/run-tests1-data.html [ Pass Failure ]
-crbug.com/943636 html5lib/generated/run-tests1-write.html [ Pass Failure ]
-crbug.com/943636 html5lib/generated/run-tests18-data.html [ Pass Failure ]
-crbug.com/943636 html5lib/generated/run-tests18-write.html [ Pass Failure ]
-crbug.com/943636 html5lib/generated/run-tests7-data.html [ Pass Failure ]
-crbug.com/943636 html5lib/generated/run-tests7-write.html [ Pass Failure ]
-crbug.com/966932 http/tests/devtools/a11y-axe-core/elements/main-tool-test.js [ Timeout Pass ]
-crbug.com/943636 http/tests/devtools/console/console-eval-object-literal.js [ Pass Failure ]
-crbug.com/943636 http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
-crbug.com/943636 http/tests/devtools/console/console-log-eval-syntax-error.js [ Pass Failure ]
-crbug.com/943636 http/tests/devtools/console/console-log-syntax-error.js [ Pass Failure ]
-crbug.com/943636 http/tests/devtools/console/console-message-from-inline-with-url.js [ Pass Failure ]
-crbug.com/943636 http/tests/devtools/sources/debugger/debugger-autocontinue-on-syntax-error.js [ Pass Failure ]
-crbug.com/943636 http/tests/devtools/sources/debugger/debugger-compile-and-run.js [ Pass Failure ]
-crbug.com/943636 inspector-protocol/runtime/runtime-callFunctionOn-async.js [ Pass Failure ]
-crbug.com/943636 inspector-protocol/runtime/runtime-runScript-async.js [ Pass Failure ]
-crbug.com/943636 paint/invalidation/svg/viewport-mask-update.html [ Pass Failure ]
-crbug.com/943636 security/lazy-event-listener.html [ Pass Failure ]
-crbug.com/943636 virtual/disable-blink-gen-property-trees/paint/invalidation/svg/viewport-mask-update.html [ Pass Failure ]
-crbug.com/943636 virtual/mouseevent_fractional/fast/events/attribute-listener-deletion-crash.html [ Pass Failure ]
-crbug.com/943636 virtual/mouseevent_fractional/fast/events/set-attribute-listener-window-onerror-crash.html [ Pass Failure ]
-crbug.com/943636 virtual/mouseevent_fractional/fast/events/window-onerror-05.html [ Pass Failure ]
-crbug.com/943636 virtual/omt-worker-fetch/fast/workers/worker-onerror-01.html [ Pass Failure ]
-crbug.com/943636 virtual/not-omt-sw-fetch/fast/workers/worker-onerror-01.html [ Pass Failure ]
 
 # Sheriff 2019-05-27
 crbug.com/942411 [ Win ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
@@ -6249,3 +6234,10 @@ crbug.com/979593 [ Linux Win ] external/wpt/service-workers/service-worker/regis
 crbug.com/979593 [ Linux Win ] virtual/blink-cors/external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 crbug.com/979593 [ Linux Win ] virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
+
+# Sheriff 2019-07-03
+crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
+crbug.com/980924 [ Linux Win Debug ] external/wpt/html/cross-origin/null.tentative.html [ Pass Failure ]
+
+# TODO(crbug.com/980588): reenable once WPT is fixed
+crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]

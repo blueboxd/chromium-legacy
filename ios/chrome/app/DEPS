@@ -28,7 +28,7 @@ include_rules = [
   "+ios/net",
   "+ios/public/provider/chrome",
   "+mojo/core/embedder/embedder.h",
-  "+services/identity/public/cpp/identity_manager.h",
+  "+components/signin/public/identity_manager/identity_manager.h",
   "+third_party/breakpad/breakpad/src/client/ios",
 
   # Strings and resources.

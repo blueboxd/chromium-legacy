@@ -208,6 +208,7 @@ public class NoTouchActivity extends SingleTabActivity {
     /**
      * @return  Whether this activity supports the find in page page
      */
+    @Override
     public boolean supportsFindInPage() {
         return false;
     }

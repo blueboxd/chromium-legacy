@@ -11,8 +11,9 @@ namespace blink {
 
 WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
                                        WebViewImpl& web_view)
-    : WebFrameWidgetBase(client), web_view_(&web_view), self_keep_alive_(this) {
-}
+    : WebFrameWidgetBase(client),
+      web_view_(&web_view),
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 

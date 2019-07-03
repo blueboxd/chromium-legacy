@@ -161,6 +161,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
               params_->weight_multiplier_per_signal_strength_level())},
       effective_connection_type_at_last_main_frame_(
           EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      queueing_delay_update_interval_(base::TimeDelta::FromMilliseconds(2000)),
       effective_connection_type_recomputation_interval_(
           base::TimeDelta::FromSeconds(10)),
       rtt_observations_size_at_last_ect_computation_(0),
@@ -714,6 +715,62 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   UMA_HISTOGRAM_ENUMERATION("NQE.MainFrame.EffectiveConnectionType",
                             effective_connection_type_at_last_main_frame_,
                             EFFECTIVE_CONNECTION_TYPE_LAST);
+}
+
+bool NetworkQualityEstimator::ShouldComputeNetworkQueueingDelay() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  // Recomputes the queueing delay estimate if |queueing_delay_update_interval_|
+  // has passed.
+  return (now - last_queueing_delay_computation_ >=
+          queueing_delay_update_interval_);
+}
+
+void NetworkQualityEstimator::ComputeNetworkQueueingDelay() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!ShouldComputeNetworkQueueingDelay())
+    return;
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  last_queueing_delay_computation_ = now;
+  // The time after which observations are considered as recent data.
+  const base::TimeTicks recent_start_time =
+      now - base::TimeDelta::FromMilliseconds(1000);
+  // The time after which observations are considered as historical data.
+  const base::TimeTicks historical_start_time =
+      now - base::TimeDelta::FromMilliseconds(30000);
+
+  // Checks if a valid downlink throughput estimation is available.
+  int32_t downlink_kbps = 0;
+  if (!GetRecentDownlinkThroughputKbps(recent_start_time, &downlink_kbps))
+    downlink_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
+
+  // Gets recent RTT statistic values.
+  std::map<nqe::internal::IPHash, nqe::internal::CanonicalStats>
+      recent_rtt_stats =
+          rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+              .GetCanonicalStatsKeyedByHosts(recent_start_time,
+                                             std::set<nqe::internal::IPHash>());
+
+  if (recent_rtt_stats.empty())
+    return;
+
+  // Gets the set of active hosts. Only computes the historical stats for recent
+  // active hosts.
+  std::set<nqe::internal::IPHash> active_hosts;
+  for (const auto& host_stat : recent_rtt_stats)
+    active_hosts.insert(host_stat.first);
+
+  std::map<nqe::internal::IPHash, nqe::internal::CanonicalStats>
+      historical_rtt_stats =
+          rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+              .GetCanonicalStatsKeyedByHosts(historical_start_time,
+                                             active_hosts);
+
+  network_congestion_analyzer_.ComputeRecentQueueingDelay(
+      recent_rtt_stats, historical_rtt_stats, downlink_kbps);
 }
 
 void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
@@ -1330,11 +1387,12 @@ void NetworkQualityEstimator::OnUpdatedTransportRTTAvailable(
     const base::Optional<nqe::internal::IPHash>& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LT(nqe::internal::INVALID_RTT_THROUGHPUT, rtt.InMilliseconds());
-
   Observation observation(rtt.InMilliseconds(), tick_clock_->NowTicks(),
                           current_network_id_.signal_strength,
                           ProtocolSourceToObservationSource(protocol), host);
   AddAndNotifyObserversOfRTT(observation);
+
+  ComputeNetworkQueueingDelay();
 }
 
 void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(

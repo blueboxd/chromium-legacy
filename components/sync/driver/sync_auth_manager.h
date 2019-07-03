@@ -15,12 +15,12 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_auth_util.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/connection_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/backoff_entry.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 class AccessTokenFetcher;

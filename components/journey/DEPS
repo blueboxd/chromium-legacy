@@ -3,7 +3,6 @@ include_rules = [
   "+components",
   "+net",
   "+services/data_decoder/public/cpp",
-  "+services/identity/public/cpp",
   "+services/network/public/cpp",
   "+services/network/test",
   "+url",

@@ -112,7 +112,7 @@ static_library("device_sync") {
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
     "//chromeos/services/device_sync/public/mojom",
-    "//services/identity/public/mojom",
+    "//services/network/public/cpp",
     "//services/service_manager/public/cpp",
   ]
 
@@ -127,8 +127,8 @@ static_library("device_sync") {
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
     "//components/gcm_driver",
+    "//components/signin/public/identity_manager",
     "//net",
-    "//services/identity/public/cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
   ]
@@ -235,8 +235,8 @@ source_set("unit_tests") {
     "//chromeos/services/device_sync/public/mojom",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
+    "//components/signin/public/identity_manager:test_support",
     "//net/traffic_annotation:test_support",
-    "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",

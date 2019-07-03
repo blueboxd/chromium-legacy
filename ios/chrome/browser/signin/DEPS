@@ -9,6 +9,7 @@ specific_include_rules = {
     "+components/signin/core/browser/primary_account_manager.h",
     "+components/signin/core/browser/primary_account_policy_manager.h",
     "+components/signin/core/browser/profile_oauth2_token_service.h",
+    "+components/signin/internal/identity_manager",  # TODO(crbug.com/974198): remove once closed
   ],
 
   # The dependence on the Identity Service implementation should be used *only*

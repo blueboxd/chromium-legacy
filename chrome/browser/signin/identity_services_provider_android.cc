@@ -6,7 +6,8 @@
 #include "chrome/android/chrome_jni_headers/IdentityServicesProvider_jni.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "chrome/browser/signin/signin_manager_android_wrapper_factory.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -29,4 +30,12 @@ JNI_IdentityServicesProvider_GetOAuth2TokenService(
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   return identity_manager->LegacyGetOAuth2TokenServiceJavaObject();
+}
+
+static ScopedJavaLocalRef<jobject>
+JNI_IdentityServicesProvider_GetSigninManager(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile_android) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
+  return SigninManagerAndroidWrapperFactory::GetJavaObjectForProfile(profile);
 }

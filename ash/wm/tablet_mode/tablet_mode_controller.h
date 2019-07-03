@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
@@ -73,8 +72,7 @@ class ASH_EXPORT TabletModeController
       public SessionObserver,
       public ui::InputDeviceEventObserver,
       public KioskNextShellObserver,
-      public ui::LayerAnimationObserver,
-      public aura::WindowObserver {
+      public ui::LayerAnimationObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
@@ -160,9 +158,6 @@ class ASH_EXPORT TabletModeController
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
 
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-
   void increment_app_window_drag_count() { ++app_window_drag_count_; }
   void increment_app_window_drag_in_splitview_count() {
     ++app_window_drag_in_splitview_count_;
@@ -187,10 +182,11 @@ class ASH_EXPORT TabletModeController
     bool observe_display_events = true;
     bool observe_external_pointer_device_events = true;
     bool block_internal_input_device = false;
-    bool always_show_overview_button_in_tablet_mode = false;
+    bool always_show_overview_button = false;
   };
 
  private:
+  class DestroyObserver;
   class TabletModeTransitionFpsCounter;
   friend class TabletModeControllerTestApi;
 
@@ -290,19 +286,19 @@ class ASH_EXPORT TabletModeController
   // Deletes the enter tablet mode screenshot and associated callbacks.
   void DeleteScreenshot();
 
+  void ResetDestroyObserver();
+
   // Finishes initializing for tablet mode. May be called async if a screenshot
   // was requested while starting initializing.
   void FinishInitTabletMode();
 
   // Takes a screenshot of everything in the rotation container, except for
   // |top_window|.
-  void TakeScreenshot(aura::Window* top_window,
-                      base::OnceClosure on_screenshot_taken);
+  void TakeScreenshot(aura::Window* top_window);
 
   // Called when a screenshot is taken. Creates |screenshot_widget_| which holds
-  // the screenshot results and stacks it under |top_window|.
-  void OnScreenshotTaken(aura::Window* top_window,
-                         base::OnceClosure on_screenshot_taken,
+  // the screenshot results and stacks it under top window.
+  void OnScreenshotTaken(base::OnceClosure on_screenshot_taken,
                          std::unique_ptr<viz::CopyOutputResult> copy_result);
 
   // The maximized window manager (if enabled).
@@ -394,10 +390,12 @@ class ASH_EXPORT TabletModeController
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
 
-  // The window and layer we are observing when animating from clamshell to
-  // tablet mode or vice versa.
-  aura::Window* observed_window_ = nullptr;
-  ui::Layer* observed_layer_ = nullptr;
+  // Observers top windows or animating window during state transition.
+  std::unique_ptr<DestroyObserver> destroy_observer_;
+
+  // The layer that animates duraing tablet mode <-> clamshell
+  // transition. It's observed to take an action after its animation ends.
+  ui::Layer* animating_layer_ = nullptr;
 
   std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
 

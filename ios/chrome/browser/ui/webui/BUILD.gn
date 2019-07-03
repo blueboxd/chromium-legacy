@@ -94,6 +94,7 @@ source_set("webui_internal") {
     "//base",
     "//components/resources",
     "//components/signin/core/browser",
+    "//components/signin/public/identity_manager",
     "//ios/chrome/app/resources:ios_resources",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
@@ -104,7 +105,6 @@ source_set("webui_internal") {
     "//ios/chrome/browser/ui/webui/sync_internals",
     "//ios/chrome/browser/ui/webui/translate_internals",
     "//ios/web/public/webui",
-    "//services/identity/public/cpp",
     "//url",
   ]
 }

@@ -188,7 +188,9 @@ std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
   if (impl_name == "builtin") {
     return std::make_unique<CertVerifyImplUsingProc>(
         "CertVerifyProcBuiltin",
-        net::CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher)));
+        net::CreateCertVerifyProcBuiltin(
+            std::move(cert_net_fetcher),
+            nullptr /* system_trust_store_provider */));
   }
 
   if (impl_name == "pathbuilder")

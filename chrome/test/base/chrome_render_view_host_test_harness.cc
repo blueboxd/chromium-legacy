@@ -34,6 +34,20 @@ void ChromeRenderViewHostTestHarness::TearDown() {
 
 content::BrowserContext*
 ChromeRenderViewHostTestHarness::CreateBrowserContext() {
+  // Maintain the profile directory ourselves so that it isn't deleted along
+  // with TestingProfile.  RenderViewHostTestHarness::TearDown() will destroy
+  // the profile and also destroy the thread bundle to ensure that any tasks
+  // posted throughout the test run to completion.  By postponing the deletion
+  // of the profile directory until ~ChromeRenderViewHostTestHarness() we
+  // guarantee that no tasks will try to access the profile directory when it's
+  // (being) deleted.
+  auto temp_dir = std::make_unique<base::ScopedTempDir>();
+  CHECK(temp_dir->CreateUniqueTempDir());
+
   TestingProfile::Builder builder;
+  builder.SetPath(temp_dir->GetPath());
+
+  temp_dirs_.push_back(std::move(temp_dir));
+
   return builder.Build().release();
 }

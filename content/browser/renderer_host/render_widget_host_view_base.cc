@@ -624,11 +624,6 @@ void RenderWidgetHostViewBase::OnFrameTokenChangedForView(
     host()->DidProcessFrame(frame_token);
 }
 
-bool RenderWidgetHostViewBase::ScreenRectIsUnstableFor(
-    const blink::WebInputEvent& event) {
-  return false;
-}
-
 viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
     viz::SurfaceHittestDelegate* delegate,
     const gfx::PointF& point,

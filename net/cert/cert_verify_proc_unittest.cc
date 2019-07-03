@@ -211,7 +211,9 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
       return new CertVerifyProcWin();
 #endif
     case CERT_VERIFY_PROC_BUILTIN:
-      return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
+      return CreateCertVerifyProcBuiltin(
+          std::move(cert_net_fetcher),
+          nullptr /* system_trust_store_provider */);
     default:
       return nullptr;
   }

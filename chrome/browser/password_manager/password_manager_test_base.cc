@@ -409,6 +409,12 @@ void BubbleObserver::WaitForAutomaticSavePrompt() const {
   controller->WaitForState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
+void BubbleObserver::WaitForAutomaticUpdatePrompt() const {
+  CustomManagePasswordsUIController* controller =
+      static_cast<CustomManagePasswordsUIController*>(passwords_ui_controller_);
+  controller->WaitForState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
+}
+
 bool BubbleObserver::WaitForFallbackForSaving(
     const base::TimeDelta timeout) const {
   CustomManagePasswordsUIController* controller =

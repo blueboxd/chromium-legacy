@@ -42,7 +42,6 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
   TableViewTextLinkCell* cell =
       base::mac::ObjCCastStrict<TableViewTextLinkCell>(tableCell);
   cell.textLabel.text = self.text;
-  cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
   [cell setLinkURL:self.linkURL];
 }

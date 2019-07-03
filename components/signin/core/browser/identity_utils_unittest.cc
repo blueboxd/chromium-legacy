@@ -7,6 +7,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -25,14 +26,13 @@ const char kMatchingPattern6[] = ".*";
 const char kNonMatchingPattern[] = ".*foo.*";
 const char kNonMatchingUsernamePattern[] = "foo@test.com";
 const char kNonMatchingDomainPattern[] = "test@foo.com";
-
-const char kRegisteredPattern[] = "test.registered.username_pattern";
 }  // namespace
 
 class IdentityUtilsTest : public testing::Test {
  public:
   IdentityUtilsTest() {
-    prefs_.registry()->RegisterStringPref(kRegisteredPattern, std::string());
+    prefs_.registry()->RegisterStringPref(prefs::kGoogleServicesUsernamePattern,
+                                          std::string());
   }
 
   TestingPrefServiceSimple* prefs() { return &prefs_; }
@@ -42,13 +42,13 @@ class IdentityUtilsTest : public testing::Test {
 };
 
 TEST_F(IdentityUtilsTest, IsUsernameAllowedByPatternFromPrefs_EmptyPatterns) {
-  prefs()->SetString(kRegisteredPattern, "");
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(),kUsername, kRegisteredPattern);
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, "");
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, "   ");
-  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern);
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, "   ");
+  EXPECT_FALSE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 }
 
 TEST_F(IdentityUtilsTest,
@@ -56,50 +56,55 @@ TEST_F(IdentityUtilsTest,
   // identity::IsUsernameAllowedByPatternFromPrefs should recognize invalid
   // wildcard patterns like "*@foo.com" and insert a "." before them
   // automatically.
-  prefs()->SetString(kRegisteredPattern, kValidWildcardPattern);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern);
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                     kValidWildcardPattern);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kInvalidWildcardPattern);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern);
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                     kInvalidWildcardPattern);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 }
 
 TEST_F(IdentityUtilsTest,
        IsUsernameAllowedByPatternFromPrefs_MatchingWildcardPatterns) {
-  prefs()->SetString(kRegisteredPattern, kMatchingPattern1);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, kMatchingPattern1);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kMatchingPattern2);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, kMatchingPattern2);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kMatchingPattern3);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, kMatchingPattern3);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kMatchingPattern4);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, kMatchingPattern4);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kMatchingPattern5);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, kMatchingPattern5);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kMatchingPattern6);
-  EXPECT_TRUE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern, kMatchingPattern6);
+  EXPECT_TRUE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kNonMatchingPattern);
-  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                     kNonMatchingPattern);
+  EXPECT_FALSE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kNonMatchingUsernamePattern);
-  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                     kNonMatchingUsernamePattern);
+  EXPECT_FALSE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 
-  prefs()->SetString(kRegisteredPattern, kNonMatchingDomainPattern);
-  EXPECT_FALSE(identity::IsUsernameAllowedByPatternFromPrefs(
-      prefs(), kUsername, kRegisteredPattern));
+  prefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                     kNonMatchingDomainPattern);
+  EXPECT_FALSE(
+      identity::IsUsernameAllowedByPatternFromPrefs(prefs(), kUsername));
 }

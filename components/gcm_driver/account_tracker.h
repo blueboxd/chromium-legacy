@@ -12,9 +12,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 class GoogleServiceAuthError;
 

@@ -33,6 +33,7 @@
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
+#include "third_party/blink/public/web/web_origin_policy.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 
 #if INSIDE_BLINK
@@ -210,8 +211,6 @@ struct BLINK_EXPORT WebNavigationParams {
   // The http content type of the request used to load the main resource, if
   // any.
   WebString http_content_type;
-  // The origin policy for this navigation.
-  WebString origin_policy;
   // The origin of the request used to load the main resource, specified at
   // https://fetch.spec.whatwg.org/#concept-request-origin. Can be null.
   // TODO(dgozman,nasko): we shouldn't need both this and |origin_to_commit|.
@@ -332,6 +331,8 @@ struct BLINK_EXPORT WebNavigationParams {
   // The origin trial features activated in the document initiating this
   // navigation that should be applied in the document being navigated to.
   WebVector<int> initiator_origin_trial_features;
+
+  base::Optional<WebOriginPolicy> origin_policy;
 };
 
 }  // namespace blink

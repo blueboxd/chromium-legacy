@@ -18,9 +18,9 @@
 #include "components/invalidation/impl/push_client_channel.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

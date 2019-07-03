@@ -78,7 +78,8 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
     return nullptr;
   CSSFontFaceSrcValue* uri_value(CSSFontFaceSrcValue::Create(
       url, context.CompleteURL(url), context.GetReferrer(),
-      context.ShouldCheckContentSecurityPolicy()));
+      context.ShouldCheckContentSecurityPolicy(),
+      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse));
 
   if (range.Peek().FunctionId() != CSSValueID::kFormat)
     return uri_value;
@@ -106,14 +107,16 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
     if (!args.AtEnd())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
-        arg.Value().ToString(), should_check_content_security_policy);
+        arg.Value().ToString(), should_check_content_security_policy,
+        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
   }
   if (args.Peek().GetType() == kIdentToken) {
     String family_name = css_parsing_utils::ConcatenateFamilyName(args);
     if (!args.AtEnd())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
-        family_name, should_check_content_security_policy);
+        family_name, should_check_content_security_policy,
+        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
   }
   return nullptr;
 }

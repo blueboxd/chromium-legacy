@@ -18,6 +18,5 @@ include_rules = [
   "+components/version_info",
   "+components/webdata/common",
   "+components/webdata_services",
-  "+services/identity/public/cpp",
   "+services/network/test",
 ]

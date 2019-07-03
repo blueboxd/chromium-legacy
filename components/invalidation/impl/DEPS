@@ -4,6 +4,7 @@ include_rules = [
   "+components/gcm_driver",
   "+components/keyed_service",
   "+components/pref_registry",
+  "+components/signin/public",
   "+components/sync_preferences",
 
   "+google_apis/gaia",
@@ -20,7 +21,6 @@ include_rules = [
   "+net/base/load_flags.h",
 
   "+services/data_decoder/public/cpp/testing_json_parser.h",
-  "+services/identity/public",
   "+services/network/public",
   "+services/network/test",
 ]

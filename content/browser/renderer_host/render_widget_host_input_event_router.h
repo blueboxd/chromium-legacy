@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
-#include "components/viz/host/hit_test/hit_test_region_observer.h"
 #include "components/viz/service/surfaces/surface_hittest_delegate.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
@@ -75,8 +74,7 @@ viz::HitTestQuery* GetHitTestQuery(
 class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     : public RenderWidgetHostViewBaseObserver,
       public RenderWidgetTargeter::Delegate,
-      public TouchEmulatorClient,
-      public viz::HitTestRegionObserver {
+      public TouchEmulatorClient {
  public:
   RenderWidgetHostInputEventRouter();
   ~RenderWidgetHostInputEventRouter() final;
@@ -167,11 +165,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void SetCursor(const WebCursor& cursor) override;
   void ShowContextMenuAtPoint(const gfx::Point& point,
                               const ui::MenuSourceType source_type) override;
-
-  // HitTestRegionObserver
-  void OnAggregatedHitTestRegionListUpdated(
-      const viz::FrameSinkId& frame_sink_id,
-      const std::vector<viz::AggregatedHitTestRegion>& hit_test_data) override;
 
   bool HasEventsPendingDispatch() const;
 
@@ -335,14 +328,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     return forced_last_fling_start_target_to_stop_flinging_for_test_;
   }
 
-  void SetTouchscreenGestureTarget(RenderWidgetHostViewBase* target,
-                                   bool moved_recently = false);
-
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;
   RenderWidgetHostViewBase* touch_target_ = nullptr;
   RenderWidgetHostViewBase* touchscreen_gesture_target_ = nullptr;
-  bool touchscreen_gesture_target_moved_recently_ = false;
   RenderWidgetHostViewBase* touchpad_gesture_target_ = nullptr;
   RenderWidgetHostViewBase* bubbling_gesture_scroll_target_ = nullptr;
   RenderWidgetHostViewChildFrame* bubbling_gesture_scroll_origin_ = nullptr;

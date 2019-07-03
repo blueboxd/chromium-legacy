@@ -42,6 +42,8 @@ source_set("google_services") {
     "//components/google/core/common",
     "//components/metrics",
     "//components/prefs",
+    "//components/signin/public/identity_manager",
+    "//components/signin/public/identity_manager/objc",
     "//components/strings",
     "//components/sync",
     "//components/ukm/ios:features",
@@ -70,7 +72,6 @@ source_set("google_services") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/signin",
-    "//services/identity/public/objc",
     "//ui/base",
   ]
   allow_circular_includes_from =

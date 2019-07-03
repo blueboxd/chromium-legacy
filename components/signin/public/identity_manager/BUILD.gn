@@ -1,0 +1,108 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("identity_manager") {
+  sources = [
+    "access_token_fetcher.cc",
+    "access_token_fetcher.h",
+    "access_token_info.cc",
+    "access_token_info.h",
+    "accounts_cookie_mutator.h",
+    "accounts_in_cookie_jar_info.cc",
+    "accounts_in_cookie_jar_info.h",
+    "accounts_mutator.h",
+    "diagnostics_provider.h",
+    "identity_manager.cc",
+    "identity_manager.h",
+    "primary_account_access_token_fetcher.cc",
+    "primary_account_access_token_fetcher.h",
+    "primary_account_mutator.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  public_deps = [
+    "//base",
+    "//components/signin/core/browser:shared",
+    "//components/signin/core/browser:signin_buildflags",
+    "//google_apis",
+    "//services/identity/public/cpp:cpp_types",
+  ]
+
+  deps = [
+    "//components/signin/core/browser:internals",
+    "//services/network/public/cpp",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "access_token_fetcher_unittest.cc",
+    "accounts_cookie_mutator_unittest.cc",
+    "accounts_mutator_unittest.cc",
+    "diagnostics_provider_unittest.cc",
+    "identity_manager_unittest.cc",
+    "identity_test_environment_unittest.cc",
+    "primary_account_access_token_fetcher_unittest.cc",
+  ]
+
+  deps = [
+    ":identity_manager",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//components/image_fetcher/core:test_support",
+    "//components/prefs:test_support",
+    "//components/signin/core/browser:internals",
+    "//components/signin/core/browser:internals_test_support",
+    "//components/signin/core/browser:shared",
+    "//components/signin/internal/identity_manager",
+    "//components/signin/public/identity_manager",
+    "//components/sync_preferences:test_support",
+    "//google_apis",
+    "//services/network:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (!is_chromeos) {
+    sources += [ "primary_account_mutator_unittest.cc" ]
+  }
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "identity_test_environment.cc",
+    "identity_test_environment.h",
+    "identity_test_utils.cc",
+    "identity_test_utils.h",
+    "test_identity_manager_observer.cc",
+    "test_identity_manager_observer.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/signin/core/browser:shared",
+    "//components/signin/public/identity_manager",
+    "//google_apis",
+  ]
+
+  deps = [
+    "//components/image_fetcher/core:test_support",
+    "//components/signin/core/browser",
+    "//components/signin/core/browser:internals",
+    "//components/signin/core/browser:internals_test_support",
+    "//components/signin/internal/identity_manager",
+    "//components/sync_preferences:test_support",
+    "//testing/gtest",
+  ]
+
+  if (is_ios) {
+    deps += [ "//components/signin/ios/browser" ]
+  }
+}

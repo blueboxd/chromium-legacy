@@ -32,7 +32,7 @@ using syncer::LoopbackServerEntity;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::PassphraseType;
-using syncer::ProtoPassphraseTypeToEnum;
+using syncer::ProtoPassphraseInt32ToEnum;
 using syncer::SyncService;
 using syncer::SystemEncryptor;
 
@@ -142,7 +142,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
       const std::string& passphrase) {
     NigoriSpecifics nigori;
     EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
-    EXPECT_EQ(ProtoPassphraseTypeToEnum(nigori.passphrase_type()),
+    EXPECT_EQ(ProtoPassphraseInt32ToEnum(nigori.passphrase_type()),
               PassphraseType::CUSTOM_PASSPHRASE);
     auto cryptographer = std::make_unique<Cryptographer>(&system_encryptor_);
     InitCustomPassphraseCryptographerFromNigori(nigori, cryptographer.get(),

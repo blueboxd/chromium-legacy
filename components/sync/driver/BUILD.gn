@@ -112,9 +112,9 @@ jumbo_static_library("driver") {
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/signin/core/browser",
+    "//components/signin/public/identity_manager",
     "//components/version_info",
     "//components/version_info:generate_version_info",
-    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//ui/base",
   ]
@@ -178,6 +178,7 @@ static_library("test_support") {
     "//components/invalidation/impl:test_support",
     "//components/pref_registry",
     "//components/signin/core/browser:shared",
+    "//components/signin/public/identity_manager:test_support",
     "//components/sync",
     "//components/sync:test_support_engine",
     "//components/sync:test_support_model",
@@ -186,6 +187,6 @@ static_library("test_support") {
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//google_apis",
-    "//services/identity/public/cpp:test_support",
+    "//services/network:test_support",
   ]
 }

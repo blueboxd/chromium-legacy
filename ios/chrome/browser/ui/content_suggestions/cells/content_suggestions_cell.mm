@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/i18n_string.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -70,15 +71,6 @@ const CGFloat kAnimationDuration = 0.3;
 @end
 
 @implementation ContentSuggestionsCell
-
-@synthesize titleLabel = _titleLabel;
-@synthesize imageContainer = _imageContainer;
-@synthesize noImageIcon = _noImageIcon;
-@synthesize additionalInformationLabel = _additionalInformationLabel;
-@synthesize contentImageView = _contentImageView;
-@synthesize faviconView = _faviconView;
-@synthesize imageSizeConstraint = _imageSizeConstraint;
-@synthesize displayImage = _displayImage;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -202,6 +194,10 @@ const CGFloat kAnimationDuration = 0.3;
   CGFloat additionalInfoHeight =
       [additionalInfoLabel sizeThatFits:sizeForLabels].height;
   labelHeight += MAX(additionalInfoHeight, kFaviconSize);
+  // Add extra space at the bottom for separators between cells.
+  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
+    return MAX(minimalHeight, labelHeight) + kStandardSpacing;
+  }
   return MAX(minimalHeight, labelHeight);
 }
 
@@ -287,7 +283,7 @@ const CGFloat kAnimationDuration = 0.3;
     [_faviconView.widthAnchor
         constraintEqualToAnchor:_faviconView.heightAnchor],
     [_faviconView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.titleLabel.bottomAnchor
+        constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
                                     constant:kSmallSpacing],
 
     // No image icon.
@@ -298,6 +294,15 @@ const CGFloat kAnimationDuration = 0.3;
     [_noImageIcon.widthAnchor constraintEqualToConstant:kIconSize],
     [_noImageIcon.heightAnchor constraintEqualToAnchor:_noImageIcon.widthAnchor]
   ]];
+
+  // Prevent _additionalInformationLabel from overlapping with _titleLabel when
+  // a11y font size is used.
+  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
+    [_additionalInformationLabel.topAnchor
+        constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
+                                    constant:kSmallSpacing]
+        .active = YES;
+  }
 
   AddSameConstraints(_contentImageView, _imageContainer);
 

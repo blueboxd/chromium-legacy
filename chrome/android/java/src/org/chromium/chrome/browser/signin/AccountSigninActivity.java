@@ -13,7 +13,6 @@ import android.support.annotation.IntDef;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -66,13 +65,7 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
             return false;
         }
 
-        final Intent intent;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            intent = SigninActivity.createIntent(context, accessPoint);
-        } else {
-            intent = createIntentForDefaultSigninFlow(context, accessPoint, false);
-        }
-        context.startActivity(intent);
+        context.startActivity(SigninActivity.createIntent(context, accessPoint));
         return true;
     }
 

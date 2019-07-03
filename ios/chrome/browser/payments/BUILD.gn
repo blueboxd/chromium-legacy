@@ -41,6 +41,7 @@ source_set("payments") {
     "//components/prefs",
     "//components/security_state/core",
     "//components/signin/core/browser",
+    "//components/signin/public/identity_manager",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
@@ -50,7 +51,6 @@ source_set("payments") {
     "//ios/web",
     "//ios/web/public/security",
     "//net",
-    "//services/identity/public/cpp:cpp",
     "//ui/base",
     "//url",
   ]
@@ -118,12 +118,12 @@ source_set("test_support") {
     "//components/payments/core:test_support",
     "//components/prefs",
     "//components/signin/core/browser",
+    "//components/signin/public/identity_manager",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
-    "//services/identity/public/cpp:cpp",
   ]
 }

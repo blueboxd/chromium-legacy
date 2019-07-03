@@ -100,7 +100,13 @@ IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, Parse) {
 }
 
 // Tests that a new service is created for each SafeXmlParser::Parse() call.
-IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, Isolation) {
+// Flaky on ChromeOS. See https://crbug.com/979606
+#if defined(OS_CHROMEOS)
+#define MAYBE_Isolation DISABLED_Isolation
+#else
+#define MAYBE_Isolation Isolation
+#endif
+IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, MAYBE_Isolation) {
   constexpr size_t kParseCount = 5;
   for (size_t i = 0; i < kParseCount; i++)
     TestParse(kTestXml, kTestJson);

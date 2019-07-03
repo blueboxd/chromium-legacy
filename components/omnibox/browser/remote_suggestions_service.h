@@ -12,8 +12,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/search_engines/template_url.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/access_token_info.h"
 #include "url/gurl.h"
 
 namespace base {

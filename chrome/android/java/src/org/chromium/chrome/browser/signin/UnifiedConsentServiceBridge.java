@@ -7,8 +7,7 @@ package org.chromium.chrome.browser.signin;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
- * Bridge to UnifiedConsentService. Should only be used if
- * {@link org.chromium.chrome.browser.ChromeFeatureList.UNIFIED_CONSENT} feature is enabled.
+ * Bridge to UnifiedConsentService.
  */
 public class UnifiedConsentServiceBridge {
     private UnifiedConsentServiceBridge() {}

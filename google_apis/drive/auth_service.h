@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/drive/auth_service_interface.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace network {
 class SharedURLLoaderFactory;

@@ -20,28 +20,86 @@ cca.views = cca.views || {};
 cca.views.camera = cca.views.camera || {};
 
 /**
+ * Callback for saving photo capture result. It's called with parameter of photo
+ * capture result and filename to be saved to.
+ * @typedef {function(cca.views.camera.PhotoResult, string): Promise}
+ *     DoSavePhoto
+ */
+
+/**
+ * Callback for saving video capture result. It's called with parameter of video
+ * capture result and filename to be saved to.
+ * @typedef {function(cca.views.camera.VideoResult, string): Promise}
+ *     DoSaveVideo
+ */
+
+/**
+ * Object contains video recording result.
+ * @param {number} width Resolution width of the video.
+ * @param {number} height Resolution height of the video.
+ * @param {number} duration Recorded time in minutes.
+ * @param {FileEntry} chunkfile File saving recorded chunks.
+ * @constructor
+ */
+cca.views.camera.VideoResult = function(width, height, duration, chunkfile) {
+  /**
+   * @type {[number, number]} Resolution of the video.
+   */
+  this.resolution = [width, height];
+
+  /**
+   * @type {number}
+   */
+  this.duration = duration;
+
+  /**
+   * @type {FileEntry}
+   */
+  this.chunkfile = chunkfile;
+
+  // End of properties, seal the object.
+  Object.seal(this);
+};
+
+/**
+ * Object contains photo taking result.
+ * @param {number} width Resolution width of the photo.
+ * @param {number} height Resolution height of the photo.
+ * @param {?Blob} blob Blob saving photo result.
+ * @constructor
+ */
+cca.views.camera.PhotoResult = function(width, height, blob) {
+  /**
+   * @type {[number, number]} Resolution of the photo.
+   */
+  this.resolution = [width, height];
+
+  /**
+   * @type {?Blob}
+   */
+  this.blob = blob;
+
+  // End of properties, seal the object.
+  Object.seal(this);
+};
+
+/**
  * Mode controller managing capture sequence of different camera mode.
  * @param {cca.views.camera.PhotoResolPreferrer} photoResolPreferrer
  * @param {cca.views.camera.VideoConstraintsPreferrer} videoPreferrer
  * @param {function()} doSwitchMode Callback to trigger mode switching.
- * @param {function(?Blob, boolean, string): Promise} doSavePicture Callback for
- *     saving picture.
+ * @param {DoSavePhoto} doSavePhoto
+ * @param {DoSaveVideo} doSaveVideo
  * @constructor
  */
 cca.views.camera.Modes = function(
-    photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePicture) {
+    photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
+    doSaveVideo) {
   /**
    * @type {function()}
    * @private
    */
   this.doSwitchMode_ = doSwitchMode;
-
-  /**
-   * Callback for saving picture.
-   * @type {function(?Blob, boolean, string): Promise}
-   * @private
-   */
-  this.doSavePicture_ = doSavePicture;
 
   /**
    * Capture controller of current camera mode.
@@ -76,7 +134,7 @@ cca.views.camera.Modes = function(
   this.allModes_ = {
     'video-mode': {
       captureFactory: () =>
-          new cca.views.camera.Video(this.stream_, this.doSavePicture_),
+          new cca.views.camera.Video(this.stream_, doSaveVideo),
       isSupported: async () => true,
       resolutionConfig: videoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, true),
@@ -84,7 +142,7 @@ cca.views.camera.Modes = function(
     },
     'photo-mode': {
       captureFactory: () => new cca.views.camera.Photo(
-          this.stream_, this.doSavePicture_, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_),
       isSupported: async () => true,
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
@@ -92,7 +150,7 @@ cca.views.camera.Modes = function(
     },
     'square-mode': {
       captureFactory: () => new cca.views.camera.Square(
-          this.stream_, this.doSavePicture_, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_),
       isSupported: async () => true,
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
@@ -100,7 +158,7 @@ cca.views.camera.Modes = function(
     },
     'portrait-mode': {
       captureFactory: () => new cca.views.camera.Portrait(
-          this.stream_, this.doSavePicture_, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_),
       isSupported: async (stream) => {
         try {
           const imageCapture =
@@ -306,25 +364,17 @@ cca.views.camera.Modes.prototype.updateMode =
 /**
  * Base class for controlling capture sequence in different camera modes.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean, string): Promise} doSavePicture
  * @param {?[number, number]} captureResolution Capturing resolution width and
  *     height.
  * @constructor
  */
-cca.views.camera.Mode = function(stream, doSavePicture, captureResolution) {
+cca.views.camera.Mode = function(stream, captureResolution) {
   /**
    * Stream of current mode.
    * @type {?Promise}
    * @protected
    */
   this.stream_ = stream;
-
-  /**
-   * Callback for saving picture.
-   * @type {function(?Blob, boolean, string): Promise}
-   * @protected
-   */
-  this.doSavePicture_ = doSavePicture;
 
   /**
    * Width, height of capture resolution. May be null on device not supporting
@@ -364,7 +414,7 @@ cca.views.camera.Mode.prototype.stopCapture = async function() {
 };
 
 /**
- * Initiates video/photo capturing operation under this mode.
+ * Initiates video/photo capture operation under this mode.
  * @async
  * @protected
  */
@@ -379,11 +429,18 @@ cca.views.camera.Mode.prototype.stop_ = function() {};
 /**
  * Video mode capture controller.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean, string): Promise} doSavePicture
+ * @param {DoSaveVideo} doSaveVideo
  * @constructor
  */
-cca.views.camera.Video = function(stream, doSavePicture) {
-  cca.views.camera.Mode.call(this, stream, doSavePicture, null);
+cca.views.camera.Video = function(stream, doSaveVideo) {
+  cca.views.camera.Mode.call(this, stream, null);
+
+  /**
+   * Callback for saving video.
+   * @type {DoSaveVideo} doSaveVideo
+   * @protected
+   */
+  this.doSaveVideo_ = doSaveVideo;
 
   /**
    * Promise for play start sound delay.
@@ -439,18 +496,21 @@ cca.views.camera.Video.prototype.start_ = async function() {
     }
   }
 
-  let blob;
-  // Take of recording will be ended by another shutter click.
+  this.recordTime_.start();
   try {
-    blob = await this.createVideoBlob_();
+    var chunkfile = await this.createChunkfile_();
   } catch (e) {
     cca.toast.show('error_msg_empty_recording');
     throw e;
+  } finally {
+    var duration = this.recordTime_.stop();
   }
   cca.sound.play('#sound-rec-end');
 
-  await this.doSavePicture_(
-      blob, true, (new cca.models.Filenamer()).newVideoName());
+  const {width, height} = this.stream_.getVideoTracks()[0].getSettings();
+  await this.doSaveVideo_(
+      new cca.views.camera.VideoResult(width, height, duration, chunkfile),
+      (new cca.models.Filenamer()).newVideoName());
 };
 
 /**
@@ -474,62 +534,72 @@ cca.views.camera.Video.prototype.stop_ = function() {
 cca.views.camera.Video.VIDEO_MIMETYPE = 'video/x-matroska;codecs=avc1';
 
 /**
- * Starts a recording to create a blob of it after the recorder is stopped.
- * @return {!Promise<!Blob>} Promise for the result.
+ * Starts recording and waits for stop recording event triggered by stop
+ * shutter.
+ * @return {FileEntry} File saving recorded chunks.
+ * @async
  * @private
  */
-cca.views.camera.Video.prototype.createVideoBlob_ = function() {
-  return new Promise((resolve, reject) => {
-    var recordedChunks = [];
+cca.views.camera.Video.prototype.createChunkfile_ = async function() {
+  const chunkfile = await cca.models.FileSystem.createTempVideoFile();
+  const writer = await new Promise(
+      (resolve, reject) => chunkfile.createWriter(resolve, reject));
+
+  return await new Promise((resolve, reject) => {
+    let noChunk = true;
+    let prevWrite = Promise.resolve();
+
     var ondataavailable = (event) => {
-      // TODO(yuli): Handle insufficient storage.
       if (event.data && event.data.size > 0) {
-        recordedChunks.push(event.data);
+        noChunk = false;
+        prevWrite = (async () => {
+          await prevWrite;
+          await new Promise((resolve) => {
+            writer.onwriteend = resolve;
+            writer.write(event.data);
+          });
+        })();
       }
     };
     var onstop = (event) => {
       this.mediaRecorder_.removeEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.removeEventListener('stop', onstop);
 
-      var recordedBlob = new Blob(
-          recordedChunks, {type: cca.views.camera.Video.VIDEO_MIMETYPE});
-      recordedBlob.mins = this.recordTime_.stop();
-      const {width, height} = this.stream_.getVideoTracks()[0].getSettings();
-      recordedBlob.resolution = [width, height];
-      recordedChunks = [];
-      if (recordedBlob.size) {
-        resolve(recordedBlob);
-      } else {
-        reject(new Error('Video blob error.'));
-      }
+      prevWrite.then(() => {
+        if (noChunk) {
+          reject(new Error('Video blob error.'));
+        } else {
+          resolve(chunkfile);
+        }
+      });
+
+      prevWrite.catch(
+          (e) => {
+              // TODO(yuli): Handle insufficient storage.
+          });
     };
     this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
     this.mediaRecorder_.addEventListener('stop', onstop);
-
-    // Start recording and update the UI for the ongoing recording.
-    // TODO(yuli): Don't re-enable audio after crbug.com/878255 fixed in M73.
-    var track = this.stream_.getAudioTracks()[0];
-    var enableAudio = (enabled) => {
-      if (track) {
-        track.enabled = enabled;
-      }
-    };
-    enableAudio(true);
-    this.mediaRecorder_.start();
-    enableAudio(cca.state.get('mic'));
-    this.recordTime_.start();
+    this.mediaRecorder_.start(3000);
   });
 };
 
 /**
  * Photo mode capture controller.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean, string): Promise} doSavePicture
+ * @param {DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
  * @constructor
  */
-cca.views.camera.Photo = function(stream, doSavePicture, captureResolution) {
-  cca.views.camera.Mode.call(this, stream, doSavePicture, captureResolution);
+cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
+  cca.views.camera.Mode.call(this, stream, captureResolution);
+
+  /**
+   * Callback for saving picture.
+   * @type {DoSavePhoto}
+   * @protected
+   */
+  this.doSavePhoto_ = doSavePhoto;
 
   /**
    * ImageCapture object to capture still photos.
@@ -556,25 +626,23 @@ cca.views.camera.Photo.prototype.start_ = async function() {
     }
   }
 
-  let blob;
   try {
-    blob = await this.createPhotoBlob_();
+    var result = await this.createPhotoResult_();
   } catch (e) {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;
   }
   cca.sound.play('#sound-shutter');
-  await this.doSavePicture_(
-      blob, false, (new cca.models.Filenamer()).newImageName());
+  await this.doSavePhoto_(result, (new cca.models.Filenamer()).newImageName());
 };
 
 /**
- * Takes a photo to create a blob of it.
+ * Takes a photo and returns capture result.
  * @async
- * @return {!Promise<!Blob>} Result blob.
+ * @return {cca.views.camera.PhotoResult} Image capture result.
  * @private
  */
-cca.views.camera.Photo.prototype.createPhotoBlob_ = async function() {
+cca.views.camera.Photo.prototype.createPhotoResult_ = async function() {
   if (this.captureResolution_) {
     var photoSettings = {
       imageWidth: this.captureResolution_[0],
@@ -589,35 +657,34 @@ cca.views.camera.Photo.prototype.createPhotoBlob_ = async function() {
   }
   const blob = await this.imageCapture_.takePhoto(photoSettings);
   const image = await cca.util.blobToImage(blob);
-  blob.resolution = [image.width, image.height];
-  return blob;
+  return new cca.views.camera.PhotoResult(image.width, image.height, blob);
 };
 
 /**
  * Square mode capture controller.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean, string): Promise} doSavePicture
+ * @param {DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
  * @constructor
  */
-cca.views.camera.Square = function(stream, doSavePicture, captureResolution) {
-  cca.views.camera.Photo.call(this, stream, doSavePicture, captureResolution);
+cca.views.camera.Square = function(stream, doSavePhoto, captureResolution) {
+  cca.views.camera.Photo.call(this, stream, doSavePhoto, captureResolution);
 
   /**
-   * Picture saving callback from parent.
-   * @type {function(?Blob, boolean, string): Promise}
+   * Photo saving callback from parent.
+   * @type {DoSavePhoto}
    * @private
    */
-  this.doAscentSave_ = this.doSavePicture_;
+  this.doAscentSave_ = this.doSavePhoto_;
 
   // End of properties, seal the object.
   Object.seal(this);
 
-  this.doSavePicture_ = async (blob, ...args) => {
-    if (blob) {
-      blob = await this.cropSquare(blob);
+  this.doSavePhoto_ = async (result, ...args) => {
+    if (result.blob) {
+      result.blob = await this.cropSquare(result.blob);
     }
-    await this.doAscentSave_(blob, ...args);
+    await this.doAscentSave_(result, ...args);
   };
 };
 
@@ -651,12 +718,12 @@ cca.views.camera.Square.prototype.cropSquare = async function(blob) {
 /**
  * Portrait mode capture controller.
  * @param {MediaStream} stream
- * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @param {DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
  * @constructor
  */
-cca.views.camera.Portrait = function(stream, doSavePicture, captureResolution) {
-  cca.views.camera.Mode.call(this, stream, doSavePicture, captureResolution);
+cca.views.camera.Portrait = function(stream, doSavePhoto, captureResolution) {
+  cca.views.camera.Photo.call(this, stream, doSavePhoto, captureResolution);
 
   /**
    * ImageCapture object to capture still photos.
@@ -670,7 +737,7 @@ cca.views.camera.Portrait = function(stream, doSavePicture, captureResolution) {
 };
 
 cca.views.camera.Portrait.prototype = {
-  __proto__: cca.views.camera.Mode.prototype,
+  __proto__: cca.views.camera.Photo.prototype,
 };
 
 /**
@@ -717,13 +784,14 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
                        'error_msg_take_photo_failed');
       throw e;
     }
-    const image = await cca.util.blobToImage(blob);
-    blob.resolution = [image.width, image.height];
     if (!playSound) {
       playSound = true;
       cca.sound.play('#sound-shutter');
     }
-    await this.doSavePicture_(blob, true, filenamer.newBurstName(!isPortrait));
+    const image = await cca.util.blobToImage(blob);
+    await this.doSavePhoto_(
+        new cca.views.camera.PhotoResult(image.width, image.height, blob),
+        filenamer.newBurstName(!isPortrait));
   });
   try {
     await portraitSave;

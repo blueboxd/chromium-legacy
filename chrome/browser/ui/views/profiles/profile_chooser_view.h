@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/views/controls/styled_label.h"
 
 namespace views {

@@ -101,10 +101,11 @@
                                               completion:completion];
 }
 
-- (void)sendTabToTargetDeviceCacheGUID:(NSString*)cacheGuid {
-  // TODO(crbug.com/970284) Add a dispatcher property in the .h file of this
-  // coordinator, and set it to BVC's self.dispatcher.
+- (void)sendTabToTargetDeviceCacheGUID:(NSString*)cacheGUID {
+  SendTabToSelfCommand* command =
+      [[SendTabToSelfCommand alloc] initWithTargetDeviceID:cacheGUID];
 
+  [self.dispatcher sendTabToSelf:command];
   // TODO(crbug.com/970284) log histogram of send event.
 }
 

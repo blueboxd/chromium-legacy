@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -278,7 +279,13 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
   EXPECT_TRUE(IsPlaying(shell(), "long-audio"));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, WebContents_Muted) {
+// Flaky on Mac. See https://crbug.com/980663
+#if defined(OS_MACOSX)
+#define MAYBE_WebContents_Muted DISABLED_WebContents_Muted
+#else
+#define MAYBE_WebContents_Muted WebContents_Muted
+#endif
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MAYBE_WebContents_Muted) {
   NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
 
   shell()->web_contents()->SetAudioMuted(true);

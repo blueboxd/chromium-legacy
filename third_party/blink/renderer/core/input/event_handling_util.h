@@ -53,13 +53,6 @@ LocalFrame* GetTargetSubframe(const MouseEventWithHitTestResults&,
 
 LocalFrame* SubframeForTargetNode(Node*, bool* is_remote_frame = nullptr);
 
-// Intervention: if an input event lands on a cross-origin iframe that has
-// moved or resized recently (recent==500ms), and which contains an
-// IntersectionObserver that is tracking visibility, then the event is quietly
-// discarded.
-bool ShouldDiscardEventTargetingFrame(const WebInputEvent& event,
-                                      const LocalFrame& frame);
-
 class PointerEventTarget {
   DISALLOW_NEW();
 

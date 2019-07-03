@@ -45,6 +45,11 @@ class SVGSVGElement;
 
 class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
  public:
+  // Sorted list
+  using ScheduledVector = HeapVector<Member<SVGSMILElement>>;
+  using AttributeMap = HeapHashMap<QualifiedName, Member<ScheduledVector>>;
+  using AnimationsMap = HeapHashMap<WeakMember<SVGElement>, AttributeMap>;
+
   explicit SMILTimeContainer(SVGSVGElement& owner);
   ~SMILTimeContainer();
 
@@ -131,12 +136,7 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   TaskRunnerTimer<SMILTimeContainer> wakeup_timer_;
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
 
-  using AnimationsLinkedHashSet = HeapLinkedHashSet<WeakMember<SVGSMILElement>>;
-  using AttributeAnimationsMap =
-      HeapHashMap<QualifiedName, Member<AnimationsLinkedHashSet>>;
-  using GroupedAnimationsMap =
-      HeapHashMap<WeakMember<SVGElement>, AttributeAnimationsMap>;
-  GroupedAnimationsMap scheduled_animations_;
+  AnimationsMap scheduled_animations_;
 
   Member<SVGSVGElement> owner_svg_element_;
 

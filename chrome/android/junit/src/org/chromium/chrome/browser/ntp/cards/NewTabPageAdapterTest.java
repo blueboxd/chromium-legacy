@@ -101,8 +101,8 @@ import java.util.Locale;
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowPostTask.class,
                 NewTabPageAdapterTest.ShadowChromeFeatureList.class})
-@DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-        ChromeFeatureList.CHROME_DUET, ChromeFeatureList.UNIFIED_CONSENT})
+@DisableFeatures(
+        {ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD, ChromeFeatureList.CHROME_DUET})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -1010,7 +1010,7 @@ public class NewTabPageAdapterTest {
     public void testSigninPromoDismissal() {
         final String signInPromoText = "sign in";
         when(MyShadowResources.sResources.getText(
-                     R.string.signin_promo_description_ntp_content_suggestions_legacy))
+                     R.string.signin_promo_description_ntp_content_suggestions_no_account))
                 .thenReturn(signInPromoText);
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);

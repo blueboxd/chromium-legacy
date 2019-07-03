@@ -145,6 +145,12 @@ void ProfileOAuth2TokenService::ExtractCredentials(
 }
 #endif
 
+void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
+    const CoreAccountId& account_id,
+    const GoogleServiceAuthError& error) {
+  GetDelegate()->UpdateAuthError(account_id, error);
+}
+
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   OAuth2TokenService::OnRefreshTokenAvailable(account_id);

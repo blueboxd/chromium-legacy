@@ -1,5 +1,4 @@
 include_rules = [
   "+ios/web/public",
-  "+services/identity/public/cpp",
   "+third_party/ocmock",
 ]

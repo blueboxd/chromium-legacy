@@ -16,7 +16,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "ui/views/window/dialog_client_view.h"
 
 class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {

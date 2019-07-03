@@ -247,31 +247,31 @@ void OriginPolicyThrottle::Report(OriginPolicyErrorReason reason,
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void OriginPolicyThrottle::OnOriginPolicyManagerRetrieveDone(
-    const network::mojom::OriginPolicyPtr origin_policy) {
-  switch (origin_policy->state) {
-    case network::mojom::OriginPolicyState::kCannotLoadPolicy:
+    const network::OriginPolicy& origin_policy) {
+  switch (origin_policy.state) {
+    case network::OriginPolicyState::kCannotLoadPolicy:
       // TODO(andypaicu): OriginPolicyErrorReason is obsolete and we should use
-      // network::mojom::OriginPolicyState instead.
+      // network::OriginPolicyState instead.
       CancelNavigation(OriginPolicyErrorReason::kCannotLoadPolicy,
-                       origin_policy->policy_url);
+                       origin_policy.policy_url);
       return;
 
-    case network::mojom::OriginPolicyState::kInvalidRedirect:
+    case network::OriginPolicyState::kInvalidRedirect:
       // TODO(andypaicu): OriginPolicyErrorReason is obsolete and we should use
-      // network::mojom::OriginPolicyState instead.
+      // network::OriginPolicyState instead.
       CancelNavigation(OriginPolicyErrorReason::kPolicyShouldNotRedirect,
-                       origin_policy->policy_url);
+                       origin_policy.policy_url);
       return;
 
-    case network::mojom::OriginPolicyState::kNoPolicyApplies:
+    case network::OriginPolicyState::kNoPolicyApplies:
       Resume();
       return;
 
-    case network::mojom::OriginPolicyState::kLoaded:
-      DCHECK(origin_policy->contents);
+    case network::OriginPolicyState::kLoaded:
+      DCHECK(origin_policy.contents);
       static_cast<NavigationHandleImpl*>(navigation_handle())
           ->navigation_request()
-          ->SetOriginPolicy(origin_policy->contents->raw_policy);
+          ->SetOriginPolicy(origin_policy);
       Resume();
       return;
 

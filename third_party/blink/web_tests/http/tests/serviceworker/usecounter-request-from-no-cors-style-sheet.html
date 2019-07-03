@@ -24,7 +24,9 @@ function addStyleSheet(win, href) {
   win.document.head.appendChild(link);
 }
 
-const scope = 'resources/blank.html';
+// Use simple.html, not blank.html, since fonts are not loaded if there is no
+// text.
+const scope = 'resources/simple.html';
 const basePath = new URL('.', self.location).pathname;
 const remoteOrigin = get_host_info()['HTTP_REMOTE_ORIGIN'];
 const remoteBase = new URL(basePath, remoteOrigin);
@@ -42,7 +44,7 @@ function style_sheet_test(styleSheet, description) {
         new URL(`resources/${styleSheet}`, remoteBase).href;
 
     // |frame1| uses a same-origin style sheet.
-    const frame1 = await with_iframe('resources/blank.html');
+    const frame1 = await with_iframe('resources/simple.html');
     t.add_cleanup(() => { frame1.remove(); });
     const win1 = frame1.contentWindow;
     addStyleSheet(win1, styleSheet);
@@ -54,7 +56,7 @@ function style_sheet_test(styleSheet, description) {
     addStyleSheet(win2, remoteOriginStyleSheet);
 
     // |frame3| uses a cross-origin style sheet.
-    const frame3 = await with_iframe('resources/blank.html');
+    const frame3 = await with_iframe('resources/simple.html');
     t.add_cleanup(() => { frame3.remove(); });
     const win3 = frame3.contentWindow;
     addStyleSheet(win3, remoteOriginStyleSheet);
@@ -79,7 +81,8 @@ style_sheet_test('background-image.css', 'image');
 // Test a stylesheet that requests an @import.
 style_sheet_test('import.css', '@import');
 
-// TODO(falken): Add a test for fonts.
+// Test a stylesheet that requests a font.
+style_sheet_test('font-face.css', 'font');
 
 promise_test(async t => {
   return service_worker_unregister(t, scope);

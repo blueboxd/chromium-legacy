@@ -18,20 +18,30 @@ infobars::InfoBar* TabSharingInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     const base::string16& shared_tab_name,
     const base::string16& app_name,
+    bool is_sharing_allowed,
     TabSharingUI* ui) {
   DCHECK(infobar_service);
   return infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(base::WrapUnique(
-          new TabSharingInfoBarDelegate(shared_tab_name, app_name, ui))));
+      infobar_service->CreateConfirmInfoBar(
+          base::WrapUnique(new TabSharingInfoBarDelegate(
+              shared_tab_name, app_name, is_sharing_allowed, ui))),
+      true /*replace_existing*/);
 }
 
 TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
     base::string16 shared_tab_name,
     base::string16 app_name,
+    bool is_sharing_allowed,
     TabSharingUI* ui)
     : shared_tab_name_(std::move(shared_tab_name)),
       app_name_(std::move(app_name)),
+      is_sharing_allowed_(is_sharing_allowed),
       ui_(ui) {}
+
+bool TabSharingInfoBarDelegate::EqualsDelegate(
+    InfoBarDelegate* delegate) const {
+  return delegate && delegate->GetIdentifier() == GetIdentifier();
+}
 
 bool TabSharingInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
@@ -61,7 +71,9 @@ base::string16 TabSharingInfoBarDelegate::GetButtonLabel(
 }
 
 int TabSharingInfoBarDelegate::GetButtons() const {
-  return shared_tab_name_.empty() ? BUTTON_OK : BUTTON_OK | BUTTON_CANCEL;
+  return shared_tab_name_.empty() || !is_sharing_allowed_
+             ? BUTTON_OK
+             : BUTTON_OK | BUTTON_CANCEL;
 }
 
 bool TabSharingInfoBarDelegate::Accept() {

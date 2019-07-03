@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "services/identity/public/cpp/access_token_info.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"

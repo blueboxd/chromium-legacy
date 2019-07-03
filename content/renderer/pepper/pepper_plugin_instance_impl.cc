@@ -117,7 +117,6 @@
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/blink/public/web/web_print_scaling_option.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -177,14 +176,12 @@ using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPrintParams;
 using blink::WebPrintScalingOption;
-using blink::WebScopedUserGesture;
 using blink::WebString;
 using blink::WebURLError;
 using blink::WebAssociatedURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 using blink::WebUserGestureIndicator;
-using blink::WebUserGestureToken;
 using blink::WebView;
 using blink::WebWidget;
 
@@ -538,7 +535,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       text_input_type_(kPluginDefaultTextInputType),
       selection_caret_(0),
       selection_anchor_(0),
-      pending_user_gesture_(0.0),
       document_loader_(nullptr),
       external_document_load_(false),
       isolate_(v8::Isolate::GetCurrent()),
@@ -1175,23 +1171,6 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
         CreateInputEventData(*event_in_dip.get(), &events);
       else
         CreateInputEventData(event, &events);
-
-      // Allow the user gesture to be pending after the plugin handles the
-      // event. This allows out-of-process plugins to respond to the user
-      // gesture after processing has finished here.
-      if (WebUserGestureIndicator::IsProcessingUserGesture(
-              render_frame_->GetWebFrame())) {
-        auto user_gesture_token =
-            WebUserGestureIndicator::CurrentUserGestureToken();
-        // Checking user_gesture_token.HasGestures() to make sure we are
-        // processing user geasture.
-        if (user_gesture_token.HasGestures()) {
-          pending_user_gesture_ =
-              ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
-          pending_user_gesture_token_ = user_gesture_token;
-          WebUserGestureIndicator::ExtendTimeout();
-        }
-      }
 
       // Each input event may generate more than one PP_InputEvent.
       for (size_t i = 0; i < events.size(); i++) {
@@ -2120,8 +2099,6 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
   desired_fullscreen_state_ = fullscreen;
 
   if (fullscreen) {
-    // Create the user gesture in case we're processing one that's pending.
-    WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     // WebKit does not resize the plugin to fill the screen in fullscreen mode,
     // so we will tweak plugin's attributes to support the expected behavior.
     KeepSizeAttributesBeforeFullscreen();
@@ -2149,14 +2126,11 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
   bool old_plugin_focus = PluginHasFocus();
   flash_fullscreen_ = flash_fullscreen;
   if (is_mouselock_pending && !IsMouseLocked()) {
-    if (!IsProcessingUserGesture() &&
+    if (!HasTransientUserActivation() &&
         !module_->permissions().HasPermission(
             ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
       lock_mouse_callback_->Run(PP_ERROR_NO_USER_GESTURE);
     } else {
-      // Open a user gesture here so the Webkit user gesture checks will succeed
-      // for out-of-process plugins.
-      WebScopedUserGesture user_gesture(CurrentUserGestureToken());
       if (!LockMouse())
         lock_mouse_callback_->Run(PP_ERROR_FAILED);
     }
@@ -2294,18 +2268,9 @@ void PepperPluginInstanceImpl::RemovePluginObject(PluginObject* plugin_object) {
   live_plugin_objects_.erase(plugin_object);
 }
 
-bool PepperPluginInstanceImpl::IsProcessingUserGesture() const {
-  PP_TimeTicks now = ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
-  // Give a lot of slack so tests won't be flaky.
-  const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
-  return pending_user_gesture_token_.HasGestures() &&
-         (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
-}
-
-WebUserGestureToken PepperPluginInstanceImpl::CurrentUserGestureToken() {
-  if (!IsProcessingUserGesture())
-    pending_user_gesture_token_ = WebUserGestureToken();
-  return pending_user_gesture_token_;
+bool PepperPluginInstanceImpl::HasTransientUserActivation() const {
+  return WebUserGestureIndicator::IsProcessingUserGesture(
+      render_frame_->GetWebFrame());
 }
 
 void PepperPluginInstanceImpl::OnLockMouseACK(bool succeeded) {
@@ -2549,8 +2514,7 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   blink::WebScriptSource script(
       blink::WebString::FromUTF8(script_string.c_str()));
   v8::Local<v8::Value> result;
-  if (IsProcessingUserGesture()) {
-    blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
+  if (HasTransientUserActivation()) {
     result = frame->ExecuteScriptAndReturnValue(script);
   } else {
     result = frame->ExecuteScriptAndReturnValue(script);
@@ -2792,15 +2756,12 @@ int32_t PepperPluginInstanceImpl::LockMouse(
   if (!CanAccessMainFrame())
     return PP_ERROR_NOACCESS;
 
-  if (!IsProcessingUserGesture())
+  if (!HasTransientUserActivation())
     return PP_ERROR_NO_USER_GESTURE;
 
   // Attempt mouselock only if Flash isn't waiting on fullscreen, otherwise
   // we wait and call LockMouse() in UpdateFlashFullscreenState().
   if (!FlashIsFullscreenOrPending() || flash_fullscreen_) {
-    // Open a user gesture here so the Webkit user gesture checks will succeed
-    // for out-of-process plugins.
-    WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     if (!LockMouse())
       return PP_ERROR_FAILED;
   }
@@ -3179,7 +3140,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
     return PP_ERROR_FAILED;
   }
   web_request.SetSiteForCookies(document.SiteForCookies());
-  if (IsProcessingUserGesture())
+  if (HasTransientUserActivation())
     web_request.SetHasUserGesture(true);
 
   GURL gurl(web_request.Url());
@@ -3193,7 +3154,6 @@ int32_t PepperPluginInstanceImpl::Navigate(
 
     // TODO(viettrungluu): NPAPI sends the result back to the plugin -- do we
     // need that?
-    blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     WebString result = container_->ExecuteScriptURL(gurl, false);
     return result.IsNull() ? PP_ERROR_FAILED : PP_OK;
   }
@@ -3203,7 +3163,6 @@ int32_t PepperPluginInstanceImpl::Navigate(
     return PP_ERROR_BADARGUMENT;
 
   WebString target_str = WebString::FromUTF8(target);
-  blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
   container_->LoadFrameRequest(web_request, target_str);
   return PP_OK;
 }
@@ -3301,7 +3260,7 @@ bool PepperPluginInstanceImpl::SetFullscreenCommon(bool fullscreen) const {
       return false;
     }
 
-    if (!IsProcessingUserGesture())
+    if (!HasTransientUserActivation())
       return false;
   }
   return true;

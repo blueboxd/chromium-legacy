@@ -15,11 +15,11 @@
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 class AccessTokenFetcher;

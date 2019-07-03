@@ -8141,6 +8141,8 @@
           "--enable-raster-to-sk-image",
           "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
+          "--disable-vulkan-fallback-to-gl-for-testing",
+          "--disable-headless-mode",
           "--no-xvfb"
         ],
         "merge": {
@@ -8848,6 +8850,8 @@
           "--enable-raster-to-sk-image",
           "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
+          "--disable-vulkan-fallback-to-gl-for-testing",
+          "--disable-headless-mode",
           "--no-xvfb"
         ],
         "merge": {
@@ -10340,40 +10344,6 @@
           ]
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
-          "--use-vulkan=native",
-          "--enable-oop-rasterization",
-          "--enable-gpu-rasterization",
-          "--enable-raster-to-sk-image",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "intel-hd-630-ubuntu-stable",
-              "os": "linux-intel-stable",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -21581,40 +21551,6 @@
       },
       {
         "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
-          "--use-vulkan=native",
-          "--enable-oop-rasterization",
-          "--enable-gpu-rasterization",
-          "--enable-raster-to-sk-image",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "intel-hd-630-ubuntu-stable",
-              "os": "linux-intel-stable",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -21880,40 +21816,6 @@
           ]
         },
         "test": "angle_white_box_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
-          "--use-vulkan=native",
-          "--enable-oop-rasterization",
-          "--enable-gpu-rasterization",
-          "--enable-raster-to-sk-image",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [

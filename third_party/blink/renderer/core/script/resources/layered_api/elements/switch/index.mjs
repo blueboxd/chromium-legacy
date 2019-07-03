@@ -79,6 +79,7 @@ export class StdSwitchElement extends HTMLElement {
 
     let thumbElement = this[_containerElement].appendChild(factory.createElement('span'));
     thumbElement.id = 'thumb';
+    thumbElement.part.add('thumb');
 
     this[_rippleElement] = thumbElement.appendChild(factory.createElement('span'));
     this[_rippleElement].id = 'ripple';

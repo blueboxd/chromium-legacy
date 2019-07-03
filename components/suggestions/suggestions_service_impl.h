@@ -21,6 +21,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -28,7 +29,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "services/identity/public/cpp/access_token_info.h"
 #include "url/gurl.h"
 
 namespace identity {

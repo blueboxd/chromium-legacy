@@ -88,6 +88,14 @@ void OAuth2TokenService::OnAccessTokenInvalidated(
                                       access_token);
 }
 
+void OAuth2TokenService::OnAccessTokenFetched(
+    const CoreAccountId& account_id,
+    const GoogleServiceAuthError& error) {
+  // Update the auth error state so auth errors are appropriately communicated
+  // to the user.
+  delegate_->UpdateAuthError(account_id, error);
+}
+
 bool OAuth2TokenService::HasRefreshToken(
     const CoreAccountId& account_id) const {
   return RefreshTokenIsAvailable(account_id);
@@ -240,11 +248,6 @@ void OAuth2TokenService::InvalidateAccessTokenImpl(
 
 void OAuth2TokenService::OnRefreshTokensLoaded() {
   all_credentials_loaded_ = true;
-}
-
-void OAuth2TokenService::UpdateAuthError(const CoreAccountId& account_id,
-                                         const GoogleServiceAuthError& error) {
-  delegate_->UpdateAuthError(account_id, error);
 }
 
 void OAuth2TokenService::RegisterTokenResponse(

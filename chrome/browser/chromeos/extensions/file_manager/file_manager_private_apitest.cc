@@ -37,10 +37,10 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
 using ::testing::_;

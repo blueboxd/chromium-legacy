@@ -204,6 +204,17 @@ SetUserHomeMinimalMigrationAttempted(const AccountId& account_id,
 bool USER_MANAGER_EXPORT
 WasUserHomeMinimalMigrationAttempted(const AccountId& account_id);
 
+// Setter and getter for the information about challenge-response keys that can
+// be used by this user to authenticate.
+// The getter returns a null value when the property isn't present.
+// For the format of the value, refer to
+// chromeos/login/auth/challenge_response/known_user_pref_utils.h.
+void USER_MANAGER_EXPORT SetChallengeResponseKeys(const AccountId& account_id,
+                                                  base::Value value);
+
+base::Value USER_MANAGER_EXPORT
+GetChallengeResponseKeys(const AccountId& account_id);
+
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component
 void RemovePrefs(const AccountId& account_id);

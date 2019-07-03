@@ -28,9 +28,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
@@ -222,8 +222,7 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
   CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
   if (profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) &&
       identity::IsUsernameAllowedByPatternFromPrefs(
-          g_browser_process->local_state(), primary_account.email,
-          prefs::kGoogleServicesUsernamePattern)) {
+          g_browser_process->local_state(), primary_account.email)) {
     return;
   }
 

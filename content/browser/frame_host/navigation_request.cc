@@ -1076,8 +1076,8 @@ mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
   return commit_navigation_client_.get();
 }
 
-void NavigationRequest::SetOriginPolicy(const std::string& policy) {
-  common_params_.origin_policy = policy;
+void NavigationRequest::SetOriginPolicy(const network::OriginPolicy& policy) {
+  response_head_->head.origin_policy = policy;
 }
 
 void NavigationRequest::OnRequestRedirected(

@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 
 // Adaptor that supports identity::IdentityTestEnvironment's usage in testing
 // contexts where the relevant fake objects must be injected via the

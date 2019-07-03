@@ -11,9 +11,9 @@
 #include "base/callback_list.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "services/identity/public/cpp/account_state.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 

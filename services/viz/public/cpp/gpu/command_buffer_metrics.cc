@@ -47,9 +47,6 @@ void RecordContextLost(ContextType type, ContextLostReason reason) {
     case ContextType::MEDIA:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.Media", reason);
       break;
-    case ContextType::MUS_CLIENT:
-      UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.MusClient", reason);
-      break;
     case ContextType::UNKNOWN:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.Unknown", reason);
       break;
@@ -88,8 +85,6 @@ std::string ContextTypeToString(ContextType type) {
       return "WebGPU";
     case ContextType::MEDIA:
       return "Media";
-    case ContextType::MUS_CLIENT:
-      return "MusClient";
     case ContextType::UNKNOWN:
       return "Unknown";
     case ContextType::FOR_TESTING:

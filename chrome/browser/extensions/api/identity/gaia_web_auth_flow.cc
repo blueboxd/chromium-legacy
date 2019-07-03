@@ -15,9 +15,9 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace extensions {
 

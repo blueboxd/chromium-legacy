@@ -1605,7 +1605,9 @@
     'remove_from': [
       # Flaky hangs crbug.com/940723
       'Linux FYI GPU TSAN Release',
+      # Vulkan Driver needs updating crbug.com/953535
       'Linux FYI Release (AMD R7 240)',
+      'Linux FYI Release (Intel HD 630)',
       'Linux FYI Debug (NVIDIA)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux FYI Release (NVIDIA)',

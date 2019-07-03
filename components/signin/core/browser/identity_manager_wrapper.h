@@ -6,7 +6,7 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_IDENTITY_MANAGER_WRAPPER_H_
 
 #include "components/keyed_service/core/keyed_service.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 class AccountFetcherService;
 class AccountsMutator;

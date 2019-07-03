@@ -203,13 +203,11 @@ ServiceWorkerProviderHost::PreCreateForController(
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
         out_provider_info) {
-  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-  (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
-      true /* is_parent_frame_secure */, FrameTreeNode::kFrameTreeNodeInvalidId,
+      /*is_parent_frame_secure=*/true, FrameTreeNode::kFrameTreeNodeInvalidId,
       mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
-      std::move(client_ptr_info), context));
+      /*client_ptr_info=*/nullptr, context));
   host->running_hosted_version_ = std::move(version);
 
   auto weak_ptr = host->AsWeakPtr();
@@ -284,11 +282,15 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     // controller, and |render_thread_id_| will be set when the service worker
     // context gets started.
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
+
+    DCHECK(!client_ptr_info);
+  } else {
+    DCHECK(client_ptr_info.is_valid());
   }
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
-  DCHECK(client_ptr_info.is_valid() && host_request.is_pending());
+  DCHECK(host_request.is_pending());
   container_.Bind(std::move(client_ptr_info));
   binding_.Bind(std::move(host_request));
 }

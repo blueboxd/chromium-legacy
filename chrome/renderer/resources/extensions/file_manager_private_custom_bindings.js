@@ -54,7 +54,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
 
     // So |callback| doesn't break if response is not defined.
     if (!response)
-      response = {};
+      response = [];
 
     if (callback)
       callback(response);

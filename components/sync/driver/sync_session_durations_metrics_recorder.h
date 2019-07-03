@@ -12,8 +12,8 @@
 #include "base/scoped_observer.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service_observer.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace syncer {
 

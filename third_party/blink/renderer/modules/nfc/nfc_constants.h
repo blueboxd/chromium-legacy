@@ -25,6 +25,8 @@ extern const char kNfcCharSetUTF8[];
 
 // Error messages.
 extern const char kNfcNotSupported[];
+extern const char kNfcNotReadable[];
+extern const char kNfcNotAllowed[];
 extern const char kNfcTextRecordTypeError[];
 extern const char kNfcSetIdError[];
 extern const char kNfcTextRecordMediaTypeError[];
@@ -38,12 +40,18 @@ extern const char kNfcRecordDataError[];
 extern const char kNfcRecordError[];
 extern const char kNfcMsgTypeError[];
 extern const char kNfcEmptyMsg[];
+extern const char kNfcInvalidMsg[];
 extern const char kNfcMsgConvertError[];
 extern const char kNfcMsgMaxSizeError[];
 extern const char kNfcUrlPatternError[];
 extern const char kNfcInvalidPushTimeout[];
 extern const char kNfcWatchIdNotFound[];
 extern const char kNfcAccessInNonTopFrame[];
+extern const char kNfcCancelled[];
+extern const char kNfcTimeout[];
+extern const char kNfcUnknownError[];
+extern const char kNfcDataTransferError[];
+extern const char kNfcNoModificationAllowed[];
 
 }  // namespace blink
 

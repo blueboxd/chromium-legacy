@@ -12,8 +12,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace enterprise_reporting {

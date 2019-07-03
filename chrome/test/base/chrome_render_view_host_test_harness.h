@@ -5,7 +5,11 @@
 #ifndef CHROME_TEST_BASE_CHROME_RENDER_VIEW_HOST_TEST_HARNESS_H_
 #define CHROME_TEST_BASE_CHROME_RENDER_VIEW_HOST_TEST_HARNESS_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "content/public/test/test_renderer_host.h"
 
 class TestingProfile;
@@ -31,6 +35,9 @@ class ChromeRenderViewHostTestHarness
 
   // content::RenderViewHostTestHarness.
   content::BrowserContext* CreateBrowserContext() override;
+
+ private:
+  std::vector<std::unique_ptr<base::ScopedTempDir>> temp_dirs_;
 };
 
 #endif  // CHROME_TEST_BASE_CHROME_RENDER_VIEW_HOST_TEST_HARNESS_H_

@@ -61,7 +61,6 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
-#include "third_party/blink/public/web/web_user_gesture_token.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -328,10 +327,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool flash_fullscreen() const { return flash_fullscreen_; }
 
   // Switches between fullscreen and normal mode. The transition is
-  // asynchronous. WebKit will trigger corresponding VewChanged calls.
-  // Returns true on success, false on failure (e.g. trying to enter fullscreen
-  // when not processing a user gesture or trying to set fullscreen when
-  // already in fullscreen mode).
+  // asynchronous. WebKit will trigger corresponding ViewChanged calls.  Returns
+  // true on success, false on failure (e.g. trying to enter fullscreen without
+  // user activation or trying to set fullscreen when already in fullscreen
+  // mode).
   bool SetFullscreen(bool fullscreen);
 
   // Send the message on to the plugin.
@@ -343,12 +342,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool HandleBlockingMessage(ppapi::ScopedPPVar message,
                              ppapi::ScopedPPVar* result);
 
-  // Returns true if the plugin is processing a user gesture.
-  bool IsProcessingUserGesture() const;
-
-  // Returns the user gesture token to use for creating a WebScopedUserGesture,
-  // if IsProcessingUserGesture returned true.
-  blink::WebUserGestureToken CurrentUserGestureToken();
+  // Returns true if the plugin has transient user activation.
+  bool HasTransientUserActivation() const;
 
   // A mouse lock request was pending and this reports success or failure.
   void OnLockMouseACK(bool succeeded);
@@ -869,11 +864,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   size_t selection_anchor_;
 
   scoped_refptr<ppapi::TrackedCallback> lock_mouse_callback_;
-
-  // Track pending user gestures so out-of-process plugins can respond to
-  // a user gesture after it has been processed.
-  PP_TimeTicks pending_user_gesture_;
-  blink::WebUserGestureToken pending_user_gesture_token_;
 
   // We store the arguments so we can re-send them if we are reset to talk to
   // NaCl via the IPC NaCl proxy.

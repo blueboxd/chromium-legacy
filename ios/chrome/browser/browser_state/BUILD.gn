@@ -85,6 +85,7 @@ source_set("browser_state_impl") {
     "//components/proxy_config/ios",
     "//components/signin/core/browser",
     "//components/signin/ios/browser:active_state_manager",
+    "//components/signin/public/identity_manager",
     "//components/sync_preferences",
     "//components/user_prefs",
     "//google_apis",
@@ -132,7 +133,6 @@ source_set("browser_state_impl") {
     "//ios/web/net/cookies",
     "//net",
     "//net:extras",
-    "//services/identity/public/cpp",
     "//services/identity/public/mojom",
   ]
   allow_circular_includes_from = [

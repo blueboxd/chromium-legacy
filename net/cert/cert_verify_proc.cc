@@ -461,8 +461,10 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature))
-    return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
+  if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature)) {
+    return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher),
+                                       /*system_trust_store_provider=*/nullptr);
+  }
 #endif
 #if defined(USE_NSS_CERTS)
   return new CertVerifyProcNSS();
@@ -475,7 +477,8 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault(
 #elif defined(OS_WIN)
   return new CertVerifyProcWin();
 #elif defined(OS_FUCHSIA)
-  return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
+  return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher),
+                                     /*system_trust_store_provider=*/nullptr);
 #else
 #error Unsupported platform
 #endif

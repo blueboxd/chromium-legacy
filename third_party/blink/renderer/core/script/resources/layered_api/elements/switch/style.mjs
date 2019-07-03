@@ -44,11 +44,11 @@ export function styleSheetFactory() {
   box-sizing: border-box;
   display: inline-block;
   margin-inline-start: calc(-100% + ${THUMB_MARGIN_START});
-  max-inline-size: ${THUMB_WIDTH};
-  min-inline-size: ${THUMB_WIDTH};
+  inline-size: ${THUMB_WIDTH};
 }
 
-#thumb.transitioning {
+/* :host::part(thumbTransitioning) doesn't work. crbug.com/980506 */
+#thumb[part~="thumbTransitioning"] {
   transition: all linear 0.1s;
 }
 
@@ -80,7 +80,7 @@ export function styleSheetFactory() {
   vertical-align: top;
 }
 
-#trackFill.transitioning {
+#trackFill[part~="trackFillTransitioning"] {
   transition: all linear 0.1s;
 }
 
@@ -113,8 +113,7 @@ export function styleSheetFactory() {
 }
 
 :host(:not(:disabled):hover) #thumb {
-  max-inline-size: 26px;
-  min-inline-size: 26px;
+  inline-size: 26px;
 }
 
 :host([on]:not(:disabled):hover) #thumb {
@@ -163,13 +162,17 @@ export function styleSheetFactory() {
  * @param {!Element} element
  */
 export function markTransition(element) {
-  const CLASS_NAME = 'transitioning';
-  element.classList.add(CLASS_NAME);
+  // Should check hasAttribute() to avoid creating a DOMTokenList instance.
+  if (!element.hasAttribute('part') || element.part.length < 1) {
+    return;
+  }
+  let partName = element.part[0] + 'Transitioning';
+  element.part.add(partName);
   let durations = element.computedStyleMap().getAll('transition-duration');
   if (!durations.some(duration => duration.value > 0)) {
-    // If the element will have no transitions, we remove CLASS_NAME
+    // If the element will have no transitions, we remove the part name
     // immediately.
-    element.classList.remove(CLASS_NAME);
+    element.part.remove(partName);
     return;
   }
   // If the element will have transitions, initialize counters and listeners
@@ -188,7 +191,7 @@ export function markTransition(element) {
     // events; crbug.com/979556.
     if (e.target === element && element.runningTransitions > 0 &&
         --element.runningTransitions === 0) {
-      element.classList.remove(CLASS_NAME);
+      element.part.remove(partName);
     }
   };
   element.addEventListener('transitionend', handleEndOrCancel);

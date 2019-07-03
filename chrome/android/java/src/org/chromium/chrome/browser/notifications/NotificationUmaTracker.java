@@ -48,7 +48,8 @@ public class NotificationUmaTracker {
             SystemNotificationType.WEBAPP_ACTIONS,
             SystemNotificationType.OFFLINE_CONTENT_SUGGESTION,
             SystemNotificationType.TRUSTED_WEB_ACTIVITY_SITES, SystemNotificationType.OFFLINE_PAGES,
-            SystemNotificationType.SEND_TAB_TO_SELF, SystemNotificationType.UPDATES})
+            SystemNotificationType.SEND_TAB_TO_SELF, SystemNotificationType.UPDATES,
+            SystemNotificationType.CLICK_TO_CALL})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -69,8 +70,9 @@ public class NotificationUmaTracker {
         int OFFLINE_PAGES = 14;
         int SEND_TAB_TO_SELF = 15;
         int UPDATES = 16;
+        int CLICK_TO_CALL = 17;
 
-        int NUM_ENTRIES = 17;
+        int NUM_ENTRIES = 18;
     }
 
     /*

@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_base.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace metrics {
 class ChromeUserMetricsExtension;

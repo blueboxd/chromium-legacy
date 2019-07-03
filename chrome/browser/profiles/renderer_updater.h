@@ -14,8 +14,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/variations/variations_http_header_provider.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 class Profile;
 

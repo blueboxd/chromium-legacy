@@ -20,11 +20,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_switches.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/diagnostics_provider.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
-#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
-#include "services/identity/public/cpp/diagnostics_provider.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace {
 

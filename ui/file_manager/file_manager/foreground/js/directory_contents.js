@@ -106,6 +106,10 @@ class DriveSearchContentScanner extends ContentScanner {
       }
       chrome.fileManagerPrivate.searchDrive(
           {query: this.query_, nextFeed: ''}, (entries, nextFeed) => {
+            if (chrome.runtime.lastError) {
+              console.error(chrome.runtime.lastError.message);
+            }
+
             if (this.cancelled_) {
               errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
               return;
@@ -202,6 +206,9 @@ class DriveMetadataSearchContentScanner extends ContentScanner {
   scan(entriesCallback, successCallback, errorCallback) {
     chrome.fileManagerPrivate.searchDriveMetadata(
         {query: '', types: this.searchType_, maxResults: 100}, results => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError.message);
+          }
           if (this.cancelled_) {
             errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
             return;

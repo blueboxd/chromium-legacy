@@ -14,7 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "services/network/public/mojom/origin_policy_manager.mojom.h"
+#include "services/network/public/cpp/origin_policy.h"
 
 class GURL;
 
@@ -87,7 +87,7 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   void Report(OriginPolicyErrorReason reason, const GURL& policy_url);
 
   void OnOriginPolicyManagerRetrieveDone(
-      const network::mojom::OriginPolicyPtr origin_policy);
+      const network::OriginPolicy& origin_policy);
 
   base::WeakPtrFactory<OriginPolicyThrottle> weak_factory_;
 

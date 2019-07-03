@@ -35,7 +35,6 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewDetailIconCell class];
-    _cellBackgroundColor = UIColor.cr_secondarySystemGroupedBackgroundColor;
   }
   return self;
 }
@@ -47,7 +46,6 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
   [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
-  cell.backgroundColor = self.cellBackgroundColor;
 
   // Update the icon image, if one is present.
   UIImage* iconImage = nil;

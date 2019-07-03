@@ -6,9 +6,9 @@
 
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payments_test_util.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

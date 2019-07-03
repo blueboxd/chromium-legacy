@@ -475,8 +475,6 @@ void FillNavigationParamsRequest(
 
   navigation_params->previews_state =
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state);
-  navigation_params->origin_policy =
-      WebString::FromUTF8(common_params.origin_policy);
 
   // Set the request initiator origin, which is supplied by the browser
   // process. It is present in cases such as navigating a frame in a different
@@ -1050,6 +1048,34 @@ void FillMiscNavigationParams(const CommonNavigationParams& common_params,
   }
   navigation_params->appcache_host_id =
       commit_params.appcache_host_id.value_or(base::UnguessableToken());
+}
+
+// Fills in the origin policy associated with this response, if any is present.
+// Converts it into a format that blink understands: WebOriginPolicy.
+void FillNavigationParamsOriginPolicy(
+    const network::ResourceResponseHead& head,
+    blink::WebNavigationParams* navigation_params) {
+  if (head.origin_policy.has_value() && head.origin_policy.value().contents) {
+    navigation_params->origin_policy = blink::WebOriginPolicy();
+
+    for (const auto& feature : head.origin_policy.value().contents->features) {
+      navigation_params->origin_policy->features.emplace_back(
+          WebString::FromUTF8(feature));
+    }
+
+    for (const auto& csp :
+         head.origin_policy.value().contents->content_security_policies) {
+      navigation_params->origin_policy->content_security_policies.emplace_back(
+          WebString::FromUTF8(csp));
+    }
+
+    for (const auto& csp_report_only :
+         head.origin_policy.value()
+             .contents->content_security_policies_report_only) {
+      navigation_params->origin_policy->content_security_policies_report_only
+          .emplace_back(WebString::FromUTF8(csp_report_only));
+    }
+  }
 }
 
 }  // namespace
@@ -3499,6 +3525,8 @@ void RenderFrameImpl::CommitNavigationInternal(
         GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
         !frame_->Parent(), navigation_params.get());
   }
+
+  FillNavigationParamsOriginPolicy(response_head, navigation_params.get());
 
   // The MHTML mime type should be same as the one we check in the browser
   // process's download_utils::MustDownload.

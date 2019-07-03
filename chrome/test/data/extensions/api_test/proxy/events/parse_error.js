@@ -5,17 +5,7 @@
 // proxy api test
 // browser_tests.exe --gtest_filter=ProxySettingsApiTest.ProxyEventsParseError
 
-// TODO(crbug.com/943636): remove old error once
-// https://chromium-review.googlesource.com/c/v8/v8/+/1593307 is rolled into
-// chromium.
-
-var expected_error_v1 = {
-    details: "line: 1: Uncaught SyntaxError: Unexpected token !",
-    error: "net::ERR_PAC_SCRIPT_FAILED",
-    fatal: false
-};
-
-var expected_error_v2 = {
+var expected_error = {
     details: "line: 1: Uncaught SyntaxError: Unexpected token '!'",
     error: "net::ERR_PAC_SCRIPT_FAILED",
     fatal: false
@@ -24,12 +14,7 @@ var expected_error_v2 = {
 function test() {
   // Install error handler and get the test server config.
   chrome.proxy.onProxyError.addListener(function (error) {
-    const actualErrorJson = JSON.stringify(error);
-    chrome.test.assertTrue(
-      actualErrorJson == JSON.stringify(expected_error_v1) ||
-      actualErrorJson == JSON.stringify(expected_error_v2),
-      actualErrorJson
-    );
+    chrome.test.assertEq(expected_error, error);
     chrome.test.notifyPass();
   });
 

@@ -19,10 +19,10 @@ include_rules = [
   "-components/signin/core/browser/profile_oauth2_token_service.h",
   "-components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h",
   "-components/signin/core/browser/ubertoken_fetcher_impl.h",
+  "+components/signin/public",
 
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+net",
-  "+services/identity/public/cpp",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+services/network/test",

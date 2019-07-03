@@ -110,12 +110,12 @@ enum class SendTabToSelfClickResult {
         [NSMutableArray arrayWithCapacity:[_sendTabToSelfTargets count]];
 
     for (NSString* key in _sendTabToSelfTargets) {
-      NSString* deviceId = _sendTabToSelfTargets[key];
+      NSString* deviceID = _sendTabToSelfTargets[key];
       // Retain |self| here since a |weakSelf| would be deallocated when
       // displaying the target device sheet, as the ActivitySheet will be gone.
       ProceduralBlock action = ^{
         SendTabToSelfCommand* command =
-            [[SendTabToSelfCommand alloc] initWithTargetDeviceId:deviceId];
+            [[SendTabToSelfCommand alloc] initWithTargetDeviceID:deviceID];
         base::UmaHistogramEnumeration(kClickResultHistogramName,
                                       SendTabToSelfClickResult::kClickItem);
         [self.dispatcher sendTabToSelf:command];

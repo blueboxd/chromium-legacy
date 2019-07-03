@@ -11,7 +11,7 @@
 
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace ios {
 class ChromeBrowserState;

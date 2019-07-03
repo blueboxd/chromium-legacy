@@ -15,9 +15,6 @@
 // The filename for the leading icon.  If empty, no icon will be shown.
 @property(nonatomic, copy) NSString* iconImageName;
 
-// The background color of the cell.
-@property(nonatomic, strong) UIColor* cellBackgroundColor;
-
 // The main text string.
 @property(nonatomic, copy) NSString* text;
 

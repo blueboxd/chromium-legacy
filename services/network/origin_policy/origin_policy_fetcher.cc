@@ -9,6 +9,8 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
+#include "services/network/origin_policy/origin_policy_parser.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
 namespace network {
@@ -73,10 +75,10 @@ void OriginPolicyFetcher::OnPolicyHasArrived(
     std::unique_ptr<std::string> policy_content) {
   // Fail hard if the policy could not be loaded.
   if (!policy_content || must_redirect_) {
-    Report(mojom::OriginPolicyState::kCannotLoadPolicy);
-    WorkDone(nullptr, mojom::OriginPolicyState::kCannotLoadPolicy);
+    Report(OriginPolicyState::kCannotLoadPolicy);
+    WorkDone(nullptr, OriginPolicyState::kCannotLoadPolicy);
   } else {
-    WorkDone(std::move(policy_content), mojom::OriginPolicyState::kLoaded);
+    WorkDone(std::move(policy_content), OriginPolicyState::kLoaded);
   }
 }
 
@@ -91,9 +93,9 @@ void OriginPolicyFetcher::OnPolicyRedirect(
   }
 
   // Fail hard if the policy response follows an invalid redirect.
-  Report(mojom::OriginPolicyState::kInvalidRedirect);
+  Report(OriginPolicyState::kInvalidRedirect);
 
-  WorkDone(nullptr, mojom::OriginPolicyState::kInvalidRedirect);
+  WorkDone(nullptr, OriginPolicyState::kInvalidRedirect);
 }
 
 void OriginPolicyFetcher::FetchPolicy(mojom::URLLoaderFactory* factory) {
@@ -142,18 +144,19 @@ void OriginPolicyFetcher::FetchPolicy(mojom::URLLoaderFactory* factory) {
 }
 
 void OriginPolicyFetcher::WorkDone(std::unique_ptr<std::string> policy_content,
-                                   mojom::OriginPolicyState state) {
-  auto result = mojom::OriginPolicy::New();
-  result->state = state;
-  if (policy_content) {
-    result->contents = mojom::OriginPolicyContents::New();
-    result->contents->raw_policy = *policy_content;
-  }
-  result->policy_url = fetch_url_;
+                                   OriginPolicyState state) {
+  OriginPolicy result;
+  result.state = state;
+
+  // TODO(vogelheim): Parsing errors here will not cause the origin policy
+  // retrieval to fail. Decide if this is correct or if some/all parsing errors
+  // should make the policy invalid.
+  if (policy_content)
+    result.contents = OriginPolicyParser::Parse(*policy_content);
+  result.policy_url = fetch_url_;
 
   // Do not add code after this call as it will destroy this object.
-  owner_policy_manager_->FetcherDone(this, std::move(result),
-                                     std::move(callback_));
+  owner_policy_manager_->FetcherDone(this, result, std::move(callback_));
 }
 
 bool OriginPolicyFetcher::IsValidRedirect(
@@ -176,6 +179,6 @@ bool OriginPolicyFetcher::IsValidRedirect(
 }
 
 // TODO(andypaicu): use report_to implement this function
-void OriginPolicyFetcher::Report(mojom::OriginPolicyState error_state) {}
+void OriginPolicyFetcher::Report(OriginPolicyState error_state) {}
 
 }  // namespace network

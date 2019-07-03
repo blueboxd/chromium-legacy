@@ -681,9 +681,7 @@ void OAuth2AccessTokenManager::OnFetchComplete(
     OAuth2AccessTokenManager::Fetcher* fetcher) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Update the auth error state so auth errors are appropriately communicated
-  // to the user.
-  token_service_->UpdateAuthError(fetcher->GetAccountId(), fetcher->error());
+  delegate_->OnAccessTokenFetched(fetcher->GetAccountId(), fetcher->error());
 
   // Note |fetcher| is recorded in |pending_fetcher_| mapped from its
   // combination of client ID, account ID, and scope set. This is guaranteed as

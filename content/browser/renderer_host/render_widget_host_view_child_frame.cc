@@ -678,36 +678,6 @@ RenderWidgetHostViewChildFrame::GetLocalSurfaceIdAllocation() const {
   return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceIdAllocation();
 }
 
-void RenderWidgetHostViewChildFrame::NotifyHitTestRegionUpdated(
-    const viz::AggregatedHitTestRegion& region) {
-  gfx::RectF screen_rect(region.rect);
-  if (!region.transform().TransformRectReverse(&screen_rect)) {
-    last_stable_screen_rect_ = gfx::RectF();
-    screen_rect_stable_since_ = base::TimeTicks::Now();
-    return;
-  }
-  if ((ToRoundedSize(screen_rect.size()) !=
-       ToRoundedSize(last_stable_screen_rect_.size())) ||
-      (std::abs(last_stable_screen_rect_.x() - screen_rect.x()) +
-           std::abs(last_stable_screen_rect_.y() - screen_rect.y()) >
-       blink::kMaxChildFrameScreenRectMovement)) {
-    last_stable_screen_rect_ = screen_rect;
-    screen_rect_stable_since_ = base::TimeTicks::Now();
-  }
-}
-
-bool RenderWidgetHostViewChildFrame::ScreenRectIsUnstableFor(
-    const blink::WebInputEvent& event) {
-  if (event.TimeStamp() -
-          base::TimeDelta::FromMilliseconds(blink::kMinScreenRectStableTimeMs) <
-      screen_rect_stable_since_) {
-    return true;
-  }
-  if (RenderWidgetHostViewBase* parent = GetParentView())
-    return parent->ScreenRectIsUnstableFor(event);
-  return false;
-}
-
 void RenderWidgetHostViewChildFrame::PreProcessTouchEvent(
     const blink::WebTouchEvent& event) {
   if (event.GetType() == blink::WebInputEvent::kTouchStart &&

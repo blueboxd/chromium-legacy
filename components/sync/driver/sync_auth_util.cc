@@ -6,8 +6,8 @@
 
 #include <vector>
 
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace syncer {
 

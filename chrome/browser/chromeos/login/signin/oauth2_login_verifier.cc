@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
 using content::BrowserThread;
 

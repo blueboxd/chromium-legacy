@@ -148,6 +148,23 @@ TEST_F('OSSettingsPeoplePageTest', 'MAYBE_AllJavascriptTests', function() {
   mocha.run();
 });
 
+// Tests for the Personalization section.
+// eslint-disable-next-line no-var
+var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/promise_resolver.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'personalization_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPersonalizationPageTest', 'All', function() {
+  mocha.run();
+});
+
 // Tests for the About section.
 // eslint-disable-next-line no-var
 var OSSettingsAboutPageTest = class extends OSSettingsBrowserTest {

@@ -8,6 +8,11 @@
 
 namespace network {
 
+ResourceResponseHead::ResourceResponseHead() = default;
+ResourceResponseHead::~ResourceResponseHead() = default;
+ResourceResponseHead::ResourceResponseHead(const ResourceResponseHead& other) =
+    default;
+
 scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   scoped_refptr<ResourceResponse> new_response(new ResourceResponse);
   new_response->head.request_time = head.request_time;
@@ -67,6 +72,7 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.intercepted_by_plugin = head.intercepted_by_plugin;
   new_response->head.is_legacy_tls_version = head.is_legacy_tls_version;
   new_response->head.auth_challenge_info = head.auth_challenge_info;
+  new_response->head.origin_policy = head.origin_policy;
   return new_response;
 }
 

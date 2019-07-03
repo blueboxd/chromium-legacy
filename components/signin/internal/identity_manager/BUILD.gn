@@ -1,0 +1,36 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("identity_manager") {
+  sources = [
+    "accounts_cookie_mutator_impl.cc",
+    "accounts_cookie_mutator_impl.h",
+    "diagnostics_provider_impl.cc",
+    "diagnostics_provider_impl.h",
+    "primary_account_mutator_impl.cc",
+    "primary_account_mutator_impl.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  public_deps = [
+    "//base",
+    "//components/signin/public/identity_manager",
+    "//google_apis",
+  ]
+
+  deps = [
+    "//components/prefs",
+    "//components/signin/core/browser:internals",
+    "//components/signin/core/browser:shared",
+    "//components/signin/core/browser:signin_buildflags",
+  ]
+
+  if (!is_android && !is_ios) {
+    sources += [
+      "accounts_mutator_impl.cc",
+      "accounts_mutator_impl.h",
+    ]
+  }
+}

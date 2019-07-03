@@ -15,8 +15,8 @@
 #include "chromeos/services/device_sync/cryptauth_api_call_flow.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class IdentityManager;

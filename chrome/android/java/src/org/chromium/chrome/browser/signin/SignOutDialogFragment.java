@@ -66,16 +66,13 @@ public class SignOutDialogFragment extends DialogFragment implements
                     SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFER_WIPE_DATA_ON_SIGNOUT)) {
-                return createDialogUnifiedConsentAndForceWipeDataFeatureEnabled();
-            }
-            return createDialogUnifiedConsentFeatureEnabled();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFER_WIPE_DATA_ON_SIGNOUT)) {
+            return createDialogForceWipeDataFeatureEnabled();
         }
-        return createDialogPreUnifiedConsent();
+        return createDialog();
     }
 
-    private Dialog createDialogUnifiedConsentFeatureEnabled() {
+    private Dialog createDialog() {
         String domain = SigninManager.get().getManagementDomain();
         String message = domain == null
                 ? getString(R.string.signout_message_without_remove_local_data)
@@ -88,20 +85,7 @@ public class SignOutDialogFragment extends DialogFragment implements
                 .create();
     }
 
-    private Dialog createDialogPreUnifiedConsent() {
-        String domain = SigninManager.get().getManagementDomain();
-        String message = domain == null
-                ? getString(R.string.signout_message_legacy)
-                : getString(R.string.signout_managed_account_message, domain);
-        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
-                .setTitle(R.string.signout_title_legacy)
-                .setPositiveButton(R.string.signout_dialog_positive_button, this)
-                .setNegativeButton(R.string.cancel, this)
-                .setMessage(message)
-                .create();
-    }
-
-    private Dialog createDialogUnifiedConsentAndForceWipeDataFeatureEnabled() {
+    private Dialog createDialogForceWipeDataFeatureEnabled() {
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog);
         LayoutInflater inflater = LayoutInflater.from(builder.getContext());

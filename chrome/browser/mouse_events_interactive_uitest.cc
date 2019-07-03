@@ -108,9 +108,9 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ClickAndDoubleClick) {
   WaitForTitle("ondblclick");
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
 // OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
-// OS_LINUX: http://crbug.com/133361.
+// OS_LINUX, OS_WIN: http://crbug.com/133361.
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
 #else
 #define MAYBE_TestOnMouseOut TestOnMouseOut

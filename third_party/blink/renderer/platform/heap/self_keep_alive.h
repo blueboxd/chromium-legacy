@@ -17,6 +17,7 @@ namespace blink {
 //
 //  class Opener : public GarbageCollected<Opener> {
 //   public:
+//    Opener() : keep_alive_(PERSISTENT_FROM_HERE) {}
 //    ...
 //    void Open() {
 //      // Retain a self-reference while in an Open()ed state:
@@ -44,9 +45,8 @@ class SelfKeepAlive final {
   DISALLOW_NEW();
 
  public:
-  SelfKeepAlive() = default;
-
-  explicit SelfKeepAlive(Self* self) { Assign(self); }
+  explicit SelfKeepAlive(const PersistentLocation& location)
+      : keep_alive_(location) {}
   SelfKeepAlive(const PersistentLocation& location, Self* self)
       : keep_alive_(location) {
     Assign(self);

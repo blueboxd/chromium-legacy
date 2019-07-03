@@ -14,8 +14,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace syncer {
 class SyncService;

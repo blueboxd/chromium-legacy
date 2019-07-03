@@ -23,8 +23,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
@@ -215,8 +215,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   for (auto& account_info : accounts_with_tokens) {
     DCHECK(!account_info.IsEmpty());
     if (!identity::IsUsernameAllowedByPatternFromPrefs(
-            g_browser_process->local_state(), account_info.email,
-            prefs::kGoogleServicesUsernamePattern)) {
+            g_browser_process->local_state(), account_info.email)) {
       continue;
     }
     if (account_info.account_id == default_account_id)

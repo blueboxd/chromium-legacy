@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
-#include "services/identity/public/cpp/access_token_info.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;

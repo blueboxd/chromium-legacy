@@ -16,9 +16,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 class AccountId;
 class PrefService;

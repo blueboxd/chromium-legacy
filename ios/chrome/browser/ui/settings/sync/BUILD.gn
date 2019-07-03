@@ -20,6 +20,7 @@ source_set("sync") {
     "//components/browser_sync",
     "//components/google/core/common",
     "//components/prefs",
+    "//components/signin/public/identity_manager/objc",
     "//components/strings",
     "//components/sync",
     "//components/unified_consent",
@@ -45,9 +46,9 @@ source_set("sync") {
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
-    "//services/identity/public/objc",
     "//ui/base",
     "//url",
   ]

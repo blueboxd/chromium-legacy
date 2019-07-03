@@ -19,11 +19,11 @@ include_rules = [
   "-components/signin/core/browser/profile_oauth2_token_service.h",
   "-components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h",
   "-components/signin/core/browser/ubertoken_fetcher_impl.h",
+  "+components/signin/public",
 
   "+components/version_info",
   "+google_apis/gaia",
   "+mojo/public/cpp",
-  "+services/identity",
   "+services/network/public",
   "+services/network/test",
   "+services/preferences/public",

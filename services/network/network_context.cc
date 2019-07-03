@@ -2134,7 +2134,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
               std::move(params_->trial_comparison_cert_verifier_params
                             ->report_client),
               net::CertVerifyProc::CreateDefault(cert_net_fetcher_),
-              net::CreateCertVerifyProcBuiltin(cert_net_fetcher_)));
+              net::CreateCertVerifyProcBuiltin(
+                  cert_net_fetcher_, /*system_trust_store_provider=*/nullptr)));
     }
 #endif
     if (!cert_verifier)

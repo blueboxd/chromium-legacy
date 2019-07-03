@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
-import android.content.Intent;
-
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -17,10 +14,6 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class TrustedWebActivityModel extends PropertyModel {
-
-    /** Whether toolbar should be hidden. */
-    public static final WritableBooleanPropertyKey TOOLBAR_HIDDEN =
-            new WritableBooleanPropertyKey();
 
     /** The state of Trusted Web Activity disclosure. Can be one of the constants below. */
     public static final WritableIntPropertyKey DISCLOSURE_STATE =
@@ -34,18 +27,6 @@ public class TrustedWebActivityModel extends PropertyModel {
     public static final WritableObjectPropertyKey<DisclosureEventsCallback>
             DISCLOSURE_EVENTS_CALLBACK = new WritableObjectPropertyKey<>();
 
-
-    public static class PersistentNotificationData {
-        // Necessary for making a PendingIntent for sharing.
-        public final Intent customTabActivityIntent;
-        public final Origin origin;
-
-        public PersistentNotificationData(Intent customTabActivityIntent, Origin origin) {
-            this.customTabActivityIntent = customTabActivityIntent;
-            this.origin = origin;
-        }
-    }
-
     public interface DisclosureEventsCallback {
         /** Called when user accepted the disclosure. */
         void onDisclosureAccepted();
@@ -53,6 +34,6 @@ public class TrustedWebActivityModel extends PropertyModel {
 
     @Inject
     public TrustedWebActivityModel() {
-        super(TOOLBAR_HIDDEN, DISCLOSURE_STATE, DISCLOSURE_EVENTS_CALLBACK);
+        super(DISCLOSURE_STATE, DISCLOSURE_EVENTS_CALLBACK);
     }
 }

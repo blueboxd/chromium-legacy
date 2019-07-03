@@ -738,7 +738,7 @@ bool DocumentLoader::ShouldReportTimingInfoToParent() {
 
 ContentSecurityPolicy* DocumentLoader::CreateCSP(
     const ResourceResponse& response,
-    const String& origin_policy_string) {
+    const base::Optional<WebOriginPolicy>& origin_policy) {
   auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->SetOverrideURLForSelf(response.CurrentRequestUrl());
 
@@ -747,19 +747,18 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP(
 
     // Handle OriginPolicy. We can skip the entire block if the OP policies have
     // already been passed down.
-    if (!csp->HasPolicyFromSource(
+    if (origin_policy.has_value() &&
+        !csp->HasPolicyFromSource(
             kContentSecurityPolicyHeaderSourceOriginPolicy)) {
-      std::unique_ptr<OriginPolicy> origin_policy = OriginPolicy::From(
-          StringUTF8Adaptor(origin_policy_string).AsStringPiece());
-      if (origin_policy) {
-        for (auto policy : origin_policy->GetContentSecurityPolicies()) {
-          csp->DidReceiveHeader(WTF::String::FromUTF8(policy.policy.data(),
-                                                      policy.policy.length()),
-                                policy.report_only
-                                    ? kContentSecurityPolicyHeaderTypeReport
-                                    : kContentSecurityPolicyHeaderTypeEnforce,
-                                kContentSecurityPolicyHeaderSourceOriginPolicy);
-        }
+      for (const auto& policy : origin_policy->content_security_policies) {
+        csp->DidReceiveHeader(policy, kContentSecurityPolicyHeaderTypeEnforce,
+                              kContentSecurityPolicyHeaderSourceOriginPolicy);
+      }
+
+      for (const auto& policy :
+           origin_policy->content_security_policies_report_only) {
+        csp->DidReceiveHeader(policy, kContentSecurityPolicyHeaderTypeReport,
+                              kContentSecurityPolicyHeaderSourceOriginPolicy);
       }
     }
   }
@@ -1199,7 +1198,7 @@ void DocumentLoader::StartLoadingInternal() {
     }
     http_content_type_ = g_null_atom;
     // TODO(dgozman): check whether clearing origin policy is intended behavior.
-    origin_policy_ = String();
+    origin_policy_ = base::nullopt;
     probe::WillSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),
                                      main_resource_identifier_, this, url_,
                                      http_method_, http_body_.get());
@@ -1448,21 +1447,12 @@ void DocumentLoader::DidCommitNavigation(
 // Headers go first, which means that the per-page headers override the
 // origin policy features.
 void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
-                                   const String& origin_policy_string) {
-  if (origin_policy_string.IsEmpty())
-    return;
-
-  std::unique_ptr<OriginPolicy> origin_policy = OriginPolicy::From(
-      StringUTF8Adaptor(origin_policy_string).AsStringPiece());
-  if (!origin_policy)
-    return;
-
-  for (const auto& policy : origin_policy->GetFeaturePolicies()) {
+                                   const WebOriginPolicy& origin_policy) {
+  for (const auto& policy : origin_policy.features) {
     if (!feature_policy.IsEmpty()) {
       feature_policy.Append(',');
     }
-    feature_policy.Append(
-        WTF::String::FromUTF8(policy.data(), policy.length()));
+    feature_policy.Append(policy);
   }
 }
 
@@ -1482,7 +1472,9 @@ void DocumentLoader::InstallNewDocument(
   // are sent in didCommitNavigation().
   WTF::StringBuilder feature_policy;
   feature_policy.Append(response_.HttpHeaderField(http_names::kFeaturePolicy));
-  MergeFeaturesFromOriginPolicy(feature_policy, origin_policy_);
+  if (origin_policy_.has_value()) {
+    MergeFeaturesFromOriginPolicy(feature_policy, origin_policy_.value());
+  }
 
   DocumentInit init =
       DocumentInit::Create()

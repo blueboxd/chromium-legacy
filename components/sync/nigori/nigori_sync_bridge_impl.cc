@@ -197,9 +197,10 @@ bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
     DLOG(ERROR) << "Specifics has no passphrase_type.";
     return false;
   }
-  switch (specifics.passphrase_type()) {
+  switch (ProtoPassphraseInt32ToProtoEnum(specifics.passphrase_type())) {
     case NigoriSpecifics::UNKNOWN:
-      DLOG(ERROR) << "Received UNKNOWN passphrase_type";
+      DLOG(ERROR) << "Received unknown passphrase type with value: "
+                  << specifics.passphrase_type();
       return false;
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       // TODO(crbug.com/922900): we hope that IMPLICIT_PASSPHRASE support is not
@@ -421,8 +422,8 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     observer.OnPassphraseAccepted();
   }
   for (auto& observer : observers_) {
-    observer.OnPassphraseTypeChanged(
-        ProtoPassphraseTypeToEnum(passphrase_type_), custom_passphrase_time_);
+    observer.OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+                                     custom_passphrase_time_);
   }
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(&cryptographer_);
@@ -609,18 +610,22 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   if (!IsValidNigoriSpecifics(specifics)) {
     return ModelError(FROM_HERE, "NigoriSpecifics is not valid.");
   }
+
+  const sync_pb::NigoriSpecifics::PassphraseType new_passphrase_type =
+      ProtoPassphraseInt32ToProtoEnum(specifics.passphrase_type());
+  DCHECK_NE(new_passphrase_type, NigoriSpecifics::UNKNOWN);
+
   if (!IsValidPassphraseTransition(
-          /*old_passphrase_type=*/passphrase_type_,
-          /*new_paspshrase_type=*/specifics.passphrase_type())) {
+          /*old_passphrase_type=*/passphrase_type_, new_passphrase_type)) {
     return ModelError(FROM_HERE, "Invalid passphrase type transition.");
   }
   if (!IsValidEncryptedTypesTransition(encrypt_everything_, specifics)) {
     return ModelError(FROM_HERE, "Invalid encrypted types transition.");
   }
 
-  DCHECK(specifics.has_passphrase_type());
   const bool passphrase_type_changed =
-      UpdatePassphraseType(specifics.passphrase_type(), &passphrase_type_);
+      UpdatePassphraseType(new_passphrase_type, &passphrase_type_);
+  DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
 
   const bool encrypted_types_changed =
       UpdateEncryptedTypes(specifics, &encrypt_everything_);
@@ -664,7 +669,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   if (passphrase_type_changed) {
     for (auto& observer : observers_) {
       observer.OnPassphraseTypeChanged(
-          ProtoPassphraseTypeToEnum(passphrase_type_),
+          *ProtoPassphraseInt32ToEnum(passphrase_type_),
           GetExplicitPassphraseTime());
     }
   }

@@ -22,7 +22,7 @@ void NFCReader::OnReadingError(const device::mojom::blink::NFCError& error) {}
 // NfcProxy::Observer overrides.
 void NFCReader::OnMojoConnectionError() {
   auto error = device::mojom::blink::NFCError::New(
-      device::mojom::blink::NFCErrorType::NOT_SUPPORTED);
+      device::mojom::blink::NFCErrorType::NOT_READABLE);
   OnReadingError(*error);
 }
 

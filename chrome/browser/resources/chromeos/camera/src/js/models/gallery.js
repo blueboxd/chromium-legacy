@@ -285,42 +285,56 @@ cca.models.Gallery.prototype.wrapPicture_ = function(
 };
 
 /**
- * Saves a picture that will also be added to the pictures' model.
- * @param {Blob} blob Data of the picture to be added.
- * @param {boolean} isMotionPicture Picture to be added is a video.
- * @param {string} filename Filename of picture to be added.
+ * Saves photo capture result into persistent storage and adds it into gallery.
+ * @param {Blob} blob Data of the photo to be added.
+ * @param {string} filename Filename of photo to be added.
  * @return {!Promise} Promise for the operation.
  */
-cca.models.Gallery.prototype.savePicture = function(
-    blob, isMotionPicture, filename) {
+cca.models.Gallery.prototype.savePhoto = function(blob, filename) {
   // TODO(yuli): models.Gallery listens to models.FileSystem's file-added event
   // and then add a new picture into the model.
   var saved = new Promise((resolve) => {
-                if (isMotionPicture) {
-                  resolve(blob);
-                } else {
-                  // Ignore errors since it is better to save something than
-                  // nothing.
-                  // TODO(yuli): Support showing images by EXIF orientation
-                  // instead.
-                  cca.util.orientPhoto(blob, resolve, () => resolve(blob));
-                }
+                // Ignore errors since it is better to save something than
+                // nothing.
+                // TODO(yuli): Support showing images by EXIF orientation
+                // instead.
+                cca.util.orientPhoto(blob, resolve, () => resolve(blob));
               })
                   .then((blob) => {
-                    return cca.models.FileSystem.savePicture(blob, filename);
+                    return cca.models.FileSystem.savePhoto(blob, filename);
                   })
                   .then((pictureEntry) => {
                     return this.wrapPicture_(pictureEntry);
                   });
 
-  return Promise.all([this.loaded_, saved]).then(([pictures, picture]) => {
-    // Insert the picture into the sorted pictures' model.
-    for (var index = pictures.length - 1; index >= 0; index--) {
-      if (picture.timestamp >= pictures[index].timestamp) {
-        break;
-      }
+  return saved.then((picture) => this.addPicture_(picture));
+};
+
+/**
+ * Saves video capture result into persistent storage and adds it into gallery.
+ * @param {FileEntry} tempfile File saving temporary video recording result.
+ * @param {string} filename Filename of picture to be added.
+ */
+cca.models.Gallery.prototype.saveVideo = async function(tempfile, filename) {
+  const savedFile = await cca.models.FileSystem.saveVideo(tempfile, filename);
+  const picture = await this.wrapPicture_(savedFile);
+  await this.addPicture_(picture);
+};
+
+/**
+ * Adds a picture into gallery.
+ * @param {cca.models.Gallery.Picture} picture Picture to be added.
+ * @async
+ * @private
+ */
+cca.models.Gallery.prototype.addPicture_ = async function(picture) {
+  const pictures = await this.loaded_;
+  // Insert the picture into the sorted pictures' model.
+  for (var index = pictures.length - 1; index >= 0; index--) {
+    if (picture.timestamp >= pictures[index].timestamp) {
+      break;
     }
-    pictures.splice(index + 1, 0, picture);
-    this.notifyObservers_('onPictureAdded', picture);
-  });
+  }
+  pictures.splice(index + 1, 0, picture);
+  this.notifyObservers_('onPictureAdded', picture);
 };

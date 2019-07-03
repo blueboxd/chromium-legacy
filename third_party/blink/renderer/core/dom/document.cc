@@ -5241,13 +5241,10 @@ Element* Document::SequentialFocusNavigationStartingPoint(
       } while (previous && !previous->IsElementNode());
       return ToElement(previous);
     }
-    if (next_node->IsElementNode())
-      return ToElement(next_node);
-    Node* next = next_node;
-    do {
-      next = FlatTreeTraversal::Next(*next);
-    } while (next && !next->IsElementNode());
-    return ToElement(next);
+    for (Node* next = next_node; next; next = FlatTreeTraversal::Next(*next)) {
+      if (auto* element = DynamicTo<Element>(next))
+        return element;
+    }
   }
   return nullptr;
 }

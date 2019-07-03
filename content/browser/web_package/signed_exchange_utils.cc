@@ -223,16 +223,12 @@ network::ResourceResponseHead CreateRedirectResponseHead(
   std::string buf;
   std::string link_header;
   if (!is_fallback_redirect &&
-      base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch) &&
       outer_response.headers) {
     outer_response.headers->GetNormalizedHeader("link", &link_header);
   }
   if (link_header.empty()) {
     buf = base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other");
   } else {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kSignedExchangeSubresourcePrefetch));
     buf = base::StringPrintf(
         "HTTP/1.1 %d %s\r\n"
         "link: %s\r\n",

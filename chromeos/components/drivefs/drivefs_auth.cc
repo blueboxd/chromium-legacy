@@ -18,8 +18,13 @@ constexpr char kIdentityConsumerId[] = "drivefs";
 
 DriveFsAuth::DriveFsAuth(const base::Clock* clock,
                          const base::FilePath& profile_path,
+                         std::unique_ptr<base::OneShotTimer> timer,
                          Delegate* delegate)
-    : clock_(clock), profile_path_(profile_path), delegate_(delegate) {}
+    : clock_(clock),
+      profile_path_(profile_path),
+      timer_(std::move(timer)),
+      delegate_(delegate),
+      weak_ptr_factory_(this) {}
 
 DriveFsAuth::~DriveFsAuth() {}
 
@@ -47,12 +52,18 @@ void DriveFsAuth::GetAccessToken(
   }
 
   get_access_token_callback_ = std::move(callback);
-  GetIdentityAccessor().GetPrimaryAccountWhenAvailable(
-      base::BindOnce(&DriveFsAuth::AccountReady, base::Unretained(this)));
+  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
+                base::BindOnce(&DriveFsAuth::AuthTimeout,
+                               weak_ptr_factory_.GetWeakPtr()));
+  GetIdentityAccessor().GetPrimaryAccountWhenAvailable(base::BindOnce(
+      &DriveFsAuth::AccountReady, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveFsAuth::AccountReady(const CoreAccountInfo& info,
                                const identity::AccountState& state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  timer_->Stop();
   GetIdentityAccessor().GetAccessToken(
       delegate_->GetAccountId().GetUserEmail(),
       {"https://www.googleapis.com/auth/drive"}, kIdentityConsumerId,
@@ -89,6 +100,13 @@ void DriveFsAuth::UpdateCachedToken(const std::string& token,
                                     base::Time expiry) {
   last_token_ = token;
   last_token_expiry_ = expiry;
+}
+
+void DriveFsAuth::AuthTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  std::move(get_access_token_callback_)
+      .Run(mojom::AccessTokenStatus::kAuthError, "");
 }
 
 identity::mojom::IdentityAccessor& DriveFsAuth::GetIdentityAccessor() {

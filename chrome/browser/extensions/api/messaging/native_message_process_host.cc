@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
+#include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -44,9 +45,10 @@ const size_t kReadBufferSize = 4096;
 base::FilePath GetProfilePathIfEnabled(Profile* profile,
                                        const std::string& extension_id,
                                        const std::string& host_id) {
-  // TODO(crbug.com/967262): Return an empty path if the extension would not
-  // accept an inbound native messaging connection.
-  return profile->GetPath();
+  return extensions::ExtensionSupportsConnectionFromNativeApp(
+             extension_id, host_id, profile, /* log_errors = */ false)
+             ? profile->GetPath()
+             : base::FilePath();
 }
 
 }  // namespace
@@ -104,7 +106,8 @@ std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
       NativeProcessLauncher::CreateDefault(
           allow_user_level, native_view,
           GetProfilePathIfEnabled(Profile::FromBrowserContext(browser_context),
-                                  source_extension_id, native_host_name)));
+                                  source_extension_id, native_host_name),
+          /* require_native_initiated_connections = */ false));
 }
 
 // static

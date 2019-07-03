@@ -37,9 +37,35 @@ Polymer({
     tap: 'onTap_',
   },
 
+  /** @private {Set<number>} */
+  timeoutIds_: null,
+
   /** @override */
   ready: function() {
     cr.ui.FocusOutlineManager.forDocument(document);
+    this.timeoutIds_ = new Set();
+  },
+
+  /** @override */
+  detached: function() {
+    this.timeoutIds_.forEach(clearTimeout);
+    this.timeoutIds_.clear();
+  },
+
+  /**
+   * @param {!Function} fn
+   * @param {number=} delay
+   * @private
+   */
+  setTimeout_: function(fn, delay) {
+    if (!this.isConnected) {
+      return;
+    }
+    const id = setTimeout(() => {
+      this.timeoutIds_.delete(id);
+      fn();
+    }, delay);
+    this.timeoutIds_.add(id);
   },
 
   /**
@@ -79,14 +105,17 @@ Polymer({
 
     e.preventDefault();
     e.stopPropagation();
+
     if (e.repeat) {
       return;
     }
 
+    this.getRipple().uiDownAction();
     if (e.key == 'Enter') {
       this.click();
-    } else {
-      this.getRipple().uiDownAction();
+      // Delay was chosen manually as a good time period for the ripple to be
+      // visible.
+      this.setTimeout_(() => this.getRipple().uiUpAction(), 100);
     }
   },
 
@@ -95,10 +124,12 @@ Polymer({
    * @private
    */
   onKeyUp_: function(e) {
-    if (e.key == ' ' || e.key == 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
+    if (e.key != ' ' && e.key != 'Enter') {
+      return;
     }
+
+    e.preventDefault();
+    e.stopPropagation();
 
     if (e.key == ' ') {
       this.click();

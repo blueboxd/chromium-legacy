@@ -2065,7 +2065,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
       return;
     for (const auto& record : records) {
       if (record->type() == "attributes") {
-        const Element& element = *ToElement(record->target());
+        const auto& element = *To<Element>(record->target());
         if (record->oldValue() == element.getAttribute(record->attributeName()))
           continue;
       } else if (record->type() == "characterData") {

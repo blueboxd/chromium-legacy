@@ -240,6 +240,7 @@ void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
 
 void NFC::OnConnectionError() {
   nfc_.reset();
+  client_binding_.Close();
   callbacks_.clear();
 
   // If NFCService is not available or disappears when NFC hardware is
@@ -278,7 +279,7 @@ bool NFC::IsSupportedInContext(ExecutionContext* context,
   // WebNFC API must be only accessible from top level browsing context.
   if (!To<Document>(context)->domWindow()->GetFrame() ||
       !To<Document>(context)->GetFrame()->IsMainFrame()) {
-    error_message = "Must be in a top-level browsing context";
+    error_message = kNfcAccessInNonTopFrame;
     return false;
   }
 

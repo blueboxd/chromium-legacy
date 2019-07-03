@@ -24,5 +24,7 @@ blink_modules_sources("nfc") {
     "nfc_type_converters.h",
     "nfc_utils.cc",
     "nfc_utils.h",
+    "nfc_writer.cc",
+    "nfc_writer.h",
   ]
 }

@@ -17,6 +17,13 @@ void NFCReader::Trace(blink::Visitor* visitor) {}
 void NFCReader::OnMessage(const device::mojom::blink::NDEFMessage& message) {}
 
 // An reading error has occurred.
-void NFCReader::OnError(const device::mojom::blink::NFCError& error) {}
+void NFCReader::OnReadingError(const device::mojom::blink::NFCError& error) {}
+
+// NfcProxy::Observer overrides.
+void NFCReader::OnMojoConnectionError() {
+  auto error = device::mojom::blink::NFCError::New(
+      device::mojom::blink::NFCErrorType::NOT_SUPPORTED);
+  OnReadingError(*error);
+}
 
 }  // namespace blink

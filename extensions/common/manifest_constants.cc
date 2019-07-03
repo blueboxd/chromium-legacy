@@ -561,7 +561,7 @@ const char kInvalidName[] =
 const char kInvalidNativelyConnectable[] =
     "Invalid natively_connectable. Must be a list.";
 const char kInvalidNativelyConnectableValue[] =
-    "Invalid natively_connectable value. Must be a string.";
+    "Invalid natively_connectable value. Must be a non-empty string.";
 const char kInvalidNaClModules[] =
     "Invalid value for 'nacl_modules'.";
 const char kInvalidNaClModulesPath[] =

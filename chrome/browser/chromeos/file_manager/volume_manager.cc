@@ -442,7 +442,8 @@ std::unique_ptr<Volume> Volume::CreateForTesting(
     chromeos::DeviceType device_type,
     bool read_only,
     const base::FilePath& device_path,
-    const std::string& drive_label) {
+    const std::string& drive_label,
+    const std::string& file_system_type) {
   std::unique_ptr<Volume> volume(new Volume());
   volume->type_ = volume_type;
   volume->device_type_ = device_type;
@@ -455,7 +456,7 @@ std::unique_ptr<Volume> Volume::CreateForTesting(
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->drive_label_ = drive_label;
   if (volume_type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
-    volume->file_system_type_ = "ext4";
+    volume->file_system_type_ = file_system_type;
   }
   return volume;
 }
@@ -750,11 +751,13 @@ void VolumeManager::AddVolumeForTesting(const base::FilePath& path,
                                         chromeos::DeviceType device_type,
                                         bool read_only,
                                         const base::FilePath& device_path,
-                                        const std::string& drive_label) {
+                                        const std::string& drive_label,
+                                        const std::string& file_system_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               Volume::CreateForTesting(path, volume_type, device_type,
-                                        read_only, device_path, drive_label));
+  DoMountEvent(
+      chromeos::MOUNT_ERROR_NONE,
+      Volume::CreateForTesting(path, volume_type, device_type, read_only,
+                               device_path, drive_label, file_system_type));
 }
 
 void VolumeManager::AddVolumeForTesting(std::unique_ptr<Volume> volume) {
@@ -762,17 +765,19 @@ void VolumeManager::AddVolumeForTesting(std::unique_ptr<Volume> volume) {
   DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
 }
 
-void VolumeManager::RemoveVolumeForTesting(const base::FilePath& path,
-                                           VolumeType volume_type,
-                                           chromeos::DeviceType device_type,
-                                           bool read_only,
-                                           const base::FilePath& device_path,
-                                           const std::string& drive_label) {
+void VolumeManager::RemoveVolumeForTesting(
+    const base::FilePath& path,
+    VolumeType volume_type,
+    chromeos::DeviceType device_type,
+    bool read_only,
+    const base::FilePath& device_path,
+    const std::string& drive_label,
+    const std::string& file_system_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DoUnmountEvent(
       chromeos::MOUNT_ERROR_NONE,
       *Volume::CreateForTesting(path, volume_type, device_type, read_only,
-                                device_path, drive_label));
+                                device_path, drive_label, file_system_type));
 }
 
 void VolumeManager::OnFileSystemMounted() {

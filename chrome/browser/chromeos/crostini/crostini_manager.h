@@ -400,13 +400,6 @@ class CrostiniManager : public KeyedService,
                            std::string package_path,
                            GetLinuxPackageInfoCallback callback);
 
-  // Asynchronously retrieve information about a Linux Package in the APT
-  // repository. This uses a package_name to identify a package.
-  void GetLinuxPackageInfoFromApt(const std::string& vm_name,
-                                  const std::string& container_name,
-                                  const std::string& package_name,
-                                  GetLinuxPackageInfoCallback callback);
-
   // Begin installation of a Linux Package inside the container. If the
   // installation is successfully started, further updates will be sent to
   // added LinuxPackageOperationProgressObservers.
@@ -471,15 +464,6 @@ class CrostiniManager : public KeyedService,
       void(bool success, std::vector<std::pair<std::string, uint8_t>> devices)>;
   void ListUsbDevices(const std::string& vm_name,
                       ListUsbDevicesCallback callback);
-
-  // Searches for not installed packages that have names matching the passed
-  // plaintext search query and returns a vector containing their names.
-  using SearchAppCallback =
-      base::OnceCallback<void(const std::vector<std::string>& package_names)>;
-  void SearchApp(const std::string& vm_name,
-                 const std::string& container_name,
-                 const std::string& query,
-                 SearchAppCallback callback);
 
   using RestartId = int;
   static const RestartId kUninitializedRestartId = -1;
@@ -718,8 +702,7 @@ class CrostiniManager : public KeyedService,
       GetContainerAppIconsCallback callback,
       base::Optional<vm_tools::cicerone::ContainerAppIconResponse> response);
 
-  // Callback for CrostiniManager::GetLinuxPackageInfo and
-  // CrostiniManager::GetLinuxPackageInfoFromApt.
+  // Callback for CrostiniManager::GetLinuxPackageInfo.
   void OnGetLinuxPackageInfo(
       GetLinuxPackageInfoCallback callback,
       base::Optional<vm_tools::cicerone::LinuxPackageInfoResponse> response);
@@ -761,11 +744,6 @@ class CrostiniManager : public KeyedService,
       const std::string& vm_name,
       ListUsbDevicesCallback callback,
       base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response);
-
-  // Callback for CrostiniManager::SearchApp.
-  void OnSearchApp(
-      SearchAppCallback callback,
-      base::Optional<vm_tools::cicerone::AppSearchResponse> response);
 
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.

@@ -4905,6 +4905,10 @@ interface NFCErrorEvent : Event
     attribute @@toStringTag
     getter error
     method constructor
+interface NFCWriter
+    attribute @@toStringTag
+    method constructor
+    method push
 interface NamedNodeMap
     attribute @@toStringTag
     getter length

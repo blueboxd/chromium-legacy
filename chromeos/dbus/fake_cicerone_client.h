@@ -144,12 +144,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
           callback) override;
 
-  // Fake version of the method that searches for not installed apps.
-  // |callback| is called when the method completes.
-  void SearchApp(const vm_tools::cicerone::AppSearchRequest& request,
-                 DBusMethodCallback<vm_tools::cicerone::AppSearchResponse>
-                     callback) override;
-
   // Fake version of the method that exports the container.
   // |callback| is called when the method completes.
   void ExportLxdContainer(
@@ -247,11 +241,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::ContainerAppIconResponse&
           container_app_icon_response) {
     container_app_icon_response_ = container_app_icon_response;
-  }
-
-  void set_search_app_response(
-      const vm_tools::cicerone::AppSearchResponse& search_app_response) {
-    search_app_response_ = search_app_response;
   }
 
   const vm_tools::cicerone::LinuxPackageInfoRequest&
@@ -394,7 +383,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       get_lxd_container_username_response_;
   vm_tools::cicerone::SetUpLxdContainerUserResponse
       setup_lxd_container_user_response_;
-  vm_tools::cicerone::AppSearchResponse search_app_response_;
   vm_tools::cicerone::ExportLxdContainerResponse export_lxd_container_response_;
   vm_tools::cicerone::ImportLxdContainerResponse import_lxd_container_response_;
 

@@ -27,7 +27,10 @@ class MODULES_EXPORT NFCReader : public GarbageCollectedMixin {
   virtual void OnMessage(const device::mojom::blink::NDEFMessage& message);
 
   // An reading error has occurred.
-  virtual void OnError(const device::mojom::blink::NFCError& error);
+  virtual void OnReadingError(const device::mojom::blink::NFCError& error);
+
+  // Called by NFCProxy for notification about connection error.
+  void OnMojoConnectionError();
 
  private:
   device::mojom::blink::NFCReaderOptionsPtr options_;

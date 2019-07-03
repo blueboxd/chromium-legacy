@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -76,6 +77,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/user_manager/user_manager.h"
 #else
+#include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
 #include "chrome/browser/ui/user_manager.h"
 #endif
 
@@ -683,6 +685,20 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     }
     silent_launch = true;
   }
+
+#if !defined(OS_CHROMEOS)
+  if (!process_startup &&
+      base::FeatureList::IsEnabled(features::kOnConnectNative) &&
+      command_line.HasSwitch(switches::kNativeMessagingConnectHost) &&
+      command_line.HasSwitch(switches::kNativeMessagingConnectExtension)) {
+    silent_launch = true;
+    extensions::LaunchNativeMessageHostFromNativeApp(
+        command_line.GetSwitchValueASCII(
+            switches::kNativeMessagingConnectExtension),
+        command_line.GetSwitchValueASCII(switches::kNativeMessagingConnectHost),
+        last_used_profile);
+  }
+#endif
 
   // If --no-startup-window is specified and Chrome is already running then do
   // not open a new window.

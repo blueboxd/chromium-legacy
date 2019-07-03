@@ -249,6 +249,8 @@ source_set("common") {
     "view_messages.h",
     "visual_properties.cc",
     "visual_properties.h",
+    "web_package/signed_exchange_utils.cc",
+    "web_package/signed_exchange_utils.h",
     "widget_messages.h",
   ]
 

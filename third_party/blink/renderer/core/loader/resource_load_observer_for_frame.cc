@@ -145,7 +145,8 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
                                                response.RemoteIPAddress());
 
   std::unique_ptr<AlternateSignedExchangeResourceInfo> alternate_resource_info;
-  if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled() &&
+  if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
+          &frame_or_imported_document_->GetDocument()) &&
       response.IsSignedExchangeInnerResponse() &&
       resource->GetType() == ResourceType::kLinkPrefetch &&
       resource->LastResourceResponse()) {

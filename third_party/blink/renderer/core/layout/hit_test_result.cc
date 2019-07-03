@@ -229,8 +229,8 @@ void HitTestResult::SetInnerNode(Node* n) {
     inner_node_ = area;
     inner_possibly_pseudo_node_ = area;
   }
-  if (inner_node_->IsElementNode())
-    inner_element_ = ToElement(inner_node_);
+  if (auto* element = DynamicTo<Element>(inner_node_.Get()))
+    inner_element_ = element;
   else
     inner_element_ = FlatTreeTraversal::ParentElement(*inner_node_);
 }
@@ -275,8 +275,8 @@ String HitTestResult::Title(TextDirection& dir) const {
     inner_node_->UpdateDistributionForFlatTreeTraversal();
   for (Node* title_node = inner_node_.Get(); title_node;
        title_node = FlatTreeTraversal::Parent(*title_node)) {
-    if (title_node->IsElementNode()) {
-      String title = ToElement(title_node)->title();
+    if (auto* element = DynamicTo<Element>(title_node)) {
+      String title = element->title();
       if (!title.IsNull()) {
         if (LayoutObject* layout_object = title_node->GetLayoutObject())
           dir = layout_object->StyleRef().Direction();

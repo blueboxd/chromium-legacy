@@ -358,7 +358,7 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
         cca.mojo.getCameraFacing(d.deviceId),
         cca.mojo.getPhotoResolutions(d.deviceId),
         cca.mojo.getVideoConfigs(d.deviceId),
-        cca.mojo.getSupportedFpsRange(d.deviceId),
+        cca.mojo.getSupportedFpsRanges(d.deviceId),
       ])));
     } catch (e) {
       cca.state.set('no-resolution-settings', true);

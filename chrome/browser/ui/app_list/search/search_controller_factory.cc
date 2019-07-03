@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
-#include "chrome/browser/ui/app_list/search/crostini/crostini_repository_search_provider.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
@@ -62,9 +61,6 @@ constexpr size_t kMaxSettingsShortcutResults = 6;
 
 constexpr float kBoostOfSettingsShortcut = 10.0f;
 constexpr float kBoostOfApps = 8.0f;
-
-// TODO(danielng): Need UX spec.
-constexpr size_t kMaxCrostiniRepositoryResults = 2;
 
 }  // namespace
 
@@ -157,16 +153,6 @@ std::unique_ptr<SearchController> CreateSearchController(
         app_shortcut_group_id,
         std::make_unique<ArcAppShortcutsSearchProvider>(
             kMaxAppShortcutResults, profile, list_controller, app_ranker));
-  }
-
-  // TODO(https://crbug.com/921429): Put feature switch in ash/public/app_list/
-  // like the other search providers.
-  if (base::FeatureList::IsEnabled(features::kCrostiniAppSearch)) {
-    size_t crostini_repository_group_id =
-        controller->AddGroup(kMaxCrostiniRepositoryResults, 1.0, 0.0);
-    controller->AddProvider(
-        crostini_repository_group_id,
-        std::make_unique<CrostiniRepositorySearchProvider>(profile));
   }
 
   return controller;

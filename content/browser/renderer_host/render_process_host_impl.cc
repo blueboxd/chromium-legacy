@@ -207,6 +207,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
+#include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -2073,6 +2074,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&ClipboardHostImpl::Create));
 
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::BindWebDatabaseHostImpl,
+                          base::Unretained(this)));
+
   registry->AddInterface(
       base::BindRepeating(&MimeRegistryImpl::Create),
       base::CreateSequencedTaskRunnerWithTraits(
@@ -2120,12 +2126,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     registry->AddInterface(base::BindRepeating(
         &viz::GpuClient::Add, base::Unretained(gpu_client_.get())));
   }
-
-  registry->AddInterface(
-      base::BindRepeating(
-          &WebDatabaseHostImpl::Create, GetID(),
-          base::WrapRefCounted(storage_partition_impl_->GetDatabaseTracker())),
-      storage_partition_impl_->GetDatabaseTracker()->task_runner());
 
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
@@ -2322,6 +2322,16 @@ void RenderProcessHostImpl::BindVideoDecoderService(
   if (!video_decoder_proxy_)
     video_decoder_proxy_.reset(new VideoDecoderProxy());
   video_decoder_proxy_->Add(std::move(request));
+}
+
+void RenderProcessHostImpl::BindWebDatabaseHostImpl(
+    blink::mojom::WebDatabaseHostRequest request) {
+  storage::DatabaseTracker* db_tracker =
+      storage_partition_impl_->GetDatabaseTracker();
+  db_tracker->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WebDatabaseHostImpl::Create, GetID(),
+                     base::WrapRefCounted(db_tracker), std::move(request)));
 }
 
 void RenderProcessHostImpl::CreateRendererHost(

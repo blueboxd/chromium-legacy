@@ -16,6 +16,7 @@ namespace blink {
 
 class Document;
 class NFCReader;
+class NFCWriter;
 
 // This is a proxy class used by NFCWriter(s) and NFCReader(s) to connect
 // to the DeviceService for device::mojom::blink::NFC service.
@@ -38,6 +39,11 @@ class MODULES_EXPORT NFCProxy final
 
   void Trace(blink::Visitor*) override;
 
+  // There is no matching RemoveWriter() method because writers are
+  // automatically removed from the weak hash set when they are garbage
+  // collected.
+  void AddWriter(NFCWriter*);
+
   void AddReader(NFCReader*);
   void RemoveReader(NFCReader*);
   void Push(device::mojom::blink::NDEFMessagePtr message,
@@ -55,6 +61,7 @@ class MODULES_EXPORT NFCProxy final
   void OnReaderRegistered(NFCReader* reader,
                           uint32_t id,
                           device::mojom::blink::NFCErrorPtr error);
+
   void OnCancelWatch(NFCReader* reader,
                      device::mojom::blink::NFCErrorPtr error);
 
@@ -65,6 +72,9 @@ class MODULES_EXPORT NFCProxy final
   // The <NFCReader, WatchId> map.
   using ReaderMap = HeapHashMap<WeakMember<NFCReader>, uint32_t>;
   ReaderMap readers_;
+
+  using WriterSet = HeapHashSet<WeakMember<NFCWriter>>;
+  WriterSet writers_;
 
   device::mojom::blink::NFCPtr nfc_;
   mojo::Binding<device::mojom::blink::NFCClient> client_binding_;

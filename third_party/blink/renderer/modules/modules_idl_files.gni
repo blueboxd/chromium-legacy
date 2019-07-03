@@ -226,6 +226,7 @@ modules_idl_files =
           "netinfo/network_information.idl",
           "nfc/nfc.idl",
           "nfc/nfc_error_event.idl",
+          "nfc/nfc_writer.idl",
           "notifications/notification.idl",
           "notifications/notification_event.idl",
           "notifications/timestamp_trigger.idl",

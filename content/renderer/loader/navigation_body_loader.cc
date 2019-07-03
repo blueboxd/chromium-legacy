@@ -53,7 +53,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
                                    redirect_info, redirect_response);
     WebURLLoaderImpl::PopulateURLResponse(
         url, redirect_response, &redirect.redirect_response,
-        false /* report_security_info */, request_id);
+        response_head.ssl_info.has_value(), request_id);
     if (url.SchemeIs(url::kDataScheme))
       redirect.redirect_response.SetHttpStatusCode(200);
     redirect.new_url = redirect_info.new_url;
@@ -69,7 +69,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
 
   WebURLLoaderImpl::PopulateURLResponse(
       url, response_head, &navigation_params->response,
-      false /* report_security_info */, request_id);
+      response_head.ssl_info.has_value(), request_id);
   if (url.SchemeIs(url::kDataScheme))
     navigation_params->response.SetHttpStatusCode(200);
 

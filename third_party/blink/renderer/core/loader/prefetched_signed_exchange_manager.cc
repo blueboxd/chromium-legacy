@@ -131,7 +131,6 @@ PrefetchedSignedExchangeManager* PrefetchedSignedExchangeManager::MaybeCreate(
     const String& inner_link_header,
     WebVector<std::unique_ptr<WebNavigationParams::PrefetchedSignedExchange>>
         prefetched_signed_exchanges) {
-  DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
   if (prefetched_signed_exchanges.empty())
     return nullptr;
   std::unique_ptr<AlternateSignedExchangeResourceInfo> alternative_resources =
@@ -163,7 +162,6 @@ PrefetchedSignedExchangeManager::PrefetchedSignedExchangeManager(
     : frame_(frame),
       alternative_resources_(std::move(alternative_resources)),
       prefetched_exchanges_map_(std::move(prefetched_exchanges_map)) {
-  DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
 }
 
 PrefetchedSignedExchangeManager::~PrefetchedSignedExchangeManager() {}

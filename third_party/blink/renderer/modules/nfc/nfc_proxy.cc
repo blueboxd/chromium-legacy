@@ -8,6 +8,7 @@
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_writer.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
@@ -19,9 +20,7 @@ const char NFCProxy::kSupplementName[] = "NFCProxy";
 NFCProxy* NFCProxy::From(Document& document) {
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  if (!document.IsInMainFrame()) {
-    return nullptr;
-  }
+  DCHECK(document.IsInMainFrame());
 
   NFCProxy* nfc_proxy = Supplement<Document>::From<NFCProxy>(document);
   if (!nfc_proxy) {
@@ -44,6 +43,7 @@ void NFCProxy::Dispose() {
 }
 
 void NFCProxy::Trace(blink::Visitor* visitor) {
+  visitor->Trace(writers_);
   visitor->Trace(readers_);
   PageVisibilityObserver::Trace(visitor);
   Supplement<Document>::Trace(visitor);
@@ -69,6 +69,11 @@ void NFCProxy::RemoveReader(NFCReader* reader) {
                                 WrapPersistent(reader)));
     readers_.erase(iter);
   }
+}
+
+void NFCProxy::AddWriter(NFCWriter* writer) {
+  DCHECK(!writers_.Contains(writer));
+  writers_.insert(writer);
 }
 
 void NFCProxy::Push(device::mojom::blink::NDEFMessagePtr message,
@@ -109,7 +114,7 @@ void NFCProxy::OnReaderRegistered(NFCReader* reader,
   DCHECK(reader);
 
   if (error) {
-    reader->OnError(*error);
+    reader->OnReadingError(*error);
     return;
   }
 
@@ -121,7 +126,7 @@ void NFCProxy::OnCancelWatch(NFCReader* reader,
   DCHECK(reader);
 
   if (error) {
-    reader->OnError(*error);
+    reader->OnReadingError(*error);
   }
 }
 
@@ -138,6 +143,7 @@ void NFCProxy::EnsureMojoConnection() {
       WTF::Bind(&NFCProxy::OnMojoConnectionError, WrapWeakPersistent(this)));
 
   // Set client for OnWatch event.
+  DCHECK(!client_binding_);
   device::mojom::blink::NFCClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
   nfc_->SetClient(std::move(client));
@@ -145,18 +151,21 @@ void NFCProxy::EnsureMojoConnection() {
 
 void NFCProxy::OnMojoConnectionError() {
   nfc_.reset();
+  client_binding_.Close();
 
   // Notify all active readers about the connection error.
-  // NFCWriter::push() should wrap the callback using
-  // mojo::WrapCallbackWithDefaultInvokeIfNotRun() with a default error.
-  auto error = device::mojom::blink::NFCError::New(
-      device::mojom::blink::NFCErrorType::NOT_SUPPORTED);
   for (auto pair : readers_) {
-    pair.key->OnError(*error);
+    pair.key->OnMojoConnectionError();
   }
-
   // Clear the reader list.
   readers_.clear();
+
+  // Notify all writers about the connection error.
+  for (auto& writer : writers_) {
+    writer->OnMojoConnectionError();
+  }
+  // Clear the reader list.
+  writers_.clear();
 }
 
 }  // namespace blink

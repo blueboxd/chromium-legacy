@@ -504,12 +504,13 @@ void PreloadHelper::LoadLinksFromHeader(
 
     LinkLoadParameters params(header, base_url);
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
-      DCHECK(
-          RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
+      DCHECK(document);
+      DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
+          document));
       KURL url = params.href;
       base::Optional<ResourceType> resource_type =
           PreloadHelper::GetResourceTypeFromAsAttribute(params.as);
-      if (document && resource_type == ResourceType::kImage &&
+      if (resource_type == ResourceType::kImage &&
           !params.image_srcset.IsEmpty()) {
         // |media_values| is created based on the viewport dimensions of the
         // current page that prefetched SXGs, not on the viewport of the SXG

@@ -190,7 +190,10 @@ DriveFsHost::DriveFsHost(
       disk_mount_manager_(disk_mount_manager),
       timer_(std::move(timer)),
       account_token_delegate_(
-          std::make_unique<DriveFsAuth>(clock, profile_path, delegate)) {
+          std::make_unique<DriveFsAuth>(clock,
+                                        profile_path,
+                                        std::make_unique<base::OneShotTimer>(),
+                                        delegate)) {
   DCHECK(delegate_);
   DCHECK(mount_observer_);
   DCHECK(network_connection_tracker_);

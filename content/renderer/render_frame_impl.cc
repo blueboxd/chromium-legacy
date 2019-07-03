@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -68,6 +67,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/web_package/signed_exchange_utils.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
@@ -495,8 +495,6 @@ void FillNavigationParamsRequest(
   navigation_params->was_discarded = commit_params.was_discarded;
 
   if (!commit_params.prefetched_signed_exchanges.empty()) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kSignedExchangeSubresourcePrefetch));
     navigation_params->prefetched_signed_exchanges = WebVector<std::unique_ptr<
         blink::WebNavigationParams::PrefetchedSignedExchange>>();
 
@@ -505,18 +503,13 @@ void FillNavigationParamsRequest(
       WebURLLoaderImpl::PopulateURLResponse(
           exchange.inner_url, exchange.inner_response, &web_response,
           false /* report_security_info*/, -1 /* request_id */);
-      std::string header_integrity_base64;
-      base::Base64Encode(
-          base::StringPiece(
-              reinterpret_cast<const char*>(exchange.header_integrity.data),
-              sizeof(exchange.header_integrity.data)),
-          &header_integrity_base64);
       navigation_params->prefetched_signed_exchanges.emplace_back(
           std::make_unique<
               blink::WebNavigationParams::PrefetchedSignedExchange>(
               exchange.outer_url,
-              WebString::FromLatin1(std::string("sha256-") +
-                                    header_integrity_base64),
+              WebString::FromLatin1(
+                  signed_exchange_utils::CreateHeaderIntegrityHashString(
+                      exchange.header_integrity)),
               exchange.inner_url, web_response,
               mojo::ScopedMessagePipeHandle(exchange.loader_factory_handle)));
     }

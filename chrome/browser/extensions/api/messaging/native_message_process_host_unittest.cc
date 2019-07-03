@@ -31,6 +31,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -321,6 +322,7 @@ TEST_F(NativeMessagingTest, EchoConnect) {
 TEST_F(NativeMessagingTest, ReconnectArgs) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kOnConnectNative);
+  ScopedAllowNativeAppConnectionForTest allow_native_app_connection(true);
   ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
   std::string error_message;
@@ -395,6 +397,34 @@ TEST_F(NativeMessagingTest, ReconnectArgs_Disabled) {
   const base::Value* args = nullptr;
   ASSERT_TRUE(last_message_parsed_->Get("args", &args));
   EXPECT_TRUE(args->is_none());
+}
+
+// Test that reconnect args are not sent if the extension is not permitted to
+// receive natively-established connections.
+TEST_F(NativeMessagingTest, ReconnectArgsIfNativeConnectionDisallowed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kOnConnectNative);
+  ScopedAllowNativeAppConnectionForTest disallow_native_app_connection(false);
+  ScopedTestNativeMessagingHost test_host;
+  ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
+  std::string error_message;
+  native_message_host_ = NativeMessageProcessHost::Create(
+      &profile_, NULL, ScopedTestNativeMessagingHost::kExtensionId,
+      ScopedTestNativeMessagingHost::
+          kSupportsNativeInitiatedConnectionsHostName,
+      false, &error_message);
+  native_message_host_->Start(this);
+  ASSERT_TRUE(native_message_host_);
+
+  native_message_host_->OnMessage("{\"text\": \"Hello.\"}");
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+  ASSERT_FALSE(last_message_.empty());
+  ASSERT_TRUE(last_message_parsed_);
+
+  const base::Value* args_value = nullptr;
+  ASSERT_TRUE(last_message_parsed_->Get("args", &args_value));
+  EXPECT_TRUE(args_value->is_none());
 }
 
 TEST_F(NativeMessagingTest, UserLevel) {

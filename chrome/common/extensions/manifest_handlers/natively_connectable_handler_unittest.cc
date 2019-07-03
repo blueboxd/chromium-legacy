@@ -49,4 +49,9 @@ TEST_F(NativelyConnectableManifestTest, IncorrectValuesType) {
                      manifest_errors::kInvalidNativelyConnectableValue);
 }
 
+TEST_F(NativelyConnectableManifestTest, EmptyHost) {
+  LoadAndExpectError("natively_connectable_empty_host.json",
+                     manifest_errors::kInvalidNativelyConnectableValue);
+}
+
 }  // namespace extensions

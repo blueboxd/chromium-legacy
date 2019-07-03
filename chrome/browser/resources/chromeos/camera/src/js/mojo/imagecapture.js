@@ -85,50 +85,33 @@ cca.mojo.ImageCapture = function(videoTrack) {
  * @private
  */
 cca.mojo.getMetadataData_ = function(metadata, tag) {
-  const size4Bytes = 4;
-  const size8Bytes = 8;
-
   for (let i = 0; i < metadata.entryCount; i++) {
     let entry = metadata.entries[i];
     if (entry.tag !== tag) {
       continue;
     }
-    let uint8Array = Uint8Array.from(entry.data);
-    let dataView = new DataView(uint8Array.buffer);
-    let results = [];
-    let mostSignificantInt32;
-    let leastSignificantInt32;
-    for (let j = 0; j < entry.count; j++) {
-      switch (entry.type) {
-        case cros.mojom.EntryType.TYPE_BYTE:
-          results.push(dataView.getUint8(j, true));
-          break;
-        case cros.mojom.EntryType.TYPE_INT32:
-          results.push(dataView.getInt32(j * size4Bytes, true));
-          break;
-        case cros.mojom.EntryType.TYPE_FLOAT:
-          results.push(dataView.getFloat32(j * size4Bytes, true));
-          break;
-        case cros.mojom.EntryType.TYPE_DOUBLE:
-          results.push(dataView.getFloat64(j * size8Bytes, true));
-          break;
-        case cros.mojom.EntryType.TYPE_INT64:
-          // TODO(wtlee): Currently int64 value will fallback to int32 by
-          // picking only the least significant 32 bits. Need to find a way
-          // to better handle int64 values.
-          leastSignificantInt32 = dataView.getInt32(j * size8Bytes, true);
-          mostSignificantInt32 = dataView.getInt32(j * size8Bytes + 4, true);
-          if (mostSignificantInt32 !== 0) {
-            console.warn('Truncate non-zero most significant bytes');
+    const {buffer} = Uint8Array.from(entry.data);
+    switch (entry.type) {
+      case cros.mojom.EntryType.TYPE_BYTE:
+        return Array.from(new Uint8Array(buffer));
+      case cros.mojom.EntryType.TYPE_INT32:
+        return Array.from(new Int32Array(buffer));
+      case cros.mojom.EntryType.TYPE_FLOAT:
+        return Array.from(new Float32Array(buffer));
+      case cros.mojom.EntryType.TYPE_DOUBLE:
+        return Array.from(new Float64Array(buffer));
+      case cros.mojom.EntryType.TYPE_INT64:
+        return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
+          let numVal = Number(bigIntVal);
+          if (!Number.isSafeInteger(numVal)) {
+            console.warn('The int64 value is not a safe integer');
           }
-          results.push(leastSignificantInt32);
-          break;
-        default:
-          // TODO(wtlee): Supports rational type.
-          throw new Error('Unsupported type: ' + entry.type);
-      }
+          return numVal;
+        });
+      default:
+        // TODO(wtlee): Supports rational type.
+        throw new Error('Unsupported type: ' + entry.type);
     }
-    return results;
   }
   return [];
 };

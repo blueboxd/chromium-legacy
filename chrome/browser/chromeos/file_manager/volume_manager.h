@@ -127,7 +127,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       chromeos::DeviceType device_type,
       bool read_only,
       const base::FilePath& device_path,
-      const std::string& drive_label);
+      const std::string& drive_label,
+      const std::string& file_system_type = "");
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& device_path,
       const base::FilePath& mount_path);
@@ -348,7 +349,8 @@ class VolumeManager : public KeyedService,
                            chromeos::DeviceType device_type,
                            bool read_only,
                            const base::FilePath& device_path = base::FilePath(),
-                           const std::string& drive_label = "");
+                           const std::string& drive_label = "",
+                           const std::string& file_system_type = "");
 
   // For testing purposes, adds the volume info to the volume manager.
   void AddVolumeForTesting(std::unique_ptr<Volume> volume);
@@ -359,7 +361,8 @@ class VolumeManager : public KeyedService,
       chromeos::DeviceType device_type,
       bool read_only,
       const base::FilePath& device_path = base::FilePath(),
-      const std::string& drive_label = "");
+      const std::string& drive_label = "",
+      const std::string& file_system_type = "");
 
   // drive::DriveIntegrationServiceObserver overrides.
   void OnFileSystemMounted() override;

@@ -43,6 +43,7 @@ extern const char kNfcMsgMaxSizeError[];
 extern const char kNfcUrlPatternError[];
 extern const char kNfcInvalidPushTimeout[];
 extern const char kNfcWatchIdNotFound[];
+extern const char kNfcAccessInNonTopFrame[];
 
 }  // namespace blink
 

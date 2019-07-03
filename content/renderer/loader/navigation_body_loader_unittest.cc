@@ -9,6 +9,9 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
+#include "net/cert/x509_util.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/cert_test_util.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -283,6 +286,41 @@ TEST_F(NavigationBodyLoaderTest, SetDefersLoadingFromCloseThenOnComplete) {
   Complete(net::ERR_FAILED);
   Wait();
   EXPECT_TRUE(error_.has_value());
+}
+
+// Tests that FillNavigationParamsResponseAndBodyLoader populates security
+// details on the response when they are present.
+TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
+  network::ResourceResponseHead response;
+  response.ssl_info = net::SSLInfo();
+  net::CertificateList certs;
+  ASSERT_TRUE(net::LoadCertificateFiles(
+      {"subjectAltName_sanity_check.pem", "root_ca_cert.pem"}, &certs));
+  ASSERT_EQ(2U, certs.size());
+
+  base::StringPiece cert0_der =
+      net::x509_util::CryptoBufferAsStringPiece(certs[0]->cert_buffer());
+  base::StringPiece cert1_der =
+      net::x509_util::CryptoBufferAsStringPiece(certs[1]->cert_buffer());
+
+  response.ssl_info->cert =
+      net::X509Certificate::CreateFromDERCertChain({cert0_der, cert1_der});
+  net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
+                                     &response.ssl_info->connection_status);
+
+  CommonNavigationParams common_params;
+  common_params.url = GURL("https://example.test");
+
+  blink::WebNavigationParams navigation_params;
+  auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
+  NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
+      common_params, CommitNavigationParams(), 1 /* request_id */, response,
+      mojo::ScopedDataPipeConsumerHandle() /* response_body */,
+      std::move(endpoints),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+      2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
+  EXPECT_TRUE(
+      navigation_params.response.SecurityDetailsForTesting().has_value());
 }
 
 }  // namespace

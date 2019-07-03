@@ -2067,8 +2067,6 @@ void NavigationRequest::CommitNavigation() {
   }
   if (subresource_loader_params_ &&
       !subresource_loader_params_->prefetched_signed_exchanges.empty()) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kSignedExchangeSubresourcePrefetch));
     commit_params_.prefetched_signed_exchanges =
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }

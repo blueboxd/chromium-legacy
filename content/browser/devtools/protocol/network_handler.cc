@@ -35,6 +35,7 @@
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/navigation_params.h"
+#include "content/common/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1872,22 +1873,15 @@ void NetworkHandler::OnSignedExchangeReceived(
     }
     signatures->emplace_back(std::move(signature));
 
-    const net::SHA256HashValue header_integrity =
-        envelope->ComputeHeaderIntegrity();
-    std::string header_integrity_base64;
-    base::Base64Encode(
-        base::StringPiece(reinterpret_cast<const char*>(header_integrity.data),
-                          sizeof(header_integrity.data)),
-        &header_integrity_base64);
-
     signed_exchange_info->SetHeader(
         Network::SignedExchangeHeader::Create()
             .SetRequestUrl(envelope->request_url().url.spec())
             .SetResponseCode(envelope->response_code())
             .SetResponseHeaders(Object::fromValue(headers_dict.get(), nullptr))
             .SetSignatures(std::move(signatures))
-            .SetHeaderIntegrity(std::string("sha256-") +
-                                header_integrity_base64)
+            .SetHeaderIntegrity(
+                signed_exchange_utils::CreateHeaderIntegrityHashString(
+                    envelope->ComputeHeaderIntegrity()))
             .Build());
   }
   if (ssl_info)

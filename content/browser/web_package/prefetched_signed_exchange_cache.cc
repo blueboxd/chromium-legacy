@@ -568,14 +568,9 @@ PrefetchedSignedExchangeCache::Entry::Clone() const {
   return clone;
 }
 
-PrefetchedSignedExchangeCache::PrefetchedSignedExchangeCache() {
-  DCHECK(base::FeatureList::IsEnabled(
-             features::kSignedExchangeSubresourcePrefetch) ||
-         base::FeatureList::IsEnabled(
-             features::kSignedExchangePrefetchCacheForNavigations));
-}
+PrefetchedSignedExchangeCache::PrefetchedSignedExchangeCache() = default;
 
-PrefetchedSignedExchangeCache::~PrefetchedSignedExchangeCache() {}
+PrefetchedSignedExchangeCache::~PrefetchedSignedExchangeCache() = default;
 
 void PrefetchedSignedExchangeCache::Store(
     std::unique_ptr<const Entry> cached_exchange) {
@@ -657,13 +652,6 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(const GURL& outer_url,
                                                         const GURL& inner_url,
                                                         const base::Time& now) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch)) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kSignedExchangePrefetchCacheForNavigations));
-    return std::vector<PrefetchedSignedExchangeInfo>();
-  }
 
   std::vector<PrefetchedSignedExchangeInfo> info_list;
   const url::Origin outer_url_origin = url::Origin::Create(outer_url);

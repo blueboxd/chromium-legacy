@@ -184,11 +184,6 @@ const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCrostiniAdditionalEnterpriseReporting{
     "CrostiniAdditionalEnterpriseReporting", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables not installed apps/packages to be searched for and installed in the
-// App launcher.
-const base::Feature kCrostiniAppSearch{"CrostiniAppSearch",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables an uninstall option in the right-click menu of Crostini (Linux)
 // applications.
 // TODO(crbug.com/955797): Remove this flag entirely.

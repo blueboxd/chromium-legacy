@@ -63,7 +63,7 @@ class MockNFCReader : public GarbageCollectedFinalized<MockNFCReader>,
   void Trace(blink::Visitor* visitor) override { NFCReader::Trace(visitor); }
 
   MOCK_METHOD1(OnMessage, void(const NDEFMessage& message));
-  MOCK_METHOD1(OnError, void(const NFCError& error));
+  MOCK_METHOD1(OnReadingError, void(const NFCError& error));
 };
 
 class FakeNfcService : public device::mojom::blink::NFC {
@@ -223,7 +223,7 @@ TEST_F(NFCProxyTest, ErrorPath) {
   test::RunPendingTasks();
 
   base::RunLoop loop;
-  EXPECT_CALL(*reader, OnError(_)).WillOnce(Invoke([&](const NFCError&) {
+  EXPECT_CALL(*reader, OnReadingError(_)).WillOnce(Invoke([&](const NFCError&) {
     loop.Quit();
   }));
   DestroyNfcService();

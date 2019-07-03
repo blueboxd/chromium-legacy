@@ -33,10 +33,6 @@ FakeCiceroneClient::FakeCiceroneClient() {
   setup_lxd_container_user_response_.set_status(
       vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS);
 
-  vm_tools::cicerone::AppSearchResponse::AppSearchResult* app =
-      search_app_response_.add_packages();
-  app->set_package_name("fake app");
-
   export_lxd_container_response_.set_status(
       vm_tools::cicerone::ExportLxdContainerResponse::EXPORTING);
 
@@ -243,13 +239,6 @@ void FakeCiceroneClient::SetUpLxdContainerUser(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), setup_lxd_container_user_response_));
-}
-
-void FakeCiceroneClient::SearchApp(
-    const vm_tools::cicerone::AppSearchRequest& request,
-    DBusMethodCallback<vm_tools::cicerone::AppSearchResponse> callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), search_app_response_));
 }
 
 void FakeCiceroneClient::ExportLxdContainer(

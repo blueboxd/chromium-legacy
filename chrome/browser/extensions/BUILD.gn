@@ -1017,6 +1017,8 @@ jumbo_static_library("extensions") {
       "api/image_writer_private/removable_storage_provider_linux.cc",
       "api/messaging/native_message_process_host.cc",
       "api/messaging/native_message_process_host.h",
+      "api/messaging/native_messaging_launch_from_native.cc",
+      "api/messaging/native_messaging_launch_from_native.h",
       "api/messaging/native_process_launcher.cc",
       "api/messaging/native_process_launcher.h",
       "api/messaging/native_process_launcher_win.cc",

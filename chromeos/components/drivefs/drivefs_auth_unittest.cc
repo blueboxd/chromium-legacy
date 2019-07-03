@@ -11,6 +11,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/timer/mock_timer.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom-test-utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -85,6 +86,8 @@ class FakeIdentityService
 
   ~FakeIdentityService() override { mock_->bindings_ = nullptr; }
 
+  void set_auth_enabled(bool enabled) { auth_enabled_ = enabled; }
+
  private:
   void OnBindInterface(const service_manager::BindSourceInfo& source,
                        const std::string& interface_name,
@@ -100,6 +103,9 @@ class FakeIdentityService
   // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override {
+    if (!auth_enabled_) {
+      return;
+    }
     auto account_id = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
     CoreAccountInfo account_info;
     account_info.email = account_id.GetUserEmail();
@@ -128,6 +134,7 @@ class FakeIdentityService
   service_manager::ServiceBinding binding_;
   service_manager::BinderRegistry binder_registry_;
   mojo::BindingSet<identity::mojom::IdentityAccessor> bindings_;
+  bool auth_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityService);
 };
@@ -143,13 +150,19 @@ class DriveFsAuthTest : public ::testing::Test {
     identity_service_ = std::make_unique<FakeIdentityService>(
         &mock_identity_accessor_, &clock_,
         connector_factory_.RegisterInstance(identity::mojom::kServiceName));
+    auto timer = std::make_unique<base::MockOneShotTimer>();
+    timer_ = timer.get();
     delegate_ = std::make_unique<AuthDelegateImpl>(
         connector_factory_.CreateConnector(), account_id_);
-    auth_ = std::make_unique<DriveFsAuth>(
-        &clock_, base::FilePath("/path/to/profile"), delegate_.get());
+    auth_ = std::make_unique<DriveFsAuth>(&clock_,
+                                          base::FilePath("/path/to/profile"),
+                                          std::move(timer), delegate_.get());
   }
 
-  void TearDown() override { auth_.reset(); }
+  void TearDown() override {
+    EXPECT_FALSE(timer_->IsRunning());
+    auth_.reset();
+  }
 
   void ExpectAccessToken(bool use_cached,
                          mojom::AccessTokenStatus expected_status,
@@ -176,6 +189,7 @@ class DriveFsAuthTest : public ::testing::Test {
 
   std::unique_ptr<AuthDelegateImpl> delegate_;
   std::unique_ptr<DriveFsAuth> auth_;
+  base::MockOneShotTimer* timer_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFsAuthTest);
@@ -205,20 +219,39 @@ TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Transient) {
   ExpectAccessToken(false, mojom::AccessTokenStatus::kTransientError, "");
 }
 
-TEST_F(DriveFsAuthTest, GetAccessToken_ParallelRequests) {
+TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Timeout) {
+  identity_service_->set_auth_enabled(false);
   base::RunLoop run_loop;
   auto quit_closure = run_loop.QuitClosure();
   auth_->GetAccessToken(
-      false, base::BindOnce(
-                 [](mojom::AccessTokenStatus status, const std::string& token) {
-                   FAIL() << "Unexpected callback";
+      false, base::BindLambdaForTesting(
+                 [&](mojom::AccessTokenStatus status, const std::string&) {
+                   EXPECT_EQ(mojom::AccessTokenStatus::kAuthError, status);
+                   std::move(quit_closure).Run();
                  }));
+  timer_->Fire();
+  run_loop.Run();
+}
+
+TEST_F(DriveFsAuthTest, GetAccessToken_ParallelRequests) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_identity_accessor_,
+              GetAccessToken("test@example.com", _, "drivefs"))
+      .WillOnce(testing::Return(
+          std::make_pair("auth token", GoogleServiceAuthError::NONE)));
+  auto quit_closure = run_loop.QuitClosure();
+  auth_->GetAccessToken(
+      false, base::BindLambdaForTesting([&](mojom::AccessTokenStatus status,
+                                            const std::string& token) {
+        EXPECT_EQ(mojom::AccessTokenStatus::kSuccess, status);
+        EXPECT_EQ("auth token", token);
+        std::move(quit_closure).Run();
+      }));
   auth_->GetAccessToken(
       false, base::BindLambdaForTesting([&](mojom::AccessTokenStatus status,
                                             const std::string& token) {
         EXPECT_EQ(mojom::AccessTokenStatus::kTransientError, status);
         EXPECT_TRUE(token.empty());
-        std::move(quit_closure).Run();
       }));
   run_loop.Run();
 }

@@ -1781,7 +1781,6 @@ void DocumentLoader::ParseAndPersistClientHints(
 void DocumentLoader::InitializePrefetchedSignedExchangeManager() {
   if (params_->prefetched_signed_exchanges.empty())
     return;
-  DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
   // |prefetched_signed_exchanges| is set only when the page is loaded from a
   // signed exchange.
   DCHECK(GetResponse().IsSignedExchangeInnerResponse());

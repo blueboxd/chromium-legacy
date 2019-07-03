@@ -361,12 +361,13 @@ HRESULT OSUserManager::ChangeUserPassword(const wchar_t* domain,
     flags_changed = true;
   }
 
-  base::string16 password_domain = base::StringPrintf(L"\\\\%ls", domain);
+  base::string16 password_domain = base::StringPrintf(L"%ls", domain);
 
   NET_API_STATUS changepassword_nsts = ::NetUserChangePassword(
       password_domain.c_str(), username, old_password, new_password);
   if (changepassword_nsts != NERR_Success) {
     LOGFN(ERROR) << "Unable to change password for '" << username
+                 << "' domain '" << password_domain
                  << "' nsts=" << changepassword_nsts;
   }
 

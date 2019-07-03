@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/origin_util.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/database/vfs_backend.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -90,11 +90,11 @@ WebDatabaseHostImpl::~WebDatabaseHostImpl() {
 void WebDatabaseHostImpl::Create(
     int process_id,
     scoped_refptr<storage::DatabaseTracker> db_tracker,
-    blink::mojom::WebDatabaseHostRequest request) {
+    mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver) {
   DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebDatabaseHostImpl>(process_id, std::move(db_tracker)),
-      std::move(request));
+      std::move(receiver));
 }
 
 void WebDatabaseHostImpl::OpenFile(const base::string16& vfs_file_name,
@@ -450,15 +450,17 @@ blink::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            [](int process_id, blink::mojom::WebDatabaseRequest request) {
+            [](int process_id,
+               mojo::PendingReceiver<blink::mojom::WebDatabase> receiver) {
               RenderProcessHost* host = RenderProcessHost::FromID(process_id);
               if (host) {
-                content::BindInterface(host, std::move(request));
+                host->BindInterface(blink::mojom::WebDatabase::Name_,
+                                    receiver.PassPipe());
               }
             },
-            process_id_, mojo::MakeRequest(&database_provider_)));
+            process_id_, database_provider_.BindNewPipeAndPassReceiver()));
   }
-  return *database_provider_;
+  return *database_provider_.get();
 }
 
 void WebDatabaseHostImpl::ValidateOrigin(const url::Origin& origin,

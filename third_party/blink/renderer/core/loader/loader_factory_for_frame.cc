@@ -95,7 +95,6 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
   }
 
   if (prefetched_signed_exchange_manager_) {
-    DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
     auto loader =
         prefetched_signed_exchange_manager_->MaybeCreateURLLoader(webreq);
     if (loader)

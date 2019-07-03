@@ -64,14 +64,6 @@ class CrostiniPackageService : public KeyedService,
       const std::string& package_path,
       CrostiniManager::InstallLinuxPackageCallback callback);
 
-  // Install a Linux package via a package_id. If successfully started, a
-  // system notification will be used to display further updates.
-  void InstallLinuxPackageFromApt(
-      const std::string& vm_name,
-      const std::string& container_name,
-      const std::string& package_id,
-      CrostiniManager::InstallLinuxPackageCallback callback);
-
   // LinuxPackageOperationProgressObserver:
   void OnInstallLinuxPackageProgress(const std::string& vm_name,
                                      const std::string& container_name,

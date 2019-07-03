@@ -124,13 +124,6 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void SearchAppCallback(base::OnceClosure closure,
-                         const std::vector<std::string>& expected_result,
-                         const std::vector<std::string>& result) {
-    EXPECT_THAT(result, testing::ContainerEq(expected_result));
-    std::move(closure).Run();
-  }
-
   void GetLinuxPackageInfoFromAptCallback(
       base::OnceClosure closure,
       const LinuxPackageInfo& expected_result,
@@ -1197,92 +1190,6 @@ TEST_F(CrostiniManagerTest, ImportContainerFailOnVmStop) {
           &ExpectCrostiniResult, run_loop()->QuitClosure(),
           CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED));
   crostini_manager()->StopVm(kVmName, base::DoNothing());
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, SearchAppSuccess) {
-  vm_tools::cicerone::AppSearchResponse response;
-  vm_tools::cicerone::AppSearchResponse::AppSearchResult* app =
-      response.add_packages();
-  app->set_package_name("fake app");
-  app = response.add_packages();
-  app->set_package_name("fake app1");
-  app = response.add_packages();
-  app->set_package_name("fake app2");
-  fake_cicerone_client_->set_search_app_response(response);
-  std::vector<std::string> expected = {"fake app", "fake app1", "fake app2"};
-  crostini_manager()->SearchApp(
-      kVmName, kContainerName, "fake ap",
-      base::BindOnce(&CrostiniManagerTest::SearchAppCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     expected));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, SearchAppNoResults) {
-  vm_tools::cicerone::AppSearchResponse response;
-  fake_cicerone_client_->set_search_app_response(response);
-  std::vector<std::string> expected = {};
-  crostini_manager()->SearchApp(
-      kVmName, kContainerName, "fake ap",
-      base::BindOnce(&CrostiniManagerTest::SearchAppCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     expected));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, GetLinuxPackageInfoFromAptFailedToGetInfo) {
-  const char kFailMessage[] = "Failed to get package info.";
-  vm_tools::cicerone::LinuxPackageInfoResponse response;
-  response.set_success(false);
-  response.set_failure_reason(kFailMessage);
-  fake_cicerone_client_->set_linux_package_info_response(response);
-  LinuxPackageInfo expected;
-  expected.success = false;
-  expected.failure_reason = kFailMessage;
-  crostini_manager()->GetLinuxPackageInfoFromApt(
-      kVmName, kContainerName, "fake app",
-      base::BindOnce(&CrostiniManagerTest::GetLinuxPackageInfoFromAptCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     expected));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, GetLinuxPackageInfoFromAptInvalidID) {
-  vm_tools::cicerone::LinuxPackageInfoResponse response;
-  response.set_success(true);
-  response.set_package_id("Bad;;id;");
-  fake_cicerone_client_->set_linux_package_info_response(response);
-  LinuxPackageInfo expected;
-  expected.success = false;
-  expected.failure_reason = "Linux package info contained invalid package id.";
-  crostini_manager()->GetLinuxPackageInfoFromApt(
-      kVmName, kContainerName, "fake app",
-      base::BindOnce(&CrostiniManagerTest::GetLinuxPackageInfoFromAptCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     expected));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, GetLinuxPackageInfoFromAptSuccess) {
-  vm_tools::cicerone::LinuxPackageInfoResponse response;
-  response.set_success(true);
-  response.set_package_id("good;1.1;id;");
-  response.set_summary("A summary");
-  response.set_description("A description");
-  fake_cicerone_client_->set_linux_package_info_response(response);
-  LinuxPackageInfo expected;
-  expected.success = true;
-  expected.package_id = "good;1.1;id;";
-  expected.name = "good";
-  expected.version = "1.1";
-  expected.summary = "A summary";
-  expected.description = "A description";
-  crostini_manager()->GetLinuxPackageInfoFromApt(
-      kVmName, kContainerName, "fake app",
-      base::BindOnce(&CrostiniManagerTest::GetLinuxPackageInfoFromAptCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     expected));
   run_loop()->Run();
 }
 

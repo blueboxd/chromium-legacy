@@ -51,7 +51,7 @@ bool NativelyConnectableHandler::Parse(Extension* extension,
 
   auto hosts = std::make_unique<NativelyConnectableHosts>();
   for (const auto& host : natively_connectable_hosts->GetList()) {
-    if (!host.is_string()) {
+    if (!host.is_string() || host.GetString().empty()) {
       *error =
           base::ASCIIToUTF16(manifest_errors::kInvalidNativelyConnectableValue);
       return false;

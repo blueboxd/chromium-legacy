@@ -1,0 +1,11 @@
+typedef (DOMString or ArrayBuffer or NDEFMessage) NDEFMessageSource;
+
+[
+  RuntimeEnabled=WebNFC,
+  SecureContext,
+  Constructor(),
+  ConstructorCallWith=ExecutionContext,
+  Exposed=Window
+] interface NFCWriter {
+  [CallWith=ScriptState] Promise<void> push (NDEFMessageSource message, optional NFCPushOptions options);
+};

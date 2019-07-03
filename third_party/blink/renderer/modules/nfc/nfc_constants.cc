@@ -43,5 +43,7 @@ const char kNfcUrlPatternError[] = "Invalid URL pattern was provided.";
 const char kNfcInvalidPushTimeout[] =
     "Invalid NFCPushOptions.timeout value was provided.";
 const char kNfcWatchIdNotFound[] = "Provided watch id cannot be found.";
+const char kNfcAccessInNonTopFrame[] =
+    "NFC interfaces are only avaliable in a top-level browsing context";
 
 }  // namespace blink

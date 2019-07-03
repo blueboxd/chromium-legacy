@@ -3513,9 +3513,9 @@ bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(
   auto* node = GetLayoutObject().GetNode();
   if (!node)
     return false;
-  if (target == DisplayLockContextLifecycleTarget::kSelf &&
-      node->IsElementNode()) {
-    if (auto* context = ToElement(node)->GetDisplayLockContext()) {
+  auto* element = DynamicTo<Element>(node);
+  if (target == DisplayLockContextLifecycleTarget::kSelf && element) {
+    if (auto* context = element->GetDisplayLockContext()) {
       if (!context->ShouldPaint(DisplayLockContext::kSelf))
         return true;
     }

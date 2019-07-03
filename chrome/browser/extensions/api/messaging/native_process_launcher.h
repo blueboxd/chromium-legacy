@@ -44,11 +44,14 @@ class NativeProcessLauncher {
   // window that contains calling page. Can be nullptr, e.g. for background
   // pages. If |profile_directory| is non-empty and the host supports
   // native-initiated connections, additional reconnect args will be passed to
-  // the host.
+  // the host. If |require_native_initiated_connections| is true, the connection
+  // will be allowed only if the native messaging host sets
+  // "supports_native_initiated_connections" to true in its manifest.
   static std::unique_ptr<NativeProcessLauncher> CreateDefault(
       bool allow_user_level_hosts,
       gfx::NativeView native_view,
-      const base::FilePath& profile_directory);
+      const base::FilePath& profile_directory,
+      bool require_native_initiated_connections);
 
   NativeProcessLauncher() {}
   virtual ~NativeProcessLauncher() {}

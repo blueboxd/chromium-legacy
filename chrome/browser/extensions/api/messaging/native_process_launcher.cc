@@ -46,7 +46,8 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
  public:
   NativeProcessLauncherImpl(bool allow_user_level_hosts,
                             intptr_t native_window,
-                            const base::FilePath& profile_directory);
+                            const base::FilePath& profile_directory,
+                            bool require_native_initiated_connections);
   ~NativeProcessLauncherImpl() override;
 
   void Launch(const GURL& origin,
@@ -58,7 +59,8 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
    public:
     Core(bool allow_user_level_hosts,
          intptr_t native_window,
-         const base::FilePath& profile_directory);
+         const base::FilePath& profile_directory,
+         bool require_native_initiated_connections);
     void Launch(const GURL& origin,
                 const std::string& native_host_name,
                 const LaunchedCallback& callback);
@@ -84,10 +86,11 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
     bool detached_;
 
-    bool allow_user_level_hosts_;
+    const bool allow_user_level_hosts_;
 
-    base::FilePath profile_directory_;
+    const base::FilePath profile_directory_;
 
+    const bool require_native_initiated_connections_;
 #if defined(OS_WIN)
     // Handle of the native window corresponding to the extension.
     intptr_t window_handle_;
@@ -103,10 +106,13 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
 NativeProcessLauncherImpl::Core::Core(bool allow_user_level_hosts,
                                       intptr_t window_handle,
-                                      const base::FilePath& profile_directory)
+                                      const base::FilePath& profile_directory,
+                                      bool require_native_initiated_connections)
     : detached_(false),
       allow_user_level_hosts_(allow_user_level_hosts),
-      profile_directory_(profile_directory)
+      profile_directory_(profile_directory),
+      require_native_initiated_connections_(
+          require_native_initiated_connections)
 #if defined(OS_WIN)
       ,
       window_handle_(window_handle)
@@ -172,6 +178,12 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
 
   if (!manifest->allowed_origins().MatchesSecurityOrigin(origin)) {
     // Not an allowed origin.
+    PostErrorResult(callback, RESULT_FORBIDDEN);
+    return;
+  }
+
+  if (require_native_initiated_connections_ &&
+      !manifest->supports_native_initiated_connections()) {
     PostErrorResult(callback, RESULT_FORBIDDEN);
     return;
   }
@@ -300,9 +312,12 @@ void NativeProcessLauncherImpl::Core::PostResult(
 NativeProcessLauncherImpl::NativeProcessLauncherImpl(
     bool allow_user_level_hosts,
     intptr_t window_handle,
-    const base::FilePath& profile_directory)
-    : core_(
-          new Core(allow_user_level_hosts, window_handle, profile_directory)) {}
+    const base::FilePath& profile_directory,
+    bool require_native_initiated_connections)
+    : core_(new Core(allow_user_level_hosts,
+                     window_handle,
+                     profile_directory,
+                     require_native_initiated_connections)) {}
 
 NativeProcessLauncherImpl::~NativeProcessLauncherImpl() {
   core_->Detach();
@@ -320,14 +335,16 @@ void NativeProcessLauncherImpl::Launch(const GURL& origin,
 std::unique_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
     bool allow_user_level_hosts,
     gfx::NativeView native_view,
-    const base::FilePath& profile_directory) {
+    const base::FilePath& profile_directory,
+    bool require_native_initiated_connections) {
   intptr_t window_handle = 0;
 #if defined(OS_WIN)
   window_handle = reinterpret_cast<intptr_t>(
       views::HWNDForNativeView(native_view));
 #endif
   return std::make_unique<NativeProcessLauncherImpl>(
-      allow_user_level_hosts, window_handle, profile_directory);
+      allow_user_level_hosts, window_handle, profile_directory,
+      require_native_initiated_connections);
 }
 
 }  // namespace extensions

@@ -1205,23 +1205,6 @@ void CrostiniManager::GetLinuxPackageInfo(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::GetLinuxPackageInfoFromApt(
-    const std::string& vm_name,
-    const std::string& container_name,
-    const std::string& package_name,
-    GetLinuxPackageInfoCallback callback) {
-  vm_tools::cicerone::LinuxPackageInfoRequest request;
-  request.set_owner_id(owner_id_);
-  request.set_vm_name(vm_name);
-  request.set_container_name(container_name);
-  request.set_package_name(package_name);
-
-  GetCiceroneClient()->GetLinuxPackageInfo(
-      std::move(request),
-      base::BindOnce(&CrostiniManager::OnGetLinuxPackageInfo,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void CrostiniManager::InstallLinuxPackage(
     std::string vm_name,
     std::string container_name,
@@ -1454,23 +1437,6 @@ void CrostiniManager::OnListUsbDevices(
     mount_points.push_back(std::make_pair(vm_name, dev.guest_port()));
   }
   std::move(callback).Run(/*success=*/true, std::move(mount_points));
-}
-
-void CrostiniManager::SearchApp(const std::string& vm_name,
-                                const std::string& container_name,
-                                const std::string& query,
-                                SearchAppCallback callback) {
-  vm_tools::cicerone::AppSearchRequest request;
-
-  request.set_owner_id(owner_id_);
-  request.set_vm_name(std::move(vm_name));
-  request.set_container_name(std::move(container_name));
-  request.set_query(query);
-
-  GetCiceroneClient()->SearchApp(
-      std::move(request),
-      base::BindOnce(&CrostiniManager::OnSearchApp,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 CrostiniManager::RestartId CrostiniManager::RestartCrostini(
@@ -2332,20 +2298,6 @@ void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
     // Mount shared devices
     chromeos::CrosUsbDetector::Get()->ConnectSharedDevicesOnVmStartup();
   }
-}
-
-void CrostiniManager::OnSearchApp(
-    SearchAppCallback callback,
-    base::Optional<vm_tools::cicerone::AppSearchResponse> response) {
-  std::vector<std::string> package_names;
-  if (!response) {
-    LOG(ERROR) << "Failed to SearchApp. Empty response.";
-    std::move(callback).Run(package_names);
-    return;
-  }
-  for (auto& package : response->packages())
-    package_names.push_back(package.package_name());
-  std::move(callback).Run(package_names);
 }
 
 void CrostiniManager::OnExportLxdContainer(

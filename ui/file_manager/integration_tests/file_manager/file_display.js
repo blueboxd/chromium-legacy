@@ -766,10 +766,7 @@ async function unmountRemovableVolume(removableDirectory) {
   if (removableDirectory === 'partition-1' ||
       removableDirectory === 'partition-2') {
     const partitionQuery = `#file-list [file-name="${removableDirectory}"]`;
-    const partitionFiles = [
-      ENTRIES.hello.getExpectedRow(),
-      ['Folder', '--', 'Folder', Date()],
-    ];
+    const partitionFiles = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
     await remoteCall.callRemoteTestUtil(
         'fakeMouseDoubleClick', appId, [partitionQuery]);
     await remoteCall.waitUntilCurrentDirectoryIsChanged(

@@ -744,91 +744,6 @@ class LocalTestVolume : public TestVolume {
   DISALLOW_COPY_AND_ASSIGN(LocalTestVolume);
 };
 
-// Removable TestVolume: local test volume for external media devices.
-class RemovableTestVolume : public LocalTestVolume {
- public:
-  RemovableTestVolume(const std::string& name,
-                      VolumeType volume_type,
-                      chromeos::DeviceType device_type,
-                      const base::FilePath& device_path,
-                      const std::string& drive_label)
-      : LocalTestVolume(name),
-        volume_type_(volume_type),
-        device_type_(device_type),
-        device_path_(device_path),
-        drive_label_(drive_label) {}
-  ~RemovableTestVolume() override = default;
-
-  bool PreparePartitionTestEntries(Profile* profile) {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Create fake file on the removable volume.
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
-                                                 "text.txt", "hello.txt")
-                    .SetMimeType("text/plain"));
-
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
-                                                 "", "Folder"));
-    base::RunLoop().RunUntilIdle();
-    return true;
-  }
-
-  bool PrepareUsbTestEntries(Profile* profile) {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Create fake file on the removable volume.
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
-                                                 "text.txt", "hello.txt")
-                    .SetMimeType("text/plain"));
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
-                                                 "", "Folder"));
-
-    base::RunLoop().RunUntilIdle();
-    return true;
-  }
-
-  bool Mount(Profile* profile) override {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Revoke name() mount point first, then re-add its mount point.
-    GetMountPoints()->RevokeFileSystem(name());
-    const bool added = GetMountPoints()->RegisterFileSystem(
-        name(), storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(), root_path());
-    if (!added)
-      return false;
-
-    // Expose the mount point with the given volume and device type.
-    VolumeManager::Get(profile)->AddVolumeForTesting(
-        root_path(), volume_type_, device_type_, read_only_, device_path_,
-        drive_label_);
-    base::RunLoop().RunUntilIdle();
-    return true;
-  }
-
-  void Unmount(Profile* profile) {
-    VolumeManager::Get(profile)->RemoveVolumeForTesting(
-        root_path(), volume_type_, device_type_, read_only_, device_path_,
-        drive_label_);
-  }
-
- private:
-  storage::ExternalMountPoints* GetMountPoints() {
-    return storage::ExternalMountPoints::GetSystemInstance();
-  }
-
-  const VolumeType volume_type_;
-  const chromeos::DeviceType device_type_;
-  const base::FilePath device_path_;
-  const bool read_only_ = false;
-  const std::string drive_label_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemovableTestVolume);
-};
-
 // DownloadsTestVolume: local test volume for the "Downloads" directory.
 class DownloadsTestVolume : public LocalTestVolume {
  public:
@@ -973,15 +888,7 @@ class FakeTestVolume : public LocalTestVolume {
   }
 
   bool Mount(Profile* profile) override {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Revoke name() mount point first, then re-add its mount point.
-    GetMountPoints()->RevokeFileSystem(name());
-    const bool added = GetMountPoints()->RegisterFileSystem(
-        name(), storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(), root_path());
-    if (!added)
+    if (!MountSetup(profile))
       return false;
 
     // Expose the mount point with the given volume and device type.
@@ -996,16 +903,73 @@ class FakeTestVolume : public LocalTestVolume {
         root_path(), volume_type_, device_type_, read_only_);
   }
 
- private:
+ protected:
   storage::ExternalMountPoints* GetMountPoints() {
     return storage::ExternalMountPoints::GetSystemInstance();
+  }
+
+  bool MountSetup(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Revoke name() mount point first, then re-add its mount point.
+    GetMountPoints()->RevokeFileSystem(name());
+    const bool added = GetMountPoints()->RegisterFileSystem(
+        name(), storage::kFileSystemTypeNativeLocal,
+        storage::FileSystemMountOption(), root_path());
+    if (!added)
+      return false;
+
+    return true;
   }
 
   const VolumeType volume_type_;
   const chromeos::DeviceType device_type_;
   const bool read_only_ = false;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FakeTestVolume);
+};
+
+// Removable TestVolume: local test volume for external media devices.
+class RemovableTestVolume : public FakeTestVolume {
+ public:
+  RemovableTestVolume(const std::string& name,
+                      VolumeType volume_type,
+                      chromeos::DeviceType device_type,
+                      const base::FilePath& device_path,
+                      const std::string& drive_label,
+                      const std::string& file_system_type)
+      : FakeTestVolume(name, volume_type, device_type),
+        device_path_(device_path),
+        drive_label_(drive_label),
+        file_system_type_(file_system_type) {}
+  ~RemovableTestVolume() override = default;
+
+  bool Mount(Profile* profile) override {
+    if (!MountSetup(profile))
+      return false;
+
+    // Expose the mount point with the given volume and device type.
+    VolumeManager::Get(profile)->AddVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_, file_system_type_);
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_, file_system_type_);
+  }
+
+ private:
+  const base::FilePath device_path_;
+  const std::string drive_label_;
+  const std::string file_system_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovableTestVolume);
 };
 
 // DriveTestVolume: test volume for Google Drive.
@@ -2000,9 +1964,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "mountFakeUsb" || name == "mountFakeUsbEmpty" ||
       name == "mountFakeUsbDcim") {
-    usb_volume_ = std::make_unique<FakeTestVolume>(
+    std::string file_system = "ext4";
+    const std::string* file_system_param = value.FindStringKey("filesystem");
+    if (file_system_param) {
+      file_system = *file_system_param;
+    }
+    usb_volume_ = std::make_unique<RemovableTestVolume>(
         "fake-usb", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB);
+        chromeos::DEVICE_TYPE_USB, base::FilePath(), "FAKEUSB", file_system);
 
     if (name == "mountFakeUsb")
       ASSERT_TRUE(usb_volume_->PrepareTestEntries(profile()));
@@ -2016,6 +1985,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "unmountUsb") {
     DCHECK(usb_volume_);
     usb_volume_->Unmount(profile());
+    return;
   }
 
   if (name == "mountUsbWithPartitions") {
@@ -2028,14 +1998,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     // Create partition volumes with the same device path and drive label.
     partition_1_ = std::make_unique<RemovableTestVolume>(
         "partition-1", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label", "ext4");
     partition_2_ = std::make_unique<RemovableTestVolume>(
         "partition-2", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label", "ext4");
 
     // Create fake entries on partitions.
-    ASSERT_TRUE(partition_1_->PreparePartitionTestEntries(profile()));
-    ASSERT_TRUE(partition_2_->PreparePartitionTestEntries(profile()));
+    ASSERT_TRUE(partition_1_->PrepareTestEntries(profile()));
+    ASSERT_TRUE(partition_2_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(partition_1_->Mount(profile()));
     ASSERT_TRUE(partition_2_->Mount(profile()));

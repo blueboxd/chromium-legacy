@@ -173,18 +173,6 @@ void CrostiniPackageService::InstallLinuxPackage(
                      std::move(callback)));
 }
 
-void CrostiniPackageService::InstallLinuxPackageFromApt(
-    const std::string& vm_name,
-    const std::string& container_name,
-    const std::string& package_id,
-    CrostiniManager::InstallLinuxPackageCallback callback) {
-  CrostiniManager::GetForProfile(profile_)->InstallLinuxPackageFromApt(
-      vm_name, container_name, package_id,
-      base::BindOnce(&CrostiniPackageService::OnInstallLinuxPackage,
-                     weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
-                     std::move(callback)));
-}
-
 void CrostiniPackageService::OnInstallLinuxPackageProgress(
     const std::string& vm_name,
     const std::string& container_name,

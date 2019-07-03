@@ -221,11 +221,8 @@
             'fakeMouseClick', appId, [PARTITION_QUERY]),
         'fakeMouseClick failed');
 
-    // Check: the 'hello.txt' file should appear in the file list.
-    const files = [
-      ENTRIES.hello.getExpectedRow(),
-      ['Folder', '--', 'Folder', Date()],
-    ];
+    // Check: the USB files should appear in the file list.
+    const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
     await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
     // Open the file in Quick View.

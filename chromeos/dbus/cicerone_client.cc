@@ -321,27 +321,6 @@ class CiceroneClientImpl : public CiceroneClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void SearchApp(const vm_tools::cicerone::AppSearchRequest& request,
-                 DBusMethodCallback<vm_tools::cicerone::AppSearchResponse>
-                     callback) override {
-    dbus::MethodCall method_call(vm_tools::cicerone::kVmCiceroneInterface,
-                                 vm_tools::cicerone::kAppSearchMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode AppSearchRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    cicerone_proxy_->CallMethod(
-        &method_call, kDefaultTimeout.InMilliseconds(),
-        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
-                           vm_tools::cicerone::AppSearchResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void ExportLxdContainer(
       const vm_tools::cicerone::ExportLxdContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::ExportLxdContainerResponse>

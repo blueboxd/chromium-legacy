@@ -73,7 +73,7 @@ void TextElementTiming::OnTextObjectsPainted(
 
     // Text aggregators should be Elements!
     DCHECK(node->IsElementNode());
-    Element* element = ToElement(node);
+    auto* element = To<Element>(node);
     const AtomicString& attr =
         element->FastGetAttribute(html_names::kElementtimingAttr);
     if (attr.IsEmpty())

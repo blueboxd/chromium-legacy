@@ -108,13 +108,10 @@ LinkHeader::LinkHeader(Iterator begin, Iterator end) : is_valid_(true) {
   // According to Section 5.2 of RFC 5988, "anchor" parameters in Link headers
   // must be either respected, or the entire header must be ignored:
   // https://tools.ietf.org/html/rfc5988#section-5.2
-  // Blink uses "anchor" parameters only when SignedExchangeSubresourcePrefetch
-  // is enabled and the rel is "alternate".
-  if (anchor_.has_value() &&
-      (!RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled() ||
-       rel_ != "alternate")) {
+  // Blink uses "anchor" parameters only for SignedExchangeSubresourcePrefetch
+  // and the rel is "alternate".
+  if (anchor_.has_value() && rel_ != "alternate")
     is_valid_ = false;
-  }
 }
 
 LinkHeaderSet::LinkHeaderSet(const String& header) {

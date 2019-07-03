@@ -872,17 +872,17 @@
 
     // Mount removable volumes.
     await sendTestMessage({name: 'mountUsbWithPartitions'});
-    await sendTestMessage({name: 'mountFakeUsb'});
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ext4'});
 
     // Open Files app on local Downloads.
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
-    // Check the context menu for single partition USB.
+    // Check the context menu for single partition ext4 USB.
     await checkContextMenu(
         appId, '/fake-usb', singleUsbMenus, true /* rootMenu */);
 
-    // Check the context menu for a folder inside a singlue USB partition.
+    // Check the context menu for a folder inside a single USB partition.
     await checkContextMenu(
         appId, '/fake-usb/A', folderMenus, false /* rootMenu */);
 
@@ -897,8 +897,7 @@
 
     // Check the context menu for a folder inside a partition1.
     await checkContextMenu(
-        appId, '/Drive Label/partition-1/Folder', folderMenus,
-        false /* rootMenu */);
+        appId, '/Drive Label/partition-1/A', folderMenus, false /* rootMenu */);
   };
 
   /**

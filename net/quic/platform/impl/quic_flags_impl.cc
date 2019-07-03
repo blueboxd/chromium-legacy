@@ -203,7 +203,7 @@ std::vector<std::string> QuicParseCommandLineFlagsImpl(
   }
 
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest = logging::LOG_TO_STDERR;
   CHECK(logging::InitLogging(settings));
 
   return result.non_flag_args;

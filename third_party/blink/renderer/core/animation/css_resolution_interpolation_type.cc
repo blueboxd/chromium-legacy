@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/css_resolution_interpolation_type.h"
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 namespace blink {
@@ -30,8 +31,9 @@ const CSSValue* CSSResolutionInterpolationType::CreateCSSValue(
     const InterpolableValue& value,
     const NonInterpolableValue*,
     const StyleResolverState&) const {
-  return CSSPrimitiveValue::Create(ToInterpolableNumber(value).Value(),
-                                   CSSPrimitiveValue::UnitType::kDotsPerPixel);
+  return CSSNumericLiteralValue::Create(
+      ToInterpolableNumber(value).Value(),
+      CSSPrimitiveValue::UnitType::kDotsPerPixel);
 }
 
 }  // namespace blink

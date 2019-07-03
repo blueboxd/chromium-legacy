@@ -436,7 +436,9 @@ void OpenSLESOutputStream::FillBufferQueueNoLock() {
         reinterpret_cast<int16_t*>(audio_data_[active_buffer_index_]));
   } else {
     DCHECK_EQ(sample_format_, kSampleFormatF32);
-    audio_bus_->ToInterleaved<Float32SampleTypeTraits>(
+
+    // We skip clipping since that occurs at the shared memory boundary.
+    audio_bus_->ToInterleaved<Float32SampleTypeTraitsNoClip>(
         frames_filled,
         reinterpret_cast<float*>(audio_data_[active_buffer_index_]));
   }

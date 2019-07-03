@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/icon/icon_size.h"
+#include "components/payments/core/error_strings.h"
 #include "components/payments/core/url_util.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -290,9 +291,6 @@ void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
     content::WebContents* source) {
   DCHECK(source == web_contents());
   if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source)) {
-    log_.Error("Aborting payment handler window \"" + target_.spec() +
-               "\" because of insecure certificate state on \"" +
-               source->GetVisibleURL().spec() + "\"");
     AbortPayment();
   }
 }
@@ -330,9 +328,6 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
 
   if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
-    log_.Error("Aborting payment handler window \"" + target_.spec() +
-               "\" because of navigation to an insecure url \"" +
-               navigation_handle->GetURL().spec() + "\"");
     AbortPayment();
     return;
   }
@@ -353,9 +348,6 @@ void PaymentHandlerWebFlowViewController::TitleWasSet(
 }
 
 void PaymentHandlerWebFlowViewController::DidAttachInterstitialPage() {
-  log_.Error("Aborting payment handler window \"" + target_.spec() +
-             "\" because of navigation to a page with invalid certificate "
-             "state or malicious content.");
   AbortPayment();
 }
 
@@ -363,7 +355,7 @@ void PaymentHandlerWebFlowViewController::AbortPayment() {
   if (web_contents())
     web_contents()->Close();
 
-  dialog()->ShowErrorMessage();
+  state()->OnPaymentResponseError(errors::kPaymentHandlerInsecureNavigation);
 }
 
 }  // namespace payments

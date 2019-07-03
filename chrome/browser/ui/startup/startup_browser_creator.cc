@@ -479,9 +479,6 @@ void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
 // static
 void StartupBrowserCreator::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-#if defined(OS_WIN)
-  registry->RegisterBooleanPref(prefs::kWelcomePageOnOSUpgradeEnabled, true);
-#endif
 #if !defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kPromotionalTabsEnabled, true);
   registry->RegisterBooleanPref(prefs::kCommandLineFlagSecurityWarningsEnabled,

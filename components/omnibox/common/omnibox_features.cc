@@ -4,6 +4,8 @@
 
 #include "components/omnibox/common/omnibox_features.h"
 
+#include "build/build_config.h"
+
 namespace omnibox {
 
 // Feature used to hide the scheme from steady state URLs displayed in the
@@ -255,8 +257,14 @@ const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
 // Feature used to dedupe Google Drive URLs between different formats.
 // OmniboxDocumentProvider arms may wish to enable this, though it may also be
 // run on its own.
-const base::Feature kDedupeGoogleDriveURLs{"OmniboxDedupeGoogleDriveURLs",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDedupeGoogleDriveURLs {
+  "OmniboxDedupeGoogleDriveURLs",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature to replace the standard ZeroSuggest with icons for most visited sites
 // and collections (bookmarks, history, recent tabs, reading list). Only
@@ -286,6 +294,11 @@ const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing
 // URL bar (the omnibox).
 const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to provide non personalized head search suggestion from a compact
+// on device model.
+const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox

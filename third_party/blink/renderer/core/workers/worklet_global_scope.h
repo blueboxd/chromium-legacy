@@ -129,7 +129,8 @@ class CORE_EXPORT WorkletGlobalScope
   // thread.
   WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                      WorkerReportingProxy&,
-                     LocalFrame*);
+                     LocalFrame*,
+                     Agent* = nullptr);
   // Constructs an instance as a threaded worklet. Must be called on a worker
   // thread.
   WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -153,7 +154,8 @@ class CORE_EXPORT WorkletGlobalScope
                      v8::Isolate*,
                      ThreadType,
                      LocalFrame*,
-                     WorkerThread*);
+                     WorkerThread*,
+                     Agent*);
 
   EventTarget* ErrorEventTarget() final { return nullptr; }
 

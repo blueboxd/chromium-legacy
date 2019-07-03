@@ -24,11 +24,13 @@ using testing::UnorderedElementsAre;
 class PolicyTest : public testing::Test {
  public:
   void SetUp() override {
-    document_ = MakeGarbageCollected<Document>();
-    document_->SetSecurityOrigin(SecurityOrigin::CreateFromString(kSelfOrigin));
-    document_->ApplyFeaturePolicyFromHeader(
-        "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
-        "https://example.com https://example.net");
+    DocumentInit init =
+        DocumentInit::Create()
+            .WithOriginToCommit(SecurityOrigin::CreateFromString(kSelfOrigin))
+            .WithFeaturePolicyHeader(
+                "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
+                "https://example.com https://example.net");
+    document_ = MakeGarbageCollected<Document>(init);
   }
 
   DOMFeaturePolicy* GetPolicy() const { return policy_; }

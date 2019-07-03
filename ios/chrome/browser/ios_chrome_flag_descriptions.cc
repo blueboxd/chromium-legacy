@@ -336,6 +336,12 @@ const char kOmniboxUseDefaultSearchEngineFaviconName[] =
 const char kOmniboxUseDefaultSearchEngineFaviconDescription[] =
     "Shows default search engine favicon in the omnibox";
 
+const char kOmniboxOnDeviceHeadSuggestionsName[] =
+    "Omnibox on device head suggestions";
+const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
+    "Shows Google head non personalized search suggestions provided by a "
+    "compact on device model";
+
 const char kOnlyNewPasswordFormParsingName[] =
     "Use only new password form parsing";
 const char kOnlyNewPasswordFormParsingDescription[] =

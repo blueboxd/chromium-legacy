@@ -82,15 +82,6 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // exist.
   scoped_refptr<MainThreadTaskQueue> VeryHighPriorityTaskQueue();
 
-  enum WebSchedulingTaskQueueType : unsigned {
-    kWebSchedulingUserVisiblePriority,
-    kWebSchedulingBestEffortPriority,
-    kWebSchedulingPriorityCount
-  };
-  // Return the Scheduling API task queue for the given priority.
-  scoped_refptr<MainThreadTaskQueue> ExperimentalWebSchedulingTaskQueue(
-      WebSchedulingTaskQueueType);
-
   // Return the non-loading task queue associated with the given queue traits,
   // and created it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
@@ -122,7 +113,6 @@ class PLATFORM_EXPORT FrameTaskQueueController {
 
   void CreateLoadingTaskQueue();
   void CreateLoadingControlTaskQueue();
-  void CreateWebSchedulingTaskQueue(WebSchedulingTaskQueueType task_queue_type);
   void CreateNonLoadingTaskQueue(MainThreadTaskQueue::QueueTraits);
 
   void TaskQueueCreated(const scoped_refptr<MainThreadTaskQueue>&);
@@ -151,9 +141,6 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   scoped_refptr<MainThreadTaskQueue> best_effort_task_queue_;
 
   scoped_refptr<MainThreadTaskQueue> very_high_priority_task_queue_;
-
-  scoped_refptr<MainThreadTaskQueue>
-      web_scheduling_task_queues_[kWebSchedulingPriorityCount];
 
   using NonLoadingTaskQueueMap =
       WTF::HashMap<MainThreadTaskQueue::QueueTraitsKeyType,

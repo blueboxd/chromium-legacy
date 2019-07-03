@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
@@ -255,8 +256,8 @@ CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
     else
       return nullptr;
     range.ConsumeIncludingWhitespace();
-    return CSSPrimitiveValue::Create(percent,
-                                     CSSPrimitiveValue::UnitType::kPercentage);
+    return CSSNumericLiteralValue::Create(
+        percent, CSSPrimitiveValue::UnitType::kPercentage);
   }
   return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, css_parser_mode, kValueRangeAll);

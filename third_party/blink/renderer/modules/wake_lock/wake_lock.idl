@@ -13,5 +13,6 @@ enum WakeLockType {
   Exposed=Window,
   RuntimeEnabled=WakeLock
 ] interface WakeLock {
+  [CallWith=ScriptState, Exposed=Window] static Promise<PermissionState> requestPermission(WakeLockType type);
   [CallWith=ScriptState] static Promise<void> request(WakeLockType type, optional WakeLockRequestOptions options);
 };

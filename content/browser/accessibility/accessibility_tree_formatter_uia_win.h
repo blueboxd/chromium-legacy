@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UIA_WIN_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UIA_WIN_H_
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 
 #include <ole2.h>
 #include <stdint.h>
@@ -16,7 +16,7 @@
 #include "base/win/scoped_variant.h"
 namespace content {
 
-class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatter {
+class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
  public:
   AccessibilityTreeFormatterUia();
 

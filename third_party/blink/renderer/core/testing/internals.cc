@@ -890,7 +890,7 @@ DOMWindow* Internals::pagePopupWindow() const {
         To<LocalDOMWindow>(page->GetChromeClient().PagePopupWindowForTesting());
     if (popup) {
       // We need to make the popup same origin so web tests can access it.
-      popup->document()->UpdateSecurityOrigin(
+      popup->document()->SetSecurityOriginForTesting(
           document_->GetMutableSecurityOrigin());
     }
     return popup;

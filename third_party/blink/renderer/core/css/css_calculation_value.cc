@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -177,7 +178,7 @@ CSSCalcPrimitiveValue* CSSCalcPrimitiveValue::Create(
   if (std::isnan(value) || std::isinf(value))
     return nullptr;
   return MakeGarbageCollected<CSSCalcPrimitiveValue>(
-      CSSPrimitiveValue::Create(value, type), is_integer);
+      CSSNumericLiteralValue::Create(value, type), is_integer);
 }
 
 CSSCalcPrimitiveValue::CSSCalcPrimitiveValue(CSSPrimitiveValue* value,
@@ -702,7 +703,7 @@ class CSSCalcExpressionNodeParser {
       return nullptr;
 
     return CSSCalcPrimitiveValue::Create(
-        CSSPrimitiveValue::Create(token.NumericValue(), type),
+        CSSNumericLiteralValue::Create(token.NumericValue(), type),
         token.GetNumericValueType() == kIntegerValueType);
   }
 
@@ -818,10 +819,10 @@ CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(double pixels,
                                                           double percent) {
   return CreateExpressionNode(
       CreateExpressionNode(
-          CSSPrimitiveValue::Create(percent,
-                                    CSSPrimitiveValue::UnitType::kPercentage),
+          CSSNumericLiteralValue::Create(
+              percent, CSSPrimitiveValue::UnitType::kPercentage),
           percent == trunc(percent)),
-      CreateExpressionNode(CSSPrimitiveValue::Create(
+      CreateExpressionNode(CSSNumericLiteralValue::Create(
                                pixels, CSSPrimitiveValue::UnitType::kPixels),
                            pixels == trunc(pixels)),
       CSSMathOperator::kAdd);

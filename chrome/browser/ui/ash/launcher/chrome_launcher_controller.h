@@ -149,6 +149,11 @@ class ChromeLauncherController
   // the association of |contents| with an app.
   void UpdateAppState(content::WebContents* contents, bool remove);
 
+  // Updates app state for all tabs where a specific v1 app is running.
+  // This call is necessary if an app has been created for an existing
+  // web page (see IDC_CREATE_SHORTCUT).
+  void UpdateV1AppState(const std::string& app_id);
+
   // Returns ShelfID for |contents|. If |contents| is not an app or is not
   // pinned, returns the id of browser shrotcut.
   ash::ShelfID GetShelfIDForWebContents(content::WebContents* contents);

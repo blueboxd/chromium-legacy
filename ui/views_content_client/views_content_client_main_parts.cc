@@ -33,7 +33,7 @@ void ViewsContentClientMainParts::PreCreateMainMessageLoop() {}
 void ViewsContentClientMainParts::PreMainMessageLoopRun() {
   ui::MaterialDesignController::Initialize();
   ui::InitializeInputMethodForTesting();
-  browser_context_.reset(new content::ShellBrowserContext(false, NULL));
+  browser_context_.reset(new content::ShellBrowserContext(false));
 
   std::unique_ptr<views::TestViewsDelegate> test_views_delegate(
       new views::DesktopTestViewsDelegate);

@@ -11,8 +11,6 @@ import android.support.test.uiautomator.StaleObjectException;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 
-import org.chromium.base.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +25,10 @@ import java.util.List;
 public class UiLocatorHelper {
     private static final String TAG = "UiLocatorHelper";
     private static final long DEFAULT_TIMEOUT_MS = 3000L;
-    private static final long DEFAULT_MAX_UI_SETTLE_TIME_MS = 200L;
     // UI_CHECK_INTERVAL_MS is intentionally not modifiable so that longer timeouts
     // don't lead to slowness due to the checking interval being too coarse.
-    private static final long UI_CHECK_INTERVAL_MS = DEFAULT_TIMEOUT_MS / 4L;
+    static final long UI_CHECK_INTERVAL_MS = DEFAULT_TIMEOUT_MS / 4L;
+    private static final long DEFAULT_MAX_UI_SETTLE_TIME_MS = 200L;
 
     private static final ElementConverter<String> CONVERTER_TEXT = object2 -> {
         return object2.getText();
@@ -51,7 +49,7 @@ public class UiLocatorHelper {
     private final UiDevice mDevice;
     private long mTimeout;
 
-    public UiLocatorHelper() {
+    UiLocatorHelper() {
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         mTimeout = DEFAULT_TIMEOUT_MS;
     }
@@ -74,7 +72,6 @@ public class UiLocatorHelper {
 
     /**
      * Checks and waits if a node is found on the screen.
-     *
      * @param locator Locator used to find the node.
      * @return        true if node is found, false otherwise.
      */
@@ -89,7 +86,6 @@ public class UiLocatorHelper {
 
     /**
      * Checks if a node is found on the screen, does not retry.
-     *
      * @param locator Locator used to find the node.
      * @param root    Node to search under, or null if all the nodes should be searched.
      *                Possible root staleness will make retries ineffective, this means
@@ -238,7 +234,6 @@ public class UiLocatorHelper {
 
     /**
      * Returns the first element found using locator.
-     *
      * Throws UiLocationError if not found.
      * @param locator Locator to use to find the element.
      * @return        UiObject2
@@ -250,7 +245,6 @@ public class UiLocatorHelper {
 
     /**
      * Returns the first element found using locator.
-     *
      * Could return null but does not throw.
      * @param locator Locator to use to find the element.
      * @param root    Search for elements within root, or on the device if null.
@@ -292,7 +286,7 @@ public class UiLocatorHelper {
             if (elapsedTime >= mTimeout) {
                 break;
             }
-            sleep(UI_CHECK_INTERVAL_MS);
+            Utils.sleep(UI_CHECK_INTERVAL_MS);
         } while (true);
         throw UiLocationException.newInstance("Could not find any objects after " + elapsedTime
                         + " ms and " + attempts + " attempts",
@@ -319,7 +313,6 @@ public class UiLocatorHelper {
 
     /**
      * Delegate to be used with getCustomElements.
-     *
      * @param <T> The type of the element.
      */
     static public interface CustomElementMaker<T> {
@@ -381,7 +374,7 @@ public class UiLocatorHelper {
                 // makeElement could throw while going through the list of roots,
                 // so clear out any elements to avoid duplicates and stale ones.
                 elements.clear();
-                sleep(UI_CHECK_INTERVAL_MS);
+                Utils.sleep(UI_CHECK_INTERVAL_MS);
                 // If the next interaction will cause timeout to be exceeded, then
                 // flag isLastAttempt so client can choose to perform a work-around
                 // instead of throwing an exception again.
@@ -432,18 +425,15 @@ public class UiLocatorHelper {
         return allT;
     }
 
-    /** Could return empty list or throw StaleObject exception or throw NullPointerException*/
+    /**
+     * Returns all nodes that matched the locator.
+     * Note that StaleObject or NPE may be thrown from this if the UI has gotten into an
+     * inconsistent state, this usually means the caller should retry the operation.
+     * @param locator Locator to use.
+     * @param root    Root node to match under, or null to match on any node.
+     * @return        List of matched nodes, possibly empty.
+     */
     private List<UiObject2> getAllInternal(@NonNull IUi2Locator locator, UiObject2 root) {
         return root == null ? locator.locateAll(mDevice) : locator.locateAll(root);
-    }
-
-    private void sleep(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException e) {
-            for (StackTraceElement elem : e.getStackTrace()) {
-                Log.e(TAG, elem.toString());
-            }
-        }
     }
 }

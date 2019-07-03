@@ -76,6 +76,11 @@ declare_args() {
   # It's currently not possible to collect AFDO profiles on anything but
   # x86{,_64}.
   using_mismatched_sample_profile = current_cpu != "x64" && current_cpu != "x86"
+
+  # Whether an error should be raised on attempts to make debug builds with
+  # is_component_build=false. Very large debug symbols can have unwanted side
+  # effects so this is enforced by default for chromium.
+  forbid_non_component_debug_builds = build_with_chromium
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
@@ -232,8 +237,8 @@ if (symbol_level == -1) {
     # info or variable info, so we can leave that out to speed up the build.
     # Sanitizers also require symbols for filename suppressions to work.
     symbol_level = 1
-  } else if ((!is_nacl && !is_linux && !is_fuchsia && current_os != "aix") || is_debug ||
-             is_official_build || is_chromecast) {
+  } else if ((!is_nacl && !is_linux && !is_fuchsia && current_os != "aix") ||
+             is_debug || is_official_build || is_chromecast) {
     # Linux builds slower by having symbols as part of the target binary,
     # whereas Mac and Windows have them separate, so in Release Linux, default
     # them off, but keep them on for Official builds and Chromecast builds.
@@ -256,7 +261,7 @@ if (symbol_level == -1) {
 # because the is_component_build flag is set to false in various components of
 # the build (like nacl) and we don't want to assert on those.
 # iOS does not support component builds so add an exception for this platform.
-if (build_with_chromium) {
+if (forbid_non_component_debug_builds) {
   assert(symbol_level != 2 || current_toolchain != default_toolchain ||
              is_component_build || !is_debug || is_ios,
          "Can't do non-component debug builds at symbol_level=2")

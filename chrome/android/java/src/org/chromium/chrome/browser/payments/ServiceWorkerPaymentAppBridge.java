@@ -25,6 +25,7 @@ import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
+import org.chromium.payments.mojom.PaymentEventResponseType;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -257,13 +258,15 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                 // Notify closing payment app window so as to abort payment if unsecure.
                 WebContents webContents = tab.getWebContents();
                 if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(webContents)) {
-                    onClosingPaymentAppWindow(webContents);
+                    nativeOnClosingPaymentAppWindow(webContents,
+                            PaymentEventResponseType.PAYMENT_HANDLER_INSECURE_NAVIGATION);
                 }
             }
 
             @Override
             public void onDidAttachInterstitialPage(Tab tab) {
-                onClosingPaymentAppWindow(tab.getWebContents());
+                nativeOnClosingPaymentAppWindow(tab.getWebContents(),
+                        PaymentEventResponseType.PAYMENT_HANDLER_INSECURE_NAVIGATION);
             }
         });
     }
@@ -274,7 +277,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * @param webContents The web contents in the opened window.
      */
     public static void onClosingPaymentAppWindow(WebContents webContents) {
-        nativeOnClosingPaymentAppWindow(webContents);
+        nativeOnClosingPaymentAppWindow(
+                webContents, PaymentEventResponseType.PAYMENT_HANDLER_WINDOW_CLOSING);
     }
 
     @CalledByNative
@@ -479,5 +483,5 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             String topOrigin, String paymentRequestOrigin, PaymentMethodData[] methodData,
             PaymentDetailsModifier[] modifiers, CanMakePaymentCallback callback);
 
-    private static native void nativeOnClosingPaymentAppWindow(WebContents webContents);
+    private static native void nativeOnClosingPaymentAppWindow(WebContents webContents, int reason);
 }

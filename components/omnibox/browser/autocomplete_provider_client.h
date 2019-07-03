@@ -145,12 +145,8 @@ class AutocompleteProviderClient {
   virtual void StartServiceWorker(const GURL& destination_url) {}
 
   // Called by |controller| when its results have changed and all providers are
-  // done processing the autocomplete request. At the //chrome level, this
-  // callback results in firing the
-  // NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY notification.
-  // TODO(blundell): Remove the //chrome-level notification entirely in favor of
-  // having AutocompleteController expose a CallbackList that //chrome-level
-  // listeners add themselves to, and then kill this method.
+  // done processing the autocomplete request. Chrome ignores this. It's only
+  // used in components unit tests. TODO(blundell): remove it.
   virtual void OnAutocompleteControllerResultReady(
       AutocompleteController* controller) {}
 

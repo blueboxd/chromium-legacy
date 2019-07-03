@@ -667,7 +667,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static void UndoCustomLinkAction();
   static void ResetCustomLinks();
   static void ToggleMostVisitedOrCustomLinks();
-  static void ToggleShortcutsVisibility();
+  static void ToggleShortcutsVisibility(bool do_notify);
   static std::string FixupAndValidateUrl(const std::string& url);
   static void LogEvent(int event);
   static void LogSuggestionEventWithValue(int event, int data);
@@ -1008,11 +1008,11 @@ void NewTabPageBindings::ToggleMostVisitedOrCustomLinks() {
 }
 
 // static
-void NewTabPageBindings::ToggleShortcutsVisibility() {
+void NewTabPageBindings::ToggleShortcutsVisibility(bool do_notify) {
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
-  search_box->ToggleShortcutsVisibility();
+  search_box->ToggleShortcutsVisibility(do_notify);
 }
 
 // static

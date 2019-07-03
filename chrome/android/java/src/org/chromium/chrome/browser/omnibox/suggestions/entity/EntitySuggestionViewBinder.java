@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.entity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Handler;
+import android.support.v4.view.ViewCompat;
 import android.view.MotionEvent;
 
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
@@ -104,6 +105,9 @@ public class EntitySuggestionViewBinder {
             applySuggestionImage(model, view);
         } else if (SuggestionCommonProperties.USE_DARK_COLORS.equals(propertyKey)) {
             view.setUseDarkColors(model.get(SuggestionCommonProperties.USE_DARK_COLORS));
+        } else if (SuggestionCommonProperties.LAYOUT_DIRECTION.equals(propertyKey)) {
+            ViewCompat.setLayoutDirection(
+                    view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
         }
     }
 }

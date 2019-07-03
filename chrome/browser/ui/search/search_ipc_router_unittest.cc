@@ -72,7 +72,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD0(OnUndoCustomLinkAction, void());
   MOCK_METHOD0(OnResetCustomLinks, void());
   MOCK_METHOD0(OnToggleMostVisitedOrCustomLinks, void());
-  MOCK_METHOD0(OnToggleShortcutsVisibility, void());
+  MOCK_METHOD1(OnToggleShortcutsVisibility, void(bool do_notify));
   MOCK_METHOD2(OnLogEvent, void(NTPLoggingEventType event,
                                 base::TimeDelta time));
   MOCK_METHOD3(OnLogSuggestionEventWithValue,
@@ -687,24 +687,26 @@ TEST_F(SearchIPCRouterTest, ProcessToggleShortcutsVisibility) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), OnToggleShortcutsVisibility()).Times(1);
+  EXPECT_CALL(*mock_delegate(), OnToggleShortcutsVisibility(false)).Times(1);
   EXPECT_CALL(*policy, ShouldProcessToggleShortcutsVisibility())
       .Times(1)
       .WillOnce(Return(true));
 
-  GetSearchIPCRouter().ToggleShortcutsVisibility(GetSearchIPCRouterSeqNo());
+  GetSearchIPCRouter().ToggleShortcutsVisibility(GetSearchIPCRouterSeqNo(),
+                                                 false);
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreToggleShortcutsVisibility) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), OnToggleShortcutsVisibility()).Times(0);
+  EXPECT_CALL(*mock_delegate(), OnToggleShortcutsVisibility(true)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessToggleShortcutsVisibility())
       .Times(1)
       .WillOnce(Return(false));
 
-  GetSearchIPCRouter().ToggleShortcutsVisibility(GetSearchIPCRouterSeqNo());
+  GetSearchIPCRouter().ToggleShortcutsVisibility(GetSearchIPCRouterSeqNo(),
+                                                 true);
 }
 
 TEST_F(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg) {

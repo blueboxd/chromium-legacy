@@ -300,6 +300,23 @@ static const int32_t kTestVectorInt32[kTestVectorSize] = {
 static const float kTestVectorFloat32[kTestVectorSize] = {
     -1.0f, 0.0f, 1.0f, -1.0f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f};
 
+// This is based on kTestVectorFloat32, but has some of the values outside of
+// sanity.
+static const float kTestVectorFloat32Invalid[kTestVectorSize] = {
+    -5.0f,
+    0.0f,
+    5.0f,
+    -1.0f,
+    0.5f,
+    -0.5f,
+    0.0f,
+    std::numeric_limits<float>::infinity(),
+    std::numeric_limits<float>::signaling_NaN(),
+    std::numeric_limits<float>::quiet_NaN()};
+
+static const float kTestVectorFloat32Sanitized[kTestVectorSize] = {
+    -1.0f, 0.0f, 1.0f, -1.0f, 0.5f, -0.5f, 0.0f, 1.0f, -1.0f, -1.0f};
+
 // Expected results.
 static const int kTestVectorFrameCount = kTestVectorSize / 2;
 static const float kTestVectorResult[][kTestVectorFrameCount] = {
@@ -519,29 +536,50 @@ TEST_F(AudioBusTest, ToInterleaved) {
 }
 
 TEST_F(AudioBusTest, ToInterleavedSanitized) {
-  // This is based on kTestVectorFloat32, but has some of the values outside of
-  // sanity.
-  static const float kTestVectorFloat32Invalid[kTestVectorSize] = {
-      -5.0f,
-      0.0f,
-      5.0f,
-      -1.0f,
-      0.5f,
-      -0.5f,
-      0.0f,
-      std::numeric_limits<float>::infinity(),
-      std::numeric_limits<float>::signaling_NaN(),
-      std::numeric_limits<float>::quiet_NaN()};
   std::unique_ptr<AudioBus> bus =
       AudioBus::Create(kTestVectorChannelCount, kTestVectorFrameCount);
   bus->FromInterleaved<Float32SampleTypeTraits>(kTestVectorFloat32Invalid,
                                                 bus->frames());
   // Verify FromInterleaved applied no sanity.
   ASSERT_EQ(bus->channel(0)[0], kTestVectorFloat32Invalid[0]);
-  float test_array[base::size(kTestVectorFloat32)];
+  float test_array[base::size(kTestVectorFloat32Sanitized)];
   bus->ToInterleaved<Float32SampleTypeTraits>(bus->frames(), test_array);
+  for (size_t i = 0; i < base::size(kTestVectorFloat32Sanitized); ++i)
+    ASSERT_EQ(kTestVectorFloat32Sanitized[i], test_array[i]);
+
+  // Verify that Float32SampleTypeTraitsNoClip applied no sanity.
+  bus->ToInterleaved<Float32SampleTypeTraitsNoClip>(bus->frames(), test_array);
   ASSERT_EQ(0,
-            memcmp(test_array, kTestVectorFloat32, sizeof(kTestVectorFloat32)));
+            memcmp(test_array, kTestVectorFloat32Invalid,
+                   kTestVectorFrameCount * sizeof(*kTestVectorFloat32Invalid) *
+                       kTestVectorChannelCount));
+}
+
+TEST_F(AudioBusTest, CopyAndClipTo) {
+  auto bus = AudioBus::Create(kTestVectorChannelCount, kTestVectorFrameCount);
+  bus->FromInterleaved<Float32SampleTypeTraits>(kTestVectorFloat32Invalid,
+                                                bus->frames());
+  auto expected =
+      AudioBus::Create(kTestVectorChannelCount, kTestVectorFrameCount);
+  expected->FromInterleaved<Float32SampleTypeTraits>(
+      kTestVectorFloat32Sanitized, bus->frames());
+
+  // Verify FromInterleaved applied no sanity.
+  ASSERT_EQ(bus->channel(0)[0], kTestVectorFloat32Invalid[0]);
+
+  std::unique_ptr<AudioBus> copy_to_bus =
+      AudioBus::Create(kTestVectorChannelCount, kTestVectorFrameCount);
+  bus->CopyAndClipTo(copy_to_bus.get());
+
+  for (int ch = 0; ch < expected->channels(); ++ch) {
+    for (int i = 0; i < expected->frames(); ++i)
+      ASSERT_EQ(copy_to_bus->channel(ch)[i], expected->channel(ch)[i]);
+  }
+
+  ASSERT_EQ(expected->channels(), copy_to_bus->channels());
+  ASSERT_EQ(expected->frames(), copy_to_bus->frames());
+  ASSERT_EQ(expected->is_bitstream_format(),
+            copy_to_bus->is_bitstream_format());
 }
 
 // Verify ToInterleavedPartial() interleaves audio correctly.

@@ -4398,11 +4398,17 @@ interface KeyframeEffect : AnimationEffect
     setter target
 interface LargestContentfulPaint : PerformanceEntry
     attribute @@toStringTag
+    getter element
+    getter id
+    getter responseEnd
     getter size
+    getter url
     method constructor
     method toJSON
 interface LayoutShift : PerformanceEntry
     attribute @@toStringTag
+    getter hadRecentInput
+    getter lastInputTime
     getter value
     method constructor
     method toJSON
@@ -5368,13 +5374,9 @@ interface Performance : EventTarget
     attribute @@toStringTag
     getter memory
     getter navigation
-    getter onelementtimingbufferfull
-    getter oneventtimingbufferfull
     getter onresourcetimingbufferfull
     getter timeOrigin
     getter timing
-    method clearElementTimings
-    method clearEventTimings
     method clearMarks
     method clearMeasures
     method clearResourceTimings
@@ -5386,12 +5388,8 @@ interface Performance : EventTarget
     method measure
     method now
     method profile
-    method setElementTimingBufferMaxSize
-    method setEventTimingBufferMaxSize
     method setResourceTimingBufferSize
     method toJSON
-    setter onelementtimingbufferfull
-    setter oneventtimingbufferfull
     setter onresourcetimingbufferfull
 interface PerformanceElementTiming : PerformanceEntry
     attribute @@toStringTag
@@ -7298,14 +7296,6 @@ interface ScriptProcessorNode : AudioNode
     getter onaudioprocess
     method constructor
     setter onaudioprocess
-interface ScriptedTaskQueue
-    attribute @@toStringTag
-    method constructor
-    method postTask
-interface ScriptedTaskQueueController
-    attribute @@toStringTag
-    method constructor
-    method default
 interface ScrollTimeline : AnimationTimeline
     attribute @@toStringTag
     getter endScrollOffset
@@ -8182,6 +8172,7 @@ interface VisualViewport : EventTarget
     setter onscroll
 interface WakeLock
     static method request
+    static method requestPermission
     attribute @@toStringTag
     method constructor
 interface WaveShaperNode : AudioNode
@@ -10956,7 +10947,6 @@ interface webkitURL
     attribute textInputController
     attribute top
     attribute window
-    getter TaskQueue
     getter TrustedTypes
     getter applicationCache
     getter caches
@@ -11164,7 +11154,6 @@ interface webkitURL
     method webkitRequestAnimationFrame
     method webkitRequestFileSystem
     method webkitResolveLocalFileSystemURL
-    setter TaskQueue
     setter clientInformation
     setter cookieStore
     setter defaultStatus

@@ -487,6 +487,26 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
   SetItemStatusOrRemove(shelf_id, GetAppState(shelf_id.app_id));
 }
 
+void ChromeLauncherController::UpdateV1AppState(const std::string& app_id) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->is_app() || !browser->is_type_tabbed() ||
+        !multi_user_util::IsProfileFromActiveUser(browser->profile())) {
+      continue;
+    }
+    for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+      content::WebContents* const web_contents =
+          browser->tab_strip_model()->GetWebContentsAt(i);
+      if (launcher_controller_helper_->GetAppID(web_contents) != app_id)
+        continue;
+      UpdateAppState(web_contents, false /*remove*/);
+      if (browser->tab_strip_model()->GetActiveWebContents() == web_contents) {
+        GetBrowserShortcutLauncherItemController()
+            ->SetShelfIDForBrowserWindowContents(browser, web_contents);
+      }
+    }
+  }
+}
+
 ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
     content::WebContents* contents) {
   std::string app_id = launcher_controller_helper_->GetAppID(contents);

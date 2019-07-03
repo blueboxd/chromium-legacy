@@ -83,8 +83,9 @@ XMLDocument* DOMImplementation::createDocument(
     DocumentType* doctype,
     ExceptionState& exception_state) {
   XMLDocument* doc = nullptr;
-  DocumentInit init =
-      DocumentInit::Create().WithContextDocument(document_->ContextDocument());
+  DocumentInit init = DocumentInit::Create()
+                          .WithContextDocument(document_->ContextDocument())
+                          .WithOwnerDocument(document_->ContextDocument());
   if (namespace_uri == svg_names::kNamespaceURI) {
     doc = XMLDocument::CreateSVG(init);
   } else if (namespace_uri == html_names::xhtmlNamespaceURI) {
@@ -94,7 +95,6 @@ XMLDocument* DOMImplementation::createDocument(
     doc = MakeGarbageCollected<XMLDocument>(init);
   }
 
-  doc->SetSecurityOrigin(document_->GetMutableSecurityOrigin());
   doc->SetContextFeatures(document_->GetContextFeatures());
 
   Node* document_element = nullptr;
@@ -206,6 +206,7 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
   DocumentInit init =
       DocumentInit::Create()
           .WithContextDocument(document_->ContextDocument())
+          .WithOwnerDocument(document_->ContextDocument())
           .WithRegistrationContext(document_->RegistrationContext());
   auto* d = MakeGarbageCollected<HTMLDocument>(init);
   d->open();
@@ -217,7 +218,6 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
     head_element->AppendChild(title_element);
     title_element->AppendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
   }
-  d->SetSecurityOrigin(document_->GetMutableSecurityOrigin());
   d->SetContextFeatures(document_->GetContextFeatures());
   return d;
 }

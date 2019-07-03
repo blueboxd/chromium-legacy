@@ -66,6 +66,10 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   // be marked as displayed.
   void PageFlipComplete();
 
+  // Destroys all the buffers (useful if for some reason, the buffers are no
+  // longer presentable).
+  void FreeAllSurfaces();
+
   // Frees all buffers if |size|, |color_space|, or |use_stencil| correspond to
   // a change of state. Otherwise, it's a no-op. Returns true if there was a
   // change of state, false otherwise.
@@ -73,11 +77,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
                float scale_factor,
                const gfx::ColorSpace& color_space,
                bool use_stencil);
-
-  // Recreates all the buffers (useful if for some reason, the old buffers are
-  // no longer presentable). Returns the name of the texture corresponding to
-  // the current buffer or 0u if there is no current buffer.
-  unsigned RecreateBuffers();
 
   // Copies the damage from the most recently swapped available buffer into the
   // current buffer.
@@ -107,8 +106,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
     gfx::Rect damage;  // This is the damage for this frame from the previous.
   };
 
-  void FreeAllSurfaces();
-
   void FreeSurfaceResources(AllocatedSurface* surface);
 
   // Copy everything that is in |copy_rect|, except for what is in
@@ -122,9 +119,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
 
   // Return a surface, available to be drawn into.
   std::unique_ptr<AllocatedSurface> GetNextSurface();
-
-  std::unique_ptr<AllocatedSurface> RecreateBuffer(
-      std::unique_ptr<AllocatedSurface> surface);
 
   gpu::gles2::GLES2Interface* const gl_;
   gfx::Size size_;

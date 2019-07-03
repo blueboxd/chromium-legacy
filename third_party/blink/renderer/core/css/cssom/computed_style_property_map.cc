@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -36,12 +37,12 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
           operation.Is3DOperation() ? CSSValueID::kScale3d
                                     : CSSValueID::kScale);
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           scale.X(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           scale.Y(), CSSPrimitiveValue::UnitType::kNumber));
       if (operation.Is3DOperation()) {
-        result->Append(*CSSPrimitiveValue::Create(
+        result->Append(*CSSNumericLiteralValue::Create(
             scale.Z(), CSSPrimitiveValue::UnitType::kNumber));
       }
       return result;
@@ -55,10 +56,10 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
           operation.Is3DOperation() ? CSSValueID::kTranslate3d
                                     : CSSValueID::kTranslate);
-      result->Append(*CSSPrimitiveValue::Create(translate.X(), zoom));
-      result->Append(*CSSPrimitiveValue::Create(translate.Y(), zoom));
+      result->Append(*CSSPrimitiveValue::CreateFromLength(translate.X(), zoom));
+      result->Append(*CSSPrimitiveValue::CreateFromLength(translate.Y(), zoom));
       if (operation.Is3DOperation()) {
-        result->Append(*CSSPrimitiveValue::Create(
+        result->Append(*CSSNumericLiteralValue::Create(
             translate.Z(), CSSPrimitiveValue::UnitType::kPixels));
       }
       return result;
@@ -69,13 +70,13 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       const auto& rotate = ToRotateTransformOperation(operation);
       CSSFunctionValue* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kRotate3d);
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           rotate.X(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           rotate.Y(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           rotate.Z(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
@@ -83,30 +84,30 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       const auto& rotate = ToRotateTransformOperation(operation);
       auto* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kRotate);
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkewX: {
       const auto& skew = ToSkewTransformOperation(operation);
       auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkewX);
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkewY: {
       const auto& skew = ToSkewTransformOperation(operation);
       auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkewY);
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           skew.AngleY(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkew: {
       const auto& skew = ToSkewTransformOperation(operation);
       auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkew);
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           skew.AngleY(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
@@ -114,7 +115,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       const auto& perspective = ToPerspectiveTransformOperation(operation);
       auto* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPerspective);
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           perspective.Perspective(), CSSPrimitiveValue::UnitType::kPixels));
       return result;
     }
@@ -125,7 +126,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       double values[6] = {matrix.A(), matrix.B(), matrix.C(),
                           matrix.D(), matrix.E(), matrix.F()};
       for (double value : values) {
-        result->Append(*CSSPrimitiveValue::Create(
+        result->Append(*CSSNumericLiteralValue::Create(
             value, CSSPrimitiveValue::UnitType::kNumber));
       }
       return result;
@@ -140,7 +141,7 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
           matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34(),
           matrix.M41(), matrix.M42(), matrix.M43(), matrix.M44()};
       for (double value : values) {
-        result->Append(*CSSPrimitiveValue::Create(
+        result->Append(*CSSNumericLiteralValue::Create(
             value, CSSPrimitiveValue::UnitType::kNumber));
       }
       return result;

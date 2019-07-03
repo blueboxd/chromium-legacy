@@ -2563,13 +2563,7 @@
   },
 
   "WelcomePageOnOSUpgradeEnabled": {
-    "os": ["win"],
-    "test_policy": { "WelcomePageOnOSUpgradeEnabled": false },
-    "pref_mappings": [
-      { "pref": "browser.welcome_page_on_os_upgrade_enabled",
-        "local_state": true
-      }
-    ]
+    "note": "This policy is retired, see https://crbug.com/978349."
   },
 
   "SuppressUnsupportedOSWarning": {

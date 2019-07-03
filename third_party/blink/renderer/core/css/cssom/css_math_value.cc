@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_math_value.h"
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 
 namespace blink {
 
@@ -12,7 +13,7 @@ const CSSValue* CSSMathValue::ToCSSValue() const {
   CSSCalcExpressionNode* node = ToCalcExpressionNode();
   if (!node)
     return nullptr;
-  return CSSPrimitiveValue::Create(CSSCalcValue::Create(node));
+  return CSSMathFunctionValue::Create(CSSCalcValue::Create(node));
 }
 
 }  // namespace blink

@@ -221,7 +221,7 @@ void CameraDeviceDelegate::StopAndDeAllocate(
     base::OnceClosure device_close_callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  reprocess_manager_->FlushReprocessOptions(device_descriptor_.device_id);
+  reprocess_manager_->Flush(device_descriptor_.device_id);
 
   if (!device_context_ ||
       device_context_->GetState() == CameraDeviceContext::State::kStopped ||
@@ -781,17 +781,13 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
         FROM_HERE, "Failed to get default request settings");
     return;
   }
-  device_context_->SetState(CameraDeviceContext::State::kCapturing);
-  camera_3a_controller_->SetAutoFocusModeForStillCapture();
-  request_manager_->StartPreview(std::move(settings));
-
-  if (!take_photo_callbacks_.empty()) {
-    TakePhotoImpl();
-  }
-
-  if (set_photo_option_callback_) {
-    std::move(set_photo_option_callback_).Run(true);
-  }
+  reprocess_manager_->GetFpsRange(
+      device_descriptor_.device_id,
+      chrome_capture_params_.requested_format.frame_size.width(),
+      chrome_capture_params_.requested_format.frame_size.height(),
+      media::BindToCurrentLoop(
+          base::BindOnce(&CameraDeviceDelegate::OnGotFpsRange, GetWeakPtr(),
+                         std::move(settings))));
 }
 
 void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
@@ -809,6 +805,42 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
                                                 request_manager_->GetWeakPtr(),
                                                 settings.Clone())));
     take_photo_callbacks_.pop();
+  }
+}
+
+void CameraDeviceDelegate::OnGotFpsRange(
+    cros::mojom::CameraMetadataPtr settings,
+    base::Optional<gfx::Range> specified_fps_range) {
+  device_context_->SetState(CameraDeviceContext::State::kCapturing);
+  camera_3a_controller_->SetAutoFocusModeForStillCapture();
+  if (specified_fps_range.has_value()) {
+    const int32_t entry_length = 2;
+
+    // CameraMetadata is represented as an uint8 array. According to the
+    // definition of the FPS metadata tag, its data type is int32, so we
+    // reinterpret_cast here.
+    std::vector<uint8_t> fps_range(sizeof(int32_t) * entry_length);
+    auto* fps_ptr = reinterpret_cast<int32_t*>(fps_range.data());
+    fps_ptr[0] = specified_fps_range->GetMin();
+    fps_ptr[1] = specified_fps_range->GetMax();
+    cros::mojom::CameraMetadataEntryPtr e =
+        cros::mojom::CameraMetadataEntry::New();
+    e->tag =
+        cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_TARGET_FPS_RANGE;
+    e->type = cros::mojom::EntryType::TYPE_INT32;
+    e->count = entry_length;
+    e->data = std::move(fps_range);
+
+    AddOrUpdateMetadataEntry(&settings, std::move(e));
+  }
+  request_manager_->StartPreview(std::move(settings));
+
+  if (!take_photo_callbacks_.empty()) {
+    TakePhotoImpl();
+  }
+
+  if (set_photo_option_callback_) {
+    std::move(set_photo_option_callback_).Run(true);
   }
 }
 

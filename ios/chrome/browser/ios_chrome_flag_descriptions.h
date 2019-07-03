@@ -281,6 +281,11 @@ extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 extern const char kOmniboxUseDefaultSearchEngineFaviconName[];
 extern const char kOmniboxUseDefaultSearchEngineFaviconDescription[];
 
+// Title and description for the flag to enable Omnibox On Device Head
+// suggestions.
+extern const char kOmniboxOnDeviceHeadSuggestionsName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
+
 // Title and description for the flag to enable using only new password form
 // parsing.
 extern const char kOnlyNewPasswordFormParsingName[];

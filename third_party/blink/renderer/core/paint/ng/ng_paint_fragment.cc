@@ -911,10 +911,9 @@ bool NGPaintFragment::TryMarkLastLineBoxDirtyFor(
 }
 
 void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
-  if (LayoutObject* layout_object = GetMutableLayoutObject()) {
-    layout_object->StyleRef().ClearCachedPseudoStyles();
+  if (LayoutObject* layout_object = GetMutableLayoutObject())
     layout_object->SetShouldDoFullPaintInvalidation();
-  }
+
   for (NGPaintFragment* child : Children())
     child->SetShouldDoFullPaintInvalidationRecursively();
 }
@@ -925,7 +924,6 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() const {
 
   if (NGPaintFragment* line_box = FirstLineBox()) {
     line_box->SetShouldDoFullPaintInvalidationRecursively();
-    GetLayoutObject()->StyleRef().ClearCachedPseudoStyles();
     GetMutableLayoutObject()->SetShouldDoFullPaintInvalidation();
   }
 }

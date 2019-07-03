@@ -5,6 +5,8 @@
 #ifndef ASH_WM_OVERVIEW_ROUNDED_LABEL_WIDGET_H_
 #define ASH_WM_OVERVIEW_ROUNDED_LABEL_WIDGET_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -18,6 +20,8 @@ class RoundedLabelWidget : public views::Widget {
  public:
   // Params to modify the look of the label.
   struct InitParams {
+    InitParams();
+    std::string name;
     int horizontal_padding;
     int vertical_padding;
     SkColor background_color;

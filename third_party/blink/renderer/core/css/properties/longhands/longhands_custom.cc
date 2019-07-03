@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_layout_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
@@ -146,8 +147,8 @@ const CSSValue* AnimationDelay::CSSValueFromComputedStyleInternal(
 const CSSValue* AnimationDelay::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSValue>, value,
-      (CSSPrimitiveValue::Create(CSSTimingData::InitialDelay(),
-                                 CSSPrimitiveValue::UnitType::kSeconds)));
+      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDelay(),
+                                      CSSPrimitiveValue::UnitType::kSeconds)));
   return value;
 }
 
@@ -207,8 +208,8 @@ const CSSValue* AnimationDuration::CSSValueFromComputedStyleInternal(
 const CSSValue* AnimationDuration::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSValue>, value,
-      (CSSPrimitiveValue::Create(CSSTimingData::InitialDuration(),
-                                 CSSPrimitiveValue::UnitType::kSeconds)));
+      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDuration(),
+                                      CSSPrimitiveValue::UnitType::kSeconds)));
   return value;
 }
 
@@ -279,8 +280,8 @@ const CSSValue* AnimationIterationCount::CSSValueFromComputedStyleInternal(
 const CSSValue* AnimationIterationCount::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSValue>, value,
-      (CSSPrimitiveValue::Create(CSSAnimationData::InitialIterationCount(),
-                                 CSSPrimitiveValue::UnitType::kNumber)));
+      (CSSNumericLiteralValue::Create(CSSAnimationData::InitialIterationCount(),
+                                      CSSPrimitiveValue::UnitType::kNumber)));
   return value;
 }
 
@@ -829,9 +830,9 @@ const CSSValue* BorderImageOutset::CSSValueFromComputedStyleInternal(
 const CSSValue* BorderImageOutset::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSQuadValue>, value,
-      (CSSQuadValue::Create(
-          CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kInteger),
-          CSSQuadValue::kSerializeAsQuad)));
+      (CSSQuadValue::Create(CSSNumericLiteralValue::Create(
+                                0, CSSPrimitiveValue::UnitType::kInteger),
+                            CSSQuadValue::kSerializeAsQuad)));
   return value;
 }
 
@@ -879,7 +880,7 @@ const CSSValue* BorderImageSlice::InitialValue() const {
       const Persistent<CSSBorderImageSliceValue>, value,
       (MakeGarbageCollected<CSSBorderImageSliceValue>(
           CSSQuadValue::Create(
-              CSSPrimitiveValue::Create(
+              CSSNumericLiteralValue::Create(
                   100, CSSPrimitiveValue::UnitType::kPercentage),
               CSSQuadValue::kSerializeAsQuad),
           /* fill */ false)));
@@ -936,9 +937,9 @@ const CSSValue* BorderImageWidth::CSSValueFromComputedStyleInternal(
 const CSSValue* BorderImageWidth::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSQuadValue>, value,
-      (CSSQuadValue::Create(
-          CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kInteger),
-          CSSQuadValue::kSerializeAsQuad)));
+      (CSSQuadValue::Create(CSSNumericLiteralValue::Create(
+                                1, CSSPrimitiveValue::UnitType::kInteger),
+                            CSSQuadValue::kSerializeAsQuad)));
   return value;
 }
 
@@ -1635,8 +1636,8 @@ const CSSValue* ColumnCount::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.HasAutoColumnCount())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return CSSPrimitiveValue::Create(style.ColumnCount(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.ColumnCount(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* ColumnFill::CSSValueFromComputedStyleInternal(
@@ -2395,8 +2396,8 @@ const CSSValue* FillOpacity::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(svg_style.FillOpacity(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(svg_style.FillOpacity(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* FillRule::CSSValueFromComputedStyleInternal(
@@ -2466,8 +2467,8 @@ const CSSValue* FlexGrow::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.FlexGrow(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.FlexGrow(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* FlexShrink::ParseSingleValue(
@@ -2484,8 +2485,8 @@ const CSSValue* FlexShrink::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.FlexShrink(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.FlexShrink(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* FlexWrap::CSSValueFromComputedStyleInternal(
@@ -2547,8 +2548,8 @@ const CSSValue* FloodOpacity::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(svg_style.FloodOpacity(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(svg_style.FloodOpacity(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* FontFamily::ParseSingleValue(
@@ -2621,8 +2622,8 @@ const CSSValue* FontSizeAdjust::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.HasFontSizeAdjust()) {
-    return CSSPrimitiveValue::Create(style.FontSizeAdjust(),
-                                     CSSPrimitiveValue::UnitType::kNumber);
+    return CSSNumericLiteralValue::Create(style.FontSizeAdjust(),
+                                          CSSPrimitiveValue::UnitType::kNumber);
   }
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
@@ -3277,7 +3278,8 @@ const CSSValue* ImageOrientation::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.RespectImageOrientation() == kRespectImageOrientation)
     return CSSIdentifierValue::Create(CSSValueID::kFromImage);
-  return CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees);
+  return CSSNumericLiteralValue::Create(0,
+                                        CSSPrimitiveValue::UnitType::kDegrees);
 }
 
 const CSSValue* ImageRendering::CSSValueFromComputedStyleInternal(
@@ -4361,7 +4363,7 @@ const CSSValue* OffsetRotate::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (style.OffsetRotate().type == OffsetRotationType::kAuto)
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
-  list->Append(*CSSPrimitiveValue::Create(
+  list->Append(*CSSNumericLiteralValue::Create(
       style.OffsetRotate().angle, CSSPrimitiveValue::UnitType::kDegrees));
   return list;
 }
@@ -4378,8 +4380,8 @@ const CSSValue* Opacity::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.Opacity(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.Opacity(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* Order::ParseSingleValue(CSSParserTokenRange& range,
@@ -4394,8 +4396,8 @@ const CSSValue* Order::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.Order(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.Order(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* Orphans::ParseSingleValue(CSSParserTokenRange& range,
@@ -4410,8 +4412,8 @@ const CSSValue* Orphans::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.Orphans(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.Orphans(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* OutlineColor::ParseSingleValue(
@@ -4832,7 +4834,7 @@ const CSSValue* Perspective::ParseSingleValue(
     if (!css_property_parser_helpers::ConsumeNumberRaw(range, perspective))
       return nullptr;
     context.Count(WebFeature::kUnitlessPerspectiveInPerspectiveProperty);
-    parsed_value = CSSPrimitiveValue::Create(
+    parsed_value = CSSNumericLiteralValue::Create(
         perspective, CSSPrimitiveValue::UnitType::kPixels);
   }
   if (parsed_value &&
@@ -5070,14 +5072,14 @@ const CSSValue* Rotate::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (style.Rotate()->X() != 0 || style.Rotate()->Y() != 0 ||
       style.Rotate()->Z() != 1) {
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         style.Rotate()->X(), CSSPrimitiveValue::UnitType::kNumber));
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         style.Rotate()->Y(), CSSPrimitiveValue::UnitType::kNumber));
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         style.Rotate()->Z(), CSSPrimitiveValue::UnitType::kNumber));
   }
-  list->Append(*CSSPrimitiveValue::Create(
+  list->Append(*CSSNumericLiteralValue::Create(
       style.Rotate()->Angle(), CSSPrimitiveValue::UnitType::kDegrees));
   return list;
 }
@@ -5170,12 +5172,12 @@ const CSSValue* Scale::CSSValueFromComputedStyleInternal(
   if (!style.Scale())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*CSSPrimitiveValue::Create(
+  list->Append(*CSSNumericLiteralValue::Create(
       style.Scale()->X(), CSSPrimitiveValue::UnitType::kNumber));
-  list->Append(*CSSPrimitiveValue::Create(
+  list->Append(*CSSNumericLiteralValue::Create(
       style.Scale()->Y(), CSSPrimitiveValue::UnitType::kNumber));
   if (style.Scale()->Z() != 1) {
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         style.Scale()->Z(), CSSPrimitiveValue::UnitType::kNumber));
   }
   return list;
@@ -5548,8 +5550,8 @@ const CSSValue* ShapeImageThreshold::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.ShapeImageThreshold(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.ShapeImageThreshold(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* ShapeMargin::ParseSingleValue(
@@ -5797,8 +5799,8 @@ const CSSValue* StopOpacity::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(svg_style.StopOpacity(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(svg_style.StopOpacity(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* Stroke::ParseSingleValue(CSSParserTokenRange& range,
@@ -5900,8 +5902,8 @@ const CSSValue* StrokeMiterlimit::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(svg_style.StrokeMiterLimit(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(svg_style.StrokeMiterLimit(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* StrokeOpacity::ParseSingleValue(
@@ -5917,8 +5919,8 @@ const CSSValue* StrokeOpacity::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(svg_style.StrokeOpacity(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(svg_style.StrokeOpacity(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* StrokeWidth::ParseSingleValue(
@@ -5938,8 +5940,8 @@ const CSSValue* StrokeWidth::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   const Length& length = svg_style.StrokeWidth().length();
   if (length.IsFixed()) {
-    return CSSPrimitiveValue::Create(length.Value(),
-                                     CSSPrimitiveValue::UnitType::kPixels);
+    return CSSNumericLiteralValue::Create(length.Value(),
+                                          CSSPrimitiveValue::UnitType::kPixels);
   }
   return CSSValue::Create(length, style.EffectiveZoom());
 }
@@ -5961,10 +5963,10 @@ const CSSValue* TabSize::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.GetTabSize().GetPixelSize(1.0),
-                                   style.GetTabSize().IsSpaces()
-                                       ? CSSPrimitiveValue::UnitType::kNumber
-                                       : CSSPrimitiveValue::UnitType::kPixels);
+  return CSSNumericLiteralValue::Create(
+      style.GetTabSize().GetPixelSize(1.0),
+      style.GetTabSize().IsSpaces() ? CSSPrimitiveValue::UnitType::kNumber
+                                    : CSSPrimitiveValue::UnitType::kPixels);
 }
 
 const CSSValue* TableLayout::CSSValueFromComputedStyleInternal(
@@ -6291,8 +6293,9 @@ const CSSValue* TextSizeAdjust::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.GetTextSizeAdjust().IsAuto())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return CSSPrimitiveValue::Create(style.GetTextSizeAdjust().Multiplier() * 100,
-                                   CSSPrimitiveValue::UnitType::kPercentage);
+  return CSSNumericLiteralValue::Create(
+      style.GetTextSizeAdjust().Multiplier() * 100,
+      CSSPrimitiveValue::UnitType::kPercentage);
 }
 
 const CSSValue* TextTransform::CSSValueFromComputedStyleInternal(
@@ -6565,8 +6568,8 @@ const CSSValue* TransitionDelay::CSSValueFromComputedStyleInternal(
 const CSSValue* TransitionDelay::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSValue>, value,
-      (CSSPrimitiveValue::Create(CSSTimingData::InitialDelay(),
-                                 CSSPrimitiveValue::UnitType::kSeconds)));
+      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDelay(),
+                                      CSSPrimitiveValue::UnitType::kSeconds)));
   return value;
 }
 
@@ -6590,8 +6593,8 @@ const CSSValue* TransitionDuration::CSSValueFromComputedStyleInternal(
 const CSSValue* TransitionDuration::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSValue>, value,
-      (CSSPrimitiveValue::Create(CSSTimingData::InitialDuration(),
-                                 CSSPrimitiveValue::UnitType::kSeconds)));
+      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDuration(),
+                                      CSSPrimitiveValue::UnitType::kSeconds)));
   return value;
 }
 
@@ -6949,8 +6952,8 @@ const CSSValue* WebkitBoxFlex::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.BoxFlex(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.BoxFlex(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* WebkitBoxOrdinalGroup::ParseSingleValue(
@@ -6966,8 +6969,8 @@ const CSSValue* WebkitBoxOrdinalGroup::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.BoxOrdinalGroup(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.BoxOrdinalGroup(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* WebkitBoxOrient::CSSValueFromComputedStyleInternal(
@@ -7000,7 +7003,8 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 
   CSSPrimitiveValue* offset = nullptr;
   if (range.AtEnd()) {
-    offset = CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
+    offset =
+        CSSNumericLiteralValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
   } else {
     offset = ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll,
@@ -7120,8 +7124,8 @@ const CSSValue* WebkitLineClamp::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (!style.HasLineClamp())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return CSSPrimitiveValue::Create(style.LineClamp(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.LineClamp(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* WebkitLocale::ParseSingleValue(
@@ -7931,8 +7935,8 @@ const CSSValue* Widows::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.Widows(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.Widows(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 const CSSValue* Width::ParseSingleValue(CSSParserTokenRange& range,
@@ -8169,8 +8173,8 @@ const CSSValue* ZIndex::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.HasAutoZIndex() || !style.IsStackingContext())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return CSSPrimitiveValue::Create(style.ZIndex(),
-                                   CSSPrimitiveValue::UnitType::kInteger);
+  return CSSNumericLiteralValue::Create(style.ZIndex(),
+                                        CSSPrimitiveValue::UnitType::kInteger);
 }
 
 const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
@@ -8206,8 +8210,8 @@ const CSSValue* Zoom::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(style.Zoom(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.Zoom(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 void Zoom::ApplyInitial(StyleResolverState& state) const {

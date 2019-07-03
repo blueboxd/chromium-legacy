@@ -19,12 +19,14 @@ namespace offline_pages {
 
 OfflinePageTestArchivePublisher::OfflinePageTestArchivePublisher(
     ArchiveManager* archive_manager,
-    SystemDownloadManager* download_manager)
-    : OfflinePageArchivePublisher(archive_manager, download_manager),
-      expect_publish_archive_called_(false),
+    int64_t download_id_to_use)
+    : expect_publish_archive_called_(false),
       publish_archive_called_(false),
       archive_attempt_failure_(false),
-      use_verbatim_archive_path_(false) {}
+      use_verbatim_archive_path_(false),
+      download_id_(download_id_to_use),
+      last_removed_id_(0LL),
+      archive_manager_(archive_manager) {}
 
 OfflinePageTestArchivePublisher::~OfflinePageTestArchivePublisher() {
   if (expect_publish_archive_called_)
@@ -40,6 +42,7 @@ void OfflinePageTestArchivePublisher::PublishArchive(
 
   if (archive_attempt_failure_) {
     publish_archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
+    publish_archive_result.download_id = 0LL;
   } else {
     publish_archive_result.move_result = SavePageResult::SUCCESS;
 
@@ -54,12 +57,18 @@ void OfflinePageTestArchivePublisher::PublishArchive(
           archive_manager_->GetPublicArchivesDir().Append(
               offline_page.file_path.BaseName());
     }
-    publish_archive_result.download_id = 0;
+    publish_archive_result.download_id = download_id_;
   }
 
   background_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(publish_done_callback), offline_page,
                                 std::move(publish_archive_result)));
+}
+
+void OfflinePageTestArchivePublisher::UnpublishArchives(
+    const std::vector<int64_t>& download_manager_ids) const {
+  if (!download_manager_ids.empty())
+    last_removed_id_ = download_manager_ids.back();
 }
 
 }  // namespace offline_pages

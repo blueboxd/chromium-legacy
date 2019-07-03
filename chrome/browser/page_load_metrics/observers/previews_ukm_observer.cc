@@ -118,6 +118,10 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
                             previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     resource_loading_hints_seen_ = true;
   }
+  if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
+                            previews::PreviewsType::DEFER_ALL_SCRIPT) {
+    defer_all_script_seen_ = true;
+  }
   if (previews_user_data->cache_control_no_transform_directive()) {
     origin_opt_out_occurred_ = true;
   }
@@ -139,6 +143,9 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   resource_loading_hints_eligibility_reason_ =
       previews_user_data->EligibilityReasonForPreview(
           previews::PreviewsType::RESOURCE_LOADING_HINTS);
+  defer_all_script_eligibility_reason_ =
+      previews_user_data->EligibilityReasonForPreview(
+          previews::PreviewsType::DEFER_ALL_SCRIPT);
   offline_eligibility_reason_ = previews_user_data->EligibilityReasonForPreview(
       previews::PreviewsType::OFFLINE);
 
@@ -219,9 +226,9 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   // preview can be attempted and not commit. This incurs the penalty but may
   // also cause no preview to be committed.
   if (!lite_page_seen_ && !noscript_seen_ && !resource_loading_hints_seen_ &&
-      !offline_preview_seen_ && !origin_opt_out_occurred_ &&
-      !save_data_enabled_ && !lite_page_redirect_seen_ &&
-      !navigation_restart_penalty_.has_value()) {
+      !defer_all_script_seen_ && !offline_preview_seen_ &&
+      !origin_opt_out_occurred_ && !save_data_enabled_ &&
+      !lite_page_redirect_seen_ && !navigation_restart_penalty_.has_value()) {
     return;
   }
 
@@ -235,6 +242,8 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setnoscript(1);
   if (resource_loading_hints_seen_)
     builder.Setresource_loading_hints(1);
+  if (defer_all_script_seen_)
+    builder.Setdefer_all_script(1);
   if (offline_preview_seen_)
     builder.Setoffline_preview(1);
   // 2 is set here for legacy reasons as it denotes an optout through the
@@ -270,6 +279,11 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
           resource_loading_hints_eligibility_reason_)) {
     builder.Setresource_loading_hints_eligibility_reason(
         static_cast<int>(resource_loading_hints_eligibility_reason_.value()));
+  }
+  if (ShouldOptionalEligibilityReasonBeRecorded(
+          defer_all_script_eligibility_reason_)) {
+    builder.Setdefer_all_script_eligibility_reason(
+        static_cast<int>(defer_all_script_eligibility_reason_.value()));
   }
   if (ShouldOptionalEligibilityReasonBeRecorded(offline_eligibility_reason_)) {
     builder.Setoffline_eligibility_reason(

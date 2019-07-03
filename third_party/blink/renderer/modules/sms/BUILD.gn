@@ -10,6 +10,8 @@ blink_modules_sources("sms") {
     "navigator_sms.h",
     "sms.cc",
     "sms.h",
+    "sms_metrics.cc",
+    "sms_metrics.h",
     "sms_receiver.cc",
     "sms_receiver.h",
   ]

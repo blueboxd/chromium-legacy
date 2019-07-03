@@ -17,7 +17,6 @@ namespace extensions {
 // then app_shell would also have to create a normal context and manage both.
 ShellBrowserContext::ShellBrowserContext()
     : content::ShellBrowserContext(false /* off_the_record */,
-                                   nullptr /* net_log */,
                                    true /* delay_services_creation */),
       storage_policy_(new ShellSpecialStoragePolicy) {}
 

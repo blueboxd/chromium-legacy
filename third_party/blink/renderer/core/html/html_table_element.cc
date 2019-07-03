@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -532,18 +533,18 @@ CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
                          *CSSInheritedValue::Create());
       break;
     case kSolidBorders:
-      style->SetProperty(
-          CSSPropertyID::kBorderWidth,
-          *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kPixels));
+      style->SetProperty(CSSPropertyID::kBorderWidth,
+                         *CSSNumericLiteralValue::Create(
+                             1, CSSPrimitiveValue::UnitType::kPixels));
       style->SetProperty(CSSPropertyID::kBorderStyle,
                          *CSSIdentifierValue::Create(CSSValueID::kSolid));
       style->SetProperty(CSSPropertyID::kBorderColor,
                          *CSSInheritedValue::Create());
       break;
     case kInsetBorders:
-      style->SetProperty(
-          CSSPropertyID::kBorderWidth,
-          *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kPixels));
+      style->SetProperty(CSSPropertyID::kBorderWidth,
+                         *CSSNumericLiteralValue::Create(
+                             1, CSSPrimitiveValue::UnitType::kPixels));
       style->SetProperty(CSSPropertyID::kBorderStyle,
                          *CSSIdentifierValue::Create(CSSValueID::kInset));
       style->SetProperty(CSSPropertyID::kBorderColor,
@@ -557,7 +558,7 @@ CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
 
   if (padding_)
     style->SetProperty(CSSPropertyID::kPadding,
-                       *CSSPrimitiveValue::Create(
+                       *CSSNumericLiteralValue::Create(
                            padding_, CSSPrimitiveValue::UnitType::kPixels));
 
   return style;

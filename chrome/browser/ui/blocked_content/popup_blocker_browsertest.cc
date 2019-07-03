@@ -526,9 +526,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   search_test_utils::WaitForTemplateURLServiceToLoad(service);
-  LocationBar* location_bar = browser()->window()->GetLocationBar();
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar, search_string);
-  OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
+  ui_test_utils::SendToOmniboxAndSubmit(browser(), search_string);
+  OmniboxEditModel* model =
+      browser()->window()->GetLocationBar()->GetOmniboxView()->model();
   EXPECT_EQ(GURL(search_string), model->CurrentMatch(nullptr).destination_url);
   EXPECT_EQ(base::ASCIIToUTF16(search_string),
             model->CurrentMatch(nullptr).contents);

@@ -23,10 +23,24 @@ class CORE_EXPORT RemoteSecurityContext
 
   void SetReplicatedOrigin(scoped_refptr<SecurityOrigin>);
   void ResetReplicatedContentSecurityPolicy();
-  void ResetSandboxFlags();
+  void ResetAndEnforceSandboxFlags(WebSandboxFlags flags);
 
-  // FIXME: implement
-  void DidUpdateSecurityOrigin() override {}
+  // Constructs the enforcement FeaturePolicy struct for this security context.
+  // The resulting FeaturePolicy is a combination of:
+  //   * |parsed_header|: from the FeaturePolicy part of the response headers.
+  //   * |container_policy|: from <iframe>'s allow attribute.
+  //   * |parent_feature_policy|: which is the current state of feature policies
+  //     in a parent browsing context (frame).
+  //   * |opener_feature_state|: the current state of the policies in an opener
+  //     if any.
+  // Note that at most one of the |parent_feature_policy| or
+  // |opener_feature_state| should be provided. The |container_policy| is empty
+  // for a top-level security context.
+  void InitializeFeaturePolicy(
+      const ParsedFeaturePolicy& parsed_header,
+      const ParsedFeaturePolicy& container_policy,
+      const FeaturePolicy* parent_feature_policy,
+      const FeaturePolicy::FeatureState* opener_feature_state);
 };
 
 }  // namespace blink

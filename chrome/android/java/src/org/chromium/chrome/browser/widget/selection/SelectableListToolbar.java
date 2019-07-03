@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
 import android.support.annotation.StringRes;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
@@ -47,6 +48,7 @@ import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.UiUtils;
 
 import java.util.List;
 
@@ -98,9 +100,9 @@ public class SelectableListToolbar<E>
     private boolean mUpdateStatusBarColor;
 
     protected NumberRollView mNumberRollView;
-    private TintedDrawable mNormalMenuButton;
-    private TintedDrawable mSelectionMenuButton;
-    private TintedDrawable mNavigationIconDrawable;
+    private Drawable mNormalMenuButton;
+    private Drawable mSelectionMenuButton;
+    private Drawable mNavigationIconDrawable;
 
     private int mNavigationButton;
     private int mTitleResId;
@@ -199,12 +201,12 @@ public class SelectableListToolbar<E>
 
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
         //                    buttons.
-        mNormalMenuButton = TintedDrawable.constructTintedDrawable(
-                getContext(), R.drawable.ic_more_vert_black_24dp);
-        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(getContext(),
-                R.drawable.ic_more_vert_black_24dp, R.color.default_icon_color_inverse);
-        mNavigationIconDrawable = TintedDrawable.constructTintedDrawable(
-                getContext(), R.drawable.ic_arrow_back_white_24dp);
+        mNormalMenuButton = UiUtils.getTintedDrawable(
+                getContext(), R.drawable.ic_more_vert_24dp, R.color.standard_mode_tint);
+        mSelectionMenuButton = UiUtils.getTintedDrawable(
+                getContext(), R.drawable.ic_more_vert_24dp, R.color.default_icon_color_inverse);
+        mNavigationIconDrawable = UiUtils.getTintedDrawable(
+                getContext(), R.drawable.ic_arrow_back_white_24dp, R.color.standard_mode_tint);
 
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
@@ -217,8 +219,8 @@ public class SelectableListToolbar<E>
         // Will not be needed after a tint is applied to all toolbar buttons.
         MenuItem extraMenuItem = getMenu().findItem(mExtraMenuItemId);
         if (extraMenuItem != null) {
-            Drawable iconDrawable = TintedDrawable.constructTintedDrawable(
-                    getContext(), R.drawable.ic_more_vert_black_24dp, R.color.standard_mode_tint);
+            Drawable iconDrawable = UiUtils.getTintedDrawable(
+                    getContext(), R.drawable.ic_more_vert_24dp, R.color.standard_mode_tint);
             extraMenuItem.setIcon(iconDrawable);
         }
     }
@@ -368,11 +370,11 @@ public class SelectableListToolbar<E>
             case NAVIGATION_BUTTON_NONE:
                 break;
             case NAVIGATION_BUTTON_BACK:
-                mNavigationIconDrawable.setTint(mDarkIconColorList);
+                DrawableCompat.setTintList(mNavigationIconDrawable, mDarkIconColorList);
                 contentDescriptionId = R.string.accessibility_toolbar_btn_back;
                 break;
             case NAVIGATION_BUTTON_SELECTION_BACK:
-                mNavigationIconDrawable.setTint(mLightIconColorList);
+                DrawableCompat.setTintList(mNavigationIconDrawable, mLightIconColorList);
                 contentDescriptionId = R.string.accessibility_cancel_selection;
                 break;
             default:

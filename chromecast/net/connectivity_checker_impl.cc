@@ -159,7 +159,8 @@ void ConnectivityCheckerImpl::CheckInternal() {
 
   DVLOG(1) << "Connectivity check: url=" << *connectivity_check_url_;
   url_request_ = url_request_context_->CreateRequest(
-      *connectivity_check_url_, net::MAXIMUM_PRIORITY, this);
+      *connectivity_check_url_, net::MAXIMUM_PRIORITY, this,
+      MISSING_TRAFFIC_ANNOTATION);
   url_request_->set_method("HEAD");
   url_request_->Start();
 

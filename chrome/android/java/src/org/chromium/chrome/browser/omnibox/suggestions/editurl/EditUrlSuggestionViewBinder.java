@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -60,7 +61,8 @@ public class EditUrlSuggestionViewBinder {
             view.setImageBitmap(bitmap);
         } else {
             boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
-            Drawable icon = view.getContext().getResources().getDrawable(R.drawable.ic_globe_24dp);
+            Drawable icon =
+                    AppCompatResources.getDrawable(view.getContext(), R.drawable.ic_globe_24dp);
             int color = view.getContext().getResources().getColor(useDarkColors
                             ? R.color.default_icon_color_secondary_list
                             : R.color.white_mode_tint);

@@ -374,8 +374,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   }
 
   // Set all LineLayoutItems in the inline box subtree should do full paint
-  // invalidation and clear the first line style cache.
-  void SetShouldDoFullPaintInvalidationForFirstLine();
+  // invalidation.
+  void SetShouldDoFullPaintInvalidationRecursively();
 
 #define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase)               \
  public:                                                                \

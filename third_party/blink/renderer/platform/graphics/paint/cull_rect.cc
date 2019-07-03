@@ -103,7 +103,8 @@ void CullRect::ApplyTransforms(const TransformPaintPropertyNode& source,
   for (const auto* t = &destination; t != &source; t = t->Parent()) {
     if (!t) {
       // |source| is not an ancestor of |destination|. Simply map.
-      GeometryMapper::SourceToDestinationRect(source, destination, rect_);
+      if (!IsInfinite())
+        GeometryMapper::SourceToDestinationRect(source, destination, rect_);
       return;
     }
     if (t->ScrollNode())

@@ -622,87 +622,6 @@
       },
     },
   },
-  # TODO(bpastene): Remove 'chromium.chrome' when it's been switched to 'chrome'
-  {
-    'name': 'chromium.chrome',
-    'machines': {
-      'chromeos-amd64-generic-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-      },
-      'chromeos-betty-google-rel': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_friendly_gtests',
-          'isolated_scripts': 'chromeos_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm',
-            },
-          ],
-        },
-      },
-      'linux-chromeos-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_sandbox',
-          'linux_symbols',
-          'symupload'
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
-      'linux-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome/installer/linux',
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
-      },
-      'mac-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'mac_10.14',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
-      },
-      'win-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_official_builder',
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'win10',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
-      },
-    },
-  },
   {
     'name': 'chromium.chromiumos',
     'machines': {
@@ -2408,6 +2327,9 @@
           'pie',
           'walleye',
         ],
+        'additional_compile_targets': [
+          'angle_apks',
+        ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
@@ -2432,6 +2354,9 @@
           'gpu_pool',
           'pie',
           'walleye',
+        ],
+        'additional_compile_targets': [
+          'angle_apks',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',

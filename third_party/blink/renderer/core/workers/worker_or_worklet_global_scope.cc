@@ -168,6 +168,7 @@ class OutsideSettingsCSPDelegate final
 
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
+    scoped_refptr<SecurityOrigin> origin,
     Agent* agent,
     OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     const String& name,
@@ -179,6 +180,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     : ExecutionContext(isolate,
                        agent,
                        MakeGarbageCollected<OriginTrialContext>()),
+      SecurityContext(std::move(origin), WebSandboxFlags::kNone, nullptr),
       off_main_thread_fetch_option_(off_main_thread_fetch_option),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
@@ -395,6 +397,14 @@ scoped_refptr<base::SingleThreadTaskRunner>
 WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   DCHECK(IsContextThread());
   return GetThread()->GetTaskRunner(type);
+}
+
+void WorkerOrWorkletGlobalScope::ApplySandboxFlags(SandboxFlags mask) {
+  sandbox_flags_ |= mask;
+  if (IsSandboxed(WebSandboxFlags::kOrigin) &&
+      !GetSecurityOrigin()->IsOpaque()) {
+    SetSecurityOrigin(GetSecurityOrigin()->DeriveNewOpaqueOrigin());
+  }
 }
 
 void WorkerOrWorkletGlobalScope::SetOutsideContentSecurityPolicyHeaders(

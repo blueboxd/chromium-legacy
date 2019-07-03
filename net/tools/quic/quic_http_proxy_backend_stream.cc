@@ -12,6 +12,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 
@@ -188,7 +189,7 @@ void QuicHttpProxyBackendStream::SetUpload(
 void QuicHttpProxyBackendStream::SendRequestOnBackendThread() {
   DCHECK(quic_proxy_task_runner_->BelongsToCurrentThread());
   url_request_ = proxy_context_->GetURLRequestContext()->CreateRequest(
-      url_, net::DEFAULT_PRIORITY, this);
+      url_, net::DEFAULT_PRIORITY, this, MISSING_TRAFFIC_ANNOTATION);
   url_request_->set_method(method_type_);
   url_request_->SetExtraRequestHeaders(request_headers_);
   if (upload_) {

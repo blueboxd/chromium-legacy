@@ -1701,4 +1701,28 @@ TEST_P(PaintPropertyTreeUpdateTest, BackfaceVisibilityInvalidatesProperties) {
   EXPECT_TRUE(span->GetLayoutObject()->NeedsPaintPropertyUpdate());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, FixedPositionCompositing) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="space" style="height: 200px"></div>
+    <div id="fixed" style="position: fixed; top: 50px; left: 60px">Fixed</div>
+  )HTML");
+
+  EXPECT_FALSE(PaintPropertiesForElement("fixed"));
+
+  auto* space = GetDocument().getElementById("space");
+  space->setAttribute(html_names::kStyleAttr, "height: 2000px");
+  UpdateAllLifecyclePhasesForTest();
+  auto* properties = PaintPropertiesForElement("fixed");
+  ASSERT_TRUE(properties);
+  auto* paint_offset_translation = properties->PaintOffsetTranslation();
+  ASSERT_TRUE(paint_offset_translation);
+  EXPECT_EQ(FloatSize(60, 50), paint_offset_translation->Translation2D());
+  EXPECT_TRUE(paint_offset_translation->HasDirectCompositingReasons());
+  EXPECT_FALSE(properties->Transform());
+
+  space->setAttribute(html_names::kStyleAttr, "height: 100px");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(PaintPropertiesForElement("fixed"));
+}
+
 }  // namespace blink

@@ -36,7 +36,6 @@ uint32_t recursive_hash(const char* str, int N) {
 std::map<int, std::string> kReservedAnnotations = {
     {TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test"},
     {PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test_partial"},
-    {NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code, "undefined"},
     {MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code, "missing"}};
 
 struct AnnotationID {

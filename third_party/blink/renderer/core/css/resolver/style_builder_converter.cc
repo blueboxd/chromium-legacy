@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
@@ -1465,8 +1466,8 @@ float StyleBuilderConverter::ConvertTextStrokeWidth(StyleResolverState& state,
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && IsValidCSSValueID(identifier_value->GetValueID())) {
     float multiplier = ConvertLineWidth<float>(state, value);
-    return CSSPrimitiveValue::Create(multiplier / 48,
-                                     CSSPrimitiveValue::UnitType::kEms)
+    return CSSNumericLiteralValue::Create(multiplier / 48,
+                                          CSSPrimitiveValue::UnitType::kEms)
         ->ComputeLength<float>(state.CssToLengthConversionData());
   }
   return To<CSSPrimitiveValue>(value).ComputeLength<float>(
@@ -1726,7 +1727,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       // Instead of the actual zoom, use 1 to avoid potential rounding errors
       Length length = primitive_value->ConvertToLength(
           css_to_length_conversion_data.CopyWithAdjustedZoom(1));
-      return *CSSPrimitiveValue::Create(length, 1);
+      return *CSSPrimitiveValue::CreateFromLength(length, 1);
     }
 
     // If we encounter a calculated number that was not resolved during
@@ -1739,21 +1740,24 @@ static const CSSValue& ComputeRegisteredPropertyValue(
          CSSPrimitiveValue::UnitType::kNumber)) {
       double double_value = primitive_value->CssCalcValue()->DoubleValue();
       auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
-      return *CSSPrimitiveValue::Create(std::round(double_value), unit_type);
+      return *CSSNumericLiteralValue::Create(std::round(double_value),
+                                             unit_type);
     }
 
     if (primitive_value->IsAngle()) {
-      return *CSSPrimitiveValue::Create(primitive_value->ComputeDegrees(),
-                                        CSSPrimitiveValue::UnitType::kDegrees);
+      return *CSSNumericLiteralValue::Create(
+          primitive_value->ComputeDegrees(),
+          CSSPrimitiveValue::UnitType::kDegrees);
     }
 
     if (primitive_value->IsTime()) {
-      return *CSSPrimitiveValue::Create(primitive_value->ComputeSeconds(),
-                                        CSSPrimitiveValue::UnitType::kSeconds);
+      return *CSSNumericLiteralValue::Create(
+          primitive_value->ComputeSeconds(),
+          CSSPrimitiveValue::UnitType::kSeconds);
     }
 
     if (primitive_value->IsResolution()) {
-      return *CSSPrimitiveValue::Create(
+      return *CSSNumericLiteralValue::Create(
           primitive_value->ComputeDotsPerPixel(),
           CSSPrimitiveValue::UnitType::kDotsPerPixel);
     }

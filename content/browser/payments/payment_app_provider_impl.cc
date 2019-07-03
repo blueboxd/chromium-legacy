@@ -206,12 +206,11 @@ class RespondWithCallbacks
 
   int request_id() { return request_id_; }
 
-  void AbortPaymentSinceOpennedWindowClosing() {
+  void AbortPaymentSinceOpennedWindowClosing(PaymentEventResponseType reason) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     service_worker_version_->FinishRequest(request_id_, false);
-    RespondWithErrorAndDeleteSelf(
-        PaymentEventResponseType::PAYMENT_HANDLER_WINDOW_CLOSING);
+    RespondWithErrorAndDeleteSelf(reason);
   }
 
  private:
@@ -440,14 +439,15 @@ void CheckPermissionForPaymentApps(
   std::move(callback).Run(std::move(permitted_apps));
 }
 
-void AbortInvokePaymentApp(BrowserContext* browser_context) {
+void AbortInvokePaymentApp(BrowserContext* browser_context,
+                           PaymentEventResponseType reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RespondWithCallbacks* callback =
       InvokePaymentAppCallbackRepository::GetInstance()->GetCallback(
           browser_context);
   if (callback)
-    callback->AbortPaymentSinceOpennedWindowClosing();
+    callback->AbortPaymentSinceOpennedWindowClosing(reason);
 }
 
 }  // namespace
@@ -584,12 +584,13 @@ void PaymentAppProviderImpl::CloseOpenedWindow(
 }
 
 void PaymentAppProviderImpl::OnClosingOpenedWindow(
-    BrowserContext* browser_context) {
+    BrowserContext* browser_context,
+    PaymentEventResponseType reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AbortInvokePaymentApp, browser_context));
+      base::BindOnce(&AbortInvokePaymentApp, browser_context, reason));
 }
 
 bool PaymentAppProviderImpl::IsValidInstallablePaymentApp(

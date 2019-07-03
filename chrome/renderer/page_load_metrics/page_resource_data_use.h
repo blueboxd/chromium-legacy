@@ -37,8 +37,8 @@ class PageResourceDataUse {
   // Updates received bytes.
   void DidReceiveTransferSizeUpdate(int received_data_length);
 
-  // Updates received bytes from encoded length, returns whether it was updated.
-  bool DidCompleteResponse(const network::URLLoaderCompletionStatus& status);
+  // Updates received bytes from encoded length.
+  void DidCompleteResponse(const network::URLLoaderCompletionStatus& status);
 
   // Flags the resource as canceled.
   void DidCancelResponse();

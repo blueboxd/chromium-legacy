@@ -323,9 +323,9 @@ void SearchTabHelper::OnToggleMostVisitedOrCustomLinks() {
     instant_service_->ToggleMostVisitedOrCustomLinks();
 }
 
-void SearchTabHelper::OnToggleShortcutsVisibility() {
+void SearchTabHelper::OnToggleShortcutsVisibility(bool do_notify) {
   if (instant_service_)
-    instant_service_->ToggleShortcutsVisibility();
+    instant_service_->ToggleShortcutsVisibility(do_notify);
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,

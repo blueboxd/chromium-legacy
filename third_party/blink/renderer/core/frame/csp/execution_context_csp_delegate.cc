@@ -43,7 +43,25 @@ const KURL& ExecutionContextCSPDelegate::Url() const {
 }
 
 void ExecutionContextCSPDelegate::SetSandboxFlags(SandboxFlags mask) {
-  GetSecurityContext().EnforceSandboxFlags(mask);
+  // Ideally sandbox flags are determined at construction time since
+  // sandbox flags influence the security origin and that influences
+  // the Agent that is assigned for the ExecutionContext. Changing
+  // an ExecutionContext's agent in the middle of an object lifecycle
+  // is not permitted.
+
+  // Since Workers and Worklets don't share agents (each one is unique)
+  // we allow them to apply new sandbox flags on top of the current ones.
+  WorkerOrWorkletGlobalScope* worklet_or_worker =
+      DynamicTo<WorkerOrWorkletGlobalScope>(execution_context_.Get());
+  if (worklet_or_worker) {
+    worklet_or_worker->ApplySandboxFlags(mask);
+  }
+  // Just check that all the sandbox flags that are set by CSP have
+  // already been set on the security context. Meta tags can't set them
+  // and we should have already constructed the document with the correct
+  // sandbox flags from CSP already.
+  WebSandboxFlags flags = GetSecurityContext().GetSandboxFlags();
+  CHECK_EQ(flags | mask, flags);
 }
 
 void ExecutionContextCSPDelegate::SetAddressSpace(mojom::IPAddressSpace space) {

@@ -9,6 +9,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/time/time.h"
 #include "device/vr/orientation/orientation_device.h"
+#include "device/vr/vr_display_impl.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -134,13 +135,38 @@ void VROrientationDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   DCHECK(!options->immersive);
+
   // TODO(http://crbug.com/695937): Perform a check to see if sensors are
   // available when RequestSession is called for non-immersive sessions.
-  ReturnNonImmersiveSession(std::move(callback));
+
+  mojom::XRFrameDataProviderPtr data_provider;
+  mojom::XRSessionControllerPtr controller;
+  magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
+      this, mojo::MakeRequest(&data_provider), mojo::MakeRequest(&controller)));
+
+  auto session = mojom::XRSession::New();
+  session->data_provider = data_provider.PassInterface();
+  if (display_info_) {
+    session->display_info = display_info_.Clone();
+  }
+
+  std::move(callback).Run(std::move(session), std::move(controller));
 }
 
-void VROrientationDevice::OnGetInlineFrameData(
+void VROrientationDevice::EndMagicWindowSession(VRDisplayImpl* session) {
+  base::EraseIf(magic_window_sessions_,
+                [session](const std::unique_ptr<VRDisplayImpl>& item) {
+                  return item.get() == session;
+                });
+}
+
+void VROrientationDevice::GetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
+  if (!inline_poses_enabled_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
   mojom::VRPosePtr pose = mojom::VRPose::New();
 
   SensorReading latest_reading;

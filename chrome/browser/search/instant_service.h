@@ -112,8 +112,10 @@ class InstantService : public KeyedService,
   // false and does nothing if the profile is using a third-party NTP.
   bool ToggleMostVisitedOrCustomLinks();
   // Invoked when the Instant page wants to toggle visibility of the tiles.
+  // Notifies observers only if |do_notify| is true, which is usually the case
+  // if |ToggleMostVisitedOrCustomLinks| will not be called immediately after.
   // Returns false and does nothing if the profile is using a third-party NTP.
-  bool ToggleShortcutsVisibility();
+  bool ToggleShortcutsVisibility(bool do_notify);
 
   // Invoked to update theme information for the NTP.
   void UpdateThemeInfo();

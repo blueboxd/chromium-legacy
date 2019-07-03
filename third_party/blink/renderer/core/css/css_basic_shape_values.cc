@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
 
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -90,9 +91,9 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
     if ((side == CSSValueID::kRight || side == CSSValueID::kBottom) &&
         amount->IsPercentage()) {
       side = default_side;
-      amount =
-          CSSPrimitiveValue::Create(100 - amount->GetFloatValue(),
-                                    CSSPrimitiveValue::UnitType::kPercentage);
+      amount = CSSNumericLiteralValue::Create(
+          100 - amount->GetFloatValue(),
+          CSSPrimitiveValue::UnitType::kPercentage);
     }
   } else {
     amount = To<CSSPrimitiveValue>(offset);
@@ -100,14 +101,14 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
 
   if (side == CSSValueID::kCenter) {
     side = default_side;
-    amount =
-        CSSPrimitiveValue::Create(50, CSSPrimitiveValue::UnitType::kPercentage);
+    amount = CSSNumericLiteralValue::Create(
+        50, CSSPrimitiveValue::UnitType::kPercentage);
   } else if (!amount || (amount->IsLength() && !amount->GetFloatValue())) {
     if (side == CSSValueID::kRight || side == CSSValueID::kBottom)
-      amount = CSSPrimitiveValue::Create(
+      amount = CSSNumericLiteralValue::Create(
           100, CSSPrimitiveValue::UnitType::kPercentage);
     else
-      amount = CSSPrimitiveValue::Create(
+      amount = CSSNumericLiteralValue::Create(
           0, CSSPrimitiveValue::UnitType::kPercentage);
     side = default_side;
   }

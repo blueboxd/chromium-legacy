@@ -2485,6 +2485,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-on-device-head-suggestions",
+    "owners": [ "cechen", "suggest-2g@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-pedal-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76

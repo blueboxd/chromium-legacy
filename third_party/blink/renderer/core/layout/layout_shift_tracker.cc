@@ -119,7 +119,8 @@ LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
              &LayoutShiftTracker::TimerFired),
       frame_max_distance_(0.0),
       overall_max_distance_(0.0),
-      observed_input_or_scroll_(false) {}
+      observed_input_or_scroll_(false),
+      most_recent_input_timestamp_initialized_(false) {}
 
 void LayoutShiftTracker::AccumulateJank(
     const LayoutObject& source,
@@ -291,7 +292,8 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   double jank_fraction = region_area / viewport_area;
   DCHECK_GT(jank_fraction, 0);
 
-  score_ += jank_fraction;
+  if (!HadRecentInput())
+    score_ += jank_fraction;
 
   DCHECK_GT(frame_max_distance_, 0.0);
   double viewport_max_dimension = std::max(viewport.Width(), viewport.Height());
@@ -302,13 +304,14 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   double jank_fraction_with_move_distance =
       jank_fraction * move_distance_factor;
 
-  score_with_move_distance_ += jank_fraction_with_move_distance;
+  if (!HadRecentInput())
+    score_with_move_distance_ += jank_fraction_with_move_distance;
 
   overall_max_distance_ = std::max(overall_max_distance_, frame_max_distance_);
 
   LocalFrame& frame = frame_view_->GetFrame();
 #if DCHECK_IS_ON()
-  if (ShouldLog(frame)) {
+  if (!HadRecentInput() && ShouldLog(frame)) {
     DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", viewport was "
              << (jank_fraction * 100) << "% janked; raising score to "
@@ -319,16 +322,18 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   TRACE_EVENT_INSTANT2(
       "loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD, "data",
       PerFrameTraceData(jank_fraction, jank_fraction_with_move_distance,
-                        granularity_scale),
+                        granularity_scale, HadRecentInput()),
       "frame", ToTraceValue(&frame));
 
-  double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
-  if (weighted_jank_fraction > 0) {
-    weighted_score_ += weighted_jank_fraction;
-    if (RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled())
-      weighted_jank_fraction *= move_distance_factor;
-    frame.Client()->DidObserveLayoutJank(weighted_jank_fraction,
-                                         observed_input_or_scroll_);
+  if (!HadRecentInput()) {
+    double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
+    if (weighted_jank_fraction > 0) {
+      weighted_score_ += weighted_jank_fraction;
+      if (RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled())
+        weighted_jank_fraction *= move_distance_factor;
+      frame.Client()->DidObserveLayoutJank(weighted_jank_fraction,
+                                           observed_input_or_scroll_);
+    }
   }
 
   if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
@@ -336,23 +341,22 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       frame.DomWindow()) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
-    if (performance &&
-        (performance->HasObserverFor(PerformanceEntry::kLayoutJank) ||
-         performance->ShouldBufferEntries())) {
+    if (performance) {
       performance->AddLayoutJankFraction(
           RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled()
               ? jank_fraction_with_move_distance
-              : jank_fraction);
+              : jank_fraction,
+          HadRecentInput(), most_recent_input_timestamp_);
     }
   }
 
   if (use_sweep_line) {
-    if (!region_experimental_.IsEmpty()) {
+    if (!region_experimental_.IsEmpty() && !HadRecentInput()) {
       SetLayoutShiftRects(region_experimental_.GetRects(), 1, true);
     }
     region_experimental_.Reset();
   } else {
-    if (!region_.IsEmpty()) {
+    if (!region_.IsEmpty() && !HadRecentInput()) {
       SetLayoutShiftRects(region_.Rects(), granularity_scale, false);
     }
     region_ = Region();
@@ -378,6 +382,16 @@ void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
 
   // This cancels any previously scheduled task from the same timer.
   timer_.StartOneShot(kTimerDelay, FROM_HERE);
+  UpdateInputTimestamp(event.TimeStamp());
+}
+
+void LayoutShiftTracker::UpdateInputTimestamp(base::TimeTicks timestamp) {
+  if (!most_recent_input_timestamp_initialized_) {
+    most_recent_input_timestamp_ = timestamp;
+    most_recent_input_timestamp_initialized_ = true;
+  } else if (timestamp > most_recent_input_timestamp_) {
+    most_recent_input_timestamp_ = timestamp;
+  }
 }
 
 void LayoutShiftTracker::NotifyScroll(ScrollType scroll_type) {
@@ -392,6 +406,11 @@ void LayoutShiftTracker::NotifyScroll(ScrollType scroll_type) {
 void LayoutShiftTracker::NotifyViewportSizeChanged() {
   // This cancels any previously scheduled task from the same timer.
   timer_.StartOneShot(kTimerDelay, FROM_HERE);
+  UpdateInputTimestamp(base::TimeTicks::Now());
+}
+
+bool LayoutShiftTracker::HadRecentInput() {
+  return timer_.IsActive();
 }
 
 bool LayoutShiftTracker::IsActive() {
@@ -399,17 +418,14 @@ bool LayoutShiftTracker::IsActive() {
   // SVGImage::DataChanged.
   if (frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient())
     return false;
-
-  if (timer_.IsActive())
-    return false;
-
   return true;
 }
 
 std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
     double jank_fraction,
     double jank_fraction_with_move_distance,
-    double granularity_scale) const {
+    double granularity_scale,
+    bool input_detected) const {
   auto value = std::make_unique<TracedValue>();
   value->SetDouble("score", jank_fraction);
   value->SetDouble("score_with_move_distance",
@@ -424,6 +440,7 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
   else
     RegionToTracedValue(region_, granularity_scale, *value);
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
+  value->SetBoolean("had_recent_input", input_detected);
   return value;
 }
 

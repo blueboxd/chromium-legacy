@@ -10,11 +10,13 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -134,9 +136,55 @@ class MockWakeLockService : public mojom::blink::WakeLockService {
     mock_wake_lock_[pos].Bind(std::move(request));
   }
 
-  MockWakeLock
-      mock_wake_lock_[static_cast<size_t>(WakeLockType::kMaxValue) + 1];
+  MockWakeLock mock_wake_lock_[kWakeLockTypeCount];
   mojo::BindingSet<mojom::blink::WakeLockService> bindings_;
+};
+
+// Mock PermissionService implementation. It only implements the bits required
+// by the Wake Lock code, and it mimics what we do in the content and chrome
+// layers: screen locks are always granted, system locks are always denied.
+class MockPermissionService final : public mojom::blink::PermissionService {
+ public:
+  MockPermissionService();
+  ~MockPermissionService() override;
+
+  void BindRequest(mojo::ScopedMessagePipeHandle handle);
+
+  void SetPermissionResponse(WakeLockType, mojom::blink::PermissionStatus);
+
+  void WaitForPermissionRequest(WakeLockType);
+
+ private:
+  bool GetWakeLockTypeFromDescriptor(
+      const mojom::blink::PermissionDescriptorPtr& descriptor,
+      WakeLockType* output);
+
+  // mojom::blink::PermissionService implementation
+  void HasPermission(mojom::blink::PermissionDescriptorPtr permission,
+                     HasPermissionCallback) override;
+  void RequestPermission(mojom::blink::PermissionDescriptorPtr permission,
+                         bool user_gesture,
+                         RequestPermissionCallback) override;
+  void RequestPermissions(
+      Vector<mojom::blink::PermissionDescriptorPtr> permissions,
+      bool user_gesture,
+      RequestPermissionsCallback) override;
+  void RevokePermission(mojom::blink::PermissionDescriptorPtr permission,
+                        RevokePermissionCallback) override;
+  void AddPermissionObserver(mojom::blink::PermissionDescriptorPtr permission,
+                             mojom::blink::PermissionStatus last_known_status,
+                             mojom::blink::PermissionObserverPtr) override;
+
+  void OnConnectionError();
+
+  mojo::Binding<mojom::blink::PermissionService> binding_{this};
+
+  base::Optional<mojom::blink::PermissionStatus>
+      permission_responses_[kWakeLockTypeCount];
+
+  base::OnceClosure request_permission_callbacks_[static_cast<size_t>(
+                                                      WakeLockType::kMaxValue) +
+                                                  1];
 };
 
 // Overrides requests for WakeLockService with MockWakeLockService instances.
@@ -161,11 +209,29 @@ class WakeLockTestingContext final {
         mojom::blink::WakeLockService::Name_,
         WTF::BindRepeating(&MockWakeLockService::BindRequest,
                            WTF::Unretained(mock_wake_lock_service)));
+    test_api.SetBinderForName(
+        mojom::blink::PermissionService::Name_,
+        WTF::BindRepeating(&MockPermissionService::BindRequest,
+                           WTF::Unretained(&permission_service_)));
   }
 
   Document* GetDocument() { return &testing_scope_.GetDocument(); }
   LocalFrame* Frame() { return &testing_scope_.GetFrame(); }
   ScriptState* GetScriptState() { return testing_scope_.GetScriptState(); }
+  MockPermissionService& GetPermissionService() { return permission_service_; }
+
+  // Synchronously waits for |promise| to be fulfilled.
+  ScriptPromise WaitForPromiseFulfillment(ScriptPromise promise) {
+    base::RunLoop run_loop;
+    ScriptPromise return_promise =
+        promise.Then(ClosureRunnerFunction::CreateFunction(
+            GetScriptState(), run_loop.QuitClosure()));
+    // Execute pending microtasks, otherwise it can take a few seconds for the
+    // promise to resolve.
+    v8::MicrotasksScope::PerformCheckpoint(GetScriptState()->GetIsolate());
+    run_loop.Run();
+    return return_promise;
+  }
 
   // Synchronously waits for |promise| to be rejected.
   void WaitForPromiseRejection(ScriptPromise promise) {
@@ -180,8 +246,9 @@ class WakeLockTestingContext final {
   }
 
  private:
-  // Helper class for WaitForPromiseRejection(). It provides a function that is
-  // invoked when a ScriptPromise is rejected that invokes |callback|.
+  // Helper class for WaitForPromise{Fulfillment,Rejection}(). It provides a
+  // function that is invoked when a ScriptPromise is rejected that invokes
+  // |callback|.
   class ClosureRunnerFunction final : public ScriptFunction {
    public:
     static v8::Local<v8::Function> CreateFunction(
@@ -206,14 +273,27 @@ class WakeLockTestingContext final {
     base::RepeatingClosure callback_;
   };
 
+  MockPermissionService permission_service_;
   V8TestingScope testing_scope_;
 };
 
-// Shorthand for getting a PromiseState out of a ScriptPromise.
-inline v8::Promise::PromiseState GetScriptPromiseState(
-    const ScriptPromise& promise) {
-  return promise.V8Value().As<v8::Promise>()->State();
-}
+// Utility functions to retrieve promise data out of a ScriptPromise.
+class ScriptPromiseUtils final {
+ public:
+  // Shorthand for getting a PromiseState out of a ScriptPromise.
+  static v8::Promise::PromiseState GetPromiseState(
+      const ScriptPromise& promise);
+
+  // Shorthand for getting a String out of a ScriptPromise. This assumes the
+  // promise has been resolved with a string. If anything wrong happens during
+  // the conversion, an empty string is returned.
+  static String GetPromiseResolutionAsString(const ScriptPromise&);
+
+  // Shorthand for getting a DOMException* out of a ScriptPromise. This assumes
+  // the promise has been resolved with a DOMException. If the conversion fails,
+  // nullptr is returned.
+  static DOMException* GetPromiseResolutionAsDOMException(const ScriptPromise&);
+};
 
 }  // namespace blink
 

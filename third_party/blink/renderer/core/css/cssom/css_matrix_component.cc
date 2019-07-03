@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_matrix_component.h"
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_matrix_component_options.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
@@ -58,7 +59,7 @@ const CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
     double values[6] = {matrix_->a(), matrix_->b(), matrix_->c(),
                         matrix_->d(), matrix_->e(), matrix_->f()};
     for (double value : values) {
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           value, CSSPrimitiveValue::UnitType::kNumber));
     }
   } else {
@@ -68,7 +69,7 @@ const CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
         matrix_->m31(), matrix_->m32(), matrix_->m33(), matrix_->m34(),
         matrix_->m41(), matrix_->m42(), matrix_->m43(), matrix_->m44()};
     for (double value : values) {
-      result->Append(*CSSPrimitiveValue::Create(
+      result->Append(*CSSNumericLiteralValue::Create(
           value, CSSPrimitiveValue::UnitType::kNumber));
     }
   }

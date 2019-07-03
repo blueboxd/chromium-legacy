@@ -2479,6 +2479,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNewAnswerLayoutName,
      flag_descriptions::kOmniboxNewAnswerLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxNewAnswerLayout)},
+
+    {"omnibox-on-device-head-suggestions",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-rich-entity-suggestions",
@@ -3315,10 +3320,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppReinstallZeroState)},
 #endif  // OS_CHROMEOS
 
-    {"enable-bloated-renderer-detection",
-     flag_descriptions::kEnableBloatedRendererDetectionName,
-     flag_descriptions::kEnableBloatedRendererDetectionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBloatedRendererDetection)},
     {"enable-sync-uss-bookmarks",
      flag_descriptions::kEnableSyncUSSBookmarksName,
      flag_descriptions::kEnableSyncUSSBookmarksDescription, kOsAll,

@@ -19,6 +19,35 @@ namespace remoting {
 
 namespace {
 
+constexpr base::TimeDelta kBackoffResetDelay = base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kNetworkChangeDelay = base::TimeDelta::FromSeconds(5);
+
+const net::BackoffEntry::Policy kBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms. (1s)
+    1000,
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.5,
+
+    // Maximum amount of time we are willing to delay our request in ms. (1m)
+    60000,
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Starts with initial delay.
+    false,
+};
+
 const char* SignalStrategyErrorToString(SignalStrategy::Error error) {
   switch (error) {
     case SignalStrategy::OK:
@@ -39,7 +68,8 @@ FtlSignalingConnector::FtlSignalingConnector(
     FtlSignalStrategy* signal_strategy,
     base::OnceClosure auth_failed_callback)
     : signal_strategy_(signal_strategy),
-      auth_failed_callback_(std::move(auth_failed_callback)) {
+      auth_failed_callback_(std::move(auth_failed_callback)),
+      backoff_(&kBackoffPolicy) {
   DCHECK(signal_strategy_);
   DCHECK(auth_failed_callback_);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -53,7 +83,7 @@ FtlSignalingConnector::~FtlSignalingConnector() {
 }
 
 void FtlSignalingConnector::Start() {
-  TryReconnect();
+  TryReconnect(base::TimeDelta());
 }
 
 void FtlSignalingConnector::OnSignalStrategyStateChange(
@@ -63,15 +93,19 @@ void FtlSignalingConnector::OnSignalStrategyStateChange(
   if (state == SignalStrategy::CONNECTED) {
     HOST_LOG << "Signaling connected. New JID: "
              << signal_strategy_->GetLocalAddress().jid();
+    backoff_reset_timer_.Start(FROM_HERE, kBackoffResetDelay, &backoff_,
+                               &net::BackoffEntry::Reset);
   } else if (state == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Signaling disconnected. error="
              << SignalStrategyErrorToString(signal_strategy_->GetError());
+    backoff_reset_timer_.AbandonAndStop();
+    backoff_.InformOfRequest(false);
     if (signal_strategy_->IsSignInError() &&
         signal_strategy_->GetError() == SignalStrategy::AUTHENTICATION_FAILED) {
       std::move(auth_failed_callback_).Run();
       return;
     }
-    TryReconnect();
+    TryReconnect(backoff_.GetTimeUntilRelease());
   }
 }
 
@@ -86,14 +120,13 @@ void FtlSignalingConnector::OnNetworkChanged(
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
       signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Network state changed to online.";
-    TryReconnect();
+    TryReconnect(kNetworkChangeDelay);
   }
 }
 
-void FtlSignalingConnector::TryReconnect() {
+void FtlSignalingConnector::TryReconnect(base::TimeDelta delay) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  timer_.Start(FROM_HERE, base::TimeDelta(), this,
-               &FtlSignalingConnector::DoReconnect);
+  timer_.Start(FROM_HERE, delay, this, &FtlSignalingConnector::DoReconnect);
 }
 
 void FtlSignalingConnector::DoReconnect() {

@@ -399,6 +399,20 @@ CreditCard GetCreditCard2() {
   return credit_card;
 }
 
+CreditCard GetExpiredCreditCard() {
+  CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
+                    "11", "2002", "1");
+  return credit_card;
+}
+
+CreditCard GetIncompleteCreditCard() {
+  CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  SetCreditCardInfo(&credit_card, "", "4111111111111111" /* Visa */, "11",
+                    "2022", "1");
+  return credit_card;
+}
+
 CreditCard GetVerifiedCreditCard() {
   CreditCard credit_card(GetCreditCard());
   credit_card.set_origin(kSettingsOrigin);

@@ -23,6 +23,7 @@ class WakeLock final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static ScriptPromise requestPermission(ScriptState*, const WTF::String& type);
   static ScriptPromise request(ScriptState*,
                                const WTF::String& type,
                                WakeLockRequestOptions*);

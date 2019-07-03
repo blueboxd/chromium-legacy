@@ -98,6 +98,9 @@ class CORE_EXPORT PointerEventManager
 
   void RemoveLastMousePosition();
 
+  void SetLastMousePositionForPointerUnlock(
+      FloatPoint mouse_lock_position_in_screen);
+
   Element* GetMouseCaptureTarget();
 
   // Sends any outstanding events. For example it notifies TouchEventManager
@@ -190,6 +193,13 @@ class CORE_EXPORT PointerEventManager
                           EventTarget* entered_target,
                           PointerEvent*);
   void SetElementUnderPointer(PointerEvent*, Element*);
+
+  // First movement after entering a new frame should be 0 as the new frame
+  // doesn't have the info for the previous events. This function sets the
+  // LastPosition to be same as current event position when target is in
+  // different frame, so that movement_x/y will be 0.
+  void SetLastPointerPositionForFrameBoundary(const WebPointerEvent& event,
+                                              Element* target);
 
   // Processes the assignment of |m_pointerCaptureTarget| from
   // |m_pendingPointerCaptureTarget| and sends the got/lostpointercapture

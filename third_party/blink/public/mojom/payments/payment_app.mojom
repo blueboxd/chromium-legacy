@@ -33,6 +33,7 @@ enum PaymentEventResponseType {
   PAYMENT_DETAILS_NOT_OBJECT,
   PAYMENT_EVENT_BROWSER_ERROR,
   PAYMENT_EVENT_TIMEOUT,
+  PAYMENT_HANDLER_INSECURE_NAVIGATION,
 };
 
 // This struct is provided to hold a payment instrument from render

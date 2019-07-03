@@ -20,6 +20,8 @@ namespace remoting {
 
 namespace {
 
+constexpr base::TimeDelta kBackoffResetDelay = base::TimeDelta::FromSeconds(30);
+
 // The delay between reconnect attempts will increase exponentially up
 // to the maximum specified here.
 const int kMaxReconnectDelaySeconds = 10 * 60;
@@ -72,10 +74,12 @@ void SignalingConnector::OnSignalStrategyStateChange(
   if (state == SignalStrategy::CONNECTED) {
     HOST_LOG << "Signaling connected. New JID: "
              << signal_strategy_->GetLocalAddress().jid();
-    reconnect_attempts_ = 0;
+    backoff_reset_timer_.Start(FROM_HERE, kBackoffResetDelay, this,
+                               &SignalingConnector::ResetBackoff);
   } else if (state == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Signaling disconnected. error="
              << SignalStrategyErrorToString(signal_strategy_->GetError());
+    backoff_reset_timer_.Stop();
     reconnect_attempts_++;
 
     if (signal_strategy_->GetError() == SignalStrategy::AUTHENTICATION_FAILED)
@@ -143,7 +147,7 @@ void SignalingConnector::ScheduleTryReconnect() {
 void SignalingConnector::ResetAndTryReconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   signal_strategy_->Disconnect();
-  reconnect_attempts_ = 0;
+  ResetBackoff();
   timer_.Stop();
   ScheduleTryReconnect();
 }
@@ -178,6 +182,11 @@ void SignalingConnector::OnDnsBlackholeCheckerDone(bool allow) {
     oauth_token_getter_->CallWithToken(base::BindOnce(
         &SignalingConnector::OnAccessToken, weak_factory_.GetWeakPtr()));
   }
+}
+
+void SignalingConnector::ResetBackoff() {
+  backoff_reset_timer_.Stop();
+  reconnect_attempts_ = 0;
 }
 
 }  // namespace remoting

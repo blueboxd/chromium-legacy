@@ -15,6 +15,7 @@
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/content_features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/task_scheduler/post_task_android.h"
@@ -278,11 +279,10 @@ std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
   options.message_loop_type = base::MessagePump::Type::IO;
   options.task_environment =
       g_browser_task_executor->browser_io_task_environment_.release();
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   // Up the priority of the |io_thread_| as some of its IPCs relate to
   // display tasks.
-  options.priority = base::ThreadPriority::DISPLAY;
-#endif
+  if (base::FeatureList::IsEnabled(features::kBrowserUseDisplayThreadPriority))
+    options.priority = base::ThreadPriority::DISPLAY;
   if (!io_thread->StartWithOptions(options))
     LOG(FATAL) << "Failed to start BrowserThread:IO";
   return io_thread;

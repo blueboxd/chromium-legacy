@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
 
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -32,9 +33,12 @@ CSSAxisValue::CSSAxisValue(CSSValueID axis_name)
     default:
       NOTREACHED();
   }
-  Append(*CSSPrimitiveValue::Create(x, CSSPrimitiveValue::UnitType::kNumber));
-  Append(*CSSPrimitiveValue::Create(y, CSSPrimitiveValue::UnitType::kNumber));
-  Append(*CSSPrimitiveValue::Create(z, CSSPrimitiveValue::UnitType::kNumber));
+  Append(
+      *CSSNumericLiteralValue::Create(x, CSSPrimitiveValue::UnitType::kNumber));
+  Append(
+      *CSSNumericLiteralValue::Create(y, CSSPrimitiveValue::UnitType::kNumber));
+  Append(
+      *CSSNumericLiteralValue::Create(z, CSSPrimitiveValue::UnitType::kNumber));
 }
 
 CSSAxisValue::CSSAxisValue(double x, double y, double z)
@@ -51,9 +55,12 @@ CSSAxisValue::CSSAxisValue(double x, double y, double z)
     z = 1;
     axis_name_ = CSSValueID::kZ;
   }
-  Append(*CSSPrimitiveValue::Create(x, CSSPrimitiveValue::UnitType::kNumber));
-  Append(*CSSPrimitiveValue::Create(y, CSSPrimitiveValue::UnitType::kNumber));
-  Append(*CSSPrimitiveValue::Create(z, CSSPrimitiveValue::UnitType::kNumber));
+  Append(
+      *CSSNumericLiteralValue::Create(x, CSSPrimitiveValue::UnitType::kNumber));
+  Append(
+      *CSSNumericLiteralValue::Create(y, CSSPrimitiveValue::UnitType::kNumber));
+  Append(
+      *CSSNumericLiteralValue::Create(z, CSSPrimitiveValue::UnitType::kNumber));
 }
 
 String CSSAxisValue::CustomCSSText() const {

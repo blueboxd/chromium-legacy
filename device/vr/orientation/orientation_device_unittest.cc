@@ -15,6 +15,7 @@
 #include "device/vr/orientation/orientation_device.h"
 #include "device/vr/test/fake_orientation_provider.h"
 #include "device/vr/test/fake_sensor_provider.h"
+#include "device/vr/vr_display_impl.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
@@ -135,7 +136,7 @@ class VROrientationDeviceTest : public testing::Test {
 
     base::RunLoop loop;
 
-    device_->OnGetInlineFrameData(base::BindOnce(
+    device_->GetInlineFrameData(base::BindOnce(
         [](base::OnceClosure quit_closure,
            base::OnceCallback<void(mojom::VRPosePtr)> callback,
            mojom::XRFrameDataPtr ptr) {
@@ -148,6 +149,43 @@ class VROrientationDeviceTest : public testing::Test {
 
     // Ensure the pose request callback runs.
     loop.Run();
+  }
+
+  void AssertInlineFrameDataAvailable(bool expect_available) {
+    if (expect_available) {
+      device_->GetInlineFrameData(base::BindOnce(
+          [](device::mojom::XRFrameDataPtr data) { EXPECT_TRUE(data); }));
+    } else {
+      device_->GetInlineFrameData(base::BindOnce(
+          [](device::mojom::XRFrameDataPtr data) { EXPECT_FALSE(data); }));
+    }
+  }
+
+  void SetInlinePosesEnabled(bool enabled) {
+    device_->SetInlinePosesEnabled(enabled);
+  }
+
+  std::unique_ptr<VRDisplayImpl> MakeDisplay() {
+    mojom::XRFrameDataProviderPtr data_provider;
+    mojom::XRSessionControllerPtr controller;
+    return std::make_unique<VRDisplayImpl>(device_.get(),
+                                           mojo::MakeRequest(&data_provider),
+                                           mojo::MakeRequest(&controller));
+  }
+
+  void TryGetFrameData(VRDisplayImpl* display, bool expect_null) {
+    bool was_called = false;
+    auto callback = [](bool expect_null, bool* was_called,
+                       mojom::XRFrameDataPtr data) {
+      *was_called = true;
+      EXPECT_EQ(expect_null, !data);
+    };
+
+    static_cast<mojom::XRFrameDataProvider*>(display)->GetFrameData(
+        nullptr, base::BindOnce(callback, expect_null, &was_called));
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
   }
 
   mojom::SensorInitParamsPtr FakeInitParams() {
@@ -340,6 +378,28 @@ TEST_F(VROrientationDeviceTest, OrientationLandscape270Test) {
                    EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
                    EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
+}
+
+TEST_F(VROrientationDeviceTest, NoMagicWindowPosesWhileBrowsing) {
+  InitializeDevice(FakeInitParams());
+
+  AssertInlineFrameDataAvailable(true);
+  SetInlinePosesEnabled(false);
+  AssertInlineFrameDataAvailable(false);
+}
+
+TEST_F(VROrientationDeviceTest, GetFrameDataHelper) {
+  InitializeDevice(FakeInitParams());
+
+  // 1) create display impl with restricted frame data
+  // 2) call GetFrameData and check behavior
+  // 3) unrestrict frame data
+  // 4) call GetFrameData and check behavior
+  std::unique_ptr<VRDisplayImpl> display = MakeDisplay();
+  TryGetFrameData(display.get(), true);
+  static_cast<mojom::XRSessionController*>(display.get())
+      ->SetFrameDataRestricted(false);
+  TryGetFrameData(display.get(), false);
 }
 
 }  // namespace device

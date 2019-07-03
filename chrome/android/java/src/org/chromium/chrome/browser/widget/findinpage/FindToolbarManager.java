@@ -9,26 +9,33 @@ import android.view.View;
 import android.view.ViewStub;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manages the interactions with the find toolbar.
  */
 public class FindToolbarManager {
     private FindToolbar mFindToolbar;
-    private final ChromeActivity mActivity;
+    private final ViewStub mFindToolbarStub;
+    private final TabModelSelector mTabModelSelector;
+    private final WindowAndroid mWindowAndroid;
     private final ActionMode.Callback mCallback;
     private final ObserverList<FindToolbarObserver> mObservers;
 
     /**
      * Creates an instance of a {@link FindToolbarManager}.
-     * @param activity The ChromeActivity that contains the {@link FindToolbar}.
+     * @param findToolbarStub The {@link ViewStub} where for the find toolbar.
+     * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
+     * @param windowAndroid The {@link WindowAndroid} for the containing activity.
      * @param callback The ActionMode.Callback that will be used when selection occurs on the
      *         {@link FindToolbar}.
      */
-    public FindToolbarManager(ChromeActivity activity, ActionMode.Callback callback) {
-        mActivity = activity;
+    public FindToolbarManager(ViewStub findToolbarStub, TabModelSelector tabModelSelector,
+            WindowAndroid windowAndroid, ActionMode.Callback callback) {
+        mFindToolbarStub = findToolbarStub;
+        mTabModelSelector = tabModelSelector;
+        mWindowAndroid = windowAndroid;
         mCallback = callback;
         mObservers = new ObserverList<FindToolbarObserver>();
     }
@@ -62,13 +69,9 @@ public class FindToolbarManager {
      */
     public void showToolbar() {
         if (mFindToolbar == null) {
-            int stubId = R.id.find_toolbar_stub;
-            if (mActivity.isTablet()) {
-                stubId = R.id.find_toolbar_tablet_stub;
-            }
-            mFindToolbar = (FindToolbar) ((ViewStub) mActivity.findViewById(stubId)).inflate();
-            mFindToolbar.setTabModelSelector(mActivity.getTabModelSelector());
-            mFindToolbar.setWindowAndroid(mActivity.getWindowAndroid());
+            mFindToolbar = (FindToolbar) mFindToolbarStub.inflate();
+            mFindToolbar.setTabModelSelector(mTabModelSelector);
+            mFindToolbar.setWindowAndroid(mWindowAndroid);
             mFindToolbar.setActionModeCallbackForTextEdit(mCallback);
             mFindToolbar.setObserver(new FindToolbarObserver() {
                 @Override

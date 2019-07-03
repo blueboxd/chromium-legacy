@@ -982,10 +982,6 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
         master_prefs_->suppress_default_browser_prompt_for_version);
   }
 
-#if defined(OS_WIN)
-  if (!master_prefs_->welcome_page_on_os_upgrade_enabled)
-    local_state->SetBoolean(prefs::kWelcomePageOnOSUpgradeEnabled, false);
-#endif
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }

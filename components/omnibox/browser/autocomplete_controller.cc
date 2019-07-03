@@ -34,6 +34,7 @@
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
+#include "components/omnibox/browser/on_device_head_provider.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
@@ -222,6 +223,7 @@ AutocompleteController::AutocompleteController(
       keyword_provider_(nullptr),
       search_provider_(nullptr),
       zero_suggest_provider_(nullptr),
+      on_device_head_provider_(nullptr),
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       done_(true),
       in_start_(false),
@@ -277,6 +279,11 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_DOCUMENT) {
     document_provider_ = DocumentProvider::Create(provider_client_.get(), this);
     providers_.push_back(document_provider_);
+  }
+  if (provider_types & AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
+    on_device_head_provider_ =
+        OnDeviceHeadProvider::Create(provider_client_.get(), this);
+    providers_.push_back(on_device_head_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD) {
 #if !defined(OS_IOS)

@@ -144,9 +144,7 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
   if (response.result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
-    unsigned current_surface_texture = buffer_queue_->RecreateBuffers();
-    if (current_surface_texture)
-      BindFramebuffer();
+    buffer_queue_->FreeAllSurfaces();
     force_swap = true;
   }
 

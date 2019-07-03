@@ -44,7 +44,6 @@ class NullExecutionContext
   bool TasksNeedPause() override { return tasks_need_pause_; }
   void SetTasksNeedPause(bool flag) { tasks_need_pause_ = flag; }
 
-  void DidUpdateSecurityOrigin() override {}
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
   DOMTimerCoordinator* Timers() override { return nullptr; }

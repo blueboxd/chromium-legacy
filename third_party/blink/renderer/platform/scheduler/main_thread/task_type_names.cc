@@ -61,10 +61,6 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "IdleTask";
     case TaskType::kMiscPlatformAPI:
       return "MiscPlatformAPI";
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-      return "ExperimentalWebSchedulingUserInteraction";
-    case TaskType::kExperimentalWebSchedulingBestEffort:
-      return "ExperimentalWebSchedulingBackground";
     case TaskType::kFontLoading:
       return "FontLoading";
     case TaskType::kApplicationLifeCycle:

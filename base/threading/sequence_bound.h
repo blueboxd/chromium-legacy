@@ -234,8 +234,8 @@ class SequenceBound {
 
   // Run on impl thread to construct |t|'s storage.
   template <typename... Args>
-  static void ConstructOwnerRecord(T* t, Args&&... args) {
-    new (t) T(std::forward<Args>(args)...);
+  static void ConstructOwnerRecord(T* t, std::decay_t<Args>&&... args) {
+    new (t) T(std::move(args)...);
   }
 
   // Destruct the object associated with |t|, and delete |storage|.

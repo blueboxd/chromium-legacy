@@ -21,7 +21,6 @@
 
 namespace net {
 class CertVerifier;
-class NetLog;
 class NetworkDelegate;
 class ProxyConfigService;
 class ProxyResolutionService;
@@ -38,8 +37,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       const base::FilePath& base_path,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors,
-      net::NetLog* net_log);
+      URLRequestInterceptorScopedVector request_interceptors);
 
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override;
@@ -75,7 +73,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   bool shut_down_;
   base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  net::NetLog* net_log_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;

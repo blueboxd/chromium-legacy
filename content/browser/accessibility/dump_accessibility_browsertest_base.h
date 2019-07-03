@@ -13,7 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/test/content_browser_test.h"
 
 namespace content {

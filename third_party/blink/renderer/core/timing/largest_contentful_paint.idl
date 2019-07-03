@@ -6,6 +6,10 @@
 [Exposed=Window, RuntimeEnabled=LargestContentfulPaint]
 interface LargestContentfulPaint : PerformanceEntry {
     readonly attribute unsigned long long size;
+    readonly attribute DOMHighResTimeStamp responseEnd;
+    readonly attribute DOMString id;
+    readonly attribute DOMString url;
+    readonly attribute Element? element;
 
     [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

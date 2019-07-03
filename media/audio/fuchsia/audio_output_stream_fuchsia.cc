@@ -221,7 +221,9 @@ void AudioOutputStreamFuchsia::PumpSamples() {
   // Save samples to the |payload_buffer_|.
   size_t packet_size = parameters_.GetBytesPerBuffer(kSampleFormatF32);
   DCHECK_LE(payload_buffer_pos_ + packet_size, payload_buffer_.size());
-  audio_bus_->ToInterleaved<media::Float32SampleTypeTraits>(
+
+  // We skip clipping since that occurs at the shared memory boundary.
+  audio_bus_->ToInterleaved<Float32SampleTypeTraitsNoClip>(
       audio_bus_->frames(),
       reinterpret_cast<float*>(static_cast<uint8_t*>(payload_buffer_.memory()) +
                                payload_buffer_pos_));

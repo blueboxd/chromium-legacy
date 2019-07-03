@@ -1034,10 +1034,10 @@ class PolicyTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver observer(web_contents);
-    LocationBar* location_bar = browser->window()->GetLocationBar();
-    ui_test_utils::SendToOmniboxAndSubmit(location_bar, url);
-    OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
+    ui_test_utils::SendToOmniboxAndSubmit(browser, url);
     observer.Wait();
+    OmniboxEditModel* model =
+        browser->window()->GetLocationBar()->GetOmniboxView()->model();
     EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
     EXPECT_EQ(GetExpectedSearchURL(expect_safe_search), web_contents->GetURL());
   }
@@ -1522,9 +1522,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
 
   // Verify that searching from the omnibox uses kSearchURL.
   chrome::FocusLocationBar(browser());
-  LocationBar* location_bar = browser()->window()->GetLocationBar();
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "stuff to search for");
-  OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
+  ui_test_utils::SendToOmniboxAndSubmit(browser(), "stuff to search for");
+  OmniboxEditModel* model =
+      browser()->window()->GetLocationBar()->GetOmniboxView()->model();
   EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1539,7 +1539,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_TRUE(service->GetDefaultSearchProvider());
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(service->GetDefaultSearchProvider());
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "should not work");
+  ui_test_utils::SendToOmniboxAndSubmit(browser(), "should not work");
   // This means that submitting won't trigger any action.
   EXPECT_FALSE(model->CurrentMatch(NULL).destination_url.is_valid());
   EXPECT_EQ(GURL(url::kAboutBlankURL), web_contents->GetURL());

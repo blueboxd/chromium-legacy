@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -296,6 +297,9 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)showTabsButton {
+  if (IsIPadIdiom()) {
+    return grey_accessibilityID(@"Enter Tab Switcher");
+  }
   return grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
 }

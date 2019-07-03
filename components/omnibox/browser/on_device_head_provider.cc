@@ -9,13 +9,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/base_search_provider.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
 namespace {
 const int kBaseRelevance = 99;
@@ -127,10 +130,21 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
     // request.
     std::unique_ptr<OnDeviceHeadProviderParams> params = base::WrapUnique(
         new OnDeviceHeadProviderParams(on_device_search_request_id_, input));
-    task_runner_->PostTask(
+
+    // Since the On Device provider usually runs much faster than online
+    // providers, it will be very likely users will see on device suggestions
+    // first and then the Omnibox UI gets refreshed to show suggestions fetched
+    // from server, if we issue both requests simultaneously.
+    // Therefore, we might want to delay the On Device suggest requests (and
+    // also apply a timeout to search default loader) to mitigate this issue.
+    int delay = base::GetFieldTrialParamByFeatureAsInt(
+        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs", 0);
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&OnDeviceHeadProvider::DoSearch,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(params)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(params)),
+        delay > 0 ? base::TimeDelta::FromMilliseconds(delay)
+                  : base::TimeDelta());
   }
 }
 
@@ -196,7 +210,12 @@ void OnDeviceHeadProvider::SearchDone(
 
   if (IsDefaultSearchProviderGoogle(template_url_service) && !params->failed) {
     matches_.clear();
-    int relevance = kBaseRelevance;
+    int relevance =
+        (params->input.type() != metrics::OmniboxInputType::URL)
+            ? base::GetFieldTrialParamByFeatureAsInt(
+                  omnibox::kOnDeviceHeadProvider,
+                  "OnDeviceSuggestMaxScoreForNonUrlInput", kBaseRelevance)
+            : kBaseRelevance;
     for (const auto& item : params->suggestions) {
       matches_.push_back(BaseSearchProvider::CreateOnDeviceSearchSuggestion(
           /*autocomplete_provider=*/this, /*input=*/params->input,

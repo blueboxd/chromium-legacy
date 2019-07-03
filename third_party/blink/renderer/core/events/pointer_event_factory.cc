@@ -6,6 +6,8 @@
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 namespace blink {
@@ -94,13 +96,30 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
 
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
+  // TODO(crbug.com/802067): pointerrawupdate event's movements are not
+  // calculated.
   if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
       web_pointer_event.GetType() == WebInputEvent::kPointerMove) {
-    // TODO(eirage): pointerrawupdate event's movements are not calculated.
-    pointer_event_init->setMovementX(web_pointer_event.PositionInScreen().x -
-                                     last_global_position.X());
-    pointer_event_init->setMovementY(web_pointer_event.PositionInScreen().y -
-                                     last_global_position.Y());
+    // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
+    // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
+    // with the current behavior. We need to figure out what is the best
+    // behavior here.
+    float device_scale_factor = 1;
+    if (dom_window && dom_window->GetFrame()) {
+      LocalFrame* frame = dom_window->GetFrame();
+      if (frame->GetPage()->DeviceScaleFactorDeprecated() == 1) {
+        device_scale_factor = frame->GetPage()
+                                  ->GetChromeClient()
+                                  .GetScreenInfo()
+                                  .device_scale_factor;
+      }
+    }
+    pointer_event_init->setMovementX(
+        (web_pointer_event.PositionInScreen().x - last_global_position.X()) *
+        device_scale_factor);
+    pointer_event_init->setMovementY(
+        (web_pointer_event.PositionInScreen().y - last_global_position.Y()) *
+        device_scale_factor);
   }
 
   // If width/height is unknown we let PointerEventInit set it to 1.
@@ -316,14 +335,16 @@ PointerEvent* PointerEventFactory::Create(
   pointer_event_init->setCoalescedEvents(coalesced_pointer_events);
   pointer_event_init->setPredictedEvents(predicted_pointer_events);
 
-  SetLastPosition(pointer_event_init->pointerId(), web_pointer_event);
+  SetLastPosition(pointer_event_init->pointerId(),
+                  web_pointer_event.PositionInScreen());
   return PointerEvent::Create(type, pointer_event_init,
                               web_pointer_event.TimeStamp());
 }
 
-void PointerEventFactory::SetLastPosition(int pointer_id,
-                                          const WebPointerProperties& event) {
-  pointer_id_last_position_mapping_.Set(pointer_id, event.PositionInScreen());
+void PointerEventFactory::SetLastPosition(
+    int pointer_id,
+    const FloatPoint& position_in_screen) {
+  pointer_id_last_position_mapping_.Set(pointer_id, position_in_screen);
 }
 
 void PointerEventFactory::RemoveLastPosition(const int pointer_id) {

@@ -26,7 +26,6 @@
 #include "url/gurl.h"
 
 class Browser;
-class LocationBar;
 class Profile;
 
 namespace app_modal {
@@ -182,9 +181,12 @@ void WaitForHistoryToLoad(history::HistoryService* history_service);
 // Download the given file and waits for the download to complete.
 void DownloadURL(Browser* browser, const GURL& download_url);
 
+// Waits until the autocomplete controller reaches its done state.
+void WaitForAutocompleteDone(Browser* browser);
+
 // Send the given text to the omnibox and wait until it's updated.
 void SendToOmniboxAndSubmit(
-    LocationBar* location_bar,
+    Browser* browser,
     const std::string& input,
     base::TimeTicks match_selection_timestamp = base::TimeTicks());
 

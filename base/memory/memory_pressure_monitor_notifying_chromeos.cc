@@ -203,7 +203,7 @@ bool MemoryPressureMonitorNotifying::SupportsKernelNotifications() {
 }
 
 MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitorNotifying::GetCurrentPressureLevel() {
+MemoryPressureMonitorNotifying::GetCurrentPressureLevel() const {
   return current_memory_pressure_level_;
 }
 

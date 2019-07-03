@@ -75,7 +75,7 @@ const base::Feature kDirectCompositionUnderlays{
     "DirectCompositionUnderlays", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 const base::Feature kGpuUseDisplayThreadPriority{
     "GpuUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
 #else

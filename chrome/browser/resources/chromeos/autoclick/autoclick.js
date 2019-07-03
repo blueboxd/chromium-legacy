@@ -10,13 +10,23 @@
 const AUTOCLICK_FOCUS_RING_COLOR = '#aac9fa';
 
 /**
+ * The amount of time to wait before hiding the focus rings from the display.
+ * @private {number}
+ * @const
+ */
+const AUTOCLICK_FOCUS_RING_DISPLAY_TIME_MS = 250;
+
+/**
  * Class to manage Automatic Clicks' interaction with the accessibility tree.
  */
 class Autoclick {
-  constructor() {
-    console.log('Autoclick is enabled.');
-
-
+  constructor(blinkFocusRings) {
+    /**
+     * Whether to blink the focus rings. Disabled during tests due to
+     * complications with callbacks.
+     * @private {boolean}
+     */
+    this.blinkFocusRings_ = blinkFocusRings;
 
     /**
      * @private {chrome.automation.AutomationNode}
@@ -53,6 +63,8 @@ class Autoclick {
    * @private
    */
   setFocusRings_(rects) {
+    // TODO(katie): Add a property to FocusRingInfo to set FocusRingBehavior
+    // to fade out.
     chrome.accessibilityPrivate.setFocusRings([{
       rects: rects,
       type: chrome.accessibilityPrivate.FocusType.SOLID,
@@ -97,8 +109,26 @@ class Autoclick {
     }
     if (!node.location)
       return;
-    this.setFocusRings_([node.location]);
-    chrome.accessibilityPrivate.onScrollableBoundsForPointFound(node.location);
+    let bounds = node.location;
+    this.setFocusRings_([bounds]);
+    if (this.blinkFocusRings_) {
+      // Blink the focus ring briefly per UX spec, using timeouts to turn it
+      // off, on, and off again. The focus ring is only used to show the user
+      // where the scroll might occur, but is not persisted after the blink.
+      // Turn off after 500 ms.
+      setTimeout(() => {
+        this.setFocusRings_([]);
+      }, AUTOCLICK_FOCUS_RING_DISPLAY_TIME_MS * 2);
+      // Back on after an additional 250 ms.
+      setTimeout(() => {
+        this.setFocusRings_([bounds]);
+      }, AUTOCLICK_FOCUS_RING_DISPLAY_TIME_MS * 3);
+      // And off after another 500 ms.
+      setTimeout(() => {
+        this.setFocusRings_([]);
+      }, AUTOCLICK_FOCUS_RING_DISPLAY_TIME_MS * 5);
+    }
+    chrome.accessibilityPrivate.onScrollableBoundsForPointFound(bounds);
   }
 
   /**
@@ -114,4 +144,4 @@ class Autoclick {
 }
 
 // Initialize the Autoclick extension.
-let autoclick = new Autoclick();
+let autoclick = new Autoclick(true /* blink focus rings */);

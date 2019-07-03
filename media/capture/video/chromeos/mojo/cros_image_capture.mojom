@@ -32,4 +32,15 @@ interface CrosImageCapture {
   // actual video device id.
   SetReprocessOption(string source_id, Effect effect)
       => (int32 status, media.mojom.Blob blob);
+
+  // Sets the frame rate range for upcoming configured camera stream.
+  // The |source_id| might need translation to be actual video device id.
+  // The |stream_width| and |stream_height| are the target stream resolution
+  // that the caller sets the frame rate range for.
+  // The |min_frame_rate| and |max_frame_rate| represent the frame rate range.
+  // If the given frame rate is valid and set successfully, |is_success| returns
+  // true. False otherwise.
+  SetFpsRange(string source_id, uint32 stream_width, uint32 stream_height,
+              int32 min_frame_rate, int32 max_frame_rate)
+      => (bool is_success);
 };

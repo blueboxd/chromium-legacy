@@ -58,8 +58,8 @@ class CORE_EXPORT SourceLocation {
     return std::move(stack_trace_);
   }
 
-  std::unique_ptr<SourceLocation> Clone()
-      const;  // Safe to pass between threads.
+  // Safe to pass between threads, drops async chain in stack trace.
+  std::unique_ptr<SourceLocation> Clone() const;
 
   // No-op when stack trace is unknown.
   void ToTracedValue(TracedValue*, const char* name) const;
@@ -70,6 +70,9 @@ class CORE_EXPORT SourceLocation {
   // Could be null when stack trace is unknown.
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
   BuildInspectorObject() const;
+
+  std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
+  BuildInspectorObject(int max_async_depth) const;
 
  private:
   static std::unique_ptr<SourceLocation> CreateFromNonEmptyV8StackTrace(

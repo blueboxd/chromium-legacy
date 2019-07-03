@@ -26,6 +26,11 @@ namespace blink {
 // https://w3c.github.io/wake-lock/#the-wakelocktype-enum
 enum class WakeLockType : int8_t { kScreen, kSystem, kMaxValue = kSystem };
 
+// Useful for creating arrays with size N, where N is the number of different
+// wake lock types.
+constexpr size_t kWakeLockTypeCount =
+    static_cast<size_t>(WakeLockType::kMaxValue) + 1;
+
 MODULES_EXPORT device::mojom::blink::WakeLockType ToMojomWakeLockType(
     WakeLockType type);
 

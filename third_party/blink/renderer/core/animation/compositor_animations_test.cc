@@ -1645,11 +1645,9 @@ void UpdateDummyEffectNode(ObjectPaintProperties& properties,
 }
 
 }  // namespace
+
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorTransformBasedOnPaintProperties) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   layout_object->EnsureIdForTestingProxy();
@@ -1682,9 +1680,6 @@ TEST_P(AnimationCompositorAnimationsTest,
 
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorEffectBasedOnPaintProperties) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   layout_object->EnsureIdForTestingProxy();
@@ -1780,8 +1775,9 @@ TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimationNoneRegistered) {
 }
 
 TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
-  // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   LoadTestData("transform-animation.html");
@@ -1792,22 +1788,20 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
   ASSERT_NE(nullptr, properties);
   const auto* transform = properties->Transform();
   ASSERT_NE(nullptr, transform);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->HasActiveTransformAnimation());
-    // Make sure the animation state is initialized in paint properties.
-    auto* property_trees =
-        document->View()->RootCcLayer()->layer_tree_host()->property_trees();
-    auto* cc_transform = property_trees->transform_tree.Node(
-        property_trees->element_id_to_transform_node_index
-            [transform->GetCompositorElementId()]);
-    ASSERT_NE(nullptr, cc_transform);
-    EXPECT_TRUE(cc_transform->has_potential_animation);
-    EXPECT_TRUE(cc_transform->is_currently_animating);
-    EXPECT_EQ(cc::kNotScaled, cc_transform->starting_animation_scale);
-    EXPECT_EQ(cc::kNotScaled, cc_transform->maximum_animation_scale);
-  }
+  EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  EXPECT_TRUE(transform->HasActiveTransformAnimation());
+
+  // Make sure the animation state is initialized in paint properties.
+  auto* property_trees =
+      document->View()->RootCcLayer()->layer_tree_host()->property_trees();
+  auto* cc_transform = property_trees->transform_tree.Node(
+      property_trees->element_id_to_transform_node_index
+          [transform->GetCompositorElementId()]);
+  ASSERT_NE(nullptr, cc_transform);
+  EXPECT_TRUE(cc_transform->has_potential_animation);
+  EXPECT_TRUE(cc_transform->is_currently_animating);
+  EXPECT_EQ(cc::kNotScaled, cc_transform->starting_animation_scale);
+  EXPECT_EQ(cc::kNotScaled, cc_transform->maximum_animation_scale);
 
   // Make sure the animation is started on the compositor.
   EXPECT_EQ(CheckCanStartElementOnCompositor(*target),
@@ -1819,8 +1813,9 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
 }
 
 TEST_P(AnimationCompositorAnimationsTest, CompositedScaleAnimation) {
-  // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   LoadTestData("scale-animation.html");
@@ -1831,22 +1826,20 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedScaleAnimation) {
   ASSERT_NE(nullptr, properties);
   const auto* transform = properties->Transform();
   ASSERT_NE(nullptr, transform);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->HasActiveTransformAnimation());
-    // Make sure the animation state is initialized in paint properties.
-    auto* property_trees =
-        document->View()->RootCcLayer()->layer_tree_host()->property_trees();
-    auto* cc_transform = property_trees->transform_tree.Node(
-        property_trees->element_id_to_transform_node_index
-            [transform->GetCompositorElementId()]);
-    ASSERT_NE(nullptr, cc_transform);
-    EXPECT_TRUE(cc_transform->has_potential_animation);
-    EXPECT_TRUE(cc_transform->is_currently_animating);
-    EXPECT_EQ(2.f, cc_transform->starting_animation_scale);
-    EXPECT_EQ(5.f, cc_transform->maximum_animation_scale);
-  }
+  EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  EXPECT_TRUE(transform->HasActiveTransformAnimation());
+
+  // Make sure the animation state is initialized in paint properties.
+  auto* property_trees =
+      document->View()->RootCcLayer()->layer_tree_host()->property_trees();
+  auto* cc_transform = property_trees->transform_tree.Node(
+      property_trees->element_id_to_transform_node_index
+          [transform->GetCompositorElementId()]);
+  ASSERT_NE(nullptr, cc_transform);
+  EXPECT_TRUE(cc_transform->has_potential_animation);
+  EXPECT_TRUE(cc_transform->is_currently_animating);
+  EXPECT_EQ(2.f, cc_transform->starting_animation_scale);
+  EXPECT_EQ(5.f, cc_transform->maximum_animation_scale);
 
   // Make sure the animation is started on the compositor.
   EXPECT_EQ(CheckCanStartElementOnCompositor(*target),

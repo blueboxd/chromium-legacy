@@ -54,6 +54,8 @@
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_layout_function_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
@@ -95,7 +97,7 @@ CSSValue* CSSValue::Create(const Length& value, float zoom) {
     case Length::kPercent:
     case Length::kFixed:
     case Length::kCalculated:
-      return CSSPrimitiveValue::Create(value, zoom);
+      return CSSPrimitiveValue::CreateFromLength(value, zoom);
     case Length::kDeviceWidth:
     case Length::kDeviceHeight:
     case Length::kMaxSizeNone:
@@ -214,7 +216,9 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSGridTemplateAreasValue>(*this, other);
       case kPathClass:
         return CompareCSSValues<CSSPathValue>(*this, other);
-      case kPrimitiveClass:
+      case kNumericLiteralClass:
+      case kMathFunctionClass:
+        // TODO(crbug.com/979895): Should call into the subclasses.
         return CompareCSSValues<CSSPrimitiveValue>(*this, other);
       case kRayClass:
         return CompareCSSValues<CSSRayValue>(*this, other);
@@ -324,7 +328,9 @@ String CSSValue::CssText() const {
       return To<CSSGridTemplateAreasValue>(this)->CustomCSSText();
     case kPathClass:
       return To<CSSPathValue>(this)->CustomCSSText();
-    case kPrimitiveClass:
+    case kNumericLiteralClass:
+    case kMathFunctionClass:
+      // TODO(crbug.com/979895): Should call into the subclasses.
       return To<CSSPrimitiveValue>(this)->CustomCSSText();
     case kRayClass:
       return To<CSSRayValue>(this)->CustomCSSText();
@@ -462,8 +468,11 @@ void CSSValue::FinalizeGarbageCollectedObject() {
     case kPathClass:
       To<CSSPathValue>(this)->~CSSPathValue();
       return;
-    case kPrimitiveClass:
-      To<CSSPrimitiveValue>(this)->~CSSPrimitiveValue();
+    case kNumericLiteralClass:
+      To<CSSNumericLiteralValue>(this)->~CSSNumericLiteralValue();
+      return;
+    case kMathFunctionClass:
+      To<CSSMathFunctionValue>(this)->~CSSMathFunctionValue();
       return;
     case kRayClass:
       To<CSSRayValue>(this)->~CSSRayValue();
@@ -619,8 +628,11 @@ void CSSValue::Trace(blink::Visitor* visitor) {
     case kPathClass:
       To<CSSPathValue>(this)->TraceAfterDispatch(visitor);
       return;
-    case kPrimitiveClass:
-      To<CSSPrimitiveValue>(this)->TraceAfterDispatch(visitor);
+    case kNumericLiteralClass:
+      To<CSSNumericLiteralValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kMathFunctionClass:
+      To<CSSMathFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kRayClass:
       To<CSSRayValue>(this)->TraceAfterDispatch(visitor);

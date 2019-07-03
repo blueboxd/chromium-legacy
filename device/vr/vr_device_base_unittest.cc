@@ -12,7 +12,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
-#include "device/vr/test/fake_vr_service_client.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,11 +93,6 @@ class VRDeviceTest : public testing::Test {
   ~VRDeviceTest() override {}
 
  protected:
-  void SetUp() override {
-    mojom::VRServiceClientPtr proxy;
-    client_ = std::make_unique<FakeVRServiceClient>(mojo::MakeRequest(&proxy));
-  }
-
   std::unique_ptr<VRDeviceBaseForTesting> MakeVRDevice() {
     std::unique_ptr<VRDeviceBaseForTesting> device =
         std::make_unique<VRDeviceBaseForTesting>();
@@ -113,9 +107,6 @@ class VRDeviceTest : public testing::Test {
     return display_info;
   }
 
-  FakeVRServiceClient* client() { return client_.get(); }
-
-  std::unique_ptr<FakeVRServiceClient> client_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceTest);
@@ -155,18 +146,6 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
   EXPECT_CALL(listener, DoOnDeviceActivated(mounted, testing::_)).Times(1);
   device->FireDisplayActivate();
   base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(VRDeviceTest, NoMagicWindowPosesWhileBrowsing) {
-  auto device =
-      std::make_unique<FakeVRDevice>(static_cast<device::mojom::XRDeviceId>(1));
-  device->SetPose(mojom::VRPose::New());
-
-  device->GetInlineFrameData(base::BindOnce(
-      [](device::mojom::XRFrameDataPtr data) { EXPECT_TRUE(data); }));
-  device->SetInlinePosesEnabled(false);
-  device->GetInlineFrameData(base::BindOnce(
-      [](device::mojom::XRFrameDataPtr data) { EXPECT_FALSE(data); }));
 }
 
 }  // namespace device

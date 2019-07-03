@@ -322,12 +322,6 @@ void WindowPerformance::ReportLongTask(
   }
 }
 
-// We buffer Element Timing and Event Timing (long-latency events) entries until
-// onload, i.e., LoadEventStart is not reached yet.
-bool WindowPerformance::ShouldBufferEntries() {
-  return !timing() || !timing()->loadEventStart();
-}
-
 void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             base::TimeTicks start_time,
                                             base::TimeTicks processing_start,
@@ -387,7 +381,7 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
       NotifyObserversOfEntry(*entry);
     }
 
-    if (ShouldBufferEntries() && !IsEventTimingBufferFull())
+    if (!IsEventTimingBufferFull())
       AddEventTimingBuffer(*entry);
   }
   event_timings_.clear();
@@ -412,7 +406,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                       WebFeature::kElementTimingExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }
-  if (ShouldBufferEntries() && !IsElementTimingBufferFull())
+  if (!IsElementTimingBufferFull())
     AddElementTimingBuffer(*entry);
 }
 
@@ -431,21 +425,30 @@ void WindowPerformance::DispatchFirstInputTiming(
   first_input_timing_ = entry;
 }
 
-void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
+void WindowPerformance::AddLayoutJankFraction(double jank_fraction,
+                                              bool input_detected,
+                                              base::TimeTicks input_timestamp) {
   DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
       GetExecutionContext()));
-  auto* entry = MakeGarbageCollected<LayoutShift>(now(), jank_fraction);
+  auto* entry = MakeGarbageCollected<LayoutShift>(
+      now(), jank_fraction, input_detected,
+      input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)
+                     : 0.0);
   if (HasObserverFor(PerformanceEntry::kLayoutJank))
     NotifyObserversOfEntry(*entry);
-  if (ShouldBufferEntries())
-    AddLayoutJankBuffer(*entry);
+  AddLayoutJankBuffer(*entry);
 }
 
 void WindowPerformance::OnLargestContentfulPaintUpdated(
     base::TimeTicks paint_time,
-    uint64_t paint_size) {
+    uint64_t paint_size,
+    base::TimeTicks response_end,
+    const AtomicString& id,
+    const String& url,
+    Element* element) {
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
-      MonotonicTimeToDOMHighResTimeStamp(paint_time), paint_size);
+      MonotonicTimeToDOMHighResTimeStamp(paint_time), paint_size,
+      MonotonicTimeToDOMHighResTimeStamp(response_end), id, url, element);
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);

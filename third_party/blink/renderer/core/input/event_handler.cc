@@ -1401,6 +1401,12 @@ void EventHandler::ElementRemoved(Element* target) {
     mouse_wheel_event_manager_->ElementRemoved(target);
 }
 
+void EventHandler::SetMousePositionForPointerUnlock(
+    FloatPoint lock_position_in_screen) {
+  pointer_event_manager_->SetLastMousePositionForPointerUnlock(
+      lock_position_in_screen);
+}
+
 WebInputEventResult EventHandler::DispatchMousePointerEvent(
     const WebInputEvent::Type event_type,
     Element* target_element,

@@ -177,7 +177,7 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
 
   // Data that should only be used on the IO thread.
-  scoped_refptr<ContentVerifierIOData> io_data_;
+  ContentVerifierIOData io_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
 };

@@ -72,8 +72,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
       const base::string16& term) override;
   void PrefetchImage(const GURL& url) override;
   void StartServiceWorker(const GURL& destination_url) override;
-  void OnAutocompleteControllerResultReady(
-      AutocompleteController* controller) override;
   bool IsTabOpenWithURL(const GURL& url,
                         const AutocompleteInput* input) override;
   bool IsBrowserUpdateAvailable() const override;

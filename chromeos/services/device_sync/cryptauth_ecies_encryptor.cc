@@ -34,6 +34,11 @@ CryptAuthEciesEncryptor::PayloadAndKey::PayloadAndKey(
     const std::string& key)
     : payload(payload), key(key) {}
 
+bool CryptAuthEciesEncryptor::PayloadAndKey::operator==(
+    const PayloadAndKey& other) const {
+  return payload == other.payload && key == other.key;
+}
+
 CryptAuthEciesEncryptor::CryptAuthEciesEncryptor() = default;
 
 CryptAuthEciesEncryptor::~CryptAuthEciesEncryptor() = default;

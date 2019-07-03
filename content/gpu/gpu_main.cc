@@ -296,11 +296,13 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrGpuMain");
 
+#if !defined(OS_MACOSX)
   if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)) {
     // Set thread priority before sandbox initialization.
     base::PlatformThread::SetCurrentThreadPriority(
         base::ThreadPriority::DISPLAY);
   }
+#endif
 
   auto gpu_init = std::make_unique<gpu::GpuInit>();
   ContentSandboxHelper sandbox_helper;

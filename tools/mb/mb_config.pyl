@@ -87,16 +87,6 @@
       'x86 Emulator Tester': 'android_debug_static_bot_x86',
     },
 
-    # TODO(bpastene): Remove 'chromium.chrome' when it's been switched to 'chrome'
-    'chromium.chrome': {
-      'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
-      'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
-      'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
-      'linux-google-rel': 'official_goma',
-      'mac-google-rel': 'official_goma',
-      'win-google-rel': 'official_goma_x86',
-    },
-
     'chromium.chromedriver': {
       'Win7': 'release_bot_x86',
       'Mac 10.6': 'release_bot',
@@ -687,12 +677,6 @@
       'win_chrome_official': 'official_goma_x86',
     },
 
-    'tryserver.chromium.chrome': {
-      'chromeos-betty-chrome': 'official_cros_chrome_sdk_headless_ozone',
-      'linux-chrome': 'official_goma',
-      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',
-    },
-
     'tryserver.chromium.chromiumos': {
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
       # and two kevin bots when the PFQ has it enabled.
@@ -862,10 +846,6 @@
       'win_mojo': 'release_trybot_x86',
       'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_x86',
       'win_upload_clang': 'release_bot',
-    },
-
-    'tryserver.chrome.win': {
-      'win_chrome_official': 'official_goma_x86',
     },
 
     'tryserver.v8': {

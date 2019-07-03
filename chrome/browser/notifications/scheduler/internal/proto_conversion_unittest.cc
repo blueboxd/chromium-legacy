@@ -48,6 +48,16 @@ void TestNotificationEntryConversion(NotificationEntry* entry) {
       << " \n Expected: " << test::DebugString(&expected);
 }
 
+NotificationData::Button CreateButton(const char* text,
+                                      ActionButtonType type,
+                                      const char* id) {
+  NotificationData::Button button;
+  button.text = base::UTF8ToUTF16(text);
+  button.type = type;
+  button.id = id;
+  return button;
+}
+
 TEST(ProtoConversionTest, IconEntryFromProto) {
   IconProto proto;
   proto.set_uuid(kUuid);
@@ -185,6 +195,23 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
     entry.schedule_params.priority = priority;
     TestNotificationEntryConversion(&entry);
   }
+}
+
+// Verifies buttons are converted correctly to proto buffers.
+TEST(ProtoConversionTest, NotificationEntryButtonsConversion) {
+  NotificationEntry entry(SchedulerClientType::kTest2, kGuid);
+  bool success =
+      base::Time::FromString("04/25/20 01:00:00 AM", &entry.create_time);
+  DCHECK(success);
+
+  NotificationData::Button button;
+  entry.notification_data.buttons.emplace_back(
+      CreateButton("text1", ActionButtonType::kUnknownAction, "id1"));
+  entry.notification_data.buttons.emplace_back(
+      CreateButton("text2", ActionButtonType::kHelpful, "id2"));
+  entry.notification_data.buttons.emplace_back(
+      CreateButton("text3", ActionButtonType::kUnhelpful, "id3"));
+  TestNotificationEntryConversion(&entry);
 }
 
 }  // namespace

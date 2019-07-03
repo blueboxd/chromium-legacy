@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
@@ -212,7 +214,7 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
       CSSLengthNonInterpolableValue::HasPercentage(non_interpolable_value);
 
   CSSCalcExpressionNode* root_node = nullptr;
-  CSSPrimitiveValue* first_value = nullptr;
+  CSSNumericLiteralValue* first_value = nullptr;
 
   for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
     double value = ToInterpolableNumber(*interpolable_list.Get(i)).Value();
@@ -220,8 +222,8 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
         (i != CSSPrimitiveValue::kUnitTypePercentage || !has_percentage)) {
       continue;
     }
-    CSSPrimitiveValue* current_value =
-        CSSPrimitiveValue::Create(value, IndexToUnitType(i));
+    CSSNumericLiteralValue* current_value =
+        CSSNumericLiteralValue::Create(value, IndexToUnitType(i));
 
     if (!first_value) {
       DCHECK(!root_node);
@@ -238,12 +240,13 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
   }
 
   if (root_node) {
-    return CSSPrimitiveValue::Create(CSSCalcValue::Create(root_node));
+    return CSSMathFunctionValue::Create(CSSCalcValue::Create(root_node));
   }
   if (first_value) {
     return first_value;
   }
-  return CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
+  return CSSNumericLiteralValue::Create(0,
+                                        CSSPrimitiveValue::UnitType::kPixels);
 }
 
 }  // namespace blink

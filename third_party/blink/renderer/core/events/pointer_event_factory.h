@@ -80,6 +80,7 @@ class CORE_EXPORT PointerEventFactory {
   bool IsPrimary(const WebPointerProperties&) const;
 
   static const PointerId kMouseId;
+  static const PointerId kInvalidId;
 
   // Removes pointer_id from the map.
   void RemoveLastPosition(const PointerId pointer_id);
@@ -89,6 +90,9 @@ class CORE_EXPORT PointerEventFactory {
   // get movement = 0 when there is no last position.
   FloatPoint GetLastPointerPosition(PointerId pointer_id,
                                     const WebPointerProperties& event) const;
+
+  void SetLastPosition(PointerId pointer_id,
+                       const FloatPoint& position_in_screen);
 
  private:
   // We use int64_t to cover the whole range for PointerId with no
@@ -140,10 +144,6 @@ class CORE_EXPORT PointerEventFactory {
       const PointerEventInit* pointer_event_init,
       const Vector<WebPointerEvent>& event_list,
       LocalDOMWindow* view);
-
-  void SetLastPosition(PointerId pointer_id, const WebPointerProperties& event);
-
-  static const PointerId kInvalidId;
 
   PointerId current_id_;
   HashMap<IncomingId,

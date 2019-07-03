@@ -465,6 +465,9 @@ WebInputEventResult PointerEventManager::DispatchTouchPointerEvent(
   WebInputEventResult result = WebInputEventResult::kHandledSystem;
   if (pointer_event_target.target_element &&
       pointer_event_target.target_frame && !non_hovering_pointers_canceled_) {
+    SetLastPointerPositionForFrameBoundary(web_pointer_event,
+                                           pointer_event_target.target_element);
+
     PointerEvent* pointer_event = pointer_event_factory_.Create(
         web_pointer_event, coalesced_events, predicted_events,
         pointer_event_target.target_element
@@ -664,21 +667,29 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
     const Vector<WebMouseEvent>& coalesced_events,
     const Vector<WebMouseEvent>& predicted_events,
     const String& canvas_region_id) {
-  // Fetch the last_mouse_position for creating MouseEvent before
-  // pointer_event_factory updates it.
-  FloatPoint last_mouse_position =
-      pointer_event_factory_.GetLastPointerPosition(
-          PointerEventFactory::kMouseId, event);
-  WebInputEventResult result = CreateAndDispatchPointerEvent(
-      target, mouse_event_type, event, coalesced_events, predicted_events,
-      canvas_region_id);
+  if (!(event.GetModifiers() &
+        WebInputEvent::Modifiers::kRelativeMotionEvent)) {
+    // Fetch the last_mouse_position for creating MouseEvent before
+    // pointer_event_factory updates it.
+    FloatPoint last_mouse_position =
+        pointer_event_factory_.GetLastPointerPosition(
+            PointerEventFactory::kMouseId, event);
 
-  result = event_handling_util::MergeEventResult(
-      result, mouse_event_manager_->DispatchMouseEvent(
-                  target, mouse_event_type, event, canvas_region_id,
-                  &last_mouse_position, nullptr));
+    WebInputEventResult result = CreateAndDispatchPointerEvent(
+        target, mouse_event_type, event, coalesced_events, predicted_events,
+        canvas_region_id);
 
-  return result;
+    result = event_handling_util::MergeEventResult(
+        result, mouse_event_manager_->DispatchMouseEvent(
+                    target, mouse_event_type, event, canvas_region_id,
+                    &last_mouse_position, nullptr));
+    return result;
+  }
+  pointer_event_factory_.SetLastPosition(
+      pointer_event_factory_.GetPointerEventId(event),
+      event.PositionInScreen());
+
+  return WebInputEventResult::kHandledSuppressed;
 }
 
 WebInputEventResult PointerEventManager::SendMousePointerEvent(
@@ -705,7 +716,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   // pointer_event_factory updates it.
   FloatPoint last_mouse_position =
       pointer_event_factory_.GetLastPointerPosition(
-          PointerEventFactory::kMouseId, mouse_event);
+          pointer_event_factory_.GetPointerEventId(mouse_event), mouse_event);
 
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       web_pointer_event, pointer_coalesced_events, pointer_predicted_events,
@@ -1041,6 +1052,29 @@ bool PointerEventManager::PrimaryPointerdownCanceled(
       return true;
   }
   return false;
+}
+
+void PointerEventManager::SetLastPointerPositionForFrameBoundary(
+    const WebPointerEvent& web_pointer_event,
+    Element* new_target) {
+  PointerId pointer_id =
+      pointer_event_factory_.GetPointerEventId(web_pointer_event);
+  Element* last_target = element_under_pointer_.Contains(pointer_id)
+                             ? element_under_pointer_.at(pointer_id).target
+                             : nullptr;
+  if (!new_target) {
+    pointer_event_factory_.RemoveLastPosition(pointer_id);
+  } else if (!last_target || new_target->GetDocument().GetFrame() !=
+                                 last_target->GetDocument().GetFrame()) {
+    pointer_event_factory_.SetLastPosition(
+        pointer_id, web_pointer_event.PositionInScreen());
+  }
+}
+
+void PointerEventManager::SetLastMousePositionForPointerUnlock(
+    FloatPoint mouse_lock_position_in_screen) {
+  pointer_event_factory_.SetLastPosition(PointerEventFactory::kMouseId,
+                                         mouse_lock_position_in_screen);
 }
 
 void PointerEventManager::RemoveLastMousePosition() {

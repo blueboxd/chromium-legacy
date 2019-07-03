@@ -139,6 +139,9 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   if (RequiresCompositingForScrollTimeline(*layer))
     reasons |= CompositingReason::kScrollTimelineTarget;
 
+  if (RequiresCompositingForScrollDependentPosition(*layer))
+    reasons |= CompositingReason::kScrollDependentPosition;
+
   return reasons;
 }
 

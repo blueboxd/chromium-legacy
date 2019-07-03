@@ -370,6 +370,12 @@ if (enable_java_templates) {
   #   header_output: Path to the generated .h file (optional).
   #   sources_blacklist: List of .java files that should be skipped. (optional)
   #   namespace: Registration functions will be wrapped into this. (optional)
+  #   require_native_mocks: Enforce that any native calls using
+  #     org.chromium.base.annotations.NativeMethods must have a mock set
+  #     (optional).
+  #   enable_native_mocks: Allow native calls using
+  #     org.chromium.base.annotations.NativeMethods to be mocked in tests
+  #     (optional).
   #
   # Example
   #   generate_jni_registration("chrome_jni_registration") {
@@ -414,11 +420,11 @@ if (enable_java_templates) {
 
       if (defined(invoker.enable_native_mocks) && invoker.enable_native_mocks) {
         args += [ "--enable_proxy_mocks" ]
-      }
 
-      if (defined(invoker.require_native_mocks) &&
-          invoker.require_native_mocks) {
-        args += [ "--require_mocks" ]
+        if (defined(invoker.require_native_mocks) &&
+            invoker.require_native_mocks) {
+          args += [ "--require_mocks" ]
+        }
       }
 
       if (defined(invoker.header_output)) {
@@ -2029,6 +2035,12 @@ if (enable_java_templates) {
   #     Optional, default 23.
   #   max_sdk_version: The maximum Android SDK version this target supports.
   #     Optional, default not set.
+  #   require_native_mocks: Enforce that any native calls using
+  #     org.chromium.base.annotations.NativeMethods must have a mock set
+  #     (optional).
+  #   enable_native_mocks: Allow native calls using
+  #     org.chromium.base.annotations.NativeMethods to be mocked in tests
+  #     (optional).
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.final_apk_path) || defined(invoker.name))
@@ -2639,6 +2651,11 @@ if (enable_java_templates) {
 
     if (_generate_final_jni) {
       generate_jni_registration("${_template_name}__final_jni") {
+        forward_variables_from(invoker,
+                               [
+                                 "enable_native_mocks",
+                                 "require_native_mocks",
+                               ])
         target = ":$_template_name"
         if (defined(invoker.jni_registration_header)) {
           header_output = invoker.jni_registration_header
@@ -3268,6 +3285,7 @@ if (enable_java_templates) {
                                "dont_load_shared_libraries",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
+                               "enable_native_mocks",
                                "final_apk_path",
                                "generate_buildconfig_java",
                                "generate_final_jni",
@@ -3302,6 +3320,7 @@ if (enable_java_templates) {
                                "resource_blacklist_regex",
                                "resource_ids_provider_dep",
                                "resources_config_path",
+                               "require_native_mocks",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
                                "secondary_native_lib_placeholders",
@@ -3595,6 +3614,8 @@ if (enable_java_templates) {
       ]
       if (defined(invoker.apk_under_test)) {
         data_deps += [ invoker.apk_under_test ]
+      } else {
+        enable_native_mocks = true
       }
       if (defined(invoker.additional_apks)) {
         data_deps += invoker.additional_apks

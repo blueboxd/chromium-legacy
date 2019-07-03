@@ -6,6 +6,8 @@
 <script>
 'use strict';
 
+self.testRunner.setPermission('wake-lock-screen', 'granted', location.origin, location.origin);
+
 promise_test(t => {
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
@@ -15,8 +17,7 @@ promise_test(t => {
 promise_test(t => {
   window.testRunner.setPageVisibility('visible');
 
-  const controller = new AbortController();
-  const screenLock = WakeLock.request('screen', { signal: controller.signal });
+  const screenLock = WakeLock.request('screen');
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
   return promise_rejects(t, "AbortError", screenLock);

@@ -29,7 +29,6 @@ CONTENT_EXPORT extern const base::Feature kAudioServiceOutOfProcess;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
-CONTENT_EXPORT extern const base::Feature kBloatedRendererDetection;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
 CONTENT_EXPORT extern const base::Feature kBundledHTTPExchanges;
 CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
@@ -154,6 +153,7 @@ CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrPlaneDetection;
 CONTENT_EXPORT extern const base::Feature kScriptStreamingOnPreload;
 CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
+CONTENT_EXPORT extern const base::Feature kBrowserUseDisplayThreadPriority;
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;

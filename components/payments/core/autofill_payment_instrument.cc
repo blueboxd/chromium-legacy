@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -83,6 +84,15 @@ bool AutofillPaymentInstrument::IsCompleteForPayment() const {
   return autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
                                               billing_profiles_) <=
          autofill::CREDIT_CARD_EXPIRED;
+}
+
+void AutofillPaymentInstrument::RecordMissingFieldsForInstrument() const {
+  if (IsCompleteForPayment())
+    return;
+
+  base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
+                           autofill::GetCompletionStatusForCard(
+                               credit_card_, app_locale_, billing_profiles_));
 }
 
 bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() const {

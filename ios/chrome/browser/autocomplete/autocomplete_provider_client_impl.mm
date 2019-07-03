@@ -215,11 +215,6 @@ void AutocompleteProviderClientImpl::DeleteMatchingURLsForKeywordFromHistory(
 
 void AutocompleteProviderClientImpl::PrefetchImage(const GURL& url) {}
 
-void AutocompleteProviderClientImpl::OnAutocompleteControllerResultReady(
-    AutocompleteController* controller) {
-  // iOS currently has no client for this event.
-}
-
 bool AutocompleteProviderClientImpl::IsTabOpenWithURL(
     const GURL& url,
     const AutocompleteInput* input) {

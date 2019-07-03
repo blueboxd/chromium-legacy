@@ -82,7 +82,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
     // Called when the EmbeddedSearch wants to toggle visibility of the
     // shortcuts.
-    virtual void OnToggleShortcutsVisibility() = 0;
+    virtual void OnToggleShortcutsVisibility(bool do_notify) = 0;
 
     // Called to signal that an event has occurred on the New Tab Page at a
     // particular time since navigation start.
@@ -255,7 +255,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void UndoCustomLinkAction(int page_seq_no) override;
   void ResetCustomLinks(int page_seq_no) override;
   void ToggleMostVisitedOrCustomLinks(int page_seq_no) override;
-  void ToggleShortcutsVisibility(int page_seq_no) override;
+  void ToggleShortcutsVisibility(int page_seq_no, bool do_notify) override;
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;

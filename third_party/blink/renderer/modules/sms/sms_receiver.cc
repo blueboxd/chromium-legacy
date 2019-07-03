@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/sms/sms.h"
+#include "third_party/blink/renderer/modules/sms/sms_metrics.h"
 #include "third_party/blink/renderer/modules/sms/sms_receiver_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -66,9 +67,10 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
         &SMSReceiver::OnSMSReceiverConnectionError, WrapWeakPersistent(this)));
   }
 
-  service_->Receive(base::TimeDelta::FromSeconds(timeout_seconds),
-                    WTF::Bind(&SMSReceiver::OnReceive, WrapPersistent(this),
-                              WrapPersistent(resolver)));
+  service_->Receive(
+      base::TimeDelta::FromSeconds(timeout_seconds),
+      WTF::Bind(&SMSReceiver::OnReceive, WrapPersistent(this),
+                WrapPersistent(resolver), base::TimeTicks::Now()));
 
   return resolver->Promise();
 }
@@ -76,6 +78,7 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
 SMSReceiver::~SMSReceiver() = default;
 
 void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
+                            base::TimeTicks start_time,
                             mojom::blink::SmsStatus status,
                             const WTF::String& sms) {
   requests_.erase(resolver);
@@ -83,8 +86,13 @@ void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
   if (status == mojom::blink::SmsStatus::kTimeout) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kTimeoutError, "SMSReceiver timed out."));
+    RecordSMSOutcome(SMSReceiverOutcome::kTimeout);
     return;
   }
+
+  RecordSMSSuccessTime(base::TimeTicks::Now() - start_time);
+  RecordSMSOutcome(SMSReceiverOutcome::kSuccess);
+
   resolver->Resolve(MakeGarbageCollected<blink::SMS>(sms));
 }
 
@@ -93,6 +101,7 @@ void SMSReceiver::OnSMSReceiverConnectionError() {
   for (ScriptPromiseResolver* request : requests_) {
     request->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, "SMSReceiver not available."));
+    RecordSMSOutcome(SMSReceiverOutcome::kConnectionError);
   }
   requests_.clear();
 }

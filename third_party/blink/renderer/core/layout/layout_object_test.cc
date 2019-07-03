@@ -1040,19 +1040,4 @@ TEST_F(LayoutObjectTest, FirstLineBackgroundImageAddBlockBackgroundImageCrash) {
   UpdateAllLifecyclePhasesForTest();
 }
 
-TEST_F(LayoutObjectTest, FirstLineBackgroundImageChangeStyleCrash) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #target::first-line {
-        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
-      }
-    </style>
-    <div id="target">Target</div>
-  )HTML");
-  // This should not crash.
-  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
-                                                       "color: blue");
-  UpdateAllLifecyclePhasesForTest();
-}
-
 }  // namespace blink

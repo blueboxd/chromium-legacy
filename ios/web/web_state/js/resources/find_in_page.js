@@ -683,7 +683,7 @@ function scrollToCurrentlySelectedMatch_() {
     return;
   }
 
-  match.nodes[0].scrollIntoView(/*alignToTop=*/false);
+  match.nodes[0].scrollIntoView({block: "center", inline: "center"});
 };
 
 /**

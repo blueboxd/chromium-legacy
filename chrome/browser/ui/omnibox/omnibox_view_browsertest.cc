@@ -225,29 +225,25 @@ class OmniboxViewTest : public InProcessBrowserTest,
     observer.WaitForNavigationFinished();
   }
 
-  void WaitForTabOpenOrCloseForBrowser(const Browser* browser,
-                                       int expected_tab_count) {
-    int tab_count = browser->tab_strip_model()->count();
+  void WaitForTabOpenOrClose(int expected_tab_count) {
+    int tab_count = browser()->tab_strip_model()->count();
     if (tab_count == expected_tab_count)
       return;
 
     content::NotificationRegistrar registrar;
-    registrar.Add(this,
-        (tab_count < expected_tab_count) ?
-            static_cast<int>(chrome::NOTIFICATION_TAB_PARENTED) :
-            static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED),
+    registrar.Add(
+        this,
+        (tab_count < expected_tab_count)
+            ? static_cast<int>(chrome::NOTIFICATION_TAB_PARENTED)
+            : static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED),
         content::NotificationService::AllSources());
 
     while (!HasFailure() &&
-           browser->tab_strip_model()->count() != expected_tab_count) {
+           browser()->tab_strip_model()->count() != expected_tab_count) {
       content::RunMessageLoop();
     }
 
-    ASSERT_EQ(expected_tab_count, browser->tab_strip_model()->count());
-  }
-
-  void WaitForTabOpenOrClose(int expected_tab_count) {
-    WaitForTabOpenOrCloseForBrowser(browser(), expected_tab_count);
+    ASSERT_EQ(expected_tab_count, browser()->tab_strip_model()->count());
   }
 
   void WaitForAutocompleteControllerDone() {
@@ -261,14 +257,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     if (controller->done())
       return;
 
-    content::NotificationRegistrar registrar;
-    registrar.Add(this,
-                  chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-                  content::Source<AutocompleteController>(controller));
-
-    while (!HasFailure() && !controller->done())
-      content::RunMessageLoop();
-
+    ui_test_utils::WaitForAutocompleteDone(browser());
     ASSERT_TRUE(controller->done());
   }
 
@@ -385,12 +374,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
     switch (type) {
       case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       case chrome::NOTIFICATION_TAB_PARENTED:
-      case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
         break;
       default:
         FAIL() << "Unexpected notification type";
     }
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   policy::MockConfigurationPolicyProvider* policy_provider() {

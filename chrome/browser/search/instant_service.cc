@@ -379,7 +379,7 @@ bool InstantService::ToggleMostVisitedOrCustomLinks() {
   return true;
 }
 
-bool InstantService::ToggleShortcutsVisibility() {
+bool InstantService::ToggleShortcutsVisibility(bool do_notify) {
   // Non-Google NTPs are not supported.
   if (!most_visited_sites_ || !search_provider_observer_ ||
       !search_provider_observer_->is_google()) {
@@ -389,7 +389,9 @@ bool InstantService::ToggleShortcutsVisibility() {
   pref_service_->SetBoolean(prefs::kNtpShortcutsVisible, is_visible);
   most_visited_info_->is_visible = is_visible;
 
-  NotifyAboutMostVisitedInfo();
+  if (do_notify) {
+    NotifyAboutMostVisitedInfo();
+  }
   return true;
 }
 

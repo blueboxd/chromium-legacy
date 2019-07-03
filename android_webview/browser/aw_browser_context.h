@@ -23,7 +23,6 @@
 
 class GURL;
 class PrefService;
-class PrefRegistrySimple;
 
 namespace autofill {
 class AutocompleteHistoryManager;
@@ -74,10 +73,7 @@ extern const char kAuthServerWhitelist[];
 class AwBrowserContext : public content::BrowserContext,
                          public visitedlink::VisitedLinkDelegate {
  public:
-  AwBrowserContext(
-      const base::FilePath path,
-      std::unique_ptr<PrefService> pref_service,
-      std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector);
+  AwBrowserContext();
   ~AwBrowserContext() override;
 
   // Currently only one instance per process is supported.
@@ -92,6 +88,7 @@ class AwBrowserContext : public content::BrowserContext,
   // common/aw_paths.h (http://crbug.com/934184).
   static base::FilePath GetCacheDir();
   static base::FilePath GetCookieStorePath();
+  static base::FilePath GetContextStoragePath();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -148,6 +145,7 @@ class AwBrowserContext : public content::BrowserContext,
 
  private:
   void OnAuthPrefsChanged();
+  void CreateUserPrefService();
 
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;

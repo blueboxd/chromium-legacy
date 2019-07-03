@@ -164,7 +164,8 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
       frames_to_copy =
           std::min(audio_bus_->frames() - frame_offset_in_bus, frames_to_copy);
 
-      audio_bus_->ToInterleavedPartial<Float32SampleTypeTraits>(
+      // We skip clipping since that occurs at the shared memory boundary.
+      audio_bus_->ToInterleavedPartial<Float32SampleTypeTraitsNoClip>(
           frame_offset_in_bus, frames_to_copy,
           reinterpret_cast<float*>(pa_buffer));
       frame_offset_in_bus += frames_to_copy;

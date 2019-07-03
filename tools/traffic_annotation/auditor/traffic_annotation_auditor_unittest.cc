@@ -306,7 +306,6 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
        AnnotationInstance::Type::ANNOTATION_PARTIAL},
       {"good_test_annotation.txt", AuditorResult::Type::ERROR_TEST_ANNOTATION},
       {"missing_annotation.txt", AuditorResult::Type::ERROR_MISSING_TAG_USED},
-      {"no_annotation.txt", AuditorResult::Type::ERROR_NO_ANNOTATION},
       {"fatal_annotation1.txt", AuditorResult::Type::ERROR_FATAL},
       {"fatal_annotation2.txt", AuditorResult::Type::ERROR_FATAL},
       {"fatal_annotation3.txt", AuditorResult::Type::ERROR_FATAL},
@@ -402,8 +401,6 @@ TEST_F(TrafficAnnotationAuditorTest, GetReservedIDsCoverage) {
   int expected_ids[] = {
       TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
-      NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
-      NO_PARTIAL_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
       MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code};
 
   std::map<int, std::string> reserved_words =

@@ -43,10 +43,6 @@ IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object) {
 
 }  // namespace internal
 
-// The maximum amount of characters included in Element Timing for inline
-// images.
-constexpr const unsigned kInlineImageMaxChars = 100u;
-
 // static
 const char ImageElementTiming::kSupplementName[] = "ImageElementTiming";
 
@@ -110,6 +106,12 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   if (node->IsInShadowTree())
     return;
 
+  // Do not expose elements which should have effective zero opacity.
+  // We can afford to call this expensive method because this is only called
+  // once per image annotated with the elementtiming attribute.
+  if (!layout_object.HasNonZeroEffectiveOpacity())
+    return;
+
   FloatRect intersection_rect = ComputeIntersectionRect(
       frame, layout_object, current_paint_chunk_properties);
   const AtomicString attr =
@@ -129,9 +131,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
           &layout_object.GetDocument())) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*GetSupplementable());
-    if (performance &&
-        (performance->HasObserverFor(PerformanceEntry::kElement) ||
-         performance->ShouldBufferEntries())) {
+    if (performance) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
           ImagePaintString(), url.GetString(), intersection_rect,
@@ -210,8 +210,7 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                                                   base::TimeTicks timestamp) {
   WindowPerformance* performance =
       DOMWindowPerformance::performance(*GetSupplementable());
-  if (performance && (performance->HasObserverFor(PerformanceEntry::kElement) ||
-                      performance->ShouldBufferEntries())) {
+  if (performance) {
     for (const auto& element_timing : element_timings_) {
       performance->AddElementTiming(
           ImagePaintString(), element_timing->url, element_timing->rect,

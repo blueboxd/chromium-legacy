@@ -13,10 +13,6 @@ namespace device {
 class ScopedGeolocationOverrider;
 }
 
-namespace net {
-class NetLog;
-}
-
 namespace content {
 
 class BackgroundSyncController;
@@ -29,7 +25,7 @@ class PushMessagingService;
 
 class WebTestBrowserContext final : public ShellBrowserContext {
  public:
-  WebTestBrowserContext(bool off_the_record, net::NetLog* net_log);
+  WebTestBrowserContext(bool off_the_record);
   ~WebTestBrowserContext() override;
 
   // BrowserContext implementation.

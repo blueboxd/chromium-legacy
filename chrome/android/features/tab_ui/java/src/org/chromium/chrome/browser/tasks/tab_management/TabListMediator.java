@@ -420,6 +420,8 @@ class TabListMediator {
                 @Override
                 public void didMoveWithinGroup(
                         Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
+                    if (tabModelNewIndex == tabModelOldIndex) return;
+
                     int curPosition = mModel.indexFromId(movedTab.getId());
                     TabModel tabModel = mTabModelSelector.getCurrentModel();
 
@@ -449,8 +451,12 @@ class TabListMediator {
                     }
                     if (mActionsOnAllRelatedTabs) {
                         Tab currentSelectedTab = mTabModelSelector.getCurrentTab();
-                        addTabInfoToModel(movedTab, mModel.size(),
-                                currentSelectedTab.getId() == movedTab.getId());
+                        int index = TabModelUtils.getTabIndexById(
+                                mTabModelSelector.getTabModelFilterProvider()
+                                        .getCurrentTabModelFilter(),
+                                movedTab.getId());
+                        addTabInfoToModel(
+                                movedTab, index, currentSelectedTab.getId() == movedTab.getId());
                         boolean isSelected = mTabModelSelector.getCurrentTabId()
                                 == filter.getTabAt(prevFilterIndex).getId();
                         updateTab(prevFilterIndex, filter.getTabAt(prevFilterIndex), isSelected,
@@ -481,7 +487,7 @@ class TabListMediator {
                 @Override
                 public void didMoveTabGroup(
                         Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
-                    if (!mActionsOnAllRelatedTabs) return;
+                    if (!mActionsOnAllRelatedTabs || tabModelNewIndex == tabModelOldIndex) return;
                     TabGroupModelFilter filter =
                             (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                     .getCurrentTabModelFilter();
@@ -518,6 +524,10 @@ class TabListMediator {
 
                     mModel.move(curPosition, newPosition);
                 }
+
+                @Override
+                public void didCreateGroup(
+                        List<Tab> tabs, List<Integer> tabOriginalIndex, boolean isSameGroup) {}
             };
 
             ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
@@ -598,7 +608,7 @@ class TabListMediator {
         sTabClosedFromMapTabClosedFromMap.put(tabId, TabClosedFrom.GRID_TAB_SWITCHER_GROUP);
     }
 
-    public void setActionOnAllRelatedTabsForTest(boolean actionOnAllRelatedTabs) {
+    void setActionOnAllRelatedTabsForTest(boolean actionOnAllRelatedTabs) {
         mActionsOnAllRelatedTabs = actionOnAllRelatedTabs;
     }
 
@@ -609,9 +619,10 @@ class TabListMediator {
     }
 
     private void onTabAdded(Tab tab, boolean onlyShowRelatedTabs) {
-        List<Tab> related = getRelatedTabsForId(tab.getId());
         int index;
         if (onlyShowRelatedTabs) {
+            if (mModel.size() == 0) return;
+            List<Tab> related = getRelatedTabsForId(mModel.get(0).get(TabProperties.TAB_ID));
             index = related.indexOf(tab);
             if (index == -1) return;
         } else {

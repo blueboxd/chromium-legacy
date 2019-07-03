@@ -59,7 +59,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
     // Load and install the root for the validated chain.
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), cert_file);
-    scoped_root_.Reset(root_cert.get());
+    scoped_root_.Reset({root_cert});
   }
 
   ~TestProofVerifierChromium() override {}

@@ -58,17 +58,9 @@ public class OfflinePageBridge {
         if (profile == null)
             return null;
 
-        OfflinePageBridge bridge = nativeGetOfflinePageBridgeForProfileKey(profile.getProfileKey());
-
-        // TODO(crbug.com/978871): Storing Profile is a temporary hack during the transition
-        // of some members to RequestCoordinatorBridge.
-        if (bridge != null) {
-            bridge.mProfile = profile;
-        }
-        return bridge;
+        return nativeGetOfflinePageBridgeForProfileKey(profile.getProfileKey());
     }
 
-    private Profile mProfile;
     private long mNativeOfflinePageBridge;
     private boolean mIsNativeOfflinePageModelLoaded;
     private final ObserverList<OfflinePageModelObserver> mObservers =
@@ -220,70 +212,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Gets all the URLs in the request queue.
-     *
-     * @return A list of {@link SavePageRequest} representing all the queued requests.
-     * @deprecated Use {@link
-     *         RequestCoordinatorBridge#getRequestsInQueue(Callback<SavePageRequest[]>)} instead.
-     */
-    @Deprecated
-    @VisibleForTesting
-    public void getRequestsInQueue(Callback<SavePageRequest[]> callback) {
-        RequestCoordinatorBridge.getForProfile(mProfile).getRequestsInQueue(callback);
-    }
-
-    /**
-     * Contains a result for a remove page request.
-     * @deprecated Use {@link RequestCoordinatorBridge.RequestRemovedResult} instead.
-     */
-    @Deprecated
-    public static class RequestRemovedResult {
-        private long mRequestId;
-        private int mUpdateRequestResult;
-
-        public RequestRemovedResult(long requestId, int requestResult) {
-            mRequestId = requestId;
-            mUpdateRequestResult = requestResult;
-        }
-
-        /** Request ID as found in the SavePageRequest. */
-        public long getRequestId() {
-            return mRequestId;
-        }
-
-        /** {@see org.chromium.components.offlinepages.background.UpdateRequestResult} enum. */
-        public int getUpdateRequestResult() {
-            return mUpdateRequestResult;
-        }
-    }
-
-    /**
-     * Removes SavePageRequests from the request queue.
-     *
-     * The callback will be called with |null| in the case that the queue is unavailable.  This can
-     * happen in incognito, for example.
-     *
-     * @param requestIdList The IDs of the requests to remove.
-     * @param callback Called when the removal is done, with the SavePageRequest objects that were
-     *     actually removed.
-     * @deprecated Use {@link RequestCoordinatorBridge#removeRequestsFromQueue(List<Long>,
-     *         Callback<List<RequestCoordinatorBridge.RequestRemovedResult>>)} instead.
-     */
-    @Deprecated
-    public void removeRequestsFromQueue(
-            List<Long> requestIdList, Callback<List<RequestRemovedResult>> callback) {
-        RequestCoordinatorBridge.getForProfile(mProfile).removeRequestsFromQueue(
-                requestIdList, (results) -> {
-                    List<RequestRemovedResult> transformedResults = new ArrayList<>(results.size());
-                    for (RequestCoordinatorBridge.RequestRemovedResult result : results) {
-                        transformedResults.add(new RequestRemovedResult(
-                                result.getRequestId(), result.getUpdateRequestResult()));
-                    }
-                    callback.onResult(transformedResults);
-                });
-    }
-
-    /**
      * Get the offline page associated with the provided offline URL.
      *
      * @param onlineUrl URL of the page.
@@ -348,143 +276,6 @@ public class OfflinePageBridge {
 
         nativeSavePage(mNativeOfflinePageBridge, callback, webContents, clientId.getNamespace(),
                 clientId.getId(), origin.encodeAsJsonString());
-    }
-
-    /**
-     * Save the given URL as an offline page when the network becomes available.
-     *
-     * The page is marked as not having been saved by the user.  Use the 3-argument form to specify
-     * a user request.
-     *
-     * @param url The given URL to save for later.
-     * @param clientId The client ID for the offline page to be saved later.
-     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId)} instead.
-     */
-    @Deprecated
-    @VisibleForTesting
-    public void savePageLater(String url, ClientId clientId) {
-        savePageLater(url, clientId, true);
-    }
-
-    /**
-     * Save the given URL as an offline page when the network becomes available. Origin is
-     * assumed to be Chrome.
-     *
-     * @param url The given URL to save for later.
-     * @param clientId The client ID for the offline page to be saved later.
-     * @param userRequested Whether this request should be prioritized because the user explicitly
-     *     requested it.
-     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId, boolean)}
-     *         instead.
-     */
-    @Deprecated
-    public void savePageLater(final String url, final ClientId clientId, boolean userRequested) {
-        savePageLater(url, clientId, userRequested, new OfflinePageOrigin());
-    }
-
-    /**
-     * Save the given URL as an offline page when the network becomes available with the given
-     * origin.
-     *
-     * @param url The given URL to save for later
-     * @param clientId The clientId for the offline page to be saved later.
-     * @param userRequested Whether this request should be prioritized because the user explicitly
-     *                      requested it.
-     * @param origin The app that initiated the request.
-     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId, boolean,
-     *         OfflinePageOrigin)} instead.
-     */
-    @Deprecated
-    public void savePageLater(final String url, final ClientId clientId, boolean userRequested,
-            OfflinePageOrigin origin) {
-        savePageLater(url, clientId, userRequested, origin, null);
-    }
-
-    /**
-     * Save the given URL as an offline page when the network becomes available with the given
-     * origin. Callback with status when done.
-     *
-     * @param url The given URL to save for later.
-     * @param clientId the clientId for the offline page to be saved later.
-     * @param userRequested Whether this request should be prioritized because the user explicitly
-     *                      requested it.
-     * @param origin The app that initiated the request.
-     * @param callback Callback for whether the URL is successfully added to queue. Non-zero number
-     *                 represents a failure reason (See offline_pages::AddRequestResult enum). 0 is
-     * success.
-     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, ClientId, boolean,
-     *         OfflinePageOrigin, Callback<Integer>)} instead.
-     */
-    @Deprecated
-    public void savePageLater(final String url, final ClientId clientId, boolean userRequested,
-            OfflinePageOrigin origin, Callback<Integer> callback) {
-        Callback<Integer> wrapper = new Callback<Integer>() {
-            @Override
-            public void onResult(Integer i) {
-                if (callback != null) {
-                    callback.onResult(i);
-                }
-            }
-        };
-        RequestCoordinatorBridge.getForProfile(mProfile).savePageLater(
-                url, clientId, userRequested, origin, callback);
-    }
-
-    /**
-     * Save the given URL as an offline page when the network becomes available with a randomly
-     * generated clientId in the given namespace. Origin is defaulted to Chrome.
-     *
-     * @param url The given URL to save for later.
-     * @param namespace The namespace for the offline page to be saved later.
-     * @param userRequested Whether this request should be prioritized because the user explicitly
-     *                      requested it.
-     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, String, boolean)}
-     *         instead.
-     */
-    @Deprecated
-    public void savePageLater(final String url, final String namespace, boolean userRequested) {
-        savePageLater(url, namespace, userRequested, new OfflinePageOrigin());
-    }
-
-    /**
-     * Save the given URL as an offline page when the network becomes available with a randomly
-     * generated clientId in the given namespace and the given origin.
-     *
-     * @param url The given URL to save for later
-     * @param namespace The namespace for the offline page to be saved later.
-     * @param userRequested Whether this request should be prioritized because the user explicitly
-     *                      requested it.
-     * @param origin The app that initiated the request.
-     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, String, boolean,
-     *         OfflinePageOrigin)} instead.
-     */
-    @Deprecated
-    public void savePageLater(final String url, final String namespace, boolean userRequested,
-            OfflinePageOrigin origin) {
-        savePageLater(url, namespace, userRequested, origin, null);
-    }
-
-    /**
-     * Save the given URL as an offline page when the network becomes available with a randomly
-     * generated clientId in the given namespace and the given origin. Calls back with whether
-     * the URL has been successfully added to queue.
-     *
-     * @param url The given URL to save for later
-     * @param namespace The namespace for the offline page to be saved later.
-     * @param userRequested Whether this request should be prioritized because the user explicitly
-     *                      requested it.
-     * @param origin The app that initiated the request.
-     * @param callback Callback to call whether the URL is successfully added to the queue. Non-zero
-     *                 number represents failure reason (see offline_pages::AddRequestResult enum).
-     * @deprecated Use {@link RequestCoordinatorBridge#savePageLater(String, String, boolean,
-     *         OfflinePageOrigin, Callback<Integer>)} instead.
-     * 0 is success.
-     */
-    @Deprecated
-    public void savePageLater(final String url, final String namespace, boolean userRequested,
-            OfflinePageOrigin origin, Callback<Integer> callback) {
-        ClientId clientId = ClientId.createGuidClientIdForNamespace(namespace);
-        savePageLater(url, clientId, userRequested, origin, callback);
     }
 
     /**

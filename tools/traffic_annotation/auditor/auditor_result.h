@@ -17,6 +17,8 @@ class AuditorResult {
     ERROR_MISSING_TAG_USED,  // A function is called with
                              // MISSING_TRAFFIC_ANNOTATION tag.
     ERROR_NO_ANNOTATION,     // A function is called with NO_ANNOTATION tag.
+                             // Deprecated, as NO_ANNOTATION is now undefined on
+                             // supported platforms.
     ERROR_SYNTAX,            // Annotation syntax is not right.
     ERROR_RESERVED_ID_HASH_CODE,    // An id has a hash code equal to a reserved
                                     // word.

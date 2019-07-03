@@ -88,7 +88,7 @@ void MemoryPressureMonitor::CheckMemoryPressureSoon() {
 }
 
 MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitor::GetCurrentPressureLevel() {
+MemoryPressureMonitor::GetCurrentPressureLevel() const {
   return current_memory_pressure_level_;
 }
 

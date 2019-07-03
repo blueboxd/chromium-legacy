@@ -15,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.base.BuildInfo;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
@@ -156,7 +155,6 @@ public class PrivacyPreferences
                     (boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
             PrefServiceBridge.getInstance().setNetworkPredictionEnabled((boolean) newValue);
-            recordNetworkPredictionEnablingUMA((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
         } else if (PREF_CAN_MAKE_PAYMENT.equals(key)) {
@@ -165,11 +163,6 @@ public class PrivacyPreferences
         }
 
         return true;
-    }
-
-    private void recordNetworkPredictionEnablingUMA(boolean enabled) {
-        // Report user turning on and off NetworkPrediction.
-        RecordHistogram.recordBooleanHistogram("PrefService.NetworkPredictionEnabled", enabled);
     }
 
     @Override

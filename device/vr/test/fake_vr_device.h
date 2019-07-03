@@ -34,9 +34,6 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase,
  private:
   void OnPresentingControllerMojoConnectionError();
 
-  void OnGetInlineFrameData(
-      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
-
   mojom::VRDisplayInfoPtr InitBasicDevice();
   mojom::VREyeParametersPtr InitEye(float fov, float offset, uint32_t size);
 

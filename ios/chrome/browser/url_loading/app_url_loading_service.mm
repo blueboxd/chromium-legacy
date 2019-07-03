@@ -7,11 +7,12 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -56,9 +57,10 @@ void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
                                                params.in_incognito) {
       // Must take a snapshot of the tab before we switch the incognito mode
       // because the currentTab will change after the switch.
-      Tab* currentTab = [delegate_ currentTabModel].currentTab;
-      if (currentTab) {
-        SnapshotTabHelper::FromWebState(currentTab.webState)
+      web::WebState* currentWebState =
+          [delegate_ currentTabModel].webStateList->GetActiveWebState();
+      if (currentWebState) {
+        SnapshotTabHelper::FromWebState(currentWebState)
             ->UpdateSnapshotWithCallback(nil);
       }
 

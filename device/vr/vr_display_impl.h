@@ -19,7 +19,7 @@
 
 namespace device {
 
-class VRDeviceBase;
+class VROrientationDevice;
 
 // VR device process implementation of a XRFrameDataProvider within a WebVR
 // or WebXR site session.
@@ -28,7 +28,7 @@ class VRDeviceBase;
 class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
                                        public mojom::XRSessionController {
  public:
-  VRDisplayImpl(VRDeviceBase* device,
+  VRDisplayImpl(VROrientationDevice* device,
                 mojom::XRFrameDataProviderRequest,
                 mojom::XRSessionControllerRequest);
   ~VRDisplayImpl() override;
@@ -39,11 +39,6 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
   void SetInputSourceButtonListener(
       mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
 
-  gfx::Size sessionFrameSize() { return session_frame_size_; }
-  display::Display::Rotation sessionRotation() { return session_rotation_; }
-
-  device::VRDeviceBase* device() { return device_; }
-
   // Accessible to tests.
  protected:
   // mojom::XRFrameDataProvider
@@ -51,17 +46,14 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
                     GetFrameDataCallback callback) override;
 
   // mojom::XRSessionController
-  void SetFrameDataRestricted(bool paused) override;
+  void SetFrameDataRestricted(bool frame_data_restricted) override;
 
   void OnMojoConnectionError();
 
   mojo::Binding<mojom::XRFrameDataProvider> magic_window_binding_;
   mojo::Binding<mojom::XRSessionController> session_controller_binding_;
-  device::VRDeviceBase* device_;
+  device::VROrientationDevice* device_;
   bool restrict_frame_data_ = true;
-
-  gfx::Size session_frame_size_ = gfx::Size(0, 0);
-  display::Display::Rotation session_rotation_ = display::Display::ROTATE_0;
 };
 
 }  // namespace device

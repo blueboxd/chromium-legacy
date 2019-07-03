@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -539,12 +538,6 @@ bool NaClProcessHost::LaunchSelLdr() {
                                switches::kNaClLoaderProcess));
   if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
-
-  // TODO(crbug.com/932175): Remove this after field trials no longer need to
-  // be consulted for the MojoChannelMac launch.
-  base::FieldTrialList::CopyFieldTrialStateToFlags(
-      switches::kFieldTrialHandle, switches::kEnableFeatures,
-      switches::kDisableFeatures, cmd_line.get());
 
 #if defined(OS_WIN)
   cmd_line->AppendArg(switches::kPrefetchArgumentOther);

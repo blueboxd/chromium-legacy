@@ -23,6 +23,7 @@
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
+#include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
@@ -86,6 +87,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -432,14 +434,7 @@ AwContentBrowserClient::GetNetworkContextParams() {
 }
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
-  base::FilePath user_data_dir;
-  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
-    NOTREACHED() << "Failed to get app data directory for Android WebView";
-  }
-
-  browser_context_ = std::make_unique<AwBrowserContext>(
-      user_data_dir, aw_feature_list_creator_->TakePrefService(),
-      aw_feature_list_creator_->TakeBrowserPolicyConnector());
+  browser_context_ = std::make_unique<AwBrowserContext>();
   return browser_context_.get();
 }
 
@@ -866,6 +861,7 @@ AwContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!base::FeatureList::IsEnabled(::features::kNavigationLoaderOnUI));
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
@@ -893,8 +889,40 @@ AwContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     const bool is_reload = ui::PageTransitionCoreTypeIs(
         static_cast<ui::PageTransition>(request.transition_type),
         ui::PAGE_TRANSITION_RELOAD);
-    if (is_load_url || is_go_back_forward || is_reload)
-      result.push_back(std::make_unique<AwURLLoaderThrottle>(resource_context));
+    if (is_load_url || is_go_back_forward || is_reload) {
+      result.push_back(std::make_unique<AwURLLoaderThrottle>(
+          static_cast<AwResourceContext*>(resource_context)));
+    }
+  }
+
+  return result;
+}
+
+std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+AwContentBrowserClient::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    content::BrowserContext* browser_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+
+  if (request.resource_type ==
+      static_cast<int>(content::ResourceType::kMainFrame)) {
+    const bool is_load_url =
+        request.transition_type & ui::PAGE_TRANSITION_FROM_API;
+    const bool is_go_back_forward =
+        request.transition_type & ui::PAGE_TRANSITION_FORWARD_BACK;
+    const bool is_reload = ui::PageTransitionCoreTypeIs(
+        static_cast<ui::PageTransition>(request.transition_type),
+        ui::PAGE_TRANSITION_RELOAD);
+    if (is_load_url || is_go_back_forward || is_reload) {
+      result.push_back(
+          std::make_unique<AwURLLoaderThrottle>(static_cast<AwResourceContext*>(
+              browser_context->GetResourceContext())));
+    }
   }
 
   return result;

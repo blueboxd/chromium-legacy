@@ -462,7 +462,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestInitiatedCompletionStatusMetricsTest,
   ASSERT_EQ(1U, buckets.size());
   EXPECT_EQ(JourneyLogger::EVENT_INITIATED | JourneyLogger::EVENT_USER_ABORTED |
                 JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
-                JourneyLogger::EVENT_REQUEST_METHOD_OTHER,
+                JourneyLogger::EVENT_REQUEST_METHOD_OTHER |
+                JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT,
             buckets[0].min);
 }
 

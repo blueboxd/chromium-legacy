@@ -23,16 +23,12 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-namespace device {
-class VRDisplayImpl;
-}  // namespace device
-
 namespace vr {
 
 class XRRuntimeManager;
 class BrowserXRRuntime;
 
-// The browser-side host for a device::VRDisplayImpl. Controls access to VR
+// The browser-side host for VR services. Controls access to VR
 // APIs like poses and presentation.
 class XRDeviceImpl : public device::mojom::XRDevice {
  public:

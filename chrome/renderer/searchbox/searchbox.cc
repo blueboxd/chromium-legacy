@@ -370,8 +370,8 @@ void SearchBox::ToggleMostVisitedOrCustomLinks() {
   embedded_search_service_->ToggleMostVisitedOrCustomLinks(page_seq_no_);
 }
 
-void SearchBox::ToggleShortcutsVisibility() {
-  embedded_search_service_->ToggleShortcutsVisibility(page_seq_no_);
+void SearchBox::ToggleShortcutsVisibility(bool do_notify) {
+  embedded_search_service_->ToggleShortcutsVisibility(page_seq_no_, do_notify);
 }
 
 std::string SearchBox::FixupAndValidateUrl(const std::string& url) const {

@@ -24,6 +24,7 @@
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 
@@ -277,7 +278,7 @@ void CronetURLRequest::NetworkTasks::Start(
           << initial_url_.possibly_invalid_spec().c_str()
           << " priority: " << RequestPriorityToString(initial_priority_);
   url_request_ = context->GetURLRequestContext()->CreateRequest(
-      initial_url_, net::DEFAULT_PRIORITY, this);
+      initial_url_, net::DEFAULT_PRIORITY, this, MISSING_TRAFFIC_ANNOTATION);
   url_request_->SetLoadFlags(initial_load_flags_);
   url_request_->set_method(method);
   url_request_->SetExtraRequestHeaders(*request_headers);

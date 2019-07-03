@@ -28,13 +28,16 @@ public class PaymentRequestTestBridge {
         private final boolean mIsIncognito;
         private final boolean mIsValidSsl;
         private final boolean mIsWebContentsActive;
+        private final boolean mPrefsCanMakePayment;
         private final boolean mSkipUiForBasicCard;
 
         PaymentRequestDelegateForTest(boolean isIncognito, boolean isValidSsl,
-                boolean isWebContentsActive, boolean skipUiForBasicCard) {
+                boolean isWebContentsActive, boolean prefsCanMakePayment,
+                boolean skipUiForBasicCard) {
             mIsIncognito = isIncognito;
             mIsValidSsl = isValidSsl;
             mIsWebContentsActive = isWebContentsActive;
+            mPrefsCanMakePayment = prefsCanMakePayment;
             mSkipUiForBasicCard = skipUiForBasicCard;
         }
 
@@ -52,6 +55,11 @@ public class PaymentRequestTestBridge {
         @Override
         public boolean isWebContentsActive(TabModel model, WebContents webContents) {
             return mIsWebContentsActive;
+        }
+
+        @Override
+        public boolean prefsCanMakePayment() {
+            return mPrefsCanMakePayment;
         }
 
         @Override
@@ -122,10 +130,11 @@ public class PaymentRequestTestBridge {
 
     @CalledByNative
     public static void setUseDelegateForTest(boolean useDelegate, boolean isIncognito,
-            boolean isValidSsl, boolean isWebContentsActive, boolean skipUiForBasicCard) {
+            boolean isValidSsl, boolean isWebContentsActive, boolean prefsCanMakePayment,
+            boolean skipUiForBasicCard) {
         if (useDelegate) {
-            PaymentRequestFactory.sDelegateForTest = new PaymentRequestDelegateForTest(
-                    isIncognito, isValidSsl, isWebContentsActive, skipUiForBasicCard);
+            PaymentRequestFactory.sDelegateForTest = new PaymentRequestDelegateForTest(isIncognito,
+                    isValidSsl, isWebContentsActive, prefsCanMakePayment, skipUiForBasicCard);
         } else {
             PaymentRequestFactory.sDelegateForTest = null;
         }

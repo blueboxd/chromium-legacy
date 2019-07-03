@@ -124,6 +124,13 @@ CreditCard GetCreditCard();
 // Returns a credit card full of dummy info, different to the above.
 CreditCard GetCreditCard2();
 
+// Returns an expired credit card full of fake info.
+CreditCard GetExpiredCreditCard();
+
+// Returns an incomplete credit card full of fake info with card holder's name
+// missing.
+CreditCard GetIncompleteCreditCard();
+
 // Returns a masked server card full of dummy info.
 CreditCard GetMaskedServerCard();
 CreditCard GetMaskedServerCardAmex();

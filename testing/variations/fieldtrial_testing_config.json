@@ -574,19 +574,6 @@
                     ]
                 }
             ]
-        },
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioServiceStreams",
-                    "enable_features": [
-                        "AudioServiceAudioStreams"
-                    ]
-                }
-            ]
         }
     ],
     "AudioServiceOutOfProcessSandboxApmMac": [
@@ -1441,22 +1428,6 @@
             "experiments": [
                 {
                     "name": "Disabled"
-                }
-            ]
-        }
-    ],
-    "ClearOldOnDemandFavicons": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ClearOldOnDemandFavicons"
-                    ]
                 }
             ]
         }
@@ -3526,7 +3497,6 @@
                         "UIVerticalMargin": "10"
                     },
                     "enable_features": [
-                        "OmniboxDedupeGoogleDriveURLs",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxGroupSuggestionsBySearchVsUrl",

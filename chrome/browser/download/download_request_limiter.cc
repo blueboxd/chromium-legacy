@@ -147,11 +147,11 @@ void DownloadRequestLimiter::TabDownloadState::DidStartNavigation(
     if (navigation_handle->IsRendererInitiated()) {
       GURL origin = navigation_handle->GetURL().GetOrigin();
       // Mark the origin as restricted. If the origin does not exist in
-      // |restricted_status_map_|, give it a default value of
+      // |download_status_map_|, give it a default value of
       // PROMPT_BEFORE_DOWNLOAD and content setting will be checked later once
       // CanDownloadImpl() is called.
       if (!origin.is_empty())
-        restricted_status_map_.emplace(origin, PROMPT_BEFORE_DOWNLOAD);
+        download_status_map_.emplace(origin, PROMPT_BEFORE_DOWNLOAD);
       return;
     }
 
@@ -290,8 +290,8 @@ void DownloadRequestLimiter::TabDownloadState::Accept(
 DownloadRequestLimiter::DownloadStatus
 DownloadRequestLimiter::TabDownloadState::GetDownloadStatus(
     const GURL& request_origin) {
-  auto it = restricted_status_map_.find(request_origin);
-  if (it != restricted_status_map_.end())
+  auto it = download_status_map_.find(request_origin);
+  if (it != download_status_map_.end())
     return it->second;
   return ALLOW_ONE_DOWNLOAD;
 }
@@ -415,10 +415,10 @@ void DownloadRequestLimiter::TabDownloadState::SetDownloadStatusAndNotifyImpl(
   origin_ = request_origin;
 
   if (!origin_.is_empty()) {
-    if (status_ == PROMPT_BEFORE_DOWNLOAD || status_ == DOWNLOADS_NOT_ALLOWED)
-      restricted_status_map_[request_origin] = status_;
+    if (status_ != ALLOW_ONE_DOWNLOAD)
+      download_status_map_[request_origin] = status_;
     else
-      restricted_status_map_.erase(request_origin);
+      download_status_map_.erase(request_origin);
   }
 
   if (!web_contents())
@@ -445,8 +445,12 @@ bool DownloadRequestLimiter::TabDownloadState::IsNavigationRestricted(
     return true;
 
   GURL origin = navigation_handle->GetURL().GetOrigin();
-  if (navigation_handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK)
-    return restricted_status_map_.find(origin) != restricted_status_map_.end();
+  if (navigation_handle->GetPageTransition() &
+      ui::PAGE_TRANSITION_FORWARD_BACK) {
+    auto it = download_status_map_.find(origin);
+    if (it != download_status_map_.end())
+      return it->second != ALLOW_ALL_DOWNLOADS;
+  }
   return false;
 }
 
@@ -581,11 +585,15 @@ void DownloadRequestLimiter::CanDownloadImpl(
     setting = content_settings->GetContentSetting(
         initiator, initiator, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
         std::string());
-    // Override the status if content setting is block or always allow.
-    if (setting == CONTENT_SETTING_BLOCK)
+    // Override the status if content setting is block. If the content setting
+    // is always allow, only reset the status if it is |DOWNLOADS_NOT_ALLOWED|
+    // so unnecessary notifications will not be triggered.
+    if (setting == CONTENT_SETTING_BLOCK) {
       status = DOWNLOADS_NOT_ALLOWED;
-    else if (setting == CONTENT_SETTING_ALLOW)
+    } else if (setting == CONTENT_SETTING_ALLOW &&
+               status == DOWNLOADS_NOT_ALLOWED) {
       status = ALLOW_ALL_DOWNLOADS;
+    }
   }
 
   // Always call SetDownloadStatusAndNotify since we may need to change the

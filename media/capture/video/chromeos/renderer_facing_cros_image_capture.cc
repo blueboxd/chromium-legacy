@@ -39,6 +39,19 @@ void RendererFacingCrosImageCapture::SetReprocessOptionWithRealId(
                                           std::move(callback));
 }
 
+void RendererFacingCrosImageCapture::SetFpsRangeWithRealId(
+    const uint32_t stream_width,
+    const uint32_t stream_height,
+    const int32_t min_frame_rate,
+    const int32_t max_frame_rate,
+    SetFpsRangeCallback callback,
+    const base::Optional<std::string>& device_id) {
+  DCHECK(device_id.has_value());
+  cros_image_capture_->SetFpsRange(*device_id, stream_width, stream_height,
+                                   min_frame_rate, max_frame_rate,
+                                   std::move(callback));
+}
+
 void RendererFacingCrosImageCapture::GetCameraInfo(
     const std::string& source_id,
     GetCameraInfoCallback callback) {
@@ -57,6 +70,20 @@ void RendererFacingCrosImageCapture::SetReprocessOption(
       media::BindToCurrentLoop(base::BindOnce(
           &RendererFacingCrosImageCapture::SetReprocessOptionWithRealId,
           weak_ptr_factory_.GetWeakPtr(), effect, std::move(callback))));
+}
+
+void RendererFacingCrosImageCapture::SetFpsRange(const std::string& source_id,
+                                                 const uint32_t stream_width,
+                                                 const uint32_t stream_height,
+                                                 const int32_t min_frame_rate,
+                                                 const int32_t max_frame_rate,
+                                                 SetFpsRangeCallback callback) {
+  mapping_callback_.Run(
+      source_id,
+      media::BindToCurrentLoop(base::BindOnce(
+          &RendererFacingCrosImageCapture::SetFpsRangeWithRealId,
+          weak_ptr_factory_.GetWeakPtr(), stream_width, stream_height,
+          min_frame_rate, max_frame_rate, std::move(callback))));
 }
 
 }  // namespace media

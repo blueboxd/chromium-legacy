@@ -139,6 +139,10 @@ UkmPageLoadMetricsObserver::ShouldObserveMimeType(
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
+  if (navigation_handle->IsInMainFrame()) {
+    largest_contentful_paint_handler_.RecordMainFrameTreeNodeId(
+        navigation_handle->GetFrameTreeNodeId());
+  }
   if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
       kOfflinePreviewsMimeType) {
     if (!IsOfflinePreview(navigation_handle->GetWebContents()))
@@ -627,16 +631,21 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
     return;
   const page_load_metrics::ContentfulPaintTimingInfo& paint =
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+
   if (!paint.IsEmpty()) {
-    TRACE_EVENT_INSTANT1(
+    TRACE_EVENT_INSTANT2(
         "loading",
         "NavStartToLargestContentfulPaint::Candidate::AllFrames::UKM",
-        TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue());
+        TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue(),
+        "main_frame_tree_node_id",
+        largest_contentful_paint_handler_.MainFrameTreeNodeId());
   } else {
-    TRACE_EVENT_INSTANT0("loading",
-                         "NavStartToLargestContentfulPaint::"
-                         "Invalidate::AllFrames::UKM",
-                         TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT1(
+        "loading",
+        "NavStartToLargestContentfulPaint::"
+        "Invalidate::AllFrames::UKM",
+        TRACE_EVENT_SCOPE_THREAD, "main_frame_tree_node_id",
+        largest_contentful_paint_handler_.MainFrameTreeNodeId());
   }
 }
 

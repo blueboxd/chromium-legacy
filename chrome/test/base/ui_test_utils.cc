@@ -17,6 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
@@ -33,6 +35,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -46,7 +49,10 @@
 #include "components/download/public/common/download_item.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -148,6 +154,34 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
+};
+
+class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
+ public:
+  explicit AutocompleteChangeObserver(Profile* profile) {
+    scoped_observer_.Add(
+        OmniboxControllerEmitter::GetForBrowserContext(profile));
+  }
+
+  ~AutocompleteChangeObserver() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // OmniboxControllerEmitter::Observer:
+  void OnOmniboxQuery(AutocompleteController* controller,
+                      const base::string16& input_text) override {}
+  void OnOmniboxResultChanged(bool default_match_changed,
+                              AutocompleteController* controller) override {
+    if (run_loop_.running())
+      run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  ScopedObserver<OmniboxControllerEmitter, OmniboxControllerEmitter::Observer>
+      scoped_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteChangeObserver);
 };
 
 }  // namespace
@@ -367,19 +401,26 @@ void DownloadURL(Browser* browser, const GURL& download_url) {
   observer->WaitForFinished();
 }
 
-void SendToOmniboxAndSubmit(LocationBar* location_bar,
+void WaitForAutocompleteDone(Browser* browser) {
+  auto* controller = browser->window()
+                         ->GetLocationBar()
+                         ->GetOmniboxView()
+                         ->model()
+                         ->autocomplete_controller();
+  while (!controller->done())
+    AutocompleteChangeObserver(browser->profile()).Wait();
+}
+
+void SendToOmniboxAndSubmit(Browser* browser,
                             const std::string& input,
                             base::TimeTicks match_selection_timestamp) {
+  LocationBar* location_bar = browser->window()->GetLocationBar();
   OmniboxView* omnibox = location_bar->GetOmniboxView();
   omnibox->model()->OnSetFocus(false);
   omnibox->SetUserText(base::ASCIIToUTF16(input));
   location_bar->AcceptInput(match_selection_timestamp);
-  while (!omnibox->model()->autocomplete_controller()->done()) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-        content::NotificationService::AllSources());
-    observer.Wait();
-  }
+
+  WaitForAutocompleteDone(browser);
 }
 
 Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers) {

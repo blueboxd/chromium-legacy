@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_ray_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
@@ -122,8 +123,8 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     case BasicShape::kStyleRayType: {
       const StyleRay& ray = To<StyleRay>(*basic_shape);
       return MakeGarbageCollected<cssvalue::CSSRayValue>(
-          *CSSPrimitiveValue::Create(ray.Angle(),
-                                     CSSPrimitiveValue::UnitType::kDegrees),
+          *CSSNumericLiteralValue::Create(
+              ray.Angle(), CSSPrimitiveValue::UnitType::kDegrees),
           *CSSIdentifierValue::Create(RaySizeToKeyword(ray.Size())),
           (ray.Contain() ? CSSIdentifierValue::Create(CSSValueID::kContain)
                          : nullptr));
@@ -169,8 +170,10 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       const Vector<Length>& values = polygon->Values();
       for (unsigned i = 0; i < values.size(); i += 2) {
         polygon_value->AppendPoint(
-            CSSPrimitiveValue::Create(values.at(i), style.EffectiveZoom()),
-            CSSPrimitiveValue::Create(values.at(i + 1), style.EffectiveZoom()));
+            CSSPrimitiveValue::CreateFromLength(values.at(i),
+                                                style.EffectiveZoom()),
+            CSSPrimitiveValue::CreateFromLength(values.at(i + 1),
+                                                style.EffectiveZoom()));
       }
       return polygon_value;
     }
@@ -179,14 +182,14 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       auto* inset_value =
           MakeGarbageCollected<cssvalue::CSSBasicShapeInsetValue>();
 
-      inset_value->SetTop(
-          CSSPrimitiveValue::Create(inset->Top(), style.EffectiveZoom()));
-      inset_value->SetRight(
-          CSSPrimitiveValue::Create(inset->Right(), style.EffectiveZoom()));
-      inset_value->SetBottom(
-          CSSPrimitiveValue::Create(inset->Bottom(), style.EffectiveZoom()));
-      inset_value->SetLeft(
-          CSSPrimitiveValue::Create(inset->Left(), style.EffectiveZoom()));
+      inset_value->SetTop(CSSPrimitiveValue::CreateFromLength(
+          inset->Top(), style.EffectiveZoom()));
+      inset_value->SetRight(CSSPrimitiveValue::CreateFromLength(
+          inset->Right(), style.EffectiveZoom()));
+      inset_value->SetBottom(CSSPrimitiveValue::CreateFromLength(
+          inset->Bottom(), style.EffectiveZoom()));
+      inset_value->SetLeft(CSSPrimitiveValue::CreateFromLength(
+          inset->Left(), style.EffectiveZoom()));
 
       inset_value->SetTopLeftRadius(
           ValueForLengthSize(inset->TopLeftRadius(), style));

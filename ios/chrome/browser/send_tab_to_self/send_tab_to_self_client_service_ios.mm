@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
@@ -166,8 +167,8 @@ void SendTabToSelfClientServiceIOS::DisplayInfoBar(
     return;
   }
 
-  infobar_manager->AddInfoBar(
-      CreateConfirmInfoBar(IOSSendTabToSelfInfoBarDelegate::Create(entry)));
+  infobar_manager->AddInfoBar(CreateConfirmInfoBar(
+      IOSSendTabToSelfInfoBarDelegate::Create(entry, model_)));
 }
 
 void SendTabToSelfClientServiceIOS::CleanUpObserversAndVariables() {

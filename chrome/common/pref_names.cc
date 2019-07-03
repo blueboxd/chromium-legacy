@@ -1732,14 +1732,6 @@ const char kPrintPreviewStickySettings[] =
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
-#if defined(OS_WIN)
-// Boolean that specifies whether or not showing the welcome page following an
-// OS upgrade is enabled. True by default. May be set by master_preferences or
-// overridden by the WelcomePageOnOSUpgradeEnabled policy setting.
-const char kWelcomePageOnOSUpgradeEnabled[] =
-    "browser.welcome_page_on_os_upgrade_enabled";
-#endif
-
 // String that lists supported HTTP authentication schemes.
 const char kAuthSchemes[] = "auth.schemes";
 

@@ -34,7 +34,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.components.offlinepages.SavePageResult;
-import org.chromium.components.offlinepages.background.UpdateRequestResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -177,72 +176,9 @@ public class OfflinePageBridgeTest {
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testGetRequestsInQueue() throws Exception {
-        String url = "https://www.google.com/";
-        String namespace = "custom_tabs";
-        savePageLater(url, namespace);
-        SavePageRequest[] requests = OfflineTestUtil.getRequestsInQueue();
-        Assert.assertEquals(1, requests.length);
-        Assert.assertEquals(namespace, requests[0].getClientId().getNamespace());
-        Assert.assertEquals(url, requests[0].getUrl());
-
-        String url2 = "https://mail.google.com/";
-        String namespace2 = "last_n";
-        savePageLater(url2, namespace2);
-        requests = OfflineTestUtil.getRequestsInQueue();
-        Assert.assertEquals(2, requests.length);
-
-        HashSet<String> expectedUrls = new HashSet<>();
-        expectedUrls.add(url);
-        expectedUrls.add(url2);
-
-        HashSet<String> expectedNamespaces = new HashSet<>();
-        expectedNamespaces.add(namespace);
-        expectedNamespaces.add(namespace2);
-
-        for (SavePageRequest request : requests) {
-            Assert.assertTrue(expectedNamespaces.contains(request.getClientId().getNamespace()));
-            expectedNamespaces.remove(request.getClientId().getNamespace());
-            Assert.assertTrue(expectedUrls.contains(request.getUrl()));
-            expectedUrls.remove(request.getUrl());
-        }
-    }
-
-    @Test
-    @MediumTest
-    @RetryOnFailure
     public void testOfflinePageBridgeDisabledInIncognito() throws Exception {
         initializeBridgeForProfile(true);
         Assert.assertEquals(null, mOfflinePageBridge);
-    }
-
-    @Test
-    @MediumTest
-    @RetryOnFailure
-    public void testRemoveRequestsFromQueue() throws Exception {
-        String url = "https://www.google.com/";
-        String namespace = "custom_tabs";
-        savePageLater(url, namespace);
-
-        String url2 = "https://mail.google.com/";
-        String namespace2 = "last_n";
-        savePageLater(url2, namespace2);
-
-        SavePageRequest[] requests = OfflineTestUtil.getRequestsInQueue();
-        Assert.assertEquals(2, requests.length);
-
-        List<Long> requestsToRemove = new ArrayList<>();
-        requestsToRemove.add(Long.valueOf(requests[1].getRequestId()));
-
-        List<OfflinePageBridge.RequestRemovedResult> removed =
-                removeRequestsFromQueue(requestsToRemove);
-        Assert.assertEquals(requests[1].getRequestId(), removed.get(0).getRequestId());
-        Assert.assertEquals(UpdateRequestResult.SUCCESS, removed.get(0).getUpdateRequestResult());
-        SavePageRequest[] remaining = OfflineTestUtil.getRequestsInQueue();
-        Assert.assertEquals(1, remaining.length);
-
-        Assert.assertEquals(requests[0].getRequestId(), remaining[0].getRequestId());
-        Assert.assertEquals(requests[0].getUrl(), remaining[0].getUrl());
     }
 
     @Test
@@ -557,43 +493,6 @@ public class OfflinePageBridgeTest {
             }
         }
         return result;
-    }
-
-    private void savePageLater(final String url, final String namespace)
-            throws InterruptedException {
-        final Semaphore semaphore = new Semaphore(0);
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mOfflinePageBridge.savePageLater(url, namespace, true /* userRequested */,
-                    new OfflinePageOrigin(), new Callback<Integer>() {
-                        @Override
-                        public void onResult(Integer i) {
-                            Assert.assertEquals("SavePageLater did not succeed", Integer.valueOf(0),
-                                    i); // 0 is SUCCESS
-                            semaphore.release();
-                        }
-                    });
-        });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private List<OfflinePageBridge.RequestRemovedResult> removeRequestsFromQueue(
-            final List<Long> requestsToRemove) throws InterruptedException {
-        final AtomicReference<List<OfflinePageBridge.RequestRemovedResult>> ref =
-                new AtomicReference<>();
-        final Semaphore semaphore = new Semaphore(0);
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mOfflinePageBridge.removeRequestsFromQueue(
-                    requestsToRemove, new Callback<List<OfflinePageBridge.RequestRemovedResult>>() {
-                        @Override
-                        public void onResult(
-                                List<OfflinePageBridge.RequestRemovedResult> removedRequests) {
-                            ref.set(removedRequests);
-                            semaphore.release();
-                        }
-                    });
-        });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        return ref.get();
     }
 
     private LoadUrlParams getLoadUrlParamsForOpeningMhtmlFileOrContent(String url)

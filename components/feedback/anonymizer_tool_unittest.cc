@@ -209,145 +209,153 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatternWithoutContext) {
 }
 
 TEST_F(AnonymizerToolTest, AnonymizeChunk) {
-  std::string data =
-      "aaaaaaaa [SSID=123aaaaaa]aaaaa\n"  // SSID.
-      "aaaaaaaahttp://tets.comaaaaaaa\n"  // URL.
-      "aaaaaemail@example.comaaa\n"       // Email address.
-      "example@@1234\n"           // No PII, it is not valid email address.
-      "255.255.155.2\n"           // IP address.
-      "255.255.155.255\n"         // IP address.
-      "127.0.0.1\n"               // IPv4 loopback.
-      "127.255.0.1\n"             // IPv4 loopback.
-      "0.0.0.0\n"                 // Any IPv4.
-      "0.255.255.255\n"           // Any IPv4.
-      "10.10.10.100\n"            // IPv4 private class A.
-      "10.10.10.100\n"            // Intentional duplicate.
-      "10.10.10.101\n"            // IPv4 private class A.
-      "10.255.255.255\n"          // IPv4 private class A.
-      "172.16.0.0\n"              // IPv4 private class B.
-      "172.31.255.255\n"          // IPv4 private class B.
-      "172.11.5.5\n"              // IP address.
-      "172.111.5.5\n"             // IP address.
-      "192.168.0.0\n"             // IPv4 private class C.
-      "192.168.255.255\n"         // IPv4 private class C.
-      "192.169.2.120\n"           // IP address.
-      "169.254.0.1\n"             // Link local.
-      "169.200.0.1\n"             // IP address.
-      "fe80::\n"                  // Link local.
-      "fe80::ffff\n"              // Link local.
-      "febf:ffff::ffff\n"         // Link local.
-      "fecc::1111\n"              // IP address.
-      "224.0.0.24\n"              // Multicast.
-      "240.0.0.0\n"               // IP address.
-      "255.255.255.255\n"         // Broadcast.
-      "100.115.92.92\n"           // ChromeOS.
-      "100.115.91.92\n"           // IP address.
-      "1.1.1.1\n"                 // DNS
-      "8.8.8.8\n"                 // DNS
-      "8.8.4.4\n"                 // DNS
-      "8.8.8.4\n"                 // IP address.
-      "255.255.259.255\n"         // Not an IP address.
-      "255.300.255.255\n"         // Not an IP address.
-      "aaaa123.123.45.4aaa\n"     // IP address.
-      "11:11;11::11\n"            // IP address.
-      "11::11\n"                  // IP address.
-      "11:11:abcdef:0:0:0:0:0\n"  // No PII.
-      "::\n"                      // Unspecified.
-      "::1\n"                     // Local host.
-      "Instance::Set\n"           // Ignore match, no PII.
-      "Instant::ff\n"             // Ignore match, no PII.
-      "net::ERR_CONN_TIMEOUT\n"   // Ignore match, no PII.
-      "ff01::1\n"                 // All nodes address (interface local).
-      "ff01::2\n"                 // All routers (interface local).
-      "ff01::3\n"                 // Multicast (interface local).
-      "ff02::1\n"                 // All nodes address (link local).
-      "ff02::2\n"                 // All routers (link local).
-      "ff02::3\n"                 // Multicast (link local).
-      "ff02::fb\n"                // mDNSv6 (link local).
-      "ff08::fb\n"                // mDNSv6.
-      "ff0f::101\n"               // All NTP servers.
-      "::ffff:cb0c:10ea\n"        // IPv4-mapped IPV6 (IP address).
-      "::ffff:a0a:a0a\n"          // IPv4-mapped IPV6 (private class A).
-      "::ffff:a0a:a0a\n"          // Intentional duplicate.
-      "::ffff:ac1e:1e1e\n"        // IPv4-mapped IPV6 (private class B).
-      "::ffff:c0a8:640a\n"        // IPv4-mapped IPV6 (private class C).
-      "::ffff:6473:5c01\n"        // IPv4-mapped IPV6 (Chrome).
-      "64:ff9b::a0a:a0a\n"       // IPv4-translated 6to4 IPV6 (private class A).
-      "64:ff9b::6473:5c01\n"     // IPv4-translated 6to4 IPV6 (Chrome).
-      "::0101:ffff:c0a8:640a\n"  // IP address.
-      "aa:aa:aa:aa:aa:aa\n"      // MAC address (BSSID).
-      "chrome://resources/foo\n"        // Secure chrome resource, whitelisted.
-      "chrome://resources/f?user=bar";  // Potentially PII in parameter.
-  std::string result =
-      "aaaaaaaa [SSID=1]aaaaa\n"
-      "aaaaaaaa<URL: 1>\n"
-      "<email: 1>\n"
-      "example@@1234\n"
-      "<IPv4: 1>\n"
-      "<IPv4: 2>\n"
-      "<127.0.0.0/8: 3>\n"
-      "<127.0.0.0/8: 4>\n"
-      "<0.0.0.0/8: 5>\n"
-      "<0.0.0.0/8: 6>\n"
-      "<10.0.0.0/8: 7>\n"
-      "<10.0.0.0/8: 7>\n"
-      "<10.0.0.0/8: 8>\n"
-      "<10.0.0.0/8: 9>\n"
-      "<172.16.0.0/12: 10>\n"
-      "<172.16.0.0/12: 11>\n"
-      "<IPv4: 12>\n"
-      "<IPv4: 13>\n"
-      "<192.168.0.0/16: 14>\n"
-      "<192.168.0.0/16: 15>\n"
-      "<IPv4: 16>\n"
-      "<169.254.0.0/16: 17>\n"
-      "<IPv4: 18>\n"
-      "<fe80::/10: 1>\n"
-      "<fe80::/10: 2>\n"
-      "<fe80::/10: 3>\n"
-      "<IPv6: 4>\n"
-      "<224.0.0.0/4: 19>\n"
-      "<IPv4: 20>\n"
-      "255.255.255.255\n"
-      "100.115.92.92\n"
-      "<IPv4: 23>\n"
-      "1.1.1.1\n"
-      "8.8.8.8\n"
-      "8.8.4.4\n"
-      "<IPv4: 27>\n"
-      "255.255.259.255\n"
-      "255.300.255.255\n"
-      "aaaa<IPv4: 28>aaa\n"
-      "11:11;<IPv6: 5>\n"
-      "<IPv6: 5>\n"
-      "11:11:abcdef:0:0:0:0:0\n"
-      "::\n"
-      "::1\n"
-      "Instance::Set\n"
-      "Instant::ff\n"
-      "net::ERR_CONN_TIMEOUT\n"
-      "ff01::1\n"
-      "ff01::2\n"
-      "<ff01::/16: 13>\n"
-      "ff02::1\n"
-      "ff02::2\n"
-      "<ff02::/16: 16>\n"
-      "<ff02::/16: 17>\n"
-      "<IPv6: 18>\n"
-      "<IPv6: 19>\n"
-      "<IPv6: 20>\n"
-      "<M 10.0.0.0/8: 21>\n"
-      "<M 10.0.0.0/8: 21>\n"
-      "<M 172.16.0.0/12: 22>\n"
-      "<M 192.168.0.0/16: 23>\n"
-      "<M 100.115.92.1: 24>\n"
-      "<T 10.0.0.0/8: 25>\n"
-      "<T 100.115.92.1: 26>\n"
-      "<IPv6: 27>\n"
-      "aa:aa:aa:00:00:01\n"
-      "chrome://resources/foo\n"
-      "<URL: 2>";
-  EXPECT_EQ(result, anonymizer_.Anonymize(data));
+  // For better readability, put all the pre/post redaction strings in an array
+  // of pairs, and then convert that to two strings which become the input and
+  // output of the anonymizer.
+  std::pair<std::string, std::string> data[] = {
+      {"aaaaaaaa [SSID=123aaaaaa]aaaaa",  // SSID.
+       "aaaaaaaa [SSID=1]aaaaa"},
+      {"aaaaaaaahttp://tets.comaaaaaaa",  // URL.
+       "aaaaaaaa<URL: 1>"},
+      {"aaaaaemail@example.comaaa",  // Email address.
+       "<email: 1>"},
+      {"example@@1234",  // No PII, it is not invalid email address.
+       "example@@1234"},
+      {"255.255.155.2",  // IP address.
+       "<IPv4: 1>"},
+      {"255.255.155.255",  // IP address.
+       "<IPv4: 2>"},
+      {"127.0.0.1",  // IPv4 loopback.
+       "<127.0.0.0/8: 3>"},
+      {"127.255.0.1",  // IPv4 loopback.
+       "<127.0.0.0/8: 4>"},
+      {"0.0.0.0",  // Any IPv4.
+       "<0.0.0.0/8: 5>"},
+      {"0.255.255.255",  // Any IPv4.
+       "<0.0.0.0/8: 6>"},
+      {"10.10.10.100",  // IPv4 private class A.
+       "<10.0.0.0/8: 7>"},
+      {"10.10.10.100",  // Intentional duplicate.
+       "<10.0.0.0/8: 7>"},
+      {"10.10.10.101",  // IPv4 private class A.
+       "<10.0.0.0/8: 8>"},
+      {"10.255.255.255",  // IPv4 private class A.
+       "<10.0.0.0/8: 9>"},
+      {"172.16.0.0",  // IPv4 private class B.
+       "<172.16.0.0/12: 10>"},
+      {"172.31.255.255",  // IPv4 private class B.
+       "<172.16.0.0/12: 11>"},
+      {"172.11.5.5",  // IP address.
+       "<IPv4: 12>"},
+      {"172.111.5.5",  // IP address.
+       "<IPv4: 13>"},
+      {"192.168.0.0",  // IPv4 private class C.
+       "<192.168.0.0/16: 14>"},
+      {"192.168.255.255",  // IPv4 private class C.
+       "<192.168.0.0/16: 15>"},
+      {"192.169.2.120",  // IP address.
+       "<IPv4: 16>"},
+      {"169.254.0.1",  // Link local.
+       "<169.254.0.0/16: 17>"},
+      {"169.200.0.1",  // IP address.
+       "<IPv4: 18>"},
+      {"fe80::",  // Link local.
+       "<fe80::/10: 1>"},
+      {"fe80::ffff",  // Link local.
+       "<fe80::/10: 2>"},
+      {"febf:ffff::ffff",  // Link local.
+       "<fe80::/10: 3>"},
+      {"fecc::1111",  // IP address.
+       "<IPv6: 4>"},
+      {"224.0.0.24",  // Multicast.
+       "<224.0.0.0/4: 19>"},
+      {"240.0.0.0",  // IP address.
+       "<IPv4: 20>"},
+      {"255.255.255.255",  // Broadcast.
+       "255.255.255.255"},
+      {"100.115.92.92",  // ChromeOS.
+       "100.115.92.92"},
+      {"100.115.91.92",  // IP address.
+       "<IPv4: 23>"},
+      {"1.1.1.1",  // DNS
+       "1.1.1.1"},
+      {"8.8.8.8",  // DNS
+       "8.8.8.8"},
+      {"8.8.4.4",  // DNS
+       "8.8.4.4"},
+      {"8.8.8.4",  // IP address.
+       "<IPv4: 27>"},
+      {"255.255.259.255",  // Not an IP address.
+       "255.255.259.255"},
+      {"255.300.255.255",  // Not an IP address.
+       "255.300.255.255"},
+      {"aaaa123.123.45.4aaa",  // IP address.
+       "aaaa<IPv4: 28>aaa"},
+      {"11:11;11::11",  // IP address.
+       "11:11;<IPv6: 5>"},
+      {"11::11",  // IP address.
+       "<IPv6: 5>"},
+      {"11:11:abcdef:0:0:0:0:0",  // No PII.
+       "11:11:abcdef:0:0:0:0:0"},
+      {"::",  // Unspecified.
+       "::"},
+      {"::1",  // Local host.
+       "::1"},
+      {"Instance::Set",  // Ignore match, no PII.
+       "Instance::Set"},
+      {"Instant::ff",  // Ignore match, no PII.
+       "Instant::ff"},
+      {"net::ERR_CONN_TIMEOUT",  // Ignore match, no PII.
+       "net::ERR_CONN_TIMEOUT"},
+      {"ff01::1",  // All nodes address (interface local).
+       "ff01::1"},
+      {"ff01::2",  // All routers (interface local).
+       "ff01::2"},
+      {"ff01::3",  // Multicast (interface local).
+       "<ff01::/16: 13>"},
+      {"ff02::1",  // All nodes address (link local).
+       "ff02::1"},
+      {"ff02::2",  // All routers (link local).
+       "ff02::2"},
+      {"ff02::3",  // Multicast (link local).
+       "<ff02::/16: 16>"},
+      {"ff02::fb",  // mDNSv6 (link local).
+       "<ff02::/16: 17>"},
+      {"ff08::fb",  // mDNSv6.
+       "<IPv6: 18>"},
+      {"ff0f::101",  // All NTP servers.
+       "<IPv6: 19>"},
+      {"::ffff:cb0c:10ea",  // IPv4-mapped IPV6 (IP address).
+       "<IPv6: 20>"},
+      {"::ffff:a0a:a0a",  // IPv4-mapped IPV6 (private class A).
+       "<M 10.0.0.0/8: 21>"},
+      {"::ffff:a0a:a0a",  // Intentional duplicate.
+       "<M 10.0.0.0/8: 21>"},
+      {"::ffff:ac1e:1e1e",  // IPv4-mapped IPV6 (private class B).
+       "<M 172.16.0.0/12: 22>"},
+      {"::ffff:c0a8:640a",  // IPv4-mapped IPV6 (private class C).
+       "<M 192.168.0.0/16: 23>"},
+      {"::ffff:6473:5c01",  // IPv4-mapped IPV6 (Chrome).
+       "<M 100.115.92.1: 24>"},
+      {"64:ff9b::a0a:a0a",  // IPv4-translated 6to4 IPV6 (private class A).
+       "<T 10.0.0.0/8: 25>"},
+      {"64:ff9b::6473:5c01",  // IPv4-translated 6to4 IPV6 (Chrome).
+       "<T 100.115.92.1: 26>"},
+      {"::0101:ffff:c0a8:640a",  // IP address.
+       "<IPv6: 27>"},
+      {"aa:aa:aa:aa:aa:aa",  // MAC address (BSSID).
+       "aa:aa:aa:00:00:01"},
+      {"chrome://resources/foo",  // Secure chrome resource, whitelisted.
+       "chrome://resources/foo"},
+      {"chrome://resources/f?user=bar",  // Potentially PII in parameter.
+       "<URL: 2>"}};
+  std::string anon_input;
+  std::string anon_output;
+  for (const auto& s : data) {
+    anon_input.append(s.first).append("\n");
+    anon_output.append(s.second).append("\n");
+  }
+  EXPECT_EQ(anon_output, anonymizer_.Anonymize(anon_input));
 }
 
 }  // namespace feedback

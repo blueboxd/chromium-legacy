@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
 class LocalFrame;
@@ -118,6 +119,19 @@ class CORE_EXPORT DocumentInit final {
   V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
   DocumentInit& WithNewRegistrationContext();
 
+  DocumentInit& WithFeaturePolicyHeader(const String& header);
+  const String& FeaturePolicyHeader() const { return feature_policy_header_; }
+
+  DocumentInit& WithOriginTrialsHeader(const String& header);
+  const String& OriginTrialsHeader() const { return origin_trials_header_; }
+
+  DocumentInit& WithSandboxFlags(WebSandboxFlags flags);
+
+  DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
+  ContentSecurityPolicy* GetContentSecurityPolicy() const {
+    return content_security_policy_;
+  }
+
  private:
   DocumentInit(HTMLImportsController*);
 
@@ -162,6 +176,18 @@ class CORE_EXPORT DocumentInit final {
 
   Member<V0CustomElementRegistrationContext> registration_context_;
   bool create_new_registration_context_;
+
+  // The feature policy set via response header.
+  String feature_policy_header_;
+
+  // The origin trial set via response header.
+  String origin_trials_header_;
+
+  // Additional sandbox flags
+  WebSandboxFlags sandbox_flags_ = WebSandboxFlags::kNone;
+
+  // Loader's CSP
+  Member<ContentSecurityPolicy> content_security_policy_;
 };
 
 }  // namespace blink

@@ -450,6 +450,8 @@ void UsbDeviceHandleUsbfs::Close() {
   // see if the handle is closed.
   device_->HandleClosed(this);
   device_ = nullptr;
+  // The device is no longer attached so we don't have any endpoints either.
+  endpoints_.clear();
 
   // Releases |helper_|.
   blocking_task_runner_->PostTask(
@@ -746,7 +748,10 @@ void UsbDeviceHandleUsbfs::ReleaseInterfaceComplete(int interface_number,
   auto it = interfaces_.find(interface_number);
   DCHECK(it != interfaces_.end());
   interfaces_.erase(it);
-  RefreshEndpointInfo();
+  if (device_) {
+    // Only refresh endpoints if a device is still attached.
+    RefreshEndpointInfo();
+  }
   std::move(callback).Run(true);
 }
 
@@ -853,6 +858,7 @@ void UsbDeviceHandleUsbfs::TransferComplete(
 
 void UsbDeviceHandleUsbfs::RefreshEndpointInfo() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(device_);
   endpoints_.clear();
 
   const UsbConfigDescriptor* config = device_->active_configuration();

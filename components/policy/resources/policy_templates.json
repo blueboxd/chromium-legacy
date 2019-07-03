@@ -10729,7 +10729,7 @@
     },
     {
       'name': 'WelcomePageOnOSUpgradeEnabled',
-      'supported_on': ['chrome.win:45-'],
+      'supported_on': ['chrome.win:45-62'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'id': 303,

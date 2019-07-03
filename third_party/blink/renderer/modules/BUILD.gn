@@ -392,6 +392,7 @@ jumbo_source_set("unit_tests") {
     "service_worker/web_embedded_worker_impl_test.cc",
     "wake_lock/wake_lock_controller_test.cc",
     "wake_lock/wake_lock_state_record_test.cc",
+    "wake_lock/wake_lock_test_utils.cc",
     "wake_lock/wake_lock_test_utils.h",
     "webaudio/audio_basic_processor_handler_test.cc",
     "webaudio/audio_context_autoplay_test.cc",

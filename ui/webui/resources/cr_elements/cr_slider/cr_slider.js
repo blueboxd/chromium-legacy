@@ -132,10 +132,7 @@ cr_slider.SliderTick;
         value: () => [],
       },
 
-      value: {
-        type: Number,
-        value: 0,
-      },
+      value: Number,
 
       /** @private */
       label_: {
@@ -179,7 +176,7 @@ cr_slider.SliderTick;
     observers: [
       'onTicksChanged_(ticks.*)',
       'updateUi_(ticks.*, value, min, max)',
-      'updateValue_(value, min, max)',
+      'onValueMinMaxChange_(value, min, max)',
     ],
 
     listeners: {
@@ -211,7 +208,10 @@ cr_slider.SliderTick;
       this.draggingEventTracker_ = new EventTracker();
     },
 
-    /** @private */
+    /**
+     * @return {boolean}
+     * @private
+     */
     computeDisabled_: function() {
       return this.disabled || this.ticks.length == 1;
     },
@@ -381,12 +381,23 @@ cr_slider.SliderTick;
         this.max = this.ticks.length - 1;
         this.min = 0;
       }
-      this.updateValue_(this.value);
+      if (this.value !== undefined) {
+        this.updateValue_(this.value);
+      }
     },
 
     /** @private */
     onTransitionEnd_: function() {
       this.transiting_ = false;
+    },
+
+    /** @private */
+    onValueMinMaxChange_: function() {
+      if (this.value == undefined || this.min == undefined ||
+          this.max == undefined) {
+        return;
+      }
+      this.updateValue_(this.value);
     },
 
     /** @private */
@@ -420,6 +431,7 @@ cr_slider.SliderTick;
      * @private
      */
     updateValue_: function(value) {
+      this.$.container.hidden = false;
       if (this.snaps) {
         // Skip update if |value| has not passed the next value .8 units away.
         // The value will update as the drag approaches the next value.

@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_test_utils.h"
@@ -22,11 +21,6 @@ namespace {
 WakeLockStateRecord* MakeStateRecord(WakeLockTestingContext& context,
                                      WakeLockType type) {
   return MakeGarbageCollected<WakeLockStateRecord>(context.GetDocument(), type);
-}
-
-DOMException* GetDOMException(const ScriptPromise& promise) {
-  return V8DOMException::ToImplWithTypeCheck(
-      promise.GetIsolate(), promise.V8Value().As<v8::Promise>()->Result());
 }
 
 }  // namespace
@@ -51,8 +45,10 @@ TEST(WakeLockStateRecordTest, AcquireWakeLock) {
   state_record->AcquireWakeLock(resolver2);
   screen_lock.WaitForRequest();
 
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise1));
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise2));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise1));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise2));
   EXPECT_TRUE(screen_lock.is_acquired());
   EXPECT_EQ(2U, state_record->active_locks_.size());
 }
@@ -72,7 +68,8 @@ TEST(WakeLockStateRecordTest, ReleaseAllWakeLocks) {
   state_record->AcquireWakeLock(resolver);
   screen_lock.WaitForRequest();
 
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise));
   EXPECT_EQ(1U, state_record->active_locks_.size());
   EXPECT_TRUE(screen_lock.is_acquired());
 
@@ -80,8 +77,10 @@ TEST(WakeLockStateRecordTest, ReleaseAllWakeLocks) {
   context.WaitForPromiseRejection(promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
-  DOMException* dom_exception = GetDOMException(promise);
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
+  DOMException* dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(promise);
   ASSERT_NE(nullptr, dom_exception);
   EXPECT_EQ("AbortError", dom_exception->name());
 
@@ -111,14 +110,16 @@ TEST(WakeLockStateRecordTest, ReleaseNonExistentWakeLock) {
   context.WaitForPromiseRejection(promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
   EXPECT_EQ(0U, state_record->active_locks_.size());
   EXPECT_FALSE(screen_lock.is_acquired());
 
   state_record->ReleaseWakeLock(resolver);
   test::RunPendingTasks();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
   EXPECT_EQ(0U, state_record->active_locks_.size());
   EXPECT_FALSE(screen_lock.is_acquired());
 }
@@ -142,17 +143,22 @@ TEST(WakeLockStateRecordTest, ReleaseOneWakeLock) {
   state_record->AcquireWakeLock(resolver2);
   screen_lock.WaitForRequest();
 
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise1));
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise2));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise1));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise2));
   EXPECT_EQ(2U, state_record->active_locks_.size());
   EXPECT_TRUE(screen_lock.is_acquired());
 
   state_record->ReleaseWakeLock(resolver1);
   context.WaitForPromiseRejection(promise1);
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise1));
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise2));
-  DOMException* dom_exception = GetDOMException(promise1);
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise1));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise2));
+  DOMException* dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(promise1);
   ASSERT_NE(nullptr, dom_exception);
   EXPECT_EQ("AbortError", dom_exception->name());
 
@@ -172,12 +178,14 @@ TEST(WakeLockStateRecordTest, ReleaseRejectsPromise) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
 
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise));
 
   state_record->ReleaseWakeLock(resolver);
   context.WaitForPromiseRejection(promise);
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
   EXPECT_EQ(0U, state_record->active_locks_.size());
   EXPECT_FALSE(screen_lock.is_acquired());
 }
@@ -221,12 +229,16 @@ TEST(WakeLockStateRecordTest, ClearWakeLocks) {
   context.WaitForPromiseRejection(promise2);
   system_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise1));
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise2));
-  DOMException* dom_exception = GetDOMException(promise1);
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise1));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise2));
+  DOMException* dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(promise1);
   ASSERT_NE(nullptr, dom_exception);
   EXPECT_EQ("AbortError", dom_exception->name());
-  dom_exception = GetDOMException(promise2);
+  dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(promise2);
   ASSERT_NE(nullptr, dom_exception);
   EXPECT_EQ("AbortError", dom_exception->name());
 
@@ -257,12 +269,16 @@ TEST(WakeLockStateRecordTest, WakeLockConnectionError) {
   context.WaitForPromiseRejection(promise1);
   context.WaitForPromiseRejection(promise2);
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise1));
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise2));
-  DOMException* dom_exception = GetDOMException(promise1);
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise1));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise2));
+  DOMException* dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(promise1);
   ASSERT_NE(nullptr, dom_exception);
   EXPECT_EQ("AbortError", dom_exception->name());
-  dom_exception = GetDOMException(promise2);
+  dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(promise2);
   ASSERT_NE(nullptr, dom_exception);
   EXPECT_EQ("AbortError", dom_exception->name());
 

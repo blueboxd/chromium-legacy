@@ -151,6 +151,9 @@ class MEDIA_SHMEM_EXPORT AudioBus {
   // AudioBus object must have the same frames() and channels().
   void CopyTo(AudioBus* dest) const;
 
+  // Similar to above, but clips values to [-1, 1] during the copy process.
+  void CopyAndClipTo(AudioBus* dest) const;
+
   // Helper method to copy frames from one AudioBus to another. Both AudioBus
   // objects must have the same number of channels(). |source_start_frame| is
   // the starting offset. |dest_start_frame| is the starting offset in |dest|.

@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "media/base/media.h"
 #include "media/base/media_client.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -153,9 +154,11 @@ bool IsVp9ProfileSupported(VideoCodecProfile profile) {
     return true;
 
 #if defined(OS_ANDROID)
-  // Support for VP9.2, VP9.3 was not added until Nougat.
+  // Support for VP9.2, VP9.3 was not added until Nougat and requires that we
+  // have the platform decoder (MediaCodec) available.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_NOUGAT) {
+          base::android::SDK_VERSION_NOUGAT ||
+      !HasPlatformDecoderSupport()) {
     return false;
   }
 

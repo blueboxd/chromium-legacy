@@ -78,7 +78,9 @@ class CORE_EXPORT ImageRecordsManager {
     DCHECK(!RecordedTooManyNodes());
     invisible_node_ids_.insert(node_id);
   }
-  void RecordVisibleNode(const DOMNodeId&, const uint64_t& visual_size);
+  void RecordVisibleNode(const DOMNodeId&,
+                         const uint64_t& visual_size,
+                         const ImageResourceContent&);
   void RecordVisibleNode(const BackgroundImageId& background_image_id,
                          const uint64_t& visual_size);
   size_t CountVisibleNodes() const { return visible_node_map_.size(); }

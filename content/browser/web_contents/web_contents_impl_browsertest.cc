@@ -977,33 +977,35 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   }
 
  protected:
-  bool TestResourceLoadFromDedicatedWorker(const GURL& url,
-                                           const GURL& worker) {
-    // Do a cross-process navigation to clear the in-memory cache.
-    // We assume that we don't start this call from "chrome://gpu", as
-    // otherwise it won't be a cross-process navigation. We are relying
-    // on this navigation to discard the old process.
-    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
-
-    // Observe network requests.
-    ResourceLoadObserver observer(shell());
-
-    EXPECT_TRUE(NavigateToURL(shell(), url));
-
-    const char kLoadWorkerScript[] = "let w = new Worker('%s');";
-    std::string create_worker_script =
-        base::StringPrintf(kLoadWorkerScript, worker.spec().c_str());
-
-    EXPECT_TRUE(ExecuteScript(shell(), create_worker_script));
-
-    GURL resource = GenURL("3p.com", "/script");
-    observer.WaitForResourceCompletion(resource);
-    return (*observer.FindResource(resource))->was_cached;
+  // Loads 3p.com/script on page |url|, optionally from |sub_frame| if it's
+  // valid, and returns whether the script was cached or not.
+  bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
+    return TestResourceLoadHelper(url, sub_frame, GURL());
   }
 
-  // Loads 3p.com/script on page |url|, optionally from |sub_frame| if it's
-  // valid and return if the script was cached or not.
-  bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
+  // Loads 3p.com/script on page |url| from |worker| and returns whether
+  // the script was cached or not.
+  bool TestResourceLoadFromDedicatedWorker(const GURL& url,
+                                           const GURL& worker) {
+    DCHECK(worker.is_valid());
+    return TestResourceLoadHelper(url, GURL(), worker);
+  }
+
+  // Loads 3p.com/script on page |url| from |worker| inside |sub_frame|
+  // and returns whether the script was cached or not.
+  bool TestResourceLoadFromDedicatedWorkerInIframe(const GURL& url,
+                                                   const GURL& sub_frame,
+                                                   const GURL& worker) {
+    DCHECK(sub_frame.is_valid());
+    DCHECK(worker.is_valid());
+    return TestResourceLoadHelper(url, sub_frame, worker);
+  }
+
+  bool TestResourceLoadHelper(const GURL& url,
+                              const GURL& sub_frame,
+                              const GURL& worker) {
+    DCHECK(url.is_valid());
+
     // Do a cross-process navigation to clear the in-memory cache.
     // We assume that we don't start this call from "chrome://gpu", as
     // otherwise it won't be a cross-process navigation. We are relying
@@ -1027,13 +1029,13 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
     // If there is supposed to be a sub-frame, create it.
     if (sub_frame.is_valid()) {
-      const char kLoadIframeScript[] =
-          "var iframe = document.createElement('iframe');"
-          "iframe.src='%s';"
-          "document.body.appendChild(iframe);";
-      std::string create_iframe_script =
-          base::StringPrintf(kLoadIframeScript, sub_frame.spec().c_str());
-      EXPECT_TRUE(ExecuteScript(shell(), create_iframe_script));
+      const char kLoadIframeScript[] = R"(
+        let iframe = document.createElement('iframe');
+        iframe.src = $1;
+        document.body.appendChild(iframe);
+      )";
+      EXPECT_TRUE(
+          ExecuteScript(shell(), JsReplace(kLoadIframeScript, sub_frame)));
       EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
       host_to_load_resource =
@@ -1044,16 +1046,22 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
               ->current_frame_host();
     }
 
-    const char kLoadResourceScript[] = R"(
-    var script = document.createElement("script");
-    script.src = '%s';
-    document.body.appendChild(script);
-  )";
     GURL resource = GenURL("3p.com", "/script");
-    std::string loader_script =
-        base::StringPrintf(kLoadResourceScript, resource.spec().c_str());
 
-    EXPECT_TRUE(ExecuteScript(host_to_load_resource, loader_script));
+    if (worker.is_valid()) {
+      const char kLoadWorkerScript[] = R"(let w = new Worker($1);)";
+      EXPECT_TRUE(ExecuteScript(host_to_load_resource,
+                                JsReplace(kLoadWorkerScript, worker)));
+    } else {
+      const char kLoadResourceScript[] = R"(
+        let script = document.createElement('script');
+        script.src = $1;
+        document.body.appendChild(script);
+      )";
+      EXPECT_TRUE(ExecuteScript(host_to_load_resource,
+                                JsReplace(kLoadResourceScript, resource)));
+    }
+
     observer.WaitForResourceCompletion(resource);
 
     // Test the network isolation key.
@@ -1189,7 +1197,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled,
   EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
       GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
 
-  // Load 3p.com/script from a worker with a new top frame origin. Due to split
+  // Load 3p.com/script from a worker with a new top-frame origin. Due to split
   // caching it's a cache miss.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
       GenURL("b.com", "/title1.html"), GenURL("b.com", "/worker.js")));
@@ -1204,6 +1212,24 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled,
   EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
       GenURL("c.com", "/title1.html"),
       GenURL("c.com", "/embedding_worker.js?c")));
+
+  // Load 3p.com/script from a worker with a new top-frame origin and nested in
+  // a cross-origin iframe. Due to split caching it's a cache miss.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("d.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("d.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
+
+  // Load 3p.com/script from a worker with a new top-frame origin and nested in
+  // a cross-origin iframe whose URL has previously been loaded.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("f.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("f.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
@@ -1215,16 +1241,26 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
   EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
       GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
 
-  // Load 3p.com/script from b.com's worker. The cache isn't split by top frame
+  // Load 3p.com/script from b.com's worker. The cache isn't split by top-frame
   // origin so the resource is already cached.
   EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
       GenURL("b.com", "/title1.html"), GenURL("b.com", "/worker.js")));
 
   // Load 3p.com/script from a nested worker with a new top-frame origin. The
-  // cache isn't split by top frame origin so the resource is already cached.
+  // cache isn't split by top-frame origin so the resource is already cached.
   EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
       GenURL("c.com", "/title1.html"),
       GenURL("c.com", "/embedding_worker.js?c")));
+
+  // Load 3p.com/script from a worker with a new top-frame origin and nested in
+  // a cross-origin iframe. The cache isn't split by top-frame origin so the
+  // resource is already cached.
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("d.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("f.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

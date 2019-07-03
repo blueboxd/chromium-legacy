@@ -1560,11 +1560,27 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
   LayoutUnit logical_block_offset =
       previous_inflow_position.logical_block_offset;
 
-  if (child.Style().MarginBeforeCollapse() != EMarginCollapse::kCollapse) {
+  EMarginCollapse margin_before_collapse = child.Style().MarginBeforeCollapse();
+  if (margin_before_collapse != EMarginCollapse::kCollapse) {
     // Stop margin collapsing on the block-start side of the child.
     StopMarginCollapsing(child.Style().MarginBeforeCollapse(),
                          margins.block_start, &logical_block_offset,
                          &margin_strut);
+
+    if (margin_before_collapse == EMarginCollapse::kSeparate) {
+      UseCounter::Count(Node().GetDocument(),
+                        WebFeature::kWebkitMarginBeforeCollapseSeparate);
+      if (margin_strut != previous_inflow_position.margin_strut ||
+          logical_block_offset !=
+              previous_inflow_position.logical_block_offset) {
+        UseCounter::Count(
+            Node().GetDocument(),
+            WebFeature::kWebkitMarginBeforeCollapseSeparateMaybeDoesSomething);
+      }
+    } else if (margin_before_collapse == EMarginCollapse::kDiscard) {
+      UseCounter::Count(Node().GetDocument(),
+                        WebFeature::kWebkitMarginBeforeCollapseDiscard);
+    }
   } else {
     margin_strut.Append(margins.block_start,
                         child.Style().HasMarginBeforeQuirk());
@@ -1655,11 +1671,26 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
 
   NGMarginStrut margin_strut = layout_result.EndMarginStrut();
 
-  if (child.Style().MarginAfterCollapse() != EMarginCollapse::kCollapse) {
+  EMarginCollapse margin_after_collapse = child.Style().MarginAfterCollapse();
+  if (margin_after_collapse != EMarginCollapse::kCollapse) {
+    LayoutUnit logical_block_offset_copy = logical_block_offset;
     // Stop margin collapsing on the block-end side of the child.
-    StopMarginCollapsing(child.Style().MarginAfterCollapse(),
-                         child_data.margins.block_end, &logical_block_offset,
-                         &margin_strut);
+    StopMarginCollapsing(margin_after_collapse, child_data.margins.block_end,
+                         &logical_block_offset, &margin_strut);
+
+    if (margin_after_collapse == EMarginCollapse::kSeparate) {
+      UseCounter::Count(Node().GetDocument(),
+                        WebFeature::kWebkitMarginAfterCollapseSeparate);
+      if (margin_strut != layout_result.EndMarginStrut() ||
+          logical_block_offset != logical_block_offset_copy) {
+        UseCounter::Count(
+            Node().GetDocument(),
+            WebFeature::kWebkitMarginAfterCollapseSeparateMaybeDoesSomething);
+      }
+    } else if (margin_after_collapse == EMarginCollapse::kDiscard) {
+      UseCounter::Count(Node().GetDocument(),
+                        WebFeature::kWebkitMarginAfterCollapseDiscard);
+    }
   } else {
     // Self collapsing child's end margin can "inherit" quirkiness from its
     // start margin. E.g.

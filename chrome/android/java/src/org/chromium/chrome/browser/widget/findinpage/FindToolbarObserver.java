@@ -7,18 +7,14 @@ package org.chromium.chrome.browser.widget.findinpage;
 /**
  * Observer for find in page actions.
  */
-public class FindToolbarObserver {
-
+public interface FindToolbarObserver {
     /**
      * Notified when the find in page toolbar has been shown.
      */
-    public void onFindToolbarShown() {
-    }
+    void onFindToolbarShown();
 
     /**
      * Notified when the find in page toolbar has been hidden.
      */
-    public void onFindToolbarHidden() {
-    }
-
+    void onFindToolbarHidden();
 }

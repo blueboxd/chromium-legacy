@@ -268,14 +268,15 @@ void SearchIPCRouter::ToggleMostVisitedOrCustomLinks(int page_seq_no) {
   delegate_->OnToggleMostVisitedOrCustomLinks();
 }
 
-void SearchIPCRouter::ToggleShortcutsVisibility(int page_seq_no) {
+void SearchIPCRouter::ToggleShortcutsVisibility(int page_seq_no,
+                                                bool do_notify) {
   if (page_seq_no != commit_counter_)
     return;
 
   if (!policy_->ShouldProcessToggleShortcutsVisibility())
     return;
 
-  delegate_->OnToggleShortcutsVisibility();
+  delegate_->OnToggleShortcutsVisibility(do_notify);
 }
 
 void SearchIPCRouter::LogEvent(int page_seq_no,

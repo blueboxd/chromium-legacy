@@ -88,6 +88,11 @@ public class DinoActivity extends SingleTabActivity {
     protected void initializeToolbar() {}
 
     @Override
+    public boolean supportsFindInPage() {
+        return false;
+    }
+
+    @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,
                 () -> mBrowserControlsOffsetHelper, ChromeFullscreenManager.ControlsPosition.NONE);

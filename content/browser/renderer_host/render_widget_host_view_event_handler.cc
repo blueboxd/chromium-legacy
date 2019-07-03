@@ -124,6 +124,8 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       set_focus_on_mouse_down_or_key_event_(false),
       synthetic_move_sent_(false),
+      enable_consolidated_movement_(
+          base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)),
       host_(host),
       host_view_(host_view),
       popup_child_host_view_(nullptr),
@@ -184,9 +186,9 @@ bool RenderWidgetHostViewEventHandler::LockMouse() {
     cursor_client->LockCursor();
   }
 
-  if (ShouldMoveToCenter()) {
-    MoveCursorToCenter();
-  }
+  if (ShouldMoveToCenter(unlocked_global_mouse_position_))
+    MoveCursorToCenter(nullptr);
+
   delegate_->SetTooltipsEnabled(false);
   return true;
 }
@@ -214,6 +216,8 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
   // ModifyEventMovementAndCoords function.
   global_mouse_position_ = unlocked_global_mouse_position_;
   window_->MoveCursorTo(gfx::ToFlooredPoint(unlocked_mouse_position_));
+  synthetic_move_position_ =
+      gfx::ToFlooredPoint(unlocked_global_mouse_position_);
 
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
@@ -749,7 +753,7 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
     if (event->flags() & ui::EF_IS_NON_CLIENT) {
       // TODO(jonross): ideally this would not be done for mus
       // (crbug.com/621412)
-      MoveCursorToCenter();
+      MoveCursorToCenter(event);
       return;
     }
 
@@ -780,15 +784,13 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
       }
     }
 
+    bool should_not_forward = is_move_to_center_event && synthetic_move_sent_;
+
     ModifyEventMovementAndCoords(*event, &mouse_event);
 
-    bool should_not_forward = is_move_to_center_event && synthetic_move_sent_;
-    if (should_not_forward) {
+    if (!enable_consolidated_movement_ && should_not_forward) {
       synthetic_move_sent_ = false;
     } else {
-      // Check if the mouse has reached the border and needs to be centered.
-      if (ShouldMoveToCenter())
-        MoveCursorToCenter();
       bool is_selection_popup = NeedsInputGrab(popup_child_host_view_);
       // Forward event to renderer.
       if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
@@ -804,6 +806,14 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
         if (event->type() == ui::ET_MOUSE_PRESSED)
           SetKeyboardFocus();
       }
+
+      // Check if the mouse has reached the border and needs to be centered.
+      // Use event position if consolidated_movement_ is enabled, otherwise use
+      // stored global_mouse_position_.
+      if (ShouldMoveToCenter(enable_consolidated_movement_
+                                 ? gfx::PointF(mouse_event.PositionInScreen())
+                                 : global_mouse_position_))
+        MoveCursorToCenter(event);
     }
   }
   if (!ShouldGenerateAppCommand(event))
@@ -813,39 +823,56 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
 void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
     const ui::MouseEvent& ui_mouse_event,
     blink::WebMouseEvent* event) {
-  // If the mouse has just entered, we must report zero movementX/Y. Hence we
-  // reset any global_mouse_position set previously.
-  if (ui_mouse_event.type() == ui::ET_MOUSE_ENTERED ||
-      ui_mouse_event.type() == ui::ET_MOUSE_EXITED) {
+  if (!enable_consolidated_movement_) {
+    // If the mouse has just entered, we must report zero movementX/Y. Hence we
+    // reset any global_mouse_position set previously.
+    if (ui_mouse_event.type() == ui::ET_MOUSE_ENTERED ||
+        ui_mouse_event.type() == ui::ET_MOUSE_EXITED) {
+      global_mouse_position_.SetPoint(event->PositionInScreen().x,
+                                      event->PositionInScreen().y);
+    }
+
+    // Movement is computed by taking the difference of the new cursor position
+    // and the previous. Under mouse lock the cursor will be warped back to the
+    // center so that we are not limited by clipping boundaries.
+    // We do not measure movement as the delta from cursor to center because
+    // we may receive more mouse movement events before our warp has taken
+    // effect.
+    // TODO(crbug.com/802067): We store event coordinates as pointF but
+    // movement_x/y are integer. In order not to lose fractional part, we need
+    // to keep the movement calculation as "floor(cur_pos) - floor(last_pos)".
+    // Remove the floor here when movement_x/y is changed to double.
+    event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x) -
+                        gfx::ToFlooredInt(global_mouse_position_.x());
+    event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y) -
+                        gfx::ToFlooredInt(global_mouse_position_.y());
+
     global_mouse_position_.SetPoint(event->PositionInScreen().x,
                                     event->PositionInScreen().y);
   }
 
-  // Movement is computed by taking the difference of the new cursor position
-  // and the previous. Under mouse lock the cursor will be warped back to the
-  // center so that we are not limited by clipping boundaries.
-  // We do not measure movement as the delta from cursor to center because
-  // we may receive more mouse movement events before our warp has taken
-  // effect.
-  // TODO(crbug.com/802067): We store event coordinates as pointF but
-  // movement_x/y are integer. In order not to lose fractional part, we need
-  // to keep the movement calculation as "floor(cur_pos) - floor(last_pos)".
-  // Remove the floor here when movement_x/y is changed to double.
-  event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x) -
-                      gfx::ToFlooredInt(global_mouse_position_.x());
-  event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y) -
-                      gfx::ToFlooredInt(global_mouse_position_.y());
-
-  global_mouse_position_.SetPoint(event->PositionInScreen().x,
-                                  event->PositionInScreen().y);
+  // This logic is similar to |is_move_to_center_event| check when
+  // consolidated_movement disabled. We can not guarantee that |MoveCursorTo|
+  // is taking effect immediately, so wait for the event that has matching
+  // coordiantes to marked as synthesized event.
+  if (enable_consolidated_movement_ && synthetic_move_position_.has_value() &&
+      synthetic_move_position_.value() ==
+          gfx::ToRoundedPoint(event->PositionInScreen())) {
+    event->SetModifiers(event->GetModifiers() |
+                        blink::WebInputEvent::Modifiers::kRelativeMotionEvent);
+    synthetic_move_position_.reset();
+    return;
+  }
 
   // Under mouse lock, coordinates of mouse are locked to what they were when
   // mouse lock was entered.
   if (mouse_locked_) {
-    event->SetPositionInWidget(unlocked_mouse_position_.x(),
-                               unlocked_mouse_position_.y());
-    event->SetPositionInScreen(unlocked_global_mouse_position_.x(),
-                               unlocked_global_mouse_position_.y());
+    if (!enable_consolidated_movement_) {
+      event->SetPositionInWidget(unlocked_mouse_position_.x(),
+                                 unlocked_mouse_position_.y());
+      event->SetPositionInScreen(unlocked_global_mouse_position_.x(),
+                                 unlocked_global_mouse_position_.y());
+    }
   } else {
     unlocked_mouse_position_.SetPoint(event->PositionInWidget().x,
                                       event->PositionInWidget().y);
@@ -854,19 +881,35 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   }
 }
 
-void RenderWidgetHostViewEventHandler::MoveCursorToCenter() {
+void RenderWidgetHostViewEventHandler::MoveCursorToCenter(
+    ui::MouseEvent* event) {
+  gfx::PointF center_in_screen(window_->GetBoundsInScreen().CenterPoint());
 #if defined(OS_WIN)
   // TODO(crbug.com/781182): Set the global position when move cursor to center.
-  // This is a workaround for a bug from Windows update 16299, and should be remove
-  // once the bug is fixed in OS.
-  gfx::PointF center_in_screen(window_->GetBoundsInScreen().CenterPoint());
+  // This is a workaround for a bug from Windows update 16299, and should be
+  // remove once the bug is fixed in OS. When consolidate_movement_ flag is
+  // enabled, send a synthesized event to update the blink side states.
   global_mouse_position_ = center_in_screen;
+  if (enable_consolidated_movement_ && event) {
+    blink::WebMouseEvent mouse_event = ui::MakeWebMouseEvent(*event);
+    mouse_event.SetModifiers(
+        mouse_event.GetModifiers() |
+        blink::WebInputEvent::Modifiers::kRelativeMotionEvent);
+    mouse_event.SetPositionInScreen(center_in_screen);
+    if (ShouldRouteEvents()) {
+      host_->delegate()->GetInputEventRouter()->RouteMouseEvent(
+          host_view_, &mouse_event, *event->latency());
+    } else {
+      ProcessMouseEvent(mouse_event, *event->latency());
+    }
+  }
 #else
   synthetic_move_sent_ = true;
 #endif
 
   gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
   window_->MoveCursorTo(center);
+  synthetic_move_position_ = gfx::ToFlooredPoint(center_in_screen);
 }
 
 void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
@@ -887,16 +930,17 @@ void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
   }
 }
 
-bool RenderWidgetHostViewEventHandler::ShouldMoveToCenter() {
+bool RenderWidgetHostViewEventHandler::ShouldMoveToCenter(
+    gfx::PointF mouse_screen_position) {
   gfx::Rect rect = window_->bounds();
   rect = delegate_->ConvertRectToScreen(rect);
   float border_x = rect.width() * kMouseLockBorderPercentage / 100.0;
   float border_y = rect.height() * kMouseLockBorderPercentage / 100.0;
 
-  return global_mouse_position_.x() < rect.x() + border_x ||
-         global_mouse_position_.x() > rect.right() - border_x ||
-         global_mouse_position_.y() < rect.y() + border_y ||
-         global_mouse_position_.y() > rect.bottom() - border_y;
+  return mouse_screen_position.x() < rect.x() + border_x ||
+         mouse_screen_position.x() > rect.right() - border_x ||
+         mouse_screen_position.y() < rect.y() + border_y ||
+         mouse_screen_position.y() > rect.bottom() - border_y;
 }
 
 bool RenderWidgetHostViewEventHandler::ShouldRouteEvents() const {

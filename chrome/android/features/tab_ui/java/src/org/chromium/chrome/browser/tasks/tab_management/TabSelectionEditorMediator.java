@@ -69,7 +69,7 @@ class TabSelectionEditorMediator
                     (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                             .getCurrentTabModelFilter();
 
-            tabGroupModelFilter.mergeListOfTabsToGroup(selectedTabs, destinationTab);
+            tabGroupModelFilter.mergeListOfTabsToGroup(selectedTabs, destinationTab, false, true);
 
             hide();
 

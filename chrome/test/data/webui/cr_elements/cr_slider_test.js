@@ -10,6 +10,7 @@ suite('cr-slider', function() {
     document.body.innerHTML = '<cr-slider min="0" max="100"></cr-slider>';
 
     crSlider = document.body.querySelector('cr-slider');
+    crSlider.value = 0;
     return PolymerTest.flushTasks();
   });
 
@@ -77,7 +78,6 @@ suite('cr-slider', function() {
   }
 
   test('key events', () => {
-    crSlider.value = 0;
     pressArrowRight();
     assertEquals(1, crSlider.value);
     pressPageUp();
@@ -110,7 +110,6 @@ suite('cr-slider', function() {
 
   test('no-keybindings', () => {
     crSlider.noKeybindings = true;
-    crSlider.value = 0;
     pressArrowRight();
     assertEquals(0, crSlider.value);
     crSlider.noKeybindings = false;
@@ -125,7 +124,6 @@ suite('cr-slider', function() {
   });
 
   test('mouse events', () => {
-    crSlider.value = 0;
     pointerMove(.25);
     assertEquals(0, crSlider.value);
     pointerDown(.5);
@@ -171,7 +169,6 @@ suite('cr-slider', function() {
   });
 
   test('markers', () => {
-    crSlider.value = 0;
     assertTrue(crSlider.$.markers.hidden);
     crSlider.markerCount = 10;
     assertFalse(crSlider.$.markers.hidden);
@@ -385,5 +382,13 @@ suite('cr-slider', function() {
     crSlider.value = 100;
     crSlider.max = 50;
     assertEquals(50, crSlider.value);
+  });
+
+  test('container hidden until value set', () => {
+    document.body.innerHTML = '<cr-slider></cr-slider>';
+    crSlider = document.body.querySelector('cr-slider');
+    assertTrue(crSlider.$.container.hidden);
+    crSlider.value = 0;
+    assertFalse(crSlider.$.container.hidden);
   });
 });

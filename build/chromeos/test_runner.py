@@ -64,10 +64,10 @@ class RemoteTest(object):
 
     # /home is mounted with "noexec" in the device, but some of our tools
     # and tests use the home dir as a workspace (eg: vpython downloads
-    # python binaries to ~/.vpython-root). /tmp doesn't have this
+    # python binaries to ~/.vpython-root). /usr/local/tmp doesn't have this
     # restriction, so change the location of the home dir for the
     # duration of the test.
-    'export HOME=/tmp',
+    'export HOME=/usr/local/tmp',
   ]
 
   def __init__(self, args, unknown_args):

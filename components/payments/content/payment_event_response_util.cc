@@ -36,6 +36,8 @@ base::StringPiece ConvertPaymentEventResponseTypeToErrorString(
       return errors::kPaymentEventBrowserError;
     case mojom::PaymentEventResponseType::PAYMENT_EVENT_TIMEOUT:
       return errors::kPaymentEventTimeout;
+    case mojom::PaymentEventResponseType::PAYMENT_HANDLER_INSECURE_NAVIGATION:
+      return errors::kPaymentHandlerInsecureNavigation;
   }
 }
 

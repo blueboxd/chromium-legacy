@@ -4544,10 +4544,13 @@ TEST_F(ChromeLauncherControllerTest, UnpinnableComponentApps) {
   InitLauncherController();
 
   const char* kPinnableApp = file_manager::kFileManagerAppId;
-  const char* kUnpinnableApp = file_manager::kGalleryAppId;
+  const char* kNoPinApps[] = {file_manager::kGalleryAppId,
+                              extension_misc::kFeedbackExtensionId};
 
   EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
             GetPinnableForAppID(kPinnableApp, profile()));
-  EXPECT_EQ(AppListControllerDelegate::NO_PIN,
-            GetPinnableForAppID(kUnpinnableApp, profile()));
+  for (const char* id : kNoPinApps) {
+    EXPECT_EQ(AppListControllerDelegate::NO_PIN,
+              GetPinnableForAppID(id, profile()));
+  }
 }

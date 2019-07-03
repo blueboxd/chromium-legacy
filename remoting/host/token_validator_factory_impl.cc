@@ -89,7 +89,7 @@ void TokenValidatorImpl::StartValidateRequest(const std::string& token) {
 
   request_ = request_context_getter_->GetURLRequestContext()->CreateRequest(
       third_party_auth_config_.token_validation_url, net::DEFAULT_PRIORITY,
-      this);
+      this, MISSING_TRAFFIC_ANNOTATION);
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::string app_name = "Chrome Remote Desktop";

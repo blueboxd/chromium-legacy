@@ -750,7 +750,8 @@ using payments::JourneyLogger;
   GREYAssertEqual(JourneyLogger::EVENT_USER_ABORTED |
                       JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE |
                       JourneyLogger::EVENT_REQUEST_METHOD_OTHER |
-                      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD,
+                      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+                      JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT,
                   buckets[0].min, @"");
 
   // Make sure that the metrics that required the Payment Request to be shown

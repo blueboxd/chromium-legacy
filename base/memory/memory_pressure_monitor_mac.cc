@@ -165,7 +165,7 @@ int MemoryPressureMonitor::GetSecondsPerUMATick() {
 }
 
 MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitor::GetCurrentPressureLevel() {
+MemoryPressureMonitor::GetCurrentPressureLevel() const {
   return last_pressure_level_;
 }
 

@@ -160,6 +160,12 @@ public class TabCountProvider {
             public void didMoveTabOutOfGroup(Tab moveTab, int oldFilterIndex) {
                 updateTabCount();
             }
+
+            @Override
+            public void didCreateGroup(
+                    List<Tab> tabs, List<Integer> tabOriginalIndex, boolean isSameGroup) {
+                updateTabCount();
+            }
         };
 
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()

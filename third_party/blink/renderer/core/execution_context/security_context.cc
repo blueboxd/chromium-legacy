@@ -82,7 +82,14 @@ WebVector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
 }
 
 SecurityContext::SecurityContext()
-    : sandbox_flags_(WebSandboxFlags::kNone),
+    : SecurityContext(nullptr, WebSandboxFlags::kNone, nullptr) {}
+
+SecurityContext::SecurityContext(scoped_refptr<SecurityOrigin> origin,
+                                 WebSandboxFlags sandbox_flags,
+                                 std::unique_ptr<FeaturePolicy> feature_policy)
+    : sandbox_flags_(sandbox_flags),
+      security_origin_(std::move(origin)),
+      feature_policy_(std::move(feature_policy)),
       address_space_(mojom::IPAddressSpace::kPublic),
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
       require_safe_types_(false) {}
@@ -144,25 +151,6 @@ bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
   return (sandbox_flags_ & mask) != WebSandboxFlags::kNone;
 }
 
-void SecurityContext::EnforceSandboxFlags(WebSandboxFlags mask) {
-  ApplySandboxFlags(mask);
-}
-
-void SecurityContext::ApplySandboxFlags(WebSandboxFlags mask,
-                                        bool is_potentially_trustworthy) {
-  sandbox_flags_ |= mask;
-
-  if (IsSandboxed(WebSandboxFlags::kOrigin) && GetSecurityOrigin() &&
-      !GetSecurityOrigin()->IsOpaque()) {
-    scoped_refptr<SecurityOrigin> security_origin =
-        GetSecurityOrigin()->DeriveNewOpaqueOrigin();
-    security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
-        is_potentially_trustworthy);
-    SetSecurityOrigin(std::move(security_origin));
-    DidUpdateSecurityOrigin();
-  }
-}
-
 String SecurityContext::addressSpaceForBindings() const {
   switch (address_space_) {
     case mojom::IPAddressSpace::kPublic:
@@ -197,36 +185,6 @@ void SecurityContext::SetFeaturePolicy(
   // This method should be called before a FeaturePolicy has been created.
   DCHECK(!feature_policy_);
   feature_policy_ = std::move(feature_policy);
-}
-
-void SecurityContext::InitializeFeaturePolicy(
-    const ParsedFeaturePolicy& parsed_header,
-    const ParsedFeaturePolicy& container_policy,
-    const FeaturePolicy* parent_feature_policy,
-    const FeaturePolicy::FeatureState* opener_feature_state) {
-  // Feature policy should either come from a parent in the case of an embedded
-  // child frame, or from an opener if any when a new window is created by an
-  // opener. A main frame without an opener would not have a parent policy nor
-  // an opener feature state.
-  DCHECK(!parent_feature_policy || !opener_feature_state);
-  report_only_feature_policy_ = nullptr;
-  if (!HasCustomizedFeaturePolicy()) {
-    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-        nullptr, {}, security_origin_->ToUrlOrigin());
-    return;
-  }
-
-  if (!opener_feature_state ||
-      !RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-        parent_feature_policy, container_policy,
-        security_origin_->ToUrlOrigin());
-  } else {
-    DCHECK(!parent_feature_policy);
-    feature_policy_ = FeaturePolicy::CreateWithOpenerPolicy(
-        *opener_feature_state, security_origin_->ToUrlOrigin());
-  }
-  feature_policy_->SetHeaderPolicy(parsed_header);
 }
 
 // Uses the parent enforcing policy as the basis for the report-only policy.

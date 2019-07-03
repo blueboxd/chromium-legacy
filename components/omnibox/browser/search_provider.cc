@@ -16,6 +16,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/rand_util.h"
@@ -94,6 +95,14 @@ bool HasMultipleWords(const base::string16& text) {
     }
   }
   return false;
+}
+
+bool IsSearchEngineGoogle(const TemplateURL* template_url,
+                          const AutocompleteProviderClient* client) {
+  return template_url && client &&
+         template_url->GetEngineType(
+             client->GetTemplateURLService()->search_terms_data()) ==
+             SEARCH_ENGINE_GOOGLE;
 }
 
 }  // namespace
@@ -502,11 +511,8 @@ void SearchProvider::LogLoadComplete(bool success, bool is_keyword) {
   // Record response time for suggest requests sent to Google.  We care
   // only about the common case: the Google default provider used in
   // non-keyword mode.
-  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
-  if (!is_keyword && default_url &&
-      (default_url->GetEngineType(
-          client()->GetTemplateURLService()->search_terms_data()) ==
-       SEARCH_ENGINE_GOOGLE)) {
+  if (!is_keyword &&
+      IsSearchEngineGoogle(providers_.GetDefaultProviderURL(), client())) {
     const base::TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;
     if (success) {
@@ -615,11 +621,21 @@ void SearchProvider::Run(bool query_is_private) {
   time_suggest_request_sent_ = base::TimeTicks::Now();
 
   if (!query_is_private) {
-    default_loader_ =
-        CreateSuggestLoader(providers_.GetDefaultProviderURL(), input_);
+    int timeout_ms = 0;
+    // Consider explicitly setting a timeout for requests sent to Google when
+    // On Device Head provider is enabled.
+    if (IsSearchEngineGoogle(providers_.GetDefaultProviderURL(), client())) {
+      timeout_ms = base::GetFieldTrialParamByFeatureAsInt(
+          omnibox::kOnDeviceHeadProvider,
+          "SearchProviderDefaultLoaderTimeoutMs", 0);
+    }
+    default_loader_ = CreateSuggestLoader(
+        providers_.GetDefaultProviderURL(), input_,
+        timeout_ms > 0 ? base::TimeDelta::FromMilliseconds(timeout_ms)
+                       : base::TimeDelta());
   }
-  keyword_loader_ =
-      CreateSuggestLoader(providers_.GetKeywordProviderURL(), keyword_input_);
+  keyword_loader_ = CreateSuggestLoader(providers_.GetKeywordProviderURL(),
+                                        keyword_input_, base::TimeDelta());
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
@@ -865,7 +881,8 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(
 
 std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
     const TemplateURL* template_url,
-    const AutocompleteInput& input) {
+    const AutocompleteInput& input,
+    const base::TimeDelta& timeout) {
   if (!template_url || template_url->suggestions_url().empty())
     return nullptr;
 
@@ -968,6 +985,8 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
 
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  if (timeout > base::TimeDelta())
+    loader->SetTimeoutDuration(timeout);
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       client()->GetURLLoaderFactory().get(),
       base::BindOnce(&SearchProvider::OnURLLoadComplete, base::Unretained(this),

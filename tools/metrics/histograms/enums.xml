@@ -23799,6 +23799,18 @@ Called by update_net_error_codes.py.-->
   <int value="2940" label="CSSAtRuleProperty"/>
   <int value="2941"
       label="ServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet"/>
+  <int value="2942" label="WebkitMarginBeforeCollapseDiscard"/>
+  <int value="2943" label="WebkitMarginBeforeCollapseSeparate"/>
+  <int value="2944"
+      label="WebkitMarginBeforeCollapseSeparateMaybeDoesSomething"/>
+  <int value="2945" label="WebkitMarginAfterCollapseDiscard"/>
+  <int value="2946" label="WebkitMarginAfterCollapseSeparate"/>
+  <int value="2947"
+      label="WebkitMarginAfterCollapseSeparateMaybeDoesSomething"/>
+  <int value="2948" label="CredentialManagerCreateWithUVM"/>
+  <int value="2949" label="CredentialManagerGetWithUVM"/>
+  <int value="2950" label="CredentialManagerCreateSuccessWithUVM"/>
+  <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34809,6 +34821,7 @@ from previous Chrome versions.
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
+  <int value="-243323793" label="OmniboxOnDeviceHeadProvider:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>
@@ -35015,6 +35028,7 @@ from previous Chrome versions.
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="48223610" label="SiteSettings:disabled"/>
+  <int value="49113130" label="OmniboxOnDeviceHeadProvider:disabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
   <int value="54571864" label="EnableDisplayZoomSetting:enabled"/>
@@ -45920,6 +45934,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Other Aborted"/>
 </enum>
 
+<enum name="PaymentRequestMissingContactFields">
+  <summary>
+    A bit field value that shows the missing fields of contact info section in
+    payment sheet. The cardinality is not too high since the total number of
+    used bits is less than 4.
+  </summary>
+</enum>
+
+<enum name="PaymentRequestMissingPaymentFields">
+  <summary>
+    A bit field value that shows the missing fields of payment section in
+    payment sheet. The cardinality is not too high since the total number of
+    used bits is less than 6.
+  </summary>
+</enum>
+
+<enum name="PaymentRequestMissingShippingFields">
+  <summary>
+    A bit field value that shows the missing fields of shipping section in
+    payment sheet. The cardinality is not too high since the total number of
+    used bits is less than 4.
+  </summary>
+</enum>
+
 <enum name="PaymentRequestNoShowReason">
   <int value="0" label="NoMatchingPaymentMethod"/>
   <int value="1" label="NoSupportedPaymentMethod"/>
@@ -53559,6 +53597,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Authenticated channel dropped"/>
 </enum>
 
+<enum name="SMSReceiverOutcome">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timed out"/>
+  <int value="2" label="Connection Error"/>
+</enum>
+
 <enum name="SnackbarIdentifier">
   <int value="-2" label="TEST_SNACKBAR"/>
   <int value="-1" label="UNKNOWN"/>
@@ -53594,6 +53638,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="29" label="UMA_AUTOFILL_ASSISTANT_STOP_UNDO"/>
   <int value="30" label="UMA_TAB_CLOSE_MULTIPLE_UNDO"/>
   <int value="31" label="UMA_SEARCH_ENGINE_CHOICE_NOTIFICATION"/>
+  <int value="32" label="UMA_TAB_GROUP_MANUAL_CREATION_UNDO"/>
 </enum>
 
 <enum name="SnippetOpenMethod">

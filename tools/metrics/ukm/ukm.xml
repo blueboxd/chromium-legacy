@@ -2056,6 +2056,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="BloatedRenderer">
+  <obsolete>
+    Deprecated as of 03/2019.
+  </obsolete>
   <owner>ulan@chromium.org</owner>
   <summary>
     Metrics related to a bloated renderer that is close to out-of-memory. They
@@ -2941,7 +2944,7 @@ be describing additional metrics about the same event.
   <summary>
     Logged when the FindInPage returns a user search request result.
   </summary>
-  <metric name="HasMatches">
+  <metric name="HasMatches" enum="Boolean">
     <summary>
       True if there were matches.
     </summary>
@@ -5898,6 +5901,20 @@ be describing additional metrics about the same event.
       attempted and was allowed to proceed by the coin flip. Set to 2 if a
       preview would have been attempted but was held back by the coin flip. Note
       that a non-zero value in this field implies previews_likely.
+    </summary>
+  </metric>
+  <metric name="defer_all_script" enum="Boolean">
+    <summary>
+      Set to 1 when a user is shown a DeferAllScript preview on a page load.
+    </summary>
+  </metric>
+  <metric name="defer_all_script_eligibility_reason"
+      enum="PreviewsEligibilityReason">
+    <summary>
+      Set to the value of the last known reason a DeferAllScript preview was not
+      eligible on this page load. The value of this metric corresponds to the
+      PreviewsEligibilityReason enum. This metric is only set when it is
+      non-zero.
     </summary>
   </metric>
   <metric name="lite_page">

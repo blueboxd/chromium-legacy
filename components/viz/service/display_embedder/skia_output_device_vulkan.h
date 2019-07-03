@@ -35,12 +35,13 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
-  gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
-                                BufferPresentedCallback feedback) override;
+  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
+  SkSurface* BeginPaint() override;
+  void EndPaint(const GrBackendSemaphore& semaphore) override;
 
  private:
   void CreateVulkanSurface();
-  void UpdateDrawSurface();
+  void CreateSkSurface();
 
   VulkanContextProvider* const context_provider_;
 

@@ -935,17 +935,15 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      *
      * @param tabModelSelector           The selector that handles tab management.
      * @param controlsVisibilityDelegate The delegate to handle visibility of browser controls.
-     * @param findToolbarManager         The manager for find in page.
      * @param overviewModeBehavior       The overview mode manager.
      * @param layoutManager              A {@link LayoutManager} instance used to watch for scene
      *                                   changes.
      */
     public void initializeWithNative(TabModelSelector tabModelSelector,
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
-            FindToolbarManager findToolbarManager, OverviewModeBehavior overviewModeBehavior,
-            LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
-            OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
-            OnClickListener customTabsBackClickHandler) {
+            OverviewModeBehavior overviewModeBehavior, LayoutManager layoutManager,
+            OnClickListener tabSwitcherClickHandler, OnClickListener newTabClickHandler,
+            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler) {
         assert !mInitializedWithNative;
 
         mTabModelSelector = tabModelSelector;
@@ -971,14 +969,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mLocationBarModel.setShouldShowOmniboxInOverviewMode(
                 ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher());
 
-        mFindToolbarManager = findToolbarManager;
 
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
 
         mNativeLibraryReady = false;
-
-        mFindToolbarManager.addObserver(mFindToolbarObserver);
 
         if (overviewModeBehavior != null) {
             mOverviewModeBehavior = overviewModeBehavior;
@@ -1027,6 +1022,15 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mOnInitializedRunnable.run();
             mOnInitializedRunnable = null;
         }
+    }
+
+    /**
+     * Set the {@link FindToolbarManager}.
+     * @param findToolbarManager The manager for find in page.
+     */
+    public void setFindToolbarManager(FindToolbarManager findToolbarManager) {
+        mFindToolbarManager = findToolbarManager;
+        mFindToolbarManager.addObserver(mFindToolbarObserver);
     }
 
     /**

@@ -76,6 +76,10 @@ Polymer({
     },
   },
 
+  observers: [
+    'onMinimumSizeChange_(prefs.webkit.webprefs.minimum_font_size.value)',
+  ],
+
   /** @private {?settings.FontsBrowserProxy} */
   browserProxy_: null,
 
@@ -136,12 +140,18 @@ Polymer({
 
   /**
    * Get the minimum font size, accounting for unset prefs.
-   * @return {?}
+   * @return {number}
    * @private
    */
   computeMinimumFontSize_: function() {
-    return this.get('prefs.webkit.webprefs.minimum_font_size.value') ||
-        MINIMUM_FONT_SIZE_RANGE[0];
+    const prefValue = this.get('prefs.webkit.webprefs.minimum_font_size.value');
+    return /** @type {number} */ (prefValue) || MINIMUM_FONT_SIZE_RANGE[0];
+  },
+
+
+  /** @private */
+  onMinimumSizeChange_: function() {
+    this.$.minimumSizeSample.hidden = this.computeMinimumFontSize_() <= 0;
   },
 });
 })();

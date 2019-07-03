@@ -48,7 +48,6 @@
 #include "components/prefs/json_pref_store.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -350,11 +349,7 @@ mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
   mojo::PlatformChannelServerEndpoint server_endpoint;
 #if defined(OS_MACOSX)
   // Mach receive rights (named server channels) are not Clone-able.
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    server_endpoint = std::move(server_endpoint_);
-  } else {
-    server_endpoint = server_endpoint_.Clone();
-  }
+  server_endpoint = std::move(server_endpoint_);
 #elif defined(OS_POSIX)
   server_endpoint = server_endpoint_.Clone();
 #elif defined(OS_WIN)

@@ -260,13 +260,6 @@ class CORE_EXPORT DocumentLoader
   void BlockParser();
   void ResumeParser();
 
-  // Returns the currently stored content security policy, if this is called
-  // after the document has been installed it will return nullptr as the
-  // CSP belongs to the document at that point.
-  const ContentSecurityPolicy* GetContentSecurityPolicy() const {
-    return content_security_policy_.Get();
-  }
-
   bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
 
   UseCounterHelper& GetUseCounterHelper() { return use_counter_; }

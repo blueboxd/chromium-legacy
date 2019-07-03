@@ -65,8 +65,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     kCleanup = 20,
 
-    kWebSchedulingUserInteraction = 21,
-    kWebSchedulingBestEffort = 22,
+    // 21 : kWebSchedulingUserInteraction, obsolete.
+    // 22 : kWebSchedulingBestEffort, obsolete.
 
     // Used to group multiple types when calculating Expected Queueing Time.
     kOther = 23,

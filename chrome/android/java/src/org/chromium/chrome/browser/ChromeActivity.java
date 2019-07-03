@@ -47,6 +47,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ObservableSupplier;
+import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
@@ -64,7 +65,6 @@ import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -156,7 +156,6 @@ import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -273,14 +272,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private PictureInPictureController mPictureInPictureController;
 
     private CompositorViewHolder mCompositorViewHolder;
+    private ObservableSupplierImpl<LayoutManager> mLayoutManagerSupplier =
+            new ObservableSupplierImpl<>();
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     @Nullable
     private ToolbarManager mToolbarManager;
-    @Nullable
-    private FindToolbarManager mFindToolbarManager;
     private BottomSheetController mBottomSheetController;
     private UpdateNotificationController mUpdateNotificationController;
     private BottomSheet mBottomSheet;
@@ -628,8 +627,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     private void initializeToolbarIfNecessary() {
-        // TODO(pshmakov): make ToolbarManager and FindToolbarManager lazy, don't create them unless
-        // getToolbarManager() or getFindToolbarManager() is called.
+        // TODO(https://crbug.com/931496): Move toolbar ownership to RootUiCoordinator.
+        // TODO(pshmakov): make ToolbarManager lazy, don't create them unless getToolbarManager()
+        // is called.
         if (!mToolbarInitialized) {
             mToolbarInitialized = true;
             initializeToolbar();
@@ -649,8 +649,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mToolbarManager = new ToolbarManager(this, toolbarContainer,
                     getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
                     mTabThemeColorProvider);
-            mFindToolbarManager =
-                    new FindToolbarManager(this, mToolbarManager.getActionModeControllerCallback());
         }
     }
 
@@ -730,17 +728,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             initializeToolbarIfNecessary();
         }
         return mToolbarManager;
-    }
-
-    /**
-     * @return {@link FindToolbarManager} that belongs to this activity.
-     */
-    @Nullable
-    public FindToolbarManager getFindToolbarManager() {
-        if (isInitialLayoutInflationComplete()) {
-            initializeToolbarIfNecessary();
-        }
-        return mFindToolbarManager;
     }
 
     /**
@@ -835,9 +822,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         if (isContextualSearchAllowed() && ContextualSearchFieldTrial.isEnabled()) {
             mContextualSearchManager = new ContextualSearchManager(this, this);
-            if (mFindToolbarManager != null) {
-                mContextualSearchManager.setFindToolbarManager(mFindToolbarManager);
-            }
         }
 
         if (ReaderModeManager.isEnabled(this)) {
@@ -1869,6 +1853,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mActivityTabProvider.setLayoutManager(layoutManager);
         EphemeralTabPanel panel = layoutManager.getEphemeralTabPanel();
         if (panel != null) panel.setChromeActivity(this);
+
+        mLayoutManagerSupplier.set(layoutManager);
+    }
+
+    /**
+     * @return An {@link ObservableSupplier} that will supply the {@link LayoutManager} when it is
+     *         ready.
+     */
+    public ObservableSupplier<LayoutManager> getLayoutManagerSupplier() {
+        return mLayoutManagerSupplier;
     }
 
     /**
@@ -2084,22 +2078,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (id == R.id.preferences_id) {
             PreferencesLauncher.launchSettingsPage(this, null);
             RecordUserAction.record("MobileMenuSettings");
-        } else if (id == R.id.find_in_page_id) {
-            if (mFindToolbarManager == null) return false;
-
-            mFindToolbarManager.showToolbar();
-            if (mContextualSearchManager != null) {
-                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
-            }
-            if (getEphemeralTabPanel() != null) {
-                getEphemeralTabPanel().closePanel(StateChangeReason.UNKNOWN, true);
-            }
-            if (fromMenu) {
-                RecordUserAction.record("MobileMenuFindInPage");
-            } else {
-                RecordUserAction.record("MobileShortcutFindInPage");
-            }
-            return true;
         }
 
         if (id == R.id.update_menu_id) {
@@ -2516,6 +2494,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Derived classes that disable the toolbar should also have the Menu disabled without
         // having to explicitly disable the Menu as well.
         return getToolbarLayoutId() != NO_TOOLBAR_LAYOUT;
+    }
+
+    /**
+     * @return  Whether this activity supports the find in page feature.
+     */
+    public boolean supportsFindInPage() {
+        return true;
     }
 
     /**

@@ -621,8 +621,11 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   output_device_->Reshape(size_, device_scale_factor, color_space, has_alpha);
 
   if (characterization) {
+    // Start a paint temporarily for getting sk surface characterization.
+    scoped_output_device_paint_.emplace(output_device_.get());
     output_sk_surface()->characterize(characterization);
     DCHECK(characterization->isValid());
+    scoped_output_device_paint_.reset();
   }
 }
 
@@ -635,6 +638,12 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
+  DCHECK(!scoped_output_device_paint_);
+
+  // We do not reset scoped_output_device_paint_ after drawing the ddl until
+  // SwapBuffers() is called, because we may need access to output_sk_surface()
+  // for CopyOutput().
+  scoped_output_device_paint_.emplace(output_device_.get());
   DCHECK(output_sk_surface());
 
   if (!MakeCurrent(true /* need_fbo0 */))
@@ -660,7 +669,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
       DCHECK(result);
     }
 
-    output_sk_surface()->draw(ddl.get());
+    if (!output_sk_surface()->draw(ddl.get()))
+      DLOG(ERROR) << "output_sk_surface()->draw() failed.";
     ddl = nullptr;
 
     if (overdraw_ddl) {
@@ -704,10 +714,9 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
       return;
     }
     if (output_device_->need_swap_semaphore()) {
-      DCHECK(!swap_buffers_semaphore_.isInitialized());
-      swap_buffers_semaphore_ =
-          scoped_promise_image_access.end_semaphores().back();
-      DCHECK(swap_buffers_semaphore_.isInitialized());
+      auto& semaphore = scoped_promise_image_access.end_semaphores().back();
+      DCHECK(semaphore.isInitialized());
+      scoped_output_device_paint_->set_semaphore(std::move(semaphore));
     }
   }
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
@@ -715,11 +724,14 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(output_sk_surface());
+  DCHECK(scoped_output_device_paint_);
+  DCHECK(output_device_);
+
+  scoped_output_device_paint_.reset();
+
   if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
     return;
 
-  DCHECK(output_device_);
   gfx::SwapResponse response;
   if (frame.sub_buffer_rect && frame.sub_buffer_rect->IsEmpty()) {
     // TODO(https://crbug.com/898680): Maybe do something for overlays here.
@@ -730,13 +742,10 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
       frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
                                    frame.sub_buffer_rect->height());
     response = output_device_->PostSubBuffer(*frame.sub_buffer_rect,
-                                             swap_buffers_semaphore_,
                                              buffer_presented_callback_);
   } else {
-    response = output_device_->SwapBuffers(swap_buffers_semaphore_,
-                                           buffer_presented_callback_);
+    response = output_device_->SwapBuffers(buffer_presented_callback_);
   }
-  swap_buffers_semaphore_ = GrBackendSemaphore();
 
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
@@ -831,6 +840,8 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool from_fbo0 = !id;
+  DCHECK(scoped_output_device_paint_ || !from_fbo0);
+
   if (!MakeCurrent(true /* need_fbo0 */))
     return;
 

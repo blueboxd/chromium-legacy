@@ -21,9 +21,11 @@ MockSystemService::MockSystemService(const std::string& consumer_socket,
       task_runner_(std::make_unique<PerfettoTaskRunner>(
           base::SequencedTaskRunnerHandle::Get())) {
   service_ = perfetto::ServiceIPCHost::CreateInstance(task_runner_.get());
+  DCHECK(service_);
   unlink(producer_socket.c_str());
   unlink(consumer_socket.c_str());
-  DCHECK(service_->Start(producer_.c_str(), consumer_.c_str()));
+  bool succeeded = service_->Start(producer_.c_str(), consumer_.c_str());
+  DCHECK(succeeded);
 }
 
 MockSystemService::~MockSystemService() {

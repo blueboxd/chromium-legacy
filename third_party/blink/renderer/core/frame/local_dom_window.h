@@ -61,7 +61,6 @@ class MessageEvent;
 class Modulator;
 class Navigator;
 class Screen;
-class ScriptedTaskQueueController;
 class ScriptPromise;
 class ScriptState;
 class ScrollToOptions;
@@ -217,8 +216,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Acessibility Object Model
   ScriptPromise getComputedAccessibleNode(ScriptState*, Element*);
-
-  ScriptedTaskQueueController* taskQueue() const;
 
   // WebKit animation extensions
   int requestAnimationFrame(V8FrameRequestCallback*);

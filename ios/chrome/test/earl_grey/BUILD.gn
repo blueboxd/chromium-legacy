@@ -17,7 +17,6 @@ group("all_tests") {
     ":ios_chrome_reading_list_egtests",
     ":ios_chrome_settings_egtests",
     ":ios_chrome_smoke_egtests",
-    ":ios_chrome_tab_grid_egtests",
     ":ios_chrome_translate_egtests",
     ":ios_chrome_ui_egtests",
     ":ios_chrome_web_egtests",
@@ -71,13 +70,6 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
   ]
 }
 
-chrome_ios_eg_test("ios_chrome_tab_grid_egtests") {
-  deps = [
-    ":test_support",
-    "//ios/chrome/browser/ui/tab_grid:eg_tests",
-  ]
-}
-
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
   deps = [
     "//ios/chrome/browser/ui/activity_services:eg_tests",
@@ -106,6 +98,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/settings/sync/utils:eg_tests",
     "//ios/chrome/browser/ui/side_swipe:eg_tests",
     "//ios/chrome/browser/ui/signin_interaction:eg_tests",
+    "//ios/chrome/browser/ui/tab_grid:eg_tests",
     "//ios/chrome/browser/ui/tabs:eg_tests",
     "//ios/chrome/browser/ui/toolbar:eg_tests",
     "//ios/chrome/browser/ui/webui:eg_tests",

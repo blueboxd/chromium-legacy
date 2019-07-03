@@ -129,8 +129,6 @@ core_idl_files =
                     "dom/node_list.idl",
                     "dom/processing_instruction.idl",
                     "dom/range.idl",
-                    "dom/scripted_task_queue.idl",
-                    "dom/scripted_task_queue_controller.idl",
                     "dom/static_range.idl",
                     "dom/text.idl",
                     "dom/tree_walker.idl",

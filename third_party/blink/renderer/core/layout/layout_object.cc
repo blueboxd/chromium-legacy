@@ -1983,18 +1983,8 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
   DCHECK(style);
 
   StyleDifference diff;
-  if (style_) {
+  if (style_)
     diff = style_->VisualInvalidationDiff(GetDocument(), *style);
-    if (const auto* cached_inherited_first_line_style =
-            style_->GetCachedPseudoStyle(kPseudoIdFirstLineInherited)) {
-      // Merge the difference to the first line style because even if the new
-      // style is the same as the old style, the new style may have some higher
-      // priority properties overriding first line style.
-      // See external/wpt/css/css-pseudo/first-line-change-inline-color*.html.
-      diff.Merge(cached_inherited_first_line_style->VisualInvalidationDiff(
-          GetDocument(), *style));
-    }
-  }
 
   diff = AdjustStyleDifference(diff);
 
@@ -2134,8 +2124,7 @@ void LayoutObject::UpdateImageObservers(const ComputedStyle* old_style,
 void LayoutObject::UpdateFirstLineImageObservers(
     const ComputedStyle* new_style) {
   bool has_new_first_line_style =
-      new_style && new_style->HasPseudoStyle(kPseudoIdFirstLine) &&
-      BehavesLikeBlockContainer();
+      new_style && new_style->HasPseudoStyle(kPseudoIdFirstLine);
   if (!bitfields_.RegisteredAsFirstLineImageObserver() &&
       !has_new_first_line_style)
     return;
@@ -2150,21 +2139,36 @@ void LayoutObject::UpdateFirstLineImageObservers(
           ? first_line_style_map.at(this)
           : nullptr;
 
-  const auto* new_first_line_style =
-      has_new_first_line_style ? FirstLineStyleWithoutFallback() : nullptr;
+  // Don't call CacheFirstLineStyle() which will update the cache, because this
+  // function can be called when the object has not been inserted into the tree
+  // and we can't update the pseudo style cache which may depend on ancestors.
+  const auto* cached_new_first_line_style =
+      has_new_first_line_style
+          ? new_style->GetCachedPseudoStyle(kPseudoIdFirstLine)
+          : nullptr;
 
-  if (new_first_line_style && !new_first_line_style->HasBackgroundImage())
-    new_first_line_style = nullptr;
+  if (has_new_first_line_style) {
+    // If cached_new_first_line_style is null, it means that the new first line
+    // style has not been cached yet. Will check again when the object's first
+    // line style is actually used and cached.
+    bitfields_.SetPendingUpdateFirstLineImageObservers(
+        !cached_new_first_line_style);
+  }
 
-  if (old_first_line_style || new_first_line_style) {
-    UpdateFillImages(
-        old_first_line_style ? &old_first_line_style->BackgroundLayers()
-                             : nullptr,
-        new_first_line_style ? &new_first_line_style->BackgroundLayers()
-                             : nullptr);
-    if (new_first_line_style) {
+  if (cached_new_first_line_style &&
+      !cached_new_first_line_style->HasBackgroundImage())
+    cached_new_first_line_style = nullptr;
+
+  if (old_first_line_style || cached_new_first_line_style) {
+    UpdateFillImages(old_first_line_style
+                         ? &old_first_line_style->BackgroundLayers()
+                         : nullptr,
+                     cached_new_first_line_style
+                         ? &cached_new_first_line_style->BackgroundLayers()
+                         : nullptr);
+    if (cached_new_first_line_style) {
       bitfields_.SetRegisteredAsFirstLineImageObserver(true);
-      first_line_style_map.Set(this, new_first_line_style);
+      first_line_style_map.Set(this, cached_new_first_line_style);
     } else {
       bitfields_.SetRegisteredAsFirstLineImageObserver(false);
       first_line_style_map.erase(this);
@@ -2398,7 +2402,7 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle* old_style) {
   if (Parent() && has_old_first_line_style && has_new_first_line_style) {
     if (const auto* old_first_line_style =
             old_style->GetCachedPseudoStyle(kPseudoIdFirstLine)) {
-      if (const auto* new_first_line_style = FirstLineStyleWithoutFallback()) {
+      if (auto new_first_line_style = UncachedFirstLineStyle()) {
         diff = old_first_line_style->VisualInvalidationDiff(
             GetDocument(), *new_first_line_style);
         has_diff = true;
@@ -3365,50 +3369,75 @@ void LayoutObject::ForceLayout() {
   UpdateLayout();
 }
 
-const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
-  DCHECK(GetDocument().GetStyleEngine().UsesFirstLineRules());
+enum StyleCacheState { kCached, kUncached };
 
-  if (IsBeforeOrAfterContent() || IsText()) {
-    if (!Parent())
+static scoped_refptr<const ComputedStyle> FirstLineStyleForCachedUncachedType(
+    StyleCacheState type,
+    const LayoutObject* layout_object,
+    const ComputedStyle* style) {
+  DCHECK(layout_object);
+
+  const LayoutObject* layout_object_for_first_line_style = layout_object;
+  if (layout_object->IsBeforeOrAfterContent()) {
+    if (!layout_object->Parent())
       return nullptr;
-    return Parent()->FirstLineStyleWithoutFallback();
+    layout_object_for_first_line_style = layout_object->Parent();
   }
 
-  if (BehavesLikeBlockContainer()) {
-    if (const ComputedStyle* cached =
-            StyleRef().GetCachedPseudoStyle(kPseudoIdFirstLine))
-      return cached;
-
+  if (layout_object_for_first_line_style->BehavesLikeBlockContainer()) {
     if (const LayoutBlock* first_line_block =
-            To<LayoutBlock>(this)->EnclosingFirstLineStyleBlock()) {
-      if (first_line_block->Style() == Style())
-        return first_line_block->GetCachedPseudoStyle(kPseudoIdFirstLine);
-
-      // We can't use first_line_block->GetCachedPseudoStyle() because it's
-      // based on first_line_block's style. We need to get the uncached first
-      // line style based on this object's style and cache the result in it.
-      return StyleRef().AddCachedPseudoStyle(
-          first_line_block->GetUncachedPseudoStyle(
-              PseudoStyleRequest(kPseudoIdFirstLine), Style()));
+            To<LayoutBlock>(layout_object_for_first_line_style)
+                ->EnclosingFirstLineStyleBlock()) {
+      if (type == kCached)
+        return first_line_block->GetCachedPseudoStyle(kPseudoIdFirstLine,
+                                                      style);
+      return first_line_block->GetUncachedPseudoStyle(
+          PseudoStyleRequest(kPseudoIdFirstLine), style);
     }
-  } else if (!IsAnonymous() && IsLayoutInline() &&
-             !GetNode()->IsFirstLetterPseudoElement()) {
-    if (const ComputedStyle* cached =
-            StyleRef().GetCachedPseudoStyle(kPseudoIdFirstLineInherited))
-      return cached;
-
-    if (const ComputedStyle* parent_first_line_style =
-            Parent()->FirstLineStyleWithoutFallback()) {
-      // A first-line style is in effect. Get uncached first line style based on
-      // parent_first_line_style and cache the result in this object's style.
-      return StyleRef().AddCachedPseudoStyle(GetUncachedPseudoStyle(
-          kPseudoIdFirstLineInherited, parent_first_line_style));
+  } else if (!layout_object_for_first_line_style->IsAnonymous() &&
+             layout_object_for_first_line_style->IsLayoutInline() &&
+             !layout_object_for_first_line_style->GetNode()
+                  ->IsFirstLetterPseudoElement()) {
+    const ComputedStyle* parent_style =
+        layout_object_for_first_line_style->Parent()->FirstLineStyle();
+    if (parent_style != layout_object_for_first_line_style->Parent()->Style()) {
+      if (type == kCached) {
+        // A first-line style is in effect. Cache a first-line style for
+        // ourselves.
+        return layout_object_for_first_line_style->GetCachedPseudoStyle(
+            kPseudoIdFirstLineInherited, parent_style);
+      }
+      return layout_object_for_first_line_style->GetUncachedPseudoStyle(
+          PseudoStyleRequest(kPseudoIdFirstLineInherited), parent_style);
     }
   }
   return nullptr;
 }
 
-const ComputedStyle* LayoutObject::GetCachedPseudoStyle(PseudoId pseudo) const {
+scoped_refptr<const ComputedStyle> LayoutObject::UncachedFirstLineStyle()
+    const {
+  if (!GetDocument().GetStyleEngine().UsesFirstLineRules())
+    return nullptr;
+
+  DCHECK(!IsText());
+
+  return FirstLineStyleForCachedUncachedType(kUncached, this, style_.get());
+}
+
+const ComputedStyle* LayoutObject::CachedFirstLineStyle() const {
+  DCHECK(GetDocument().GetStyleEngine().UsesFirstLineRules());
+
+  if (scoped_refptr<const ComputedStyle> style =
+          FirstLineStyleForCachedUncachedType(
+              kCached, IsText() ? Parent() : this, style_.get()))
+    return style.get();
+
+  return style_.get();
+}
+
+const ComputedStyle* LayoutObject::GetCachedPseudoStyle(
+    PseudoId pseudo,
+    const ComputedStyle* parent_style) const {
   DCHECK_NE(pseudo, kPseudoIdBefore);
   DCHECK_NE(pseudo, kPseudoIdAfter);
   if (!GetNode())
@@ -3418,7 +3447,15 @@ const ComputedStyle* LayoutObject::GetCachedPseudoStyle(PseudoId pseudo) const {
   if (!element)
     return nullptr;
 
-  return element->CachedStyleForPseudoElement(PseudoStyleRequest(pseudo));
+  const auto* cached_pseudo_style = element->CachedStyleForPseudoElement(
+      PseudoStyleRequest(pseudo), parent_style);
+  if (cached_pseudo_style && pseudo == kPseudoIdFirstLine &&
+      bitfields_.PendingUpdateFirstLineImageObservers()) {
+    // Update image observers now after we have updated the first line
+    // style cache.
+    const_cast<LayoutObject*>(this)->UpdateFirstLineImageObservers(Style());
+  }
+  return cached_pseudo_style;
 }
 
 scoped_refptr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(

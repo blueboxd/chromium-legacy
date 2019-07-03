@@ -142,7 +142,7 @@ A group of tasks can be executed in one of the following ways:
   at a time on any thread.
 * [Single Threaded](#Posting-Multiple-Tasks-to-the-Same-Thread): Tasks executed
   in posting order, one at a time on a single thread.
-   * [COM Single Threaded](#Posting-Tasks-to-a-COM-Single-Thread-Apartment-STA_Thread-Windows_):
+   * [COM Single Threaded](#Posting-Tasks-to-a-COM-Single_Thread-Apartment-STA_Thread-Windows):
      A variant of single threaded with COM initialized.
 
 ### Prefer Sequences to Physical Threads

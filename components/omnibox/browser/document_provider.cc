@@ -551,7 +551,7 @@ const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
   // https://docs.google.com/[a/domain.tld/]document/d/(id)/[...]
   // https://docs.google.com/[a/domain.tld/]spreadsheets/d/(id)/edit#gid=12345
   // https://docs.google.com/[a/domain.tld/]presentation/d/(id)/edit#slide=id.g12345a_0_26
-  // https://www.google.com/url?[...]url=https://drive.google.com/a/domain.tld/open?id%3D1fkxx6KYRYnSqljThxShJVliQJLdKzuJBnzogzL3n8rE&[...]
+  // https://www.google.com/url?[...]url=https://drive.google.com/a/domain.tld/open?id%3D(id)[&...]
   // where id is comprised of characters in [0-9A-Za-z\-_] = [\w\-]
   std::string id;
 

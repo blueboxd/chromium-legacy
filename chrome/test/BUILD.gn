@@ -1058,6 +1058,7 @@ if (!is_android) {
       "../browser/ui/passwords/google_password_manager_navigation_throttle_browsertest.cc",
       "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
       "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
+      "../browser/wake_lock/wake_lock_browsertest.cc",
 
       # If this list is used on Android in the future, these browser / speech/*
       # files will probably not be applicable.
@@ -1534,7 +1535,6 @@ if (!is_android) {
         "../browser/extensions/api/metrics_private/metrics_apitest.cc",
         "../browser/extensions/api/module/module_apitest.cc",
         "../browser/extensions/api/networking_config_chromeos_apitest_chromeos.cc",
-        "../browser/extensions/api/omnibox/omnibox_api_browsertest.cc",
         "../browser/extensions/api/page_capture/page_capture_apitest.cc",
         "../browser/extensions/api/passwords_private/passwords_private_apitest.cc",
         "../browser/extensions/api/permissions/permissions_apitest.cc",
@@ -1811,6 +1811,7 @@ if (!is_android) {
         "../browser/ui/views/payments/payment_request_debit_browsertest.cc",
         "../browser/ui/views/payments/payment_request_has_enrolled_instrument_browsertest.cc",
         "../browser/ui/views/payments/payment_request_journey_logger_browsertest.cc",
+        "../browser/ui/views/payments/payment_request_missing_fields_metrics_browsertest.cc",
         "../browser/ui/views/payments/payment_request_no_update_with_browsertest.cc",
         "../browser/ui/views/payments/payment_request_payment_app_browsertest.cc",
         "../browser/ui/views/payments/payment_request_payment_response_browsertest.cc",
@@ -3395,6 +3396,7 @@ test("unit_tests") {
   if (enable_offline_pages) {
     sources += [
       "../browser/offline_pages/android/auto_fetch_page_load_watcher_unittest.cc",
+      "../browser/offline_pages/android/offline_page_archive_publisher_impl_unittest.cc",
       "../browser/offline_pages/android/offline_page_auto_fetcher_service_unittest.cc",
       "../browser/offline_pages/background_loader_offliner_unittest.cc",
       "../browser/offline_pages/download_archive_manager_unittest.cc",

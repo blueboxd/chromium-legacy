@@ -1098,6 +1098,12 @@ void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
 void AssistantManagerServiceImpl::OnStartFinished() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnStartFinished);
 
+  // It is possible the |assistant_manager_| was destructed before the
+  // rescheduled main thread task got a chance to run. We check this and also
+  // try to avoid double run by check |start_finished_|.
+  if (!assistant_manager_ || start_finished_)
+    return;
+
   // TODO(b/129896357): find a better place for additional setups.
   start_finished_ = true;
 

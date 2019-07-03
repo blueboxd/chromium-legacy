@@ -692,24 +692,26 @@ class _LogcatProcessor(object):
 
   def _ParseLine(self, line):
     tokens = line.split(None, 6)
-    date = tokens[0]
-    invokation_time = tokens[1]
-    pid = int(tokens[2])
-    tid = int(tokens[3])
-    priority = tokens[4]
-    tag = tokens[5]
-    if len(tokens) > 6:
-      original_message = tokens[6]
-    else:  # Empty log message
-      original_message = ''
+
+    def consume_token_or_default(default):
+      return tokens.pop(0) if len(tokens) > 0 else default
+
+    date = consume_token_or_default('')
+    invokation_time = consume_token_or_default('')
+    pid = int(consume_token_or_default(-1))
+    tid = int(consume_token_or_default(-1))
+    priority = consume_token_or_default('')
+    tag = consume_token_or_default('')
+    original_message = consume_token_or_default('')
+
     # Example:
     #   09-19 06:35:51.113  9060  9154 W GCoreFlp: No location...
     #   09-19 06:01:26.174  9060 10617 I Auth    : [ReflectiveChannelBinder]...
     # Parsing "GCoreFlp:" vs "Auth    :", we only want tag to contain the word,
     # and we don't want to keep the colon for the message.
-    if tag[-1] == ':':
+    if tag and tag[-1] == ':':
       tag = tag[:-1]
-    else:
+    elif len(original_message) > 2:
       original_message = original_message[2:]
     return self.ParsedLine(
         date, invokation_time, pid, tid, priority, tag, original_message)

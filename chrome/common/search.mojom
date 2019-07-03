@@ -75,8 +75,9 @@ interface EmbeddedSearch {
   // Tells InstantExtended to toggle between most visited items or custom links.
   ToggleMostVisitedOrCustomLinks(int32 page_seq_no);
 
-  // Tells InstantExtended to toggle visibility of the shortcuts.
-  ToggleShortcutsVisibility(int32 page_seq_no);
+  // Tells InstantExtended to toggle visibility of the shortcuts and notify
+  // observers if |do_notify|.
+  ToggleShortcutsVisibility(int32 page_seq_no, bool do_notify);
 
   // Logs events from InstantExtended New Tab Pages.
   LogEvent(int32 page_seq_no,

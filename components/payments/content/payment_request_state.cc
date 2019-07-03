@@ -10,12 +10,14 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
@@ -514,7 +516,10 @@ void PaymentRequestState::SelectDefaultShippingAddressAndNotifyObservers() {
       profile_comparator()->IsShippingComplete(shipping_profiles_[0])) {
     selected_shipping_profile_ = shipping_profiles()[0];
   }
-
+  // Record the missing required fields (if any) of the most complete shipping
+  // profile.
+  profile_comparator()->RecordMissingFieldsOfShippingProfile(
+      shipping_profiles().empty() ? nullptr : shipping_profiles()[0]);
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
@@ -578,6 +583,11 @@ void PaymentRequestState::SetDefaultProfileSelections() {
       profile_comparator()->IsContactInfoComplete(contact_profiles_[0]))
     selected_contact_profile_ = contact_profiles()[0];
 
+  // Record the missing required fields (if any) of the most complete contact
+  // profile.
+  profile_comparator()->RecordMissingFieldsOfContactProfile(
+      contact_profiles().empty() ? nullptr : contact_profiles()[0]);
+
   // TODO(crbug.com/702063): Change this code to prioritize instruments by use
   // count and other means, and implement a way to modify this function's return
   // value.
@@ -593,16 +603,33 @@ void PaymentRequestState::SetDefaultProfileSelections() {
                              ? nullptr
                              : first_complete_instrument->get();
 
-  SelectDefaultShippingAddressAndNotifyObservers();
+  // Record the missing required payment fields when no complete payment
+  // info exists.
+  if (instruments.empty()) {
+    if (spec_->supports_basic_card()) {
+      // All fields are missing when basic-card is requested but no card exits.
+      base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
+                               autofill::CREDIT_CARD_EXPIRED |
+                                   autofill::CREDIT_CARD_NO_CARDHOLDER |
+                                   autofill::CREDIT_CARD_NO_NUMBER |
+                                   autofill::CREDIT_CARD_NO_BILLING_ADDRESS);
+    }
+  } else if (!selected_instrument_) {
+    // selected_instrument_ == false means no complete payment instrument is
+    // added to the available_instruments list. Since SW based payment
+    // instruments are always complete, selected_instrument_ == false also means
+    // all instruments added to the list are autofill based.
+    DCHECK_EQ(instruments[0]->type(), PaymentInstrument::Type::AUTOFILL);
+    // Record the missing info of the first available autofill instrument.
+    static_cast<const AutofillPaymentInstrument*>(instruments[0].get())
+        ->RecordMissingFieldsForInstrument();
+  }
 
-  bool has_complete_instrument =
-      available_instruments().empty()
-          ? false
-          : available_instruments()[0]->IsCompleteForPayment();
+  SelectDefaultShippingAddressAndNotifyObservers();
 
   journey_logger_->SetNumberOfSuggestionsShown(
       JourneyLogger::Section::SECTION_PAYMENT_METHOD,
-      available_instruments().size(), has_complete_instrument);
+      available_instruments().size(), selected_instrument_);
 }
 
 void PaymentRequestState::UpdateIsReadyToPayAndNotifyObservers() {

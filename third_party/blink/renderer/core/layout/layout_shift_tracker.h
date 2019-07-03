@@ -42,6 +42,7 @@ class CORE_EXPORT LayoutShiftTracker {
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(ScrollType);
   void NotifyViewportSizeChanged();
+  bool HadRecentInput();
   bool IsActive();
   double Score() const { return score_; }
   double ScoreWithMoveDistance() const { return score_with_move_distance_; }
@@ -49,6 +50,9 @@ class CORE_EXPORT LayoutShiftTracker {
   float OverallMaxDistance() const { return overall_max_distance_; }
   bool ObservedInputOrScroll() const { return observed_input_or_scroll_; }
   void Dispose() { timer_.Stop(); }
+  base::TimeTicks MostRecentInputTimestamp() {
+    return most_recent_input_timestamp_;
+  }
 
  private:
   void AccumulateJank(const LayoutObject&,
@@ -59,7 +63,8 @@ class CORE_EXPORT LayoutShiftTracker {
   std::unique_ptr<TracedValue> PerFrameTraceData(
       double jank_fraction,
       double jank_fraction_with_move_distance,
-      double granularity_scale) const;
+      double granularity_scale,
+      bool input_detected) const;
   double SubframeWeightingFactor() const;
   WebVector<gfx::Rect> ConvertIntRectsToGfxRects(
       const Vector<IntRect>& int_rects,
@@ -67,6 +72,7 @@ class CORE_EXPORT LayoutShiftTracker {
   void SetLayoutShiftRects(const Vector<IntRect>& int_rects,
                            double granularity_scale,
                            bool using_sweep_line);
+  void UpdateInputTimestamp(base::TimeTicks timestamp);
 
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
@@ -105,6 +111,11 @@ class CORE_EXPORT LayoutShiftTracker {
 
   // Whether either a user input or document scroll have been observed.
   bool observed_input_or_scroll_;
+
+  // Most recent timestamp of a user input event that has been observed.
+  // User input includes window resizing but not scrolling.
+  base::TimeTicks most_recent_input_timestamp_;
+  bool most_recent_input_timestamp_initialized_;
 };
 
 }  // namespace blink

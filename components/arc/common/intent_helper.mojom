@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 27
+// Next MinVersion: 28
 
 module arc.mojom;
 
@@ -173,7 +173,7 @@ interface CustomTabSession {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 11
+// Next method ID: 12
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -220,6 +220,10 @@ interface IntentHelperHost {
 
   // Records Sharing files feature's metrics via Chrome.
   [MinVersion=24] RecordShareFilesMetrics@9(ShareFiles flag);
+
+  // Does a reset of ARC; this wipes /data, and then re-calls on OOBE for
+  // account binding to happen again, as if the user just went through OOBE.
+  [MinVersion=27] FactoryResetArc@11();
 };
 
 // Sends intents to ARC on behalf of Chrome.

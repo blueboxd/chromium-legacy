@@ -361,12 +361,20 @@ struct MutablePartialNetworkTrafficAnnotationTag {
   net::DefineNetworkTrafficAnnotation(ANNOTATION_ID, "No proto yet.")
 #endif
 
+// These annotations are unavailable on desktop Linux + Windows. They are
+// available on other platforms, since we only audit network annotations on
+// Linux & Windows.
+//
+// On Linux and Windows, use MISSING_TRAFFIC_ANNOTATION or
+// TRAFFIC_ANNOTATION_FOR_TESTS.
+#if (!defined(OS_WIN) && !defined(OS_LINUX)) || defined(OS_CHROMEOS)
 #define NO_TRAFFIC_ANNOTATION_YET \
   net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet.")
 
 #define NO_PARTIAL_TRAFFIC_ANNOTATION_YET                              \
   net::DefinePartialNetworkTrafficAnnotation("undefined", "undefined", \
                                              "Nothing here yet.")
+#endif
 
 #define MISSING_TRAFFIC_ANNOTATION     \
   net::DefineNetworkTrafficAnnotation( \

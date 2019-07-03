@@ -1055,7 +1055,8 @@ test("ui_base_unittests") {
     ]
   }
 
-  if (use_aura || toolkit_views) {
+  # TODO(crbug.com/980371): Implement OSExchangeDataProvider for Fuchsia.
+  if ((use_aura || toolkit_views) && !is_fuchsia) {
     sources += [ "dragdrop/os_exchange_data_unittest.cc" ]
 
     deps += [

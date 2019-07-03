@@ -13,6 +13,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -20,6 +21,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
@@ -1032,6 +1034,9 @@ void OverviewSession::OnDisplayBoundsChanged() {
 }
 
 void OverviewSession::UpdateNoWindowsWidget() {
+  if (is_shutting_down_)
+    return;
+
   // Hide the widget if there is an item in overview.
   if (!IsEmpty()) {
     no_windows_widget_.reset();
@@ -1041,6 +1046,7 @@ void OverviewSession::UpdateNoWindowsWidget() {
   if (!no_windows_widget_) {
     // Create and fade in the widget.
     RoundedLabelWidget::InitParams params;
+    params.name = "OverviewNoWindowsLabel";
     params.horizontal_padding = kNoItemsIndicatorHorizontalPaddingDp;
     params.vertical_padding = kNoItemsIndicatorVerticalPaddingDp;
     params.background_color = kNoItemsIndicatorBackgroundColor;
@@ -1049,14 +1055,15 @@ void OverviewSession::UpdateNoWindowsWidget() {
     params.preferred_height = kNoItemsIndicatorHeightDp;
     params.message_id = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
     params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-        kShellWindowId_AlwaysOnTopContainer);
+        desks_util::GetActiveDeskContainerId());
     no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
     no_windows_widget_->Init(params);
 
     aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
+    widget_window->SetProperty(kHideInDeskMiniViewKey, true);
+    widget_window->parent()->StackChildAtBottom(widget_window);
     ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
                                              widget_window);
-    widget_window->SetName("OverviewNoWindowsLabel");
     no_windows_widget_->SetOpacity(1.f);
   }
 

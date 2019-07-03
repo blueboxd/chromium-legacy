@@ -302,7 +302,9 @@ void ClientCertRequest::OnCancel() {
   // When we receive an OnCancel message, we remove this ClientCertRequest from
   // the queue of pending requests.
   auto should_keep = [this](auto* req) { return req != this; };
-  pending_requests_->FilterPendingRequests(should_keep);
+  if (pending_requests_) {
+    pending_requests_->FilterPendingRequests(should_keep);
+  }
 }
 
 }  // namespace

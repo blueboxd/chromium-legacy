@@ -219,6 +219,11 @@ void MediaRecorder::start(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ != State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -238,6 +243,11 @@ void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
 }
 
 void MediaRecorder::stop(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -249,6 +259,11 @@ void MediaRecorder::stop(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::pause(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -266,6 +281,11 @@ void MediaRecorder::pause(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::resume(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -282,6 +302,11 @@ void MediaRecorder::resume(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::requestData(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,

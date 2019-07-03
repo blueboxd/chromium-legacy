@@ -32,7 +32,7 @@ namespace {
 // Controls whether we use ThreadPriority::DISPLAY for compositor thread.
 const base::Feature kBlinkCompositorUseDisplayThreadPriority {
   "BlinkCompositorUseDisplayThreadPriority",
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
+#if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

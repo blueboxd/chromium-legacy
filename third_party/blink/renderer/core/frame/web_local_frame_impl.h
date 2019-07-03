@@ -347,10 +347,14 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WasHidden() override;
   void WasShown() override;
 
-  void InitializeCoreFrame(Page&,
-                           FrameOwner*,
-                           const AtomicString& name,
-                           WindowAgentFactory*);
+  void InitializeCoreFrame(
+      Page&,
+      FrameOwner*,
+      const AtomicString& name,
+      WindowAgentFactory*,
+      WebSandboxFlags sandbox_flags = WebSandboxFlags::kNone,
+      const FeaturePolicy::FeatureState& opener_feature_state =
+          FeaturePolicy::FeatureState());
   LocalFrame* GetFrame() const { return frame_.Get(); }
 
   void WillBeDetached();

@@ -7025,29 +7025,6 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
       commit_params.current_history_list_length;
 }
 
-namespace {
-std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
-    const WebString& initiator_str) {
-  if (initiator_str.IsNull())
-    return nullptr;
-  std::unique_ptr<base::DictionaryValue> initiator =
-      base::DictionaryValue::From(
-          base::JSONReader::ReadDeprecated(initiator_str.Utf8()));
-  if (!initiator)
-    return nullptr;
-  // TODO(kozy,caseq): the hack below is due to the fact that initiators include
-  // the chain of async callstacks that results in a tree of Values so deep
-  // that it triggers mojo structure nesting limit upon deserialization.
-  // See https://crbug.com/809996 for more details.
-  // We trim async stacks here, but it should be possible to capture locations
-  // without async stacks (or with custom limit on their number) instead.
-  base::Value* parent = initiator->FindPath({"stack", "parent"});
-  if (parent && parent->is_dict())
-    parent->RemoveKey("parent");
-  return initiator;
-}
-}  // namespace
-
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info,
     bool is_history_navigation_in_new_child_frame) {
@@ -7135,8 +7112,11 @@ void RenderFrameImpl::BeginNavigationInternal(
       CloneBlobURLToken(info->blob_url_token.get()));
 
   int load_flags = info->url_request.GetLoadFlagsForWebUrlRequest();
-  std::unique_ptr<base::DictionaryValue> initiator =
-      GetDevToolsInitiator(info->devtools_initiator_info);
+  std::unique_ptr<base::DictionaryValue> initiator;
+  if (!info->devtools_initiator_info.IsNull()) {
+    initiator = base::DictionaryValue::From(
+        base::JSONReader::ReadDeprecated(info->devtools_initiator_info.Utf8()));
+  }
   mojom::BeginNavigationParamsPtr begin_navigation_params =
       mojom::BeginNavigationParams::New(
           GetWebURLRequestHeadersAsString(info->url_request), load_flags,

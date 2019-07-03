@@ -2328,6 +2328,16 @@ enum WebFeature {
   kCreateObjectURLMediaSourceFromWorker = 2939,
   kCSSAtRuleProperty = 2940,
   kServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet = 2941,
+  kWebkitMarginBeforeCollapseDiscard = 2942,
+  kWebkitMarginBeforeCollapseSeparate = 2943,
+  kWebkitMarginBeforeCollapseSeparateMaybeDoesSomething = 2944,
+  kWebkitMarginAfterCollapseDiscard = 2945,
+  kWebkitMarginAfterCollapseSeparate = 2946,
+  kWebkitMarginAfterCollapseSeparateMaybeDoesSomething = 2947,
+  kCredentialManagerCreateWithUVM = 2948,
+  kCredentialManagerGetWithUVM = 2949,
+  kCredentialManagerCreateSuccessWithUVM = 2950,
+  kCredentialManagerGetSuccessWithUVM = 2951,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

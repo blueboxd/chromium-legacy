@@ -109,6 +109,13 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGLogicalOutOfFlowPositionedNode&,
       const LayoutBox* only_layout);
 
+  scoped_refptr<const NGLayoutResult> Layout(NGBlockNode,
+                                             const NGConstraintSpace&,
+                                             const NGPhysicalStaticPosition&,
+                                             LogicalSize container_content_size,
+                                             const ContainingBlockInfo&,
+                                             const LayoutBox* only_layout);
+
   bool IsContainingBlockForCandidate(const NGLogicalOutOfFlowPositionedNode&);
 
   scoped_refptr<const NGLayoutResult> GenerateFragment(

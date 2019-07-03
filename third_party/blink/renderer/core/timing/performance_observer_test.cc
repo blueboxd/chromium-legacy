@@ -74,7 +74,7 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
   EXPECT_EQ(0, NumPerformanceEntries());
 
   // add a layoutjank to performance so getEntries() returns it
-  auto* entry = MakeGarbageCollected<LayoutShift>(0.0, 1234);
+  auto* entry = MakeGarbageCollected<LayoutShift>(0.0, 1234, true, 5678);
   base_->AddLayoutJankBuffer(*entry);
 
   // call observe with the buffered flag

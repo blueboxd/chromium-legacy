@@ -75,8 +75,6 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
       history::KeywordID keyword_id,
       const base::string16& term) override;
   void PrefetchImage(const GURL& url) override;
-  void OnAutocompleteControllerResultReady(
-      AutocompleteController* controller) override;
   bool IsTabOpenWithURL(const GURL& url,
                         const AutocompleteInput* input) override;
 

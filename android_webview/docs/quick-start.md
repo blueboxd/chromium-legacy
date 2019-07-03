@@ -167,7 +167,7 @@ Either your package didn't install (see below) or you chose a package which is
 not in the WebView provider whitelist. Double-check the package name in your GN
 args. If you're on AOSP (any OS level), choose
 `"com.android.webview"`. If you're on L-M, choose
-`"com.android.google.webview"`. In either case, you'll likely need to [remove
+`"com.google.android.webview"`. In either case, you'll likely need to [remove
 the preinstalled WebView
 APK](/android_webview/tools/remove_preinstalled_webview.py).
 

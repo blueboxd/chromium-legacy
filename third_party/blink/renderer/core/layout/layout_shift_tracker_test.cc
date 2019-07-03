@@ -150,6 +150,10 @@ TEST_F(LayoutShiftTrackerTest, IgnoreAfterInput) {
   UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
   EXPECT_TRUE(GetLayoutShiftTracker().ObservedInputOrScroll());
+  EXPECT_TRUE(GetLayoutShiftTracker()
+                  .MostRecentInputTimestamp()
+                  .since_origin()
+                  .InSecondsF() > 0.0);
 }
 
 TEST_F(LayoutShiftTrackerTest, CompositedElementMovement) {

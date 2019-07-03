@@ -41,8 +41,6 @@ static size_t GetAllocatedSize(void* mem) {
 static size_t GetAllocatedSize(void* mem) {
   return malloc_usable_size(mem);
 }
-#else
-#error "Needs to be implemented for platform."
 #endif
 
 namespace gwp_asan {

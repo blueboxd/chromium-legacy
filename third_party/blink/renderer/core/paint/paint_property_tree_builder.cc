@@ -480,6 +480,9 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         context_.current.should_flatten_inherited_transform;
     state.affected_by_outer_viewport_bounds_delta =
         IsAffectedByOuterViewportBoundsDelta();
+    state.direct_compositing_reasons =
+        full_context_.direct_compositing_reasons &
+        CompositingReason::kScrollDependentPosition;
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
       state.rendering_context_id = context_.current.rendering_context_id;

@@ -31,13 +31,15 @@ namespace blink {
 WorkletGlobalScope::WorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy,
-    LocalFrame* frame)
+    LocalFrame* frame,
+    Agent* agent)
     : WorkletGlobalScope(std::move(creation_params),
                          reporting_proxy,
                          ToIsolate(frame),
                          ThreadType::kMainThread,
                          frame,
-                         nullptr /* worker_thread */) {}
+                         nullptr /* worker_thread */,
+                         agent) {}
 
 WorkletGlobalScope::WorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
@@ -48,7 +50,8 @@ WorkletGlobalScope::WorkletGlobalScope(
                          worker_thread->GetIsolate(),
                          ThreadType::kOffMainThread,
                          nullptr /* frame */,
-                         worker_thread) {}
+                         worker_thread,
+                         nullptr /* agent */) {}
 
 // Partial implementation of the "set up a worklet environment settings object"
 // algorithm:
@@ -59,12 +62,14 @@ WorkletGlobalScope::WorkletGlobalScope(
     v8::Isolate* isolate,
     ThreadType thread_type,
     LocalFrame* frame,
-    WorkerThread* worker_thread)
+    WorkerThread* worker_thread,
+    Agent* agent)
     : WorkerOrWorkletGlobalScope(
           isolate,
+          SecurityOrigin::CreateUniqueOpaque(),
           // TODO(tzik): Assign an Agent for Worklets after
           // NonMainThreadScheduler gets ready to run microtasks.
-          nullptr,
+          agent,
           creation_params->off_main_thread_fetch_option,
           creation_params->global_scope_name,
           creation_params->parent_devtools_token,
@@ -90,9 +95,6 @@ WorkletGlobalScope::WorkletGlobalScope(
 
   // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."
   // |url_| is the inheritedAPIBaseURL passed from the parent Document.
-
-  // Step 3: "Let origin be a unique opaque origin."
-  SetSecurityOrigin(SecurityOrigin::CreateUniqueOpaque());
 
   // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
   SetReferrerPolicy(creation_params->referrer_policy);

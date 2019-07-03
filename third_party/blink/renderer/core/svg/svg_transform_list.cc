@@ -26,6 +26,7 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
@@ -228,46 +229,46 @@ CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
       MakeGarbageCollected<CSSFunctionValue>(function_id);
   switch (function_id) {
     case CSSValueID::kRotate: {
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       FloatPoint rotation_origin = transform.RotationCenter();
       if (!ToFloatSize(rotation_origin).IsZero()) {
-        transform_value->Append(*CSSPrimitiveValue::Create(
+        transform_value->Append(*CSSNumericLiteralValue::Create(
             rotation_origin.X(), CSSPrimitiveValue::UnitType::kUserUnits));
-        transform_value->Append(*CSSPrimitiveValue::Create(
+        transform_value->Append(*CSSNumericLiteralValue::Create(
             rotation_origin.Y(), CSSPrimitiveValue::UnitType::kUserUnits));
       }
       break;
     }
     case CSSValueID::kSkewX:
     case CSSValueID::kSkewY:
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       break;
     case CSSValueID::kMatrix:
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().A(), CSSPrimitiveValue::UnitType::kUserUnits));
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().B(), CSSPrimitiveValue::UnitType::kUserUnits));
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().C(), CSSPrimitiveValue::UnitType::kUserUnits));
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().D(), CSSPrimitiveValue::UnitType::kUserUnits));
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().E(), CSSPrimitiveValue::UnitType::kUserUnits));
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().F(), CSSPrimitiveValue::UnitType::kUserUnits));
       break;
     case CSSValueID::kScale:
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().A(), CSSPrimitiveValue::UnitType::kUserUnits));
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().D(), CSSPrimitiveValue::UnitType::kUserUnits));
       break;
     case CSSValueID::kTranslate:
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().E(), CSSPrimitiveValue::UnitType::kUserUnits));
-      transform_value->Append(*CSSPrimitiveValue::Create(
+      transform_value->Append(*CSSNumericLiteralValue::Create(
           transform.Matrix().F(), CSSPrimitiveValue::UnitType::kUserUnits));
       break;
     default:

@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
-#include "third_party/blink/renderer/core/dom/scripted_task_queue_controller.h"
 #include "third_party/blink/renderer/core/dom/sink_document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -983,13 +982,6 @@ ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
   ScriptPromise promise = resolver->Promise();
   resolver->ComputeAccessibleNode();
   return promise;
-}
-
-ScriptedTaskQueueController* LocalDOMWindow::taskQueue() const {
-  if (Document* document = this->document()) {
-    return ScriptedTaskQueueController::From(*document);
-  }
-  return nullptr;
 }
 
 double LocalDOMWindow::devicePixelRatio() const {

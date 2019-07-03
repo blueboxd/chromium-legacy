@@ -2511,16 +2511,10 @@ FloatRect PaintLayer::BackdropFilterReferenceBox() const {
 gfx::RRectF PaintLayer::BackdropFilterBounds(
     const FloatRect& reference_box) const {
   auto& style = GetLayoutObject().StyleRef();
-  gfx::RRectF backdrop_filter_bounds;
-  if (!style.HasBorderRadius()) {
-    backdrop_filter_bounds = gfx::RRectF(reference_box, 0);
-  } else {
-    FloatRoundedRect rrect =
-        style.GetRoundedBorderFor(LayoutRect(reference_box));
-    backdrop_filter_bounds = gfx::RRectF(rrect);
-  }
-  float zoom = style.EffectiveZoom();
-  backdrop_filter_bounds.Scale(zoom);
+  FloatRect scaled_reference_box(reference_box);
+  scaled_reference_box.Scale(style.EffectiveZoom());
+  gfx::RRectF backdrop_filter_bounds =
+      gfx::RRectF(style.GetRoundedBorderFor(LayoutRect(scaled_reference_box)));
   return backdrop_filter_bounds;
 }
 bool PaintLayer::HitTestClippedOutByClipPath(

@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/document_provider.h"
 
 #include "base/json/json_reader.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time_to_iso8601.h"
@@ -22,6 +23,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const std::string SAMPLE_ORIGINAL_URL =
+    "https://www.google.com/url?_placeholder_url=https://drive.google.com/a/"
+    "domain.tld/open?id%3D_0123_ID_4567_&_placeholder_";
+
+const std::string SAMPLE_STRIPPED_URL =
+#if defined(OS_IOS) || defined(OS_ANDROID)
+    SAMPLE_ORIGINAL_URL
+#else
+    "https://drive.google.com/open?id=_0123_ID_4567_"
+#endif
+    ;
 
 using testing::Return;
 
@@ -228,20 +241,22 @@ TEST_F(DocumentProviderTest, IsInputLikelyURL) {
 }
 
 TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
-  const char kGoodJSONResponse[] = R"({
+  const std::string kGoodJSONResponse = base::StringPrintf(
+      R"({
       "results": [
         {
           "title": "Document 1",
           "url": "https://documentprovider.tld/doc?id=1",
           "score": 1234,
-          "originalUrl": "https://shortened.url"
+          "originalUrl": "%s"
         },
         {
           "title": "Document 2",
           "url": "https://documentprovider.tld/doc?id=2"
         }
       ]
-     })";
+     })",
+      SAMPLE_ORIGINAL_URL.c_str());
 
   base::Optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponse);
@@ -256,7 +271,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   EXPECT_EQ(matches[0].destination_url,
             GURL("https://documentprovider.tld/doc?id=1"));
   EXPECT_EQ(matches[0].relevance, 1234);  // Server-specified.
-  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL(SAMPLE_STRIPPED_URL));
 
   EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
   EXPECT_EQ(matches[1].destination_url,
@@ -270,13 +285,14 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
 TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
   // Dates are kept > 1 year in the past since
   // See comments for GenerateLastModifiedString in this file for references.
-  const char kGoodJSONResponseWithMimeTypes[] = R"({
+  const std::string kGoodJSONResponseWithMimeTypes = base::StringPrintf(
+      R"({
       "results": [
         {
           "title": "My Google Doc",
           "url": "https://documentprovider.tld/doc?id=1",
           "score": 999,
-          "originalUrl": "https://shortened.url",
+          "originalUrl": "%s",
           "metadata": {
             "mimeType": "application/vnd.google-apps.document",
             "updateTime": "Mon, 15 Oct 2007 19:45:00 GMT"
@@ -300,7 +316,8 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
           }
         }
       ]
-     })";
+     })",
+      SAMPLE_ORIGINAL_URL.c_str());
 
   base::Optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithMimeTypes);
@@ -335,13 +352,14 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
 }
 
 TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
-  const char kGoodJSONResponseWithTies[] = R"({
+  const std::string kGoodJSONResponseWithTies = base::StringPrintf(
+      R"({
       "results": [
         {
           "title": "Document 1",
           "url": "https://documentprovider.tld/doc?id=1",
           "score": 1234,
-          "originalUrl": "https://shortened.url"
+          "originalUrl": "%s"
         },
         {
           "title": "Document 2",
@@ -354,7 +372,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
           "url": "https://documentprovider.tld/doc?id=3"
         }
       ]
-     })";
+     })",
+      SAMPLE_ORIGINAL_URL.c_str());
 
   base::Optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
@@ -371,7 +390,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
   EXPECT_EQ(matches[0].destination_url,
             GURL("https://documentprovider.tld/doc?id=1"));
   EXPECT_EQ(matches[0].relevance, 1234);  // As the server specified.
-  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL(SAMPLE_STRIPPED_URL));
 
   EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
   EXPECT_EQ(matches[1].destination_url,
@@ -389,13 +408,14 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
 }
 
 TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
-  const char kGoodJSONResponseWithTies[] = R"({
+  const std::string kGoodJSONResponseWithTies = base::StringPrintf(
+      R"({
       "results": [
         {
           "title": "Document 1",
           "url": "https://documentprovider.tld/doc?id=1",
           "score": 1234,
-          "originalUrl": "https://shortened.url"
+          "originalUrl": "%s"
         },
         {
           "title": "Document 2",
@@ -408,7 +428,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
           "url": "https://documentprovider.tld/doc?id=3"
         }
       ]
-     })";
+     })",
+      SAMPLE_ORIGINAL_URL.c_str());
 
   base::Optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
@@ -425,7 +446,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
   EXPECT_EQ(matches[0].destination_url,
             GURL("https://documentprovider.tld/doc?id=1"));
   EXPECT_EQ(matches[0].relevance, 1234);  // As the server specified.
-  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL(SAMPLE_STRIPPED_URL));
 
   EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
   EXPECT_EQ(matches[1].destination_url,
@@ -445,13 +466,14 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
 }
 
 TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
-  const char kGoodJSONResponseWithTies[] = R"({
+  const std::string kGoodJSONResponseWithTies = base::StringPrintf(
+      R"({
       "results": [
         {
           "title": "Document 1",
           "url": "https://documentprovider.tld/doc?id=1",
           "score": 1,
-          "originalUrl": "https://shortened.url"
+          "originalUrl": "%s"
         },
         {
           "title": "Document 2",
@@ -464,7 +486,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
           "url": "https://documentprovider.tld/doc?id=3"
         }
       ]
-     })";
+     })",
+      SAMPLE_ORIGINAL_URL.c_str());
 
   base::Optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
@@ -481,7 +504,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
   EXPECT_EQ(matches[0].destination_url,
             GURL("https://documentprovider.tld/doc?id=1"));
   EXPECT_EQ(matches[0].relevance, 1);  // As the server specified.
-  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL(SAMPLE_STRIPPED_URL));
 
   EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
   EXPECT_EQ(matches[1].destination_url,

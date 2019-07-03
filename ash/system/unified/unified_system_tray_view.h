@@ -80,9 +80,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // It deletes |detailed_view| and children.
   void ResetDetailedView();
 
-  // Save and restore keyboard focus of feature pod.
-  void SaveFeaturePodFocus();
-  void RestoreFeaturePodFocus();
+  // Save and restore keyboard focus of the currently focused element. Called
+  // before transitioning into a detailed view.
+  void SaveFocus();
+  void RestoreFocus();
 
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
   // Otherwise, it shows intermediate state.
@@ -163,6 +164,9 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
 
   // The maximum height available to the view.
   int max_height_ = 0;
+
+  // The view that is saved by calling SaveFocus().
+  views::View* saved_focused_view_ = nullptr;
 
   const std::unique_ptr<FocusSearch> focus_search_;
   const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;

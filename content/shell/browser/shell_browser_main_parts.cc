@@ -24,7 +24,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/browser/shell_net_log.h"
 #include "content/shell/common/shell_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "net/base/filename_util.h"
@@ -137,9 +136,8 @@ int ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
 void ShellBrowserMainParts::InitializeBrowserContexts() {
-  set_browser_context(new ShellBrowserContext(false, net_log_.get()));
-  set_off_the_record_browser_context(
-      new ShellBrowserContext(true, net_log_.get()));
+  set_browser_context(new ShellBrowserContext(false));
+  set_off_the_record_browser_context(new ShellBrowserContext(true));
 }
 
 void ShellBrowserMainParts::InitializeMessageLoopContext() {
@@ -158,8 +156,6 @@ int ShellBrowserMainParts::PreCreateThreads() {
         std::make_unique<crash_reporter::ChildProcessCrashObserver>());
   }
 #endif
-
-  net_log_ = std::make_unique<ShellNetLog>("content_shell");
   return 0;
 }
 

@@ -11,6 +11,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -109,6 +110,22 @@ void JourneyLogger::SetNumberOfSuggestionsShown(Section section,
   sections_[section].number_suggestions_shown_ = number;
   sections_[section].is_requested_ = true;
   sections_[section].has_complete_suggestion_ = has_complete_suggestion;
+}
+
+void JourneyLogger::SetSectionNeedsCompletion(const Section section) {
+  switch (section) {
+    case SECTION_CONTACT_INFO:
+      events_ |= EVENT_NEEDS_COMPLETION_CONTACT_INFO;
+      break;
+    case SECTION_PAYMENT_METHOD:
+      events_ |= EVENT_NEEDS_COMPLETION_PAYMENT;
+      break;
+    case SECTION_SHIPPING_ADDRESS:
+      events_ |= EVENT_NEEDS_COMPLETION_SHIPPING;
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void JourneyLogger::SetCanMakePaymentValue(bool value) {
@@ -267,6 +284,7 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
       if (sections_[i].number_suggestions_shown_ == 0 ||
           !sections_[i].has_complete_suggestion_) {
         user_had_complete_suggestions_for_requested_information = false;
+        SetSectionNeedsCompletion(static_cast<const Section>(i));
       }
     }
   }

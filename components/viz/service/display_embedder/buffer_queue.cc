@@ -137,40 +137,6 @@ bool BufferQueue::Reshape(const gfx::Size& size,
   return true;
 }
 
-unsigned BufferQueue::RecreateBuffers() {
-  // We need to recreate the buffers, for whatever reason the old ones are not
-  // presentable on the device anymore.
-  // Unused buffers can be freed directly, they will be re-allocated as needed.
-  // Any in flight, current or displayed surface must be replaced.
-  available_surfaces_.clear();
-
-  // Recreate all in-flight surfaces and put the recreated copies in the queue.
-  for (auto& surface : in_flight_surfaces_)
-    surface = RecreateBuffer(std::move(surface));
-
-  current_surface_ = RecreateBuffer(std::move(current_surface_));
-  displayed_surface_ = RecreateBuffer(std::move(displayed_surface_));
-
-  return current_surface_ ? current_surface_->texture : 0u;
-}
-
-std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::RecreateBuffer(
-    std::unique_ptr<AllocatedSurface> surface) {
-  if (!surface)
-    return nullptr;
-
-  std::unique_ptr<AllocatedSurface> new_surface(GetNextSurface());
-  if (!new_surface)
-    return nullptr;
-
-  new_surface->damage = surface->damage;
-
-  // Copy the entire texture.
-  CopyBufferDamage(new_surface->texture, surface->texture, gfx::Rect(),
-                   gfx::Rect(size_));
-  return new_surface;
-}
-
 void BufferQueue::PageFlipComplete() {
   DCHECK(!in_flight_surfaces_.empty());
   if (in_flight_surfaces_.front()) {
@@ -227,7 +193,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   }
 
   // We don't want to allow anything more than triple buffering.
-  DCHECK_LT(allocated_count_, 4U);
+  DCHECK_LT(allocated_count_, 3U);
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
           size_, format_, gfx::BufferUsage::SCANOUT, surface_handle_));

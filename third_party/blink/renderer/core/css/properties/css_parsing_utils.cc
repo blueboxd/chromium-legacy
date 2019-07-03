@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -395,7 +396,7 @@ bool ConsumePerspective(CSSParserTokenRange& args,
       return false;
     }
     context.Count(WebFeature::kUnitlessPerspectiveInTransformProperty);
-    parsed_value = CSSPrimitiveValue::Create(
+    parsed_value = CSSNumericLiteralValue::Create(
         perspective, CSSPrimitiveValue::UnitType::kPixels);
   }
   if (!parsed_value)
@@ -1296,7 +1297,8 @@ CSSValue* ConsumeCounter(CSSParserTokenRange& range,
       value = clampTo<int>(counter_value->GetDoubleValue());
     list->Append(*MakeGarbageCollected<CSSValuePair>(
         counter_name,
-        CSSPrimitiveValue::Create(value, CSSPrimitiveValue::UnitType::kInteger),
+        CSSNumericLiteralValue::Create(value,
+                                       CSSPrimitiveValue::UnitType::kInteger),
         CSSValuePair::kDropIdenticalValues));
   } while (!range.AtEnd());
   return list;
@@ -1609,7 +1611,7 @@ CSSValue* ConsumeGridBreadth(CSSParserTokenRange& range,
       token.GetUnitType() == CSSPrimitiveValue::UnitType::kFraction) {
     if (range.Peek().NumericValue() < 0)
       return nullptr;
-    return CSSPrimitiveValue::Create(
+    return CSSNumericLiteralValue::Create(
         range.ConsumeIncludingWhitespace().NumericValue(),
         CSSPrimitiveValue::UnitType::kFraction);
   }
@@ -1904,7 +1906,7 @@ CSSValue* ConsumeGridLine(CSSParserTokenRange& range,
                      // invalid.
 
   if (numeric_value) {
-    numeric_value = CSSPrimitiveValue::Create(
+    numeric_value = CSSNumericLiteralValue::Create(
         clampTo(numeric_value->GetIntValue(), -kGridMaxTracks, kGridMaxTracks),
         CSSPrimitiveValue::UnitType::kInteger);
   }

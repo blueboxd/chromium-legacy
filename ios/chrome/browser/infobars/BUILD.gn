@@ -37,6 +37,8 @@ source_set("infobars") {
 source_set("badge") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "infobar_badge_model.h",
+    "infobar_badge_model.mm",
     "infobar_badge_tab_helper.h",
     "infobar_badge_tab_helper.mm",
     "infobar_badge_tab_helper_delegate.h",
@@ -44,6 +46,7 @@ source_set("badge") {
   deps = [
     ":infobars",
     ":public",
+    "//ios/chrome/browser/ui/badges:public",
     "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/web",

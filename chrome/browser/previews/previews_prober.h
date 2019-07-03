@@ -51,6 +51,14 @@ class PreviewsProber
                                    std::unique_ptr<std::string> body) = 0;
   };
 
+  // Callers who wish to use this class should add a value to this enum. This
+  // enum is mapped to a string value which is then used in histograms and
+  // prefs.
+  enum class ClientName {
+    // TODO(crbug.com/971918): Use in litepages.
+    kLitepages,
+  };
+
   // This enum describes the different algorithms that can be used to calculate
   // a time delta between probe events like retries or timeout ttl.
   enum class Backoff {
@@ -108,7 +116,7 @@ class PreviewsProber
   PreviewsProber(
       Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& name,
+      ClientName name,
       const GURL& url,
       HttpMethod http_method,
       const net::HttpRequestHeaders headers,
@@ -134,7 +142,7 @@ class PreviewsProber
   PreviewsProber(
       Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& name,
+      ClientName name,
       const GURL& url,
       HttpMethod http_method,
       const net::HttpRequestHeaders headers,

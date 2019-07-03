@@ -41,12 +41,25 @@ class CAPTURE_EXPORT RendererFacingCrosImageCapture
       SetReprocessOptionCallback callback,
       const base::Optional<std::string>& device_id);
 
+  void SetFpsRangeWithRealId(const uint32_t stream_width,
+                             const uint32_t stream_height,
+                             const int32_t min_frame_rate,
+                             const int32_t max_frame_rate,
+                             SetFpsRangeCallback callback,
+                             const base::Optional<std::string>& device_id);
+
   // cros::mojom::CrosImageCapture implementations.
   void GetCameraInfo(const std::string& source_id,
                      GetCameraInfoCallback callback) override;
   void SetReprocessOption(const std::string& source_id,
                           cros::mojom::Effect effect,
                           SetReprocessOptionCallback callback) override;
+  void SetFpsRange(const std::string& source_id,
+                   const uint32_t stream_width,
+                   const uint32_t stream_height,
+                   const int32_t min_frame_rate,
+                   const int32_t max_frame_rate,
+                   SetFpsRangeCallback callback) override;
 
  private:
   cros::mojom::CrosImageCapturePtr cros_image_capture_;

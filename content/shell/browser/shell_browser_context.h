@@ -20,10 +20,6 @@
 
 class SimpleFactoryKey;
 
-namespace net {
-class NetLog;
-}
-
 namespace content {
 
 class BackgroundSyncController;
@@ -39,7 +35,6 @@ class ShellBrowserContext : public BrowserContext {
   // If |delay_services_creation| is true, the owner is responsible for calling
   // CreateBrowserContextServices() for this BrowserContext.
   ShellBrowserContext(bool off_the_record,
-                      net::NetLog* net_log,
                       bool delay_services_creation = false);
   ~ShellBrowserContext() override;
 
@@ -97,7 +92,6 @@ class ShellBrowserContext : public BrowserContext {
   }
 
   bool ignore_certificate_errors() const { return ignore_certificate_errors_; }
-  net::NetLog* net_log() const { return net_log_; }
 
   std::unique_ptr<ShellResourceContext> resource_context_;
   std::unique_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
@@ -112,7 +106,6 @@ class ShellBrowserContext : public BrowserContext {
 
   bool ignore_certificate_errors_;
   bool off_the_record_;
-  net::NetLog* net_log_;
   base::FilePath path_;
   BrowserPluginGuestManager* guest_manager_;
   scoped_refptr<ShellURLRequestContextGetter> url_request_getter_;

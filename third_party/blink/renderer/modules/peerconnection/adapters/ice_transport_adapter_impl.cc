@@ -33,7 +33,11 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
                              cricket::PORTALLOCATOR_ENABLE_IPV6_ON_WIFI);
   port_allocator_->Initialize();
 
-  ice_transport_channel_ = webrtc::CreateIceTransport(port_allocator_.get());
+  webrtc::IceTransportInit ice_transport_init;
+  ice_transport_init.set_port_allocator(port_allocator_.get());
+  ice_transport_init.set_async_resolver_factory(async_resolver_factory_.get());
+  ice_transport_channel_ =
+      webrtc::CreateIceTransport(std::move(ice_transport_init));
   SetupIceTransportChannel();
   // We need to set the ICE role even before Start is called since the Port
   // assumes that the role has been set before receiving incoming connectivity

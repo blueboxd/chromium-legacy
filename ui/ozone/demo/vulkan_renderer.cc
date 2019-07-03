@@ -223,8 +223,8 @@ void VulkanRenderer::RenderFrame() {
       /* .color = */ {/* .float32 = */ {.5f, 1.f - NextFraction(), .5f, 1.f}}};
 
   gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->GetSwapChain();
-  const uint32_t image = vulkan_swap_chain->current_image();
   gpu::VulkanSwapChain::ScopedWrite scoped_write(vulkan_swap_chain);
+  const uint32_t image = scoped_write.image_index();
   {
     auto& framebuffer = framebuffers_[image];
     if (!framebuffer) {
@@ -305,7 +305,7 @@ void VulkanRenderer::RenderFrame() {
     device_queue_->GetFenceHelper()->EnqueueSemaphoreCleanupForSubmittedWork(
         begin_semaphore);
   }
-  vulkan_swap_chain->SwapBuffers();
+  vulkan_surface_->SwapBuffers();
 
   PostRenderFrameTask();
 }

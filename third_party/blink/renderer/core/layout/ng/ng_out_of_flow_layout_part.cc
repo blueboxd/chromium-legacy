@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -441,10 +442,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
          node.GetLayoutBox()->ContainingBlock()->IsTable());
 
   const ContainingBlockInfo& container_info = GetContainingBlockInfo(candidate);
-
-  const TextDirection container_direction = container_info.direction;
   const TextDirection default_direction = default_containing_block_.direction;
-
   const ComputedStyle& candidate_style = node.Style();
   const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
 
@@ -481,6 +479,49 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
           .SetPercentageResolutionSize(container_content_size)
           .ToConstraintSpace();
 
+  base::Optional<PaintLayerScrollableArea::FreezeScrollbarsScope>
+      freeze_scrollbars;
+  do {
+    scoped_refptr<const NGLayoutResult> layout_result =
+        Layout(node, candidate_constraint_space, physical_static_position,
+               container_content_size, container_info, only_layout);
+
+    if (!freeze_scrollbars.has_value()) {
+      // Since out-of-flow positioning sets up a constraint space with fixed
+      // inline-size, the regular layout code (|NGBlockNode::Layout()|) cannot
+      // re-layout if it discovers that a scrollbar was added or removed. Handle
+      // that situation here. The assumption is that if preferred logical widths
+      // are dirty after layout, it means that scrollbars appeared or
+      // disappeared. We have the same logic in legacy layout in
+      // |LayoutBlockFlow::UpdateBlockLayout()|.
+      if (node.GetLayoutBox()->PreferredLogicalWidthsDirty()) {
+        // Freeze the scrollbars for this layout pass. We don't want them to
+        // change *again*.
+        freeze_scrollbars.emplace();
+        continue;
+      }
+    }
+
+    return layout_result;
+  } while (true);
+}
+
+scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
+    NGBlockNode node,
+    const NGConstraintSpace& candidate_constraint_space,
+    const NGPhysicalStaticPosition& physical_static_position,
+    LogicalSize container_content_size,
+    const ContainingBlockInfo& container_info,
+    const LayoutBox* only_layout) {
+  const TextDirection default_direction = default_containing_block_.direction;
+  const ComputedStyle& candidate_style = node.Style();
+  const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
+  const TextDirection container_direction = container_info.direction;
+
+  PhysicalSize container_physical_content_size =
+      ToPhysicalSize(container_content_size, writing_mode_);
+  LogicalSize container_content_size_in_candidate_writing_mode =
+      container_physical_content_size.ConvertToLogical(candidate_writing_mode);
   NGBoxStrut border_padding =
       ComputeBorders(candidate_constraint_space, node) +
       ComputePadding(candidate_constraint_space, candidate_style);
@@ -621,6 +662,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
                          block_estimate, node_position);
   }
+
+  // TODO(mstensho): Move the rest of this method back into LayoutCandidate().
 
   if (node.GetLayoutBox()->IsLayoutNGObject()) {
     To<LayoutBlock>(node.GetLayoutBox())

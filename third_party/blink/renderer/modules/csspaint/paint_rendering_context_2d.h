@@ -20,6 +20,12 @@ namespace blink {
 class CanvasImageSource;
 class Color;
 
+// In our internal implementation, there are different kinds of canvas such as
+// recording canvas, GPU canvas. The CSS Paint API uses the recording canvas and
+// this class is specifically designed for the recording canvas.
+//
+// The main difference between this class and other contexts is that
+// PaintRenderingContext2D operates on CSS pixels rather than physical pixels.
 class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
                                                public BaseRenderingContext2D {
   DEFINE_WRAPPERTYPEINFO();
@@ -93,6 +99,10 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   IntSize container_size_;
   Member<const PaintRenderingContext2DSettings> context_settings_;
   bool did_record_draw_commands_in_paint_recorder_;
+  // The paint worklet canvas operates on CSS pixels, and that's different than
+  // the HTML canvas which operates on physical pixels. In other words, the
+  // paint worklet canvas needs to handle device scale factor and browser zoom,
+  // and this is designed for that purpose.
   float effective_zoom_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRenderingContext2D);

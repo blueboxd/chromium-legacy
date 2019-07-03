@@ -840,7 +840,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
                 JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE |
                 JourneyLogger::EVENT_HAS_ENROLLED_INSTRUMENT_FALSE |
                 JourneyLogger::EVENT_REQUEST_METHOD_OTHER |
-                JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD,
+                JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+                JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT,
             buckets[0].min);
 
   // Make sure that the metrics that required the Payment Request to be shown
@@ -1040,7 +1041,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, CrossOriginIframe) {
   int64_t expected_step_metric =
       JourneyLogger::EVENT_SHOWN |
       JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
-      JourneyLogger::EVENT_USER_ABORTED;
+      JourneyLogger::EVENT_USER_ABORTED |
+      JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT;
 
   // Make sure the correct UMA events were logged.
   std::vector<base::Bucket> buckets =

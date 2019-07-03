@@ -34,8 +34,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.preferences.MainPreferences;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
@@ -131,6 +129,10 @@ public class PaymentRequestImpl
          * currently active TabModel from the activity.
          */
         boolean isWebContentsActive(TabModel model, WebContents webContents);
+        /**
+         * Returns whether the preferences allow CAN_MAKE_PAYMENT.
+         */
+        boolean prefsCanMakePayment();
         /**
          * Returns true if the UI can be skipped for "basic-card" scenarios. This will only ever
          * be true in tests.
@@ -1875,7 +1877,7 @@ public class PaymentRequestImpl
         mIsCanMakePaymentResponsePending = false;
 
         boolean response = legacyMode ? mHasEnrolledInstrument : mArePaymentMethodsSupported;
-        response &= PrefServiceBridge.getInstance().getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED);
+        response &= mDelegate.prefsCanMakePayment();
 
         // Only need to enforce query quota in legacy mode. Per-method quota not supported.
         if (legacyMode
@@ -2010,8 +2012,7 @@ public class PaymentRequestImpl
         }
 
         // Always return false when can make payment is disabled.
-        mHasEnrolledInstrument &=
-                PrefServiceBridge.getInstance().getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED);
+        mHasEnrolledInstrument &= mDelegate.prefsCanMakePayment();
 
         int additionalTextResourceId = app.getAdditionalAppTextResourceId();
         if (additionalTextResourceId != 0) {

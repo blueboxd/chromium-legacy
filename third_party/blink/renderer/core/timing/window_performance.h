@@ -63,8 +63,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void UpdateLongTaskInstrumentation() override;
 
-  bool ShouldBufferEntries();
-
   bool FirstInputDetected() const { return !!first_input_timing_; }
 
   // This method creates a PerformanceEventTiming and if needed creates a swap
@@ -86,10 +84,16 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                         const AtomicString& id,
                         Element*);
 
-  void AddLayoutJankFraction(double jank_fraction);
+  void AddLayoutJankFraction(double jank_fraction,
+                             bool input_detected,
+                             base::TimeTicks input_timestamp);
 
-  void OnLargestContentfulPaintUpdated(base::TimeTicks text_paint_time,
-                                       uint64_t text_paint_size);
+  void OnLargestContentfulPaintUpdated(base::TimeTicks paint_time,
+                                       uint64_t paint_size,
+                                       base::TimeTicks response_end,
+                                       const AtomicString& id,
+                                       const String& url,
+                                       Element*);
 
   void Trace(blink::Visitor*) override;
 

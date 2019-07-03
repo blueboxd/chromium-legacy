@@ -87,6 +87,9 @@ Document* XSLTProcessor::CreateDocumentFromSource(
 
   if (frame) {
     Document* old_document = frame->GetDocument();
+    init = init.WithOwnerDocument(old_document)
+               .WithSandboxFlags(old_document->GetSandboxFlags());
+
     // Before parsing, we need to save & detach the old document and get the new
     // document in place. Document::Shutdown() tears down the LocalFrameView, so
     // remember whether or not there was one.
@@ -109,9 +112,7 @@ Document* XSLTProcessor::CreateDocumentFromSource(
 
     if (old_document) {
       DocumentXSLT::From(*result).SetTransformSourceDocument(old_document);
-      result->UpdateSecurityOrigin(old_document->GetMutableSecurityOrigin());
       result->SetCookieURL(old_document->CookieURL());
-      result->EnforceSandboxFlags(old_document->GetSandboxFlags());
 
       auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
       csp->CopyStateFrom(old_document->GetContentSecurityPolicy());

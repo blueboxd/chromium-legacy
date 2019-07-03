@@ -188,16 +188,15 @@ $ sudo apt-get install qemu-system-common
 3. Add users to the "kvm" group, and have them login again, to pick-up the new
 group.
 
-### Run test target
+### Running test suites
+
+Building test suites generate a launcher script to run them on a QEMU instance
+or a physical device. These scripts are generated at `out/fuchsia/bin`. For
+instance,to run the `base_unittests` target, launch:
 
 ```shell
 $ out/fuchsia/bin/run_base_unittests
 ```
 
-This packages the built binary and test data into a disk image, and runs a QEMU
-instance from the Fuchsia SDK, outputting to the console.
-
 Common gtest arguments such as `--gtest_filter=...` are supported by the run
-script.
-
-The run script also symbolizes backtraces.
+script. The launcher script also symbolizes backtraces.

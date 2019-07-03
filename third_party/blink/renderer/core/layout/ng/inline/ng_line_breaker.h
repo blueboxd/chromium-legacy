@@ -72,9 +72,11 @@ class CORE_EXPORT NGLineBreaker {
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
-  static bool ComputeOpenTagResult(const NGInlineItem&,
-                                   const NGConstraintSpace&,
-                                   NGInlineItemResult*);
+  static bool ComputeOpenTagResult(
+      const NGInlineItem&,
+      const NGConstraintSpace&,
+      NGInlineItemResult*,
+      base::Optional<NGLineBoxStrut> margins = base::nullopt);
 
   // This enum is private, except for |WhitespaceStateForTesting()|. See
   // |whitespace_| member.
@@ -164,7 +166,7 @@ class CORE_EXPORT NGLineBreaker {
                    Vector<LayoutObject*>* out_floats_for_min_max,
                    NGLineInfo*);
 
-  void HandleOpenTag(const NGInlineItem&, NGLineInfo*);
+  bool HandleOpenTag(const NGInlineItem&, NGLineInfo*);
   void HandleCloseTag(const NGInlineItem&, NGLineInfo*);
 
   void HandleOverflow(NGLineInfo*);
@@ -264,6 +266,9 @@ class CORE_EXPORT NGLineBreaker {
     scoped_refptr<const ShapeResultView> collapsed_shape_result;
   };
   base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
+
+  // Keep track of item index where overflow occurrred.
+  unsigned overflow_item_index_;
 
   // Keep track of handled float items. See HandleFloat().
   const NGPositionedFloatVector& leading_floats_;

@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
     return;
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
-      std::make_unique<ShellBrowserContext>(true, nullptr);
+      std::make_unique<ShellBrowserContext>(true);
   auto* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context.get()));
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
     return;
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
-      std::make_unique<ShellBrowserContext>(true, nullptr);
+      std::make_unique<ShellBrowserContext>(true);
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context.get());
   scoped_refptr<network::SharedURLLoaderFactory> factory(

@@ -391,10 +391,7 @@ void ContentVerifier::SetObserverForTests(TestObserver* observer) {
 ContentVerifier::ContentVerifier(
     content::BrowserContext* context,
     std::unique_ptr<ContentVerifierDelegate> delegate)
-    : context_(context),
-      delegate_(std::move(delegate)),
-      observer_(this),
-      io_data_(new ContentVerifierIOData) {}
+    : context_(context), delegate_(std::move(delegate)), observer_(this) {}
 
 ContentVerifier::~ContentVerifier() {
 }
@@ -416,7 +413,7 @@ void ContentVerifier::Shutdown() {
 void ContentVerifier::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   shutdown_on_io_ = true;
-  io_data_->Clear();
+  io_data_.Clear();
   hash_helper_.reset();
 }
 
@@ -427,7 +424,7 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   const ContentVerifierIOData::ExtensionData* data =
-      io_data_->GetData(extension_id);
+      io_data_.GetData(extension_id);
   // The absence of |data| generally means that we don't have to verify the
   // extension resource. However, it could also mean that
   // OnExtensionLoadedOnIO didn't get a chance to fire yet.
@@ -557,7 +554,7 @@ void ContentVerifier::OnExtensionLoadedOnIO(
   if (shutdown_on_io_)
     return;
 
-  io_data_->AddData(extension_id, std::move(data));
+  io_data_.AddData(extension_id, std::move(data));
   GetContentHash(extension_id, extension_root, extension_version,
                  false /* force_missing_computed_hashes_creation */,
                  // HashHelper will respond directly to OnFetchComplete().
@@ -593,7 +590,7 @@ void ContentVerifier::OnExtensionUnloadedOnIO(
     const base::Version& extension_version) {
   if (shutdown_on_io_)
     return;
-  io_data_->RemoveData(extension_id);
+  io_data_.RemoveData(extension_id);
 
   // Remove all possible cache entries for this extension version.
   cache_.erase(CacheKey(extension_id, extension_version, true));
@@ -669,7 +666,7 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
     const std::set<base::FilePath>& relative_unix_paths) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   const ContentVerifierIOData::ExtensionData* data =
-      io_data_->GetData(extension_id);
+      io_data_.GetData(extension_id);
   if (!data)
     return false;
 
@@ -751,7 +748,7 @@ ContentVerifier::HashHelper* ContentVerifier::GetOrCreateHashHelper() {
 }
 
 void ContentVerifier::ResetIODataForTesting(const Extension* extension) {
-  io_data_->AddData(extension->id(), CreateIOData(extension, delegate_.get()));
+  io_data_.AddData(extension->id(), CreateIOData(extension, delegate_.get()));
 }
 
 base::FilePath ContentVerifier::NormalizeRelativePathForTesting(

@@ -32,6 +32,6 @@
         android:scaleType="center"
         android:background="?attr/selectableItemBackground"
         android:contentDescription="@string/accessibility_toolbar_btn_menu"
-        android:src="@drawable/ic_more_vert_black_24dp"
+        android:src="@drawable/ic_more_vert_24dp"
         app:tint="@color/standard_mode_tint" />
 </LinearLayout>

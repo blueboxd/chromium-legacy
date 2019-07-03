@@ -47,6 +47,9 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       (base::FeatureList::IsEnabled(omnibox::kDocumentProvider)
            ? AutocompleteProvider::TYPE_DOCUMENT
            : 0) |
+      (base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProvider)
+           ? AutocompleteProvider::TYPE_ON_DEVICE_HEAD
+           : 0) |
       AutocompleteProvider::TYPE_BOOKMARK | AutocompleteProvider::TYPE_BUILTIN |
       AutocompleteProvider::TYPE_HISTORY_QUICK |
       AutocompleteProvider::TYPE_HISTORY_URL |

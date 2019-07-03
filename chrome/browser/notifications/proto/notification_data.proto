@@ -14,9 +14,24 @@ message CustomData {
   optional bytes value = 2;
 }
 
+// Button type.
+enum ActionButtonType {
+  UNKNOWN_ACTION = 0;
+  HELPFUL = 1;
+  UNHELPFUL = 2;
+}
+
 // Stores data used to display a notification in the UI.
-// Next tag: 6
+// Next tag: 7
 message NotificationData {
+  // Represents the button on the notification.
+  // Next tag: 4
+  message Button {
+    optional string text = 1;
+    optional ActionButtonType button_type = 2;
+    optional string id = 3;
+  }
+
   // Identifier of the notification.
   optional string id = 1;
 
@@ -32,4 +47,7 @@ message NotificationData {
 
   // Custom data associated with a notification.
   repeated CustomData custom_data = 5;
+
+  // A list of buttons on the notification.
+  repeated Button buttons = 6;
 }

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace notifications {
@@ -20,6 +21,23 @@ namespace notifications {
 // or retrieving the hard coded assets and rewrites the data before notification
 // is shown in NotificationSchedulerClient::BeforeShowNotification().
 struct NotificationData {
+  // Represents a button on the notification UI.
+  struct Button {
+    Button();
+    Button(const Button& other);
+    bool operator==(const Button& other) const;
+    ~Button();
+
+    // The text associated with the button.
+    base::string16 text;
+
+    // The button type.
+    ActionButtonType type;
+
+    // The id of the button.
+    std::string id;
+  };
+
   using CustomData = std::map<std::string, std::string>;
   NotificationData();
   NotificationData(const NotificationData& other);
@@ -44,6 +62,9 @@ struct NotificationData {
   // Custom key value pair data associated with each notification. Will be sent
   // back after user interaction.
   CustomData custom_data;
+
+  // A list of buttons on the notification.
+  std::vector<Button> buttons;
 };
 
 }  // namespace notifications

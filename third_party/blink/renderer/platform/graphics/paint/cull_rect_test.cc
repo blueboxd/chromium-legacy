@@ -349,6 +349,10 @@ TEST_F(CullRectTest, ApplyTransformsEscapingScroll) {
   // Should ignore old_cull_rect.
   cull_rect2.ApplyTransforms(*t2, *t1, old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect2);
+
+  CullRect infinite = CullRect::Infinite();
+  infinite.ApplyTransforms(*t2, *t1, base::nullopt);
+  EXPECT_TRUE(infinite.IsInfinite());
 }
 
 TEST_F(CullRectTest, ApplyTransformsSmallScrollContentsAfterBigScrollContents) {

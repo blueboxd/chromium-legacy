@@ -27,6 +27,7 @@ class CryptAuthEciesEncryptor {
   struct PayloadAndKey {
     PayloadAndKey();
     PayloadAndKey(const std::string& payload, const std::string& key);
+    bool operator==(const PayloadAndKey& other) const;
 
     // Unencrypted/Encrypted payload to be encrypted/decrypted.
     std::string payload;

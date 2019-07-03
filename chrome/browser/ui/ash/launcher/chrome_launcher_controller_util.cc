@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 const extensions::Extension* GetExtensionForAppID(const std::string& app_id,
@@ -30,14 +31,15 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const std::string& app_id,
     Profile* profile) {
   // These file manager apps have a shelf presence, but can only be launched
-  // when provided a filename to open. Pinning them creates an item that does
-  // nothing.
-  const char* kUnpinnableAppIds[] = {
+  // when provided a filename to open. Likewise, the feedback extension needs
+  // context when launching. Pinning these creates an item that does nothing.
+  const char* kNoPinAppIds[] = {
       file_manager::kVideoPlayerAppId,
       file_manager::kGalleryAppId,
       file_manager::kAudioPlayerAppId,
+      extension_misc::kFeedbackExtensionId,
   };
-  if (base::Contains(kUnpinnableAppIds, app_id))
+  if (base::Contains(kNoPinAppIds, app_id))
     return AppListControllerDelegate::NO_PIN;
 
   const base::ListValue* pref =

@@ -75,9 +75,6 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
   Element* AddLink(const AtomicString& url, bool is_anchor);
   Element* AddBase(const AtomicString& href);
 
-  // A view-source document is not a regular WebPage.
-  bool HasCustomizedFeaturePolicy() const final { return false; }
-
   String type_;
   Member<Element> current_;
   Member<HTMLTableSectionElement> tbody_;

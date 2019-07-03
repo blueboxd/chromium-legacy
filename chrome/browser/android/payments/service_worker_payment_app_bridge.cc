@@ -488,10 +488,12 @@ static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
 
 static void JNI_ServiceWorkerPaymentAppBridge_OnClosingPaymentAppWindow(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jweb_contents) {
+    const JavaParamRef<jobject>& jweb_contents,
+    jint reason) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
   content::PaymentAppProvider::GetInstance()->OnClosingOpenedWindow(
-      web_contents->GetBrowserContext());
+      web_contents->GetBrowserContext(),
+      static_cast<payments::mojom::PaymentEventResponseType>(reason));
 }

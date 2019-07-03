@@ -101,7 +101,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnUndoCustomLinkAction() override;
   void OnResetCustomLinks() override;
   void OnToggleMostVisitedOrCustomLinks() override;
-  void OnToggleShortcutsVisibility() override;
+  void OnToggleShortcutsVisibility(bool do_notify) override;
   void OnLogEvent(NTPLoggingEventType event, base::TimeDelta time) override;
   void OnLogSuggestionEventWithValue(NTPSuggestionsLoggingEventType event,
                                      int data,

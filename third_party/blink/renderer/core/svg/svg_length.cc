@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -63,17 +64,17 @@ const CSSPrimitiveValue& CreateInitialCSSValue(
   size_t initial_value_index = static_cast<size_t>(initial_value);
   DCHECK_LT(initial_value_index, base::size(g_initial_lengths_table));
   const auto& entry = g_initial_lengths_table[initial_value_index];
-  return *CSSPrimitiveValue::Create(
+  return *CSSNumericLiteralValue::Create(
       entry.value, static_cast<CSSPrimitiveValue::UnitType>(entry.unit));
 }
 
 }  // namespace
 
 SVGLength::SVGLength(SVGLengthMode mode)
-    : SVGLength(
-          *CSSPrimitiveValue::Create(0,
-                                     CSSPrimitiveValue::UnitType::kUserUnits),
-          mode) {}
+    : SVGLength(*CSSNumericLiteralValue::Create(
+                    0,
+                    CSSPrimitiveValue::UnitType::kUserUnits),
+                mode) {}
 
 SVGLength::SVGLength(Initial initial, SVGLengthMode mode)
     : SVGLength(CreateInitialCSSValue(initial), mode) {}
@@ -99,9 +100,10 @@ SVGPropertyBase* SVGLength::CloneForAnimation(const String& value) const {
   auto* length = MakeGarbageCollected<SVGLength>();
   length->unit_mode_ = unit_mode_;
 
-  if (length->SetValueAsString(value) != SVGParseStatus::kNoError)
-    length->value_ =
-        CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kUserUnits);
+  if (length->SetValueAsString(value) != SVGParseStatus::kNoError) {
+    length->value_ = CSSNumericLiteralValue::Create(
+        0, CSSPrimitiveValue::UnitType::kUserUnits);
+  }
 
   return length;
 }
@@ -119,12 +121,12 @@ float SVGLength::Value(const SVGLengthContext& context) const {
 }
 
 void SVGLength::SetValueAsNumber(float value) {
-  value_ =
-      CSSPrimitiveValue::Create(value, CSSPrimitiveValue::UnitType::kUserUnits);
+  value_ = CSSNumericLiteralValue::Create(
+      value, CSSPrimitiveValue::UnitType::kUserUnits);
 }
 
 void SVGLength::SetValue(float value, const SVGLengthContext& context) {
-  value_ = CSSPrimitiveValue::Create(
+  value_ = CSSNumericLiteralValue::Create(
       context.ConvertValueFromUserUnits(value, UnitMode(),
                                         value_->TypeWithCalcResolved()),
       value_->TypeWithCalcResolved());
@@ -146,7 +148,7 @@ static bool IsSupportedCSSUnitType(CSSPrimitiveValue::UnitType type) {
 
 void SVGLength::SetUnitType(CSSPrimitiveValue::UnitType type) {
   DCHECK(IsSupportedCSSUnitType(type));
-  value_ = CSSPrimitiveValue::Create(value_->GetFloatValue(), type);
+  value_ = CSSNumericLiteralValue::Create(value_->GetFloatValue(), type);
 }
 
 float SVGLength::ValueAsPercentage() const {
@@ -199,8 +201,8 @@ SVGParsingError SVGLength::SetValueAsString(const String& string) {
   // string (which we'll get for example for removeAttribute.)
   // Hopefully work on crbug.com/225807 can help here.
   if (string.IsNull()) {
-    value_ =
-        CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kUserUnits);
+    value_ = CSSNumericLiteralValue::Create(
+        0, CSSPrimitiveValue::UnitType::kUserUnits);
     return SVGParseStatus::kNoError;
   }
 
@@ -223,7 +225,7 @@ String SVGLength::ValueAsString() const {
 
 void SVGLength::NewValueSpecifiedUnits(CSSPrimitiveValue::UnitType type,
                                        float value) {
-  value_ = CSSPrimitiveValue::Create(value, type);
+  value_ = CSSNumericLiteralValue::Create(value, type);
 }
 
 void SVGLength::ConvertToSpecifiedUnits(CSSPrimitiveValue::UnitType type,
@@ -231,7 +233,7 @@ void SVGLength::ConvertToSpecifiedUnits(CSSPrimitiveValue::UnitType type,
   DCHECK(IsSupportedCSSUnitType(type));
 
   float value_in_user_units = Value(context);
-  value_ = CSSPrimitiveValue::Create(
+  value_ = CSSNumericLiteralValue::Create(
       context.ConvertValueFromUserUnits(value_in_user_units, UnitMode(), type),
       type);
 }
@@ -329,7 +331,7 @@ void SVGLength::CalculateAnimatedValue(
   }
   animated_number = length_context.ConvertValueFromUserUnits(
       animated_number, UnitMode(), new_unit);
-  value_ = CSSPrimitiveValue::Create(animated_number, new_unit);
+  value_ = CSSNumericLiteralValue::Create(animated_number, new_unit);
 }
 
 float SVGLength::CalculateDistance(SVGPropertyBase* to_value,

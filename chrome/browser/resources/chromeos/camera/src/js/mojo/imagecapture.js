@@ -77,10 +77,11 @@ cca.mojo.ImageCapture = function(videoTrack) {
 /**
  * Gets the data from Camera metadata by its tag.
  * @param {cros.mojom.CameraMetadata} metadata Camera metadata from which to
- *   query the data.
+ *     query the data.
  * @param {cros.mojom.CameraMetadataTag} tag Camera metadata tag to query for.
  * @return {Array<Object>} An array containing elements whose types correspond
- *   to the format of input |tag|. If nothing is found, returns an empty array.
+ *     to the format of input |tag|. If nothing is found, returns an empty
+ *     array.
  * @private
  */
 cca.mojo.getMetadataData_ = function(metadata, tag) {
@@ -201,17 +202,13 @@ cca.mojo.ImageCapture.prototype.takePhoto = function(
 /**
  * Gets supported photo resolutions for specific camera.
  * @param {string} deviceId The renderer-facing device Id of the target camera
- *   which could be retrieved from MediaDeviceInfo.deviceId.
+ *     which could be retrieved from MediaDeviceInfo.deviceId.
  * @return {Promise<Array<Object>>} Promise of supported resolutions. Each
- *   photo resolution is represented as [width, height].
+ *     photo resolution is represented as [width, height].
  */
 cca.mojo.getPhotoResolutions = function(deviceId) {
   const formatBlob = 33;
   const typeOutputStream = 0;
-  const formatIndex = 0;
-  const widthIndex = 1;
-  const heightIndex = 2;
-  const typeIndex = 3;
   const numElementPerEntry = 4;
 
   return cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId).then(
@@ -229,17 +226,11 @@ cca.mojo.getPhotoResolutions = function(deviceId) {
         }
 
         let supportedResolutions = [];
-        for (let configIdx = 0, configBase = 0;
-             configBase < streamConfigs.length;
-             configIdx++, configBase = configIdx * numElementPerEntry) {
-          const format = streamConfigs[configBase + formatIndex];
-          if (format === formatBlob) {
-            const type = streamConfigs[configBase + typeIndex];
-            if (type === typeOutputStream) {
-              const width = streamConfigs[configBase + widthIndex];
-              const height = streamConfigs[configBase + heightIndex];
-              supportedResolutions.push([width, height]);
-            }
+        for (let i = 0; i < streamConfigs.length; i += numElementPerEntry) {
+          const [format, width, height, type] =
+              streamConfigs.slice(i, i + numElementPerEntry);
+          if (format === formatBlob && type === typeOutputStream) {
+            supportedResolutions.push([width, height]);
           }
         }
         return supportedResolutions;
@@ -249,18 +240,14 @@ cca.mojo.getPhotoResolutions = function(deviceId) {
 /**
  * Gets supported video configurations for specific camera.
  * @param {string} deviceId The renderer-facing device Id of the target camera
- *   which could be retrieved from MediaDeviceInfo.deviceId.
+ *     which could be retrieved from MediaDeviceInfo.deviceId.
  * @return {Promise<Array<Object>>} Promise of supported video configurations.
- * Each configuration is represented as [width, height, fps].
+ *     Each configuration is represented as [width, height, maxFps].
  */
 cca.mojo.getVideoConfigs = function(deviceId) {
   // Currently we use YUV format for both recording and previewing on Chrome.
   const formatYuv = 35;
   const oneSecondInNs = 1000000000;
-  const formatIndex = 0;
-  const widthIndex = 1;
-  const heightIndex = 2;
-  const durationIndex = 3;
   const numElementPerEntry = 4;
 
   return cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId).then(
@@ -279,17 +266,13 @@ cca.mojo.getVideoConfigs = function(deviceId) {
         }
 
         let supportedConfigs = [];
-        for (let configIdx = 0, configBase = 0;
-             configBase < minFrameDurationConfigs.length;
-             configIdx++, configBase = configIdx * numElementPerEntry) {
-          const format = minFrameDurationConfigs[configBase + formatIndex];
+        for (let i = 0; i < minFrameDurationConfigs.length;
+             i += numElementPerEntry) {
+          const [format, width, height, minDuration] =
+              minFrameDurationConfigs.slice(i, i + numElementPerEntry);
           if (format === formatYuv) {
-            const width = minFrameDurationConfigs[configBase + widthIndex];
-            const height = minFrameDurationConfigs[configBase + heightIndex];
-            const fps = Math.round(
-                oneSecondInNs /
-                minFrameDurationConfigs[configBase + durationIndex]);
-            supportedConfigs.push([width, height, fps]);
+            const maxFps = Math.round(oneSecondInNs / minDuration);
+            supportedConfigs.push([width, height, maxFps]);
           }
         }
         return supportedConfigs;
@@ -299,7 +282,7 @@ cca.mojo.getVideoConfigs = function(deviceId) {
 /**
  * Gets camera facing for given device.
  * @param {string} deviceId The renderer-facing device Id of the target camera
- *   which could be retrieved from MediaDeviceInfo.deviceId.
+ *     which could be retrieved from MediaDeviceInfo.deviceId.
  * @return {Promise<cros.mojom.CameraFacing>} Promise of device facing.
  */
 cca.mojo.getCameraFacing = function(deviceId) {
@@ -307,4 +290,87 @@ cca.mojo.getCameraFacing = function(deviceId) {
       ({cameraInfo}) => {
         return cameraInfo.facing;
       });
+};
+
+/**
+ * Gets supported fps ranges for specific camera.
+ * @param {string} deviceId The renderer-facing device Id of the target camera
+ *     which could be retrieved from MediaDeviceInfo.deviceId.
+ * @return {Promise<Array<Object>>} Promise of supported fps ranges. Each range
+ *     is represented as [min, max].
+ */
+cca.mojo.getSupportedFpsRanges = function(deviceId) {
+  const numElementPerEntry = 2;
+
+  return cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId).then(
+      ({cameraInfo}) => {
+        const staticMetadata = cameraInfo.staticCameraCharacteristics;
+        const availableFpsRanges = cca.mojo.getMetadataData_(
+            staticMetadata,
+            cros.mojom.CameraMetadataTag
+                .ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+        // The data of |availableFpsRanges| looks like:
+        // availableFpsRanges: [RANGE_1_MIN, RANGE_1_MAX,
+        //                      RANGE_2_MIN, RANGE_2_MAX, ...]
+        if (availableFpsRanges.length % numElementPerEntry != 0) {
+          throw new Error('Unexpected length of available fps range configs');
+        }
+
+        let supportedFpsRanges = [];
+        for (let i = 0; i < availableFpsRanges.length;
+             i += numElementPerEntry) {
+          const [rangeMin, rangeMax] =
+              availableFpsRanges.slice(i, i + numElementPerEntry);
+          supportedFpsRanges.push([rangeMin, rangeMax]);
+        }
+        return supportedFpsRanges;
+      });
+};
+
+/**
+ * Gets user media with custom negotiation through CrosImageCapture API,
+ * such as frame rate range negotiation.
+ * @param {string} deviceId The renderer-facing device Id of the target camera
+ *     which could be retrieved from MediaDeviceInfo.deviceId.
+ * @param {MediaStreamConstraints} constraints The constraints that would be
+ *     passed to get user media. If frame rate range negotiation is needed, the
+ *     caller should either set exact field or set both min and max fields for
+ *     frame rate property.
+ * @return {Promise<MediaStream>} Promise of the MediaStream that returned from
+ *     MediaDevices.getUserMedia().
+ */
+cca.mojo.getUserMedia = function(deviceId, constraints) {
+  let streamWidth = 0;
+  let streamHeight = 0;
+  let minFrameRate = 0;
+  let maxFrameRate = 0;
+
+  if (constraints && constraints.video && constraints.video.frameRate) {
+    const frameRate = constraints.video.frameRate;
+    if (frameRate.exact) {
+      minFrameRate = frameRate.exact;
+      maxFrameRate = frameRate.exact;
+    } else if (frameRate.min && frameRate.max) {
+      minFrameRate = frameRate.min;
+      maxFrameRate = frameRate.max;
+    }
+
+    streamWidth = constraints.video.width;
+    streamHeight = constraints.video.height;
+  }
+
+  try {
+    return cca.mojo.MojoInterface.getProxy()
+        .setFpsRange(
+            deviceId, streamWidth, streamHeight, minFrameRate, maxFrameRate)
+        .then(({isSuccess}) => {
+          if (!isSuccess) {
+            console.error('Failed to negotiate the frame rate range.');
+          }
+          return navigator.mediaDevices.getUserMedia(constraints);
+        });
+  } catch (e) {
+    console.error(e);
+  }
+  return navigator.mediaDevices.getUserMedia(constraints);
 };

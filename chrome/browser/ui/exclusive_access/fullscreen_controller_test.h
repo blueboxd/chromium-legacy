@@ -14,13 +14,11 @@
 #include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_MACOSX)
@@ -52,17 +50,6 @@ class FullscreenNotificationObserver : public FullscreenObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenNotificationObserver);
-};
-
-// Observer for NOTIFICATION_MOUSE_LOCK_CHANGED notifications.
-class MouseLockNotificationObserver
-    : public content::WindowedNotificationObserver {
- public:
-  MouseLockNotificationObserver() : WindowedNotificationObserver(
-      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
-      content::NotificationService::AllSources()) {}
- protected:
-  DISALLOW_COPY_AND_ASSIGN(MouseLockNotificationObserver);
 };
 
 // Test fixture with convenience functions for fullscreen, keyboard lock, and

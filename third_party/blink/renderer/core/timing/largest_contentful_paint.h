@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_LARGEST_CONTENTFUL_PAINT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 
 namespace blink {
@@ -16,13 +17,22 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  LargestContentfulPaint(double paint_time, uint64_t size);
+  LargestContentfulPaint(double paint_time,
+                         uint64_t size,
+                         double response_end,
+                         const AtomicString& id,
+                         const String& url,
+                         Element*);
   ~LargestContentfulPaint() override;
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
 
   uint64_t size() const { return size_; }
+  DOMHighResTimeStamp responseEnd() const { return response_end_; }
+  const AtomicString& id() const { return id_; }
+  const String& url() const { return url_; }
+  Element* element() const;
 
   void Trace(blink::Visitor*) override;
 
@@ -30,6 +40,10 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   uint64_t size_;
+  DOMHighResTimeStamp response_end_;
+  AtomicString id_;
+  String url_;
+  WeakMember<Element> element_;
 };
 
 }  // namespace blink

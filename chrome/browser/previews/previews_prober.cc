@@ -21,6 +21,13 @@
 
 namespace {
 
+std::string NameForClient(PreviewsProber::ClientName name) {
+  switch (name) {
+    case PreviewsProber::ClientName::kLitepages:
+      return "litepages";
+  }
+}
+
 std::string HttpMethodToString(PreviewsProber::HttpMethod http_method) {
   switch (http_method) {
     case PreviewsProber::HttpMethod::kGet:
@@ -57,7 +64,7 @@ PreviewsProber::TimeoutPolicy::TimeoutPolicy(
 PreviewsProber::PreviewsProber(
     Delegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::string& name,
+    const ClientName name,
     const GURL& url,
     const HttpMethod http_method,
     const net::HttpRequestHeaders headers,
@@ -76,7 +83,7 @@ PreviewsProber::PreviewsProber(
 PreviewsProber::PreviewsProber(
     Delegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::string& name,
+    const ClientName name,
     const GURL& url,
     const HttpMethod http_method,
     const net::HttpRequestHeaders headers,
@@ -84,7 +91,7 @@ PreviewsProber::PreviewsProber(
     const TimeoutPolicy& timeout_policy,
     const base::TickClock* tick_clock)
     : delegate_(delegate),
-      name_(name),
+      name_(NameForClient(name)),
       url_(url),
       http_method_(http_method),
       headers_(headers),

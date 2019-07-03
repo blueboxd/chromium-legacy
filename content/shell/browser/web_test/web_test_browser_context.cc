@@ -36,9 +36,8 @@
 
 namespace content {
 
-WebTestBrowserContext::WebTestBrowserContext(bool off_the_record,
-                                             net::NetLog* net_log)
-    : ShellBrowserContext(off_the_record, net_log) {
+WebTestBrowserContext::WebTestBrowserContext(bool off_the_record)
+    : ShellBrowserContext(off_the_record) {
   // Overrides geolocation coordinates for testing.
   geolocation_overrider_ =
       std::make_unique<device::ScopedGeolocationOverrider>(0, 0);
@@ -55,7 +54,7 @@ WebTestBrowserContext::CreateURLRequestContextGetter(
   return new WebTestURLRequestContextGetter(
       ignore_certificate_errors(), IsOffTheRecord(), GetPath(),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      protocol_handlers, std::move(request_interceptors), net_log());
+      protocol_handlers, std::move(request_interceptors));
 }
 
 DownloadManagerDelegate* WebTestBrowserContext::GetDownloadManagerDelegate() {

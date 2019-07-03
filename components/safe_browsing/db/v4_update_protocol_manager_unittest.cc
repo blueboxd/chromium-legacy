@@ -27,6 +27,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if !defined(FULL_SAFE_BROWSING)
+#include "base/system/sys_info.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 
@@ -283,11 +287,13 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
   std::string encoded_request_with_minus =
       pm->GetBase64SerializedUpdateRequestProto();
 
-  const std::string expected =
-#if defined(FULL_SAFE_BROWSING)
+  std::string expected =
       "Cg8KCHVuaXR0ZXN0EgMxLjAaGAgBEAIaCmg4eGZZcVk-OlIiBCABIAIoASICCAE=";
-#else
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaGwgBEAIaCmg4eGZZcVk-OlIiBxCAICABIAIoASICCAE=";
+#if !defined(FULL_SAFE_BROWSING)
+  if (base::SysInfo::IsLowEndDevice()) {
+    expected =
+        "Cg8KCHVuaXR0ZXN0EgMxLjAaGwgBEAIaCmg4eGZZcVk-OlIiBxCAICABIAIoASICCAE=";
+  }
 #endif
 
   EXPECT_EQ(expected, encoded_request_with_minus);
@@ -353,11 +359,11 @@ TEST_F(V4UpdateProtocolManagerTest, TestExtendedReportingLevelIncluded) {
   store_state_map_->clear();
   (*store_state_map_)[ListIdentifier(LINUX_PLATFORM, URL, MALWARE_THREAT)] =
       "state";
-  const std::string base =
-#if defined(FULL_SAFE_BROWSING)
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaEwgBEAIaBXN0YXRlIgQgASACKAEiAgg";
-#else
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaFggBEAIaBXN0YXRlIgcQgCAgASACKAEiAgg";
+  std::string base = "Cg8KCHVuaXR0ZXN0EgMxLjAaEwgBEAIaBXN0YXRlIgQgASACKAEiAgg";
+#if !defined(FULL_SAFE_BROWSING)
+  if (base::SysInfo::IsLowEndDevice()) {
+    base = "Cg8KCHVuaXR0ZXN0EgMxLjAaFggBEAIaBXN0YXRlIgcQgCAgASACKAEiAgg";
+  }
 #endif
 
   std::unique_ptr<V4UpdateProtocolManager> pm_with_off(CreateProtocolManager(

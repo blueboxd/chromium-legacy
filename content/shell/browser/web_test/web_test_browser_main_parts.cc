@@ -19,7 +19,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/browser/shell_net_log.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/base/filename_util.h"
@@ -50,7 +49,7 @@ WebTestBrowserMainParts::WebTestBrowserMainParts(
 WebTestBrowserMainParts::~WebTestBrowserMainParts() {}
 
 void WebTestBrowserMainParts::InitializeBrowserContexts() {
-  set_browser_context(new WebTestBrowserContext(false, net_log()));
+  set_browser_context(new WebTestBrowserContext(false));
   set_off_the_record_browser_context(nullptr);
 }
 

@@ -391,14 +391,6 @@ void ChromeAutocompleteProviderClient::StartServiceWorker(
                                                base::DoNothing());
 }
 
-void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(
-    AutocompleteController* controller) {
-//  content::NotificationService::current()->Notify(
-//      chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-//      content::Source<AutocompleteController>(controller),
-//      content::NotificationService::NoDetails());
-}
-
 // TODO(crbug.com/46623): Maintain a map of URL->WebContents for fast look-up.
 bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
     const GURL& url,

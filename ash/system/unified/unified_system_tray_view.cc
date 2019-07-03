@@ -338,12 +338,17 @@ void UnifiedSystemTrayView::ResetDetailedView() {
   Layout();
 }
 
-void UnifiedSystemTrayView::SaveFeaturePodFocus() {
-  feature_pods_container_->SaveFocus();
+void UnifiedSystemTrayView::SaveFocus() {
+  auto* focus_manager = GetFocusManager();
+  if (!focus_manager)
+    return;
+
+  saved_focused_view_ = focus_manager->GetFocusedView();
 }
 
-void UnifiedSystemTrayView::RestoreFeaturePodFocus() {
-  feature_pods_container_->RestoreFocus();
+void UnifiedSystemTrayView::RestoreFocus() {
+  if (saved_focused_view_)
+    saved_focused_view_->RequestFocus();
 }
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {

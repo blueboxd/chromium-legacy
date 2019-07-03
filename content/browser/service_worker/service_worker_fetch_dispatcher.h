@@ -66,7 +66,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       const network::ResourceRequest& original_request,
       URLLoaderFactoryGetter* url_loader_factory_getter,
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-      const WebContentsGetter& web_contents_getter);
+      int frame_tree_node_id);
 
   // Dispatches a fetch event to the |version| given in ctor, and fires
   // |fetch_callback_| (also given in ctor) once a response is received from the

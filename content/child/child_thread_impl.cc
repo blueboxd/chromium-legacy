@@ -58,7 +58,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -197,31 +196,23 @@ base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel() {
 #elif defined(OS_FUCHSIA)
   endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
       *base::CommandLine::ForCurrentProcess());
-#elif defined(OS_POSIX)
-
-#if defined(OS_MACOSX)
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    auto* client = base::MachPortRendezvousClient::GetInstance();
-    if (!client) {
-      LOG(ERROR) << "Mach rendezvous failed.";
-      return base::nullopt;
-    }
-    auto receive = client->TakeReceiveRight('mojo');
-    if (!receive.is_valid()) {
-      LOG(ERROR) << "Invalid PlatformChannel receive right";
-      return base::nullopt;
-    }
-    endpoint =
-        mojo::PlatformChannelEndpoint(mojo::PlatformHandle(std::move(receive)));
-  } else {
-#endif  // defined(OS_MACOSX)
-    endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
-        base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(
-            service_manager::kMojoIPCChannel))));
-#if defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
+  auto* client = base::MachPortRendezvousClient::GetInstance();
+  if (!client) {
+    LOG(ERROR) << "Mach rendezvous failed.";
+    return base::nullopt;
   }
-#endif
-
+  auto receive = client->TakeReceiveRight('mojo');
+  if (!receive.is_valid()) {
+    LOG(ERROR) << "Invalid PlatformChannel receive right";
+    return base::nullopt;
+  }
+  endpoint =
+      mojo::PlatformChannelEndpoint(mojo::PlatformHandle(std::move(receive)));
+#elif defined(OS_POSIX)
+  endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
+      base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(
+          service_manager::kMojoIPCChannel))));
 #endif
   // Mojo isn't supported on all child process types.
   // TODO(crbug.com/604282): Support Mojo in the remaining processes.

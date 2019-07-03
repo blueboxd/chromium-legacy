@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
+
 namespace blink {
 
 LargestContentfulPaintCalculator::LargestContentfulPaintCalculator(
@@ -15,8 +17,10 @@ void LargestContentfulPaintCalculator::OnLargestImageUpdated(
   largest_image_.reset();
   if (largest_image) {
     largest_image_ = std::make_unique<ImageRecord>();
+    largest_image_->node_id = largest_image->node_id;
     largest_image_->first_size = largest_image->first_size;
     largest_image_->paint_time = largest_image->paint_time;
+    largest_image_->cached_image = largest_image->cached_image;
   }
 
   if (LargestImageSize() > LargestTextSize()) {
@@ -55,14 +59,42 @@ void LargestContentfulPaintCalculator::OnLargestContentfulPaintUpdated(
   DCHECK(window_performance_);
   DCHECK(type != LargestContentType::kUnknown);
   last_type_ = type;
-  // TODO(crbug.com/965505): finish implementation, including adding more
-  // attribution and doing proper cross-origin checks for images.
   if (type == LargestContentType::kImage) {
+    const ImageResourceContent* cached_image = largest_image_->cached_image;
+    DCHECK(cached_image);
+    const KURL& url = cached_image->Url();
+    auto* document = window_performance_->GetExecutionContext();
+    if (!url.ProtocolIsData() &&
+        (!document || !Performance::PassesTimingAllowCheck(
+                          cached_image->GetResponse(),
+                          *document->GetSecurityOrigin(), document))) {
+      // Reset the paint time of this image. It cannot be exposed to the
+      // webexposed API.
+      largest_image_->paint_time = base::TimeTicks();
+    }
+    const String& image_url =
+        url.ProtocolIsData()
+            ? url.GetString().Left(ImageElementTiming::kInlineImageMaxChars)
+            : url.GetString();
+    Node* image_node = DOMNodeIds::NodeForId(largest_image_->node_id);
+    // Do not expose element attribution from shadow trees.
+    Element* image_element =
+        image_node->IsInShadowTree() ? nullptr : ToElement(image_node);
+    const AtomicString& image_id =
+        image_element ? image_element->GetIdAttribute() : AtomicString();
     window_performance_->OnLargestContentfulPaintUpdated(
-        largest_image_->paint_time, largest_image_->first_size);
+        largest_image_->paint_time, largest_image_->first_size,
+        cached_image->LoadResponseEnd(), image_id, image_url, image_element);
   } else {
+    Node* text_node = DOMNodeIds::NodeForId(largest_text_->node_id);
+    // Do not expose element attribution from shadow trees.
+    Element* text_element =
+        text_node->IsInShadowTree() ? nullptr : ToElement(text_node);
+    const AtomicString& text_id =
+        text_element ? text_element->GetIdAttribute() : AtomicString();
     window_performance_->OnLargestContentfulPaintUpdated(
-        largest_text_->paint_time, largest_text_->first_size);
+        largest_text_->paint_time, largest_text_->first_size, base::TimeTicks(),
+        text_id, g_empty_string, text_element);
   }
 }
 

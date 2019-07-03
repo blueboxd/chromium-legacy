@@ -87,14 +87,12 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     const base::FilePath& base_path,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors,
-    net::NetLog* net_log)
+    URLRequestInterceptorScopedVector request_interceptors)
     : ignore_certificate_errors_(ignore_certificate_errors),
       off_the_record_(off_the_record),
       shut_down_(false),
       base_path_(base_path),
       io_task_runner_(std::move(io_task_runner)),
-      net_log_(net_log),
       request_interceptors_(std::move(request_interceptors)) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -160,10 +158,10 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         *base::CommandLine::ForCurrentProcess();
 
     net::URLRequestContextBuilder builder;
-    builder.set_net_log(net_log_);
+    net::NetLog* net_log = nullptr;
     builder.set_network_delegate(CreateNetworkDelegate());
     std::unique_ptr<net::CookieStore> cookie_store =
-        CreateCookieStore(CookieStoreConfig(), net_log_);
+        CreateCookieStore(CookieStoreConfig(), net_log);
     builder.SetCookieStore(std::move(cookie_store));
     builder.set_accept_language(GetAcceptLanguages());
     builder.set_user_agent(GetShellUserAgent());

@@ -318,7 +318,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
 
     ScrollableArea::ScrollCallback callback;
     if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
-      callback = ScrollableArea::ScrollCallback(base::BindOnce(
+      callback = ScrollableArea::ScrollCallback(WTF::Bind(
           [](WeakPersistent<ScrollableArea> area) {
             if (area)
               area->MarkHoverStateDirty();

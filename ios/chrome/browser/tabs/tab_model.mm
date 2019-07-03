@@ -306,6 +306,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 }
 
 - (WebStateList*)webStateList {
+  DCHECK(_webStateList);
   return _webStateList.get();
 }
 

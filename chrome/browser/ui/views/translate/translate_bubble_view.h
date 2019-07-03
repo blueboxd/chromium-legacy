@@ -144,7 +144,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
     BUTTON_ID_OPTIONS_MENU,
     BUTTON_ID_OPTIONS_MENU_TAB,
     BUTTON_ID_CLOSE,
-    BUTTON_ID_RESET
+    BUTTON_ID_RESET,
+    BUTTON_ID_RETURN
   };
 
   enum ComboboxID {
@@ -251,9 +252,18 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Creates the 'after translate' view.
   std::unique_ptr<views::View> CreateViewAfterTranslate();
 
-  // Creates the 'error' view. Caller takes ownership of the returned view.
-  // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
+  // Creates the 'error' view for Button UI. Caller takes ownership of the
+  // returned view.
   std::unique_ptr<views::View> CreateViewError();
+
+  // Creates the 'error' view skeleton UI with no title. Caller takes ownership
+  // of the returned view.
+  std::unique_ptr<views::View> CreateViewErrorNoTitle(
+      std::unique_ptr<views::Button> advanced_button);
+
+  // Creates the 'error' view for Tab and Button_GM2 UI.
+  std::unique_ptr<views::View> CreateViewErrorTab();
+  std::unique_ptr<views::View> CreateViewErrorGM2();
 
   // Creates the 'advanced' view. Caller takes ownership of the returned view.
   // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
@@ -306,7 +316,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void ConfirmAdvancedOptions();
 
   // Return true if the current state is in advanced state for TAB UI.
-  bool TabUiIsAdvancedState(TranslateBubbleModel::ViewState view_state);
+  bool TabUiIsEquivalentState(TranslateBubbleModel::ViewState view_state);
 
   // Handles the reset button in advanced view under Tab UI.
   void ResetLanguage();

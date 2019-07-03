@@ -52,7 +52,7 @@ const char kXSSDetected[] = "Token contains a reflected XSS vector";
 
 HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer,
                                                const String& mime_type)
-    : HTMLDocument(initializer), type_(mime_type) {
+    : HTMLDocument(initializer, kViewSourceDocumentClass), type_(mime_type) {
   SetIsViewSource(true);
 
   // FIXME: Why do view-source pages need to load in quirks mode?

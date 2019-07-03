@@ -26,7 +26,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
-      'android-marshmallow-arm64-rel',
       # chromium.clang.json
       'ToTAndroid',
       'ToTAndroidCFI',
@@ -1238,28 +1237,7 @@
       },
     },
   },
-  # TODO(https://crbug.com/977620): Remove this once the V8 bots are fixed and
-  # no longer need additional logging.
-  'pixel_skia_gold_test': {
-    'modifications': {
-      'Android V8 FYI Release (Nexus 5X)': {
-        'args': [ '--stream-goldctl-output' ]
-      },
-      'Linux V8 FYI Release (NVIDIA)': {
-        'args': [ '--stream-goldctl-output' ]
-      },
-      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
-        'args': [ '--stream-goldctl-output' ]
-      },
-      'Mac V8 FYI Release (Intel)': {
-        'args': [ '--stream-goldctl-output' ]
-      },
-      'Win V8 FYI Release (NVIDIA)': {
-        'args': [ '--stream-goldctl-output' ]
-      },
-    },
-  },
-  'pixel_test': {
+ 'pixel_test':{
     'modifications': {
       'Android Release (Nexus 5X)': {
         'swarming': {
@@ -1282,6 +1260,13 @@
     ],
   },
   'services_unittests': {
+    'modifications': {
+      'android-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.services_unittests.filter',
+        ],
+      },
+    },
     'remove_from': [
       # chromium.clang
       'ToTLinuxMSan',  # https://crbug.com/831676

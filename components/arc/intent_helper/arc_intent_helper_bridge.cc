@@ -18,6 +18,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
+#include "components/arc/intent_helper/factory_reset_delegate.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -76,6 +77,7 @@ static_assert(base::size(kMapping) ==
 // Not owned. Must outlive all ArcIntentHelperBridge instances. Typically this
 // is ChromeNewWindowClient in the browser.
 OpenUrlDelegate* g_open_url_delegate = nullptr;
+FactoryResetDelegate* g_factory_reset_delegate = nullptr;
 
 // Singleton factory for ArcIntentHelperBridge.
 class ArcIntentHelperBridgeFactory
@@ -144,6 +146,12 @@ std::string ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
 // static
 void ArcIntentHelperBridge::SetOpenUrlDelegate(OpenUrlDelegate* delegate) {
   g_open_url_delegate = delegate;
+}
+
+// static
+void ArcIntentHelperBridge::SetFactoryResetDelegate(
+    FactoryResetDelegate* delegate) {
+  g_factory_reset_delegate = delegate;
 }
 
 ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
@@ -223,6 +231,10 @@ void ArcIntentHelperBridge::OnOpenChromePage(mojom::ChromePage page) {
     g_open_url_delegate->OpenUrlFromArc(
         GURL(kSettingsPageBaseUrl).Resolve(it->second));
   }
+}
+
+void ArcIntentHelperBridge::FactoryResetArc() {
+  g_factory_reset_delegate->ResetArc();
 }
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {

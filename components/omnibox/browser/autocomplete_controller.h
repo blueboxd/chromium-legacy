@@ -29,6 +29,7 @@ class KeywordProvider;
 class SearchProvider;
 class TemplateURLService;
 class ZeroSuggestProvider;
+class OnDeviceHeadProvider;
 
 // The AutocompleteController is the center of the autocomplete system.  A
 // class creates an instance of the controller, which in turn creates a set of
@@ -236,6 +237,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   SearchProvider* search_provider_;
 
   ZeroSuggestProvider* zero_suggest_provider_;
+
+  OnDeviceHeadProvider* on_device_head_provider_;
 
   // Input passed to Start.
   AutocompleteInput input_;

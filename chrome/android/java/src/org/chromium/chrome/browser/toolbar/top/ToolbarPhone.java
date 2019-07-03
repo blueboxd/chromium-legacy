@@ -2702,7 +2702,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private void setTabSwitcherAnimationMenuDrawable() {
         mTabSwitcherAnimationMenuDrawable =
                 ApiCompatibilityUtils
-                        .getDrawable(getResources(), R.drawable.ic_more_vert_black_24dp)
+                        .getDrawable(getResources(), R.drawable.ic_more_vert_24dp_on_dark_bg)
                         .mutate();
         ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
     }

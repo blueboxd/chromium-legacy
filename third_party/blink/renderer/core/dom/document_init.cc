@@ -94,17 +94,19 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
 }
 
 WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  DCHECK(MasterDocumentLoader());
   DocumentLoader* loader = MasterDocumentLoader();
-  WebSandboxFlags flags = loader->GetFrame()->Loader().EffectiveSandboxFlags();
+  WebSandboxFlags flags = sandbox_flags_;
+  if (loader) {
+    flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
 
-  // If the load was blocked by CSP, force the Document's origin to be unique,
-  // so that the blocked document appears to be a normal cross-origin document's
-  // load per CSP spec: https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
-  if (loader->WasBlockedAfterCSP()) {
-    flags |= WebSandboxFlags::kOrigin;
+    // If the load was blocked by CSP, force the Document's origin to be unique,
+    // so that the blocked document appears to be a normal cross-origin
+    // document's load per CSP spec:
+    // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
+    if (loader->WasBlockedAfterCSP()) {
+      flags |= WebSandboxFlags::kOrigin;
+    }
   }
-
   return flags;
 }
 
@@ -240,6 +242,30 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
 
 Document* DocumentInit::ContextDocument() const {
   return context_document_;
+}
+
+DocumentInit& DocumentInit::WithFeaturePolicyHeader(const String& header) {
+  DCHECK(feature_policy_header_.IsEmpty());
+  feature_policy_header_ = header;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithOriginTrialsHeader(const String& header) {
+  DCHECK(origin_trials_header_.IsEmpty());
+  origin_trials_header_ = header;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithSandboxFlags(WebSandboxFlags flags) {
+  // Only allow adding more sandbox flags.
+  sandbox_flags_ |= flags;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithContentSecurityPolicy(
+    ContentSecurityPolicy* policy) {
+  content_security_policy_ = policy;
+  return *this;
 }
 
 }  // namespace blink

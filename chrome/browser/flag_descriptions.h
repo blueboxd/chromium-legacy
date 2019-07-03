@@ -90,9 +90,6 @@ extern const char kAndroidSiteSettingsUIRefreshDescription[];
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
-extern const char kEnableBloatedRendererDetectionName[];
-extern const char kEnableBloatedRendererDetectionDescription[];
-
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[];
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[];
 
@@ -830,6 +827,9 @@ extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
 extern const char kOmniboxMaxURLMatchesName[];
 extern const char kOmniboxMaxURLMatchesDescription[];
+
+extern const char kOmniboxOnDeviceHeadSuggestionsName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingName[];
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[];

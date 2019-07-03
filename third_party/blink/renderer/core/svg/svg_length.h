@@ -21,6 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_H_
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
@@ -81,7 +82,8 @@ class SVGLength final : public SVGPropertyBase {
 
   float ValueInSpecifiedUnits() const { return value_->GetFloatValue(); }
   void SetValueInSpecifiedUnits(float value) {
-    value_ = CSSPrimitiveValue::Create(value, value_->TypeWithCalcResolved());
+    value_ =
+        CSSNumericLiteralValue::Create(value, value_->TypeWithCalcResolved());
   }
 
   const CSSPrimitiveValue& AsCSSPrimitiveValue() const { return *value_; }

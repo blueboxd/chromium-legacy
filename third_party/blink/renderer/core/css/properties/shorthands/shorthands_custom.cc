@@ -6,6 +6,7 @@
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_property_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
@@ -110,13 +111,13 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
     CSSValueList* animations_list = CSSValueList::CreateCommaSeparated();
     for (wtf_size_t i = 0; i < animation_data->NameList().size(); ++i) {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      list->Append(*CSSPrimitiveValue::Create(
+      list->Append(*CSSNumericLiteralValue::Create(
           CSSTimingData::GetRepeated(animation_data->DurationList(), i),
           CSSPrimitiveValue::UnitType::kSeconds));
       list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
           CSSTimingData::GetRepeated(animation_data->TimingFunctionList(), i)
               .get()));
-      list->Append(*CSSPrimitiveValue::Create(
+      list->Append(*CSSNumericLiteralValue::Create(
           CSSTimingData::GetRepeated(animation_data->DelayList(), i),
           CSSPrimitiveValue::UnitType::kSeconds));
       list->Append(*ComputedStyleUtils::ValueForAnimationIterationCount(
@@ -138,15 +139,15 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
   // animation-name default value.
   list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
   list->Append(
-      *CSSPrimitiveValue::Create(CSSAnimationData::InitialDuration(),
-                                 CSSPrimitiveValue::UnitType::kSeconds));
+      *CSSNumericLiteralValue::Create(CSSAnimationData::InitialDuration(),
+                                      CSSPrimitiveValue::UnitType::kSeconds));
   list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
       CSSAnimationData::InitialTimingFunction().get()));
-  list->Append(*CSSPrimitiveValue::Create(
+  list->Append(*CSSNumericLiteralValue::Create(
       CSSAnimationData::InitialDelay(), CSSPrimitiveValue::UnitType::kSeconds));
   list->Append(
-      *CSSPrimitiveValue::Create(CSSAnimationData::InitialIterationCount(),
-                                 CSSPrimitiveValue::UnitType::kNumber));
+      *CSSNumericLiteralValue::Create(CSSAnimationData::InitialIterationCount(),
+                                      CSSPrimitiveValue::UnitType::kNumber));
   list->Append(*ComputedStyleUtils::ValueForAnimationDirection(
       CSSAnimationData::InitialDirection()));
   list->Append(*ComputedStyleUtils::ValueForAnimationFillMode(
@@ -957,7 +958,7 @@ bool Flex::ParseShorthand(bool important,
           // flex only allows a basis of 0 (sans units) if
           // flex-grow and flex-shrink values have already been
           // set.
-          flex_basis = CSSPrimitiveValue::Create(
+          flex_basis = CSSNumericLiteralValue::Create(
               0, CSSPrimitiveValue::UnitType::kPixels);
         } else {
           return false;
@@ -980,7 +981,7 @@ bool Flex::ParseShorthand(bool important,
     if (flex_shrink == kUnsetValue)
       flex_shrink = 1;
     if (!flex_basis) {
-      flex_basis = CSSPrimitiveValue::Create(
+      flex_basis = CSSNumericLiteralValue::Create(
           0, CSSPrimitiveValue::UnitType::kPercentage);
     }
   }
@@ -989,14 +990,14 @@ bool Flex::ParseShorthand(bool important,
     return false;
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFlexGrow, CSSPropertyID::kFlex,
-      *CSSPrimitiveValue::Create(clampTo<float>(flex_grow),
-                                 CSSPrimitiveValue::UnitType::kNumber),
+      *CSSNumericLiteralValue::Create(clampTo<float>(flex_grow),
+                                      CSSPrimitiveValue::UnitType::kNumber),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFlexShrink, CSSPropertyID::kFlex,
-      *CSSPrimitiveValue::Create(clampTo<float>(flex_shrink),
-                                 CSSPrimitiveValue::UnitType::kNumber),
+      *CSSNumericLiteralValue::Create(clampTo<float>(flex_shrink),
+                                      CSSPrimitiveValue::UnitType::kNumber),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
@@ -1065,14 +1066,14 @@ bool ConsumeSystemFont(bool important,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontWeight, CSSPropertyID::kFont,
-      *CSSPrimitiveValue::Create(font_weight,
-                                 CSSPrimitiveValue::UnitType::kNumber),
+      *CSSNumericLiteralValue::Create(font_weight,
+                                      CSSPrimitiveValue::UnitType::kNumber),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontSize, CSSPropertyID::kFont,
-      *CSSPrimitiveValue::Create(font_size,
-                                 CSSPrimitiveValue::UnitType::kPixels),
+      *CSSNumericLiteralValue::Create(font_size,
+                                      CSSPrimitiveValue::UnitType::kPixels),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
@@ -2909,13 +2910,13 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       list->Append(*ComputedStyleUtils::CreateTransitionPropertyValue(
           transition_data->PropertyList()[i]));
-      list->Append(*CSSPrimitiveValue::Create(
+      list->Append(*CSSNumericLiteralValue::Create(
           CSSTimingData::GetRepeated(transition_data->DurationList(), i),
           CSSPrimitiveValue::UnitType::kSeconds));
       list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
           CSSTimingData::GetRepeated(transition_data->TimingFunctionList(), i)
               .get()));
-      list->Append(*CSSPrimitiveValue::Create(
+      list->Append(*CSSNumericLiteralValue::Create(
           CSSTimingData::GetRepeated(transition_data->DelayList(), i),
           CSSPrimitiveValue::UnitType::kSeconds));
       transitions_list->Append(*list);
@@ -2927,13 +2928,13 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
   // transition-property default value.
   list->Append(*CSSIdentifierValue::Create(CSSValueID::kAll));
   list->Append(
-      *CSSPrimitiveValue::Create(CSSTransitionData::InitialDuration(),
-                                 CSSPrimitiveValue::UnitType::kSeconds));
+      *CSSNumericLiteralValue::Create(CSSTransitionData::InitialDuration(),
+                                      CSSPrimitiveValue::UnitType::kSeconds));
   list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
       CSSTransitionData::InitialTimingFunction().get()));
   list->Append(
-      *CSSPrimitiveValue::Create(CSSTransitionData::InitialDelay(),
-                                 CSSPrimitiveValue::UnitType::kSeconds));
+      *CSSNumericLiteralValue::Create(CSSTransitionData::InitialDelay(),
+                                      CSSPrimitiveValue::UnitType::kSeconds));
   return list;
 }
 

@@ -130,9 +130,9 @@ enum class TaskType : unsigned char {
   // Tasks used for DedicatedWorker's requestAnimationFrame.
   kWorkerAnimation = 51,
 
-  // For tasks started with the experimental Scheduling API
-  kExperimentalWebSchedulingUserInteraction = 53,
-  kExperimentalWebSchedulingBestEffort = 54,
+  // Obsolete.
+  // kExperimentalWebSchedulingUserInteraction = 53,
+  // kExperimentalWebSchedulingBestEffort = 54,
 
   // https://drafts.csswg.org/css-font-loading/#task-source
   kFontLoading = 56,

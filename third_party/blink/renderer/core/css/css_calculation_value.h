@@ -97,6 +97,7 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
   bool is_nested_calc_ = false;
 };
 
+// TODO(crbug.com/825895): Rename it and make it store a CSSNumericLiteralValue
 class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
  public:
   static CSSCalcPrimitiveValue* Create(CSSPrimitiveValue* value,

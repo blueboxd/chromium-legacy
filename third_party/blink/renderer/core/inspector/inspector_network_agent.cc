@@ -776,7 +776,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
       BuildInitiatorObject(loader && loader->GetFrame()
                                ? loader->GetFrame()->GetDocument()
                                : nullptr,
-                           initiator_info);
+                           initiator_info, std::numeric_limits<int>::max());
 
   std::unique_ptr<protocol::Network::Request> request_info(
       BuildObjectForResourceRequest(request, max_post_data_size_.Get()));
@@ -1152,7 +1152,8 @@ void InspectorNetworkAgent::WillDispatchEventSourceEvent(
 std::unique_ptr<protocol::Network::Initiator>
 InspectorNetworkAgent::BuildInitiatorObject(
     Document* document,
-    const FetchInitiatorInfo& initiator_info) {
+    const FetchInitiatorInfo& initiator_info,
+    int max_async_depth) {
   if (!initiator_info.imported_module_referrer.IsEmpty()) {
     std::unique_ptr<protocol::Network::Initiator> initiator_object =
         protocol::Network::Initiator::create()
@@ -1166,7 +1167,8 @@ InspectorNetworkAgent::BuildInitiatorObject(
 
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
-          SourceLocation::Capture(document)->BuildInspectorObject();
+          SourceLocation::Capture(document)->BuildInspectorObject(
+              max_async_depth);
   if (current_stack_trace) {
     std::unique_ptr<protocol::Network::Initiator> initiator_object =
         protocol::Network::Initiator::create()
@@ -1559,9 +1561,13 @@ void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
                                                      const KURL&,
                                                      double,
                                                      ClientNavigationReason) {
+  // For navigations, we limit async stack trace to depth 1 to avoid the
+  // base::Value depth limits with Mojo serialization / parsing.
+  // See http://crbug.com/809996.
   frame_navigation_initiator_map_.Set(
       IdentifiersFactory::FrameId(frame),
-      BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
+      BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo(),
+                           /*max_async_depth=*/1));
 }
 
 void InspectorNetworkAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {
@@ -1661,7 +1667,11 @@ String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
       frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
   if (it != frame_navigation_initiator_map_.end())
     return it->value->toJSON();
-  return BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo())
+  // For navigations, we limit async stack trace to depth 1 to avoid the
+  // base::Value depth limits with Mojo serialization / parsing.
+  // See http://crbug.com/809996.
+  return BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo(),
+                              /*max_async_depth=*/1)
       ->toJSON();
 }
 

@@ -113,7 +113,6 @@ test("traffic_annotation_auditor_unittests") {
     "tests/extractor_outputs/good_partial_annotation.txt",
     "tests/extractor_outputs/good_test_annotation.txt",
     "tests/extractor_outputs/missing_annotation.txt",
-    "tests/extractor_outputs/no_annotation.txt",
     "tests/git_list.txt",
     "tests/gn_list_negative.txt",
     "tests/gn_list_positive.txt",

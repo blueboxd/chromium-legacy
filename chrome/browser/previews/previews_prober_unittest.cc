@@ -18,7 +18,6 @@
 
 namespace {
 const GURL kTestUrl("https://test.com");
-const char kName[] = "testing";
 }  // namespace
 
 class TestDelegate : public PreviewsProber::Delegate {
@@ -48,7 +47,7 @@ class TestPreviewsProber : public PreviewsProber {
   TestPreviewsProber(
       PreviewsProber::Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& name,
+      const PreviewsProber::ClientName name,
       const GURL& url,
       const HttpMethod http_method,
       const net::HttpRequestHeaders headers,
@@ -100,7 +99,8 @@ class PreviewsProberTest : public testing::Test {
     net::HttpRequestHeaders headers;
     headers.SetHeader("X-Testing", "Hello world");
     return std::make_unique<TestPreviewsProber>(
-        delegate, test_shared_loader_factory_, kName, kTestUrl,
+        delegate, test_shared_loader_factory_,
+        PreviewsProber::ClientName::kLitepages, kTestUrl,
         PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
         thread_bundle_.GetMockTickClock());
   }

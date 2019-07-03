@@ -61,11 +61,4 @@ void FakeVRDevice::OnPresentingControllerMojoConnectionError() {
   controller_binding_.Close();
 }
 
-void FakeVRDevice::OnGetInlineFrameData(
-    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-  frame_data->pose = pose_.Clone();
-  std::move(callback).Run(std::move(frame_data));
-}
-
 }  // namespace device

@@ -24,7 +24,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "device/vr/vr_display_impl.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/vr/service/xr_session_request_consent_manager.h"

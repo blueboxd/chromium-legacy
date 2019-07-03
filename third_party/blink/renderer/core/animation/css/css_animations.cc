@@ -494,12 +494,6 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   previous_active_interpolations_for_standard_animations_.swap(
       pending_update_.ActiveInterpolationsForStandardAnimations());
 
-  // FIXME: cancelling, pausing, unpausing animations all query
-  // compositingState, which is not necessarily up to date here
-  // since we call this from recalc style.
-  // https://code.google.com/p/chromium/issues/detail?id=339847
-  DisableCompositingQueryAsserts disabler;
-
   for (wtf_size_t paused_index :
        pending_update_.AnimationIndicesWithPauseToggled()) {
     Animation& animation = *running_animations_[paused_index]->animation;

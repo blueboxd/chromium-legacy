@@ -550,7 +550,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   scoped_refptr<StaticBitmapImage> Snapshot() override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::Snapshot");
-    if (IsGpuContextLost())
+    if (!IsValid())
       return nullptr;
 
     EndWriteAccess();

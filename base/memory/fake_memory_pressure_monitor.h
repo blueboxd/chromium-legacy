@@ -19,7 +19,7 @@ class FakeMemoryPressureMonitor : public base::MemoryPressureMonitor {
   void SetAndNotifyMemoryPressure(MemoryPressureLevel level);
 
   // base::MemoryPressureMonitor overrides:
-  MemoryPressureLevel GetCurrentPressureLevel() override;
+  MemoryPressureLevel GetCurrentPressureLevel() const override;
   void SetDispatchCallback(const DispatchCallback& callback) override;
 
  private:

@@ -295,7 +295,7 @@ void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
   detailed_view_controller_.reset();
   unified_view_->ResetDetailedView();
   if (restore_focus)
-    unified_view_->RestoreFeaturePodFocus();
+    unified_view_->RestoreFocus();
 }
 
 void UnifiedSystemTrayController::CloseBubble() {
@@ -382,7 +382,7 @@ void UnifiedSystemTrayController::ShowDetailedView(
   animation_->Reset(1.0);
   UpdateExpandedAmount();
 
-  unified_view_->SaveFeaturePodFocus();
+  unified_view_->SaveFocus();
   views::FocusManager* manager = unified_view_->GetFocusManager();
   if (manager && manager->GetFocusedView())
     manager->ClearFocus();

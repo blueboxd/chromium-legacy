@@ -50,12 +50,11 @@ class SoftwareImageDecodeCacheUtils {
     bool operator==(const CacheKey& other) const {
       // The frame_key always has to be the same. However, after that all
       // original decodes are the same, so if we can use the original decode,
-      // return true. If not, then we have to compare every field. Note we don't
-      // compare |nearest_neighbor_| because we would only use kOriginal type in
-      // that case (dchecked below), which implies no scale. The returned scale
-      // to Skia would respect the nearest neighbor value of the requested
-      // image.
-      DCHECK(!is_nearest_neighbor_ || type_ == kOriginal);
+      // return true. If not, then we have to compare every field.
+      // |nearest_neighbor_| is not compared below since it is not used for
+      // scaled decodes and does not affect the contents of the cache entry
+      // (just passed to skia for the filtering to be done at raster time).
+      DCHECK(!is_nearest_neighbor_ || type_ != kSubrectAndScale);
       return frame_key_ == other.frame_key_ && type_ == other.type_ &&
              target_color_space_ == other.target_color_space_ &&
              (type_ == kOriginal || (src_rect_ == other.src_rect_ &&

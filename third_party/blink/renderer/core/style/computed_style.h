@@ -369,10 +369,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
   const ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>) const;
-  void ClearCachedPseudoStyles() const {
-    if (cached_pseudo_styles_)
-      cached_pseudo_styles_->clear();
-  }
 
   /**
    * ComputedStyle properties
@@ -2681,10 +2677,6 @@ class ComputedStyle : public ComputedStyleBase,
     return PhysicalToLogical<const Length&>(GetWritingMode(), Direction(),
                                             Top(), Right(), Bottom(), Left());
   }
-
-  static Difference ComputeDifferenceIgnoringInheritedFirstLineStyle(
-      const ComputedStyle& old_style,
-      const ComputedStyle& new_style);
 
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,

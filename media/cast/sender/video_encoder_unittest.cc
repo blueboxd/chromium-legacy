@@ -365,16 +365,8 @@ std::vector<std::pair<Codec, bool>> DetermineEncodersToTest() {
   values.push_back(std::make_pair(CODEC_VIDEO_FAKE, false));
   // Software VP8 encoder.
   values.push_back(std::make_pair(CODEC_VIDEO_VP8, false));
-
-  // VP8 HW encoding on ChromeOS Intel platform is disabled.
-  // See ExternalVideoEncoder::IsSupported().
-  // TODO(crbug.com/955286): Remove this once VP8 HW encoder is enabled on
-  // ChromeOS Intel platform.
-#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
   // Hardware-accelerated encoder (faked).
   values.push_back(std::make_pair(CODEC_VIDEO_VP8, true));
-#endif
-
 #if defined(OS_MACOSX)
   // VideoToolbox encoder (when VideoToolbox is present).
   FrameSenderConfig video_config = GetDefaultVideoSenderConfig();

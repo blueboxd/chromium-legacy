@@ -691,10 +691,6 @@ extern const char kTabStripStackedLayout[];
 
 extern const char kRegisteredBackgroundContents[];
 
-#if defined(OS_WIN)
-extern const char kWelcomePageOnOSUpgradeEnabled[];
-#endif
-
 extern const char kAuthSchemes[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kEnableAuthNegotiatePort[];

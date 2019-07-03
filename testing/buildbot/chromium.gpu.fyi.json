@@ -2369,6 +2369,9 @@
     ]
   },
   "Android FYI 32 Vk Release (Pixel 2)": {
+    "additional_compile_targets": [
+      "angle_apks"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -2727,6 +2730,9 @@
     ]
   },
   "Android FYI 64 Vk Release (Pixel 2)": {
+    "additional_compile_targets": [
+      "angle_apks"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -11784,11 +11790,18 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
-          "--additional-driver-flag=--use-gl=swiftshader",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
           "--fuzzy-diff",
           "--skipped=always",
           "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer"
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -11797,7 +11810,7 @@
           ],
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
-        "name": "skia_renderer_blink_web_tests",
+        "name": "skia_renderer_gl_blink_web_tests",
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -11862,43 +11875,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "--num-retries=3",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
-          "--additional-driver-flag=--use-gl=swiftshader",
-          "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--force-gpu-rasterization",
-          "--additional-driver-flag=--enable-oop-rasterization",
-          "--additional-driver-flag=--disable-software-compositing-fallback",
-          "--additional-driver-flag=--use-vulkan=swiftshader",
-          "--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing",
-          "--fuzzy-diff",
-          "--skipped=always",
-          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader"
-        ],
-        "isolate_name": "blink_web_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "vulkan_swift_shader_blink_web_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
-              "pool": "Chrome-GPU"
-            }
-          ]
         }
       }
     ]

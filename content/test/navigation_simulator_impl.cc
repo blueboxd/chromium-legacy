@@ -899,6 +899,11 @@ void NavigationSimulatorImpl::SetContentsMimeType(
 void NavigationSimulatorImpl::SetLoadURLParams(
     NavigationController::LoadURLParams* load_url_params) {
   load_url_params_ = load_url_params;
+
+  // Make sure the internal attributes of NavigationSimulatorImpl match the
+  // LoadURLParams that is going to be sent.
+  referrer_ = load_url_params->referrer;
+  transition_ = load_url_params->transition_type;
 }
 
 void NavigationSimulatorImpl::SetAutoAdvance(bool auto_advance) {

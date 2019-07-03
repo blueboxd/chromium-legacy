@@ -46,6 +46,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerOrWorkletGlobalScope(
       v8::Isolate*,
+      scoped_refptr<SecurityOrigin> origin,
       Agent* agent,
       OffMainThreadWorkerScriptFetchOption,
       const String& name,
@@ -73,9 +74,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   bool IsJSExecutionForbidden() const final;
   void DisableEval(const String& error_message) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
-
-  // SecurityContext
-  void DidUpdateSecurityOrigin() final {}
 
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is
@@ -142,6 +140,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       const {
     return off_main_thread_fetch_option_;
   }
+
+  void ApplySandboxFlags(SandboxFlags mask);
 
  protected:
   // Sets outside's CSP used for off-main-thread top-level worker script

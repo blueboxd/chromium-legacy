@@ -410,10 +410,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kNetworkingControl:
       // Loading task queues are handled separately.
       return base::nullopt;
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-    case TaskType::kExperimentalWebSchedulingBestEffort:
-      // WebScheduling queues are handled separately.
-      return base::nullopt;
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -522,14 +518,6 @@ scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
       return frame_task_queue_controller_->InspectorTaskQueue();
     case TaskType::kInternalContentCapture:
       return frame_task_queue_controller_->BestEffortTaskQueue();
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-      return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
-          FrameTaskQueueController::WebSchedulingTaskQueueType::
-              kWebSchedulingUserVisiblePriority);
-    case TaskType::kExperimentalWebSchedulingBestEffort:
-      return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
-          FrameTaskQueueController::WebSchedulingTaskQueueType::
-              kWebSchedulingBestEffortPriority);
     default:
       // Non-loading task queue.
       DCHECK_LT(static_cast<size_t>(type),
@@ -992,16 +980,6 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
          parent_page_scheduler_->IsLoading())) {
       return TaskQueue::QueuePriority::kLowPriority;
     }
-  }
-
-  if (task_queue->queue_type() ==
-      MainThreadTaskQueue::QueueType::kWebSchedulingUserInteraction) {
-    return TaskQueue::QueuePriority::kNormalPriority;
-  }
-
-  if (task_queue->queue_type() ==
-      MainThreadTaskQueue::QueueType::kWebSchedulingBestEffort) {
-    return TaskQueue::QueuePriority::kLowPriority;
   }
 
   return task_queue->queue_type() ==

@@ -99,7 +99,10 @@ class JourneyLogger {
     EVENT_HAS_ENROLLED_INSTRUMENT_FALSE = 1 << 22,
     // True when a NotShownReason is set.
     EVENT_COULD_NOT_SHOW = 1 << 23,
-    EVENT_ENUM_MAX = 2097152,
+    EVENT_NEEDS_COMPLETION_CONTACT_INFO = 1 << 24,
+    EVENT_NEEDS_COMPLETION_PAYMENT = 1 << 25,
+    EVENT_NEEDS_COMPLETION_SHIPPING = 1 << 26,
+    EVENT_ENUM_MAX = 1 << 27,
   };
 
   // The reason why the Payment Request was aborted.
@@ -233,6 +236,9 @@ class JourneyLogger {
 
   // Returns whether this Payment Request was triggered (shown or skipped show).
   bool WasPaymentRequestTriggered();
+
+  // Sets needs completion bit in events_ bit field for the given section.
+  void SetSectionNeedsCompletion(Section section);
 
   SectionStats sections_[NUMBER_OF_SECTIONS];
   bool has_recorded_ = false;

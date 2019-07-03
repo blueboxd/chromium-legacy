@@ -24,6 +24,7 @@ jumbo_source_set("browser_sources") {
   # External code should depend on via ":browser" above.
   visibility = [ "//content/*" ]
   sources = [
+    "accessibility_tree_formatter.h",
     "android/android_overlay_provider.h",
     "android/child_process_importance.h",
     "android/compositor.h",

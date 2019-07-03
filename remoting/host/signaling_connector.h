@@ -53,6 +53,7 @@ class SignalingConnector
   void ResetAndTryReconnect();
   void TryReconnect();
   void OnDnsBlackholeCheckerDone(bool allow);
+  void ResetBackoff();
 
   XmppSignalStrategy* signal_strategy_;
   base::Closure auth_failed_callback_;
@@ -64,6 +65,10 @@ class SignalingConnector
   int reconnect_attempts_;
 
   base::OneShotTimer timer_;
+
+  // Timer to reset |backoff_|. We delay resetting the backoff so that we can
+  // treat an immediate CONNECTED->DISCONNECTED transition as failure.
+  base::OneShotTimer backoff_reset_timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

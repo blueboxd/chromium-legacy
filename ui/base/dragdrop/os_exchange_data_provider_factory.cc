@@ -30,7 +30,7 @@ OSExchangeDataProviderFactory::CreateProvider() {
 #elif defined(OS_WIN)
   return std::make_unique<OSExchangeDataProviderWin>();
 #elif defined(OS_FUCHSIA)
-  // TODO(fuchsia): Implement this when UI support is added. (crbug.com/750934)
+  // TODO(crbug.com/980371): Implement OSExchangeDataProvider for Fuchsia.
   NOTIMPLEMENTED();
   return nullptr;
 #else

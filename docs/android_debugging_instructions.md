@@ -192,6 +192,19 @@ out/Default/apks/ChromeModernPublic.apk.mapping
 etc.
 ```
 
+When debugging a failing test on the build waterfall, you can find the mapping
+file as follows:
+
+1. Open buildbot page for the failing build (e.g.,
+   https://ci.chromium.org/p/chrome/builders/ci/android-go-perf/1234).
+2. Open the swarming page for the failing shard (e.g., shard #3).
+3. Click on "Isolated Inputs" to locate the files the shard used to run the
+   test.
+4. Download the `.mapping` file for the APK used by the test (e.g.,
+   `ChromePublic.apk.mapping`). Note that you may need to use the
+   `tools/swarming_client/isolateserver.py` script to download the mapping
+   file if it's too big. The viewer will provide instructions for this.
+
 Build the `java_deobfuscate` tool:
 
 ```shell

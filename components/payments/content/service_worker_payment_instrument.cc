@@ -248,7 +248,8 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
 void ServiceWorkerPaymentInstrument::OnPaymentAppWindowClosed() {
   delegate_ = nullptr;
   content::PaymentAppProvider::GetInstance()->OnClosingOpenedWindow(
-      browser_context_);
+      browser_context_,
+      mojom::PaymentEventResponseType::PAYMENT_HANDLER_WINDOW_CLOSING);
 }
 
 mojom::PaymentRequestEventDataPtr

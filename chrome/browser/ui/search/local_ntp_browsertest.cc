@@ -743,7 +743,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutsVisibility) {
   // Hide the shortcuts.
   local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
       iframe,
-      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility()");
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "true)");
 
   // Check that the shortcuts are hidden.
   result = false;
@@ -759,9 +760,105 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutsVisibility) {
   // Show the shortcuts.
   local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
       iframe,
-      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility()");
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "true)");
 
   // Check that the shortcuts are visible.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.body.classList.contains('hide')", &result));
+  EXPECT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutVisibilityAndType) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  // Initialize custom links by adding a shortcut.
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.updateCustomLink(-1, "
+      "'https://1.com', 'Title1')");
+  // Confirm that there are the correct number of custom link tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+
+  // Check that the shortcuts are visible.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  ASSERT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.body.classList.contains('hide')", &result));
+  ASSERT_TRUE(result);
+
+  // Hide the shortcuts and immediately enable Most Visited sites. The
+  // successive calls should not interfere with each other, and only a single
+  // update should be sent.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "false); "
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+  // Confirm that there are the correct number of Most Visited tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  // Check that the tiles have updated properly, i.e. the tiles should not have
+  // an edit menu nor be visible.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "document.body.classList.contains('hide')", &result));
+  EXPECT_TRUE(result);
+
+  // Show the shortcuts and immediately enable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "false); "
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+  // Confirm that there are the correct number of custom link tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+
+  // Check that the tiles have updated properly, i.e. the tiles should have an
+  // edit menu and be visible.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
   result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       iframe, "window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",

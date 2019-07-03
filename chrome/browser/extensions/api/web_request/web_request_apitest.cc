@@ -253,6 +253,10 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
     test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
         chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
           details.requestHeaders.push({name: 'foo', value: 'bar'});
+          details.requestHeaders.push({
+            name: 'frameId',
+            value: details.frameId.toString()
+          });
           return {requestHeaders: details.requestHeaders};
         }, {urls: ['*://*/echoheader*']}, ['blocking', 'requestHeaders']);
 
@@ -2546,21 +2550,47 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // response for the navigation preload request, and respond with it to create
   // the page.
   GURL url = embedded_test_server()->GetURL(
-      "/echoheader?foo&service-worker-navigation-preload");
+      "/echoheader?foo&frameId&service-worker-navigation-preload");
   ui_test_utils::NavigateToURL(browser(), url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   // Since the request was to "/echoheader", the response describes the request
   // headers.
   //
-  // The extension is expected to add a "foo: bar" header to the request
-  // before it goes to network. Verify that it did.
+  // The expectation is "bar\n0\ntrue" because...
   //
-  // The browser adds a "service-worker-navigation-preload: true" header for
-  // navigation preload requests, so also sanity check that header to prove
-  // that this test is really testing the navigation preload request.
-  EXPECT_EQ("bar\ntrue",
-            EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                   "document.body.textContent;"));
+  // 1) The extension is expected to add a "foo: bar" header to the request
+  //    before it goes to network.
+  // 2) The extension is similarly expected to add a "frameId: {id}" header,
+  //    where {id} is details.frameId. This id is 0 for the main frame.
+  // 3) The browser adds a "service-worker-navigation-preload: true" header for
+  //    navigation preload requests, so also sanity check that header to prove
+  //    that this test is really testing the navigation preload request.
+  EXPECT_EQ("bar\n0\ntrue", EvalJs(web_contents, "document.body.textContent;"));
+
+  // Repeat the test from an iframe, to test that details.frameId is populated
+  // correctly.
+  const char kAddIframe[] = R"(
+    (async () => {
+      const iframe = document.createElement('iframe');
+      await new Promise(resolve => {
+        iframe.src = $1;
+        iframe.onload = resolve;
+        document.body.appendChild(iframe);
+      });
+      const result = iframe.contentWindow.document.body.textContent;
+
+      // Expect "bar\n{frameId}\ntrue" where {frameId} is a positive integer.
+      const split = result.split('\n');
+      if (split[0] == 'bar' && parseInt(split[1]) > 0 && split[2] == 'true')
+        return 'ok';
+      return 'bad result: ' + result;
+    })();
+  )";
+
+  EXPECT_EQ("ok", EvalJs(web_contents, content::JsReplace(kAddIframe, url)));
 }
 
 // Ensure we don't strip off initiator incorrectly in web request events when

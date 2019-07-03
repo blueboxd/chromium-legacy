@@ -260,7 +260,8 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   static std::unique_ptr<protocol::Network::Initiator> BuildInitiatorObject(
       Document*,
-      const FetchInitiatorInfo&);
+      const FetchInitiatorInfo&,
+      int max_async_depth);
   static bool IsNavigation(DocumentLoader*, uint64_t identifier);
 
   // This is null while inspecting workers.

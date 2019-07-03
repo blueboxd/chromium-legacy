@@ -822,7 +822,7 @@ TEST_F(DownloadRequestLimiterTest, SetHostContentSetting) {
   // ALLOW_ONE_DOWNLOAD default status.
   CanDownload();
   ExpectAndResetCounts(1, 0, 0, __LINE__);
-  EXPECT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
   CanDownload();

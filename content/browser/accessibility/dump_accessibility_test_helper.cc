@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {

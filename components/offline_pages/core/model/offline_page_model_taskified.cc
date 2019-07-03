@@ -35,7 +35,6 @@
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "components/offline_pages/core/system_download_manager.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -172,12 +171,10 @@ constexpr base::TimeDelta OfflinePageModelTaskified::kClearStorageInterval;
 OfflinePageModelTaskified::OfflinePageModelTaskified(
     std::unique_ptr<OfflinePageMetadataStore> store,
     std::unique_ptr<ArchiveManager> archive_manager,
-    std::unique_ptr<SystemDownloadManager> download_manager,
     std::unique_ptr<OfflinePageArchivePublisher> archive_publisher,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : store_(std::move(store)),
       archive_manager_(std::move(archive_manager)),
-      download_manager_(std::move(download_manager)),
       archive_publisher_(std::move(archive_publisher)),
       policy_controller_(new ClientPolicyController()),
       task_queue_(this),
@@ -587,9 +584,8 @@ void OfflinePageModelTaskified::OnDeleteDone(
   // Remove the page from the system download manager. We don't need to wait for
   // completion before calling the delete page callback.
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OfflinePageModelTaskified::RemoveFromDownloadManager,
-                     download_manager_.get(), system_download_ids));
+      FROM_HERE, base::BindOnce(&OfflinePageModelTaskified::Unpublish,
+                                archive_publisher_.get(), system_download_ids));
 
   if (!callback.is_null())
     std::move(callback).Run(result);
@@ -613,11 +609,11 @@ void OfflinePageModelTaskified::OnStoreFaviconDone(int64_t offline_id,
   }
 }
 
-void OfflinePageModelTaskified::RemoveFromDownloadManager(
-    SystemDownloadManager* download_manager,
+void OfflinePageModelTaskified::Unpublish(
+    OfflinePageArchivePublisher* publisher,
     const std::vector<int64_t>& system_download_ids) {
   if (system_download_ids.size() > 0)
-    download_manager->Remove(system_download_ids);
+    publisher->UnpublishArchives(system_download_ids);
 }
 
 void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
@@ -668,11 +664,9 @@ void OfflinePageModelTaskified::RunMaintenanceTasks(base::Time now,
 void OfflinePageModelTaskified::OnPersistentPageConsistencyCheckDone(
     bool success,
     const std::vector<int64_t>& pages_deleted) {
-  // If there's no persistent page expired, save some effort by exiting early.
   // TODO(https://crbug.com/834909): Use the temporary hidden bit in
-  // DownloadUIAdapter instead of calling remove directly.
-  if (pages_deleted.size() > 0)
-    download_manager_->Remove(pages_deleted);
+  // DownloadUIAdapter instead of removing directly.
+  Unpublish(archive_publisher_.get(), pages_deleted);
 }
 
 void OfflinePageModelTaskified::OnClearCachedPagesDone(

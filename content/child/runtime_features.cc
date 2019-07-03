@@ -66,9 +66,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(
       base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking));
 
-  if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
-    WebRuntimeFeatures::EnableBloatedRendererDetection(true);
-
   if (base::FeatureList::IsEnabled(
           blink::features::kBlockingFocusWithoutUserActivation)) {
     WebRuntimeFeatures::EnableBlockingFocusWithoutUserActivation(true);

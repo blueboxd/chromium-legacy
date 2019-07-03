@@ -208,9 +208,6 @@ public class VrShell extends GvrLayout
 
         if (mVrBrowsingEnabled) {
             injectVrRootView();
-
-            // Hide FindInPage toolbar.
-            mActivity.getFindToolbarManager().hideToolbar();
         }
 
         // This overrides the default intent created by GVR to return to Chrome when the DON flow

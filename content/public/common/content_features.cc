@@ -42,10 +42,10 @@ const base::Feature kAppCacheIncludePaddingInQuota{
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{
   "AudioServiceAudioStreams",
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
+#if defined(OS_WIN)
       base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
 
@@ -75,10 +75,6 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 // collector.
 const base::Feature kBlinkHeapIncrementalMarking{
     "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable bloated renderer detection.
-const base::Feature kBloatedRendererDetection{
-    "BloatedRendererDetection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows swipe left/right from touchpad change browser navigation. Currently
 // only enabled by default on CrOS.
@@ -735,6 +731,15 @@ const base::Feature kScriptStreamingOnPreload{
 // Controls whether the Trusted Types API is available.
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use ThreadPriority::DISPLAY for browser UI and IO threads.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+const base::Feature kBrowserUseDisplayThreadPriority{
+    "BrowserUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
+const base::Feature kBrowserUseDisplayThreadPriority{
+    "BrowserUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.

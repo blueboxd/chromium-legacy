@@ -59,8 +59,8 @@ constexpr int kParentAccessViewWidthDp = 340;
 constexpr int kParentAccessViewHeightDp = 340;
 constexpr int kParentAccessViewTabletModeHeightDp = 580;
 constexpr int kParentAccessViewRoundedCornerRadiusDp = 8;
-constexpr int kParentAccessViewVerticalInsetDp = 16;
-constexpr int kParentAccessViewHorizontalInsetDp = 26;
+constexpr int kParentAccessViewVerticalInsetDp = 24;
+constexpr int kParentAccessViewHorizontalInsetDp = 36;
 
 constexpr int kLockIconSizeDp = 24;
 

@@ -84,6 +84,17 @@ void RemoveURLFromMemoryCacheInternal(const KURL& url) {
   GetMemoryCache()->RemoveURLFromCache(url);
 }
 
+scoped_refptr<SecurityOrigin> CreateSecurityOrigin(
+    GlobalScopeCreationParams* creation_params) {
+  scoped_refptr<SecurityOrigin> security_origin =
+      SecurityOrigin::Create(creation_params->script_url);
+  if (creation_params->starter_origin) {
+    security_origin->TransferPrivilegesFrom(
+        creation_params->starter_origin->CreatePrivilegeData());
+  }
+  return security_origin;
+}
+
 }  // namespace
 
 FontFaceSet* WorkerGlobalScope::fonts() {
@@ -454,6 +465,7 @@ WorkerGlobalScope::WorkerGlobalScope(
     base::TimeTicks time_origin)
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
+          CreateSecurityOrigin(creation_params.get()),
           Agent::CreateForWorkerOrWorklet(thread->GetIsolate()),
           creation_params->off_main_thread_fetch_option,
           creation_params->global_scope_name,
@@ -478,13 +490,6 @@ WorkerGlobalScope::WorkerGlobalScope(
       script_eval_state_(ScriptEvalState::kPauseAfterFetch) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
-  scoped_refptr<SecurityOrigin> security_origin =
-      SecurityOrigin::Create(creation_params->script_url);
-  if (creation_params->starter_origin) {
-    security_origin->TransferPrivilegesFrom(
-        creation_params->starter_origin->CreatePrivilegeData());
-  }
-  SetSecurityOrigin(std::move(security_origin));
 
   // https://html.spec.whatwg.org/C/#run-a-worker
   // 4. Set worker global scope's HTTPS state to response's HTTPS state. [spec

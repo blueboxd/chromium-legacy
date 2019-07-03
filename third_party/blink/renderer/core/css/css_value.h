@@ -49,7 +49,13 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
 
   String CssText() const;
 
-  bool IsPrimitiveValue() const { return class_type_ == kPrimitiveClass; }
+  bool IsNumericLiteralValue() const {
+    return class_type_ == kNumericLiteralClass;
+  }
+  bool IsMathFunctionValue() const { return class_type_ == kMathFunctionClass; }
+  bool IsPrimitiveValue() const {
+    return IsNumericLiteralValue() || IsMathFunctionValue();
+  }
   bool IsIdentifierValue() const { return class_type_ == kIdentifierClass; }
   bool IsValuePair() const { return class_type_ == kValuePairClass; }
   bool IsValueList() const { return class_type_ >= kValueListClass; }
@@ -181,7 +187,8 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
  protected:
   static const size_t kClassTypeBits = 6;
   enum ClassType {
-    kPrimitiveClass,
+    kNumericLiteralClass,
+    kMathFunctionClass,
     kIdentifierClass,
     kColorClass,
     kCounterClass,

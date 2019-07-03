@@ -132,10 +132,18 @@ void PointerLockController::DidNotAcquirePointerLock() {
 }
 
 void PointerLockController::DidLosePointerLock() {
-  EnqueueEvent(
-      event_type_names::kPointerlockchange,
+  Document* pointer_lock_document =
       element_ ? &element_->GetDocument()
-               : document_of_removed_element_while_waiting_for_unlock_.Get());
+               : document_of_removed_element_while_waiting_for_unlock_.Get();
+  EnqueueEvent(event_type_names::kPointerlockchange, pointer_lock_document);
+
+  // Set the last mouse position back the locked position.
+  if (pointer_lock_document) {
+    pointer_lock_document->GetFrame()
+        ->GetEventHandler()
+        .SetMousePositionForPointerUnlock(pointer_lock_screen_position_);
+  }
+
   ClearElement();
   document_of_removed_element_while_waiting_for_unlock_ = nullptr;
 }

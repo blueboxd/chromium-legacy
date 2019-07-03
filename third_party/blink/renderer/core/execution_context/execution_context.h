@@ -313,15 +313,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
       mojom::FeaturePolicyFeature feature) override;
 
  protected:
-  explicit ExecutionContext(v8::Isolate* isolate,
-                            Agent* agent,
-                            OriginTrialContext* origin_trial_context);
+  ExecutionContext(v8::Isolate* isolate,
+                   Agent* agent,
+                   OriginTrialContext* origin_trial_context);
   ~ExecutionContext() override;
-
-  void SetAgent(Agent* agent) {
-    DCHECK(agent);
-    agent_ = agent;
-  }
 
  private:
   // ConsoleLogger implementation.

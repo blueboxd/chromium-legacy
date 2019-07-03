@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -535,8 +536,8 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
       // ReplaceSelectionCommandTest_TextAutosizingDoesntInflateText gets here.
       mutable_style_->SetProperty(
           CSSPropertyID::kFontSize,
-          CSSPrimitiveValue::Create(computed_style->SpecifiedFontSize(),
-                                    CSSPrimitiveValue::UnitType::kPixels)
+          CSSNumericLiteralValue::Create(computed_style->SpecifiedFontSize(),
+                                         CSSPrimitiveValue::UnitType::kPixels)
               ->CssText(),
           /* important */ false, node->GetDocument().GetSecureContextMode());
     }

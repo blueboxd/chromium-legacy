@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 import javax.inject.Named;
@@ -143,10 +142,5 @@ public class ChromeActivityCommonsModule {
     @Provides
     public ScreenOrientationProvider provideScreenOrientationProvider() {
         return ScreenOrientationProvider.getInstance();
-    }
-
-    @Provides
-    public FindToolbarManager provideFindToolbarManager() {
-        return mActivity.getFindToolbarManager();
     }
 }

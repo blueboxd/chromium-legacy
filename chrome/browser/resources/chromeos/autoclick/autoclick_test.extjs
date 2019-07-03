@@ -15,7 +15,7 @@ function AutoclickE2ETest() {
   chrome.accessibilityPrivate = this.mockAccessibilityPrivate;
 
   // Re-initialize Autoclick with mock AccessibilityPrivate API.
-  autoclick = new Autoclick();
+  autoclick = new Autoclick(false /* do not blink focus rings */);
 }
 
 AutoclickE2ETest.prototype = {

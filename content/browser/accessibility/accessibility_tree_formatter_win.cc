@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 
 #include <math.h>
 #include <oleacc.h>
@@ -37,7 +37,7 @@
 
 namespace content {
 
-class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
+class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatterBase {
  public:
   AccessibilityTreeFormatterWin();
   ~AccessibilityTreeFormatterWin() override;

@@ -10,10 +10,6 @@
 
 class GURL;
 
-namespace content {
-class ResourceContext;
-}
-
 namespace net {
 class HttpRequestHeaders;
 }
@@ -23,7 +19,7 @@ class AwResourceContext;
 
 class AwURLLoaderThrottle : public content::URLLoaderThrottle {
  public:
-  explicit AwURLLoaderThrottle(content::ResourceContext* resource_context);
+  explicit AwURLLoaderThrottle(AwResourceContext* aw_resource_context);
   ~AwURLLoaderThrottle() override;
 
   // content::URLLoaderThrottle implementation:

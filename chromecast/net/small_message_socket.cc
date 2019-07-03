@@ -83,7 +83,7 @@ void SmallMessageSocket::Send() {
         socket_->Write(write_buffer_.get(), write_buffer_->BytesRemaining(),
                        base::BindRepeating(&SmallMessageSocket::OnWriteComplete,
                                            base::Unretained(this)),
-                       NO_TRAFFIC_ANNOTATION_YET);
+                       MISSING_TRAFFIC_ANNOTATION);
     if (!HandleWriteResult(result)) {
       return;
     }

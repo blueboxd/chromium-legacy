@@ -1321,7 +1321,7 @@ if (is_win) {
     if (is_component_build) {
       ldflags += [
         "-rpath",
-        "@loader_path/../../../../../../../..",
+        "@loader_path/../../../../../..",
         "-Wl,-reexport_library,libchrome_dll.dylib",
       ]
 

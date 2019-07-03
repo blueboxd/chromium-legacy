@@ -16,6 +16,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/range/range.h"
 
 namespace media {
 
@@ -158,6 +159,9 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
       cros::mojom::CameraMetadataPtr settings);
   void OnConstructedDefaultStillCaptureRequestSettings(
       cros::mojom::CameraMetadataPtr settings);
+
+  void OnGotFpsRange(cros::mojom::CameraMetadataPtr settings,
+                     base::Optional<gfx::Range> specified_fps_range);
 
   // StreamCaptureInterface implementations.  These methods are called by
   // |stream_buffer_manager_| on |ipc_task_runner_|.

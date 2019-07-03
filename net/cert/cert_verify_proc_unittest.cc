@@ -250,6 +250,18 @@ bool ScopedTestRootCanTrustTargetCert(CertVerifyProcType verify_proc_type) {
          verify_proc_type == CERT_VERIFY_PROC_ANDROID;
 }
 
+// Returns true if a non-self-signed CA certificate added through
+// ScopedTestRoot can verify successfully as the root of a chain by the given
+// CertVerifyProcType.
+bool ScopedTestRootCanTrustIntermediateCert(
+    CertVerifyProcType verify_proc_type) {
+  return verify_proc_type == CERT_VERIFY_PROC_MAC ||
+         verify_proc_type == CERT_VERIFY_PROC_IOS ||
+         verify_proc_type == CERT_VERIFY_PROC_NSS ||
+         verify_proc_type == CERT_VERIFY_PROC_BUILTIN ||
+         verify_proc_type == CERT_VERIFY_PROC_ANDROID;
+}
+
 // TODO(crbug.com/649017): This is not parameterized by the CertVerifyProc
 // because the CertVerifyProc::Verify() does this unconditionally based on the
 // platform.
@@ -1036,6 +1048,99 @@ TEST_P(CertVerifyProcInternalTest,
   }
   // An EV Root certificate should never be used as an end-entity certificate.
   EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_IS_EV);
+}
+
+// Target cert has an EV policy, and has a valid path to the EV root, but the
+// intermediate has been trusted directly. Should stop building the path at the
+// intermediate and verify OK but not with STATUS_IS_EV.
+// See https://crbug.com/979801
+TEST_P(CertVerifyProcInternalTest, TrustedIntermediateCertWithEVPolicy) {
+  if (!SupportsEV()) {
+    LOG(INFO) << "Skipping test as EV verification is not yet supported";
+    return;
+  }
+  if (!ScopedTestRootCanTrustIntermediateCert(verify_proc_type())) {
+    LOG(INFO) << "Skipping test as intermediate cert cannot be trusted";
+    return;
+  }
+
+  CertificateList orig_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "explicit-policy-chain.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3U, orig_certs.size());
+
+  for (bool trust_the_intermediate : {false, true}) {
+    // Need to build unique certs for each try otherwise caching can break
+    // things.
+    CertBuilder root(orig_certs[2]->cert_buffer(), nullptr);
+    CertBuilder intermediate(orig_certs[1]->cert_buffer(), &root);
+    CertBuilder leaf(orig_certs[0]->cert_buffer(), &intermediate);
+
+    // The policy that "explicit-policy-chain.pem" target certificate asserts.
+    static const char kEVTestCertPolicy[] = "1.2.3.4";
+    // Consider the root of the test chain a valid EV root for the test policy.
+    ScopedTestEVPolicy scoped_test_ev_policy(
+        EVRootCAMetadata::GetInstance(),
+        X509Certificate::CalculateFingerprint256(root.GetCertBuffer()),
+        kEVTestCertPolicy);
+
+    // CRLSet which covers the leaf.
+    base::StringPiece intermediate_spki;
+    ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(
+        x509_util::CryptoBufferAsStringPiece(intermediate.GetCertBuffer()),
+        &intermediate_spki));
+    SHA256HashValue intermediate_spki_hash;
+    crypto::SHA256HashString(intermediate_spki, &intermediate_spki_hash,
+                             sizeof(SHA256HashValue));
+    scoped_refptr<CRLSet> crl_set =
+        CRLSet::ForTesting(false, &intermediate_spki_hash, "", "", {});
+
+    std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+    intermediates.push_back(bssl::UpRef(intermediate.GetCertBuffer()));
+    scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromBuffer(
+        bssl::UpRef(leaf.GetCertBuffer()), std::move(intermediates));
+    ASSERT_TRUE(cert.get());
+
+    scoped_refptr<X509Certificate> intermediate_cert =
+        X509Certificate::CreateFromBuffer(
+            bssl::UpRef(intermediate.GetCertBuffer()), {});
+    ASSERT_TRUE(intermediate_cert.get());
+
+    scoped_refptr<X509Certificate> root_cert =
+        X509Certificate::CreateFromBuffer(bssl::UpRef(root.GetCertBuffer()),
+                                          {});
+    ASSERT_TRUE(root_cert.get());
+
+    if (!trust_the_intermediate) {
+      // First trust just the root. This verifies that the test setup is
+      // actually correct.
+      ScopedTestRoot scoped_test_root({root_cert});
+      CertVerifyResult verify_result;
+      int flags = 0;
+      int error = Verify(cert.get(), "policy_test.example", flags,
+                         crl_set.get(), CertificateList(), &verify_result);
+      EXPECT_THAT(error, IsOk());
+      ASSERT_TRUE(verify_result.verified_cert);
+      // Verified chain should include the intermediate and the root.
+      EXPECT_EQ(2U, verify_result.verified_cert->intermediate_buffers().size());
+      // Should be EV.
+      EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_IS_EV);
+    } else {
+      // Now try with trusting both the intermediate and the root.
+      ScopedTestRoot scoped_test_root({intermediate_cert, root_cert});
+      CertVerifyResult verify_result;
+      int flags = 0;
+      int error = Verify(cert.get(), "policy_test.example", flags,
+                         crl_set.get(), CertificateList(), &verify_result);
+      EXPECT_THAT(error, IsOk());
+      ASSERT_TRUE(verify_result.verified_cert);
+      // Verified chain should only go to the trusted intermediate, not the
+      // root.
+      EXPECT_EQ(1U, verify_result.verified_cert->intermediate_buffers().size());
+      // Should not be EV.
+      EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_IS_EV);
+    }
+  }
 }
 
 // TODO(crbug.com/605457): the test expectation was incorrect on some

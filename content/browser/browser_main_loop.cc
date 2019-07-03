@@ -602,15 +602,17 @@ int BrowserMainLoop::EarlyInitialization() {
       return pre_early_init_error_code;
   }
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
-  // Up the priority of the UI thread unless it was already high (since recent
-  // versions of Android (O+) do this automatically).
-  if (base::PlatformThread::GetCurrentThreadPriority() <
-      base::ThreadPriority::DISPLAY) {
+  // Up the priority of the UI thread unless it was already high (since Mac
+  // and recent versions of Android (O+) do this automatically).
+#if !defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(
+          features::kBrowserUseDisplayThreadPriority) &&
+      base::PlatformThread::GetCurrentThreadPriority() <
+          base::ThreadPriority::DISPLAY) {
     base::PlatformThread::SetCurrentThreadPriority(
         base::ThreadPriority::DISPLAY);
   }
-#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
     defined(OS_ANDROID)

@@ -36,11 +36,13 @@
         <settings-slider  pref="{{prefs.webkit.webprefs.minimum_font_size}}"
             ticks="[[minimumFontSizeRange_]]" label-min="$i18n{tiny}"
             label-max="$i18n{huge}"></settings-slider>
-        <div id="minimumSizeSample" style="
-            font-size:[[computeMinimumFontSize_(
-                prefs.webkit.webprefs.minimum_font_size.value)]]px;
-            font-family:
-                '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';">
+        <div id="minimumSizeSample"
+            style="
+                font-size:[[computeMinimumFontSize_(
+                    prefs.webkit.webprefs.minimum_font_size.value)]]px;
+                font-family:
+                    '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';"
+            hidden>
           [[computeMinimumFontSize_(
                   prefs.webkit.webprefs.minimum_font_size.value)]]:
           $i18n{quickBrownFox}

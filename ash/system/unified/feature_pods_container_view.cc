@@ -87,17 +87,6 @@ int FeaturePodsContainerView::GetCollapsedHeight() const {
          kUnifiedFeaturePodCollapsedSize.height();
 }
 
-void FeaturePodsContainerView::SaveFocus() {
-  const auto i = std::find_if(children().cbegin(), children().cend(),
-                              [](const auto* v) { return v->HasFocus(); });
-  focused_button_ = (i == children().cend()) ? nullptr : *i;
-}
-
-void FeaturePodsContainerView::RestoreFocus() {
-  if (focused_button_)
-    focused_button_->RequestFocus();
-}
-
 gfx::Size FeaturePodsContainerView::CalculatePreferredSize() const {
   return gfx::Size(
       kTrayMenuWidth,

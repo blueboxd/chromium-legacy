@@ -164,6 +164,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const WebContentsGetter& web_contents_getter() const {
     return web_contents_getter_;
   }
+  int frame_tree_node_id() const { return frame_tree_node_id_; }
 
   bool is_parent_frame_secure() const { return is_parent_frame_secure_; }
 

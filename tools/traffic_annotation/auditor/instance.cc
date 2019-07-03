@@ -171,14 +171,6 @@ AuditorResult AnnotationInstance::Deserialize(
                          file_path, line_number);
   }
 
-  // Process undefined tags.
-  if (unique_id_hash_code == NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code ||
-      unique_id_hash_code ==
-          NO_PARTIAL_TRAFFIC_ANNOTATION_YET.unique_id_hash_code) {
-    return AuditorResult(AuditorResult::Type::ERROR_NO_ANNOTATION, "",
-                         file_path, line_number);
-  }
-
   // Process missing tag.
   if (unique_id_hash_code == MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code)
     return AuditorResult(AuditorResult::Type::ERROR_MISSING_TAG_USED, "",

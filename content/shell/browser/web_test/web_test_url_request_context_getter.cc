@@ -24,15 +24,13 @@ WebTestURLRequestContextGetter::WebTestURLRequestContextGetter(
     const base::FilePath& base_path,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors,
-    net::NetLog* net_log)
+    URLRequestInterceptorScopedVector request_interceptors)
     : ShellURLRequestContextGetter(ignore_certificate_errors,
                                    off_the_record,
                                    base_path,
                                    std::move(io_task_runner),
                                    protocol_handlers,
-                                   std::move(request_interceptors),
-                                   net_log) {
+                                   std::move(request_interceptors)) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

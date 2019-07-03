@@ -122,6 +122,10 @@ extern const char kPaymentEventServiceWorkerError[];
 // Service worker timed out while responding to "paymentrequest" event.
 extern const char kPaymentEventTimeout[];
 
+// Payment handler navigated to a page with insecure context, invalid SSL, or
+// malicious content.
+extern const char kPaymentHandlerInsecureNavigation[];
+
 // Payment handler encountered an internal error when handling the
 // "paymentrequest" event.
 extern const char kPaymentEventInternalError[];

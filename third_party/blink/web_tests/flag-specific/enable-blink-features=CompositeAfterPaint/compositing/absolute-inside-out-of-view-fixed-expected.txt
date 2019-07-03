@@ -9,7 +9,14 @@
     },
     {
       "name": "VerticalScrollbar",
-      "bounds": [800, 600]
+      "position": [785, 0],
+      "bounds": [15, 600]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000"
     }
   ],
   "transforms": [

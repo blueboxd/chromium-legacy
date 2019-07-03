@@ -2148,9 +2148,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForOmniboxMatch) {
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
-  LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(
-      location_bar, embedded_test_server()->GetURL("/title1.html").spec(),
+      browser(), embedded_test_server()->GetURL("/title1.html").spec(),
       base::TimeTicks::Now());
   waiter->Wait();
 

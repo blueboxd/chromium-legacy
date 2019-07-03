@@ -79,20 +79,15 @@ uint64_t ComputeDataReductionProxyUUID(
     return 0;
   }
 
-  std::string session_key = data->session_key();
   uint64_t page_id = data->page_id().value();
-
   char buf[8];
   base::WriteBigEndian<uint64_t>(buf, page_id);
 
-  std::vector<char> to_hash;
-  std::copy(session_key.begin(), session_key.end(),
-            std::back_inserter(to_hash));
-  to_hash.insert(to_hash.end(), buf, buf + 8);
+  std::string to_hash(data->session_key());
+  to_hash.append(std::begin(buf), std::end(buf));
 
   char hash[32];
-  crypto::SHA256HashString(base::StringPiece(to_hash.begin(), to_hash.end()),
-                           hash, 32);
+  crypto::SHA256HashString(base::StringPiece(to_hash), hash, 32);
 
   uint64_t uuid;
   base::ReadBigEndian<uint64_t>(hash, &uuid);

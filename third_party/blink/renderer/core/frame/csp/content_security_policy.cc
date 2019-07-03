@@ -158,6 +158,10 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       require_trusted_types_(false),
       insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
 
+bool ContentSecurityPolicy::IsBound() {
+  return delegate_;
+}
+
 void ContentSecurityPolicy::BindToDelegate(
     ContentSecurityPolicyDelegate& delegate) {
   // TODO(crbug.com/915954): Add DCHECK(!delegate_). It seems some call sites

@@ -32,6 +32,10 @@ class CORE_EXPORT ImageElementTiming final
  public:
   static const char kSupplementName[];
 
+  // The maximum amount of characters included in Element Timing and Largest
+  // Contentful Paint for inline images.
+  static constexpr const unsigned kInlineImageMaxChars = 100;
+
   explicit ImageElementTiming(LocalDOMWindow&);
   virtual ~ImageElementTiming() = default;
 

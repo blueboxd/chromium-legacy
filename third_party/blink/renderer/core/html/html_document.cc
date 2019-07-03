@@ -81,7 +81,8 @@ Document* HTMLDocument::CloneDocumentWithoutChildren() const {
       DocumentInit::Create()
           .WithContextDocument(ContextDocument())
           .WithURL(Url())
-          .WithRegistrationContext(RegistrationContext()));
+          .WithRegistrationContext(RegistrationContext())
+          .WithOriginToCommit(GetSecurityOrigin()->IsolatedCopy()));
 }
 
 // --------------------------------------------------------------------------

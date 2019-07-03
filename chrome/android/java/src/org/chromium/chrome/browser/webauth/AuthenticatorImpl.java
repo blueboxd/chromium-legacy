@@ -26,7 +26,7 @@ import org.chromium.mojo.system.MojoException;
 /**
  * Android implementation of the authenticator.mojom interface.
  */
-public class AuthenticatorImpl extends EmptyHandlerResponseCallback implements Authenticator {
+public class AuthenticatorImpl extends HandlerResponseCallback implements Authenticator {
     private final RenderFrameHost mRenderFrameHost;
     private final WebContents mWebContents;
 

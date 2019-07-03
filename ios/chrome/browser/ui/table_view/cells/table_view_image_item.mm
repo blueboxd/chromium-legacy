@@ -192,4 +192,12 @@
   return self.textLabel.text;
 }
 
+- (UIAccessibilityTraits)accessibilityTraits {
+  UIAccessibilityTraits accessibilityTraits = super.accessibilityTraits;
+  if (!self.isUserInteractionEnabled) {
+    accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+  }
+  return accessibilityTraits;
+}
+
 @end

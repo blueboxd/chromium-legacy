@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "device/vr/vr_device_base.h"
+#include "device/vr/orientation/orientation_device.h"
 
 namespace device {
 
 VRDisplayImpl::VRDisplayImpl(
-    VRDeviceBase* device,
+    VROrientationDevice* device,
     mojom::XRFrameDataProviderRequest magic_window_request,
     mojom::XRSessionControllerRequest session_request)
     : magic_window_binding_(this, std::move(magic_window_request)),
@@ -30,7 +30,11 @@ VRDisplayImpl::~VRDisplayImpl() = default;
 void VRDisplayImpl::GetFrameData(
     mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  if (device_->HasExclusiveSession() || restrict_frame_data_) {
+  // VRDisplayImpl is only used by VROrientationDevice, which should never have
+  // an exclusive session / be presenting.
+  DCHECK(!device_->HasExclusiveSession());
+
+  if (restrict_frame_data_) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -56,13 +60,6 @@ void VRDisplayImpl::SetInputSourceButtonListener(
 // XRSessionController
 void VRDisplayImpl::SetFrameDataRestricted(bool frame_data_restricted) {
   restrict_frame_data_ = frame_data_restricted;
-  if (device_->ShouldPauseTrackingWhenFrameDataRestricted()) {
-    if (restrict_frame_data_) {
-      device_->PauseTracking();
-    } else {
-      device_->ResumeTracking();
-    }
-  }
 }
 
 void VRDisplayImpl::OnMojoConnectionError() {

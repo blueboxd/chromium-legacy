@@ -29,6 +29,7 @@ class BrowserContext;
 namespace arc {
 
 class ArcBridgeService;
+class FactoryResetDelegate;
 class IntentFilter;
 class OpenUrlDelegate;
 
@@ -50,6 +51,8 @@ class ArcIntentHelperBridge
       const std::string& to_append);
 
   static void SetOpenUrlDelegate(OpenUrlDelegate* delegate);
+
+  static void SetFactoryResetDelegate(FactoryResetDelegate* delegate);
 
   ArcIntentHelperBridge(content::BrowserContext* context,
                         ArcBridgeService* bridge_service);
@@ -74,6 +77,7 @@ class ArcIntentHelperBridge
   void OpenWallpaperPicker() override;
   void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
   void OpenVolumeControl() override;
+  void FactoryResetArc() override;
   void OnOpenWebApp(const std::string& url) override;
   void RecordShareFilesMetrics(mojom::ShareFiles flag) override;
 

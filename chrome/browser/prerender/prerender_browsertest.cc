@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -2332,17 +2333,6 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
     return GetLocationBar()->GetOmniboxView();
   }
 
-  void WaitForAutocompleteDone(OmniboxView* omnibox_view) {
-    AutocompleteController* controller =
-        omnibox_view->model()->popup_model()->autocomplete_controller();
-    while (!controller->done()) {
-      content::WindowedNotificationObserver ready_observer(
-          chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-          content::Source<AutocompleteController>(controller));
-      ready_observer.Wait();
-    }
-  }
-
   predictors::AutocompleteActionPredictor* GetAutocompleteActionPredictor() {
     Profile* profile = current_browser()->profile();
     return predictors::AutocompleteActionPredictorFactory::GetForProfile(
@@ -2392,7 +2382,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   omnibox_view->SetUserText(base::UTF8ToUTF16(
       embedded_test_server()->GetURL("/empty.html?1").spec()));
   omnibox_view->OnAfterPossibleChange(true);
-  WaitForAutocompleteDone(omnibox_view);
+  ui_test_utils::WaitForAutocompleteDone(current_browser());
 
   // Fake an omnibox prerender for a different URL.
   std::unique_ptr<TestPrerender> prerender =

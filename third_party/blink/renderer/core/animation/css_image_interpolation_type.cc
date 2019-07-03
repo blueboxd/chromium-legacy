@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/css/css_crossfade_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
@@ -59,8 +60,8 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
       return end_;
     return MakeGarbageCollected<cssvalue::CSSCrossfadeValue>(
         start_, end_,
-        CSSPrimitiveValue::Create(progress,
-                                  CSSPrimitiveValue::UnitType::kNumber));
+        CSSNumericLiteralValue::Create(progress,
+                                       CSSPrimitiveValue::UnitType::kNumber));
   }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();

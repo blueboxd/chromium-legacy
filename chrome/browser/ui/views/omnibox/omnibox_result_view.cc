@@ -121,7 +121,7 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
     animation_->Hide();
 }
 
-void OmniboxResultView::Invalidate() {
+void OmniboxResultView::Invalidate(bool force_reapply_styles) {
   bool high_contrast =
       GetNativeTheme() && GetNativeTheme()->UsesHighContrastColors();
   // TODO(tapted): Consider using background()->SetNativeControlColor() and
@@ -191,7 +191,7 @@ void OmniboxResultView::Invalidate() {
     // Normally, OmniboxTextView caches its appearance, but in high contrast,
     // selected-ness changes the text colors, so the styling of the text part of
     // the results needs to be recomputed.
-    if (high_contrast) {
+    if (high_contrast || force_reapply_styles) {
       suggestion_view_->content()->ReapplyStyling();
       suggestion_view_->description()->ReapplyStyling();
     }
@@ -404,7 +404,7 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 }
 
 void OmniboxResultView::OnThemeChanged() {
-  Invalidate();
+  Invalidate(true);
   SchedulePaint();
 }
 

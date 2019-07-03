@@ -317,7 +317,6 @@ TEST_P(PaintArtifactCompositorTest, OneChunkWithAnOffset) {
       Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kWhite)));
   EXPECT_EQ(Translation(50, -50), child->ScreenSpaceTransform());
   EXPECT_EQ(gfx::Size(100, 100), child->bounds());
-  EXPECT_FALSE(GetTransformNode(child).transform_changed);
 }
 
 TEST_P(PaintArtifactCompositorTest, OneTransform) {
@@ -337,7 +336,6 @@ TEST_P(PaintArtifactCompositorTest, OneTransform) {
   ASSERT_EQ(2u, ContentLayerCount());
   {
     const cc::Layer* layer = ContentLayerAt(0);
-    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
 
     Vector<RectWithColor> rects_with_color;
     rects_with_color.push_back(
@@ -353,7 +351,6 @@ TEST_P(PaintArtifactCompositorTest, OneTransform) {
   }
   {
     const cc::Layer* layer = ContentLayerAt(1);
-    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kGray)));
@@ -379,7 +376,6 @@ TEST_P(PaintArtifactCompositorTest, OneTransformWithAlias) {
   ASSERT_EQ(2u, ContentLayerCount());
   {
     const cc::Layer* layer = ContentLayerAt(0);
-    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
 
     Vector<RectWithColor> rects_with_color;
     rects_with_color.push_back(
@@ -395,7 +391,6 @@ TEST_P(PaintArtifactCompositorTest, OneTransformWithAlias) {
   }
   {
     const cc::Layer* layer = ContentLayerAt(1);
-    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kGray)));
@@ -422,7 +417,6 @@ TEST_P(PaintArtifactCompositorTest, TransformCombining) {
   ASSERT_EQ(2u, ContentLayerCount());
   {
     const cc::Layer* layer = ContentLayerAt(0);
-    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kWhite)));
@@ -432,7 +426,6 @@ TEST_P(PaintArtifactCompositorTest, TransformCombining) {
   }
   {
     const cc::Layer* layer = ContentLayerAt(1);
-    EXPECT_FALSE(GetTransformNode(layer).transform_changed);
     EXPECT_THAT(
         layer->GetPicture(),
         Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kBlack)));

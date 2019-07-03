@@ -64,6 +64,8 @@ class AutofillPaymentInstrument
       const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;
 
+  void RecordMissingFieldsForInstrument() const;
+
   autofill::CreditCard* credit_card() { return &credit_card_; }
 
   const std::string& method_name() const { return method_name_; }

@@ -358,6 +358,18 @@ void AudioBus::CopyTo(AudioBus* dest) const {
   CopyPartialFramesTo(0, frames(), 0, dest);
 }
 
+void AudioBus::CopyAndClipTo(AudioBus* dest) const {
+  DCHECK(!is_bitstream_format_);
+  CHECK_EQ(channels(), dest->channels());
+  CHECK_LE(frames(), dest->frames());
+  for (int i = 0; i < channels(); ++i) {
+    float* dest_ptr = dest->channel(i);
+    const float* source_ptr = channel(i);
+    for (int j = 0; j < frames(); ++j)
+      dest_ptr[j] = Float32SampleTypeTraits::FromFloat(source_ptr[j]);
+  }
+}
+
 void AudioBus::CopyPartialFramesTo(int source_start_frame,
                                    int frame_count,
                                    int dest_start_frame,

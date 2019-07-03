@@ -18,6 +18,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -292,15 +293,16 @@ void GrantFileAccessToProcess(int process_id,
 
 // Creates the network URLLoaderFactory for the navigation preload request.
 void CreateNetworkFactoryForNavigationPreloadOnUI(
-    const ServiceWorkerFetchDispatcher::WebContentsGetter& web_contents_getter,
+    int frame_tree_node_id,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
     network::mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
-  WebContents* web_contents = web_contents_getter.Run();
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   StoragePartitionImpl* partition = context_wrapper->storage_partition();
-  if (!web_contents || !partition) {
+  if (!frame_tree_node || !partition) {
     // The navigation was cancelled or we are in shutdown. Just drop the
     // request. Otherwise, we might go to network without consulting the
     // embedder first, which would break guarantees.
@@ -314,7 +316,7 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   // origin instead.
   url::Origin initiator = url::Origin();
 
-  // We ignore the value of |bypass_redirect_checks_unused| since a redirects is
+  // We ignore the value of |bypass_redirect_checks_unused| since a redirect is
   // just relayed to the service worker where preloadResponse is resolved as
   // redirect.
   bool bypass_redirect_checks_unused;
@@ -322,9 +324,9 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   // Consult the embedder.
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      web_contents->GetBrowserContext(), web_contents->GetMainFrame(),
-      web_contents->GetMainFrame()->GetProcess()->GetID(),
-      true /* is_navigation */, false /* is_download */, initiator, &request,
+      partition->browser_context(), frame_tree_node->current_frame_host(),
+      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+      /*is_navigation=*/true, /*is_download=*/false, initiator, &request,
       &header_client, &bypass_redirect_checks_unused);
 
   // Make the network factory.
@@ -645,7 +647,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     const network::ResourceRequest& original_request,
     URLLoaderFactoryGetter* url_loader_factory_getter,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-    const WebContentsGetter& web_contents_getter) {
+    int frame_tree_node_id) {
   if (resource_type_ != ResourceType::kMainFrame &&
       resource_type_ != ResourceType::kSubFrame) {
     return false;
@@ -680,7 +682,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
-                       web_contents_getter, std::move(context_wrapper),
+                       frame_tree_node_id, std::move(context_wrapper),
                        mojo::MakeRequest(&network_factory)));
     factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
         std::move(network_factory));

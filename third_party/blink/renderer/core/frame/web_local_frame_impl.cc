@@ -1629,12 +1629,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
   DCHECK(!page.MainFrame());
   frame->InitializeCoreFrame(
       page, nullptr, name,
-      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
-  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
-    frame->GetFrame()->SetOpenerFeatureState(opener_feature_state);
-  // Can't force sandbox flags until there's a core frame.
-  frame->GetFrame()->Loader().ForceSandboxFlags(
-      static_cast<SandboxFlags>(sandbox_flags));
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr,
+      sandbox_flags, opener_feature_state);
   return frame;
 }
 
@@ -1652,6 +1648,17 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
+  WebSandboxFlags sandbox_flags = WebSandboxFlags::kNone;
+  FeaturePolicy::FeatureState feature_state;
+  if (!previous_frame->Owner()) {
+    // Provisional main frames need to force sandbox flags.  This is necessary
+    // to inherit sandbox flags when a sandboxed frame does a window.open()
+    // which triggers a cross-process navigation.
+    sandbox_flags = frame_policy.sandbox_flags;
+    // If there is an opener (even disowned), the opener policies must be
+    // inherited the same way as sandbox flag.
+    feature_state = previous_frame->OpenerFeatureState();
+  }
   // Note: this *always* temporarily sets a frame owner, even for main frames!
   // When a core Frame is created with no owner, it attempts to set itself as
   // the main frame of the Page. However, this is a provisional frame, and may
@@ -1666,21 +1673,14 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   web_frame->InitializeCoreFrame(
       *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(),
       previous_frame->Tree().GetName(),
-      &ToCoreFrame(*previous_web_frame)->window_agent_factory());
+      &ToCoreFrame(*previous_web_frame)->window_agent_factory(), sandbox_flags,
+      feature_state);
 
   LocalFrame* new_frame = web_frame->GetFrame();
   new_frame->SetOwner(previous_frame->Owner());
   if (auto* remote_frame_owner =
           DynamicTo<RemoteFrameOwner>(new_frame->Owner())) {
     remote_frame_owner->SetFramePolicy(frame_policy);
-  } else if (!new_frame->Owner()) {
-    // Provisional main frames need to force sandbox flags.  This is necessary
-    // to inherit sandbox flags when a sandboxed frame does a window.open()
-    // which triggers a cross-process navigation.
-    new_frame->Loader().ForceSandboxFlags(frame_policy.sandbox_flags);
-    // If there is an opener (even disowned), the opener policies must be
-    // inherited the same way as sandbox flag.
-    new_frame->SetOpenerFeatureState(previous_frame->OpenerFeatureState());
   }
 
   return web_frame;
@@ -1745,11 +1745,17 @@ void WebLocalFrameImpl::InitializeCoreFrame(
     Page& page,
     FrameOwner* owner,
     const AtomicString& name,
-    WindowAgentFactory* window_agent_factory) {
+    WindowAgentFactory* window_agent_factory,
+    WebSandboxFlags sandbox_flags,
+    const FeaturePolicy::FeatureState& opener_feature_state) {
   SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
                                                 owner, window_agent_factory,
                                                 interface_registry_));
   frame_->Tree().SetName(name);
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
+    frame_->SetOpenerFeatureState(opener_feature_state);
+  frame_->Loader().ForceSandboxFlags(sandbox_flags);
+
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
   frame_->Init();

@@ -225,6 +225,7 @@ enum DocumentClass {
   kMediaDocumentClass = 1 << 4,
   kSVGDocumentClass = 1 << 5,
   kXMLDocumentClass = 1 << 6,
+  kViewSourceDocumentClass = 1 << 7,
 };
 
 enum ShadowCascadeOrder {
@@ -563,6 +564,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void Initialize();
   virtual void Shutdown();
+
+  void InitContentSecurityPolicy(ContentSecurityPolicy*);
 
   // If you have a Document, use GetLayoutView() instead which is faster.
   void GetLayoutObject() const = delete;
@@ -1097,19 +1100,10 @@ class CORE_EXPORT Document : public ContainerNode,
   const SVGDocumentExtensions* SvgExtensions();
   SVGDocumentExtensions& AccessSVGExtensions();
 
-  // the first parameter specifies a policy to use as the document csp meaning
-  // the document will take ownership of the policy
-  // the second parameter specifies a policy to inherit meaning the document
-  // will attempt to copy over the policy
-  void InitContentSecurityPolicy(ContentSecurityPolicy* = nullptr,
-                                 const ContentSecurityPolicy* = nullptr);
-
   bool AllowInlineEventHandler(Node*,
                                EventListener*,
                                const String& context_url,
                                const WTF::OrdinalNumber& context_line);
-
-  void EnforceSandboxFlags(WebSandboxFlags mask) override;
 
   void StatePopped(scoped_refptr<SerializedScriptValue>);
 
@@ -1288,8 +1282,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void MaybeHandleHttpRefresh(const String&, HttpRefreshType);
   bool IsHttpRefreshScheduledWithin(double interval_in_seconds);
 
-  void UpdateSecurityOrigin(scoped_refptr<SecurityOrigin>);
-
   void SetHasViewportUnits() { has_viewport_units_ = true; }
   bool HasViewportUnits() const { return has_viewport_units_; }
   void SetResizedForViewportUnits();
@@ -1393,10 +1385,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
 
-  // Set an explicit feature policy on this document in response to an HTTP
-  // Feature-Policy header. This will be relayed to the embedder through the
-  // LocalFrameClient.
-  void ApplyFeaturePolicyFromHeader(const String& feature_policy_header);
+  // Apply pending feature policy headers.
+  void ApplyPendingFeaturePolicyHeaders();
 
   // Set the report-only feature policy on this document in response to an HTTP
   // Feature-Policy-Report-Only header.
@@ -1570,10 +1560,20 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsUseCounted(CSSPropertyID property,
                     UseCounterHelper::CSSPropertyType) const;
   void ClearUseCounterForTesting(mojom::WebFeature);
+  void SetSecurityOrigin(scoped_refptr<SecurityOrigin>) final;
+
+  // This method should be used sparingly because it does not adjust the
+  // window agent or agent cluster. If you are using this in a unit test
+  // you should likely navigate the document to adjust the security origin
+  // instead.
+  void SetSecurityOriginForTesting(scoped_refptr<SecurityOrigin>);
+
+  // Bind Content Security Policy to this document. This will cause the
+  // CSP to resolve the 'self' attribute and all policies will then be
+  // applied to this document.
+  void BindContentSecurityPolicy();
 
  protected:
-  void DidUpdateSecurityOrigin() final;
-
   void ClearXMLVersion() { xml_version_ = String(); }
 
   virtual Document* CloneDocumentWithoutChildren() const;
@@ -1591,6 +1591,16 @@ class CORE_EXPORT Document : public ContainerNode,
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
                            DuringOnFreeze);
   class NetworkStateObserver;
+  class SecurityContextInit;
+
+  Document(const DocumentInit& initization,
+           SecurityContextInit init_helper,
+           DocumentClassFlags document_classes);
+
+  // Post initialization of the object handling of the feature policy.
+  void FeaturePolicyInitialized(
+      const DocumentInit& document_initializer,
+      const SecurityContextInit& security_initializer);
 
   friend class AXContext;
   void AddAXContext(AXContext*);
@@ -1605,7 +1615,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ScriptedAnimationController& EnsureScriptedAnimationController();
   ScriptedIdleTaskController& EnsureScriptedIdleTaskController();
-  void InitSecurityContext(const DocumentInit&);
+  void InitSecurityContext(const DocumentInit&,
+                           const SecurityContextInit& security_initializer);
   void InitSecureContextState();
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
@@ -1701,12 +1712,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const ParsedFeaturePolicy GetOwnerContainerPolicy() const;
   const FeaturePolicy* GetParentFeaturePolicy() const;
-
-  // Set the feature policy on this document, inheriting as necessary from the
-  // parent document and frame owner (if they exist). The caller must ensure
-  // that any changes to the declared policy are relayed to the embedder through
-  // the LocalFrameClient.
-  void ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy);
 
   // Returns true if use of |method_name| for markup insertion is allowed by
   // feature policy; otherwise returns false and throws a DOM exception.
@@ -2038,6 +2043,10 @@ class CORE_EXPORT Document : public ContainerNode,
   mutable std::bitset<
       static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
       potentially_violated_features_;
+
+  // Pending parsed headers to send to browser after DidCommitNavigation
+  // IPC.
+  ParsedFeaturePolicy pending_parsed_headers_;
 
   AtomicString override_last_modified_;
 

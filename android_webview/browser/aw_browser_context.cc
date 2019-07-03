@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "android_webview/browser/aw_browser_policy_connector.h"
 #include "android_webview/browser/aw_download_manager_delegate.h"
 #include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_metrics_service_client.h"
@@ -24,11 +25,18 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
+#include "components/policy/core/browser/configuration_policy_pref_store.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/in_memory_pref_store.h"
+#include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -44,7 +52,6 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
-
 using base::FilePath;
 using content::BrowserThread;
 
@@ -100,22 +107,14 @@ bool IgnoreOriginSecurityCheck(const GURL& url) {
 
 }  // namespace
 
-AwBrowserContext::AwBrowserContext(
-    const base::FilePath path,
-    std::unique_ptr<PrefService> pref_service,
-    std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector)
-    : context_storage_path_(path),
-      user_pref_service_(std::move(pref_service)),
-      browser_policy_connector_(std::move(policy_connector)),
+AwBrowserContext::AwBrowserContext()
+    : context_storage_path_(GetContextStoragePath()),
       simple_factory_key_(GetPath(), IsOffTheRecord()) {
   DCHECK(!g_browser_context);
   g_browser_context = this;
   SimpleKeyMap::GetInstance()->Associate(this, &simple_factory_key_);
 
-  BrowserContext::Initialize(this, path);
-
-  pref_change_registrar_.Init(user_pref_service_.get());
-  user_prefs::UserPrefs::Set(this, user_pref_service_.get());
+  BrowserContext::Initialize(this, context_storage_path_);
 
   // This constructor is entered during the creation of ContentBrowserClient,
   // before browser threads are created. Therefore any checks to enforce
@@ -164,10 +163,64 @@ base::FilePath AwBrowserContext::GetCookieStorePath() {
 }
 
 // static
+base::FilePath AwBrowserContext::GetContextStoragePath() {
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
+    NOTREACHED() << "Failed to get app data directory for Android WebView";
+  }
+
+  return user_data_dir;
+}
+
+// static
 void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
+  safe_browsing::RegisterProfilePrefs(registry);
+
+  // Register the Autocomplete Data Retention Policy pref.
+  // The default value '0' represents the latest Chrome major version on which
+  // the retention policy ran. By setting it to a low default value, we're
+  // making sure it runs now (as it only runs once per major version).
+  registry->RegisterIntegerPref(
+      autofill::prefs::kAutocompleteLastVersionRetentionPolicy, 0);
+
+  // We only use the autocomplete feature of Autofill, which is controlled via
+  // the manager_delegate. We don't use the rest of Autofill, which is why it is
+  // hardcoded as disabled here.
+  // TODO(crbug.com/873740): The following also disables autocomplete.
+  // Investigate what the intended behavior is.
+  registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled,
+                                false);
+  registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled,
+                                false);
+
   registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
   registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
                                std::string());
+}
+
+void AwBrowserContext::CreateUserPrefService() {
+  browser_policy_connector_ = std::make_unique<AwBrowserPolicyConnector>();
+
+  auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
+
+  RegisterPrefs(pref_registry.get());
+
+  PrefServiceFactory pref_service_factory;
+  pref_service_factory.set_user_prefs(
+      base::MakeRefCounted<InMemoryPrefStore>());
+
+  policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
+  pref_service_factory.set_managed_prefs(
+      base::MakeRefCounted<policy::ConfigurationPolicyPrefStore>(
+          browser_policy_connector_.get(),
+          browser_policy_connector_->GetPolicyService(),
+          browser_policy_connector_->GetHandlerList(),
+          policy::POLICY_LEVEL_MANDATORY));
+
+  user_pref_service_ = pref_service_factory.Create(pref_registry);
+  pref_change_registrar_.Init(user_pref_service_.get());
+
+  user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
 
 // static
@@ -181,6 +234,8 @@ std::vector<std::string> AwBrowserContext::GetAuthSchemes() {
 
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   FilePath cache_path = GetCacheDir();
+
+  CreateUserPrefService();
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     url_request_context_getter_ =

@@ -243,7 +243,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         (action.navigationType == WKNavigationTypeFormResubmitted)) {
       self.webStateImpl->ShowRepostFormWarningDialog(
           base::BindOnce(^(bool shouldContinue) {
-            if (shouldContinue) {
+            if ([self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
+              decisionHandler(WKNavigationActionPolicyCancel);
+            } else if (shouldContinue) {
               decisionHandler(WKNavigationActionPolicyAllow);
             } else {
               decisionHandler(WKNavigationActionPolicyCancel);

@@ -77,7 +77,9 @@ class CONTENT_EXPORT PaymentAppProvider {
 
   // Notify the opened payment handler window is closing or closed by user so as
   // to abort payment request.
-  virtual void OnClosingOpenedWindow(BrowserContext* browser_context) = 0;
+  virtual void OnClosingOpenedWindow(
+      BrowserContext* browser_context,
+      payments::mojom::PaymentEventResponseType reason) = 0;
 
   // Check whether given |sw_js_url| from |manifest_url| is allowed to register
   // with |sw_scope|.

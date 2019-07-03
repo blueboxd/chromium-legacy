@@ -157,9 +157,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
     modified_params.swap_response.result = gfx::SwapResult::SWAP_ACK;
-    unsigned current_surface_texture = buffer_queue_->RecreateBuffers();
-    if (current_surface_texture)
-      BindFramebuffer();
+    buffer_queue_->FreeAllSurfaces();
     force_swap = true;
   }
   buffer_queue_->PageFlipComplete();

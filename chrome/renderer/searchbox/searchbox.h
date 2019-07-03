@@ -140,7 +140,7 @@ class SearchBox : public content::RenderFrameObserver,
   void ToggleMostVisitedOrCustomLinks();
 
   // Sends ToggleShortcutsVisibility to the browser.
-  void ToggleShortcutsVisibility();
+  void ToggleShortcutsVisibility(bool do_notify);
 
   // Attempts to fix obviously invalid URLs. Uses the "https" scheme unless
   // otherwise specified. Returns the fixed URL if valid, otherwise returns an

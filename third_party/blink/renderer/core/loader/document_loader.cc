@@ -1304,11 +1304,8 @@ void DocumentLoader::StartLoadingInternal() {
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
   document->SetReadyState(Document::kLoading);
-  if (content_security_policy_) {
-    document->InitContentSecurityPolicy(
-        content_security_policy_.Release(),
-        GetFrameLoader().GetLastOriginDocumentCSP());
-  }
+  if (content_security_policy_)
+    document->BindContentSecurityPolicy();
 
   if (history_item_ && IsBackForwardLoadType(load_type_))
     document->SetStateForNewFormElements(history_item_->GetDocumentState());
@@ -1480,14 +1477,26 @@ void DocumentLoader::InstallNewDocument(
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
 
-  DocumentInit init = DocumentInit::Create()
-                          .WithDocumentLoader(this)
-                          .WithURL(url)
-                          .WithOwnerDocument(owner_document)
-                          .WithInitiatorOrigin(initiator_origin)
-                          .WithOriginToCommit(origin_to_commit_)
-                          .WithSrcdocDocument(loading_srcdoc_)
-                          .WithNewRegistrationContext();
+  // FeaturePolicy is reset in the browser process on commit, so this needs to
+  // be initialized and replicated to the browser process after commit messages
+  // are sent in didCommitNavigation().
+  WTF::StringBuilder feature_policy;
+  feature_policy.Append(response_.HttpHeaderField(http_names::kFeaturePolicy));
+  MergeFeaturesFromOriginPolicy(feature_policy, origin_policy_);
+
+  DocumentInit init =
+      DocumentInit::Create()
+          .WithDocumentLoader(this)
+          .WithURL(url)
+          .WithOwnerDocument(owner_document)
+          .WithInitiatorOrigin(initiator_origin)
+          .WithOriginToCommit(origin_to_commit_)
+          .WithSrcdocDocument(loading_srcdoc_)
+          .WithNewRegistrationContext()
+          .WithFeaturePolicyHeader(feature_policy.ToString())
+          .WithOriginTrialsHeader(
+              response_.HttpHeaderField(http_names::kOriginTrial))
+          .WithContentSecurityPolicy(content_security_policy_.Get());
 
   // A javascript: url inherits CSP from the document in which it was
   // executed.
@@ -1592,9 +1601,6 @@ void DocumentLoader::InstallNewDocument(
     }
 #endif
 
-    OriginTrialContext::AddTokensFromHeader(
-        document, response_.HttpHeaderField(http_names::kOriginTrial));
-
     OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
         document, &initiator_origin_trial_features_);
   }
@@ -1629,10 +1635,7 @@ void DocumentLoader::InstallNewDocument(
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
-  WTF::StringBuilder feature_policy;
-  feature_policy.Append(response_.HttpHeaderField(http_names::kFeaturePolicy));
-  MergeFeaturesFromOriginPolicy(feature_policy, origin_policy_);
-  document->ApplyFeaturePolicyFromHeader(feature_policy.ToString());
+  document->ApplyPendingFeaturePolicyHeaders();
 
   WTF::String report_only_feature_policy(
       response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly));

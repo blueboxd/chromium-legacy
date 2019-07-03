@@ -68,8 +68,8 @@ class ExtensionManagementApiTest : public extensions::ExtensionApiTest {
     DisableExtension(extension_ids_["disabled_app"]);
   }
 
-  // Load an app, and wait for a message from app "management/launch_on_install"
-  // indicating that the new app has been launched.
+  // Load an app, and wait for a message that it has been launched. This should
+  // be sent by the launched app, to ensure the page is fully loaded.
   void LoadAndWaitForLaunch(const std::string& app_path,
                             std::string* out_app_id) {
     ExtensionTestMessageListener launched_app("launched app", false);

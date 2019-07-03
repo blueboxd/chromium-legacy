@@ -208,9 +208,9 @@ class DownloadRequestLimiter
     // callbacks.
     std::vector<DownloadRequestLimiter::Callback> callbacks_;
 
-    // Origins that have restricted download state.
+    // Origins that have non-default download state.
     using DownloadStatusMap = std::map<GURL, DownloadStatus>;
-    DownloadStatusMap restricted_status_map_;
+    DownloadStatusMap download_status_map_;
 
     ScopedObserver<HostContentSettingsMap, content_settings::Observer>
         observer_;

@@ -408,6 +408,8 @@ void OnMakePublicKeyCredentialComplete(
     if (credential->echo_user_verification_methods) {
       extension_outputs->setUvm(
           UvmEntryToArray(std::move(*credential->user_verification_methods)));
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerCreateSuccessWithUVM);
     }
 #endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
@@ -461,6 +463,8 @@ void OnGetAssertionComplete(
     if (credential->echo_user_verification_methods) {
       extension_outputs->setUvm(
           UvmEntryToArray(std::move(*credential->user_verification_methods)));
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerGetSuccessWithUVM);
     }
 #endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
@@ -497,6 +501,13 @@ ScriptPromise CredentialsContainer::get(
       UseCounter::Count(resolver->GetExecutionContext(),
                         WebFeature::kCredentialManagerGetPublicKeyCredential);
     }
+#if defined(OS_ANDROID)
+    if (options->publicKey()->hasExtensions() &&
+        options->publicKey()->extensions()->hasUvm()) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerGetWithUVM);
+    }
+#endif
 
     const String& relying_party_id = options->publicKey()->rpId();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
@@ -684,6 +695,13 @@ ScriptPromise CredentialsContainer::create(
           resolver->GetExecutionContext(),
           WebFeature::kCredentialManagerCreatePublicKeyCredential);
     }
+#if defined(OS_ANDROID)
+    if (options->publicKey()->hasExtensions() &&
+        options->publicKey()->extensions()->hasUvm()) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerCreateWithUVM);
+    }
+#endif
 
     const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))

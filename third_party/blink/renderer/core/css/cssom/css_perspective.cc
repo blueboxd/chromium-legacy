@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_perspective.h"
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -69,7 +70,7 @@ const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
     // Wrap out of range length with a calc.
     CSSCalcExpressionNode* node = length_->ToCalcExpressionNode();
     node->SetIsNestedCalc();
-    length = CSSPrimitiveValue::Create(CSSCalcValue::Create(node));
+    length = CSSMathFunctionValue::Create(CSSCalcValue::Create(node));
   } else {
     length = length_->ToCSSValue();
   }

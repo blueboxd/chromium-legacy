@@ -205,6 +205,13 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     protected void initializeToolbar() {}
 
+    /**
+     * @return  Whether this activity supports the find in page page
+     */
+    public boolean supportsFindInPage() {
+        return false;
+    }
+
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,

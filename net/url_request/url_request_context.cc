@@ -89,12 +89,14 @@ const HttpNetworkSession::Context* URLRequestContext::GetNetworkSessionContext()
   return &network_session->context();
 }
 
+#if (!defined(OS_WIN) && !defined(OS_LINUX)) || defined(OS_CHROMEOS)
 std::unique_ptr<URLRequest> URLRequestContext::CreateRequest(
     const GURL& url,
     RequestPriority priority,
     URLRequest::Delegate* delegate) const {
   return CreateRequest(url, priority, delegate, MISSING_TRAFFIC_ANNOTATION);
 }
+#endif
 
 std::unique_ptr<URLRequest> URLRequestContext::CreateRequest(
     const GURL& url,

@@ -200,10 +200,10 @@ customize.NOTIFICATION_TIMEOUT = 10000;
 customize.builtTiles = false;
 
 /**
- * The background image tile that was selected by the user.
- * @type {?Element}
+ * The default title for the richer picker.
+ * @type {string}
  */
-customize.selectedBackgroundTile = null;
+customize.richerPicker_defaultTitle = '';
 
 /**
  * Called when the error notification should be shown.
@@ -218,37 +218,51 @@ customize.showErrorNotification = null;
 customize.hideCustomLinkNotification = null;
 
 /**
- * The currently selected submenu (i.e. Background, Shortcuts, etc.) in the
- * richer picker. Corresponds to the submenu's button element in the sidebar.
- * @type {?Element}
+ * The currently active Background submenu. This can be the collections page or
+ * a collection's image menu. Defaults to the collections page.
+ * @type {Object}
  */
-customize.richerPicker_selectedSubmenu = null;
+customize.richerPicker_openBackgroundSubmenu = {
+  menuId: customize.IDS.BACKGROUNDS_MENU,
+  title: '',
+};
+
+/**
+ * The currently selected submenu (i.e. Background, Shortcuts, etc.) in the
+ * richer picker.
+ * @type {Object}
+ */
+customize.richerPicker_selectedSubmenu = {
+  menuButton: null,  // The submenu's button element in the sidebar.
+  menu: null,        // The submenu's menu element.
+  // The submenu's title. Will usually be |customize.richerPicker_defaultTitle|
+  // unless this is a background collection's image menu.
+  title: '',
+};
+
+/**
+ * The currently selected options in the customization menu.
+ * @type {Object}
+ */
+customize.selectedOptions = {
+  background: null,  // Contains the background image tile.
+  // Contains the selected shortcut type's DOM element, i.e. either custom links
+  // or most visited.
+  shortcutType: null,
+  shortcutsAreHidden: false,
+  color: null,  // Contains the selected color tile's DOM element.
+};
 
 /**
  * The preselected options for Shortcuts in the richer picker.
  * @type {Object}
  */
 customize.preselectedShortcutOptions = {
-  // Contains the selected type's DOM element, i.e. either custom links or most visited.
+  // Contains the selected type's DOM element, i.e. either custom links or most
+  // visited.
   shortcutType: null,
   isHidden: false,
 };
-
-/**
- * The currently selected options for Shortcuts in the richer picker.
- * @type {Object}
- */
-customize.selectedShortcutOptions = {
-  // Contains the preselected type's DOM element, i.e. either custom links or most visited.
-  shortcutType: null,
-  isHidden: false,
-};
-
-/**
- * The currently selected option in the Colors menu.
- * @type {?Element}
- */
-customize.selectedColorTile = null;
 
 /**
  * Whether tiles for Colors menu already loaded.
@@ -339,7 +353,7 @@ customize.clearAttribution = function() {
 
 customize.unselectTile = function() {
   $(customize.IDS.DONE).disabled = true;
-  customize.selectedBackgroundTile = null;
+  customize.selectedOptions.background = null;
   $(customize.IDS.DONE).tabIndex = -1;
 };
 
@@ -358,37 +372,79 @@ customize.resetSelectionDialog = function() {
 
 /**
  * Apply selected styling to |menuButton| and make corresponding |menu| visible.
- * @param {?Element} menuButton The button element to apply styling to.
+ * If |title| is not specified, the default title will be used.
+ * @param {?Element} menuButton The sidebar button element to apply styling to.
  * @param {?Element} menu The submenu element to apply styling to.
+ * @param {string=} title The submenu's title.
  */
-customize.richerPicker_selectSubmenu = function(menuButton, menu) {
+customize.richerPicker_showSubmenu = function(menuButton, menu, title = '') {
   if (!menuButton || !menu) {
     return;
   }
-  customize.richerPicker_selectedSubmenu = menuButton;
+
+  customize.richerPicker_hideOpenSubmenu();
+
+  if (!title) {  // Use the default title if not specified.
+    title = customize.richerPicker_defaultTitle;
+  }
+
+  // Save this as the currently open submenu.
+  customize.richerPicker_selectedSubmenu.menuButton = menuButton;
+  customize.richerPicker_selectedSubmenu.menu = menu;
+  customize.richerPicker_selectedSubmenu.title = title;
+
   menuButton.classList.toggle(customize.CLASSES.SELECTED, true);
   menu.classList.toggle(customize.CLASSES.MENU_SHOWN, true);
+  $(customize.IDS.MENU_TITLE).textContent = title;
+
+  // Indicate if this is a Background collection's image menu, which will enable
+  // the back button.
+  $(customize.IDS.CUSTOMIZATION_MENU)
+      .classList.toggle(
+          customize.CLASSES.ON_IMAGE_MENU,
+          menu.id === customize.IDS.BACKGROUNDS_IMAGE_MENU);
+};
+
+/**
+ * Hides the currently open submenu if any.
+ */
+customize.richerPicker_hideOpenSubmenu = function() {
+  if (!customize.richerPicker_selectedSubmenu.menuButton) {
+    return;  // No submenu is open.
+  }
+
+  customize.richerPicker_selectedSubmenu.menuButton.classList.toggle(
+      customize.CLASSES.SELECTED, false);
+  customize.richerPicker_selectedSubmenu.menu.classList.toggle(
+      customize.CLASSES.MENU_SHOWN, false);
+  $(customize.IDS.MENU_TITLE).textContent = customize.richerPicker_defaultTitle;
+
+  customize.richerPicker_selectedSubmenu.menuButton = null;
+  customize.richerPicker_selectedSubmenu.menu = null;
+  customize.richerPicker_selectedSubmenu.title =
+      customize.richerPicker_defaultTitle;
 };
 
 /**
  * Remove image tiles and maybe swap back to main background menu.
- * @param {boolean} showMenu Whether the main background menu should be shown.
  */
-customize.richerPicker_resetImageMenu = function(showMenu) {
+customize.richerPicker_resetImageMenu = function() {
   const backgroundMenu = $(customize.IDS.BACKGROUNDS_MENU);
   const imageMenu = $(customize.IDS.BACKGROUNDS_IMAGE_MENU);
   const menu = $(customize.IDS.CUSTOMIZATION_MENU);
   const menuTitle = $(customize.IDS.MENU_TITLE);
 
   imageMenu.innerHTML = '';
-  imageMenu.classList.toggle(customize.CLASSES.MENU_SHOWN, false);
-  menuTitle.textContent = menuTitle.dataset.mainTitle;
   menu.classList.toggle(customize.CLASSES.ON_IMAGE_MENU, false);
-  backgroundMenu.classList.toggle(customize.CLASSES.MENU_SHOWN, showMenu);
+  customize.richerPicker_showSubmenu(
+      $(customize.IDS.BACKGROUNDS_BUTTON), backgroundMenu);
+  customize.richerPicker_openBackgroundSubmenu.menuId =
+      customize.IDS.BACKGROUNDS_MENU;
+  customize.richerPicker_openBackgroundSubmenu.title = '';
   backgroundMenu.scrollTop = 0;
 
   customize.richerPicker_deselectBackgroundTile(
-      customize.selectedBackgroundTile);
+      customize.selectedOptions.background);
 };
 
 /**
@@ -404,14 +460,13 @@ customize.closeCollectionDialog = function(menu) {
 };
 
 /**
- * Close and reset the dialog, and set the background.
+ * Close and reset the dialog if this is not the richer picker, and set the
+ * background.
  * @param {string} url The url of the selected background.
  */
 customize.setBackground = function(
     url, attributionLine1, attributionLine2, attributionActionUrl) {
-  if (configData.richerPicker) {
-    customize.richerPicker_closeCustomizationMenu();
-  } else {
+  if (!configData.richerPicker) {
     customize.closeCollectionDialog($(customize.IDS.MENU));
   }
   window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions(
@@ -422,13 +477,19 @@ customize.setBackground = function(
  * Apply selected shortcut options.
  */
 customize.richerPicker_setShortcutOptions = function() {
-  if (customize.preselectedShortcutOptions.shortcutType !==
-      customize.selectedShortcutOptions.shortcutType) {
-    chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks();
+  const shortcutTypeChanged =
+      customize.preselectedShortcutOptions.shortcutType !==
+      customize.selectedOptions.shortcutType;
+  if (customize.preselectedShortcutOptions.shortcutsAreHidden !==
+      customize.selectedOptions.shortcutsAreHidden) {
+    // Only trigger a notification if |toggleMostVisitedOrCustomLinks| will not
+    // be called immediately after. Successive |onmostvisitedchange| events can
+    // interfere with each other.
+    chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility(
+        !shortcutTypeChanged);
   }
-  if (customize.preselectedShortcutOptions.isHidden !==
-      customize.selectedShortcutOptions.isHidden) {
-    chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility();
+  if (shortcutTypeChanged) {
+    chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks();
   }
 };
 
@@ -633,7 +694,7 @@ customize.showCollectionSelectionDialog = function() {
         // In the RP the upload or default tile may be selected.
         if (configData.richerPicker) {
           customize.richerPicker_deselectBackgroundTile(
-              customize.selectedBackgroundTile);
+              customize.selectedOptions.background);
         } else {
           customize.resetSelectionDialog();
         }
@@ -707,10 +768,35 @@ customize.showCollectionSelectionDialog = function() {
 };
 
 /**
- * Enable or disable the 'done' button.
- * @param {boolean} enable True if the done button should be enabled.
+ * Return true if any shortcut option is selected.
+ * Note: Shortcut options are preselected according to current user settings.
  */
-customize.richerPicker_toggleDone = function(enable) {
+customize.richerPicker_isShortcutOptionSelected = function() {
+  // Check if the currently selected options are not the preselection.
+  const notPreselectedType =
+      customize.preselectedShortcutOptions.shortcutType !==
+      customize.selectedOptions.shortcutType;
+  const notPreselectedHidden =
+      customize.preselectedShortcutOptions.shortcutsAreHidden !==
+      customize.selectedOptions.shortcutsAreHidden;
+  return notPreselectedType || notPreselectedHidden;
+};
+
+/**
+ * Return true if any option is selected. Used to enable the 'done' button.
+ */
+customize.richerPicker_isOptionSelected = function() {
+  return !!customize.selectedOptions.background ||
+      !!customize.selectedOptions.color ||
+      customize.richerPicker_isShortcutOptionSelected();
+};
+
+/**
+ * Enable the 'done' button if any option is selected. If no option is selected,
+ * disable the 'done' button.
+ */
+customize.richerPicker_maybeToggleDone = function() {
+  const enable = customize.richerPicker_isOptionSelected();
   $(customize.IDS.MENU_DONE).disabled = !enable;
   $(customize.IDS.MENU_DONE).tabIndex = enable ? 1 : 0;
 };
@@ -790,9 +876,9 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
   if (!tile) {
     return;
   }
-  customize.selectedBackgroundTile = tile;
+  customize.selectedOptions.background = tile;
   customize.richerPicker_applySelectedState(tile);
-  customize.richerPicker_toggleDone(true);
+  customize.richerPicker_maybeToggleDone();
   customize.richerPicker_previewImage(tile);
 };
 
@@ -805,24 +891,10 @@ customize.richerPicker_deselectBackgroundTile = function(tile) {
   if (!tile) {
     return;
   }
-  customize.selectedBackgroundTile = null;
+  customize.selectedOptions.background = null;
   customize.richerPicker_removeSelectedState(tile);
-  customize.richerPicker_toggleDone(false);
+  customize.richerPicker_maybeToggleDone();
   customize.richerPicker_unpreviewImage(tile);
-};
-
-/**
- * Enable the 'done' button if the selected shortcut options were not
- * preselected.
- * Note: Shortcut options are preselected according to current user settings.
- */
-customize.richerPicker_maybeToggleDoneShortcuts = function() {
-  const notPreselectedType =
-      customize.preselectedShortcutOptions.shortcutType !==
-      customize.selectedShortcutOptions.shortcutType;
-  const notPreselectedHidden = customize.preselectedShortcutOptions.isHidden !==
-      customize.selectedShortcutOptions.isHidden;
-  customize.richerPicker_toggleDone(notPreselectedType || notPreselectedHidden);
 };
 
 /**
@@ -832,34 +904,34 @@ customize.richerPicker_maybeToggleDoneShortcuts = function() {
  */
 customize.richerPicker_selectShortcutType = function(shortcutType) {
   if (!shortcutType ||
-      customize.selectedShortcutOptions.shortcutType === shortcutType) {
+      customize.selectedOptions.shortcutType === shortcutType) {
     return;  // The option has already been selected.
   }
 
   // Clear the previous selection, if any.
-  if (customize.selectedShortcutOptions.shortcutType) {
+  if (customize.selectedOptions.shortcutType) {
     customize.richerPicker_removeSelectedState(
-        customize.selectedShortcutOptions.shortcutType);
+        customize.selectedOptions.shortcutType);
   }
-  customize.selectedShortcutOptions.shortcutType = shortcutType;
+  customize.selectedOptions.shortcutType = shortcutType;
   customize.richerPicker_applySelectedState(shortcutType);
-  customize.richerPicker_maybeToggleDoneShortcuts();
+  customize.richerPicker_maybeToggleDone();
 };
 
 /**
  * Handles hide shortcuts toggle. Apply/remove styling for the toggle and
  * enable/disable the done button.
- * @param {boolean} isHidden True if the shortcuts are hidden, i.e. the toggle
+ * @param {boolean} areHidden True if the shortcuts are hidden, i.e. the toggle
  *     is on.
  */
-customize.richerPicker_toggleShortcutHide = function(isHidden) {
+customize.richerPicker_toggleShortcutHide = function(areHidden) {
   // (De)select the shortcut hide option.
   $(customize.IDS.SHORTCUTS_HIDE)
-      .classList.toggle(customize.CLASSES.SELECTED, isHidden);
-  $(customize.IDS.SHORTCUTS_HIDE_TOGGLE).checked = isHidden;
+      .classList.toggle(customize.CLASSES.SELECTED, areHidden);
+  $(customize.IDS.SHORTCUTS_HIDE_TOGGLE).checked = areHidden;
 
-  customize.selectedShortcutOptions.isHidden = isHidden;
-  customize.richerPicker_maybeToggleDoneShortcuts();
+  customize.selectedOptions.shortcutsAreHidden = areHidden;
+  customize.richerPicker_maybeToggleDone();
 };
 
 /**
@@ -909,8 +981,14 @@ customize.showImageSelectionDialog = function(dialogTitle) {
                                          $(customize.IDS.MENU);
 
   if (configData.richerPicker) {
-    $(customize.IDS.MENU_TITLE).textContent = dialogTitle;
     menu.classList.toggle(customize.CLASSES.ON_IMAGE_MENU, true);
+    customize.richerPicker_showSubmenu(
+        $(customize.IDS.BACKGROUNDS_BUTTON), tileContainer, dialogTitle);
+    // Save the current image menu. Used to restore to when the Background
+    // submenu is reopened.
+    customize.richerPicker_openBackgroundSubmenu.menuId =
+        customize.IDS.BACKGROUNDS_IMAGE_MENU;
+    customize.richerPicker_openBackgroundSubmenu.title = dialogTitle;
   } else {
     $(customize.IDS.TITLE).textContent = dialogTitle;
     menu.classList.remove(customize.CLASSES.COLLECTION_DIALOG);
@@ -918,17 +996,17 @@ customize.showImageSelectionDialog = function(dialogTitle) {
   }
 
   const tileInteraction = function(tile) {
-    if (customize.selectedBackgroundTile) {
+    if (customize.selectedOptions.background) {
       if (configData.richerPicker) {
-        const id = customize.selectedBackgroundTile.id;
+        const id = customize.selectedOptions.background.id;
         customize.richerPicker_deselectBackgroundTile(
-            customize.selectedBackgroundTile);
+            customize.selectedOptions.background);
         if (id === tile.id) {
           return;
         }
       } else {
-        customize.removeSelectedState(customize.selectedBackgroundTile);
-        if (customize.selectedBackgroundTile.id === tile.id) {
+        customize.removeSelectedState(customize.selectedOptions.background);
+        if (customize.selectedOptions.background.id === tile.id) {
           customize.unselectTile();
           return;
         }
@@ -939,7 +1017,7 @@ customize.showImageSelectionDialog = function(dialogTitle) {
       customize.richerPicker_selectBackgroundTile(tile);
     } else {
       customize.applySelectedState(tile);
-      customize.selectedBackgroundTile = tile;
+      customize.selectedOptions.background = tile;
     }
 
     $(customize.IDS.DONE).tabIndex = 0;
@@ -957,7 +1035,7 @@ customize.showImageSelectionDialog = function(dialogTitle) {
       tileInteraction(event.currentTarget);
     } else if (
         clickCount === 2 &&
-        customize.selectedBackgroundTile === event.currentTarget) {
+        customize.selectedOptions.background === event.currentTarget) {
       customize.setBackground(
           event.currentTarget.dataset.url,
           event.currentTarget.dataset.attributionLine1,
@@ -1158,68 +1236,92 @@ customize.networkStateChanged = function(online) {
  */
 customize.richerPicker_openCustomizationMenu = function() {
   customize.richerPicker_resetCustomizationMenu();
-  $(customize.IDS.BACKGROUNDS_MENU)
-      .classList.toggle(customize.CLASSES.MENU_SHOWN, true);
-  customize.richerPicker_selectedSubmenu = $(customize.IDS.BACKGROUNDS_BUTTON);
+
+  customize.richerPicker_showSubmenu(
+      $(customize.IDS.BACKGROUNDS_BUTTON), $(customize.IDS.BACKGROUNDS_MENU));
+
+  customize.loadChromeBackgrounds();
+  customize.loadColorTiles();
+  if (!$(customize.IDS.CUSTOMIZATION_MENU).open) {
+    $(customize.IDS.CUSTOMIZATION_MENU).showModal();
+  }
 };
 
 /**
  * Reset the selected options in the customization menu.
  */
 customize.richerPicker_resetSelectedOptions = function() {
-  if (customize.selectedBackgroundTile) {
-    // Reset background selection.
-    customize.richerPicker_removeSelectedState(
-        customize.selectedBackgroundTile);
-    customize.selectedBackgroundTile = null;
-  } else if (customize.selectedColorTile) {
-    // Reset color selection.
-    customize.richerPicker_removeSelectedState(customize.selectedColorTile);
-    customize.cancelColor();
-    customize.selectedColorTile = null;
-  }
+  // Reset background selection.
+  customize.richerPicker_deselectBackgroundTile(
+      customize.selectedOptions.background);
+  customize.selectedOptions.background = null;
+
+  // Reset color selection.
+  customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
+  customize.selectedOptions.color = null;
 
   // Preselect the shortcut options.
   const shortcutType = chrome.embeddedSearch.newTabPage.isUsingMostVisited ?
       $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED) :
       $(customize.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS);
-  const isHidden = !chrome.embeddedSearch.newTabPage.areShortcutsVisible;
+  const shortcutsAreHidden =
+      !chrome.embeddedSearch.newTabPage.areShortcutsVisible;
   customize.richerPicker_selectShortcutType(shortcutType);
-  customize.richerPicker_toggleShortcutHide(isHidden);
-  customize.selectedShortcutOptions.shortcutType = shortcutType;
+  customize.richerPicker_toggleShortcutHide(shortcutsAreHidden);
+  customize.selectedOptions.shortcutType = shortcutType;
   customize.preselectedShortcutOptions.shortcutType = shortcutType;
-  customize.selectedShortcutOptions.isHidden = isHidden;
-  customize.preselectedShortcutOptions.isHidden = isHidden;
+  customize.selectedOptions.shortcutsAreHidden = shortcutsAreHidden;
+  customize.preselectedShortcutOptions.shortcutsAreHidden = shortcutsAreHidden;
 };
 
 /**
  * Resets the customization menu.
  */
 customize.richerPicker_resetCustomizationMenu = function() {
-  // Reset the submenus.
-  customize.richerPicker_resetImageMenu(false);
-  $(customize.IDS.BACKGROUNDS_MENU)
-      .classList.toggle(customize.CLASSES.MENU_SHOWN, false);
-  $(customize.IDS.SHORTCUTS_MENU)
-      .classList.toggle(customize.CLASSES.MENU_SHOWN, false);
-  $(customize.IDS.COLORS_MENU)
-      .classList.toggle(customize.CLASSES.MENU_SHOWN, false);
-  if (customize.richerPicker_selectedSubmenu) {
-    customize.richerPicker_selectedSubmenu.classList.toggle(
-        customize.CLASSES.SELECTED, false);
-    customize.richerPicker_selectedSubmenu = null;
-  }
-  // Reset any selected options.
   customize.richerPicker_resetSelectedOptions();
-  customize.richerPicker_toggleDone(false);
+  customize.richerPicker_resetImageMenu();
+  customize.richerPicker_hideOpenSubmenu();
 };
 
 /**
- * Close customization menu.
+ * Close and reset the customization menu.
  */
 customize.richerPicker_closeCustomizationMenu = function() {
   $(customize.IDS.CUSTOMIZATION_MENU).close();
   customize.richerPicker_resetCustomizationMenu();
+};
+
+/**
+ * Cancel customization, revert any changes, and close the richer picker.
+ */
+customize.richerPicker_cancelCustomization = function() {
+  // Cancel any color changes.
+  if (customize.selectedOptions.color) {
+    customize.cancelColor();
+  }
+
+  customize.richerPicker_closeCustomizationMenu();
+};
+
+/**
+ * Apply the currently selected customization options and close the richer
+ * picker.
+ */
+customize.richerPicker_applyCustomization = function() {
+  if (customize.selectedOptions.background) {
+    customize.setBackground(
+        customize.selectedOptions.background.dataset.url,
+        customize.selectedOptions.background.dataset.attributionLine1,
+        customize.selectedOptions.background.dataset.attributionLine2,
+        customize.selectedOptions.background.dataset.attributionActionUrl);
+  }
+  if (customize.richerPicker_isShortcutOptionSelected()) {
+    customize.richerPicker_setShortcutOptions();
+  }
+  if (customize.selectedOptions.color) {
+    customize.confirmColor();
+  }
+  customize.richerPicker_closeCustomizationMenu();
 };
 
 /**
@@ -1239,9 +1341,11 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   $(customize.IDS.OPTIONS_TITLE).textContent =
       configData.translatedStrings.customizeBackground;
 
-  // Store the main menu title so it can be restored if needed.
-  $(customize.IDS.MENU_TITLE).dataset.mainTitle =
-      $(customize.IDS.MENU_TITLE).textContent;
+  if (configData.richerPicker) {
+    // Store the main menu title so it can be restored if needed.
+    customize.richerPicker_defaultTitle =
+        $(customize.IDS.MENU_TITLE).textContent;
+  }
 
   $(customize.IDS.EDIT_BG_ICON)
       .setAttribute(
@@ -1254,11 +1358,6 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   const editBackgroundInteraction = function() {
     if (configData.richerPicker) {
       customize.richerPicker_openCustomizationMenu();
-      customize.loadChromeBackgrounds();
-      customize.loadColorTiles();
-      if (!$(customize.IDS.CUSTOMIZATION_MENU).open) {
-        $(customize.IDS.CUSTOMIZATION_MENU).showModal();
-      }
     } else {
       editDialog.showModal();
     }
@@ -1269,11 +1368,7 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   };
 
   $(customize.IDS.MENU_CANCEL).onclick = function(event) {
-    if (customize.richerPicker_selectedSubmenu ==
-        $(customize.IDS.COLORS_BUTTON)) {
-      customize.cancelColor();
-    }
-    customize.richerPicker_closeCustomizationMenu();
+    customize.richerPicker_cancelCustomization();
   };
 
 
@@ -1561,7 +1656,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   // Interactions with the back arrow on the image selection dialog.
   const backInteraction = function(event) {
     if (configData.richerPicker) {
-      customize.richerPicker_resetImageMenu(true);
+      customize.richerPicker_resetImageMenu();
     }
     customize.resetSelectionDialog();
     customize.showCollectionSelectionDialog();
@@ -1609,22 +1704,15 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (done.disabled) {
       return;
     }
-
-    if (customize.richerPicker_selectedSubmenu ==
-        $(customize.IDS.COLORS_BUTTON)) {
-      customize.confirmColor();
-      customize.richerPicker_closeCustomizationMenu();
-    } else if (
-        customize.richerPicker_selectedSubmenu ==
-        $(customize.IDS.SHORTCUTS_BUTTON)) {
-      customize.richerPicker_setShortcutOptions();
-      customize.richerPicker_closeCustomizationMenu();
-    } else {
+    if (configData.richerPicker) {
+      customize.richerPicker_applyCustomization();
+    } else if (customize.selectedOptions.background) {
+      // Also closes the customization menu.
       customize.setBackground(
-          customize.selectedBackgroundTile.dataset.url,
-          customize.selectedBackgroundTile.dataset.attributionLine1,
-          customize.selectedBackgroundTile.dataset.attributionLine2,
-          customize.selectedBackgroundTile.dataset.attributionActionUrl);
+          customize.selectedOptions.background.dataset.url,
+          customize.selectedOptions.background.dataset.attributionLine1,
+          customize.selectedOptions.background.dataset.attributionLine2,
+          customize.selectedOptions.background.dataset.attributionActionUrl);
     }
   };
   $(customize.IDS.DONE).onclick = doneInteraction;
@@ -1692,9 +1780,11 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const richerPickerOpenBackgrounds = function() {
-    customize.richerPicker_resetCustomizationMenu();
-    customize.richerPicker_selectSubmenu(
-        $(customize.IDS.BACKGROUNDS_BUTTON), $(customize.IDS.BACKGROUNDS_MENU));
+    // Open the previously open Background submenu, if applicable.
+    customize.richerPicker_showSubmenu(
+        $(customize.IDS.BACKGROUNDS_BUTTON),
+        $(customize.richerPicker_openBackgroundSubmenu.menuId),
+        customize.richerPicker_openBackgroundSubmenu.title);
   };
 
   $(customize.IDS.BACKGROUNDS_BUTTON).onclick = richerPickerOpenBackgrounds;
@@ -1744,8 +1834,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const richerPickerOpenShortcuts = function() {
-    customize.richerPicker_resetCustomizationMenu();
-    customize.richerPicker_selectSubmenu(
+    customize.richerPicker_showSubmenu(
         $(customize.IDS.SHORTCUTS_BUTTON), $(customize.IDS.SHORTCUTS_MENU));
   };
 
@@ -1758,8 +1847,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customize.IDS.COLORS_BUTTON).onclick = function() {
-    customize.richerPicker_resetCustomizationMenu();
-    customize.richerPicker_selectSubmenu(
+    customize.richerPicker_showSubmenu(
         $(customize.IDS.COLORS_BUTTON), $(customize.IDS.COLORS_MENU));
     ntpApiHandle.getColorsInfo();
   };
@@ -1804,12 +1892,12 @@ customize.updateColorMenuTileSelection = function(tile) {
     return;
   }
   // Clear the previous selection, if any.
-  if (customize.selectedColorTile) {
-    customize.richerPicker_removeSelectedState(customize.selectedColorTile);
+  if (customize.selectedOptions.color) {
+    customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
   }
-  customize.selectedColorTile = tile;
+  customize.selectedOptions.color = tile;
   customize.richerPicker_applySelectedState(tile);
-  customize.richerPicker_toggleDone(true);
+  customize.richerPicker_maybeToggleDone();
 };
 
 /**

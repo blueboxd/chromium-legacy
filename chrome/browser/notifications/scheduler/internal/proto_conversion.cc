@@ -171,6 +171,29 @@ SchedulerTaskTime FromSchedulerTaskTime(
   NOTREACHED();
 }
 
+proto::ActionButtonType ToActionButtonType(ActionButtonType type) {
+  switch (type) {
+    case ActionButtonType::kUnknownAction:
+      return proto::ActionButtonType::UNKNOWN_ACTION;
+    case ActionButtonType::kHelpful:
+      return proto::ActionButtonType::HELPFUL;
+    case ActionButtonType::kUnhelpful:
+      return proto::ActionButtonType::UNHELPFUL;
+  }
+  NOTREACHED();
+}
+
+ActionButtonType FromActionButtonType(proto::ActionButtonType proto_type) {
+  switch (proto_type) {
+    case proto::ActionButtonType::UNKNOWN_ACTION:
+      return ActionButtonType::kUnknownAction;
+    case proto::ActionButtonType::HELPFUL:
+      return ActionButtonType::kHelpful;
+    case proto::ActionButtonType::UNHELPFUL:
+      return ActionButtonType::kUnhelpful;
+  }
+}
+
 // Converts NotificationData to proto buffer type.
 void NotificationDataToProto(NotificationData* notification_data,
                              proto::NotificationData* proto) {
@@ -181,6 +204,13 @@ void NotificationDataToProto(NotificationData* notification_data,
     auto* data = proto->add_custom_data();
     data->set_key(pair.first);
     data->set_value(pair.second);
+  }
+
+  for (const auto& button : notification_data->buttons) {
+    auto* proto_button = proto->add_buttons();
+    proto_button->set_text(base::UTF16ToUTF8(button.text));
+    proto_button->set_button_type(ToActionButtonType(button.type));
+    proto_button->set_id(button.id);
   }
 }
 
@@ -193,6 +223,15 @@ void NotificationDataFromProto(proto::NotificationData* proto,
   for (int i = 0; i < proto->custom_data_size(); ++i) {
     const auto& pair = proto->custom_data(i);
     notification_data->custom_data.emplace(pair.key(), pair.value());
+  }
+
+  for (int i = 0; i < proto->buttons_size(); ++i) {
+    NotificationData::Button button;
+    const auto& proto_button = proto->buttons(i);
+    button.text = base::UTF8ToUTF16(proto_button.text());
+    button.type = FromActionButtonType(proto_button.button_type());
+    button.id = proto_button.id();
+    notification_data->buttons.emplace_back(button);
   }
 }
 

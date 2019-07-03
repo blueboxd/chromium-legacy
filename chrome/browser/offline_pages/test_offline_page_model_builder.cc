@@ -17,7 +17,6 @@
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_test_archive_publisher.h"
-#include "components/offline_pages/core/stub_system_download_manager.h"
 
 namespace {
 const int64_t kDownloadId = 42LL;
@@ -47,15 +46,12 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(SimpleFactoryKey* key) {
   auto archive_manager = std::make_unique<ArchiveManager>(
       temporary_archives_dir, private_archives_dir, public_archives_dir,
       task_runner);
-  auto stub_download_manager =
-      std::make_unique<StubSystemDownloadManager>(kDownloadId, true);
-
   auto publisher = std::make_unique<OfflinePageTestArchivePublisher>(
-      archive_manager.get(), stub_download_manager.get());
+      archive_manager.get(), kDownloadId);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(stub_download_manager), std::move(publisher), task_runner));
+      std::move(publisher), task_runner));
 }
 
 }  // namespace offline_pages

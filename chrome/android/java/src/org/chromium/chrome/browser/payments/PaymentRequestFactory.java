@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.components.payments.ErrorStrings;
@@ -115,6 +117,11 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         @Override
         public boolean isWebContentsActive(TabModel model, WebContents webContents) {
             return TabModelUtils.getCurrentWebContents(model) == webContents;
+        }
+
+        @Override
+        public boolean prefsCanMakePayment() {
+            return PrefServiceBridge.getInstance().getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED);
         }
 
         @Override

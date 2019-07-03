@@ -56,10 +56,6 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "cleanup_tq";
     case MainThreadTaskQueue::QueueType::kOther:
       return "other_tq";
-    case MainThreadTaskQueue::QueueType::kWebSchedulingUserInteraction:
-      return "web_scheduling_user_interaction_tq";
-    case MainThreadTaskQueue::QueueType::kWebSchedulingBestEffort:
-      return "web_scheduling_background_tq";
     case MainThreadTaskQueue::QueueType::kCount:
       NOTREACHED();
       return nullptr;
@@ -87,8 +83,6 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kFrameDeferrable:
     case QueueType::kFramePausable:
     case QueueType::kFrameUnpausable:
-    case QueueType::kWebSchedulingUserInteraction:
-    case QueueType::kWebSchedulingBestEffort:
       return QueueClass::kTimer;
     case QueueType::kCompositor:
     case QueueType::kInput:

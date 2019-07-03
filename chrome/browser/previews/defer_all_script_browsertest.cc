@@ -302,7 +302,6 @@ IN_PROC_BROWSER_TEST_F(
   test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kcoin_flip_resultName,
                                       2);
   test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName, 1);
-  // TODO(dougarnett): Verify preview type not set once ukm support landed.
-  //  test_ukm_recorder.ExpectEntryMetric(
-  //      entry, UkmEntry::kdefer_all_scriptName, false);
+  test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kdefer_all_scriptName,
+                                      true);
 }

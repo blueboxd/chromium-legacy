@@ -23,7 +23,6 @@ ANNOTATION_TYPES = {
     'CreateMutableNetworkTrafficAnnotationTag': 'Mutable',
 }
 
-
 # Regex that matches an annotation definition.
 CALL_DETECTION_REGEX = re.compile(r'''
   \b
@@ -37,16 +36,22 @@ CALL_DETECTION_REGEX = re.compile(r'''
   \(
 ''', re.VERBOSE | re.DOTALL)
 
+# Regex that matches an annotation that should only be used in test files.
+TEST_ANNOTATION_REGEX = re.compile(
+    r'\b(PARTIAL_)?TRAFFIC_ANNOTATION_FOR_TESTS\b')
+
+# Regex that matches a placeholder annotation for a few whitelisted files.
+MISSING_ANNOTATION_REGEX = re.compile(r'\bMISSING_TRAFFIC_ANNOTATION\b')
 
 class Annotation:
   """A network annotation definition in C++ code."""
 
-  def __init__(self, file_path, re_match):
-    """Parses the annotation and populates object fields.
+  def __init__(self, file_path, line_number, type_name='', unique_id='',
+               extra_id='', text=''):
+    """Constructs an Annotation object with the given field values.
 
     Args:
       file_path: Path to the file that contains this annotation.
-      re_match: A MatchObject obtained from CALL_DETECTION_REGEX.
     """
     self.file_path = file_path
     # TODO(crbug/966883): Remove function_name from here and from the clang
@@ -56,20 +61,27 @@ class Annotation:
     # compatibility with the clang tool. Use an obviously wrong function name
     # in case this details ends up in auditor output.
     self.function_name = "XXX_UNIMPLEMENTED_XXX"
-    self.line_number = get_line_number_at(re_match.string, re_match.start())
+    self.line_number = line_number
+    self.type_name = type_name
+    self.unique_id = unique_id
+    self.extra_id = extra_id
+    self.text = text
 
+  def parse_definition(self, re_match):
+    """Parses the annotation and populates object fields.
+
+    Args:
+      file_path: Path to the file that contains this annotation.
+      re_match: A MatchObject obtained from CALL_DETECTION_REGEX.
+    """
     definition_function = re_match.group(1)
     self.type_name = ANNOTATION_TYPES[definition_function]
-
-    # These are populated by _parse_body().
-    self.unique_id = ''
-    self.extra_id = ''
-    self.text = ''
 
     # Parse the arguments given to the definition function, populating
     # |unique_id|, |text| and (possibly) |extra_id|.
     body = re_match.string[re_match.end():]
     self._parse_body(body)
+
 
   def clang_tool_output_string(self):
     """Returns a string formatted for clang-tool-style output."""
@@ -150,10 +162,49 @@ def extract_annotations(file_path):
     contents = f.read()
 
   defs = []
+
+  # Check for function calls (e.g. DefineNetworkTrafficAnnotation(...))
   for re_match in CALL_DETECTION_REGEX.finditer(contents):
     if is_inside_comment(re_match.string, re_match.start()):
       continue
-    defs.append(Annotation(file_path, re_match))
+    line_number = get_line_number_at(contents, re_match.start())
+    annotation = Annotation(file_path, line_number)
+    annotation.parse_definition(re_match)
+    defs.append(annotation)
+
+  # Check for test annotations (e.g. TRAFFIC_ANNOTATION_FOR_TESTS)
+  for re_match in TEST_ANNOTATION_REGEX.finditer(contents):
+    if is_inside_comment(re_match.string, re_match.start()):
+      continue
+    line_number = get_line_number_at(contents, re_match.start())
+
+    is_partial = bool(re_match.group(1))
+    if is_partial:
+      type_name = 'Partial'
+      unique_id = 'test_partial'
+      extra_id = 'test'
+    else:
+      type_name = 'Definition'
+      unique_id = 'test'
+      extra_id = ''
+
+    annotation = Annotation(
+        file_path, line_number, type_name=type_name,
+        unique_id=unique_id, extra_id=extra_id,
+        text='Traffic annotation for unit, browser and other tests')
+    defs.append(annotation)
+
+  # Check for MISSING_TRAFFIC_ANNOTATION.
+  for re_match in MISSING_ANNOTATION_REGEX.finditer(contents):
+    if is_inside_comment(re_match.string, re_match.start()):
+      continue
+    line_number = get_line_number_at(contents, re_match.start())
+
+    annotation = Annotation(
+        file_path, line_number, type_name='Definition', unique_id='missing',
+        text='Function called without traffic annotation.')
+    defs.append(annotation)
+
   return defs
 
 

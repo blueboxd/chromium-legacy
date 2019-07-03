@@ -8,11 +8,9 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/sequence_manager/task_time_observer.h"
 #include "components/scheduling_metrics/task_duration_metric_reporter.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/common/thread_load_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
@@ -41,12 +39,10 @@ class TaskQueueThrottler;
 class WakeUpBudgetPool;
 class CPUTimeBudgetPool;
 
-class PLATFORM_EXPORT WorkerThreadScheduler
-    : public NonMainThreadSchedulerImpl,
-      public IdleHelper::Delegate,
-      public base::sequence_manager::TaskTimeObserver {
+class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadSchedulerImpl,
+                                              public IdleHelper::Delegate {
  public:
-  // |sequence_manager|and |proxy| must remain valid for the entire lifetime of
+  // |sequence_manager| and |proxy| must remain valid for the entire lifetime of
   // this object.
   WorkerThreadScheduler(
       WebThreadType thread_type,
@@ -77,11 +73,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler
       const base::sequence_manager::Task& task,
       base::sequence_manager::TaskQueue::TaskTiming* task_timing,
       base::sequence_manager::LazyNow* lazy_now) override;
-
-  // TaskTimeObserver implementation:
-  void WillProcessTask(base::TimeTicks start_time) override;
-  void DidProcessTask(base::TimeTicks start_time,
-                      base::TimeTicks end_time) override;
 
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
@@ -146,9 +137,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   const WebThreadType thread_type_;
   IdleHelper idle_helper_;
-  ThreadLoadTracker load_tracker_;
   bool initialized_;
-  base::TimeTicks thread_start_time_;
   scoped_refptr<NonMainThreadTaskQueue> control_task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;

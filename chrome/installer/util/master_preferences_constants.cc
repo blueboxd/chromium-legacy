@@ -12,8 +12,6 @@ namespace master_preferences {
       "import_bookmarks_from_file";
   const char kDistroSuppressDefaultBrowserPromptPref[] =
       "suppress_default_browser_prompt_for_version";
-  const char kDistroWelcomePageOnOSUpgradeEnabled[] =
-      "welcome_page_on_os_upgrade_enabled";
   const char kDoNotCreateAnyShortcuts[] = "do_not_create_any_shortcuts";
   const char kDoNotCreateDesktopShortcut[] = "do_not_create_desktop_shortcut";
   const char kDoNotCreateQuickLaunchShortcut[] =

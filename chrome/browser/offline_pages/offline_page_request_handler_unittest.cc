@@ -37,7 +37,6 @@
 #include "components/offline_pages/core/offline_page_test_archive_publisher.h"
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
-#include "components/offline_pages/core/stub_system_download_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -865,8 +864,6 @@ OfflinePageRequestHandlerTest::BuildTestOfflinePageModel(
       key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(task_runner, store_path));
-  auto download_manager =
-      std::make_unique<StubSystemDownloadManager>(kDownloadId, true);
 
   // Since we're not saving page into temporary dir, it's set the same as the
   // private dir.
@@ -875,13 +872,13 @@ OfflinePageRequestHandlerTest::BuildTestOfflinePageModel(
       task_runner);
 
   auto archive_publisher = std::make_unique<OfflinePageTestArchivePublisher>(
-      archive_manager.get(), download_manager.get());
+      archive_manager.get(), kDownloadId);
   // TODO(iwells): Figure out how to make use_verbatim_archive_path go away.
   archive_publisher->use_verbatim_archive_path(true);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), std::move(archive_publisher), task_runner));
+      std::move(archive_publisher), task_runner));
 }
 
 // static

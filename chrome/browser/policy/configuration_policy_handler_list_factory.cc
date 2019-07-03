@@ -841,9 +841,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  { key::kWelcomePageOnOSUpgradeEnabled,
-    prefs::kWelcomePageOnOSUpgradeEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kChromeCleanupEnabled,
     prefs::kSwReporterEnabled,
     base::Value::Type::BOOLEAN },

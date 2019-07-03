@@ -751,9 +751,9 @@ public class ChromeTabbedActivity
             }
 
             getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
-                    getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
-                    mOverviewModeController, mLayoutManager, tabSwitcherClickHandler,
-                    newTabClickHandler, bookmarkClickHandler, null);
+                    getFullscreenManager().getBrowserVisibilityDelegate(), mOverviewModeController,
+                    mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
+                    bookmarkClickHandler, null);
 
             mLayoutManager.setToolbarManager(getToolbarManager());
 
@@ -2303,7 +2303,6 @@ public class ChromeTabbedActivity
 
     @Override
     public void onOverviewModeStartedShowing(boolean showToolbar) {
-        if (getFindToolbarManager() != null) getFindToolbarManager().hideToolbar();
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
     }
 

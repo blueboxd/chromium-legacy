@@ -172,8 +172,7 @@
           "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}",
-          "--use-skia-gold",
-          "--stream-goldctl-output"
+          "--use-skia-gold"
         ],
         "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -542,8 +541,7 @@
           "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}",
-          "--use-skia-gold",
-          "--stream-goldctl-output"
+          "--use-skia-gold"
         ],
         "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -906,8 +904,7 @@
           "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}",
-          "--use-skia-gold",
-          "--stream-goldctl-output"
+          "--use-skia-gold"
         ],
         "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -1265,8 +1262,7 @@
           "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}",
-          "--use-skia-gold",
-          "--stream-goldctl-output"
+          "--use-skia-gold"
         ],
         "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -1728,8 +1724,7 @@
           "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}",
-          "--use-skia-gold",
-          "--stream-goldctl-output"
+          "--use-skia-gold"
         ],
         "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",

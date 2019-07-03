@@ -5,21 +5,17 @@
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"
 
 #include "android_webview/browser/aw_resource_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 
 namespace android_webview {
 
-AwURLLoaderThrottle::AwURLLoaderThrottle(
-    content::ResourceContext* resource_context)
-    : aw_resource_context_(static_cast<AwResourceContext*>(resource_context)) {}
+AwURLLoaderThrottle::AwURLLoaderThrottle(AwResourceContext* aw_resource_context)
+    : aw_resource_context_(aw_resource_context) {}
 
 AwURLLoaderThrottle::~AwURLLoaderThrottle() = default;
 
 void AwURLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
                                            bool* defer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   AddExtraHeadersIfNeeded(request->url, &request->headers);
 }
 
@@ -29,8 +25,6 @@ void AwURLLoaderThrottle::WillRedirectRequest(
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   AddExtraHeadersIfNeeded(redirect_info->new_url, modified_request_headers);
 }
 

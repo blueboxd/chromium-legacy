@@ -60,7 +60,7 @@ class OmniboxResultView : public views::View,
 
   void ShowKeyword(bool show_keyword);
 
-  void Invalidate();
+  void Invalidate(bool force_reapply_styles = false);
 
   // Invoked when this result view has been selected.
   void OnSelected();

@@ -211,6 +211,7 @@ class CORE_EXPORT ContentSecurityPolicy
   ~ContentSecurityPolicy();
   void Trace(blink::Visitor*);
 
+  bool IsBound();
   void BindToDelegate(ContentSecurityPolicyDelegate&);
   void SetupSelf(const SecurityOrigin&);
   void SetupSelf(const ContentSecurityPolicy&);

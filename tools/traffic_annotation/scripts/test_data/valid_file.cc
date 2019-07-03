@@ -81,6 +81,11 @@ void TestURLFetcherCreate() {
 
   net::URLFetcher::Create(0, GURL(), net::URLFetcher::RequestType::TEST_VALUE,
                           delegate, NO_TRAFFIC_ANNOTATION_YET);
+
+  net::URLFetcher::Create(GURL(), net::URLFetcher::RequestType::TEST_VALUE,
+                          delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  SetPartialNetworkTrafficAnnotation(PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
 void TestCreateRequest() {

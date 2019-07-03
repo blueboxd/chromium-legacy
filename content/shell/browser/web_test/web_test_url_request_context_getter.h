@@ -18,7 +18,6 @@
 
 namespace net {
 class NetworkDelegate;
-class NetLog;
 class ProxyConfigService;
 }  // namespace net
 
@@ -32,8 +31,7 @@ class WebTestURLRequestContextGetter : public ShellURLRequestContextGetter {
       const base::FilePath& base_path,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors,
-      net::NetLog* net_log);
+      URLRequestInterceptorScopedVector request_interceptors);
 
  protected:
   ~WebTestURLRequestContextGetter() override;

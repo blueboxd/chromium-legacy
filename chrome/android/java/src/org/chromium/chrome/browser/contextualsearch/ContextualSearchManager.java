@@ -47,8 +47,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -152,8 +150,6 @@ public class ContextualSearchManager
     private OverlayPanelContentViewDelegate mSearchContentViewDelegate;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private FindToolbarManager mFindToolbarManager;
-    private FindToolbarObserver mFindToolbarObserver;
     private ContextualSearchIPH mInProductHelp;
 
     private boolean mDidStartLoadingResolvedSearchRequest;
@@ -278,30 +274,6 @@ public class ContextualSearchManager
     }
 
     /**
-     * Sets the {@link FindToolbarManager} and attaches an observer that dismisses the Contextual
-     * Search panel when the find toolbar is shown.
-     *
-     * @param findToolbarManager The {@link FindToolbarManager} for the current activity.
-     */
-    public void setFindToolbarManager(FindToolbarManager findToolbarManager) {
-        if (mFindToolbarManager != null) {
-            mFindToolbarManager.removeObserver(mFindToolbarObserver);
-        }
-
-        mFindToolbarManager = findToolbarManager;
-
-        if (mFindToolbarObserver == null) {
-            mFindToolbarObserver = new FindToolbarObserver() {
-                @Override
-                public void onFindToolbarShown() {
-                    hideContextualSearch(StateChangeReason.UNKNOWN);
-                }
-            };
-        }
-        mFindToolbarManager.addObserver(mFindToolbarObserver);
-    }
-
-    /**
      * Destroys the native Contextual Search Manager.
      * Call this method before orphaning this object to allow it to be garbage collected.
      */
@@ -313,11 +285,6 @@ public class ContextualSearchManager
         nativeDestroy(mNativeContextualSearchManagerPtr);
         stopListeningForHideNotifications();
         mTabRedirectHandler.clear();
-        if (mFindToolbarManager != null) {
-            mFindToolbarManager.removeObserver(mFindToolbarObserver);
-            mFindToolbarManager = null;
-            mFindToolbarObserver = null;
-        }
         mInternalStateController.enter(InternalState.UNDEFINED);
     }
 
@@ -434,9 +401,6 @@ public class ContextualSearchManager
      */
     private void showContextualSearch(@StateChangeReason int stateChangeReason) {
         assert mSearchPanel != null;
-        if (mFindToolbarManager != null) {
-            mFindToolbarManager.hideToolbar(false);
-        }
 
         // Dismiss the undo SnackBar if present by committing all tab closures.
         mActivity.getTabModelSelector().commitAllTabClosures();

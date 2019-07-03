@@ -79,12 +79,10 @@ void ReprocessManager::ConsumeReprocessOptions(
           std::move(take_photo_callback), std::move(consumption_callback)));
 }
 
-void ReprocessManager::FlushReprocessOptions(const std::string& device_id) {
+void ReprocessManager::Flush(const std::string& device_id) {
   sequenced_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ReprocessManager::ReprocessManagerImpl::FlushReprocessOptions,
-          base::Unretained(impl.get()), device_id));
+      FROM_HERE, base::BindOnce(&ReprocessManager::ReprocessManagerImpl::Flush,
+                                base::Unretained(impl.get()), device_id));
 }
 
 void ReprocessManager::GetCameraInfo(const std::string& device_id,
@@ -94,6 +92,31 @@ void ReprocessManager::GetCameraInfo(const std::string& device_id,
       base::BindOnce(&ReprocessManager::ReprocessManagerImpl::GetCameraInfo,
                      base::Unretained(impl.get()), device_id,
                      std::move(callback)));
+}
+
+void ReprocessManager::SetFpsRange(
+    const std::string& device_id,
+    const uint32_t stream_width,
+    const uint32_t stream_height,
+    const int32_t min_fps,
+    const int32_t max_fps,
+    cros::mojom::CrosImageCapture::SetFpsRangeCallback callback) {
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::SetFpsRange,
+                     base::Unretained(impl.get()), device_id, stream_width,
+                     stream_height, min_fps, max_fps, std::move(callback)));
+}
+
+void ReprocessManager::GetFpsRange(const std::string& device_id,
+                                   const uint32_t stream_width,
+                                   const uint32_t stream_height,
+                                   GetFpsRangeCallback callback) {
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::GetFpsRange,
+                     base::Unretained(impl.get()), device_id, stream_width,
+                     stream_height, std::move(callback)));
 }
 
 ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl(
@@ -147,16 +170,84 @@ void ReprocessManager::ReprocessManagerImpl::ConsumeReprocessOptions(
   std::move(consumption_callback).Run(std::move(result_task_queue));
 }
 
-void ReprocessManager::ReprocessManagerImpl::FlushReprocessOptions(
+void ReprocessManager::ReprocessManagerImpl::Flush(
     const std::string& device_id) {
   auto empty_queue = ReprocessTaskQueue();
   reprocess_task_queue_map_[device_id].swap(empty_queue);
+
+  auto empty_map = ResolutionFpsRangeMap();
+  resolution_fps_range_map_[device_id].swap(empty_map);
 }
 
 void ReprocessManager::ReprocessManagerImpl::GetCameraInfo(
     const std::string& device_id,
     GetCameraInfoCallback callback) {
   std::move(callback).Run(get_camera_info_.Run(device_id));
+}
+
+void ReprocessManager::ReprocessManagerImpl::SetFpsRange(
+    const std::string& device_id,
+    const uint32_t stream_width,
+    const uint32_t stream_height,
+    const int32_t min_fps,
+    const int32_t max_fps,
+    cros::mojom::CrosImageCapture::SetFpsRangeCallback callback) {
+  const int entry_length = 2;
+
+  auto camera_info = get_camera_info_.Run(device_id);
+  auto& static_metadata = camera_info->static_camera_characteristics;
+  auto available_fps_range_entries = GetMetadataEntryAsSpan<int32_t>(
+      static_metadata, cros::mojom::CameraMetadataTag::
+                           ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+  CHECK(available_fps_range_entries.size() % entry_length == 0);
+
+  bool is_valid = false;
+  for (size_t i = 0; i < available_fps_range_entries.size();
+       i += entry_length) {
+    if (available_fps_range_entries[i] == min_fps &&
+        available_fps_range_entries[i + 1] == max_fps) {
+      is_valid = true;
+      break;
+    }
+  }
+
+  if (!is_valid) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto resolution = gfx::Size(stream_width, stream_height);
+  auto fps_range = gfx::Range(min_fps, max_fps);
+  resolution_fps_range_map_[device_id][resolution] = fps_range;
+  std::move(callback).Run(true);
+}
+
+void ReprocessManager::ReprocessManagerImpl::GetFpsRange(
+    const std::string& device_id,
+    const uint32_t stream_width,
+    const uint32_t stream_height,
+    GetFpsRangeCallback callback) {
+  if (resolution_fps_range_map_.find(device_id) ==
+      resolution_fps_range_map_.end()) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  auto resolution = gfx::Size(stream_width, stream_height);
+  auto& fps_map = resolution_fps_range_map_[device_id];
+  if (fps_map.find(resolution) == fps_map.end()) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  std::move(callback).Run(fps_map[resolution]);
+}
+
+bool ReprocessManager::ReprocessManagerImpl::SizeComparator::operator()(
+    const gfx::Size size_1,
+    const gfx::Size size_2) const {
+  return size_1.width() < size_2.width() || (size_1.width() == size_2.width() &&
+                                             size_1.height() < size_2.height());
 }
 
 }  // namespace media

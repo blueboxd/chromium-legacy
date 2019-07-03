@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
@@ -89,12 +90,18 @@ class NET_EXPORT URLRequestContext
   // session.
   const HttpNetworkSession::Context* GetNetworkSessionContext() const;
 
+#if (!defined(OS_WIN) && !defined(OS_LINUX)) || defined(OS_CHROMEOS)
   // This function should not be used in Chromium, please use the version with
   // NetworkTrafficAnnotationTag in the future.
+  //
+  // The unannotated method is not available on desktop Linux + Windows. It's
+  // available on other platforms, since we only audit network annotations on
+  // Linux & Windows.
   std::unique_ptr<URLRequest> CreateRequest(
       const GURL& url,
       RequestPriority priority,
       URLRequest::Delegate* delegate) const;
+#endif
 
   // |traffic_annotation| is metadata about the network traffic send via this
   // URLRequest, see net::DefineNetworkTrafficAnnotation. Note that:

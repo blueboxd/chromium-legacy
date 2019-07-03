@@ -88,12 +88,10 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   // Explicitly override the security origin for this security context.
   // Note: It is dangerous to change the security origin of a script context
   //       that already contains content.
-  void SetSecurityOrigin(scoped_refptr<SecurityOrigin>);
-  virtual void DidUpdateSecurityOrigin() = 0;
+  virtual void SetSecurityOrigin(scoped_refptr<SecurityOrigin>);
 
   WebSandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
   bool IsSandboxed(WebSandboxFlags mask) const;
-  virtual void EnforceSandboxFlags(WebSandboxFlags mask);
 
   void SetAddressSpace(mojom::IPAddressSpace space) { address_space_ = space; }
   mojom::IPAddressSpace AddressSpace() const { return address_space_; }
@@ -136,22 +134,6 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
     return feature_policy_.get();
   }
   void SetFeaturePolicy(std::unique_ptr<FeaturePolicy> feature_policy);
-  // Constructs the enforcement FeaturePolicy struct for this security context.
-  // The resulted FeaturePolicy is a combination of:
-  //   * |parsed_header|: from the FeaturePolicy part of the response headers.
-  //   * |container_policy|: from <iframe>'s allow attribute.
-  //   * |parent_feature_policy|: which is the current state of feature policies
-  //     in a parent browsing context (frame).
-  //   * |opener_feature_state|: the current state of the policies in an opener
-  //     if any.
-  // Note that at most one of the |parent_feature_policy| or
-  // |opener_feature_state| should be provided. The |container_policy| is empty
-  // for a top-level security context.
-  void InitializeFeaturePolicy(
-      const ParsedFeaturePolicy& parsed_header,
-      const ParsedFeaturePolicy& container_policy,
-      const FeaturePolicy* parent_feature_policy,
-      const FeaturePolicy::FeatureState* opener_feature_state);
   void AddReportOnlyFeaturePolicy(
       const ParsedFeaturePolicy& parsed_report_only_header,
       const ParsedFeaturePolicy& container_policy,
@@ -181,30 +163,22 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
       mojom::FeaturePolicyDisposition,
       const String& message = g_empty_string) const {}
 
-  // Apply the sandbox flag. In addition, if the origin is not already opaque,
-  // the origin is updated to a newly created unique opaque origin, setting the
-  // potentially trustworthy bit from |is_potentially_trustworthy|.
-  void ApplySandboxFlags(WebSandboxFlags mask,
-                         bool is_potentially_trustworthy = false);
-
  protected:
   SecurityContext();
+  SecurityContext(scoped_refptr<SecurityOrigin> origin,
+                  WebSandboxFlags sandbox_flags,
+                  std::unique_ptr<FeaturePolicy> feature_policy);
   virtual ~SecurityContext();
 
   void SetContentSecurityPolicy(ContentSecurityPolicy*);
 
-  // Determines whether or not the SecurityContext has a customized feature
-  // policy. If this method returns false, |feature_policy_| is reset to a
-  // default value ignoring container, header, and inherited policies.
-  virtual bool HasCustomizedFeaturePolicy() const { return true; }
-
   WebSandboxFlags sandbox_flags_;
-
- private:
   scoped_refptr<SecurityOrigin> security_origin_;
-  Member<ContentSecurityPolicy> content_security_policy_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
   std::unique_ptr<FeaturePolicy> report_only_feature_policy_;
+
+ private:
+  Member<ContentSecurityPolicy> content_security_policy_;
 
   mojom::IPAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;

@@ -56,7 +56,6 @@ static_library("core") {
     "offline_clock.h",
     "offline_event_logger.cc",
     "offline_event_logger.h",
-    "offline_page_archive_publisher.cc",
     "offline_page_archive_publisher.h",
     "offline_page_archiver.cc",
     "offline_page_archiver.h",
@@ -82,7 +81,6 @@ static_library("core") {
     "page_criteria.h",
     "snapshot_controller.cc",
     "snapshot_controller.h",
-    "system_download_manager.h",
     "visuals_decoder.h",
   ]
 
@@ -117,8 +115,6 @@ static_library("test_support") {
     "offline_page_test_archiver.h",
     "stub_offline_page_model.cc",
     "stub_offline_page_model.h",
-    "stub_system_download_manager.cc",
-    "stub_system_download_manager.h",
     "test_scoped_offline_clock.cc",
     "test_scoped_offline_clock.h",
   ]
@@ -177,7 +173,6 @@ source_set("unit_tests") {
     "model/update_file_path_task_unittest.cc",
     "model/visuals_availability_task_unittest.cc",
     "offline_event_logger_unittest.cc",
-    "offline_page_archive_publisher_unittest.cc",
     "offline_page_feature_unittest.cc",
     "offline_page_item_utils_unittest.cc",
     "offline_page_metadata_store_unittest.cc",

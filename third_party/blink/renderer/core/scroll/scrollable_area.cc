@@ -31,7 +31,6 @@
 
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
-#include "base/bind.h"
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scrollbar.h"

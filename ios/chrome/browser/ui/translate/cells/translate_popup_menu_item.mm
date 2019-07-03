@@ -38,7 +38,7 @@ const int kContentColorBlue = 0x1A73E8;
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.accessibilityTraits = UIAccessibilityTraitButton;
-  cell.selected = self.isSelected;
+  [cell setCheckmark:self.selected];
   [cell setTitle:self.title];
 }
 
@@ -136,10 +136,8 @@ const int kContentColorBlue = 0x1A73E8;
   self.titleLabel.text = title;
 }
 
-- (void)setSelected:(BOOL)selected {
-  [super setSelected:selected];
-
-  if (selected) {
+- (void)setCheckmark:(BOOL)checkmark {
+  if (checkmark) {
     self.checkmarkView.hidden = NO;
     self.accessibilityTraits |= UIAccessibilityTraitSelected;
   }

@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/model/clear_storage_task.h"
+#include "components/offline_pages/core/offline_page_archive_publisher.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_model_event_logger.h"
@@ -39,10 +40,8 @@ struct OfflinePageItem;
 
 class ArchiveManager;
 class ClientPolicyController;
-class OfflinePageArchivePublisher;
 class OfflinePageArchiver;
 class OfflinePageMetadataStore;
-class SystemDownloadManager;
 
 // Implementaion of OfflinePageModel, which is a service for saving pages
 // offline. It's an entry point to get information about Offline Pages and the
@@ -66,7 +65,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   OfflinePageModelTaskified(
       std::unique_ptr<OfflinePageMetadataStore> store,
       std::unique_ptr<ArchiveManager> archive_manager,
-      std::unique_ptr<SystemDownloadManager> download_manager,
       std::unique_ptr<OfflinePageArchivePublisher> archive_publisher,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModelTaskified() override;
@@ -185,10 +183,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                                   const OfflinePageItem& offline_page,
                                   PublishArchiveResult publish_results);
 
-  // Method for unpublishing the page from the system download manager.
-  static void RemoveFromDownloadManager(
-      SystemDownloadManager* download_manager,
-      const std::vector<int64_t>& system_download_ids);
+  // Method for unpublishing the page from downloads.
+  static void Unpublish(OfflinePageArchivePublisher* publisher,
+                        const std::vector<int64_t>& system_download_ids);
 
   // Other utility methods.
   void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);
@@ -199,9 +196,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Manager for the offline archive files and directory.
   std::unique_ptr<ArchiveManager> archive_manager_;
-
-  // Manages interaction with the OS download manager, if present.
-  std::unique_ptr<SystemDownloadManager> download_manager_;
 
   // Used for moving archives into public storage.
   std::unique_ptr<OfflinePageArchivePublisher> archive_publisher_;

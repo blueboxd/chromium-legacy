@@ -1,6 +1,7 @@
 # Chromium-based Fuchsia services
 This directory contains implementation code for various Fuchsia services living
-in the Chromium repository.
+in the Chromium repository. To build Chromium on Fuchsia, check this
+[documentation](../docs/fuchsia_build_instructions.md).
 
 [TOC]
 
@@ -24,29 +25,38 @@ the aforementioned Fuchsia services.
 The `./cipd` and `./fidl` subdirectories contain CIPD definitions and FIDL
 interface definitions, respectfully.
 
-### Test-only code
-
-Test-only code should live in the same directory as the code under test.
-There is one exception to this rule for fake implementations of interfaces and
-shared test fixtures. When the number of source files containing code related
-to these has reached a certain threshold, they should be moved to a `test`
-subdirectory. For instance, see the `//fuchsia/engine/test` directory.
-
 ### Namespacing
 
 Code that is not shared across multiple targets should live in the global
 namespace. Code that is shared across multiple targets should live in the
 `cr_fuchsia` namespace.
 
-### Running test suites
+### Test code
 
-Building test suites generate a launcher script to run them on a QEMU instance.
-These scripts are generated at `out/fuchsia/bin`. For instance,to run the
-`base_unittests` target, launch:
+Under the `//fuchsia` directory , there are 3 major types of tests:
+* Unit tests: Exercises a single class in isolation, allowing full control
+  over the external environment of this class.
+* Browser tests: Spawns a full browser process along child processes. The test
+  code is run inside the browser process, allowing for full access to the
+  browser code, but not other processes.
+* Integration tests: they exercise the published API of a Fuchsia component. For
+  instance, `//fuchsia/engine:web_engine_integration_tests` make use of the
+  `//fuchsia/engine:web_engine` component. The test code is run in a separate
+  process in a separate component, allowing only access to the published API of
+  the component under test.
 
-```bash
-$ out/fuchsia/bin/run_base_unittests
-```
+Integration tests are more resource-intensive than browser tests, which are in
+turn more expensive than unit tests. Therefore, when writing new tests, it is
+preferred to write unit tests over browser tests over integration tests.
+
+As a general rule, test-only code should live in the same directory as the code
+under test with an explicit file name, either `fake_*`, `test_*`,
+`*_unittest.cc`, `*_ browser_test.cc` or `*_integration_test.cc`.
+
+Test code that is shared across components should live in a dedicated `test`
+directory, under the `cr_fuchsia` namespace. For instance, see the
+`//fuchsia/engine/test` directory, which contains code shared by all browser
+tests.
 
 ## Building and deploying the WebRunner service
 

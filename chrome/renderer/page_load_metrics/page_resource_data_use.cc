@@ -118,7 +118,7 @@ void PageResourceDataUse::DidReceiveTransferSizeUpdate(
   total_received_bytes_ += received_data_length;
 }
 
-bool PageResourceDataUse::DidCompleteResponse(
+void PageResourceDataUse::DidCompleteResponse(
     const network::URLLoaderCompletionStatus& status) {
   // Report the difference in received bytes.
   is_complete_ = true;
@@ -126,9 +126,7 @@ bool PageResourceDataUse::DidCompleteResponse(
   int64_t delta_bytes = status.encoded_data_length - total_received_bytes_;
   if (delta_bytes > 0) {
     total_received_bytes_ += delta_bytes;
-    return true;
   }
-  return false;
 }
 
 void PageResourceDataUse::DidCancelResponse() {

@@ -599,7 +599,9 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     DCHECK_LE(num_filled_bytes, packet_size_bytes_);
 
     audio_bus_->Scale(volume_);
-    audio_bus_->ToInterleaved<Float32SampleTypeTraits>(
+
+    // We skip clipping since that occurs at the shared memory boundary.
+    audio_bus_->ToInterleaved<Float32SampleTypeTraitsNoClip>(
         frames_filled, reinterpret_cast<float*>(audio_data));
 
     // Release the buffer space acquired in the GetBuffer() call.

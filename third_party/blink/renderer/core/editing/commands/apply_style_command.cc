@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -510,8 +511,8 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
     if (current_font_size != desired_font_size) {
       inline_style->SetProperty(
           CSSPropertyID::kFontSize,
-          *CSSPrimitiveValue::Create(desired_font_size,
-                                     CSSPrimitiveValue::UnitType::kPixels),
+          *CSSNumericLiteralValue::Create(desired_font_size,
+                                          CSSPrimitiveValue::UnitType::kPixels),
           false);
       SetNodeAttribute(element, kStyleAttr,
                        AtomicString(inline_style->AsText()));

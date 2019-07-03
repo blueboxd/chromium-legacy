@@ -35,13 +35,6 @@ class AwFeatureListCreator {
     return std::move(local_state_);
   }
 
-  // Passes ownership of the |browser_policy_connector_| to the caller.
-  std::unique_ptr<policy::BrowserPolicyConnectorBase>
-  TakeBrowserPolicyConnector() {
-    DCHECK(browser_policy_connector_);
-    return std::move(browser_policy_connector_);
-  }
-
  private:
   // Sets up the field trials and related initialization.
   void SetUpFieldTrials();
@@ -62,10 +55,6 @@ class AwFeatureListCreator {
   // Responsible for creating a feature list from the seed.
   std::unique_ptr<variations::VariationsFieldTrialCreator>
       variations_field_trial_creator_;
-
-  // If TakePrefService() is called, the caller will take the ownership
-  // of this variable. Stop using this variable afterwards.
-  std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
 
   std::unique_ptr<AwVariationsServiceClient> client_;
 

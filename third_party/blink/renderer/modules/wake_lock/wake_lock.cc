@@ -27,6 +27,24 @@ Document* GetDocument(ScriptState* script_state) {
 }  // namespace
 
 // static
+ScriptPromise WakeLock::requestPermission(ScriptState* script_state,
+                                          const String& type) {
+  // https://w3c.github.io/wake-lock/#requestpermission-static-method
+  // 1. Let promise be a new promise.
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // 2. Return promise and run the following steps in parallel:
+  // 2.1. Let state be the result of running and waiting for the obtain
+  //      permission steps with type.
+  // 2.2. Resolve promise with state.
+  auto* document = GetDocument(script_state);
+  WakeLockController::From(*document).RequestPermission(ToWakeLockType(type),
+                                                        resolver);
+  return promise;
+}
+
+// static
 ScriptPromise WakeLock::request(ScriptState* script_state,
                                 const String& type,
                                 WakeLockRequestOptions* options) {
@@ -113,12 +131,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
 
   // 6. Run the following steps in parallel, but abort when options' signal
   // member is present and its aborted flag is set:
-  // [...]
-  // 6.2. Let success be the result of awaiting acquire a wake lock with promise
-  //      and type:
-  // 6.2.1. If success is false then reject promise with a "NotAllowedError"
-  //        DOMException, and abort these steps.
-  controller.AcquireWakeLock(wake_lock_type, resolver);
+  controller.RequestWakeLock(wake_lock_type, resolver, options->signal());
 
   // 7. Return promise.
   return promise;

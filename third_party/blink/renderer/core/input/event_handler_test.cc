@@ -2796,4 +2796,53 @@ TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
                    .IsMousePositionUnknown());
 }
 
+// Tests that pen dragging on an element and moves will keep the element active.
+TEST_F(EventHandlerSimTest, PenDraggingOnElementActive) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  WebMouseEvent pen_down(WebMouseEvent::kMouseDown, WebFloatPoint(100, 100),
+                         WebFloatPoint(100, 100),
+                         WebPointerProperties::Button::kLeft, 0,
+                         WebInputEvent::Modifiers::kLeftButtonDown,
+                         WebInputEvent::GetStaticTimeStampForTests());
+  pen_down.pointer_type = blink::WebPointerProperties::PointerType::kPen;
+  pen_down.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pen_down));
+
+  WebMouseEvent pen_move(WebMouseEvent::kMouseMove, WebFloatPoint(100, 100),
+                         WebFloatPoint(100, 100),
+                         WebPointerProperties::Button::kLeft, 0,
+                         WebInputEvent::Modifiers::kLeftButtonDown,
+                         WebInputEvent::GetStaticTimeStampForTests());
+  pen_move.pointer_type = blink::WebPointerProperties::PointerType::kPen;
+  pen_move.SetFrameScale(1);
+  // Send first mouse move to update mouse event sates.
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pen_move));
+
+  // Send another mouse move again to update active element to verify mouse
+  // event states.
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pen_move));
+
+  EXPECT_EQ(GetDocument().GetActiveElement(),
+            GetDocument().getElementById("target"));
+}
+
 }  // namespace blink

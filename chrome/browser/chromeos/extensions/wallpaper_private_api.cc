@@ -231,6 +231,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   SET_STRING("setSuccessfullyMessage",
              IDS_WALLPAPER_MANAGER_SET_SUCCESSFULLY_MESSAGE);
   SET_STRING("defaultWallpaperLabel", IDS_DEFAULT_WALLPAPER_ACCESSIBLE_LABEL);
+  SET_STRING("backButton", IDS_ACCNAME_BACK);
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();

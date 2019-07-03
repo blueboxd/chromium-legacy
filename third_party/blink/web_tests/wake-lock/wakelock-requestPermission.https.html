@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+promise_test(async t => {
+  self.testRunner.setPermission('wake-lock-screen', 'granted', location.origin, location.origin);
+  const status = await WakeLock.requestPermission('screen');
+  assert_equals(status, 'granted');
+}, 'WakeLock.requestPermission() returns "granted" for allowed requests');
+
+promise_test(async t => {
+  self.testRunner.setPermission('wake-lock-system', 'denied', location.origin, location.origin);
+  const status = await WakeLock.requestPermission('system');
+  assert_equals(status, 'denied');
+}, 'WakeLock.requestPermission() returns "denied" for blocked requests');
+</script>
+</body>
+</html>

@@ -55,7 +55,7 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   void CheckMemoryPressureSoon();
 
   // Get the current memory pressure level. This can be called from any thread.
-  MemoryPressureLevel GetCurrentPressureLevel() override;
+  MemoryPressureLevel GetCurrentPressureLevel() const override;
   void SetDispatchCallback(const DispatchCallback& callback) override;
 
   // Returns the moderate pressure level free memory threshold, in MB.

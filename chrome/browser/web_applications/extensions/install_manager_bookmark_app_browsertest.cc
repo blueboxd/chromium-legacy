@@ -19,6 +19,11 @@
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/shelf_model.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace extensions {
 
 class InstallManagerBookmarkAppDialogTest : public DialogBrowserTest {
@@ -80,6 +85,14 @@ IN_PROC_BROWSER_TEST_F(InstallManagerBookmarkAppDialogTest,
   chrome::SetAutoAcceptBookmarkAppDialogForTesting(true);
   ShowAndVerifyUi();
   chrome::SetAutoAcceptBookmarkAppDialogForTesting(false);
+
+#if defined(OS_CHROMEOS)
+  const ash::ShelfID shelf_id(installed_app_id());
+  EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
+  EXPECT_EQ(
+      shelf_id,
+      ChromeLauncherController::instance()->shelf_model()->active_shelf_id());
+#endif  // defined(OS_CHROMEOS)
 }
 
 IN_PROC_BROWSER_TEST_F(InstallManagerBookmarkAppDialogTest,

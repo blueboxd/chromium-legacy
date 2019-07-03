@@ -45,6 +45,7 @@ const char kPaymentEventInternalError[] = "Payment handler encountered an intern
 const char kPaymentEventRejected[] = "Payment handler rejected the promise passed into PaymentRequestEvent.respondWith(). This is how payment handlers close their own window programmatically.";
 const char kPaymentEventServiceWorkerError[] = "Payment handler failed to provide a response because either the \"paymentrequest\" event took too long or the service worker stopped for some reason or was killed before the request finished.";
 const char kPaymentEventTimeout[] = "The \"paymentrequest\" event timed out after 5 minutes.";
+const char kPaymentHandlerInsecureNavigation[] = "The payment handler navigated to a page with insecure context, invalid certificate state, or malicious content.";
 const char kProhibitedOrigin[] = "Only localhost, file://, and cryptographic scheme origins allowed.";
 const char kProhibitedOriginOrInvalidSslExplanation[] = "No UI will be shown. CanMakePayment and hasEnrolledInstrument will always return false. Show will be rejected with NotSupportedError.";
 const char kSinglePaymentMethodNotSupportedFormat[] = "The payment method $ is not supported.";

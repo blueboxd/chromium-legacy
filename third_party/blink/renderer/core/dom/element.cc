@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
@@ -4555,7 +4556,8 @@ LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
 }
 
 const ComputedStyle* Element::CachedStyleForPseudoElement(
-    const PseudoStyleRequest& request) {
+    const PseudoStyleRequest& request,
+    const ComputedStyle* parent_style) {
   const ComputedStyle* style = GetComputedStyle();
 
   if (!style || (request.pseudo_id < kFirstInternalPseudoId &&
@@ -4567,7 +4569,8 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
           style->GetCachedPseudoStyle(request.pseudo_id))
     return cached;
 
-  scoped_refptr<ComputedStyle> result = StyleForPseudoElement(request, style);
+  scoped_refptr<ComputedStyle> result =
+      StyleForPseudoElement(request, parent_style);
   if (result)
     return style->AddCachedPseudoStyle(std::move(result));
   return nullptr;
@@ -5405,8 +5408,8 @@ void Element::SetInlineStyleProperty(CSSPropertyID property_id,
                                      double value,
                                      CSSPrimitiveValue::UnitType unit,
                                      bool important) {
-  SetInlineStyleProperty(property_id, *CSSPrimitiveValue::Create(value, unit),
-                         important);
+  SetInlineStyleProperty(
+      property_id, *CSSNumericLiteralValue::Create(value, unit), important);
 }
 
 void Element::SetInlineStyleProperty(CSSPropertyID property_id,
@@ -5483,7 +5486,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
     double value,
     CSSPrimitiveValue::UnitType unit) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, *CSSPrimitiveValue::Create(value, unit));
+  style->SetProperty(property_id, *CSSNumericLiteralValue::Create(value, unit));
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(

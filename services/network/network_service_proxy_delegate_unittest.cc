@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/test/scoped_task_environment.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +51,8 @@ class NetworkServiceProxyDelegateTest : public testing::Test {
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(const GURL& url) {
-    return context_->CreateRequest(url, net::DEFAULT_PRIORITY, nullptr);
+    return context_->CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   void SetConfig(mojom::CustomProxyConfigPtr config) {

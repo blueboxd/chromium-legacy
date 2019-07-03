@@ -39,10 +39,6 @@ void WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(bool enable) {
   RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBloatedRendererDetection(bool enable) {
-  RuntimeEnabledFeatures::SetBloatedRendererDetectionEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableBlockingFocusWithoutUserActivation(bool enable) {
   RuntimeEnabledFeatures::SetBlockingFocusWithoutUserActivationEnabled(enable);
 }

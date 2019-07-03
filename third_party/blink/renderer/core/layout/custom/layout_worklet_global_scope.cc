@@ -45,14 +45,14 @@ LayoutWorkletGlobalScope::LayoutWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy,
     PendingLayoutRegistry* pending_layout_registry)
-    : WorkletGlobalScope(std::move(creation_params), reporting_proxy, frame),
-      pending_layout_registry_(pending_layout_registry) {
-  // Enable a separate microtask queue for LayoutWorklet.
-  //
-  // TODO(yutak): Set agent for all worklets and workers, not just
-  // LayoutWorklet.
-  SetAgent(Agent::CreateForWorkerOrWorklet(ToIsolate(frame)));
-}
+    : WorkletGlobalScope(std::move(creation_params),
+                         reporting_proxy,
+                         frame,
+                         // Enable a separate microtask queue for LayoutWorklet.
+                         // TODO(yutak): Set agent for all worklets and workers,
+                         // not just LayoutWorklet.
+                         Agent::CreateForWorkerOrWorklet(ToIsolate(frame))),
+      pending_layout_registry_(pending_layout_registry) {}
 
 LayoutWorkletGlobalScope::~LayoutWorkletGlobalScope() = default;
 

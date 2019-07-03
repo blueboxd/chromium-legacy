@@ -181,7 +181,13 @@ std::unique_ptr<SourceLocation> SourceLocation::Clone() const {
 
 std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
 SourceLocation::BuildInspectorObject() const {
-  return stack_trace_ ? stack_trace_->buildInspectorObject() : nullptr;
+  return BuildInspectorObject(std::numeric_limits<int>::max());
+}
+
+std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
+SourceLocation::BuildInspectorObject(int max_async_depth) const {
+  return stack_trace_ ? stack_trace_->buildInspectorObject(max_async_depth)
+                      : nullptr;
 }
 
 String SourceLocation::ToString() const {

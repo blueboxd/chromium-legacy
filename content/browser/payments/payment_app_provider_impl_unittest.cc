@@ -113,7 +113,8 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
 
   void OnClosingOpenedWindow() {
     PaymentAppProviderImpl::GetInstance()->OnClosingOpenedWindow(
-        browser_context());
+        browser_context(), payments::mojom::PaymentEventResponseType::
+                               PAYMENT_HANDLER_WINDOW_CLOSING);
     base::RunLoop().RunUntilIdle();
   }
 

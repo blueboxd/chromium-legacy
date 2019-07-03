@@ -9,19 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view.h"
 
 namespace views {
 
 namespace {
-
-std::string OptionalToString(const base::Optional<int>& opt) {
-  if (!opt.has_value())
-    return "_";
-  return base::StringPrintf("%d", opt.value());
-}
 
 // Default Flex Rules ----------------------------------------------------------
 
@@ -97,7 +90,9 @@ gfx::Size GetPreferredSize(MinimumFlexSizeRule minimum_size_rule,
   // Note that this is an adjustment made for practical considerations, and may
   // not be "correct" in some absolute sense. Let's revisit at some point.
   const int preferred_height =
-      std::max(preferred.height(), view->GetHeightForWidth(width));
+      width >= preferred.width()
+          ? preferred.height()
+          : std::max(preferred.height(), view->GetHeightForWidth(width));
 
   if (!maximum_size.height()) {
     // Not having a maximum size is different from having a large available
@@ -119,44 +114,6 @@ FlexRule GetDefaultFlexRule(
 }
 
 }  // namespace
-
-// SizeBounds ------------------------------------------------------------------
-
-SizeBounds::SizeBounds() = default;
-
-SizeBounds::SizeBounds(const base::Optional<int>& width,
-                       const base::Optional<int>& height)
-    : width_(width), height_(height) {}
-
-SizeBounds::SizeBounds(const SizeBounds& other)
-    : width_(other.width()), height_(other.height()) {}
-
-SizeBounds::SizeBounds(const gfx::Size& other)
-    : width_(other.width()), height_(other.height()) {}
-
-void SizeBounds::Enlarge(int width, int height) {
-  if (width_)
-    width_ = std::max(0, *width_ + width);
-  if (height_)
-    height_ = std::max(0, *height_ + height);
-}
-
-bool SizeBounds::operator==(const SizeBounds& other) const {
-  return width_ == other.width_ && height_ == other.height_;
-}
-
-bool SizeBounds::operator!=(const SizeBounds& other) const {
-  return !(*this == other);
-}
-
-bool SizeBounds::operator<(const SizeBounds& other) const {
-  return std::tie(height_, width_) < std::tie(other.height_, other.width_);
-}
-
-std::string SizeBounds::ToString() const {
-  return base::StringPrintf("%s x %s", OptionalToString(width()).c_str(),
-                            OptionalToString(height()).c_str());
-}
 
 // FlexSpecification -----------------------------------------------------------
 
@@ -191,6 +148,114 @@ FlexSpecification FlexSpecification::WithWeight(int weight) const {
 FlexSpecification FlexSpecification::WithOrder(int order) const {
   DCHECK_GE(order, 1);
   return FlexSpecification(rule_, order, weight_);
+}
+
+// Inset1D ---------------------------------------------------------------------
+
+void Inset1D::SetInsets(int leading, int trailing) {
+  leading_ = leading;
+  trailing_ = trailing;
+}
+
+void Inset1D::Expand(int leading, int trailing) {
+  leading_ += leading;
+  trailing_ += trailing;
+}
+
+bool Inset1D::operator==(const Inset1D& other) const {
+  return leading_ == other.leading_ && trailing_ == other.trailing_;
+}
+
+bool Inset1D::operator!=(const Inset1D& other) const {
+  return !(*this == other);
+}
+
+bool Inset1D::operator<(const Inset1D& other) const {
+  return std::tie(leading_, trailing_) <
+         std::tie(other.leading_, other.trailing_);
+}
+
+std::string Inset1D::ToString() const {
+  return base::StringPrintf("%d, %d", leading(), trailing());
+}
+
+// Span ------------------------------------------------------------------------
+
+void Span::SetSpan(int start, int length) {
+  start_ = start;
+  length_ = std::max(0, length);
+}
+
+void Span::Expand(int leading, int trailing) {
+  const int end = this->end();
+  set_start(start_ - leading);
+  set_end(end + trailing);
+}
+
+void Span::Inset(int leading, int trailing) {
+  Expand(-leading, -trailing);
+}
+
+void Span::Inset(const Inset1D& insets) {
+  Inset(insets.leading(), insets.trailing());
+}
+
+void Span::Center(const Span& container, const Inset1D& margins) {
+  int remaining = container.length() - length();
+
+  // Case 1: no room for any margins. Just center the span in the container,
+  // with equal overflow on each side.
+  if (remaining <= 0) {
+    set_start(container.start() + std::ceil(remaining * 0.5f));
+    return;
+  }
+
+  // Case 2: room for only part of the margins.
+  if (margins.size() > remaining) {
+    float scale = float{remaining} / float{margins.size()};
+    set_start(container.start() + std::roundf(scale * margins.leading()));
+    return;
+  }
+
+  // Case 3: room for both span and margins. Center the whole unit.
+  remaining -= margins.size();
+  set_start(container.start() + remaining / 2 + margins.leading());
+}
+
+void Span::Align(const Span& container,
+                 LayoutAlignment alignment,
+                 const Inset1D& margins) {
+  switch (alignment) {
+    case LayoutAlignment::kStart:
+      set_start(container.start() + margins.leading());
+      break;
+    case LayoutAlignment::kEnd:
+      set_start(container.end() - (margins.trailing() + length()));
+      break;
+    case LayoutAlignment::kCenter:
+      Center(container, margins);
+      break;
+    case LayoutAlignment::kStretch:
+      SetSpan(container.start() + margins.leading(),
+              std::max(0, container.length() - margins.size()));
+      break;
+  }
+}
+
+bool Span::operator==(const Span& other) const {
+  return start_ == other.start_ && length_ == other.length_;
+}
+
+bool Span::operator!=(const Span& other) const {
+  return !(*this == other);
+}
+
+bool Span::operator<(const Span& other) const {
+  return std::tie(start_, length_) < std::tie(other.start_, other.length_);
+}
+
+std::string Span::ToString() const {
+  return base::StringPrintf("%d [%d]", start(), length());
 }
 
 }  // namespace views

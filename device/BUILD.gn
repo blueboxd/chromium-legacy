@@ -323,7 +323,6 @@ test("device_unittests") {
       "vr/util/fps_meter_unittest.cc",
       "vr/util/sliding_average_unittest.cc",
       "vr/vr_device_base_unittest.cc",
-      "vr/vr_display_impl_unittest.cc",
     ]
 
     if (is_android) {

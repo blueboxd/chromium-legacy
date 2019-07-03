@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -47,6 +48,7 @@ public class GridTabSwitcherCoordinator
     private final MultiThumbnailCardProvider mMultiThumbnailCardProvider;
     private final TabGridDialogCoordinator mTabGridDialogCoordinator;
     private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
+    private final UndoGroupSnackbarController mUndoGroupSnackbarController;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mGridTabSwitcherMenuActionHandler =
@@ -66,7 +68,8 @@ public class GridTabSwitcherCoordinator
             ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, CompositorViewHolder compositorViewHolder,
             ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
-            MenuOrKeyboardActionController menuOrKeyboardActionController, Runnable backPress) {
+            MenuOrKeyboardActionController menuOrKeyboardActionController, Runnable backPress,
+            SnackbarManager.SnackbarManageable snackbarManageable) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
@@ -84,6 +87,9 @@ public class GridTabSwitcherCoordinator
                     mTabSelectionEditorCoordinator.getController());
 
             gridCardOnClickListenerProvider = mMediator::getGridCardOnClickListener;
+
+            mUndoGroupSnackbarController =
+                    new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
         } else {
             mTabGridDialogCoordinator = null;
 
@@ -92,6 +98,7 @@ public class GridTabSwitcherCoordinator
                     mTabSelectionEditorCoordinator.getController());
 
             gridCardOnClickListenerProvider = null;
+            mUndoGroupSnackbarController = null;
         }
 
         mMultiThumbnailCardProvider =

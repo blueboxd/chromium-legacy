@@ -34,7 +34,6 @@
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "components/offline_pages/core/stub_system_download_manager.h"
 #include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -141,8 +140,9 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
                                                          ArchiverResult result);
   void CheckTaskQueueIdle();
 
-  void SetArchivePublisher(
-      std::unique_ptr<OfflinePageArchivePublisher> publisher) {
+  void SetTestArchivePublisher(
+      std::unique_ptr<OfflinePageTestArchivePublisher> publisher) {
+    publisher_ = publisher.get();
     model()->archive_publisher_ = std::move(publisher);
   }
 
@@ -156,9 +156,6 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
   }
 
   ArchiveManager* archive_manager() { return archive_manager_; }
-  StubSystemDownloadManager* download_manager_stub() {
-    return download_manager_stub_;
-  }
   OfflinePageItemGenerator* page_generator() { return &generator_; }
   TaskQueue* task_queue() { return &model_->task_queue_; }
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
@@ -182,16 +179,17 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
   base::Time last_maintenance_tasks_schedule_time() {
     return model_->last_maintenance_tasks_schedule_time_;
   }
+  OfflinePageTestArchivePublisher* publisher() { return publisher_; }
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<OfflinePageModelTaskified> model_;
   OfflinePageMetadataStoreTestUtil store_test_util_;
-  StubSystemDownloadManager* download_manager_stub_;
   ArchiveManager* archive_manager_;
   OfflinePageItemGenerator generator_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
+  OfflinePageTestArchivePublisher* publisher_;
   base::ScopedTempDir temporary_dir_;
   base::ScopedTempDir private_archive_dir_;
   base::ScopedTempDir public_archive_dir_;
@@ -257,17 +255,14 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
       temporary_dir_path(), private_archive_dir_path(),
       public_archive_dir_path(), base::ThreadTaskRunnerHandle::Get());
   archive_manager_ = archive_manager.get();
-  auto download_manager =
-      std::make_unique<StubSystemDownloadManager>(kDownloadId, true);
-  download_manager_stub_ = download_manager.get();
 
   auto publisher = std::make_unique<OfflinePageTestArchivePublisher>(
-      archive_manager.get(), download_manager.get());
+      archive_manager.get(), kDownloadId);
+  publisher_ = publisher.get();
 
   model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
-      std::move(download_manager), std::move(publisher),
-      base::ThreadTaskRunnerHandle::Get());
+      std::move(publisher), base::ThreadTaskRunnerHandle::Get());
   model_->AddObserver(this);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
   ResetResults();
@@ -887,8 +882,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesWithCriteria) {
   EXPECT_EQ(last_deleted_page().offline_id, page1.offline_id);
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(page1.system_download_id,
-            download_manager_stub()->last_removed_id());
+  EXPECT_EQ(page1.system_download_id, publisher()->last_removed_id());
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.DeletePageCount",
       static_cast<int>(
@@ -1171,10 +1165,10 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_PublishPageFailure) {
 
   // Expect that PublishArchive is called and force returning FILE_MOVE_FAILED.
   auto publisher = std::make_unique<OfflinePageTestArchivePublisher>(
-      archive_manager(), download_manager_stub());
+      archive_manager(), kDownloadId);
   publisher->expect_publish_archive_called(true);
   publisher->set_archive_attempt_failure(true);
-  SetArchivePublisher(std::move(publisher));
+  SetTestArchivePublisher(std::move(publisher));
 
   SavePageWithFileMoveFailure(kTestUrl, kTestUserRequestedClientId, GURL(),
                               kEmptyRequestOrigin, std::move(archiver));
@@ -1499,8 +1493,7 @@ TEST_F(OfflinePageModelTaskifiedTest, PersistentPageConsistencyCheckExecuted) {
   EXPECT_EQ(0UL,
             test_utils::GetFileCountInDirectory(public_archive_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(page.system_download_id,
-            download_manager_stub()->last_removed_id());
+  EXPECT_EQ(page.system_download_id, publisher()->last_removed_id());
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ConsistencyCheck.Persistent.Result", 3);
 }

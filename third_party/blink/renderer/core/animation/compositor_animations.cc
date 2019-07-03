@@ -336,37 +336,27 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
   if (!Platform::Current()->IsThreadedAnimationEnabled())
     reasons |= kAcceleratedAnimationsDisabled;
 
-  LayoutObject* layout_object = target_element.GetLayoutObject();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+  if (const auto* layout_object = target_element.GetLayoutObject()) {
     // We query paint property tree state below to determine whether the
-    // animation is compositable. There is a known lifecycle violation where an
-    // animation can be cancelled during style update. See
-    // CompositorAnimations::cancelAnimationOnCompositor and
-    // http://crbug.com/676456. When this is fixed we would like to enable
-    // the DCHECK below.
-    // DCHECK(document().lifecycle().state() >=
-    // DocumentLifecycle::PrePaintClean);
-    DCHECK(layout_object);
-
-    if (!layout_object->UniqueId())
-      reasons |= kTargetHasInvalidCompositingState;
-
+    // animation is compositable. TODO(crbug.com/676456): There is a known
+    // lifecycle violation where an animation can be cancelled during style
+    // update. See CompositorAnimations::CancelAnimationOnCompositor().
+    // When this is fixed we would like to enable the DCHECK below.
+    // DCHECK_GE(GetDocument().Lifecycle().GetState(),
+    //           DocumentLifecycle::kPrePaintClean);
+    bool has_direct_compositing_reasons = false;
     if (const auto* paint_properties =
             layout_object->FirstFragment().PaintProperties()) {
-      const TransformPaintPropertyNode* transform_node =
-          paint_properties->Transform();
-      const EffectPaintPropertyNode* effect_node = paint_properties->Effect();
-      bool has_direct_compositing_reasons =
-          (transform_node && transform_node->HasDirectCompositingReasons()) ||
-          (effect_node && effect_node->HasDirectCompositingReasons());
-      if (!has_direct_compositing_reasons)
-        reasons |= kTargetHasInvalidCompositingState;
+      const auto* transform = paint_properties->Transform();
+      const auto* effect = paint_properties->Effect();
+      has_direct_compositing_reasons =
+          (transform && transform->HasDirectCompositingReasons()) ||
+          (effect && effect->HasDirectCompositingReasons());
     }
-  } else {
-    if (!layout_object ||
-        layout_object->GetCompositingState() != kPaintsIntoOwnBacking) {
+    if (!has_direct_compositing_reasons)
       reasons |= kTargetHasInvalidCompositingState;
-    }
+  } else {
+    reasons |= kTargetHasInvalidCompositingState;
   }
 
   return reasons;
@@ -482,11 +472,6 @@ void CompositorAnimations::PauseAnimationForTestingOnCompositor(
     const Animation& animation,
     int id,
     double pause_time) {
-  // FIXME: CheckCanStartAnimationOnCompositor queries compositingState, which
-  // is not necessarily up to date.
-  // https://code.google.com/p/chromium/issues/detail?id=339847
-  DisableCompositingQueryAsserts disabler;
-
   DCHECK_EQ(CheckCanStartElementOnCompositor(element), kNoFailure);
   CompositorAnimation* compositor_animation =
       animation.GetCompositorAnimation();

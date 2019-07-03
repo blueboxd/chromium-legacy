@@ -65,7 +65,8 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
-// Non Personalized On Device Head Suggest Provider                    |   99--
+// Non Personalized On Device Head Suggest Provider                    |    *
+//                  (default value 99--, can be changed by Finch)
 // Document Suggestions (*experimental): value controlled by Finch     |    *
 //
 // URL input type:
@@ -86,6 +87,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
+// Non Personalized On Device Head Suggest Provider                    |   99--
 //
 // QUERY input type:
 // --------------------------------------------------------------------|-----
@@ -104,7 +106,8 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
-// Non Personalized On Device Head Suggest Provider                    |   99--
+// Non Personalized On Device Head Suggest Provider                    |    *
+//                  (default value 99--, can be changed by Finch)
 //
 // (A search keyword is a keyword with a replacement string; a bookmark keyword
 // is a keyword with no replacement string, that is, a shortcut for a URL.)

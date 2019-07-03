@@ -168,9 +168,8 @@ void PageTimingMetricsSender::DidCompleteResponse(
     resource_it = new_resource_it.first;
   }
 
-  if (resource_it->second->DidCompleteResponse(status)) {
-    EnsureSendTimer();
-  }
+  resource_it->second->DidCompleteResponse(status);
+  EnsureSendTimer();
   modified_resources_.insert(resource_it->second.get());
 }
 

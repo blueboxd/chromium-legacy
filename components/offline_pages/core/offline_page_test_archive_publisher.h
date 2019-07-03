@@ -22,18 +22,20 @@ class SequencedTaskRunner;
 namespace offline_pages {
 
 class ArchiveManager;
-class SystemDownloadManager;
 
 class OfflinePageTestArchivePublisher : public OfflinePageArchivePublisher {
  public:
   OfflinePageTestArchivePublisher(ArchiveManager* archive_manager,
-                                  SystemDownloadManager* download_manager);
+                                  int64_t download_id_to_use);
   ~OfflinePageTestArchivePublisher() override;
 
   void PublishArchive(
       const OfflinePageItem& offline_page,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       PublishArchiveDoneCallback publish_done_callback) const override;
+
+  void UnpublishArchives(
+      const std::vector<int64_t>& download_manager_ids) const override;
 
   void set_archive_attempt_failure(bool fail) {
     archive_attempt_failure_ = fail;
@@ -45,11 +47,17 @@ class OfflinePageTestArchivePublisher : public OfflinePageArchivePublisher {
 
   void use_verbatim_archive_path(bool use) { use_verbatim_archive_path_ = use; }
 
+  int64_t last_removed_id() const { return last_removed_id_; }
+
  private:
   bool expect_publish_archive_called_;
   mutable bool publish_archive_called_;
   bool archive_attempt_failure_;
   bool use_verbatim_archive_path_;
+  int64_t download_id_;
+  mutable int64_t last_removed_id_;
+
+  ArchiveManager* archive_manager_;
 };
 
 }  // namespace offline_pages

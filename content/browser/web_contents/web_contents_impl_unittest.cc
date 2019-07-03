@@ -3001,7 +3001,8 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Navigate the frame to another URL, which will send again
   // DidStartLoading and DidStopLoading messages.
-  NavigationSimulator::NavigateAndCommitFromDocument(foo_url, subframe);
+  subframe = static_cast<TestRenderFrameHost*>(
+      NavigationSimulator::NavigateAndCommitFromDocument(foo_url, subframe));
   subframe->OnMessageReceived(
       FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
 
@@ -3017,10 +3018,11 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   {
     auto navigation =
         NavigationSimulatorImpl::CreateBrowserInitiated(bar_url, contents());
+
     NavigationController::LoadURLParams load_params(bar_url);
     load_params.referrer = Referrer(GURL("http://referrer"),
                                     network::mojom::ReferrerPolicy::kDefault);
-    load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+    load_params.transition_type = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
     load_params.extra_headers = "content-type: text/plain";
     load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
     load_params.is_renderer_initiated = false;
@@ -3028,14 +3030,11 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
     load_params.frame_tree_node_id =
         subframe->frame_tree_node()->frame_tree_node_id();
     navigation->SetLoadURLParams(&load_params);
-    navigation->Start();
-    entry_id = controller().GetPendingEntry()->GetUniqueID();
 
-    // Commit the navigation in the child frame and send the DidStopLoading
-    // message.
-    subframe->PrepareForCommit();
-    contents()->TestDidNavigate(subframe, entry_id, true, bar_url,
-                                ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+    navigation->Commit();
+    subframe = static_cast<TestRenderFrameHost*>(
+        navigation->GetFinalRenderFrameHost());
+
     subframe->OnMessageReceived(
         FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
   }

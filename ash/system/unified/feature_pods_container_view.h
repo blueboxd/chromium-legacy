@@ -43,11 +43,6 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // Get the height of the view when |expanded_amount| is set to 0.0.
   int GetCollapsedHeight() const;
 
-  // Save and restore keyboard focus of a child feature pod button. If no button
-  // has focus or no focus is saved, these methods are no-op.
-  void SaveFocus();
-  void RestoreFocus();
-
   // Returns the number of children that prefer to be visible.
   int GetVisibleCount() const;
 
@@ -108,9 +103,6 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // Used for preventing reentrancy issue in ChildVisibilityChanged. Should be
   // always false if FeaturePodsContainerView is not in the call stack.
   bool changing_visibility_ = false;
-
-  // A button that had focus at the point SaveButtonFocus is called.
-  views::View* focused_button_ = nullptr;
 
   // A view model that contains all visible feature pod buttons.
   // Used to calculate required number of pages.

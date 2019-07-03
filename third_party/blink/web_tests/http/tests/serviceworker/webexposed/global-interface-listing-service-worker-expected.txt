@@ -1004,12 +1004,8 @@ interface PaymentRequestEvent : ExtendableEvent
     method respondWith
 interface Performance : EventTarget
     attribute @@toStringTag
-    getter onelementtimingbufferfull
-    getter oneventtimingbufferfull
     getter onresourcetimingbufferfull
     getter timeOrigin
-    method clearElementTimings
-    method clearEventTimings
     method clearMarks
     method clearMeasures
     method clearResourceTimings
@@ -1021,12 +1017,8 @@ interface Performance : EventTarget
     method measure
     method now
     method profile
-    method setElementTimingBufferMaxSize
-    method setEventTimingBufferMaxSize
     method setResourceTimingBufferSize
     method toJSON
-    setter onelementtimingbufferfull
-    setter oneventtimingbufferfull
     setter onresourcetimingbufferfull
 interface PerformanceEntry
     attribute @@toStringTag

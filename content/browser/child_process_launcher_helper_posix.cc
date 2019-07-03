@@ -15,7 +15,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"
@@ -87,22 +86,13 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
   DCHECK_NE(fd, -1);
   files_to_register->Share(service_manager::kFieldTrialDescriptor, fd);
 
-  const bool mojo_channel_mac = false;
-#else
-  const bool mojo_channel_mac =
-      base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac);
-#endif
-
-  if (!mojo_channel_mac) {
-    DCHECK(mojo_channel_remote_endpoint.is_valid());
-    files_to_register->Share(
-        service_manager::kMojoIPCChannel,
-        mojo_channel_remote_endpoint.platform_handle().GetFD().get());
-  }
+  DCHECK(mojo_channel_remote_endpoint.is_valid());
+  files_to_register->Share(
+      service_manager::kMojoIPCChannel,
+      mojo_channel_remote_endpoint.platform_handle().GetFD().get());
 
   // TODO(jcivelli): remove this "if defined" by making
   // GetAdditionalMappedFilesForChildProcess a no op on Mac.
-#if !defined(OS_MACOSX)
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
       *command_line, child_process_id, files_to_register.get());
 #endif

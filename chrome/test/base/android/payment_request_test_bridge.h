@@ -16,6 +16,7 @@ void SetUseDelegateOnPaymentRequestForTesting(bool use_delegate,
                                               bool is_incognito,
                                               bool is_valid_ssl,
                                               bool is_web_contents_active,
+                                              bool prefs_can_make_payment,
                                               bool skip_ui_for_basic_card);
 
 // Sets an observer on future Java PaymentRequests that will call these

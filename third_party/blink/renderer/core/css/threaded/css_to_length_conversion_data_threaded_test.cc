@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/threaded/multi_threaded_test_util.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
@@ -32,8 +33,8 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionEm) {
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);
 
-    CSSPrimitiveValue& value =
-        *CSSPrimitiveValue::Create(3.14, CSSPrimitiveValue::UnitType::kEms);
+    CSSPrimitiveValue& value = *CSSNumericLiteralValue::Create(
+        3.14, CSSPrimitiveValue::UnitType::kEms);
 
     Length length = value.ConvertToLength(conversionData);
     EXPECT_EQ(length.Value(), 50.24f);
@@ -49,8 +50,8 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionPixel) {
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);
 
-    CSSPrimitiveValue& value =
-        *CSSPrimitiveValue::Create(44, CSSPrimitiveValue::UnitType::kPixels);
+    CSSPrimitiveValue& value = *CSSNumericLiteralValue::Create(
+        44, CSSPrimitiveValue::UnitType::kPixels);
 
     Length length = value.ConvertToLength(conversionData);
     EXPECT_EQ(length.Value(), 44);
@@ -66,7 +67,7 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionViewport) {
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);
 
-    CSSPrimitiveValue& value = *CSSPrimitiveValue::Create(
+    CSSPrimitiveValue& value = *CSSNumericLiteralValue::Create(
         1, CSSPrimitiveValue::UnitType::kViewportWidth);
 
     Length length = value.ConvertToLength(conversionData);
@@ -84,7 +85,7 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionRem) {
                                              1);
 
     CSSPrimitiveValue& value =
-        *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kRems);
+        *CSSNumericLiteralValue::Create(1, CSSPrimitiveValue::UnitType::kRems);
 
     Length length = value.ConvertToLength(conversionData);
     EXPECT_EQ(length.Value(), 16);

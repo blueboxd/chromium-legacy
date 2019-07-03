@@ -35,6 +35,7 @@ class SMSReceiver final : public ScriptWrappable, public ContextClient {
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
 
   void OnReceive(ScriptPromiseResolver* resolver,
+                 base::TimeTicks start_time,
                  mojom::blink::SmsStatus status,
                  const WTF::String& sms);
 

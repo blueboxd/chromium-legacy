@@ -591,6 +591,25 @@ Status ParseChromeOptions(
   return Status(kOk);
 }
 
+Status ParseSeleniumOptions(
+    const base::Value& capability,
+    Capabilities* capabilities) {
+  const base::DictionaryValue* selenium_options = NULL;
+  if (!capability.GetAsDictionary(&selenium_options))
+    return Status(kInvalidArgument, "must be a dictionary");
+  std::map<std::string, Parser> parser_map;
+  parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
+
+  for (base::DictionaryValue::Iterator it(*selenium_options); !it.IsAtEnd();
+       it.Advance()) {
+    if (parser_map.find(it.key()) == parser_map.end())
+      continue;
+    Status status = parser_map[it.key()].Run(it.value(), capabilities);
+    if (status.IsError())
+      return Status(kInvalidArgument, "cannot parse " + it.key(), status);
+  }
+  return Status(kOk);
+}
 }  // namespace
 
 Switches::Switches() {}
@@ -763,10 +782,12 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   } else {
     parser_map["chromeOptions"] = base::BindRepeating(&ParseChromeOptions);
   }
-  // goog:loggingPrefs is spec-compliant name, but loggingPrefs is still
-  // supported in legacy mode.
-  if (w3c_compliant ||
-      desired_caps.GetDictionary("goog:loggingPrefs", nullptr)) {
+  // se:options.loggingPrefs and goog:loggingPrefs is spec-compliant name,
+  // but loggingPrefs is still supported in legacy mode.
+  if (desired_caps.GetDictionary("se:options.loggingPrefs", nullptr)) {
+    parser_map["se:options"] = base::BindRepeating(&ParseSeleniumOptions);
+  } else if (w3c_compliant ||
+             desired_caps.GetDictionary("goog:loggingPrefs", nullptr)) {
     parser_map["goog:loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
   } else {
     parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);

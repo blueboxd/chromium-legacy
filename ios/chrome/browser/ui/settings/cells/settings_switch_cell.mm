@@ -253,4 +253,12 @@ const CGFloat kIconImageSize = 28;
   }
 }
 
+- (UIAccessibilityTraits)accessibilityTraits {
+  UIAccessibilityTraits accessibilityTraits = super.accessibilityTraits;
+  if (!self.switchView.isEnabled) {
+    accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+  }
+  return accessibilityTraits;
+}
+
 @end

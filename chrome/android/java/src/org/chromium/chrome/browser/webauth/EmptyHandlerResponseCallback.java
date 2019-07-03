@@ -11,7 +11,7 @@ import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
  * Empty HandlerResponseCallback Temporarily used for landing CLs for
  * IsUserVerifyingPlatformAuthenticatorAvailable error response.
  */
-public class EmptyHandlerResponseCallback implements HandlerResponseCallback {
+public class EmptyHandlerResponseCallback extends HandlerResponseCallback {
     @Override
     public void onRegisterResponse(Integer status, MakeCredentialAuthenticatorResponse response){};
 

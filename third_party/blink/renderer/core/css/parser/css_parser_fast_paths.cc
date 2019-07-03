@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
@@ -144,7 +145,7 @@ static CSSValue* ParseSimpleLengthValue(CSSPropertyID property_id,
   if (number < 0 && !accepts_negative_numbers)
     return nullptr;
 
-  return CSSPrimitiveValue::Create(number, unit);
+  return CSSNumericLiteralValue::Create(number, unit);
 }
 
 static inline bool IsColorPropertyID(CSSPropertyID property_id) {
@@ -1152,7 +1153,7 @@ static bool ParseTransformTranslateArguments(
     if (unit != CSSPrimitiveValue::UnitType::kPixels &&
         (number || unit != CSSPrimitiveValue::UnitType::kNumber))
       return false;
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         number, CSSPrimitiveValue::UnitType::kPixels));
     pos += argument_length + 1;
     --expected_count;
@@ -1175,7 +1176,7 @@ static bool ParseTransformNumberArguments(CharType*& pos,
     double number = CharactersToDouble(pos, argument_length, &ok);
     if (!ok)
       return false;
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         number, CSSPrimitiveValue::UnitType::kNumber));
     pos += argument_length + 1;
     --expected_count;

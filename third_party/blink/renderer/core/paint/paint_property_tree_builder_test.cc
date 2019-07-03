@@ -4263,19 +4263,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());
   ASSERT_FALSE(
       multicol_container->FirstFragment().NextFragment()->NextFragment());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(PhysicalOffset(8, 8),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        PhysicalOffset(59, -12),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  } else {
-    EXPECT_EQ(PhysicalOffset(),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        PhysicalOffset(51, -20),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  }
+  EXPECT_EQ(PhysicalOffset(),
+            multicol_container->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(51, -20),
+            multicol_container->FirstFragment().NextFragment()->PaintOffset());
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
                                                    kUserScroll);
@@ -4284,15 +4275,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());
   ASSERT_FALSE(
       multicol_container->FirstFragment().NextFragment()->NextFragment());
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(PhysicalOffset(8, 8),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        PhysicalOffset(59, -12),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  } else {
-  }
+  EXPECT_EQ(PhysicalOffset(),
+            multicol_container->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(51, -20),
+            multicol_container->FirstFragment().NextFragment()->PaintOffset());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {

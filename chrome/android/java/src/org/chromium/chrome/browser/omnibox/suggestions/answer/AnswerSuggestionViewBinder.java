@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
+import android.support.v4.view.ViewCompat;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionViewProperties.AnswerIcon;
@@ -37,6 +39,9 @@ public class AnswerSuggestionViewBinder {
                            propertyKey)) {
             view.setLine2AccessibilityDescription(model.get(
                     AnswerSuggestionViewProperties.TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION));
+        } else if (SuggestionCommonProperties.LAYOUT_DIRECTION.equals(propertyKey)) {
+            ViewCompat.setLayoutDirection(
+                    view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
         }
     }
 

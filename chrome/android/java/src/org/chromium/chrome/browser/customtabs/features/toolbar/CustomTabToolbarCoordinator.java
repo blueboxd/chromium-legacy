@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,7 +66,6 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
     private final Context mAppContext;
     private final CustomTabActivityTabController mTabController;
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
-    private final Lazy<FindToolbarManager> mFindToolbarManager;
     private final CustomTabActivityNavigationController mNavigationController;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
@@ -87,7 +85,6 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
             @Named(APP_CONTEXT) Context appContext,
             CustomTabActivityTabController tabController,
             Lazy<ChromeFullscreenManager> fullscreenManager,
-            Lazy<FindToolbarManager> findToolbarManager,
             CustomTabActivityNavigationController navigationController,
             TabObserverRegistrar tabObserverRegistrar,
             CustomTabStatusBarColorProvider statusBarColorProvider,
@@ -101,7 +98,6 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
         mAppContext = appContext;
         mTabController = tabController;
         mFullscreenManager = fullscreenManager;
-        mFindToolbarManager = findToolbarManager;
         mNavigationController = navigationController;
         mTabObserverRegistrar = tabObserverRegistrar;
         mStatusBarColorProvider = statusBarColorProvider;
@@ -231,8 +227,8 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
                 mActivity.findViewById(R.id.control_container));
 
         mToolbarManager.get().initializeWithNative(mTabController.getTabModelSelector(),
-                mFullscreenManager.get().getBrowserVisibilityDelegate(), mFindToolbarManager.get(),
-                null, layoutDriver, null, null, null, v -> onCloseButtonClick());
+                mFullscreenManager.get().getBrowserVisibilityDelegate(), null, layoutDriver, null,
+                null, null, v -> onCloseButtonClick());
         mInitializedToolbarWithNative = true;
     }
 

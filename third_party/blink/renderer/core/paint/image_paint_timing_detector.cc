@@ -331,7 +331,7 @@ void ImagePaintTimingDetector::RecordImage(
   if (rect_size == 0) {
     records_manager_.RecordInvisibleNode(node_id);
   } else {
-    records_manager_.RecordVisibleNode(node_id, rect_size);
+    records_manager_.RecordVisibleNode(node_id, rect_size, cached_image);
     if (is_loaded) {
       records_manager_.OnImageLoaded(node_id, frame_index_);
       need_update_timing_at_frame_end_ = true;
@@ -371,10 +371,12 @@ void ImageRecordsManager::OnImageLoadedInternal(
   QueueToMeasurePaintTime(record, current_frame_index);
 }
 
-void ImageRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
-                                            const uint64_t& visual_size) {
+void ImageRecordsManager::RecordVisibleNode(
+    const DOMNodeId& node_id,
+    const uint64_t& visual_size,
+    const ImageResourceContent& cached_image) {
   std::unique_ptr<ImageRecord> record =
-      CreateImageRecord(node_id, nullptr, visual_size);
+      CreateImageRecord(node_id, &cached_image, visual_size);
   size_ordered_set_.insert(record->AsWeakPtr());
   visible_node_map_.insert(node_id, std::move(record));
 }

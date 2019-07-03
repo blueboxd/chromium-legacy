@@ -94,28 +94,30 @@ void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                                : kBottomLeft_GrSurfaceOrigin;
   auto color_type =
       supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
-  draw_surface_ = SkSurface::MakeFromBackendRenderTarget(
+  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       gr_context_, render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);
-  DCHECK(draw_surface_);
+  DCHECK(sk_surface_);
 }
 
 gfx::SwapResponse SkiaOutputDeviceGL::SwapBuffers(
-    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   // TODO(backer): Support SwapBuffersAsync
   StartSwapBuffers({});
-  return FinishSwapBuffers(gl_surface_->SwapBuffers(std::move(feedback)));
+  return FinishSwapBuffers(
+      gl_surface_->SwapBuffers(std::move(feedback)),
+      gfx::Size(sk_surface_->width(), sk_surface_->height()));
 }
 
 gfx::SwapResponse SkiaOutputDeviceGL::PostSubBuffer(
     const gfx::Rect& rect,
-    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   // TODO(backer): Support PostSubBufferAsync
   StartSwapBuffers({});
-  return FinishSwapBuffers(gl_surface_->PostSubBuffer(
-      rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback)));
+  return FinishSwapBuffers(
+      gl_surface_->PostSubBuffer(rect.x(), rect.y(), rect.width(),
+                                 rect.height(), std::move(feedback)),
+      gfx::Size(sk_surface_->width(), sk_surface_->height()));
 }
 
 void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
@@ -129,6 +131,13 @@ void SkiaOutputDeviceGL::EnsureBackbuffer() {
 void SkiaOutputDeviceGL::DiscardBackbuffer() {
   gl_surface_->SetBackbufferAllocation(false);
 }
+
+SkSurface* SkiaOutputDeviceGL::BeginPaint() {
+  DCHECK(sk_surface_);
+  return sk_surface_.get();
+}
+
+void SkiaOutputDeviceGL::EndPaint(const GrBackendSemaphore& semaphore) {}
 
 #if defined(OS_WIN)
 void SkiaOutputDeviceGL::DidCreateAcceleratedSurfaceChildWindow(

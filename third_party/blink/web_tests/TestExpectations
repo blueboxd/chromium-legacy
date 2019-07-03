@@ -2689,6 +2689,7 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy.html [ Failure ]
+crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy_with_pointerlock.html [ Failure ]
 
 # Since there is no compositor thread when running tests then there is no main thread event queue. Hence the
 # logic for this test will be skipped when running Layout tests.
@@ -6227,8 +6228,6 @@ crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jque
 
 # Sheriff 2019-06-26
 crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-markers.html [ Pass Failure ]
-
-crbug.com/979253 external/wpt/css/css-pseudo/first-line-with-out-of-flow.html [ Failure ]
 
 # Sheriff 2019-06-27
 crbug.com/979193 [ Mac ] paint/invalidation/svg/relative-sized-use-on-symbol.xhtml [ Pass Failure ]

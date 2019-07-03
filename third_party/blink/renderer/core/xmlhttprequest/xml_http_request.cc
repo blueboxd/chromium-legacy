@@ -358,6 +358,7 @@ void XMLHttpRequest::InitResponseDocument() {
 
   DocumentInit init = DocumentInit::Create()
                           .WithContextDocument(GetDocument()->ContextDocument())
+                          .WithOwnerDocument(GetDocument()->ContextDocument())
                           .WithURL(response_.ResponseUrl());
   if (is_html)
     response_document_ = MakeGarbageCollected<HTMLDocument>(init);
@@ -365,7 +366,6 @@ void XMLHttpRequest::InitResponseDocument() {
     response_document_ = MakeGarbageCollected<XMLDocument>(init);
 
   // FIXME: Set Last-Modified.
-  response_document_->SetSecurityOrigin(GetMutableSecurityOrigin());
   response_document_->SetContextFeatures(GetDocument()->GetContextFeatures());
   response_document_->SetMimeType(FinalResponseMIMETypeWithFallback());
 }

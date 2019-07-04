@@ -137,7 +137,7 @@ bool GenericV4L2Device::ClearDevicePollInterrupt() {
 }
 
 bool GenericV4L2Device::Initialize() {
-  VLOGF(2);
+  DVLOGF(3);
   static bool v4l2_functions_initialized = PostSandboxInitialization();
   if (!v4l2_functions_initialized) {
     VLOGF(1) << "Failed to initialize LIBV4L2 libs";
@@ -148,7 +148,7 @@ bool GenericV4L2Device::Initialize() {
 }
 
 bool GenericV4L2Device::Open(Type type, uint32_t v4l2_pixfmt) {
-  VLOGF(2);
+  DVLOGF(3);
   std::string path = GetDevicePathFor(type, v4l2_pixfmt);
 
   if (path.empty()) {
@@ -175,7 +175,7 @@ std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
     int index,
     size_t num_planes,
     enum v4l2_buf_type buf_type) {
-  VLOGF(2);
+  DVLOGF(3);
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(buf_type));
 
   std::vector<base::ScopedFD> dmabuf_fds;
@@ -480,7 +480,7 @@ bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
   if (type == Type::kEncoder &&
       HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
           -1) {
-    VLOGF(2) << "Using libv4l2 for " << path;
+    DVLOGF(3) << "Using libv4l2 for " << path;
     use_libv4l2_ = true;
   }
 #endif
@@ -488,7 +488,7 @@ bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
 }
 
 void GenericV4L2Device::CloseDevice() {
-  VLOGF(2);
+  DVLOGF(3);
 #if BUILDFLAG(USE_LIBV4L2)
   if (use_libv4l2_ && device_fd_.is_valid())
     v4l2_close(device_fd_.release());

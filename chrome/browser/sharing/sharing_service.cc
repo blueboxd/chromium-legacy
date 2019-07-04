@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <unordered_set>
 
 #include "base/bind.h"
@@ -14,12 +15,15 @@
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_fcm_handler.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/local_device_info_provider.h"
 
 namespace {
 // TODO(knollr): Should this be configurable or shared between similar features?
@@ -28,21 +32,37 @@ constexpr base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(2);
 
 SharingService::SharingService(
     std::unique_ptr<SharingSyncPreference> sync_prefs,
-    std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
     std::unique_ptr<VapidKeyManager> vapid_key_manager,
+    std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
+    std::unique_ptr<SharingFCMSender> fcm_sender,
+    std::unique_ptr<SharingFCMHandler> fcm_handler,
     syncer::DeviceInfoTracker* device_info_tracker,
+    syncer::LocalDeviceInfoProvider* device_info_provider,
     syncer::SyncService* sync_service)
     : sync_prefs_(std::move(sync_prefs)),
-      sharing_device_registration_(std::move(sharing_device_registration)),
       vapid_key_manager_(std::move(vapid_key_manager)),
+      sharing_device_registration_(std::move(sharing_device_registration)),
+      fcm_sender_(std::move(fcm_sender)),
+      fcm_handler_(std::move(fcm_handler)),
       device_info_tracker_(device_info_tracker),
+      device_info_provider_(device_info_provider),
       sync_service_(sync_service),
       weak_ptr_factory_(this) {
   DCHECK(sync_prefs_);
-  DCHECK(sharing_device_registration_);
   DCHECK(vapid_key_manager_);
+  DCHECK(sharing_device_registration_);
+  DCHECK(fcm_sender_);
+  DCHECK(fcm_handler_);
   DCHECK(device_info_tracker_);
+  DCHECK(device_info_provider_);
   DCHECK(sync_service_);
+
+  fcm_handler_->AddSharingHandler(
+      chrome_browser_sharing::SharingMessage::kAckMessage,
+      &ack_message_handler_);
+  fcm_handler_->AddSharingHandler(
+      chrome_browser_sharing::SharingMessage::kPingMessage,
+      &ping_message_handler_);
 
   if (!sync_service_->HasObserver(this))
     sync_service_->AddObserver(this);
@@ -101,10 +121,13 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
   return device_candidates;
 }
 
-bool SharingService::SendMessageToDevice(
+void SharingService::SendMessageToDevice(
     const std::string& device_guid,
-    const chrome_browser_sharing::SharingMessage& message) {
-  return true;
+    base::TimeDelta time_to_live,
+    chrome_browser_sharing::SharingMessage message,
+    SendMessageCallback callback) {
+  fcm_sender_->SendMessageToDevice(device_guid, time_to_live,
+                                   std::move(message), std::move(callback));
 }
 
 void SharingService::RegisterHandler(
@@ -117,7 +140,7 @@ void SharingService::OnSyncShutdown(syncer::SyncService* sync) {
   sync_service_ = nullptr;
 }
 
-void SharingService::OnStateChanged(syncer::SyncService* sync) {
+void SharingService::OnSyncCycleCompleted(syncer::SyncService* sync) {
   if (IsEnabled()) {
     sharing_device_registration_->RegisterDevice(base::BindOnce(
         &SharingService::OnDeviceRegistered, weak_ptr_factory_.GetWeakPtr()));
@@ -126,6 +149,7 @@ void SharingService::OnStateChanged(syncer::SyncService* sync) {
 
 void SharingService::OnDeviceRegistered(
     SharingDeviceRegistration::Result result) {
+  fcm_handler_->StartListening();
   // TODO(himanshujaju) : Add retry logic and logging
 }
 

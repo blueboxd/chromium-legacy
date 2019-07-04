@@ -11,9 +11,11 @@ import java.io.Closeable;
 /**
  * Enables try-with-resources compatible StrictMode violation whitelisting.
  *
+ * Prefer "ignored" as the variable name to appease Android Studio's "Unused symbol" inspection.
+ *
  * Example:
  * <pre>
- *     try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+ *     try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
  *         return Example.doThingThatRequiresDiskWrites();
  *     }
  * </pre>

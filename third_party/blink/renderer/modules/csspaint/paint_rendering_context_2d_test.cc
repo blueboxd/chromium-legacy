@@ -12,22 +12,6 @@ namespace {
 static const int kWidth = 50;
 static const int kHeight = 75;
 static const float kZoom = 1.0;
-static const float kDeviceScaleFactor = 1.23;
-
-class PaintRenderingContext2DTest : public testing::Test {
- protected:
-  void SetUp() override;
-
-  Persistent<PaintRenderingContext2D> ctx_;
-};
-
-void PaintRenderingContext2DTest::SetUp() {
-  PaintRenderingContext2DSettings* context_settings =
-      PaintRenderingContext2DSettings::Create();
-  context_settings->setAlpha(false);
-  ctx_ = MakeGarbageCollected<PaintRenderingContext2D>(
-      IntSize(kWidth, kHeight), context_settings, kZoom, kDeviceScaleFactor);
-}
 
 void TrySettingStrokeStyle(PaintRenderingContext2D* ctx,
                            const String& expected,
@@ -41,56 +25,78 @@ void TrySettingStrokeStyle(PaintRenderingContext2D* ctx,
   EXPECT_EQ(expected, result.GetAsString());
 }
 
-TEST_F(PaintRenderingContext2DTest, testParseColorOrCurrentColor) {
-  TrySettingStrokeStyle(ctx_.Get(), "#0000ff", "blue");
-  TrySettingStrokeStyle(ctx_.Get(), "#000000", "currentColor");
+TEST(PaintRenderingContext2DTest, testParseColorOrCurrentColor) {
+  PaintRenderingContext2DSettings* context_settings =
+      PaintRenderingContext2DSettings::Create();
+  context_settings->setAlpha(false);
+  PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
+      IntSize(kWidth, kHeight), context_settings, kZoom,
+      1.0 /* device_scale_factor */);
+  TrySettingStrokeStyle(ctx, "#0000ff", "blue");
+  TrySettingStrokeStyle(ctx, "#000000", "currentColor");
 }
 
-TEST_F(PaintRenderingContext2DTest, testWidthAndHeight) {
-  EXPECT_EQ(kWidth, ctx_->Width());
-  EXPECT_EQ(kHeight, ctx_->Height());
+TEST(PaintRenderingContext2DTest, testWidthAndHeight) {
+  PaintRenderingContext2DSettings* context_settings =
+      PaintRenderingContext2DSettings::Create();
+  PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
+      IntSize(kWidth, kHeight), context_settings, kZoom,
+      1.0 /* device_scale_factor */);
+  EXPECT_EQ(kWidth, ctx->Width());
+  EXPECT_EQ(kHeight, ctx->Height());
 }
 
-TEST_F(PaintRenderingContext2DTest, testBasicState) {
+TEST(PaintRenderingContext2DTest, testBasicState) {
+  PaintRenderingContext2DSettings* context_settings =
+      PaintRenderingContext2DSettings::Create();
+  PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
+      IntSize(kWidth, kHeight), context_settings, kZoom,
+      1.0 /* device_scale_factor */);
+
   const double kShadowBlurBefore = 2;
   const double kShadowBlurAfter = 3;
 
   const String line_join_before = "bevel";
   const String line_join_after = "round";
 
-  ctx_->setShadowBlur(kShadowBlurBefore);
-  ctx_->setLineJoin(line_join_before);
-  EXPECT_EQ(kShadowBlurBefore, ctx_->shadowBlur());
-  EXPECT_EQ(line_join_before, ctx_->lineJoin());
+  ctx->setShadowBlur(kShadowBlurBefore);
+  ctx->setLineJoin(line_join_before);
+  EXPECT_EQ(kShadowBlurBefore, ctx->shadowBlur());
+  EXPECT_EQ(line_join_before, ctx->lineJoin());
 
-  ctx_->save();
+  ctx->save();
 
-  ctx_->setShadowBlur(kShadowBlurAfter);
-  ctx_->setLineJoin(line_join_after);
-  EXPECT_EQ(kShadowBlurAfter, ctx_->shadowBlur());
-  EXPECT_EQ(line_join_after, ctx_->lineJoin());
+  ctx->setShadowBlur(kShadowBlurAfter);
+  ctx->setLineJoin(line_join_after);
+  EXPECT_EQ(kShadowBlurAfter, ctx->shadowBlur());
+  EXPECT_EQ(line_join_after, ctx->lineJoin());
 
-  ctx_->restore();
+  ctx->restore();
 
-  EXPECT_EQ(kShadowBlurBefore, ctx_->shadowBlur());
-  EXPECT_EQ(line_join_before, ctx_->lineJoin());
+  EXPECT_EQ(kShadowBlurBefore, ctx->shadowBlur());
+  EXPECT_EQ(line_join_before, ctx->lineJoin());
 }
 
-TEST_F(PaintRenderingContext2DTest, setTransformWithDeviceScaleFactor) {
-  DOMMatrix* matrix = ctx_->getTransform();
+TEST(PaintRenderingContext2DTest, setTransformWithDeviceScaleFactor) {
+  PaintRenderingContext2DSettings* context_settings =
+      PaintRenderingContext2DSettings::Create();
+  float device_scale_factor = 1.23;
+  PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
+      IntSize(kWidth, kHeight), context_settings, kZoom, device_scale_factor);
+  DOMMatrix* matrix = ctx->getTransform();
   EXPECT_TRUE(matrix->isIdentity());
-  ctx_->setTransform(2.1, 2.5, 1.4, 2.3, 20, 50);
-  matrix = ctx_->getTransform();
+  ctx->setTransform(2.1, 2.5, 1.4, 2.3, 20, 50);
+  matrix = ctx->getTransform();
   double epsilon = 0.000001;
-  EXPECT_NEAR(matrix->a(), 2.1 / kDeviceScaleFactor, epsilon);
-  EXPECT_NEAR(matrix->b(), 2.5 / kDeviceScaleFactor, epsilon);
-  EXPECT_NEAR(matrix->c(), 1.4 / kDeviceScaleFactor, epsilon);
-  EXPECT_NEAR(matrix->d(), 2.3 / kDeviceScaleFactor, epsilon);
-  EXPECT_NEAR(matrix->e(), 20 / kDeviceScaleFactor, epsilon);
-  EXPECT_NEAR(matrix->f(), 50 / kDeviceScaleFactor, epsilon);
+  EXPECT_NEAR(matrix->a(), 2.1 / device_scale_factor, epsilon);
+  EXPECT_NEAR(matrix->b(), 2.5 / device_scale_factor, epsilon);
+  EXPECT_NEAR(matrix->c(), 1.4 / device_scale_factor, epsilon);
+  EXPECT_NEAR(matrix->d(), 2.3 / device_scale_factor, epsilon);
+  EXPECT_NEAR(matrix->e(), 20 / device_scale_factor, epsilon);
+  EXPECT_NEAR(matrix->f(), 50 / device_scale_factor, epsilon);
 }
 
-TEST_F(PaintRenderingContext2DTest, setTransformWithDefaultDeviceScaleFactor) {
+TEST(PaintRenderingContext2DTest, setTransformWithDefaultDeviceScaleFactor) {
   PaintRenderingContext2DSettings* context_settings =
       PaintRenderingContext2DSettings::Create();
   PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(

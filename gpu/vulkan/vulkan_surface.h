@@ -12,6 +12,7 @@
 #include "gpu/vulkan/vulkan_export.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gpu {
@@ -41,23 +42,39 @@ class VULKAN_EXPORT VulkanSurface {
 
   gfx::SwapResult SwapBuffers();
 
-  VulkanSwapChain* GetSwapChain();
-
   void Finish();
 
-  virtual bool SetSize(const gfx::Size& size);
+  // Reshape the the surface and recreate swap chian if it is needed. The size
+  // is the current surface (window) size. The transform is the pre transform
+  // relative to the hardware natural orientation, applied to frame content.
+  // See VkSwapchainCreateInfoKHR::preTransform for detail.
+  virtual bool Reshape(const gfx::Size& size, gfx::OverlayTransform transform);
 
-  const gfx::Size& size() const { return size_; }
+  VulkanSwapChain* swap_chain() const { return swap_chain_.get(); }
+  uint32_t swap_chain_generation() const { return swap_chain_generation_; }
+  const gfx::Size& image_size() const { return image_size_; }
+  gfx::OverlayTransform transform() const { return transform_; }
   VkSurfaceFormatKHR surface_format() const { return surface_format_; }
 
  private:
-  bool CreateSwapChain(const gfx::Size& size);
+  bool CreateSwapChain(const gfx::Size& size, gfx::OverlayTransform transform);
 
   const VkInstance vk_instance_;
-  gfx::Size size_;
+
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSurfaceFormatKHR surface_format_ = {};
   VulkanDeviceQueue* device_queue_ = nullptr;
+
+  // The generation of |swap_chain_|, it will be increasted if a new
+  // |swap_chain_| is created due to resizing, etec.
+  uint32_t swap_chain_generation_ = 0u;
+
+  // Swap chain image size.
+  gfx::Size image_size_;
+
+  // Swap chain pre-transform.
+  gfx::OverlayTransform transform_ = gfx::OVERLAY_TRANSFORM_INVALID;
+
   std::unique_ptr<VulkanSwapChain> swap_chain_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurface);

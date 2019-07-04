@@ -228,7 +228,7 @@ public class SigninTest {
 
             // Start observing the SigninManager.
             mTestSignInObserver = new TestSignInObserver();
-            mSigninManager = SigninManager.get();
+            mSigninManager = IdentityServicesProvider.getSigninManager();
             mSigninManager.addSignInStateObserver(mTestSignInObserver);
 
             // Get these handles in the UI thread.

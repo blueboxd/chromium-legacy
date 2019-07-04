@@ -34,7 +34,7 @@ public class WebApkUpdateTask extends NativeBackgroundTask {
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.WEBAPK_UPDATE_JOB_ID;
 
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             WebappRegistry.warmUpSharedPrefs();
         }
 

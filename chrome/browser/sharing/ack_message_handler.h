@@ -10,6 +10,8 @@
 
 class AckMessageHandler : public SharingMessageHandler {
  public:
+  AckMessageHandler();
+
   void OnMessage(
       const chrome_browser_sharing::SharingMessage& message) override;
 

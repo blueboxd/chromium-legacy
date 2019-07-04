@@ -60,6 +60,7 @@ template("trichrome_library_apk_tmpl") {
 
     alternative_android_sdk_dep = webview_framework_dep
     app_as_shared_lib = true
+    r_java_root_package_name = "trichrome_lib"
     use_chromium_linker = false
     uncompress_shared_libraries = true
     uncompress_dex = use_uncompressed_dex

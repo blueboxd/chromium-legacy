@@ -4,7 +4,6 @@
 
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,6 +14,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"

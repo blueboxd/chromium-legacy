@@ -64,8 +64,6 @@ class FakeSigninClient : public IOSChromeSigninClient {
                               cookie_settings,
                               host_content_settings_map) {}
   ~FakeSigninClient() override {}
-
-  base::Time GetInstallDate() override { return base::Time::Now(); }
 };
 
 std::unique_ptr<KeyedService> BuildFakeTestSigninClient(

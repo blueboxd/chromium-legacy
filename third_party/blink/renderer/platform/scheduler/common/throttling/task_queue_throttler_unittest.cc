@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 
 #include "base/bind.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 namespace scheduler {
@@ -55,6 +55,14 @@ void RunTenTimesTask(size_t* count, scoped_refptr<TaskQueue> timer_queue) {
     timer_queue->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&RunTenTimesTask, count, timer_queue));
   }
+}
+
+Deque<base::TimeDelta> MakeTaskDurations(wtf_size_t size,
+                                         base::TimeDelta duration) {
+  Deque<base::TimeDelta> task_durations;
+  for (wtf_size_t i = 0; i < size; ++i)
+    task_durations.push_back(duration);
+  return task_durations;
 }
 
 class TaskQueueThrottlerTest : public testing::Test {
@@ -1170,7 +1178,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest, TwoBudgetPools) {
 
 namespace {
 
-void RunChainedTask(std::deque<base::TimeDelta> task_durations,
+void RunChainedTask(Deque<base::TimeDelta> task_durations,
                     scoped_refptr<TaskQueue> queue,
                     scoped_refptr<TestMockTimeTaskRunner> task_runner,
                     Vector<base::TimeTicks>* run_times,
@@ -1202,9 +1210,9 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   timer_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(
-          &RunChainedTask, std::deque<base::TimeDelta>(10, base::TimeDelta()),
-          timer_queue_, test_task_runner_, &run_times, base::TimeDelta()),
+      base::BindOnce(&RunChainedTask, MakeTaskDurations(10, base::TimeDelta()),
+                     timer_queue_, test_task_runner_, &run_times,
+                     base::TimeDelta()),
       base::TimeDelta::FromMilliseconds(100));
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
@@ -1234,7 +1242,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
       FROM_HERE,
       base::BindOnce(
           &RunChainedTask,
-          std::deque<base::TimeDelta>(10, base::TimeDelta::FromMilliseconds(3)),
+          MakeTaskDurations(10, base::TimeDelta::FromMilliseconds(3)),
           timer_queue_, test_task_runner_, &run_times, base::TimeDelta()),
       base::TimeDelta::FromMilliseconds(100));
 
@@ -1265,8 +1273,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   timer_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&RunChainedTask,
-                     std::deque<base::TimeDelta>(10, base::TimeDelta()),
+      base::BindOnce(&RunChainedTask, MakeTaskDurations(10, base::TimeDelta()),
                      timer_queue_, test_task_runner_, &run_times,
                      base::TimeDelta::FromMilliseconds(3)),
       base::TimeDelta::FromMilliseconds(100));
@@ -1301,17 +1308,16 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottlingWithCPUBudgetThrottling) {
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
 
+  Deque<base::TimeDelta> task_durations =
+      MakeTaskDurations(9, base::TimeDelta());
+  task_durations[0] = base::TimeDelta::FromMilliseconds(250);
+  task_durations[3] = base::TimeDelta::FromMilliseconds(250);
+  task_durations[6] = base::TimeDelta::FromMilliseconds(250);
+
   timer_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(
-          &RunChainedTask,
-          std::deque<base::TimeDelta>{base::TimeDelta::FromMilliseconds(250),
-                                      base::TimeDelta(), base::TimeDelta(),
-                                      base::TimeDelta::FromMilliseconds(250),
-                                      base::TimeDelta(), base::TimeDelta(),
-                                      base::TimeDelta::FromMilliseconds(250),
-                                      base::TimeDelta(), base::TimeDelta()},
-          timer_queue_, test_task_runner_, &run_times, base::TimeDelta()),
+      base::BindOnce(&RunChainedTask, std::move(task_durations), timer_queue_,
+                     test_task_runner_, &run_times, base::TimeDelta()),
       base::TimeDelta::FromMilliseconds(100));
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
@@ -1405,7 +1411,7 @@ TEST_F(TaskQueueThrottlerTest,
       FROM_HERE,
       base::BindOnce(
           &RunChainedTask,
-          std::deque<base::TimeDelta>(10, base::TimeDelta::FromMilliseconds(7)),
+          MakeTaskDurations(10, base::TimeDelta::FromMilliseconds(7)),
           timer_queue_, test_task_runner_, &run_times, base::TimeDelta()),
       base::TimeDelta::FromMilliseconds(100));
 

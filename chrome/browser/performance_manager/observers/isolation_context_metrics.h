@@ -157,7 +157,7 @@ class IsolationContextMetrics : public FrameNode::ObserverDefaultImpl,
   void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override;
 
   // (Un)registers the various node observer flavors of this object with the
-  // graph. These are invoked by OnPassedIntoGraph and OnTakenFromGraph, but
+  // graph. These are invoked by OnPassedToGraph and OnTakenFromGraph, but
   // hoisted to their own functions for testing.
   void RegisterObservers(Graph* graph);
   void UnregisterObservers(Graph* graph);

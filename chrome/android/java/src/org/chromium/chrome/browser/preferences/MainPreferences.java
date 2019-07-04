@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPrefer
 import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
 import org.chromium.chrome.browser.preferences.sync.SyncPreferenceUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -84,8 +85,9 @@ public class MainPreferences extends PreferenceFragment
     @Override
     public void onStart() {
         super.onStart();
-        if (SigninManager.get().isSigninSupported()) {
-            SigninManager.get().addSignInStateObserver(this);
+        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        if (signinManager.isSigninSupported()) {
+            signinManager.addSignInStateObserver(this);
             mSignInPreference.registerForUpdates();
         }
         ProfileSyncService syncService = ProfileSyncService.get();
@@ -97,8 +99,9 @@ public class MainPreferences extends PreferenceFragment
     @Override
     public void onStop() {
         super.onStop();
-        if (SigninManager.get().isSigninSupported()) {
-            SigninManager.get().removeSignInStateObserver(this);
+        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        if (signinManager.isSigninSupported()) {
+            signinManager.removeSignInStateObserver(this);
             mSignInPreference.unregisterForUpdates();
         }
         ProfileSyncService syncService = ProfileSyncService.get();
@@ -185,7 +188,7 @@ public class MainPreferences extends PreferenceFragment
     }
 
     private void updatePreferences() {
-        if (SigninManager.get().isSigninSupported()) {
+        if (IdentityServicesProvider.getSigninManager().isSigninSupported()) {
             addPreferenceIfAbsent(PREF_SIGN_IN);
         } else {
             removePreferenceIfPresent(PREF_SIGN_IN);

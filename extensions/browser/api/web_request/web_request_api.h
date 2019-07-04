@@ -214,17 +214,21 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       bool is_main_frame,
       AuthRequestCallback callback);
 
-  // If any WebRequest event listeners are currently active for this
-  // BrowserContext, |*request| is swapped out for a new request which proxies
-  // through an internal WebSocket implementation. This supports lifetime
-  // observation and control on behalf of the WebRequest API.
-  void MaybeProxyWebSocket(
+  // Starts proxying the connection with |factory|. This function can be called
+  // only when MayHaveProxies() returns true.
+  void ProxyWebSocket(
       content::RenderFrameHost* frame,
-      network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* auth_handler,
-      network::mojom::TrustedHeaderClientPtr* header_client);
+      content::ContentBrowserClient::WebSocketFactory factory,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<std::string>& user_agent,
+      network::mojom::WebSocketHandshakeClientPtr handshake_client);
 
   void ForceProxyForTesting();
+
+  // Indicates whether or not the WebRequestAPI may have one or more proxies
+  // installed to support the API.
+  bool MayHaveProxies() const;
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebRequestAPI>;
@@ -233,10 +237,6 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "WebRequestAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
-
-  // Indicates whether or not the WebRequestAPI may have one or more proxies
-  // installed to support the API.
-  bool MayHaveProxies() const;
 
   // Checks if |MayHaveProxies()| has changed from false to true, and resets
   // URLLoaderFactories if so.

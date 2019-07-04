@@ -31,8 +31,9 @@ class PrimaryAccountPolicyManagerImpl : public PrimaryAccountPolicyManager {
       PrimaryAccountManager* primary_account_manager) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PrimaryAccountManagerTest, Prohibited);
-  FRIEND_TEST_ALL_PREFIXES(PrimaryAccountManagerTest, TestAlternateWildcard);
+  FRIEND_TEST_ALL_PREFIXES(PrimaryAccountPolicyManagerImplTest, Prohibited);
+  FRIEND_TEST_ALL_PREFIXES(PrimaryAccountPolicyManagerImplTest,
+                           TestAlternateWildcard);
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).
   bool IsSigninAllowed() const;

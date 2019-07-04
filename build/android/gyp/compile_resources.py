@@ -80,6 +80,11 @@ def _ParseArgs(args):
       help=
       'Fail if expected manifest contents do not match final manifest contents.'
   )
+  input_opts.add_argument(
+      '--r-java-root-package-name',
+      default='base',
+      help='Short package name for this target\'s root R java file (ex. '
+      'input of "base" would become gen.base_module). Defaults to "base".')
   group = input_opts.add_mutually_exclusive_group()
   group.add_argument(
       '--shared-resources',
@@ -946,23 +951,17 @@ def main(args):
       rjava_build_options.ExportAllResources()
       rjava_build_options.GenerateOnResourcesLoaded()
 
-    custom_root_package_name = None
+    custom_root_package_name = options.r_java_root_package_name
     grandparent_custom_package_name = None
 
-    if options.arsc_package_name:
-      # This is for test apks with an apk under test. If we have an apk under
-      # test we don't want to name the resources for both the test apk and the
-      # under test apk "base". This special case lets us name the test apk's
-      # resources "test".
-      custom_root_package_name = 'test'
-    elif options.package_name:
-      # If there exists a custom package name such as vr for a feature module,
-      # pass the name and base for the parent_custom_root_package_name.
+    if options.package_name and not options.arsc_package_name:
+      # Feature modules have their own custom root package name and should
+      # inherit from the appropriate base module package. This behaviour should
+      # not be present for test apks with an apk under test. Thus,
+      # arsc_package_name is used as it is only defined for test apks with an
+      # apk under test.
       custom_root_package_name = options.package_name
-      grandparent_custom_package_name = 'base'
-    else:
-      # No grandparent_custom_package_name for base module
-      custom_root_package_name = 'base'
+      grandparent_custom_package_name = options.r_java_root_package_name
 
     resource_utils.CreateRJavaFiles(
         build.srcjar_dir, None, build.r_txt_path, options.extra_res_packages,

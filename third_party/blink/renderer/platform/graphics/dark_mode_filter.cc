@@ -154,13 +154,19 @@ bool DarkModeFilter::IsDarkModeActive() const {
 // checking the color classifiers.
 bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
   if (role == ElementRole::kBackground) {
-    DCHECK_NE(background_classifier_, nullptr);
+    // Calling get() is necessary below because operator<< in std::unique_ptr is
+    // a C++20 feature.
+    // TODO(https://crbug.com/980914): Drop .get() once we move to C++20.
+    DCHECK_NE(background_classifier_.get(), nullptr);
     return background_classifier_->ShouldInvertColor(color) ==
            DarkModeClassification::kApplyFilter;
   }
 
   DCHECK_EQ(role, ElementRole::kText);
-  DCHECK_NE(text_classifier_, nullptr);
+  // Calling get() is necessary below because operator<< in std::unique_ptr is
+  // a C++20 feature.
+  // TODO(https://crbug.com/980914): Drop .get() once we move to C++20.
+  DCHECK_NE(text_classifier_.get(), nullptr);
   return text_classifier_->ShouldInvertColor(color) ==
          DarkModeClassification::kApplyFilter;
 }

@@ -36,14 +36,16 @@ class NativeFileSystemDirectoryHandleImpl
                            GetPermissionStatusCallback callback) override;
   void RequestPermission(bool writable,
                          RequestPermissionCallback callback) override;
-  void GetFile(const std::string& name,
+  void GetFile(const std::string& basename,
                bool create,
                GetFileCallback callback) override;
-  void GetDirectory(const std::string& name,
+  void GetDirectory(const std::string& basename,
                     bool create,
                     GetDirectoryCallback callback) override;
   void GetEntries(GetEntriesCallback callback) override;
-  void Remove(bool recurse, RemoveCallback callback) override;
+  void RemoveEntry(const std::string& basename,
+                   bool recurse,
+                   RemoveEntryCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
 
@@ -71,17 +73,20 @@ class NativeFileSystemDirectoryHandleImpl
       std::vector<filesystem::mojom::DirectoryEntry> file_list,
       bool has_more);
 
-  void RemoveImpl(bool recurse, RemoveCallback callback);
+  void RemoveEntryImpl(const storage::FileSystemURL& url,
+                       bool recurse,
+                       RemoveEntryCallback callback);
 
   // Calculates a FileSystemURL for a (direct) child of this directory with the
-  // given name.  Returns an error when |name| includes invalid input like "/".
-  base::File::Error GetChildURL(const std::string& name,
+  // given basename.  Returns an error when |basename| includes invalid input
+  // like "/".
+  base::File::Error GetChildURL(const std::string& basename,
                                 storage::FileSystemURL* result)
       WARN_UNUSED_RESULT;
 
   // Helper to create a blink::mojom::NativeFileSystemEntry struct.
   blink::mojom::NativeFileSystemEntryPtr CreateEntry(
-      const std::string& name,
+      const std::string& basename,
       const storage::FileSystemURL& url,
       bool is_directory);
 

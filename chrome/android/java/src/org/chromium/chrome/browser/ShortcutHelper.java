@@ -273,6 +273,10 @@ public class ShortcutHelper {
         String id = shortcutIntent.getStringExtra(ShortcutHelper.EXTRA_ID);
         Context context = ContextUtils.getApplicationContext();
 
+        if (bitmap == null) {
+            Log.e(TAG, "Failed to find an icon for " + title + ", not adding.");
+            return;
+        }
         Icon icon = isMaskableIcon ? Icon.createWithAdaptiveBitmap(bitmap)
                                    : Icon.createWithBitmap(bitmap);
 
@@ -738,7 +742,7 @@ public class ShortcutHelper {
     private static void checkIfRequestPinShortcutSupported() {
         sShortcutManager =
                 ContextUtils.getApplicationContext().getSystemService(ShortcutManager.class);
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             sIsRequestPinShortcutSupported = sShortcutManager.isRequestPinShortcutSupported();
         }
     }

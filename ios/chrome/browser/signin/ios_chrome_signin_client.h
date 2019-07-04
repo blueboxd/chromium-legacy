@@ -31,7 +31,6 @@ class IOSChromeSigninClient : public SigninClient {
   void Shutdown() override;
 
   // SigninClient implementation.
-  base::Time GetInstallDate() override;
   std::string GetProductVersion() override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
@@ -41,7 +40,6 @@ class IOSChromeSigninClient : public SigninClient {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
   void DoFinalInit() override;
-  bool IsFirstRun() const override;
   bool AreSigninCookiesAllowed() override;
   bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(

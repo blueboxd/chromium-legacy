@@ -13,6 +13,8 @@
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_fcm_handler.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -32,6 +34,26 @@ namespace {
 
 constexpr int kNoCapabilities =
     static_cast<int>(SharingDeviceCapability::kNone);
+const char kP256dh[] = "p256dh";
+const char kAuthSecret[] = "auth_secret";
+const char kFcmToken[] = "fcm_token";
+const int kTtlSeconds = 10;
+
+class MockGCMDriver : public gcm::FakeGCMDriver {
+ public:
+  MockGCMDriver() {}
+  ~MockGCMDriver() override {}
+
+  MOCK_METHOD8(SendWebPushMessage,
+               void(const std::string& app_id,
+                    const std::string& authorized_entity,
+                    const std::string& p256dh,
+                    const std::string& auth_secret,
+                    const std::string& fcm_token,
+                    crypto::ECPrivateKey* vapid_key,
+                    gcm::WebPushMessage message,
+                    gcm::GCMDriver::SendWebPushMessageCallback callback));
+};
 
 class MockInstanceIDDriver : public InstanceIDDriver {
  public:
@@ -46,18 +68,23 @@ class SharingServiceTest : public testing::Test {
  public:
   SharingServiceTest() {
     sync_prefs_ = new SharingSyncPreference(&prefs_);
-    vapid_key_manager_ = new VapidKeyManager(sync_prefs_);
     sharing_device_registration_ = new SharingDeviceRegistration(
         sync_prefs_, &mock_instance_id_driver_, vapid_key_manager_,
-        &fake_gcm_driver_, &fake_local_device_info_provider_);
-
+        &mock_gcm_driver_, &fake_local_device_info_provider_);
+    vapid_key_manager_ = new VapidKeyManager(sync_prefs_);
+    fcm_sender_ = new SharingFCMSender(&mock_gcm_driver_,
+                                       &fake_local_device_info_provider_,
+                                       sync_prefs_, vapid_key_manager_);
+    fcm_handler_ = new SharingFCMHandler(&mock_gcm_driver_, fcm_sender_);
     sharing_service_ = std::make_unique<SharingService>(
-        base::WrapUnique(sync_prefs_),
+        base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
         base::WrapUnique(sharing_device_registration_),
-        base::WrapUnique(vapid_key_manager_), &device_info_tracker_,
+        base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
+        &device_info_tracker_, &fake_local_device_info_provider_,
         &fake_sync_service_);
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
+  void OnMessageSent(base::Optional<std::string> message_id) {}
 
  protected:
   static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
@@ -70,7 +97,7 @@ class SharingServiceTest : public testing::Test {
   }
 
   static SharingSyncPreference::Device CreateFakeSyncDevice() {
-    return SharingSyncPreference::Device("fcm_token", "p256dh", "auth_token",
+    return SharingSyncPreference::Device(kFcmToken, kP256dh, kAuthSecret,
                                          kNoCapabilities);
   }
 
@@ -79,15 +106,17 @@ class SharingServiceTest : public testing::Test {
       ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
 
   syncer::FakeDeviceInfoTracker device_info_tracker_;
-  gcm::FakeGCMDriver fake_gcm_driver_;
   FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
   syncer::FakeSyncService fake_sync_service_;
 
   NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
+  NiceMock<MockGCMDriver> mock_gcm_driver_;
 
   SharingSyncPreference* sync_prefs_;
   VapidKeyManager* vapid_key_manager_;
   SharingDeviceRegistration* sharing_device_registration_;
+  SharingFCMSender* fcm_sender_;
+  SharingFCMHandler* fcm_handler_;
   std::unique_ptr<SharingService> sharing_service_ = nullptr;
 
  private:
@@ -183,6 +212,23 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
 
   ASSERT_EQ(1u, candidates.size());
   EXPECT_EQ(id2, candidates[0].guid());
+}
+
+TEST_F(SharingServiceTest, SendMessageToDevice) {
+  std::string id = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> device_info = CreateFakeDeviceInfo(id);
+  device_info_tracker_.Add(device_info.get());
+  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+
+  EXPECT_CALL(mock_gcm_driver_,
+              SendWebPushMessage(_, _, Eq(kP256dh), Eq(kAuthSecret),
+                                 Eq(kFcmToken), _, _, _))
+      .Times(1);
+  sharing_service_->SendMessageToDevice(
+      id, base::TimeDelta::FromSeconds(kTtlSeconds),
+      chrome_browser_sharing::SharingMessage(),
+      base::BindOnce(&SharingServiceTest::OnMessageSent,
+                     base::Unretained(this)));
 }
 
 // TODO(himanshujaju) Add tests for RegisterDevice

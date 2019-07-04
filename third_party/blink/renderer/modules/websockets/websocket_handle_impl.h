@@ -33,6 +33,7 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -47,7 +48,7 @@ class WebSocketHandleImpl
   WebSocketHandleImpl();
   ~WebSocketHandleImpl() override;
 
-  void Connect(network::mojom::blink::WebSocketPtr,
+  void Connect(mojom::blink::WebSocketConnectorPtr,
                const KURL&,
                const Vector<String>& protocols,
                const KURL& site_for_cookies,
@@ -68,7 +69,8 @@ class WebSocketHandleImpl
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
   void OnResponseReceived(
       network::mojom::blink::WebSocketHandshakeResponsePtr) override;
-  void OnConnectionEstablished(const String& selected_protocol,
+  void OnConnectionEstablished(network::mojom::blink::WebSocketPtr websocket,
+                               const String& selected_protocol,
                                const String& extensions,
                                uint64_t receive_quota_threshold) override;
   // network::mojom::blink::WebSocketClient methods:

@@ -12,8 +12,10 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "net/base/backoff_entry.h"
 
+class GaiaAuthFetcher;
 class Profile;
 
 namespace signin {

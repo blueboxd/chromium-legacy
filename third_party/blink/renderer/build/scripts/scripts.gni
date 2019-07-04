@@ -109,7 +109,7 @@ template("blink_python_runner") {
              "-I",
              rebase_path("//third_party", root_build_dir),
              "-I",
-             rebase_path("//tools"),
+             rebase_path("//tools", root_build_dir),
              rebase_path(invoker.script, root_build_dir),
            ] + invoker.args
     if (defined(invoker.deps)) {

@@ -17,8 +17,6 @@
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
-#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #include "net/base/network_change_notifier.h"
@@ -125,17 +123,13 @@ typedef void (^logLaunchMetricsBlock)(id, const char*, int);
 
 class MetricsMediatorLogLaunchTest : public PlatformTest {
  protected:
-  MetricsMediatorLogLaunchTest()
-      : has_been_called_(FALSE),
-        web_state_list_(
-            std::make_unique<WebStateList>(&web_state_list_delegate_)) {}
+  MetricsMediatorLogLaunchTest() : has_been_called_(FALSE) {}
 
   void initiateMetricsMediator(BOOL coldStart, int tabCount) {
     id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
     [[[mainTabModel stub] andReturnValue:@(tabCount)] count];
-    WebStateList* web_state_list = web_state_list_.get();
-    [[[mainTabModel stub] andReturnValue:OCMOCK_VALUE(web_state_list)]
-        webStateList];
+    [[[mainTabModel stub] andReturn:nil] currentTab];
+
     StubBrowserInterfaceProvider* concreteProvider =
         [[StubBrowserInterfaceProvider alloc] init];
     concreteProvider.mainInterface.tabModel = mainTabModel;
@@ -168,8 +162,6 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
   __block BOOL has_been_called_;
   logLaunchMetricsBlock swizzle_block_;
   std::unique_ptr<ScopedBlockSwizzler> uma_histogram_swizzler_;
-  std::unique_ptr<WebStateList> web_state_list_;
-  FakeWebStateListDelegate web_state_list_delegate_;
 };
 
 // Verifies that the log of the number of open tabs is sent and verifies

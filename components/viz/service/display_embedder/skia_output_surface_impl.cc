@@ -173,17 +173,27 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
-                                 base::Unretained(impl_on_gpu_.get()), size,
-                                 device_scale_factor, std::move(color_space),
-                                 has_alpha, use_stencil, characterization,
-                                 initialize_waitable_event_.get());
+  auto callback = base::BindOnce(
+      &SkiaOutputSurfaceImplOnGpu::Reshape,
+      base::Unretained(impl_on_gpu_.get()), size, device_scale_factor,
+      std::move(color_space), has_alpha, use_stencil, pre_transform_,
+      characterization, initialize_waitable_event_.get());
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::SetUpdateVSyncParametersCallback(
     UpdateVSyncParametersCallback callback) {
   update_vsync_parameters_callback_ = std::move(callback);
+}
+
+void SkiaOutputSurfaceImpl::SetDisplayTransformHint(
+    gfx::OverlayTransform transform) {
+  if (capabilities_.supports_pre_transform)
+    pre_transform_ = transform;
+}
+
+gfx::OverlayTransform SkiaOutputSurfaceImpl::GetDisplayTransform() {
+  return pre_transform_;
 }
 
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {

@@ -216,7 +216,7 @@ public class DownloadManagerBridge {
 
     /** @return The android DownloadManager's download ID for the given download. */
     public static long getDownloadIdForDownloadGuid(String downloadGuid) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return getSharedPreferences().getLong(downloadGuid, INVALID_SYSTEM_DOWNLOAD_ID);
         }
     }

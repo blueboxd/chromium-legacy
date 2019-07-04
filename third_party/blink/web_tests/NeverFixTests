@@ -827,7 +827,6 @@ external/wpt/css/css-backgrounds/background-repeat/background-repeat-round.xht [
 external/wpt/css/css-backgrounds/background-size-025.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size-027.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size-029.html [ WontFix ]
-external/wpt/css/css-backgrounds/background-size-035.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size/background-size-contain.xht [ WontFix ]
 external/wpt/css/css-backgrounds/background-size/vector/background-size-vector-003.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size/vector/background-size-vector-004.html [ WontFix ]

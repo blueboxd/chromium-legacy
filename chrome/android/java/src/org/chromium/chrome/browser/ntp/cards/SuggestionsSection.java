@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -93,7 +94,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
     public SuggestionsSection(Delegate delegate, SuggestionsUiDelegate uiDelegate,
             SuggestionsRanker ranker, OfflinePageBridge offlinePageBridge,
-            SuggestionsCategoryInfo info) {
+            SuggestionsCategoryInfo info, SigninManager signinManager) {
         mDelegate = delegate;
         mCategoryInfo = info;
         mSuggestionsSource = uiDelegate.getSuggestionsSource();
@@ -114,7 +115,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         }
 
         if (isExpandable && SignInPromo.shouldCreatePromo()) {
-            mSigninPromo = new SignInPromo();
+            mSigninPromo = new SignInPromo(signinManager);
             mSigninPromo.setCanShowPersonalizedSuggestions(shouldShowSuggestions());
         } else {
             mSigninPromo = null;

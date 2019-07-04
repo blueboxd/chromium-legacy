@@ -8,7 +8,9 @@
 
 #include "base/logging.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 using content::BrowserThread;
 

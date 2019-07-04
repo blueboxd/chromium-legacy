@@ -35,7 +35,7 @@ _DEFAULT_ANDROID_MANIFEST_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gradle',
     'AndroidManifest.xml')
 _FILE_DIR = os.path.dirname(__file__)
-_SRCJARS_SUBDIR = 'extracted-srcjars'
+_GENERATED_JAVA_SUBDIR = 'generated_java'
 _JNI_LIBS_SUBDIR = 'symlinked-libs'
 _ARMEABI_SUBDIR = 'armeabi'
 _RES_SUBDIR = 'extracted-res'
@@ -213,6 +213,10 @@ class _ProjectEntry(object):
       ninja_target = ninja_target[1:]
     return ninja_target.replace(':', os.path.sep)
 
+  def GeneratedJavaSubdir(self):
+    return _RebasePath(
+        os.path.join('gen', self.GradleSubdir(), _GENERATED_JAVA_SUBDIR))
+
   def ProjectName(self):
     """Returns the Gradle project name."""
     return self.GradleSubdir().replace(os.path.sep, '.')
@@ -263,9 +267,6 @@ class _ProjectEntry(object):
         java_files = build_utils.ReadSourcesList(java_sources_file)
       self._java_files = java_files
     return self._java_files
-
-  def GeneratedJavaFiles(self):
-    return [p for p in self.JavaFiles() if not p.startswith('..')]
 
   def PrebuiltJars(self):
     all_jars = self.Gradle().get('dependent_prebuilt_jars', [])
@@ -348,12 +349,6 @@ class _ProjectContextGenerator(object):
   def _Relativize(self, entry, paths):
     return _RebasePath(paths, self.EntryOutputDir(entry))
 
-  def _Srcjars(self, entry):
-    srcjars = _RebasePath(entry.Gradle().get('bundled_srcjars', []))
-    if not self.use_gradle_process_resources:
-      srcjars += _RebasePath(entry.DepsInfo().get('owned_resource_srcjars', []))
-    return srcjars
-
   def _GetEntries(self, entry):
     if self.split_projects:
       return [entry]
@@ -362,37 +357,23 @@ class _ProjectContextGenerator(object):
   def EntryOutputDir(self, entry):
     return os.path.join(self.project_dir, entry.GradleSubdir())
 
-  def AllSrcjars(self, root_entry):
-    srcjars = []
-    for entry in self._GetEntries(root_entry):
-      srcjars += self._Srcjars(entry)
-    return set(srcjars)
-
   def AllResZips(self, root_entry):
     res_zips = []
     for entry in self._GetEntries(root_entry):
       res_zips += entry.ResZips()
     return set(_RebasePath(res_zips))
 
-  def GeneratedInputs(self, root_entry, fast=None):
+  def GeneratedInputs(self, root_entry):
     generated_inputs = set()
-    if not fast:
-      generated_inputs.update(self.AllResZips(root_entry))
-      generated_inputs.update(self.AllSrcjars(root_entry))
+    generated_inputs.update(self.AllResZips(root_entry))
     for entry in self._GetEntries(root_entry):
-      generated_inputs.update(entry.GeneratedJavaFiles())
       generated_inputs.update(entry.PrebuiltJars())
     return generated_inputs
 
-  def GeneratedZips(self, root_entry, fast=None):
+  def GeneratedZips(self, root_entry):
     entry_output_dir = self.EntryOutputDir(root_entry)
-    tuples = []
-    if not fast:
-      tuples.extend((s, os.path.join(entry_output_dir, _SRCJARS_SUBDIR))
-                    for s in self.AllSrcjars(root_entry))
-      tuples.extend((s, os.path.join(entry_output_dir, _RES_SUBDIR))
-                    for s in self.AllResZips(root_entry))
-    return tuples
+    return [(s, os.path.join(entry_output_dir, _RES_SUBDIR))
+            for s in self.AllResZips(root_entry)]
 
   def GenerateManifest(self, root_entry):
     android_manifest = root_entry.DepsInfo().get('android_manifest')
@@ -405,8 +386,8 @@ class _ProjectContextGenerator(object):
     # things up at all.
     variables = {}
     java_dirs, excludes = self._GenJavaDirs(root_entry)
-    java_dirs.append(
-        os.path.join(self.EntryOutputDir(root_entry), _SRCJARS_SUBDIR))
+    java_dirs.extend(
+        e.GeneratedJavaSubdir() for e in self._GetEntries(root_entry))
     self.processed_java_dirs.update(java_dirs)
     java_dirs.sort()
     variables['java_dirs'] = self._Relativize(root_entry, java_dirs)
@@ -715,7 +696,7 @@ def _ExtractFile(zip_path, extracted_path):
 
 
 def _ExtractZips(entry_output_dir, zip_tuples):
-  """Extracts all srcjars to the directory given by the tuples."""
+  """Extracts all zips to the directory given in the tuples."""
   extracted_paths = set(s[1] for s in zip_tuples)
   for extracted_path in extracted_paths:
     assert _IsSubpathOf(extracted_path, entry_output_dir)
@@ -804,9 +785,6 @@ def main():
                       action='store_true',
                       help='Split projects by their gn deps rather than '
                            'combining all the dependencies of each target')
-  parser.add_argument('--fast',
-                      action='store_true',
-                      help='Skip generating R.java and other generated files.')
   parser.add_argument('--native-target',
                       dest='native_targets',
                       action='append',
@@ -955,16 +933,16 @@ def main():
     entries_to_gen.extend(entry.android_test_entries)
     for entry_to_gen in entries_to_gen:
       # Build all paths references by .gradle that exist within output_dir.
-      generated_inputs.update(
-          generator.GeneratedInputs(entry_to_gen, args.fast))
-      zip_tuples.extend(generator.GeneratedZips(entry_to_gen, args.fast))
+      generated_inputs.update(generator.GeneratedInputs(entry_to_gen))
+      zip_tuples.extend(generator.GeneratedZips(entry_to_gen))
   if generated_inputs:
-    logging.warning('Building generated source files...')
     targets = _RebasePath(generated_inputs, output_dir)
     _RunNinja(output_dir, targets)
   if zip_tuples:
+    # This extracts generated xml files (e.g. strings).
     _ExtractZips(generator.project_dir, zip_tuples)
 
+  logging.warning('Generated files will only appear once you\'ve built them.')
   logging.warning('Generated projects for Android Studio %s', channel)
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
                   '/src.git/+/master/docs/android_studio.md')

@@ -1829,6 +1829,13 @@ public class ChromeTabbedActivity
     }
 
     @Override
+    protected void registerDirectActions() {
+        super.registerDirectActions();
+
+        mDirectActionInitializer.registerTabManipulationActions(this, getTabModelSelector());
+    }
+
+    @Override
     protected void onOmniboxFocusChanged(boolean hasFocus) {
         super.onOmniboxFocusChanged(hasFocus);
 
@@ -2499,7 +2506,7 @@ public class ChromeTabbedActivity
 
     @Override
     protected boolean shouldInitializeBottomSheet() {
-        return FeatureUtilities.isTabGroupsAndroidEnabled()
+        return super.shouldInitializeBottomSheet() || FeatureUtilities.isTabGroupsAndroidEnabled()
                 || SendTabToSelfAndroidBridge.isSendingEnabled();
     }
 

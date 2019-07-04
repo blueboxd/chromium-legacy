@@ -70,7 +70,7 @@ public class TrustedWebActivityPermissionStore {
     public TrustedWebActivityPermissionStore() {
         // On some versions of Android, creating the Preferences object involves a disk read (to
         // check if the Preferences directory exists, not even to read the actual Preferences).
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             mPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
                     SHARED_PREFS_FILE, Context.MODE_PRIVATE);
         }
@@ -100,7 +100,7 @@ public class TrustedWebActivityPermissionStore {
     Set<String> getStoredOrigins() {
         // In case the pre-emptive disk read in initStorage hasn't occurred by the time we actually
         // need the value.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()){
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             // The set returned by getStringSet cannot be modified.
             return new HashSet<>(mPreferences.getStringSet(KEY_ALL_ORIGINS, new HashSet<>()));
         }

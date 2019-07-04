@@ -33,6 +33,14 @@ void ObservableAuthenticatorList::RemoveAuthenticator(
     observer_->OnAuthenticatorRemoved(removed_authenticator);
 }
 
+void ObservableAuthenticatorList::RemoveAllAuthenticators() {
+  if (observer_) {
+    for (const auto& authenticator : authenticator_list_)
+      observer_->OnAuthenticatorRemoved(authenticator);
+  }
+  authenticator_list_.clear();
+}
+
 void ObservableAuthenticatorList::ChangeAuthenticatorId(
     base::StringPiece previous_id,
     std::string new_id) {

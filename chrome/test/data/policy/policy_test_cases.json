@@ -2466,7 +2466,7 @@
   },
 
   "BrowserSignin.DesktopForce": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "mac"],
     "test_policy": { "BrowserSignin": 2 },
     "pref_mappings": [
       { "pref": "signin.allowed_on_next_startup" },
@@ -2476,6 +2476,14 @@
       { "pref": "profile.browser_guest_enabled",
         "local_state": true
       }
+    ]
+  },
+
+  "BrowserSignin.LinuxForceNotSupported": {
+    "os": ["linux"],
+    "test_policy": { "BrowserSignin": 2 },
+    "pref_mappings": [
+      { "pref": "signin.allowed_on_next_startup" }
     ]
   },
 

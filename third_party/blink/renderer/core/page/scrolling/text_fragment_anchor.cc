@@ -152,6 +152,18 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   if (search_finished_)
     return;
 
+  // TODO(nburris): Determine what we should do with overlapping text matches.
+  // This implementation drops a match if it overlaps a previous match, since
+  // overlapping ranges are likely unintentional by the URL creator and could
+  // therefore indicate that the page text has changed.
+  if (!frame_->GetDocument()
+           ->Markers()
+           .MarkersIntersectingRange(range,
+                                     DocumentMarker::MarkerTypes::TextMatch())
+           .IsEmpty()) {
+    return;
+  }
+
   metrics_->DidFindMatch();
 
   if (first_match_needs_scroll_) {
@@ -193,8 +205,6 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   EphemeralRange dom_range =
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
                      ToPositionInDOMTree(range.EndPosition()));
-  // TODO(nburris): Determine what we should do with overlapping text matches.
-  // Currently, AddTextMatchMarker will crash when adding an overlapping marker.
   frame_->GetDocument()->Markers().AddTextMatchMarker(
       dom_range, TextMatchMarker::MatchStatus::kInactive);
   frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(true);

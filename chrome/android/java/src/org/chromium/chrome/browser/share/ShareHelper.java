@@ -419,7 +419,10 @@ public class ShareHelper {
     public static void captureScreenshotForContents(
             WebContents contents, int width, int height, Callback<Uri> callback) {
         RenderWidgetHostView rwhv = contents.getRenderWidgetHostView();
-        if (rwhv == null) callback.onResult(null);
+        if (rwhv == null) {
+          callback.onResult(null);
+          return;
+        }
         try {
             String path = UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext())
                     + File.separator + SHARE_IMAGES_DIRECTORY_NAME;
@@ -559,7 +562,7 @@ public class ShareHelper {
             try {
                 // TODO(dtrainor): Make asynchronous and have a callback to update the menu.
                 // https://crbug.com/729737
-                try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                     directShareIcon = pm.getActivityIcon(component);
                     ApplicationInfo ai = pm.getApplicationInfo(component.getPackageName(), 0);
                     directShareTitle = pm.getApplicationLabel(ai);

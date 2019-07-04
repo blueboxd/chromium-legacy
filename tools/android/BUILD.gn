@@ -14,7 +14,6 @@ group("android_tools") {
     "//third_party/android_platform:stack_wrapper",
     "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
     "//tools/android/adb_reboot",
-    "//tools/android/file_poller",
     "//tools/android/forwarder2",
     "//tools/android/md5sum",
     "//tools/android/memtrack_helper:memtrack_helper",

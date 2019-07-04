@@ -270,7 +270,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // suitable for the root frame, which may be linked to its native
   // window container.
   virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate, bool for_root_frame);
+      BrowserAccessibilityDelegate* delegate,
+      bool for_root_frame);
 
   virtual void AccessibilityShowMenu(const gfx::Point& point);
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();

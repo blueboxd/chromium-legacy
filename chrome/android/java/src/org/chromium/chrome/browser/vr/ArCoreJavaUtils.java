@@ -87,7 +87,7 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
 
     @CalledByNative
     private static String getArCoreShimLibraryPath() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return ((BaseDexClassLoader) ContextUtils.getApplicationContext().getClassLoader())
                     .findLibrary("arcore_sdk_c");
         }

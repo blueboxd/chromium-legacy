@@ -25,6 +25,7 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"

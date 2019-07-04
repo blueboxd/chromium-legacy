@@ -673,7 +673,7 @@ public abstract class SigninFragmentBase
                 && mGooglePlayServicesUpdateErrorHandler.isShowing()) {
             return;
         }
-        boolean cancelable = !SigninManager.get().isForceSigninEnabled();
+        boolean cancelable = !IdentityServicesProvider.getSigninManager().isForceSigninEnabled();
         mGooglePlayServicesUpdateErrorHandler =
                 new UserRecoverableErrorHandler.ModalDialog(getActivity(), cancelable);
         mGooglePlayServicesUpdateErrorHandler.handleError(getActivity(), gmsErrorCode);

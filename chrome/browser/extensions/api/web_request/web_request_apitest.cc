@@ -1471,31 +1471,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebSocketRequestOnWorker) {
       << message_;
 }
 
-// Tests the WebRequestProxyingWebSocket does not crash when there is a
-// connection error before AddChannelRequest is called. Regression test for
-// http://crbug.com/878574.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebSocketConnectionErrorBeforeChannelRequest) {
-  InstallWebRequestExtension("extension");
-
-  network::mojom::WebSocketPtr web_socket;
-  network::mojom::WebSocketRequest request = mojo::MakeRequest(&web_socket);
-  network::mojom::AuthenticationHandlerPtr auth_handler;
-  content::RenderFrameHost* host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-      profile())
-      ->MaybeProxyWebSocket(host, &request, &auth_handler, nullptr);
-  content::BrowserContext::GetDefaultStoragePartition(profile())
-      ->GetNetworkContext()
-      ->CreateWebSocket(std::move(request), network::mojom::kBrowserProcessId,
-                        host->GetProcess()->GetID(),
-                        url::Origin::Create(GURL("http://example.com")),
-                        network::mojom::kWebSocketOptionNone,
-                        std::move(auth_handler), nullptr);
-  web_socket.reset();
-}
-
 // Tests that a clean close from the server is not reported as an error when
 // there is a race between OnDropChannel and SendFrame.
 // Regression test for https://crbug.com/937790.

@@ -827,20 +827,35 @@ interface NetworkContext {
   // Clears the list of bad proxy servers that has been cached.
   ClearBadProxiesCache() => ();
 
-  // Creates a WebSocket connection.
-  // |options| may be a combination of the kWebSocketOption* flags.
+  // Creates a WebSocket connection to |url|. |requested_protocols| is a
+  // list of tokens identifying sub-protocols the renderer would like to use,
+  // as described in RFC6455 "Subprotocols Using the WebSocket Protocol".
+  // |additional_headers| are miscellaneous HTTP headers to be added to the
+  // request. Headers semantically relevant to the WebSocket handshake such
+  // as "sec-websocket-protocol" and "origin" are handled separately, (e.g.,
+  // "sec-websocket-protocol" is constructed from  |requested_protocols| in
+  // this message). |site_for_cookies| represents the first-party origin for
+  // the request. |options| may be a combination of the kWebSocketOption* flags.
+  // The connection will be shut down when |handshake_client| gets disconnected
+  // during the handshake phase, or |connection_client| gets disconnected.
   // If |header_client| is set, requests with the kURLLoadOptionUseHeaderClient
   // option will callback to the |header_client|, allowing the Cookie/Referrer
   // request headers and Cookie response headers to be modified. This has a
   // performance impact because of the extra process hops, so use should be
   // minimized.
-  CreateWebSocket(WebSocket& request,
-                  int32 process_id,
-                  int32 render_frame_id,
-                  url.mojom.Origin origin,
-                  uint32 options,
-                  AuthenticationHandler? auth_handler,
-                  TrustedHeaderClient? header_client);
+  CreateWebSocket(
+        url.mojom.Url url,
+        array<string> requested_protocols,
+        url.mojom.Url site_for_cookies,
+        array<HttpHeader> additional_headers,
+        int32 process_id,
+        int32 render_frame_id,
+        url.mojom.Origin origin,
+        uint32 options,
+        WebSocketHandshakeClient handshake_client,
+        WebSocketClient connection_client,
+        AuthenticationHandler? auth_handler,
+        TrustedHeaderClient? header_client);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts

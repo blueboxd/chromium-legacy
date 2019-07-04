@@ -6,13 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_ELEMENT_MOJOM_TRAITS_H_
 
 #include "services/network/public/mojom/url_loader.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 
 namespace mojo {
 
 template <>
-struct PLATFORM_EXPORT
-    StructTraits<network::mojom::DataElementDataView, blink::FormDataElement> {
+struct PLATFORM_EXPORT StructTraits<blink::mojom::FetchAPIDataElementDataView,
+                                    blink::FormDataElement> {
   static network::mojom::DataElementType type(
       const blink::FormDataElement& data);
 
@@ -49,7 +50,7 @@ struct PLATFORM_EXPORT
   static base::Time expected_modification_time(
       const blink::FormDataElement& data);
 
-  static bool Read(network::mojom::DataElementDataView data,
+  static bool Read(blink::mojom::FetchAPIDataElementDataView data,
                    blink::FormDataElement* out);
 };
 

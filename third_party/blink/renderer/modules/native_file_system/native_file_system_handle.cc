@@ -33,23 +33,6 @@ NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
                    std::move(e->entry_handle->get_directory())));
 }
 
-ScriptPromise NativeFileSystemHandle::remove(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  RemoveImpl(WTF::Bind(
-      [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result) {
-        if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve();
-        } else {
-          resolver->Reject(file_error::CreateDOMException(result->error_code));
-        }
-      },
-      WrapPersistent(resolver)));
-
-  return result;
-}
-
 namespace {
 String MojoPermissionStatusToString(mojom::blink::PermissionStatus status) {
   switch (status) {

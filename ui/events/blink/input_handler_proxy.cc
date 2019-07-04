@@ -188,8 +188,10 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
         new InputScrollElasticityController(scroll_elasticity_helper));
   }
   compositor_event_queue_ = std::make_unique<CompositorThreadEventQueue>();
-  scroll_predictor_ = std::make_unique<ScrollPredictor>(
-      base::FeatureList::IsEnabled(features::kResamplingScrollEvents));
+  scroll_predictor_ =
+      base::FeatureList::IsEnabled(features::kResamplingScrollEvents)
+          ? std::make_unique<ScrollPredictor>()
+          : nullptr;
 
   if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter) &&
       GetFieldTrialParamValueByFeature(
@@ -396,8 +398,9 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
   base::TimeTicks now = tick_clock_->NowTicks();
   while (!compositor_event_queue_->empty()) {
     std::unique_ptr<EventWithCallback> event_with_callback =
-        scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
-                                                now);
+        scroll_predictor_ ? scroll_predictor_->ResampleScrollEvents(
+                                compositor_event_queue_->Pop(), now)
+                          : compositor_event_queue_->Pop();
 
     // Save the rAF time in the latency info to be able to compute the
     // output latency.

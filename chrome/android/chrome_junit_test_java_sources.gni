@@ -57,6 +57,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/customtabs/content/CustomTabActivityTabControllerTest.java",
   "junit/src/org/chromium/chrome/browser/customtabs/content/CustomTabActivityUrlLoadingTest.java",
   "junit/src/org/chromium/chrome/browser/customtabs/shadows/ShadowExternalNavigationDelegateImpl.java",
+  "junit/src/org/chromium/chrome/browser/directactions/GoBackDirectActionHandlerTest.java",
   "junit/src/org/chromium/chrome/browser/display_cutout/DisplayCutoutControllerTest.java",
   "junit/src/org/chromium/chrome/browser/download/DownloadResumptionSchedulerTest.java",
   "junit/src/org/chromium/chrome/browser/download/DownloadSharedPreferenceEntryTest.java",

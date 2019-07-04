@@ -15,7 +15,7 @@
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/websockets/websocket_manager.h"
+#include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -121,8 +121,9 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
  private:
   void RegisterMojoInterfaces() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    registry_.AddInterface(base::BindRepeating(
-        &DedicatedWorkerHost::CreateWebSocket, base::Unretained(this)));
+    registry_.AddInterface(
+        base::BindRepeating(&DedicatedWorkerHost::CreateWebSocketConnector,
+                            base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
@@ -237,8 +238,10 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
                                                        std::move(request));
   }
 
-  void CreateWebSocket(network::mojom::WebSocketRequest request) {
+  void CreateWebSocketConnector(
+      blink::mojom::WebSocketConnectorRequest request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
     network::mojom::AuthenticationHandlerPtr auth_handler;
     auto* frame =
         RenderFrameHost::FromID(process_id_, ancestor_render_frame_id_);
@@ -249,15 +252,10 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
                               "The parent frame has already been gone.");
       return;
     }
-
-    uint32_t options = network::mojom::kWebSocketOptionNone;
-    network::mojom::TrustedHeaderClientPtr header_client;
-    GetContentClient()->browser()->WillCreateWebSocket(
-        frame, &request, &auth_handler, &header_client, &options);
-
-    WebSocketManager::CreateWebSocket(
-        process_id_, ancestor_render_frame_id_, origin_, options,
-        std::move(auth_handler), std::move(header_client), std::move(request));
+    mojo::MakeStrongBinding(
+        std::make_unique<WebSocketConnectorImpl>(
+            process_id_, ancestor_render_frame_id_, origin_),
+        std::move(request));
   }
 
   void CreateDedicatedWorker(

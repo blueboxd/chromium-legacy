@@ -5,13 +5,13 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_crossfade_value.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
@@ -196,7 +196,7 @@ class CalcParser {
     if (token.FunctionId() == CSSValueID::kCalc ||
         token.FunctionId() == CSSValueID::kWebkitCalc) {
       calc_value_ = CSSMathFunctionValue::Create(
-          CSSCalcExpressionNode::ParseCalc(ConsumeFunction(range_)),
+          CSSMathExpressionNode::ParseCalc(ConsumeFunction(range_)),
           value_range);
     }
   }

@@ -180,10 +180,12 @@ void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
     // regiserered from RegisterCSSPaintDefinition and one extra definition from
     // RegisterMainThreadDocumentPaintDefinition if OffMainThreadCSSPaintEnabled
     // is true.
-    if (existing_document_definition->GetRegisteredDefinitionCount() ==
-                RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
+    unsigned required_registered_count =
+        RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
             ? kNumGlobalScopesPerThread + 1
-            : kNumGlobalScopesPerThread)
+            : kNumGlobalScopesPerThread;
+    if (existing_document_definition->GetRegisteredDefinitionCount() ==
+        required_registered_count)
       pending_generator_registry_->NotifyGeneratorReady(name);
   } else {
     auto document_definition = std::make_unique<DocumentPaintDefinition>(

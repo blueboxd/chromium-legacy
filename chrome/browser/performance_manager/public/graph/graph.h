@@ -7,9 +7,14 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+
+namespace ukm {
+class UkmRecorder;
+}  // namespace ukm
 
 namespace performance_manager {
 
@@ -69,6 +74,9 @@ class Graph {
   virtual std::vector<const FrameNode*> GetAllFrameNodes() const = 0;
   virtual std::vector<const PageNode*> GetAllPageNodes() const = 0;
   virtual std::vector<const ProcessNode*> GetAllProcessNodes() const = 0;
+
+  // Returns the associated UKM recorder if it is defined.
+  virtual ukm::UkmRecorder* GetUkmRecorder() const = 0;
 
   // The following functions are implementation detail and should not need to be
   // used by external clients. They provide the ability to safely downcast to

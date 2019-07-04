@@ -295,6 +295,13 @@ void RemoteSuggestionsService::CreateExperimentalRequest(
     return;
   }
 
+  // As explained in http://crbug.com/968923, we have seen calls to fetch access
+  // tokens for cusco-chrome-extension scope even when remote suggestion
+  // feature was supposed to be disabled. This has caused a server issue for
+  // GSuite users that were using sync. Adding a DCHECK to make sure that this
+  // code is indeed never called when the custom endpoint URL is not configured.
+  DCHECK(!OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL().empty());
+
   // Create the oauth2 token fetcher.
   const identity::ScopeSet scopes{
       "https://www.googleapis.com/auth/cusco-chrome-extension"};

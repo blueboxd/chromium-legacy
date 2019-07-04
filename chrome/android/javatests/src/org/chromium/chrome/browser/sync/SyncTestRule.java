@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -135,7 +135,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     public void signIn(final Account account) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SigninManager.get().signIn(account, null, null);
+            IdentityServicesProvider.getSigninManager().signIn(account, null, null);
             // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
         });
@@ -147,12 +147,13 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void signOut() throws InterruptedException {
         final Semaphore s = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SigninManager.get().signOut(SignoutReason.SIGNOUT_TEST, new Runnable() {
-                @Override
-                public void run() {
-                    s.release();
-                }
-            });
+            IdentityServicesProvider.getSigninManager().signOut(
+                    SignoutReason.SIGNOUT_TEST, new Runnable() {
+                        @Override
+                        public void run() {
+                            s.release();
+                        }
+                    });
         });
         Assert.assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertNull(SigninTestUtil.getCurrentAccount());

@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -60,7 +61,7 @@ class WebSocketHandle {
 
   virtual ~WebSocketHandle() = default;
 
-  virtual void Connect(network::mojom::blink::WebSocketPtr,
+  virtual void Connect(mojom::blink::WebSocketConnectorPtr,
                        const KURL&,
                        const Vector<String>& protocols,
                        const KURL& site_for_cookies,

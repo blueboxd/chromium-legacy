@@ -2630,7 +2630,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -3085,7 +3085,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -8293,33 +8293,6 @@
           "--enable-gpu",
           "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
           "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
           "--use-gl=any",
@@ -8764,6 +8737,45 @@
       },
       {
         "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "skia_renderer_gl_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        }
+      },
+      {
+        "args": [
           "trace_test",
           "--show-stdout",
           "--browser=release",
@@ -8790,6 +8802,48 @@
           ],
           "expiration": 21600,
           "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--use-vulkan=native",
+          "--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--driver-logging",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "vulkan_native_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
         }
       },
       {
@@ -8996,33 +9050,6 @@
           "expiration": 21600
         },
         "test": "angle_white_box_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-418.56",
-              "os": "Ubuntu-19.04",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "browser_tests"
       },
       {
         "args": [
@@ -9500,6 +9527,45 @@
       },
       {
         "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "skia_renderer_gl_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        }
+      },
+      {
+        "args": [
           "trace_test",
           "--show-stdout",
           "--browser=release",
@@ -9526,6 +9592,48 @@
           ],
           "expiration": 21600,
           "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--use-vulkan=native",
+          "--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--driver-logging",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "vulkan_native_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
         }
       },
       {
@@ -12189,7 +12297,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -12214,7 +12322,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -32207,7 +32315,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -32241,7 +32349,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -32275,7 +32383,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -37161,7 +37269,7 @@
             }
           ],
           "expiration": 21600,
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -37196,7 +37304,7 @@
             }
           ],
           "expiration": 21600,
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -37231,7 +37339,7 @@
             }
           ],
           "expiration": 21600,
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {

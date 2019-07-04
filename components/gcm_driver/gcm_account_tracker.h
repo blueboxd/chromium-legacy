@@ -19,6 +19,7 @@
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 
 namespace identity {
+struct AccessTokenInfo;
 class IdentityManager;
 }
 

@@ -43,7 +43,8 @@ const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 
 // Specifies the coordinator of the startup tracing session. If the legacy
 // tracing backend is used instead of perfetto, providing this flag is not
-// necessary. Valid values: 'controller', 'devtools'. Defaults to 'controller'.
+// necessary. Valid values: 'controller', 'devtools', or 'system'. Defaults to
+// 'controller'.
 //
 // If 'controller' is specified, the session is controlled and stopped via the
 // TracingController (e.g. to implement the timeout).
@@ -51,6 +52,10 @@ const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 // If 'devtools' is specified, the startup tracing session will be owned by
 // DevTools and thus can be controlled (i.e. stopped) via the DevTools Tracing
 // domain on the first session connected to the browser endpoint.
+//
+// If 'system' is specified, the system Perfetto service should already be
+// tracing on a supported platform (currently only Android). Session is stopped
+// through the normal methods for stopping system traces.
 const char kTraceStartupOwner[] = "trace-startup-owner";
 
 // Disables the perfetto tracing backend. We need a separate command line

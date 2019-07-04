@@ -21,6 +21,7 @@ const char kTestAppId[] = "test_app_id";
 const char kTestMessageId[] = "test_message_id";
 const char kOriginalMessageId[] = "test_original_message_id";
 const char kSenderGuid[] = "test_sender_guid";
+const int kAckTimeToLiveMinutes = 30;
 
 class MockSharingMessageHandler : public SharingMessageHandler {
  public:
@@ -32,12 +33,15 @@ class MockSharingMessageHandler : public SharingMessageHandler {
 
 class MockSharingFCMSender : public SharingFCMSender {
  public:
-  MockSharingFCMSender() {}
+  MockSharingFCMSender()
+      : SharingFCMSender(nullptr, nullptr, nullptr, nullptr) {}
   ~MockSharingFCMSender() override {}
 
-  MOCK_METHOD2(SendMessage,
-               bool(const std::string& device_guid,
-                    const SharingMessage& message));
+  MOCK_METHOD4(SendMessageToDevice,
+               void(const std::string& device_guid,
+                    base::TimeDelta time_to_live,
+                    chrome_browser_sharing::SharingMessage message,
+                    SendMessageCallback callback));
 };
 
 class SharingFCMHandlerTest : public Test {
@@ -51,16 +55,9 @@ class SharingFCMHandlerTest : public Test {
   gcm::IncomingMessage CreateGCMIncomingMessage(
       const SharingMessage& sharing_message) {
     gcm::IncomingMessage incoming_message;
-    incoming_message.raw_data = sharing_message.SerializeAsString();
     incoming_message.message_id = kTestMessageId;
+    sharing_message.SerializeToString(&incoming_message.raw_data);
     return incoming_message;
-  }
-
-  // Creates a SharingMessage with defaults.
-  SharingMessage CreateSharingMessage() {
-    SharingMessage sharing_message;
-    sharing_message.set_sender_guid(kSenderGuid);
-    return sharing_message;
   }
 
   NiceMock<MockSharingMessageHandler> mock_sharing_message_handler_;
@@ -83,7 +80,7 @@ MATCHER_P(ProtoEquals, message, "") {
 // from other payloads since we need to ensure AckMessage is not sent for
 // SharingMessage with AckMessage payload.
 TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
-  SharingMessage sharing_message = CreateSharingMessage();
+  SharingMessage sharing_message;
   sharing_message.mutable_ack_message()->set_original_message_id(
       kOriginalMessageId);
   gcm::IncomingMessage incoming_message =
@@ -91,7 +88,8 @@ TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
 
   EXPECT_CALL(mock_sharing_message_handler_,
               OnMessage(ProtoEquals(sharing_message)));
-  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessage(_, _)).Times(0);
+  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToDevice(_, _, _, _))
+      .Times(0);
   sharing_fcm_handler_->AddSharingHandler(SharingMessage::kAckMessage,
                                           &mock_sharing_message_handler_);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
@@ -99,25 +97,30 @@ TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
 
 // Generic test for handling of SharingMessage payload other than AckMessage.
 TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
-  SharingMessage sharing_message = CreateSharingMessage();
+  SharingMessage sharing_message;
+  sharing_message.set_sender_guid(kSenderGuid);
   sharing_message.mutable_ping_message();
   gcm::IncomingMessage incoming_message =
       CreateGCMIncomingMessage(sharing_message);
 
   SharingMessage sharing_ack_message;
   sharing_ack_message.mutable_ack_message()->set_original_message_id(
-      incoming_message.message_id);
+      kTestMessageId);
 
   // Tests OnMessage flow in SharingFCMHandler when no handler is registered.
   EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_)).Times(0);
-  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessage(_, _)).Times(0);
+  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToDevice(_, _, _, _))
+      .Times(0);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
 
   // Tests OnMessage flow in SharingFCMHandler after handler is added.
   EXPECT_CALL(mock_sharing_message_handler_,
               OnMessage(ProtoEquals(sharing_message)));
   EXPECT_CALL(mock_sharing_fcm_sender_,
-              SendMessage(Eq(kSenderGuid), ProtoEquals(sharing_ack_message)));
+              SendMessageToDevice(
+                  Eq(kSenderGuid),
+                  Eq(base::TimeDelta::FromMinutes(kAckTimeToLiveMinutes)),
+                  ProtoEquals(sharing_ack_message), _));
   sharing_fcm_handler_->AddSharingHandler(SharingMessage::kPingMessage,
                                           &mock_sharing_message_handler_);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
@@ -125,7 +128,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
   // Tests OnMessage flow in SharingFCMHandler after registered handler is
   // removed.
   EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_)).Times(0);
-  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessage(_, _)).Times(0);
+  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToDevice(_, _, _, _))
+      .Times(0);
   sharing_fcm_handler_->RemoveSharingHandler(SharingMessage::kPingMessage);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
 }

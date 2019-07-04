@@ -14,6 +14,18 @@ settings.FingerprintSetupStep = {
   READY: 3            // The scanner has read the fingerprint successfully.
 };
 
+/**
+ * Fingerprint sensor locations corresponding to the FingerprintLocation
+ * enumerators in
+ * /chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h
+ * @enum {number}
+ */
+settings.FingerprintLocation = {
+  TABLET_POWER_BUTTON: 0,
+  KEYBOARD_TOP_RIGHT: 1,
+  KEYBOARD_BOTTOM_RIGHT: 2,
+};
+
 (function() {
 
 /**
@@ -73,6 +85,31 @@ Polymer({
       type: Number,
       value: 0,
       observer: 'onProgressChanged_',
+    },
+
+    /**
+     * This is used to display right animation for fingerprint sensor.
+     * @private {string}
+     */
+    fingerprintScannerAnimationClass_: {
+      type: String,
+      value: function() {
+        if (!loadTimeData.getBoolean('fingerprintUnlockEnabled')) {
+          return '';
+        }
+        const fingerprintLocation =
+            loadTimeData.getInteger('fingerprintReaderLocation');
+        switch (fingerprintLocation) {
+          case settings.FingerprintLocation.TABLET_POWER_BUTTON:
+            return 'fingerprint-scanner-tablet-power-button';
+          case settings.FingerprintLocation.KEYBOARD_TOP_RIGHT:
+            return 'fingerprint-scanner-laptop-top-right';
+          case settings.FingerprintLocation.KEYBOARD_BOTTOM_RIGHT:
+            return 'fingerprint-scanner-laptop-bottom-right';
+        }
+        assertNotReached();
+      },
+      readOnly: true,
     },
   },
 
@@ -308,16 +345,5 @@ Polymer({
     this.$.arc.setProgress(oldValue, newValue, newValue === 100);
   },
 
-  /**
-   * Returns the class name for fingerprint scanner animation.
-   * @private
-   */
-  getFingerprintScannerAnimationClass_: function() {
-    if (loadTimeData.getBoolean('fingerprintUnlockEnabled') &&
-        loadTimeData.getBoolean('isFingerprintReaderOnKeyboard')) {
-      return 'fingerprint-scanner-laptop';
-    }
-    return 'fingerprint-scanner-tablet';
-  },
 });
 })();

@@ -152,7 +152,9 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : delegate_(delegate),
+    : WebContentsObserver(delegate ? delegate->AccessibilityWebContents()
+                                   : nullptr),
+      delegate_(delegate),
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
@@ -168,7 +170,9 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : delegate_(delegate),
+    : WebContentsObserver(delegate ? delegate->AccessibilityWebContents()
+                                   : nullptr),
+      delegate_(delegate),
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),

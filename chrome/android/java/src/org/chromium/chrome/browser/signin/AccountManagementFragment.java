@@ -144,7 +144,7 @@ public class AccountManagementFragment extends PreferenceFragment
     @Override
     public void onResume() {
         super.onResume();
-        SigninManager.get().addSignInStateObserver(this);
+        IdentityServicesProvider.getSigninManager().addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
         mProfileDataCache.update(AccountManagerFacade.get().tryGetGoogleAccountNames());
         update();
@@ -153,7 +153,7 @@ public class AccountManagementFragment extends PreferenceFragment
     @Override
     public void onPause() {
         super.onPause();
-        SigninManager.get().removeSignInStateObserver(this);
+        IdentityServicesProvider.getSigninManager().removeSignInStateObserver(this);
         mProfileDataCache.removeObserver(this);
     }
 
@@ -207,7 +207,8 @@ public class AccountManagementFragment extends PreferenceFragment
                     SigninUtils.logEvent(
                             ProfileAccountManagementMetrics.TOGGLE_SIGNOUT, mGaiaServiceType);
 
-                    String managementDomain = SigninManager.get().getManagementDomain();
+                    String managementDomain =
+                            IdentityServicesProvider.getSigninManager().getManagementDomain();
                     if (managementDomain != null) {
                         // Show the 'You are signing out of a managed account' dialog.
 
@@ -375,7 +376,8 @@ public class AccountManagementFragment extends PreferenceFragment
 
         final Activity activity = getActivity();
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
-        SigninManager.get().signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
+        IdentityServicesProvider.getSigninManager().signOut(
+                SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
                 null, new SigninManager.WipeDataHooks() {
                     @Override
                     public void preWipeData() {

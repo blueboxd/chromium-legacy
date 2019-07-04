@@ -224,24 +224,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
                 IdentityServicesProvider.getAccountTrackerService());
     }
 
-    /**
-     * A helper method for retrieving the application-wide SigninManager.
-     * <p/>
-     * Can only be accessed on the main thread.
-     * @deprecated
-     * This method will be removed in https://crrev.com/c/1674022, use
-     * IdentityServicesProvider.getSigninManager() instead.
-     *
-     * @return a singleton instance of the SigninManager.
-     */
-    @Deprecated()
-    public static SigninManager get() {
-        if (sTestingSigninManager != null) {
-            return sTestingSigninManager;
-        }
-        return IdentityServicesProvider.getSigninManager();
-    }
-
     @VisibleForTesting
     SigninManager(Context context, long nativeSigninManagerAndroid, SigninManagerDelegate delegate,
             AccountTrackerService accountTrackerService) {
@@ -713,19 +695,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     public static String extractDomainName(String email) {
         return SigninManagerJni.get().extractDomainName(email);
-    }
-
-    /**
-     * Override the SigninManager to be used for tests
-     * @deprecated
-     * This method will be removed in https://crrev.com/c/1674022, provide SigninManager as a
-     * parameter of your tested objects instead.
-     * @param signinManager
-     */
-    @VisibleForTesting
-    @Deprecated
-    public static void setInstanceForTesting(SigninManager signinManager) {
-        sTestingSigninManager = signinManager;
     }
 
     // Native methods.

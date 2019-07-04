@@ -40,7 +40,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "google_apis/gaia/oauth2_token_service_test_util.h"
+#include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -256,7 +256,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   std::unique_ptr<TestSigninClient> client_;
   std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>
       oauth2_service_delegate_;
-  TestingOAuth2TokenServiceConsumer consumer_;
+  TestingOAuth2AccessTokenManagerConsumer consumer_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_service_;
   scoped_refptr<TokenWebData> token_web_data_;

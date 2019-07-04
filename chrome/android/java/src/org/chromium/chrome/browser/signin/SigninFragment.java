@@ -131,26 +131,28 @@ public class SigninFragment extends SigninFragmentBase {
                     AccountSigninActivity.SwitchAccountSource.SIGNOUT_SIGNIN);
         }
 
-        SigninManager.get().signIn(accountName, getActivity(), new SigninManager.SignInCallback() {
-            @Override
-            public void onSignInComplete() {
-                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
-                if (settingsClicked) {
-                    PreferencesLauncher.launchSettingsPage(getActivity(),
-                            SyncAndServicesPreferences.class,
-                            SyncAndServicesPreferences.createArguments(true));
-                }
+        IdentityServicesProvider.getSigninManager().signIn(
+                accountName, getActivity(), new SigninManager.SignInCallback() {
+                    @Override
+                    public void onSignInComplete() {
+                        UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
+                                true);
+                        if (settingsClicked) {
+                            PreferencesLauncher.launchSettingsPage(getActivity(),
+                                    SyncAndServicesPreferences.class,
+                                    SyncAndServicesPreferences.createArguments(true));
+                        }
 
-                recordSigninCompletedHistogramAccountInfo();
-                getActivity().finish();
-                callback.run();
-            }
+                        recordSigninCompletedHistogramAccountInfo();
+                        getActivity().finish();
+                        callback.run();
+                    }
 
-            @Override
-            public void onSignInAborted() {
-                callback.run();
-            }
-        });
+                    @Override
+                    public void onSignInAborted() {
+                        callback.run();
+                    }
+                });
     }
 
     @Override

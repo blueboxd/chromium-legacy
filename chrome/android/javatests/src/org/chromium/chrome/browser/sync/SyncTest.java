@@ -22,7 +22,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
-import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -85,7 +84,7 @@ public class SyncTest {
                 new Criteria("Timed out checking that isSignedInOnNative() == true") {
                     @Override
                     public boolean isSatisfied() {
-                        return SigninManager.get().isSignedInOnNative();
+                        return IdentityServicesProvider.getSigninManager().isSignedInOnNative();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
@@ -99,7 +98,7 @@ public class SyncTest {
                 new Criteria("Timed out checking that isSignedInOnNative() == false") {
                     @Override
                     public boolean isSatisfied() {
-                        return !SigninManager.get().isSignedInOnNative();
+                        return !IdentityServicesProvider.getSigninManager().isSignedInOnNative();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);

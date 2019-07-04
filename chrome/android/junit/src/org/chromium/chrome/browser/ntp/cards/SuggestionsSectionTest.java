@@ -134,7 +134,6 @@ public class SuggestionsSectionTest {
 
         // Set up a test account and initialize to the signed in state.
         NewTabPageTestUtils.setUpTestAccount();
-        SigninManager.setInstanceForTesting(mSigninManager);
         when(mSigninManager.isSignedInOnNative()).thenReturn(false);
         when(mSigninManager.isSignInAllowed()).thenReturn(true);
     }
@@ -143,7 +142,6 @@ public class SuggestionsSectionTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         PrefServiceBridge.setInstanceForTesting(null);
-        SigninManager.setInstanceForTesting(null);
     }
 
     @Test
@@ -1047,8 +1045,8 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
-        SuggestionsSection section = new SuggestionsSection(
-                mDelegate, mUiDelegate, mock(SuggestionsRanker.class), mBridge, info);
+        SuggestionsSection section = new SuggestionsSection(mDelegate, mUiDelegate,
+                mock(SuggestionsRanker.class), mBridge, info, mSigninManager);
         section.addObserver(mObserver);
         return section;
     }

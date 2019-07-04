@@ -183,14 +183,15 @@ void AddFingerprintResources(content::WebUIDataSource* source) {
   int animation_id;
   switch (quick_unlock::GetFingerprintLocation()) {
     case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
-      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION;
+      animation_id =
+          IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_POWER_BUTTON_ANIMATION;
       break;
     case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
-      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION;
+      animation_id =
+          IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION;
       break;
     case quick_unlock::FingerprintLocation::KEYBOARD_TOP_RIGHT:
-      // TODO(rsorokin): Add animation for KEYBOARD_TOP_RIGHT.
-      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION;
+      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION;
       break;
   }
   source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);

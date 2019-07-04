@@ -10,6 +10,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "chrome/browser/sharing/fcm_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -21,7 +22,7 @@
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "crypto/ec_private_key.h"
 
-#if defined(ANDROID_OS)
+#if defined(OS_ANDROID)
 #include "chrome/android/chrome_jni_headers/SharingJNIBridge_jni.h"
 #endif
 
@@ -110,7 +111,7 @@ int SharingDeviceRegistration::GetDeviceCapabilities() const {
 }
 
 bool SharingDeviceRegistration::IsTelephonySupported() const {
-#if defined(ANDROID_OS)
+#if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_SharingJNIBridge_isTelephonySupported(env);
 #endif

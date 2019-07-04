@@ -142,7 +142,7 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     private void simulateDownloadDirectories(boolean hasSDCard) {
         ArrayList<DirectoryOption> dirs = new ArrayList<>();
 
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             dirs.add(buildDirectoryOption(DirectoryOption.DownloadLocationDirectoryType.DEFAULT,
                     PathUtils.getExternalStorageDirectory()));
             if (hasSDCard) {

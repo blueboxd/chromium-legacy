@@ -87,7 +87,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
       ("Media.Video.Autoplay.Muted.Blocked", kAutoplayBlockedReasonMax));
 
   // Autoplay already initiated
-  if (sources_.count(source))
+  if (sources_.Contains(source))
     return;
 
   sources_.insert(source);
@@ -207,7 +207,7 @@ void AutoplayUmaHelper::RecordAutoplayUnmuteStatus(
     if (sources_.size() ==
         static_cast<size_t>(AutoplaySource::kNumberOfSources)) {
       source = static_cast<int>(AutoplaySource::kDualSource);
-    } else if (sources_.count(AutoplaySource::kMethod)) {
+    } else if (sources_.Contains(AutoplaySource::kMethod)) {
       source = static_cast<int>(AutoplaySource::kAttribute);
     }
 
@@ -294,7 +294,7 @@ void AutoplayUmaHelper::HandleContextDestroyed() {
 }
 
 void AutoplayUmaHelper::MaybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
-  if (!sources_.count(AutoplaySource::kMethod) ||
+  if (!sources_.Contains(AutoplaySource::kMethod) ||
       !element_->IsHTMLVideoElement() || !element_->muted())
     return;
 
@@ -324,7 +324,7 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(
 
 void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
   if (!element_->IsHTMLVideoElement() || !element_->muted() ||
-      !sources_.count(AutoplaySource::kMethod))
+      !sources_.Contains(AutoplaySource::kMethod))
     return;
 
   // Start recording muted video playing offscreen duration.
@@ -352,7 +352,7 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
         CurrentTimeTicks() - muted_video_autoplay_offscreen_start_time_;
   }
 
-  DCHECK(sources_.count(AutoplaySource::kMethod));
+  DCHECK(sources_.Contains(AutoplaySource::kMethod));
 
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration",

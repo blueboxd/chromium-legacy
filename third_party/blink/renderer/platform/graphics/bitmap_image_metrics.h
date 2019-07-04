@@ -78,12 +78,10 @@ class PLATFORM_EXPORT BitmapImageMetrics {
   // with a smallest side (width or length) of |image_min_side|.
   static void CountImageJpegDensity(int image_min_side,
                                     uint64_t density_centi_bpp);
+  // Misnamed: Only counts gamut information at the moment.
   static void CountImageGammaAndGamut(const skcms_ICCProfile*);
   static void CountJpegArea(const IntSize& size);
   static void CountJpegColorSpace(JpegColorSpace color_space);
-
- private:
-  static Gamma GetColorSpaceGamma(const skcms_ICCProfile*);
 };
 
 }  // namespace blink

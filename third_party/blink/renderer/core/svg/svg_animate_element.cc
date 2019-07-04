@@ -489,7 +489,8 @@ void SVGAnimateElement::ApplyResultsToTarget() {
   if (!animated_value_)
     return;
 
-  if (!ShouldApplyAnimation(*targetElement(), AttributeName()))
+  SVGElement* target_element = targetElement();
+  if (!ShouldApplyAnimation(*target_element, AttributeName()))
     return;
 
   // We do update the style and the animation property independent of each
@@ -497,15 +498,17 @@ void SVGAnimateElement::ApplyResultsToTarget() {
   if (IsAnimatingCSSProperty()) {
     // CSS properties animation code-path.
     // Convert the result of the animation to a String and apply it as CSS
-    // property on the target.
-    MutableCSSPropertyValueSet* property_set =
-        targetElement()->EnsureAnimatedSMILStyleProperties();
-    if (property_set
-            ->SetProperty(
-                css_property_id_, animated_value_->ValueAsString(), false,
-                targetElement()->GetDocument().GetSecureContextMode(), nullptr)
-            .did_change) {
-      targetElement()->SetNeedsStyleRecalc(
+    // property on the target_element.
+    MutableCSSPropertyValueSet* properties =
+        target_element->EnsureAnimatedSMILStyleProperties();
+    auto animated_value_string = animated_value_->ValueAsString();
+    auto secure_context_mode =
+        target_element->GetDocument().GetSecureContextMode();
+    auto set_result =
+        properties->SetProperty(css_property_id_, animated_value_string, false,
+                                secure_context_mode, nullptr);
+    if (set_result.did_change) {
+      target_element->SetNeedsStyleRecalc(
           kLocalStyleChange,
           StyleChangeReasonForTracing::Create(style_change_reason::kAnimation));
     }

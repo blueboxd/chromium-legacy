@@ -34,16 +34,16 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
   MAYBE_MetricsCollectorTest() : GraphTestHarness() {}
 
   void SetUp() override {
-    metrics_collector_ = std::make_unique<MetricsCollector>();
+    metrics_collector_ = new MetricsCollector();
     PerformanceManagerClock::SetClockForTesting(&clock_);
-
     // Sets a valid starting time.
     clock_.SetNowTicks(base::TimeTicks::Now());
-    graph()->RegisterObserver(metrics_collector_.get());
+    graph()->PassToGraph(base::WrapUnique(metrics_collector_));
   }
 
   void TearDown() override {
-    graph()->UnregisterObserver(metrics_collector_.get());
+    graph()->TakeFromGraph(metrics_collector_);  // Destroy the observer.
+    metrics_collector_ = nullptr;
     PerformanceManagerClock::ResetClockForTesting();
   }
 
@@ -56,7 +56,7 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
   base::SimpleTestTickClock clock_;
 
  private:
-  std::unique_ptr<MetricsCollector> metrics_collector_;
+  MetricsCollector* metrics_collector_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MAYBE_MetricsCollectorTest);
 };

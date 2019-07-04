@@ -108,6 +108,7 @@
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
+#include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -1633,6 +1634,10 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
   if (view)
     return view->AccessibilityGetNativeViewAccessibleForWindow();
   return nullptr;
+}
+
+WebContents* RenderFrameHostImpl::AccessibilityWebContents() {
+  return delegate()->GetAsWebContents();
 }
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
@@ -4164,7 +4169,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebSocket, base::Unretained(this)));
+      &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
@@ -6014,21 +6019,12 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
                  base::Unretained(this))));
 }
 
-void RenderFrameHostImpl::CreateWebSocket(
-    network::mojom::WebSocketRequest request) {
-  network::mojom::AuthenticationHandlerPtr auth_handler;
-
-  network::mojom::TrustedHeaderClientPtr header_client;
-  uint32_t options = network::mojom::kWebSocketOptionNone;
-  GetContentClient()->browser()->WillCreateWebSocket(
-      this, &request, &auth_handler, &header_client, &options);
-
-  // This is to support usage of WebSockets in cases in which there is an
-  // associated RenderFrame. This is important for showing the correct security
-  // state of the page and also honoring user override of bad certificates.
-  WebSocketManager::CreateWebSocket(
-      process_->GetID(), routing_id_, last_committed_origin_, options,
-      std::move(auth_handler), std::move(header_client), std::move(request));
+void RenderFrameHostImpl::CreateWebSocketConnector(
+    blink::mojom::WebSocketConnectorRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<WebSocketConnectorImpl>(
+          GetProcess()->GetID(), routing_id_, last_committed_origin_),
+      std::move(request));
 }
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(

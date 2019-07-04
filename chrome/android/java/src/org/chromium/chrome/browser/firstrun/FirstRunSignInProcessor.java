@@ -13,6 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
@@ -48,7 +49,7 @@ public final class FirstRunSignInProcessor {
      * @param activity The context for the FRE parameters processor.
      */
     public static void start(final Activity activity) {
-        SigninManager signinManager = SigninManager.get();
+        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
         signinManager.onFirstRunCheckDone();
 
         // Skip signin if the first run flow is not complete. Examples of cases where the user
@@ -177,7 +178,7 @@ public final class FirstRunSignInProcessor {
      * Allows the user to sign-in if there are no pending FRE sign-in requests.
      */
     public static void updateSigninManagerFirstRunCheckDone() {
-        SigninManager manager = SigninManager.get();
+        SigninManager manager = IdentityServicesProvider.getSigninManager();
         if (manager.isSignInAllowed()) return;
         if (!FirstRunStatus.getFirstRunFlowComplete()) return;
         if (!getFirstRunFlowSignInComplete()) return;

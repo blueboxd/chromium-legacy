@@ -741,8 +741,6 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
   DCHECK(!refresh_token.empty());
 
   ValidateAccountId(account_id);
-  signin_metrics::LogSigninAddAccount();
-
   const std::string& existing_token = GetRefreshToken(account_id);
   if (existing_token != refresh_token) {
     ScopedBatchChange batch(this);

@@ -77,6 +77,11 @@ class PrefetchServiceImpl : public PrefetchService {
   // KeyedService implementation:
   void Shutdown() override;
 
+  // Replaces the ImageFetcher. The ReducedModeImageFetcher is used when the
+  // PrefetchService is created, and will be replaced with CachedImageFetcher
+  // when Chrome is launched from reduced mode to full browser mode.
+  void ReplaceImageFetcher(image_fetcher::ImageFetcher* image_fetcher);
+
  private:
   void OnGCMTokenReceived(const std::string& gcm_token,
                           instance_id::InstanceID::Result result);

@@ -8,4 +8,5 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kSolidButtonTextColor = @"solid_button_text_color";
 NSString* const kTintColor = @"tint_color";

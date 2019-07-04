@@ -80,14 +80,6 @@ void TestSigninClient::SetNetworkCallsDelayed(bool value) {
   }
 }
 
-bool TestSigninClient::IsFirstRun() const {
-  return false;
-}
-
-base::Time TestSigninClient::GetInstallDate() {
-  return base::Time::Now();
-}
-
 bool TestSigninClient::AreSigninCookiesAllowed() {
   return are_signin_cookies_allowed_;
 }

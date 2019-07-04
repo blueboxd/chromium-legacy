@@ -5,6 +5,7 @@
 #include "components/sync/driver/sync_session_durations_metrics_recorder.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 

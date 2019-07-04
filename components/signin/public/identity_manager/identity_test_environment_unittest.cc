@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace identity {

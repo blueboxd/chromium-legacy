@@ -58,6 +58,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
                bool use_stencil) override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
+  gfx::OverlayTransform GetDisplayTransform() override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -144,6 +146,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
   std::vector<gpu::SyncToken> resource_sync_tokens_;
 
   const RendererSettings renderer_settings_;
+
+  // The display transform relative to the hardware natural orientation,
+  // applied to the frame content. The transform can be rotations in 90 degree
+  // increments or flips.
+  gfx::OverlayTransform pre_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   // |impl_on_gpu| is created and destroyed on the GPU thread.
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;

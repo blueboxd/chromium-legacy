@@ -58,7 +58,7 @@ public class IncognitoTabLauncher extends Activity {
         chromeLauncherIntent.putExtra(
                 IntentHandler.EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB, true);
 
-        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             startActivity(chromeLauncherIntent);
         }
 

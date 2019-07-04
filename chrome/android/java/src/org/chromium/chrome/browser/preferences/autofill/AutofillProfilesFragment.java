@@ -105,7 +105,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             }
             Bundle args = pref.getExtras();
             args.putString(MainPreferences.AUTOFILL_GUID, profile.getGUID());
-            try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 getPreferenceScreen().addPreference(pref);
             }
         }
@@ -124,7 +124,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             pref.setTitle(R.string.autofill_create_profile);
             pref.setKey(PREF_NEW_PROFILE); // For testing.
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 getPreferenceScreen().addPreference(pref);
             }
         }

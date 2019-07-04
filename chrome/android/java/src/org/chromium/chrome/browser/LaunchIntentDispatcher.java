@@ -229,7 +229,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
         searchIntent.putExtra(SearchManager.QUERY, query);
 
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             int resolvers =
                     ContextUtils.getApplicationContext()
                             .getPackageManager()

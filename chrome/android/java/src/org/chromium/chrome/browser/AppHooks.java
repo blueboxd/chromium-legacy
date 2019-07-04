@@ -26,6 +26,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.directactions.DirectActionCoordinator;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.AsyncFeedbackSource;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
@@ -157,6 +158,14 @@ public abstract class AppHooks {
      */
     public CustomTabsConnection createCustomTabsConnection() {
         return new CustomTabsConnection();
+    }
+
+    /**
+     * Returns a new {@link DirectActionCoordinator} instance, if available.
+     */
+    @Nullable
+    public DirectActionCoordinator createDirectActionCoordinator() {
+        return null;
     }
 
     /**

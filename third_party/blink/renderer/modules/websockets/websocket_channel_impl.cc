@@ -36,6 +36,7 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -206,10 +207,7 @@ WebSocketChannelImpl::~WebSocketChannelImpl() {
   DCHECK(!blob_loader_);
 }
 
-bool WebSocketChannelImpl::Connect(
-    const KURL& url,
-    const String& protocol,
-    network::mojom::blink::WebSocketPtr socket_ptr) {
+bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   NETWORK_DVLOG(1) << this << " Connect()";
   if (!handle_)
     return false;
@@ -255,8 +253,17 @@ bool WebSocketChannelImpl::Connect(
     return true;
   }
 
+  mojom::blink::WebSocketConnectorPtr connector;
+  if (execution_context_->GetInterfaceProvider()) {
+    execution_context_->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(
+        &connector, execution_context_->GetTaskRunner(TaskType::kWebSocket)));
+  } else {
+    // Create a fake request. This will lead to a closed WebSocket due to
+    // a mojo connection error.
+    mojo::MakeRequest(&connector);
+  }
   handle_->Connect(
-      std::move(socket_ptr), url, protocols,
+      std::move(connector), url, protocols,
       GetBaseFetchContext()->GetSiteForCookies(),
       execution_context_->UserAgent(), this,
       execution_context_->GetTaskRunner(TaskType::kNetworking).get());
@@ -279,17 +286,6 @@ bool WebSocketChannelImpl::Connect(
                            execution_context_, identifier_, url, protocol));
   probe::DidCreateWebSocket(execution_context_, identifier_, url, protocol);
   return true;
-}
-
-bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
-  network::mojom::blink::WebSocketPtr socket_ptr;
-  auto socket_request = mojo::MakeRequest(
-      &socket_ptr, execution_context_->GetTaskRunner(TaskType::kWebSocket));
-  service_manager::InterfaceProvider* interface_provider =
-      execution_context_->GetInterfaceProvider();
-  if (interface_provider)
-    interface_provider->GetInterface(std::move(socket_request));
-  return Connect(url, protocol, std::move(socket_ptr));
 }
 
 void WebSocketChannelImpl::Send(const std::string& message) {

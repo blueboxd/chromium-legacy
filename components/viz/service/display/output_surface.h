@@ -57,6 +57,12 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool supports_post_sub_buffer = false;
     // Whether this OutputSurface supports gpu vsync callbacks.
     bool supports_gpu_vsync = false;
+    // Whether this OutputSurface supports pre transform. If it is supported,
+    // the chrome will set the output surface size in hardware natural
+    // orientation, and will render transformed content on back buffers based
+    // on the current system transform. So the OS presentation engine can
+    // present buffers onto the screen directly.
+    bool supports_pre_transform = false;
   };
 
   // Constructor for skia-based compositing.

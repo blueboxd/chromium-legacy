@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -228,6 +229,8 @@ void Portal::Activate(blink::TransferableMessage data,
     portal_contents_main_frame_view->TakeFallbackContentFrom(
         outer_contents_main_frame_view);
 
+    outer_contents->GetInputEventRouter()->IgnoreUnackedTouchEvents(
+        outer_contents_main_frame_view);
     outer_contents_main_frame_view->Destroy();
   }
 

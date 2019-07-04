@@ -256,23 +256,23 @@ void SVGAnimateMotionElement::CalculateAnimatedValue(float percentage,
 void SVGAnimateMotionElement::ApplyResultsToTarget() {
   // We accumulate to the target element transform list so there is not much to
   // do here.
-  SVGElement* target_element = this->targetElement();
+  SVGElement* target_element = targetElement();
   if (!target_element)
     return;
 
-  AffineTransform* t = target_element->AnimateMotionTransform();
-  if (!t)
+  AffineTransform* target_transform = target_element->AnimateMotionTransform();
+  if (!target_transform)
     return;
 
   // ...except in case where we have additional instances in <use> trees.
-  const HeapHashSet<WeakMember<SVGElement>>& instances =
-      target_element->InstancesForElement();
+  const auto& instances = target_element->InstancesForElement();
   for (SVGElement* shadow_tree_element : instances) {
     DCHECK(shadow_tree_element);
-    AffineTransform* transform = shadow_tree_element->AnimateMotionTransform();
-    if (!transform)
+    AffineTransform* shadow_transform =
+        shadow_tree_element->AnimateMotionTransform();
+    if (!shadow_transform)
       continue;
-    transform->SetMatrix(t->A(), t->B(), t->C(), t->D(), t->E(), t->F());
+    shadow_transform->SetTransform(*target_transform);
     if (LayoutObject* layout_object = shadow_tree_element->GetLayoutObject())
       InvalidateForAnimateMotionTransformChange(*layout_object);
   }

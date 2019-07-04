@@ -17,7 +17,6 @@ source_set("identity_manager") {
   public_deps = [
     "//base",
     "//components/signin/public/identity_manager",
-    "//google_apis",
   ]
 
   deps = [
@@ -25,6 +24,7 @@ source_set("identity_manager") {
     "//components/signin/core/browser:internals",
     "//components/signin/core/browser:shared",
     "//components/signin/core/browser:signin_buildflags",
+    "//google_apis",
   ]
 
   if (!is_android && !is_ios) {

@@ -771,38 +771,32 @@ bool WebRequestAPI::MaybeProxyAuthRequest(
   return true;
 }
 
-void WebRequestAPI::MaybeProxyWebSocket(
+void WebRequestAPI::ProxyWebSocket(
     content::RenderFrameHost* frame,
-    network::mojom::WebSocketRequest* request,
-    network::mojom::AuthenticationHandlerPtr* auth_handler,
-    network::mojom::TrustedHeaderClientPtr* header_client) {
+    content::ContentBrowserClient::WebSocketFactory factory,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<std::string>& user_agent,
+    network::mojom::WebSocketHandshakeClientPtr handshake_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!MayHaveProxies())
-    return;
+  DCHECK(MayHaveProxies());
 
-  network::mojom::WebSocketPtrInfo proxied_socket_ptr_info;
-  auto proxied_request = std::move(*request);
-  *request = mojo::MakeRequest(&proxied_socket_ptr_info);
-  auto authentication_request = mojo::MakeRequest(auth_handler);
-
-  network::mojom::TrustedHeaderClientRequest header_client_request;
-  if (ExtensionWebRequestEventRouter::GetInstance()
+  const bool has_extra_headers =
+      ExtensionWebRequestEventRouter::GetInstance()
           ->HasAnyExtraHeadersListenerOnUI(
-              frame->GetProcess()->GetBrowserContext())) {
-    header_client_request = mojo::MakeRequest(header_client);
-  }
+              frame->GetProcess()->GetBrowserContext());
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &WebRequestProxyingWebSocket::StartProxying,
-          frame->GetProcess()->GetID(), frame->GetRoutingID(),
-          request_id_generator_, frame->GetLastCommittedOrigin(),
+          &WebRequestProxyingWebSocket::StartProxying, std::move(factory), url,
+          site_for_cookies, user_agent, handshake_client.PassInterface(),
+          has_extra_headers, frame->GetProcess()->GetID(),
+          frame->GetRoutingID(), request_id_generator_,
+          frame->GetLastCommittedOrigin(),
           frame->GetProcess()->GetBrowserContext(),
           frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
-          base::Unretained(info_map_), std::move(proxied_socket_ptr_info),
-          std::move(proxied_request), std::move(authentication_request),
-          std::move(header_client_request)));
+          base::Unretained(info_map_)));
 }
 
 void WebRequestAPI::ForceProxyForTesting() {

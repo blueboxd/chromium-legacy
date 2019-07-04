@@ -94,7 +94,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                                                            R.id.omnibox_results_container_stub))
                                               .inflate();
                 OmniboxSuggestionsList list;
-                try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                     list = new OmniboxSuggestionsList(context);
                 }
 

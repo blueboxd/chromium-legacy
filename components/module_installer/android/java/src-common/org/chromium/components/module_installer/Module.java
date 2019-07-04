@@ -55,7 +55,7 @@ public class Module<T> {
         if (mImpl != null) return true;
         // Accessing classes in the module may cause its DEX file to be loaded. And on some devices
         // that causes a read mode violation.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             ModuleInstaller.init();
             Class.forName(mImplClassName);
             return true;
@@ -88,7 +88,7 @@ public class Module<T> {
             ModuleInstaller.init();
             // Accessing classes in the module may cause its DEX file to be loaded. And on some
             // devices that causes a read mode violation.
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                 mImpl = mInterfaceClass.cast(Class.forName(mImplClassName).newInstance());
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                     | IllegalArgumentException e) {

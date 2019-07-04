@@ -191,10 +191,15 @@ class AuthenticatorInternalUnrecognizedErrorSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  void OnBack() override;
+  void OnAccept() override;
 };
 
 class AuthenticatorBlePowerOnManualSheetModel

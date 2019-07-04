@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <set>
-
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
@@ -118,7 +116,6 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
 
-  std::set<int32_t> observer_ids_;
   mojom::blink::IDBDatabaseAssociatedPtr database_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

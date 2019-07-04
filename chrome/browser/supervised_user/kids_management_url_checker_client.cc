@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "components/google/core/common/google_util.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"

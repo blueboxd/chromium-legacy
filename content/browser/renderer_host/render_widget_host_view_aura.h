@@ -155,7 +155,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   InputEventAckState FilterChildGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
+      BrowserAccessibilityDelegate* delegate,
+      bool for_root_frame) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   void SetMainFrameAXTreeID(ui::AXTreeID id) override;

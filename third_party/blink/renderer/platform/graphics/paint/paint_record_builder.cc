@@ -30,14 +30,10 @@ PaintRecordBuilder::PaintRecordBuilder(printing::MetafileSkia* metafile,
   paint_controller_->UpdateCurrentPaintChunkProperties(
       base::nullopt, PropertyTreeState::Root());
 
-  const DarkModeSettings* dark_mode_settings =
-      containing_context ? &containing_context->dark_mode_settings() : nullptr;
   context_ = std::make_unique<GraphicsContext>(*paint_controller_,
                                                disabled_mode, metafile);
-  if (dark_mode_settings)
-    context_->SetDarkMode(*dark_mode_settings);
-
   if (containing_context) {
+    context_->SetDarkMode(containing_context->dark_mode_settings());
     context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());
     context_->SetPrinting(containing_context->Printing());
   }

@@ -4063,6 +4063,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafetyTipDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSafetyTipUI)},
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"animated-avatar-button", flag_descriptions::kAnimatedAvatarButtonName,
+     flag_descriptions::kAnimatedAvatarButtonDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kAnimatedAvatarButton)},
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -554,7 +554,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                                     .setTracingMode(TracingConfig.RECORD_CONTINUOUSLY)
                                     .build());
                 } else {
-                    try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+                    try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                         String outFileName = getFilesDir() + "/webview_tracing.json";
                         try {
                             tracingController.stop(new TracingLogger(outFileName, this),

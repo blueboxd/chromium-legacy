@@ -48,7 +48,7 @@ import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
@@ -614,9 +614,9 @@ public class HistoryActivityTest {
         // user setting will be reset.
         final Account account = SigninTestUtil.addTestAccount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SigninManager.get().onFirstRunCheckDone();
-            SigninManager.get().addSignInStateObserver(mTestObserver);
-            SigninManager.get().signIn(account, null, null);
+            IdentityServicesProvider.getSigninManager().onFirstRunCheckDone();
+            IdentityServicesProvider.getSigninManager().addSignInStateObserver(mTestObserver);
+            IdentityServicesProvider.getSigninManager().signIn(account, null, null);
         });
 
         mTestObserver.onSigninStateChangedCallback.waitForCallback(
@@ -670,12 +670,16 @@ public class HistoryActivityTest {
         // Sign out of account.
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> SigninManager.get().signOut(SignoutReason.SIGNOUT_TEST));
+                ()
+                        -> IdentityServicesProvider.getSigninManager().signOut(
+                                SignoutReason.SIGNOUT_TEST));
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
 
         // Remove observer
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> SigninManager.get().removeSignInStateObserver(mTestObserver));
+                ()
+                        -> IdentityServicesProvider.getSigninManager().removeSignInStateObserver(
+                                mTestObserver));
     }
 }

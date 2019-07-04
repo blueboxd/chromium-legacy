@@ -1209,7 +1209,7 @@ public class DownloadUtils {
 
         // Check if the file path contains the external public directory.
         File primaryDir = null;
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             primaryDir = Environment.getExternalStorageDirectory();
         }
         if (primaryDir == null || path == null) return false;

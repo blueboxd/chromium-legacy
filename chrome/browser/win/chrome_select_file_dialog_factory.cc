@@ -5,6 +5,7 @@
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -18,14 +19,6 @@
 #include "ui/shell_dialogs/execute_select_file_win.h"
 #include "ui/shell_dialogs/select_file_dialog_win.h"
 #include "ui/shell_dialogs/select_file_policy.h"
-
-namespace {
-
-// This feature controls whether or not file dialogs are executed in a utility
-// process on Windows.
-base::Feature kWinOOPSelectFileDialog{"WinOOPSelectFileDialog",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-}  // namespace
 
 // Helper class to execute a select file operation on a utility process. It
 // hides the complexity of managing the lifetime of the connection to the
@@ -146,13 +139,6 @@ void ExecuteSelectFileImpl(
     const base::string16& default_extension,
     HWND owner,
     ui::OnSelectFileExecutedCallback on_select_file_executed_callback) {
-  if (!base::FeatureList::IsEnabled(kWinOOPSelectFileDialog)) {
-    ui::ExecuteSelectFile(type, title, default_path, filter, file_type_index,
-                          default_extension, owner,
-                          std::move(on_select_file_executed_callback));
-    return;
-  }
-
   UtilWinHelper::ExecuteSelectFile(type, title, default_path, filter,
                                    file_type_index, default_extension, owner,
                                    std::move(on_select_file_executed_callback));

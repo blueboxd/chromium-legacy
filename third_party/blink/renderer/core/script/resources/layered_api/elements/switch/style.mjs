@@ -47,8 +47,8 @@ export function styleSheetFactory() {
   inline-size: ${THUMB_WIDTH};
 }
 
-/* :host::part(thumbTransitioning) doesn't work. crbug.com/980506 */
-#thumb[part~="thumbTransitioning"] {
+/* :host::part(thumb-transitioning) doesn't work. crbug.com/980506 */
+#thumb[part~="thumb-transitioning"] {
   transition: all linear 0.1s;
 }
 
@@ -80,7 +80,7 @@ export function styleSheetFactory() {
   vertical-align: top;
 }
 
-#trackFill[part~="trackFillTransitioning"] {
+#trackFill[part~="track-fill-transitioning"] {
   transition: all linear 0.1s;
 }
 
@@ -166,7 +166,7 @@ export function markTransition(element) {
   if (!element.hasAttribute('part') || element.part.length < 1) {
     return;
   }
-  let partName = element.part[0] + 'Transitioning';
+  let partName = element.part[0] + '-transitioning';
   element.part.add(partName);
   let durations = element.computedStyleMap().getAll('transition-duration');
   if (!durations.some(duration => duration.value > 0)) {

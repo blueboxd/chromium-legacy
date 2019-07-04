@@ -5,14 +5,22 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeActivity.ActivityType;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -109,6 +117,31 @@ public class AutofillAssistantFacade {
             moduleEntry.start(canStartWithoutOnboarding, initialUrl, parameters, experimentIds,
                     activity.getInitialIntent().getExtras());
         });
+    }
+
+    /**
+     * Checks whether direct actions provided by Autofill Assistant should be available - assuming
+     * that direct actions are available at all.
+     */
+    public static boolean areDirectActionsAvailable(@ActivityType int activityType) {
+        return BuildInfo.isAtLeastQ()
+                && (activityType == ActivityType.CUSTOM_TAB || activityType == ActivityType.TABBED)
+                && AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT);
+    }
+
+    /**
+     * Returns a {@link DirectActionHandler} for making dynamic actions available under Android Q.
+     *
+     * <p>This should only be called if {@link #areDirectActionsAvailable} returns true. This method
+     * can also return null if autofill assistant is not available for some other reasons.
+     */
+    public static DirectActionHandler createDirectActionHandler(Context context,
+            BottomSheetController bottomSheetController, ScrimView scrimView,
+            TabModelSelector tabModelSelector) {
+        // TODO(crbug.com/959841): Implement AutofillAssistant support for direct actions.
+        return null;
     }
 
     /**

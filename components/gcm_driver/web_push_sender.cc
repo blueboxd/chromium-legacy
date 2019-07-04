@@ -144,7 +144,7 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
       GetAuthHeader(vapid_key, message.time_to_live);
   if (!auth_header) {
     LOG(ERROR) << "Failed to create JWT";
-    std::move(callback).Run(message.id, false);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
@@ -153,37 +153,52 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
   url_loader->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&WebPushSender::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr(), message.id,
-                     std::move(url_loader), std::move(callback)),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(url_loader),
+                     std::move(callback)),
       kMaximumBodySize);
 }
 
 void WebPushSender::OnMessageSent(
-    const std::string& message_id,
     std::unique_ptr<network::SimpleURLLoader> url_loader,
     SendMessageCallback callback,
     std::unique_ptr<std::string> response_body) {
   int net_error = url_loader->NetError();
   if (net_error != net::OK) {
     LOG(ERROR) << "Network Error: " << net_error;
-    std::move(callback).Run(message_id, false);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
-  if (!url_loader->ResponseInfo() || !url_loader->ResponseInfo()->headers) {
+  scoped_refptr<net::HttpResponseHeaders> response_headers =
+      url_loader->ResponseInfo()->headers;
+  if (!url_loader->ResponseInfo() || !response_headers) {
     LOG(ERROR) << "Response info not found";
-    std::move(callback).Run(message_id, false);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
-  int response_code = url_loader->ResponseInfo()->headers->response_code();
+  int response_code = response_headers->response_code();
   if (!network::cors::IsOkStatus(response_code)) {
     LOG(ERROR) << "HTTP Error: " << response_code;
-    std::move(callback).Run(message_id, false);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
-  std::move(callback).Run(message_id, true);
+  std::string location;
+  if (!response_headers->EnumerateHeader(nullptr, "location", &location)) {
+    LOG(ERROR) << "Failed to get location header from response";
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  size_t slash_pos = location.rfind("/");
+  if (slash_pos == std::string::npos) {
+    LOG(ERROR) << "Failed to parse message_id from location header";
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  std::move(callback).Run(base::make_optional(location.substr(slash_pos + 1)));
 }
 
 }  // namespace gcm

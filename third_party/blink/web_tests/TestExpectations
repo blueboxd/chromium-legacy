@@ -2707,6 +2707,11 @@ crbug.com/957181 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-co
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
 # Disabled until v8 roll.
+crbug.com/980917 fast/events/window-onerror-03.html [ Skip ]
+crbug.com/980917 fast/js/assign.html [ Skip ]
+crbug.com/980917 fast/js/postfix-syntax.html [ Skip ]
+crbug.com/980917 fast/js/prefix-syntax.html [ Skip ]
+crbug.com/980917 virtual/mouseevent_fractional/fast/events/window-onerror-03.html [ Skip ]
 crbug.com/906847 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
 crbug.com/906847 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
 crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip ]
@@ -3196,7 +3201,6 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/pointerevents/pointerevent_touch-action-keyboard.html [ Failure Timeout ]
-crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Failure Timeout ]
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
@@ -6255,10 +6259,12 @@ crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/mod
 crbug.com/980924 [ Linux Win Debug ] external/wpt/html/cross-origin/null.tentative.html [ Pass Failure ]
 crbug.com/980283 [ Mac ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
 crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-lossy.html [ Pass Failure ]
-crbug.com/981210 [ Linux ] external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
+crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
-crbug.com/981249 [ Linux Win ] fast/forms/form-submission-create-crash.xhtml [ Pass Failure ]
+crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
+crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
+crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]

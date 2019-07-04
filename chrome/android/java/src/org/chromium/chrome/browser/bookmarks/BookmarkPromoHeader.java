@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
@@ -93,7 +94,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
             mSigninPromoController = null;
         }
 
-        mSignInManager = SigninManager.get();
+        mSignInManager = IdentityServicesProvider.getSigninManager();
         mSignInManager.addSignInStateObserver(this);
 
         mPromoState = calculatePromoState();

@@ -28,7 +28,7 @@ enum DifferentPrimaryAccounts {
 // Track all the ways a profile can become signed out as a histogram.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
-enum ProfileSignout {
+enum ProfileSignout : int {
   // The value used within unit tests.
   SIGNOUT_TEST = 0,
   // The preference or policy controlling if signin is valid has changed.
@@ -360,12 +360,6 @@ void RecordAccountsPerProfile(int total_number_accounts);
 // |successful| - True if AccountReconciler was successful.
 void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
                                             bool successful);
-
-// Track a successful signin.
-void LogSigninAddAccount();
-
-// Track a successful signin of a profile.
-void LogSigninProfile(bool is_first_run, base::Time install_date);
 
 // Track a profile signout.
 void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric);

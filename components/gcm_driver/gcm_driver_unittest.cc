@@ -67,11 +67,8 @@ class GCMDriverBaseTest : public testing::Test {
   void TearDown() override;
 
   GCMDriverDesktop* driver() { return driver_.get(); }
-  const std::string& send_web_push_message_id() const {
+  base::Optional<std::string> send_web_push_message_id() const {
     return send_web_push_message_id_;
-  }
-  bool send_web_push_message_result() const {
-    return send_web_push_message_result_;
   }
   const std::string& send_web_push_message_payload() const {
     return send_web_push_message_payload_;
@@ -97,7 +94,7 @@ class GCMDriverBaseTest : public testing::Test {
                       IncomingMessage message,
                       WaitToFinish wait_to_finish);
 
-  void SendWebPushMessageCompleted(const std::string& message_id, bool result);
+  void SendWebPushMessageCompleted(base::Optional<std::string> message_id);
   void GetEncryptionInfoCompleted(const std::string& p256dh,
                                   const std::string& auth_secret);
   void DecryptMessageCompleted(GCMDecryptionResult result,
@@ -116,8 +113,7 @@ class GCMDriverBaseTest : public testing::Test {
 
   base::Closure async_operation_completed_callback_;
 
-  std::string send_web_push_message_id_;
-  bool send_web_push_message_result_;
+  base::Optional<std::string> send_web_push_message_id_;
   std::string send_web_push_message_payload_;
   std::string p256dh_;
   std::string auth_secret_;
@@ -211,10 +207,14 @@ void GCMDriverBaseTest::SendWebPushMessage(
     const network::DataElement& body = body_elements->back();
     send_web_push_message_payload_ = std::string(body.bytes(), body.length());
 
+    network::ResourceResponseHead response_head =
+        network::CreateResourceResponseHead(*completion_status);
+    response_head.headers->AddHeader(
+        "location:https://fcm.googleapis.com/message_id");
+
     test_url_loader_factory_.SimulateResponseForPendingRequest(
         pendingRequest->request.url,
-        network::URLLoaderCompletionStatus(net::OK),
-        network::CreateResourceResponseHead(*completion_status), "");
+        network::URLLoaderCompletionStatus(net::OK), response_head, "");
   }
 
   if (wait_to_finish == WAIT)
@@ -248,10 +248,8 @@ void GCMDriverBaseTest::DecryptMessage(const std::string& app_id,
 }
 
 void GCMDriverBaseTest::SendWebPushMessageCompleted(
-    const std::string& message_id,
-    bool result) {
+    base::Optional<std::string> message_id) {
   send_web_push_message_id_ = message_id;
-  send_web_push_message_result_ = result;
   if (!async_operation_completed_callback_.is_null())
     async_operation_completed_callback_.Run();
 }
@@ -278,7 +276,6 @@ TEST_F(GCMDriverBaseTest, SendWebPushMessage) {
   GetEncryptionInfo(kTestAppID1, GCMDriverBaseTest::WAIT);
 
   WebPushMessage message;
-  message.id = "message_id";
   message.time_to_live = 3600;
   message.payload = "payload";
   ASSERT_NO_FATAL_FAILURE(SendWebPushMessage(kTestAppID1, std::move(message),
@@ -286,7 +283,6 @@ TEST_F(GCMDriverBaseTest, SendWebPushMessage) {
                                              GCMDriverBaseTest::WAIT));
 
   EXPECT_EQ("message_id", send_web_push_message_id());
-  EXPECT_TRUE(send_web_push_message_result());
 
   IncomingMessage incoming_message;
   incoming_message.data["content-encoding"] = "aes128gcm";
@@ -303,21 +299,18 @@ TEST_F(GCMDriverBaseTest, SendWebPushMessageEncryptionError) {
   // Intentionally not creating encryption info.
 
   WebPushMessage message;
-  message.id = "message_id";
   message.time_to_live = 3600;
   message.payload = "payload";
   ASSERT_NO_FATAL_FAILURE(SendWebPushMessage(
       kTestAppID1, std::move(message), base::nullopt, GCMDriverBaseTest::WAIT));
 
-  EXPECT_EQ("message_id", send_web_push_message_id());
-  EXPECT_FALSE(send_web_push_message_result());
+  EXPECT_FALSE(send_web_push_message_id());
 }
 
 TEST_F(GCMDriverBaseTest, SendWebPushMessageServerError) {
   GetEncryptionInfo(kTestAppID1, GCMDriverBaseTest::WAIT);
 
   WebPushMessage message;
-  message.id = "message_id";
   message.time_to_live = 3600;
   message.payload = "payload";
   ASSERT_NO_FATAL_FAILURE(
@@ -325,8 +318,7 @@ TEST_F(GCMDriverBaseTest, SendWebPushMessageServerError) {
                          base::make_optional(net::HTTP_INTERNAL_SERVER_ERROR),
                          GCMDriverBaseTest::WAIT));
 
-  EXPECT_EQ("message_id", send_web_push_message_id());
-  EXPECT_FALSE(send_web_push_message_result());
+  EXPECT_FALSE(send_web_push_message_id());
 }
 
 }  // namespace gcm

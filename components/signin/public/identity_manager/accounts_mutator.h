@@ -10,8 +10,12 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "google_apis/gaia/core_account_id.h"
+
+namespace signin_metrics {
+enum class SourceForRefreshTokenOperation;
+}
+
+struct CoreAccountId;
 
 namespace identity {
 

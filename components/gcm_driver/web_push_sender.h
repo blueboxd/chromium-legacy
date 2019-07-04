@@ -6,6 +6,7 @@
 #define COMPONENTS_GCM_DRIVER_WEB_PUSH_SENDER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace network {
@@ -24,7 +25,7 @@ struct WebPushMessage;
 class WebPushSender {
  public:
   using SendMessageCallback =
-      base::OnceCallback<void(const std::string&, bool)>;
+      base::OnceCallback<void(base::Optional<std::string>)>;
 
   explicit WebPushSender(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -36,15 +37,15 @@ class WebPushSender {
   // |fcm_token|: FCM registration token for receiving end.
   // |vapid_key|: Private key to sign VAPID header.
   // |message|: WebPushMessage to be sent.
-  // |callback|: To be called once the asynchronous operation is done.
+  // |callback|: To be invoked with message_id if asynchronous operation
+  // succeeded, or base::nullopt if operation failed.
   void SendMessage(const std::string& fcm_token,
                    crypto::ECPrivateKey* vapid_key,
                    const WebPushMessage& message,
                    SendMessageCallback callback);
 
  private:
-  void OnMessageSent(const std::string& message_id,
-                     std::unique_ptr<network::SimpleURLLoader> url_loader,
+  void OnMessageSent(std::unique_ptr<network::SimpleURLLoader> url_loader,
                      SendMessageCallback callback,
                      std::unique_ptr<std::string> response_body);
 

@@ -78,13 +78,13 @@ void NativeFileSystemDirectoryHandleImpl::RequestPermission(
   DoRequestPermission(writable, std::move(callback));
 }
 
-void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& name,
+void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& basename,
                                                   bool create,
                                                   GetFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   storage::FileSystemURL child_url;
-  const base::File::Error file_error = GetChildURL(name, &child_url);
+  const base::File::Error file_error = GetChildURL(basename, &child_url);
   if (file_error != base::File::FILE_OK) {
     std::move(callback).Run(NativeFileSystemError::New(file_error), nullptr);
     return;
@@ -121,13 +121,13 @@ void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& name,
 }
 
 void NativeFileSystemDirectoryHandleImpl::GetDirectory(
-    const std::string& name,
+    const std::string& basename,
     bool create,
     GetDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   storage::FileSystemURL child_url;
-  const base::File::Error file_error = GetChildURL(name, &child_url);
+  const base::File::Error file_error = GetChildURL(basename, &child_url);
   if (file_error != base::File::FILE_OK) {
     std::move(callback).Run(NativeFileSystemError::New(file_error), nullptr);
     return;
@@ -174,14 +174,23 @@ void NativeFileSystemDirectoryHandleImpl::GetEntries(
                  base::Owned(new ReadDirectoryState{std::move(callback)})));
 }
 
-void NativeFileSystemDirectoryHandleImpl::Remove(bool recurse,
-                                                 RemoveCallback callback) {
+void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
+    const std::string& basename,
+    bool recurse,
+    RemoveEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  storage::FileSystemURL child_url;
+  const base::File::Error file_error = GetChildURL(basename, &child_url);
+  if (file_error != base::File::FILE_OK) {
+    std::move(callback).Run(NativeFileSystemError::New(file_error));
+    return;
+  }
+
   RunWithWritePermission(
-      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::RemoveImpl,
-                     weak_factory_.GetWeakPtr(), recurse),
-      base::BindOnce([](RemoveCallback callback) {
+      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::RemoveEntryImpl,
+                     weak_factory_.GetWeakPtr(), child_url, recurse),
+      base::BindOnce([](RemoveEntryCallback callback) {
         std::move(callback).Run(
             NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
       }),
@@ -269,17 +278,17 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
   }
 
   for (const auto& entry : file_list) {
-    std::string name = storage::FilePathToString(entry.name);
+    std::string basename = storage::FilePathToString(entry.name);
 
     storage::FileSystemURL child_url;
-    const base::File::Error file_error = GetChildURL(name, &child_url);
+    const base::File::Error file_error = GetChildURL(basename, &child_url);
 
     // All entries must exist in this directory as a direct child with a valid
-    // |name|.
+    // |basename|.
     CHECK_EQ(file_error, base::File::FILE_OK);
 
     state->entries.push_back(
-        CreateEntry(name, child_url,
+        CreateEntry(basename, child_url,
                     entry.type == filesystem::mojom::FsFileType::DIRECTORY));
   }
 
@@ -292,39 +301,41 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
   }
 }
 
-void NativeFileSystemDirectoryHandleImpl::RemoveImpl(bool recurse,
-                                                     RemoveCallback callback) {
+void NativeFileSystemDirectoryHandleImpl::RemoveEntryImpl(
+    const storage::FileSystemURL& url,
+    bool recurse,
+    RemoveEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
   operation_runner()->Remove(
-      url(), recurse,
+      url, recurse,
       base::BindOnce(
-          [](RemoveCallback callback, base::File::Error result) {
+          [](RemoveEntryCallback callback, base::File::Error result) {
             std::move(callback).Run(NativeFileSystemError::New(result));
           },
           std::move(callback)));
 }
 
 base::File::Error NativeFileSystemDirectoryHandleImpl::GetChildURL(
-    const std::string& name,
+    const std::string& basename,
     storage::FileSystemURL* result) {
   // TODO(mek): Rather than doing URL serialization and parsing we should just
   // have a way to get a child FileSystemURL directly from its parent.
 
-  if (name.empty()) {
+  if (basename.empty()) {
     return base::File::FILE_ERROR_NOT_FOUND;
   }
 
-  if (ContainsPathSeparator(name) || IsCurrentOrParentDirectory(name)) {
-    // |name| must refer to a entry that exists in this directory as a direct
-    // child.
+  if (ContainsPathSeparator(basename) || IsCurrentOrParentDirectory(basename)) {
+    // |basename| must refer to a entry that exists in this directory as a
+    // direct child.
     return base::File::FILE_ERROR_SECURITY;
   }
 
   std::string escaped_name =
-      net::EscapeQueryParamValue(name, /*use_plus=*/false);
+      net::EscapeQueryParamValue(basename, /*use_plus=*/false);
 
   GURL parent_url = url().ToGURL();
   std::string path = base::StrCat({parent_url.path(), "/", escaped_name});
@@ -337,7 +348,7 @@ base::File::Error NativeFileSystemDirectoryHandleImpl::GetChildURL(
 }
 
 NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
-    const std::string& name,
+    const std::string& basename,
     const storage::FileSystemURL& url,
     bool is_directory) {
   if (is_directory) {
@@ -346,14 +357,14 @@ NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
             manager()
                 ->CreateDirectoryHandle(context(), url, handle_state())
                 .PassInterface()),
-        name);
+        basename);
   }
   return NativeFileSystemEntry::New(
       NativeFileSystemHandle::NewFile(
           manager()
               ->CreateFileHandle(context(), url, handle_state())
               .PassInterface()),
-      name);
+      basename);
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

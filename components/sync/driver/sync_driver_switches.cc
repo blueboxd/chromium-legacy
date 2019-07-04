@@ -73,7 +73,7 @@ const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
 
 // Enable USS implementation of autofill wallet metadata datatype.
 const base::Feature kSyncUSSAutofillWalletMetadata{
-    "SyncUSSAutofillWalletMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncUSSAutofillWalletMetadata", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable USS implementation of Nigori datatype.
 const base::Feature kSyncUSSNigori{"SyncUSSNigori",

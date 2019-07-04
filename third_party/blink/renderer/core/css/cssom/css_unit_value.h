@@ -55,7 +55,7 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   const CSSPrimitiveValue* ToCSSValueWithProperty(
       CSSPropertyID,
       const CSSSyntaxComponent*) const final;
-  CSSCalcExpressionNode* ToCalcExpressionNode() const final;
+  CSSMathExpressionNode* ToCalcExpressionNode() const final;
 
  private:
   double ConvertFixedLength(CSSPrimitiveValue::UnitType) const;

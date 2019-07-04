@@ -15,7 +15,6 @@ import android.widget.Button;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -151,7 +150,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     private void waitForDecoder() throws Exception {
-        int callCount = onSelectionCallback.getCallCount();
+        int callCount = onDecoderReadyCallback.getCallCount();
         onDecoderReadyCallback.waitForCallback(
                 callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
@@ -216,7 +215,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
     @Test
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
-    @Ignore("crbug/941488")
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -238,7 +236,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
     @Test
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
-    @Ignore("crbug/941488")
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.

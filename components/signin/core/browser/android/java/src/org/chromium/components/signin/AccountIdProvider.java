@@ -55,7 +55,7 @@ public class AccountIdProvider {
      */
     public boolean canBeUsed() {
         // TODO(http://crbug.com/577190): Remove StrictMode override.
-        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
                     ContextUtils.getApplicationContext());
             return resultCode == ConnectionResult.SUCCESS;

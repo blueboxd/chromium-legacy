@@ -55,9 +55,8 @@ public class SignInPromo extends OptionalLeaf {
     protected final SigninPromoController mSigninPromoController;
     protected final ProfileDataCache mProfileDataCache;
 
-    protected SignInPromo() {
+    protected SignInPromo(SigninManager signinManager) {
         Context context = ContextUtils.getApplicationContext();
-        SigninManager signinManager = SigninManager.get();
 
         mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
         updateVisibility();

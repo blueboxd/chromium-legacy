@@ -33,11 +33,13 @@ size_t ToIndex(
 
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const WebContentsProxy& contents_proxy,
-                           bool is_visible)
+                           bool is_visible,
+                           bool is_audible)
     : TypedNodeBase(graph),
       contents_proxy_(contents_proxy),
       visibility_change_time_(PerformanceManagerClock::NowTicks()),
-      is_visible_(is_visible) {
+      is_visible_(is_visible),
+      is_audible_(is_audible) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -89,6 +91,10 @@ void PageNodeImpl::SetIsVisible(bool is_visible) {
     // NowTicks.
     visibility_change_time_ = PerformanceManagerClock::NowTicks();
   }
+}
+
+void PageNodeImpl::SetIsAudible(bool is_audible) {
+  is_audible_.SetAndMaybeNotify(this, is_audible);
 }
 
 void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
@@ -172,6 +178,11 @@ FrameNodeImpl* PageNodeImpl::GetMainFrameNodeImpl() const {
 bool PageNodeImpl::is_visible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_visible_.value();
+}
+
+bool PageNodeImpl::is_audible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_audible_.value();
 }
 
 bool PageNodeImpl::is_loading() const {
@@ -321,6 +332,16 @@ bool PageNodeImpl::IsVisible() const {
   return is_visible();
 }
 
+base::TimeDelta PageNodeImpl::GetTimeSinceLastVisibilityChange() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return TimeSinceLastVisibilityChange();
+}
+
+bool PageNodeImpl::IsAudible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_audible();
+}
+
 bool PageNodeImpl::IsLoading() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_loading();
@@ -339,6 +360,11 @@ PageNodeImpl::LifecycleState PageNodeImpl::GetLifecycleState() const {
 int64_t PageNodeImpl::GetNavigationID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return navigation_id();
+}
+
+base::TimeDelta PageNodeImpl::GetTimeSinceLastNavigation() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return TimeSinceLastNavigation();
 }
 
 const FrameNode* PageNodeImpl::GetMainFrameNode() const {

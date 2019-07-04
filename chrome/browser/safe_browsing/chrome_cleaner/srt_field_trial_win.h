@@ -52,6 +52,10 @@ enum PromptTypeHistogramValue {
   PROMPT_TYPE_MAX,
 };
 
+// Feature to control whether users should be prompted for a cleanup if the
+// software reporter finds bad software on their machine.
+extern const base::Feature kChromeCleanupInBrowserPromptFeature;
+
 // Feature, parameters of which control which software reporter and cleanup tool
 // versions will be downloaded. When not enabled, default versions will be used.
 extern const base::Feature kChromeCleanupDistributionFeature;
@@ -60,15 +64,9 @@ extern const base::Feature kChromeCleanupDistributionFeature;
 // for, and cleanup, bad extensions.
 extern const base::Feature kChromeCleanupExtensionsFeature;
 
-extern const char kSRTPromptTrial[];
-
 // Returns true if this Chrome is in a field trial group which shows the SRT
 // prompt.
-bool IsInSRTPromptFieldTrialGroups();
-
-// Returns true if this Chrome is in a field trial group which doesn't need an
-// elevation icon, i.e., the SRT won't ask for elevation on startup.
-bool SRTPromptNeedsElevationIcon();
+bool IsSRTPromptFeatureEnabled();
 
 // Returns the correct SRT download URL for the current field trial.
 GURL GetSRTDownloadURL();
@@ -76,8 +74,9 @@ GURL GetSRTDownloadURL();
 // Returns the value of the incoming SRT seed.
 std::string GetIncomingSRTSeed();
 
-// Returns the group name in the SRTPrompt field trial.
-std::string GetSRTFieldTrialGroupName();
+// Returns the value of the "Group" parameter associed with the SRTPrompt
+// feature.
+std::string GetSRTPromptGroupName();
 
 // Records a value for the SRT Prompt Histogram.
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value);

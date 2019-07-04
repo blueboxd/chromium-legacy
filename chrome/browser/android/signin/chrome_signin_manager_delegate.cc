@@ -21,6 +21,7 @@
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 using base::android::JavaParamRef;
 

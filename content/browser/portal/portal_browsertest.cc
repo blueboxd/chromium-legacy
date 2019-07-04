@@ -648,21 +648,159 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
   // Create portal and wait for navigation.
-  PortalCreatedObserver portal_created_observer(main_frame);
-  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  EXPECT_TRUE(ExecJs(
-      main_frame, JsReplace("var portal = document.createElement('portal');"
-                            "portal.src = $1;"
-                            "document.body.appendChild(portal);"
-                            "document.body.addEventListener('touchstart', "
-                            "e => { portal.activate(); }, {passive: false});",
-                            a_url)));
-  Portal* portal = portal_created_observer.WaitUntilPortalCreated();
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);"
+                              "document.body.addEventListener('touchstart', "
+                              "e => { portal.activate(); }, {passive: false});",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
   WebContentsImpl* portal_contents = portal->GetPortalContents();
 
   // The portal should not have navigated yet, wait for the first navigation.
   TestNavigationObserver navigation_observer(portal_contents);
   navigation_observer.Wait();
+
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+  RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  RenderWidgetHostViewChildFrame* portal_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(portal_frame->GetView());
+  InputEventAckWaiter input_event_ack_waiter(
+      render_widget_host, blink::WebInputEvent::Type::kTouchStart);
+  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.position =
+      portal_view->TransformPointToRootCoordSpaceF(gfx::PointF(5, 5));
+
+  std::unique_ptr<SyntheticTapGesture> gesture =
+      std::make_unique<SyntheticTapGesture>(params);
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+  portal_interceptor->WaitForActivate();
+  EXPECT_EQ(portal_contents, shell()->web_contents());
+
+  // Wait for a touch ack to be sent from the predecessor.
+  input_event_ack_waiter.Wait();
+}
+
+// Regression test for crbug.com/973647. Tests that receiving a touch ack
+// after activation and predecessor adoption doesn't cause a crash.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndAdopt) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal and wait for navigation.
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    const int TOUCH_ACK_DELAY_IN_MILLISECONDS = 500;
+    EXPECT_TRUE(
+        ExecJs(main_frame,
+               JsReplace("var portal = document.createElement('portal');"
+                         "portal.src = $1;"
+                         "document.body.appendChild(portal);"
+                         "document.body.addEventListener('touchstart', e => {"
+                         "  portal.activate();"
+                         "  var stop = performance.now() + $2;"
+                         "  while (performance.now() < stop) {}"
+                         "}, {passive: false});",
+                         a_url, TOUCH_ACK_DELAY_IN_MILLISECONDS)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     "window.addEventListener('portalactivate', e => {"
+                     "  var portal = e.adoptPredecessor();"
+                     "  document.body.appendChild(portal);"
+                     "});"));
+  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+  RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
+  InputEventAckWaiter input_event_ack_waiter(
+      render_widget_host, blink::WebInputEvent::Type::kTouchStart);
+
+  SyntheticTapGestureParams params;
+  RenderWidgetHostViewChildFrame* portal_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(portal_frame->GetView());
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.position =
+      portal_view->TransformPointToRootCoordSpaceF(gfx::PointF(5, 5));
+
+  std::unique_ptr<SyntheticTapGesture> gesture =
+      std::make_unique<SyntheticTapGesture>(params);
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+  portal_interceptor->WaitForActivate();
+  EXPECT_EQ(portal_contents, shell()->web_contents());
+
+  // Wait for a touch ack to be sent from the predecessor.
+  input_event_ack_waiter.Wait();
+}
+
+// Regression test for crbug.com/973647. Tests that receiving a touch ack
+// after activation and reactivating a predecessor doesn't cause a crash.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal and wait for navigation.
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    const int TOUCH_ACK_DELAY_IN_MILLISECONDS = 500;
+    EXPECT_TRUE(
+        ExecJs(main_frame,
+               JsReplace("var portal = document.createElement('portal');"
+                         "portal.src = $1;"
+                         "document.body.appendChild(portal);"
+                         "document.body.addEventListener('touchstart', e => {"
+                         "  portal.activate();"
+                         "  var stop = performance.now() + $2;"
+                         "  while (performance.now() < stop) {}"
+                         "}, {passive: false});",
+                         a_url, TOUCH_ACK_DELAY_IN_MILLISECONDS)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     "window.addEventListener('portalactivate', e => {"
+                     "  var portal = e.adoptPredecessor();"
+                     "  document.body.appendChild(portal);"
+                     "  portal.activate();"
+                     "});"));
+  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
 
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
@@ -683,6 +821,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
 
   // Wait for a touch ack to be sent from the predecessor.
   input_event_ack_waiter.Wait();
+  // Sanity check to see if the predecessor was reactivated.
+  EXPECT_EQ(web_contents_impl, shell()->web_contents());
 }
 
 // Tests that the outer FrameTreeNode is deleted after activation.

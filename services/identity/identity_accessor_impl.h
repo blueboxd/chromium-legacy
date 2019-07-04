@@ -18,6 +18,7 @@
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 namespace identity {
+struct AccessTokenInfo;
 
 class IdentityAccessorImpl : public mojom::IdentityAccessor,
                              public IdentityManager::Observer {

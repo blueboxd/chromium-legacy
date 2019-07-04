@@ -1245,18 +1245,35 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks);
 
-  // Allows the embedder to intercept a WebSocket connection. |*request|
-  // is always valid upon entry and MUST be valid upon return. The embedder
-  // may swap out the value of |*request| for its own.
+  // Returns true when the embedder wants to intercept a websocket connection.
+  virtual bool WillInterceptWebSocket(RenderFrameHost* frame);
+
+  // Returns the WebSocket creation options.
+  virtual uint32_t GetWebSocketOptions(RenderFrameHost* frame);
+
+  using WebSocketFactory = base::OnceCallback<void(
+      const GURL& /* url */,
+      std::vector<network::mojom::HttpHeaderPtr> /* additional_headers */,
+      network::mojom::WebSocketHandshakeClientPtr,
+      network::mojom::AuthenticationHandlerPtr,
+      network::mojom::TrustedHeaderClientPtr)>;
+
+  // Allows the embedder to intercept a WebSocket connection. This is called
+  // only when WillInterceptWebSocket returns true.
+  //
+  // |factory| provides a way to create a usual WebSocket connection. |url|,
+  // |requested_protocols|, |user_agent|, |handshake_client| are arguments
+  // given from the renderer.
   //
   // Always called on the UI thread and only when the Network Service is
   // enabled.
-  virtual void WillCreateWebSocket(
+  virtual void CreateWebSocket(
       RenderFrameHost* frame,
-      network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* authentication_handler,
-      network::mojom::TrustedHeaderClientPtr* header_client,
-      uint32_t* options);
+      WebSocketFactory factory,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<std::string>& user_agent,
+      network::mojom::WebSocketHandshakeClientPtr handshake_client);
 
   // Allows the embedder to intercept the mojo object vended to renderer
   // processes for limited, origin-locked (to |origin|), access to

@@ -243,7 +243,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
   if (HasContentEditableAttributeSet())
     return kIncludeObject;
 
-  static const std::set<ax::mojom::Role> always_included_computed_roles = {
+  static const HashSet<ax::mojom::Role> always_included_computed_roles = {
       ax::mojom::Role::kAbbr,
       ax::mojom::Role::kBlockquote,
       ax::mojom::Role::kContentDeletion,

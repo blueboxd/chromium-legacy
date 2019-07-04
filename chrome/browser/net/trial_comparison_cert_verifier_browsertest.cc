@@ -4,6 +4,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/net/trial_comparison_cert_verifier_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -72,8 +73,14 @@ IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
   histograms.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
+// Flaky on Mac. See https://crbug.com/981325.
+#if defined(OS_MACOSX)
+#define MAYBE_TrialEnabledPrefEnabled DISABLED_TrialEnabledPrefEnabled
+#else
+#define MAYBE_TrialEnabledPrefEnabled TrialEnabledPrefEnabled
+#endif
 IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
-                       TrialEnabledPrefEnabled) {
+                       MAYBE_TrialEnabledPrefEnabled) {
   safe_browsing::SetExtendedReportingPref(browser()->profile()->GetPrefs(),
                                           true);
 

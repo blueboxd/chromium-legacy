@@ -424,7 +424,7 @@ def high_entropy(definition_or_member):
     return False
 
 
-# [OriginTrialEnabled]
+# [RuntimeEnabled]
 def _is_origin_trial_feature(feature_name, runtime_features):
     assert feature_name in runtime_features, feature_name + ' is not a runtime feature.'
     feature = runtime_features[feature_name]
@@ -434,31 +434,12 @@ def _is_origin_trial_feature(feature_name, runtime_features):
 def origin_trial_feature_name(definition_or_member, runtime_features):
     """
     Returns the name of the origin trial feature if found, None otherwise.
-    Looks for origin trial feature specified by either OriginTrialEnabled or
-    RuntimeEnabled attributes.
-
-    An exception is raised if OriginTrialEnabled is used in conjunction with
-    RuntimeEnabled attribute.
-
-    If the feature name is found, the includes are also updated as a side-effect.
+    Looks for origin trial feature specified by the RuntimeEnabled attribute.
     """
     extended_attributes = definition_or_member.extended_attributes
     feature_name = extended_attributes.get('RuntimeEnabled')
     if feature_name and _is_origin_trial_feature(feature_name, runtime_features):
         return feature_name
-
-    # TODO(yashard): Remove this part.
-    # This part handles the deprecated OriginTrialEnabled attribute. Remove this
-    # logic after the support for origin trial features through RuntimeEnabled
-    # attribute is added.
-    feature_name = extended_attributes.get('OriginTrialEnabled')
-
-    if feature_name and 'RuntimeEnabled' in extended_attributes:
-        raise Exception('[OriginTrialEnabled] and [RuntimeEnabled] must '
-                        'not be specified on the same definition: %s'
-                        % definition_or_member.name)
-
-    return feature_name
 
 
 def origin_trial_function_call(feature_name, execution_context=None):

@@ -47,8 +47,8 @@ void VulkanDemo::Initialize() {
   window_->Show();
 
   // Sync up size between |window_| and |vulkan_surface_|
-  vulkan_surface_->SetSize(size);
-  sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
+  vulkan_surface_->Reshape(size, gfx::OVERLAY_TRANSFORM_NONE);
+  sk_surfaces_.resize(vulkan_surface_->swap_chain()->num_images());
 }
 
 void VulkanDemo::Destroy() {
@@ -67,15 +67,15 @@ void VulkanDemo::Run() {
 }
 
 void VulkanDemo::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  if (vulkan_surface_->size() == new_bounds.size())
+  if (vulkan_surface_->image_size() == new_bounds.size())
     return;
-  auto old_size = vulkan_surface_->size();
-  vulkan_surface_->SetSize(new_bounds.size());
-  if (vulkan_surface_->size() != old_size) {
+  auto generation = vulkan_surface_->swap_chain_generation();
+  vulkan_surface_->Reshape(new_bounds.size(), gfx::OVERLAY_TRANSFORM_NONE);
+  if (vulkan_surface_->swap_chain_generation() != generation) {
     // Size has been changed, we need to clear all surfaces which will be
     // recreated later.
     sk_surfaces_.clear();
-    sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
+    sk_surfaces_.resize(vulkan_surface_->swap_chain()->num_images());
   }
 }
 
@@ -100,7 +100,7 @@ void VulkanDemo::OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) {
 }
 
 void VulkanDemo::CreateSkSurface() {
-  scoped_write_.emplace(vulkan_surface_->GetSwapChain());
+  scoped_write_.emplace(vulkan_surface_->swap_chain());
   auto& sk_surface = sk_surfaces_[scoped_write_->image_index()];
 
   if (!sk_surface) {
@@ -113,7 +113,7 @@ void VulkanDemo::CreateSkSurface() {
     vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
     vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
     vk_image_info.fLevelCount = 1;
-    const auto& size = vulkan_surface_->size();
+    const auto& size = vulkan_surface_->image_size();
     GrBackendRenderTarget render_target(size.width(), size.height(), 0, 0,
                                         vk_image_info);
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
@@ -139,7 +139,7 @@ void VulkanDemo::Draw(SkCanvas* canvas, float fraction) {
   constexpr float kWidth = 800;
   constexpr float kHeight = 600;
 
-  const auto& size = vulkan_surface_->size();
+  const auto& size = vulkan_surface_->image_size();
   canvas->scale(size.width() / kWidth, size.height() / kHeight);
 
   SkPaint paint;

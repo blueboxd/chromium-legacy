@@ -17,7 +17,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "google_apis/gaia/oauth2_token_service_test_util.h"
+#include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -111,7 +111,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   AccountTrackerService account_tracker_;
   FakeDeviceAccountsProvider* fake_provider_;
   std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate> oauth2_delegate_;
-  TestingOAuth2TokenServiceConsumer consumer_;
+  TestingOAuth2AccessTokenManagerConsumer consumer_;
   int token_available_count_;
   int token_revoked_count_;
   int tokens_loaded_count_;

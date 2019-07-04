@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 #include <memory>
-#include <set>
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"

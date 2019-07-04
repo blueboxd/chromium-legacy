@@ -31,9 +31,12 @@ Worklet::Worklet(Document* document)
 }
 
 Worklet::~Worklet() {
+  DCHECK(!HasPendingTasks());
+}
+
+void Worklet::Dispose() {
   for (const auto& proxy : proxies_)
     proxy->WorkletObjectDestroyed();
-  DCHECK(!HasPendingTasks());
 }
 
 // Implementation of the first half of the "addModule(moduleURL, options)"

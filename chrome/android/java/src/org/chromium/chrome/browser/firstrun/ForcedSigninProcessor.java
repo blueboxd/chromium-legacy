@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -65,7 +66,7 @@ public final class ForcedSigninProcessor {
      * This is used to enforce the environment for Android EDU and child accounts.
      */
     private static void processForcedSignIn(@Nullable final Runnable onComplete) {
-        final SigninManager signinManager = SigninManager.get();
+        final SigninManager signinManager = IdentityServicesProvider.getSigninManager();
         // By definition we have finished all the checks for first run.
         signinManager.onFirstRunCheckDone();
         if (!FeatureUtilities.canAllowSync() || !signinManager.isSignInAllowed()) {
@@ -103,7 +104,7 @@ public final class ForcedSigninProcessor {
     // TODO(bauerb): Once external dependencies reliably use policy to force sign-in,
     // consider removing the child account / EDU checks.
     public static void checkCanSignIn(final ChromeActivity activity) {
-        if (SigninManager.get().isForceSigninEnabled()) {
+        if (IdentityServicesProvider.getSigninManager().isForceSigninEnabled()) {
             ExternalAuthUtils.getInstance().canUseGooglePlayServices(
                     new UserRecoverableErrorHandler.ModalDialog(activity, false));
         }

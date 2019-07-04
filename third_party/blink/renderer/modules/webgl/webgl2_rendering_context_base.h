@@ -1120,8 +1120,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   // Member rather than Member.
   Member<WebGLTransformFeedback> default_transform_feedback_;
 
-  std::set<GLenum> supported_internal_formats_storage_;
-  std::set<GLenum> compressed_texture_formats_etc2eac_;
+  GLenumHashSet supported_internal_formats_storage_;
+  GLenumHashSet compressed_texture_formats_etc2eac_;
 
   Member<WebGLBuffer> bound_copy_read_buffer_;
   Member<WebGLBuffer> bound_copy_write_buffer_;

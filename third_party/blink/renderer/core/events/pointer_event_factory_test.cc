@@ -128,7 +128,7 @@ class PointerEventFactoryTest : public testing::Test {
     return pointer_event;
   }
   void CreateAndCheckPointerTransitionEvent(PointerEvent*, const AtomicString&);
-  void CheckNonHoveringPointers(const std::set<int>& expected);
+  void CheckNonHoveringPointers(const HashSet<int>& expected);
 
   PointerEventFactory pointer_event_factory_;
   int expected_mouse_id_;
@@ -177,7 +177,7 @@ void PointerEventFactoryTest::CreateAndCheckPointerTransitionEvent(
 }
 
 void PointerEventFactoryTest::CheckNonHoveringPointers(
-    const std::set<int>& expected_pointers) {
+    const HashSet<int>& expected_pointers) {
   Vector<int> pointers =
       pointer_event_factory_.GetPointerIdsOfNonHoveringPointers();
   EXPECT_EQ(pointers.size(), expected_pointers.size());

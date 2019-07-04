@@ -27,6 +27,12 @@
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/gurl.h"
 
+namespace blink {
+namespace mojom {
+class FetchAPIDataElementDataView;
+}  // namespace mojom
+}  // namespace blink
+
 namespace network {
 
 // Represents part of an upload body. This could be either one of bytes, file or
@@ -178,6 +184,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
   friend void PrintTo(const DataElement& x, ::std::ostream* os);
   friend struct mojo::StructTraits<network::mojom::DataElementDataView,
+                                   network::DataElement>;
+  friend struct mojo::StructTraits<blink::mojom::FetchAPIDataElementDataView,
                                    network::DataElement>;
   mojom::DataElementType type_;
   // For TYPE_BYTES.

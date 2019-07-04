@@ -2641,8 +2641,8 @@ void MigrationTest::SetUpVersion87Database(sql::Database* connection) {
          "0',X'C2881000',NULL,X'2200',X'2200',NULL);"
       "INSERT INTO 'metas' VALUES(11,683,683,8,0,"
          META_PROTO_TIMES_VALS(11)
-         ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,'Ho"
-         "me (The Chromium Projects)','Home (The Chromium Projects)',NULL,NULL,"
+         ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,'Home"
+         " (The Chromium Projects)','Home (The Chromium Projects)',NULL,NULL,"
          "X'50514C784A456D623579366267644237646A7A2B62314130346E493D',X'C288102"
          "20A18687474703A2F2F6465762E6368726F6D69756D2E6F72672F1206414741545741"
          "',X'C28810290A1D687474703A2F2F6465762E6368726F6D69756D2E6F72672F6F746"
@@ -2756,8 +2756,8 @@ void MigrationTest::SetUpVersion88Database(sql::Database* connection) {
          "0',X'C2881000',NULL,X'2200',X'2200',NULL);"
       "INSERT INTO 'metas' VALUES(11,683,683,8,0,"
          META_PROTO_TIMES_VALS(11)
-         ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,'Ho"
-         "me (The Chromium Projects)','Home (The Chromium Projects)',NULL,NULL,"
+         ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,'Home"
+         " (The Chromium Projects)','Home (The Chromium Projects)',NULL,NULL,"
          "X'50514C784A456D623579366267644237646A7A2B62314130346E493D',X'C288102"
          "20A18687474703A2F2F6465762E6368726F6D69756D2E6F72672F1206414741545741"
          "',X'C28810290A1D687474703A2F2F6465762E6368726F6D69756D2E6F72672F6F746"

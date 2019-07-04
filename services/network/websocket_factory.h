@@ -27,13 +27,18 @@ class WebSocketFactory final {
   explicit WebSocketFactory(NetworkContext* context);
   ~WebSocketFactory();
 
-  void CreateWebSocket(mojom::WebSocketRequest request,
-                       mojom::AuthenticationHandlerPtr auth_handler,
-                       mojom::TrustedHeaderClientPtr header_client,
+  void CreateWebSocket(const GURL& url,
+                       const std::vector<std::string>& requested_protocols,
+                       const GURL& site_for_cookies,
+                       std::vector<mojom::HttpHeaderPtr> additional_headers,
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin,
-                       uint32_t options);
+                       uint32_t options,
+                       mojom::WebSocketHandshakeClientPtr handshake_client,
+                       mojom::WebSocketClientPtr client,
+                       mojom::AuthenticationHandlerPtr auth_handler,
+                       mojom::TrustedHeaderClientPtr header_client);
 
  private:
   class Delegate;

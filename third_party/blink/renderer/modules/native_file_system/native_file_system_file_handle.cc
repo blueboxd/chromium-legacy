@@ -94,11 +94,6 @@ NativeFileSystemFileHandle::Transfer() {
   return result;
 }
 
-void NativeFileSystemFileHandle::RemoveImpl(
-    base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)> callback) {
-  mojo_ptr_->Remove(std::move(callback));
-}
-
 void NativeFileSystemFileHandle::QueryPermissionImpl(
     bool writable,
     base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {

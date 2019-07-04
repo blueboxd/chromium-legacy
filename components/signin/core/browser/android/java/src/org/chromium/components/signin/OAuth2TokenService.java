@@ -104,7 +104,7 @@ public final class OAuth2TokenService
     public static String[] getSystemAccountNames() {
         // TODO(https://crbug.com/768366): Remove this after adding cache to account manager facade.
         // This function is called by native code on UI thread.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             List<String> accountNames = AccountManagerFacade.get().tryGetGoogleAccountNames();
             return accountNames.toArray(new String[accountNames.size()]);
         }
@@ -241,7 +241,7 @@ public final class OAuth2TokenService
         // Temporarily allowing disk read while fixing. TODO: http://crbug.com/618096.
         // This function is called in RefreshTokenIsAvailable of OAuth2TokenService which is
         // expected to be called in the UI thread synchronously.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return AccountManagerFacade.get().hasAccountForName(accountName);
         }
     }

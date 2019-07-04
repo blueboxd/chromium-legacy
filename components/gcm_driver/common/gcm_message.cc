@@ -28,4 +28,6 @@ WebPushMessage::WebPushMessage(WebPushMessage&& other) = default;
 
 WebPushMessage::~WebPushMessage() = default;
 
+WebPushMessage& WebPushMessage::operator=(WebPushMessage&& other) = default;
+
 }  // namespace gcm

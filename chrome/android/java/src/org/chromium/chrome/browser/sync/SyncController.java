@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -99,15 +100,16 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
             }
         });
 
-        SigninManager.get().addSignInStateObserver(new SigninManager.SignInStateObserver() {
-            @Override
-            public void onSignedIn() {
-                mProfileSyncService.requestStart();
-            }
+        IdentityServicesProvider.getSigninManager().addSignInStateObserver(
+                new SigninManager.SignInStateObserver() {
+                    @Override
+                    public void onSignedIn() {
+                        mProfileSyncService.requestStart();
+                    }
 
-            @Override
-            public void onSignedOut() {}
-        });
+                    @Override
+                    public void onSignedOut() {}
+                });
     }
 
     /**

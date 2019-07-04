@@ -70,13 +70,7 @@ ServiceWorkerRequestHandler::CreateForNavigation(
                                          ? ResourceType::kMainFrame
                                          : ResourceType::kSubFrame;
   return (*out_provider_host)
-      ->CreateLoaderInterceptor(network::mojom::RequestMode::kNavigate,
-                                network::mojom::CredentialsMode::kInclude,
-                                network::mojom::RedirectMode::kManual,
-                                std::string() /* integrity */,
-                                false /* keepalive */, resource_type,
-                                request_info.begin_params->request_context_type,
-                                request_info.common_params.post_data,
+      ->CreateLoaderInterceptor(resource_type,
                                 request_info.begin_params->skip_service_worker);
 }
 
@@ -100,14 +94,8 @@ ServiceWorkerRequestHandler::CreateForWorker(
   }
 
   return host->CreateLoaderInterceptor(
-      resource_request.mode, resource_request.credentials_mode,
-      resource_request.redirect_mode, resource_request.fetch_integrity,
-      resource_request.keepalive,
       static_cast<ResourceType>(resource_request.resource_type),
-      resource_request.resource_type == static_cast<int>(ResourceType::kWorker)
-          ? blink::mojom::RequestContextType::WORKER
-          : blink::mojom::RequestContextType::SHARED_WORKER,
-      resource_request.request_body, resource_request.skip_service_worker);
+      resource_request.skip_service_worker);
 }
 
 }  // namespace content

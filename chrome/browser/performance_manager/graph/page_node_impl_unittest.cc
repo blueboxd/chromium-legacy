@@ -407,6 +407,7 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnPageNodeAdded, void(const PageNode*));
   MOCK_METHOD1(OnBeforePageNodeRemoved, void(const PageNode*));
   MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
+  MOCK_METHOD1(OnIsAudibleChanged, void(const PageNode*));
   MOCK_METHOD1(OnIsLoadingChanged, void(const PageNode*));
   MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
@@ -452,6 +453,11 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   EXPECT_CALL(obs, OnIsVisibleChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
   page_node->SetIsVisible(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnIsAudibleChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetIsAudible(true);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   EXPECT_CALL(obs, OnIsLoadingChanged(_))
@@ -509,6 +515,7 @@ TEST_F(PageNodeImplTest, PublicInterface) {
   EXPECT_EQ(page_node->page_almost_idle(),
             public_page_node->IsPageAlmostIdle());
   EXPECT_EQ(page_node->is_visible(), public_page_node->IsVisible());
+  EXPECT_EQ(page_node->is_audible(), public_page_node->IsAudible());
   EXPECT_EQ(page_node->is_loading(), public_page_node->IsLoading());
   EXPECT_EQ(page_node->ukm_source_id(), public_page_node->GetUkmSourceID());
   EXPECT_EQ(page_node->lifecycle_state(),

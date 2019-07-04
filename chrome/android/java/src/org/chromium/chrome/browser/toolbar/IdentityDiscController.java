@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -77,7 +78,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
 
         mProfileSyncService.addSyncStateChangedListener(this);
 
-        mSigninManager = SigninManager.get();
+        mSigninManager = IdentityServicesProvider.getSigninManager();
         mSigninManager.addSignInStateObserver(this);
     }
 

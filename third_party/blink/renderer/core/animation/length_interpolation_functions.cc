@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -218,7 +218,7 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
   bool has_percentage =
       CSSLengthNonInterpolableValue::HasPercentage(non_interpolable_value);
 
-  CSSCalcExpressionNode* root_node = nullptr;
+  CSSMathExpressionNode* root_node = nullptr;
   CSSNumericLiteralValue* first_value = nullptr;
 
   for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
@@ -235,13 +235,13 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
       first_value = current_value;
       continue;
     }
-    CSSCalcExpressionNode* current_node =
-        CSSCalcPrimitiveValue::Create(current_value);
+    CSSMathExpressionNode* current_node =
+        CSSMathExpressionNumericLiteral::Create(current_value);
     if (!root_node) {
-      root_node = CSSCalcPrimitiveValue::Create(first_value);
+      root_node = CSSMathExpressionNumericLiteral::Create(first_value);
     }
-    root_node = CSSCalcBinaryOperation::Create(root_node, current_node,
-                                               CSSMathOperator::kAdd);
+    root_node = CSSMathExpressionBinaryOperation::Create(
+        root_node, current_node, CSSMathOperator::kAdd);
   }
 
   if (root_node) {

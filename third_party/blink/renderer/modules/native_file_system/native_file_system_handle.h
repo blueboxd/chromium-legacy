@@ -30,7 +30,6 @@ class NativeFileSystemHandle : public ScriptWrappable {
   virtual bool isDirectory() const { return false; }
   const String& name() const { return name_; }
 
-  ScriptPromise remove(ScriptState*);
   ScriptPromise queryPermission(ScriptState*,
                                 const FileSystemHandlePermissionDescriptor*);
   ScriptPromise requestPermission(ScriptState*,
@@ -39,8 +38,6 @@ class NativeFileSystemHandle : public ScriptWrappable {
   virtual mojom::blink::NativeFileSystemTransferTokenPtr Transfer() = 0;
 
  private:
-  virtual void RemoveImpl(
-      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)>) = 0;
   virtual void QueryPermissionImpl(
       bool writable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)>) = 0;

@@ -31,6 +31,12 @@ class PanelItem extends HTMLElement {
 
     /** @public {?DisplayPanel} */
     this.parent = null;
+
+    /**
+     * Callback that signals events happening in the panel (e.g. click).
+     * @private @type {!function(*)}
+     */
+    this.signal_ = console.log;
   }
 
   /**
@@ -113,6 +119,7 @@ class PanelItem extends HTMLElement {
         this.setAttribute('indicator', 'progress');
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
+        secondaryButton.onclick = this.onclick;
         secondaryButton.dataset.category = 'cancel';
         secondaryButton.setAttribute('aria-label', '$i18n{CANCEL_LABEL}');
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
@@ -130,6 +137,7 @@ class PanelItem extends HTMLElement {
         this.setAttribute('status', 'success');
         primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
+        primaryButton.onclick = this.onclick;
         primaryButton.dataset.category = 'dismiss';
         buttonSpacer.insertAdjacentElement('beforebegin', primaryButton);
 
@@ -143,6 +151,7 @@ class PanelItem extends HTMLElement {
         this.setAttribute('status', 'failure');
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
+        secondaryButton.onclick = this.onclick;
         secondaryButton.dataset.category = 'retry';
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;
@@ -266,6 +275,61 @@ class PanelItem extends HTMLElement {
         }
         break;
     }
+  }
+
+  /**
+   * DOM connected.
+   * @private
+   */
+  connectedCallback() {
+    this.onclick = this.onClicked_.bind(this);
+  }
+
+  /**
+   * DOM disconnected.
+   * @private
+   */
+  disconnectedCallback() {
+    // Replace references to any signal callback.
+    this.signal_ = console.log;
+
+    // Clear click event handler references.
+    let button = this.shadowRoot.querySelector('#primary-action');
+    if (button) {
+      button.onclick = null;
+    }
+    button = this.shadowRoot.querySelector('#secondary-action');
+    if (button) {
+      button.onclick = null;
+    }
+    this.onclick = null;
+  }
+
+  /**
+   * Handles 'click' events from our sub-elements and sends
+   * signals to the |signal_| callback if needed.
+   * @param {?Event} event
+   * @private
+   */
+  onClicked_(event) {
+    event.stopImmediatePropagation();
+    event.preventDefault();
+
+    // Ignore clicks on the panel item itself.
+    if (event.target === this) {
+      return;
+    }
+
+    let id = assert(event.target.dataset.category);
+    this.signal_(id);
+  }
+
+  /**
+   * Sets the callback that triggers signals from events on the panel.
+   * @param {?function(*)} signal
+   */
+  set signalCallback(signal) {
+    this.signal_ = signal || console.log;
   }
 
   /**

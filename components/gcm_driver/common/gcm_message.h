@@ -53,9 +53,8 @@ struct GCM_DRIVER_EXPORT WebPushMessage {
   WebPushMessage();
   WebPushMessage(WebPushMessage&& other);
   ~WebPushMessage();
+  WebPushMessage& operator=(WebPushMessage&& other);
 
-  // Message ID.
-  std::string id;
   // In seconds.
   int time_to_live;
   std::string payload;

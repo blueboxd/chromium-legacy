@@ -126,5 +126,12 @@
       <property name="ignoreComments" value="true"/>
       <property name="message" value="ConcurrentHashMap has a bug on some Android versions. Use Collections.synchronizedMap() instead (crbug.com/905903)."/>
     </module>
+    <module name="RegexpSinglelineJava">
+      <property name="id" value="StrictModeContextIgnoredCheck"/>
+      <property name="severity" value="error"/>
+      <property name="format" value="try .*StrictModeContext (?!ignored).*="/>
+      <property name="ignoreComments" value="true"/>
+      <property name="message" value="Please name the StrictModeContext variable &quot;ignored&quot; (crbug.com/767058#c4)."/>
+    </module>
   </module>
 </module>

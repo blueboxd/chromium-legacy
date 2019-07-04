@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/reading_list/features.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
+#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -164,7 +165,7 @@ NSString* const kPageInfoWillHideNotification =
 #pragma mark - PageInfoReloading
 
 - (void)reload {
-  web::WebState* webState = self.tabModel.webStateList->GetActiveWebState();
+  web::WebState* webState = self.tabModel.currentTab.webState;
   if (webState) {
     // |check_for_repost| is true because the reload is explicitly initiated
     // by the user.

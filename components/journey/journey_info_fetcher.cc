@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/journey/journey_info_json_request.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 

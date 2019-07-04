@@ -10,6 +10,10 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/time/time.h"
+#include "chrome/browser/sharing/ack_message_handler.h"
+#include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -17,10 +21,13 @@
 
 namespace syncer {
 class DeviceInfoTracker;
+class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
 
 class SharingDeviceInfo;
+class SharingFCMHandler;
+class SharingFCMSender;
 class SharingMessageHandler;
 class SharingSyncPreference;
 class VapidKeyManager;
@@ -29,11 +36,17 @@ class VapidKeyManager;
 // sharing messages to other devices.
 class SharingService : public KeyedService, syncer::SyncServiceObserver {
  public:
+  using SendMessageCallback =
+      base::OnceCallback<void(base::Optional<std::string>)>;
+
   SharingService(
       std::unique_ptr<SharingSyncPreference> sync_prefs,
-      std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
       std::unique_ptr<VapidKeyManager> vapid_key_manager,
+      std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
+      std::unique_ptr<SharingFCMSender> fcm_sender,
+      std::unique_ptr<SharingFCMHandler> fcm_handler,
       syncer::DeviceInfoTracker* device_info_tracker,
+      syncer::LocalDeviceInfoProvider* device_info_provider,
       syncer::SyncService* sync_service);
   ~SharingService() override;
 
@@ -44,9 +57,12 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
       int required_capabilities) const;
 
   // Sends a message to the device specified by GUID.
-  bool SendMessageToDevice(
-      const std::string& device_guid,
-      const chrome_browser_sharing::SharingMessage& message);
+  // |callback| will be invoked with message_id if synchronous operation
+  // succeeded, or base::nullopt if operation failed.
+  void SendMessageToDevice(const std::string& device_guid,
+                           base::TimeDelta time_to_live,
+                           chrome_browser_sharing::SharingMessage message,
+                           SendMessageCallback callback);
 
   // Registers a handler of a given SharingMessage payload type.
   void RegisterHandler(
@@ -56,7 +72,7 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
  private:
   // Overrides for syncer::SyncServiceObserver.
   void OnSyncShutdown(syncer::SyncService* sync) override;
-  void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
   void OnDeviceRegistered(SharingDeviceRegistration::Result result);
 
@@ -64,10 +80,15 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   bool IsEnabled() const;
 
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
-  std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
+  std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
+  std::unique_ptr<SharingFCMSender> fcm_sender_;
+  std::unique_ptr<SharingFCMHandler> fcm_handler_;
   syncer::DeviceInfoTracker* device_info_tracker_;
+  syncer::LocalDeviceInfoProvider* device_info_provider_;
   syncer::SyncService* sync_service_;
+  AckMessageHandler ack_message_handler_;
+  PingMessageHandler ping_message_handler_;
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_;
 

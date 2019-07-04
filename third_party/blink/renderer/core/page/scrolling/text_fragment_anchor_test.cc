@@ -1078,6 +1078,41 @@ TEST_F(TextFragmentAnchorTest, TargetStaysInView) {
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
+// Test that overlapping text ranges results in only the first one highlighted
+TEST_F(TextFragmentAnchorTest, OverlappingTextRanges) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=This,test&targetText=is,page",
+      "text/html");
+  LoadURL(
+      "https://example.com/test.html#targetText=This,test&targetText=is,page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "This is a test".
+  auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(14u, markers.at(0)->EndOffset());
+}
+
 }  // namespace
 
 }  // namespace blink

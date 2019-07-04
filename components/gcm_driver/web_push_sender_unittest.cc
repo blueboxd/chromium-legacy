@@ -30,7 +30,6 @@ namespace gcm {
 
 WebPushMessage CreateMessage() {
   WebPushMessage message;
-  message.id = "message_id";
   message.time_to_live = 3600;
   message.payload = "payload";
   return message;
@@ -46,12 +45,9 @@ class WebPushSenderTest : public testing::Test {
   WebPushSender* sender() { return sender_.get(); }
   network::TestURLLoaderFactory& loader() { return test_url_loader_factory_; }
 
-  void OnMessageSent(std::string* message_id_out,
-                     bool* result_out,
-                     const std::string& message_id,
-                     bool result) {
+  void OnMessageSent(base::Optional<std::string>* message_id_out,
+                     base::Optional<std::string> message_id) {
     *message_id_out = message_id;
-    *result_out = result;
   }
 
  private:
@@ -77,12 +73,10 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
           private_key_info.begin(), private_key_info.end()));
   ASSERT_TRUE(private_key);
 
-  std::string message_id;
-  bool result;
-  sender()->SendMessage(
-      "fcm_token", private_key.get(), CreateMessage(),
-      base::BindOnce(&WebPushSenderTest::OnMessageSent, base::Unretained(this),
-                     &message_id, &result));
+  base::Optional<std::string> message_id;
+  sender()->SendMessage("fcm_token", private_key.get(), CreateMessage(),
+                        base::BindOnce(&WebPushSenderTest::OnMessageSent,
+                                       base::Unretained(this), &message_id));
 
   ASSERT_EQ(loader().NumPending(), 1);
 
@@ -115,12 +109,16 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
   const network::DataElement& body = body_elements->back();
   ASSERT_EQ("payload", std::string(body.bytes(), body.length()));
 
+  network::ResourceResponseHead response_head =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+  response_head.headers->AddHeader(
+      "location:https://fcm.googleapis.com/message_id");
+
   loader().SimulateResponseForPendingRequest(
       pendingRequest->request.url, network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(net::HTTP_OK), "");
+      response_head, "");
 
   ASSERT_EQ("message_id", message_id);
-  ASSERT_TRUE(result);
 }
 
 TEST_F(WebPushSenderTest, ServerErrorTest) {
@@ -131,12 +129,10 @@ TEST_F(WebPushSenderTest, ServerErrorTest) {
           private_key_info.begin(), private_key_info.end()));
   ASSERT_TRUE(private_key);
 
-  std::string message_id;
-  bool result;
-  sender()->SendMessage(
-      "fcm_token", private_key.get(), CreateMessage(),
-      base::BindOnce(&WebPushSenderTest::OnMessageSent, base::Unretained(this),
-                     &message_id, &result));
+  base::Optional<std::string> message_id;
+  sender()->SendMessage("fcm_token", private_key.get(), CreateMessage(),
+                        base::BindOnce(&WebPushSenderTest::OnMessageSent,
+                                       base::Unretained(this), &message_id));
 
   ASSERT_EQ(loader().NumPending(), 1);
   loader().SimulateResponseForPendingRequest(
@@ -144,8 +140,7 @@ TEST_F(WebPushSenderTest, ServerErrorTest) {
       network::URLLoaderCompletionStatus(net::OK),
       network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "");
 
-  ASSERT_EQ("message_id", message_id);
-  ASSERT_FALSE(result);
+  ASSERT_FALSE(message_id);
 }
 
 }  // namespace gcm

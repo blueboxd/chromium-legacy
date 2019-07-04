@@ -420,6 +420,36 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, FormatVolume) {
+  // Catch-all rule to ensure that FormatMountedDevice does not get called with
+  // other arguments that don't match the rules below.
+  EXPECT_CALL(*disk_mount_manager_mock_, FormatMountedDevice(_, _, _)).Times(0);
+
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              FormatMountedDevice(
+                  chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
+                      .AppendASCII("mount_path1")
+                      .AsUTF8Unsafe(),
+                  "vfat", "NEWLABEL1"))
+      .Times(1);
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              FormatMountedDevice(
+                  chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
+                      .AppendASCII("mount_path2")
+                      .AsUTF8Unsafe(),
+                  "exfat", "NEWLABEL2"))
+      .Times(1);
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              FormatMountedDevice(
+                  chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
+                      .AppendASCII("mount_path3")
+                      .AsUTF8Unsafe(),
+                  "ntfs", "NEWLABEL3"))
+      .Times(1);
+
+  ASSERT_TRUE(RunComponentExtensionTest("file_browser/format_test"));
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
   EXPECT_TRUE(
       RunExtensionTestIgnoreManifestWarnings("file_browser/permissions"));

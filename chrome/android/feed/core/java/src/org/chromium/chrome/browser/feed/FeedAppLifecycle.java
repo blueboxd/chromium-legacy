@@ -15,6 +15,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 
 import java.lang.annotation.Retention;
@@ -94,7 +95,7 @@ public class FeedAppLifecycle
         }
 
         ApplicationStatus.registerStateListenerForAllActivities(this);
-        SigninManager.get().addSignInStateObserver(this);
+        IdentityServicesProvider.getSigninManager().addSignInStateObserver(this);
     }
 
     /**
@@ -126,7 +127,7 @@ public class FeedAppLifecycle
      * Unregisters listeners and cleans up any native resources held by FeedAppLifecycle.
      */
     public void destroy() {
-        SigninManager.get().removeSignInStateObserver(this);
+        IdentityServicesProvider.getSigninManager().removeSignInStateObserver(this);
         ApplicationStatus.unregisterActivityStateListener(this);
         mLifecycleBridge.destroy();
         mLifecycleBridge = null;

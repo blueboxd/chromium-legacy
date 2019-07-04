@@ -197,7 +197,7 @@ public class AutocompleteEditText
         mDisableTextScrollingFromAutocomplete = false;
 
         // Certain OEM implementations of setText trigger disk reads. https://crbug.com/633298
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             super.setText(text, type);
         }
         if (mModel != null) mModel.onSetText(text);
@@ -229,7 +229,7 @@ public class AutocompleteEditText
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         // Certain OEM implementations of onInitializeAccessibilityNodeInfo trigger disk reads
         // to access the clipboard.  crbug.com/640993
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             super.onInitializeAccessibilityNodeInfo(info);
         }
     }

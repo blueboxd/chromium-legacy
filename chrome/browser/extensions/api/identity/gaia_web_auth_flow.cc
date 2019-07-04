@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
-#define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
+#ifndef GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_MANAGER_TEST_UTIL_H_
+#define GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_MANAGER_TEST_UTIL_H_
 
 #include <string>
 
@@ -13,11 +13,11 @@
 std::string GetValidTokenResponse(const std::string& token, int expiration);
 
 // A simple testing consumer.
-class TestingOAuth2TokenServiceConsumer
+class TestingOAuth2AccessTokenManagerConsumer
     : public OAuth2AccessTokenManager::Consumer {
  public:
-  TestingOAuth2TokenServiceConsumer();
-  ~TestingOAuth2TokenServiceConsumer() override;
+  TestingOAuth2AccessTokenManagerConsumer();
+  ~TestingOAuth2AccessTokenManagerConsumer() override;
 
   // OAuth2AccessTokenManager::Consumer overrides.
   void OnGetTokenSuccess(
@@ -32,4 +32,4 @@ class TestingOAuth2TokenServiceConsumer
   int number_of_errors_;
 };
 
-#endif  // GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
+#endif  // GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_MANAGER_TEST_UTIL_H_

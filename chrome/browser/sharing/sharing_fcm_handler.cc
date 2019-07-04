@@ -10,24 +10,33 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 
+namespace {
+// Time to live for ACK messages.
+const int kAckTimeToLiveMinutes = 30;
+}  // namespace
+
 SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
                                      SharingFCMSender* sharing_fcm_sender)
     : gcm_driver_(gcm_driver),
       sharing_fcm_sender_(sharing_fcm_sender),
-      weak_ptr_factory_(this) {
-  StartListening();
-}
+      weak_ptr_factory_(this) {}
 
 SharingFCMHandler::~SharingFCMHandler() {
   StopListening();
 }
 
 void SharingFCMHandler::StartListening() {
-  gcm_driver_->AddAppHandler(kSharingFCMAppID, this);
+  if (!is_listening_) {
+    gcm_driver_->AddAppHandler(kSharingFCMAppID, this);
+    is_listening_ = true;
+  }
 }
 
 void SharingFCMHandler::StopListening() {
-  gcm_driver_->RemoveAppHandler(kSharingFCMAppID);
+  if (is_listening_) {
+    gcm_driver_->RemoveAppHandler(kSharingFCMAppID);
+    is_listening_ = false;
+  }
 }
 
 void SharingFCMHandler::AddSharingHandler(
@@ -47,11 +56,11 @@ void SharingFCMHandler::RemoveSharingHandler(
 }
 
 void SharingFCMHandler::OnMessagesDeleted(const std::string& app_id) {
-  NOTIMPLEMENTED();
+  // TODO: Handle message deleted from the server.
 }
 
 void SharingFCMHandler::ShutdownHandler() {
-  NOTIMPLEMENTED();
+  is_listening_ = false;
 }
 
 void SharingFCMHandler::OnMessage(const std::string& app_id,
@@ -89,14 +98,25 @@ void SharingFCMHandler::OnSendError(
 }
 
 void SharingFCMHandler::OnStoreReset() {
-  NOTIMPLEMENTED();
+  // TODO: Handle GCM store reset.
 }
 
-bool SharingFCMHandler::SendAckMessage(
-    const std::string& original_sender_guid,
-    const std::string& original_message_id) const {
+void SharingFCMHandler::SendAckMessage(const std::string& original_sender_guid,
+                                       const std::string& original_message_id) {
   SharingMessage ack_message;
   ack_message.mutable_ack_message()->set_original_message_id(
       original_message_id);
-  return sharing_fcm_sender_->SendMessage(original_sender_guid, ack_message);
+  sharing_fcm_sender_->SendMessageToDevice(
+      original_sender_guid, base::TimeDelta::FromMinutes(kAckTimeToLiveMinutes),
+      std::move(ack_message),
+      base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
+                     weak_ptr_factory_.GetWeakPtr(), original_message_id));
+}
+
+void SharingFCMHandler::OnAckMessageSent(
+    const std::string& original_message_id,
+    base::Optional<std::string> message_id) {
+  if (!message_id) {
+    LOG(ERROR) << "Failed to send ack mesage for " << original_message_id;
+  }
 }

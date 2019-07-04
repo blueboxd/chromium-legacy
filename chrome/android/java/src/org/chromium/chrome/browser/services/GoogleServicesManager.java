@@ -13,6 +13,7 @@ import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SignoutReason;
@@ -73,7 +74,7 @@ public class GoogleServicesManager implements ApplicationStateListener {
             // crash on the native side then the signin state may get out of sync. Make sure that
             // the native side is signed out if the Java side doesn't have a currently signed in
             // user.
-            SigninManager signinManager = SigninManager.get();
+            SigninManager signinManager = IdentityServicesProvider.getSigninManager();
             if (!mChromeSigninController.isSignedIn() && signinManager.isSignedInOnNative()) {
                 Log.w(TAG, "Signed in state got out of sync, forcing native sign out");
                 // TODO(https://crbug.com/873116): Pass the correct reason for the signout.

@@ -631,14 +631,7 @@ void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
 
 std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerProviderHost::CreateLoaderInterceptor(
-    network::mojom::RequestMode request_mode,
-    network::mojom::CredentialsMode credentials_mode,
-    network::mojom::RedirectMode redirect_mode,
-    const std::string& integrity,
-    bool keepalive,
     ResourceType resource_type,
-    blink::mojom::RequestContextType request_context_type,
-    scoped_refptr<network::ResourceRequestBody> body,
     bool skip_service_worker) {
   if (skip_service_worker) {
     // Use an interceptor that just observes redirects so the resulting
@@ -647,9 +640,7 @@ ServiceWorkerProviderHost::CreateLoaderInterceptor(
   }
 
   return std::make_unique<ServiceWorkerControlleeRequestHandler>(
-      context_, AsWeakPtr(), request_mode, credentials_mode, redirect_mode,
-      integrity, keepalive, resource_type, request_context_type,
-      std::move(body));
+      context_, AsWeakPtr(), resource_type);
 }
 
 base::WeakPtr<ServiceWorkerObjectHost>

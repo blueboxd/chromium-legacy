@@ -21,6 +21,7 @@
 
 namespace content {
 class StoragePartition;
+class RenderProcessHost;
 
 // The WebSocketManager is a per child process instance that manages the
 // lifecycle of network::WebSocket objects. It is responsible for creating
@@ -29,22 +30,22 @@ class StoragePartition;
 class CONTENT_EXPORT WebSocketManager
     : public net::URLRequestContextGetterObserver {
  public:
-  // Called on the UI thread: create a websocket.
-  // - For frames, |frame_id| should be their own id.
-  // - For dedicated workers, |frame_id| should be its parent frame's id.
-  // - For shared workers and service workers, |frame_id| should be
-  //   MSG_ROUTING_NONE because they do not have a frame.
   static void CreateWebSocket(
-      int process_id,
-      int frame_id,
-      url::Origin origin,
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      const base::Optional<std::string>& user_agent,
+      RenderProcessHost* process,
+      int32_t frame_id,
+      const url::Origin& origin,
       uint32_t options,
-      network::mojom::AuthenticationHandlerPtr auth_handler,
-      network::mojom::TrustedHeaderClientPtr header_client,
-      network::mojom::WebSocketRequest request);
+      network::mojom::WebSocketHandshakeClientPtr handshake_client,
+      network::mojom::WebSocketClientPtr client);
 
   // net::URLRequestContextGetterObserver implementation.
   void OnContextShuttingDown() override;
+
+  size_t num_sockets() const { return impls_.size(); }
 
  protected:
   class Delegate;
@@ -55,23 +56,32 @@ class CONTENT_EXPORT WebSocketManager
   WebSocketManager(int process_id, StoragePartition* storage_partition);
 
   // All other methods must run on the IO thread.
-
   ~WebSocketManager() override;
-  void DoCreateWebSocket(int frame_id,
-                         url::Origin origin,
-                         uint32_t options,
-                         network::mojom::WebSocketRequest request);
+  void DoCreateWebSocket(
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      const base::Optional<std::string>& user_agent,
+      int32_t render_frame_id,
+      const url::Origin& origin,
+      uint32_t options,
+      network::mojom::WebSocketHandshakeClientPtrInfo handshake_client,
+      network::mojom::WebSocketClientPtrInfo websocket_client);
   void ThrottlingPeriodTimerCallback();
 
   // This is virtual to support testing.
   virtual std::unique_ptr<network::WebSocket> DoCreateWebSocketInternal(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
-      network::mojom::WebSocketRequest request,
-      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
-      int child_id,
-      int frame_id,
-      url::Origin origin,
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      const base::Optional<std::string>& user_agent,
+      int32_t frame_id,
+      const url::Origin& origin,
       uint32_t options,
+      network::mojom::WebSocketHandshakeClientPtr handshake_client,
+      network::mojom::WebSocketClientPtr websocket_client,
+      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
       base::TimeDelta delay);
 
   net::URLRequestContext* GetURLRequestContext();

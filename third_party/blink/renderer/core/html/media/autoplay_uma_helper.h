@@ -12,8 +12,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
-#include <set>
-
 namespace blink {
 
 // These values are used for histograms. Do not reorder.
@@ -70,7 +68,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
 
   bool IsVisible() const { return is_visible_; }
 
-  bool HasSource() const { return !sources_.empty(); }
+  bool HasSource() const { return !sources_.IsEmpty(); }
 
   void Invoke(ExecutionContext*, Event*) override;
 
@@ -103,7 +101,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   bool ShouldListenToContextDestroyed() const;
 
   // The autoplay sources.
-  std::set<AutoplaySource> sources_;
+  HashSet<AutoplaySource> sources_;
 
   // The media element this UMA helper is attached to. |element| owns |this|.
   Member<HTMLMediaElement> element_;

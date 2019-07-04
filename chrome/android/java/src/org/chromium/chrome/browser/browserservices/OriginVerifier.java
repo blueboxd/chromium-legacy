@@ -424,7 +424,7 @@ public class OriginVerifier {
      * Checks for a previously saved verification result.
      */
     private void checkForSavedResult() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             boolean verified = VerificationResultStore.isRelationshipSaved(
                     new Relationship(mPackageName, mSignatureFingerprint, mOrigin, mRelation));
 

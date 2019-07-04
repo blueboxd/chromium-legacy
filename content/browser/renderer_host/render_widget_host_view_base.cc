@@ -459,7 +459,8 @@ WidgetType RenderWidgetHostViewBase::GetWidgetType() {
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+    BrowserAccessibilityDelegate* delegate,
+    bool for_root_frame) {
   NOTREACHED();
   return nullptr;
 }
@@ -861,6 +862,8 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
     const gfx::PointF& point,
     gfx::PointF* transformed_point) const {
   DCHECK(use_viz_hit_test_);
+  DCHECK(original_view);
+  DCHECK(target_view);
   viz::FrameSinkId root_frame_sink_id = original_view->GetRootFrameSinkId();
   if (!root_frame_sink_id.is_valid())
     return false;

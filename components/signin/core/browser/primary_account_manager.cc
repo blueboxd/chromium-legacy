@@ -290,9 +290,6 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
 
   if (!reauth_in_progress && on_google_signin_succeeded_callback_)
     on_google_signin_succeeded_callback_.Run(GetAuthenticatedAccountInfo());
-
-  signin_metrics::LogSigninProfile(client_->IsFirstRun(),
-                                   client_->GetInstallDate());
 }
 
 #if !defined(OS_CHROMEOS)

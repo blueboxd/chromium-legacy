@@ -304,7 +304,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             ThreadUtils.setWillOverrideUiThread(true);
             BuildInfo.setBrowserPackageInfo(packageInfo);
 
-            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                              "WebViewChromiumFactoryProvider.loadChromiumLibrary")) {
                     String dataDirectorySuffix = null;

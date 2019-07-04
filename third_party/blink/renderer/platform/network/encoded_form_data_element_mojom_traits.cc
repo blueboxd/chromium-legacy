@@ -24,8 +24,8 @@ namespace mojo {
 
 // static
 network::mojom::DataElementType
-StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::type(
-    const blink::FormDataElement& data) {
+StructTraits<blink::mojom::FetchAPIDataElementDataView,
+             blink::FormDataElement>::type(const blink::FormDataElement& data) {
   switch (data.type_) {
     case blink::FormDataElement::kData:
       return network::mojom::DataElementType::kBytes;
@@ -45,30 +45,31 @@ StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::type(
 
 // static
 base::span<const uint8_t>
-StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::buf(
-    const blink::FormDataElement& data) {
+StructTraits<blink::mojom::FetchAPIDataElementDataView,
+             blink::FormDataElement>::buf(const blink::FormDataElement& data) {
   return base::make_span(reinterpret_cast<const uint8_t*>(data.data_.data()),
                          data.data_.size());
 }
 
 // static
 base::File
-StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::file(
-    const blink::FormDataElement& data) {
+StructTraits<blink::mojom::FetchAPIDataElementDataView,
+             blink::FormDataElement>::file(const blink::FormDataElement& data) {
   return base::File();
 }
 
 // static
 base::FilePath
-StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::path(
-    const blink::FormDataElement& data) {
+StructTraits<blink::mojom::FetchAPIDataElementDataView,
+             blink::FormDataElement>::path(const blink::FormDataElement& data) {
   return base::FilePath::FromUTF8Unsafe(data.filename_.Utf8());
 }
 
 // static
-network::mojom::blink::DataPipeGetterPtrInfo
-StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
-    data_pipe_getter(const blink::FormDataElement& data) {
+network::mojom::blink::DataPipeGetterPtrInfo StructTraits<
+    blink::mojom::FetchAPIDataElementDataView,
+    blink::FormDataElement>::data_pipe_getter(const blink::FormDataElement&
+                                                  data) {
   if (data.type_ == blink::FormDataElement::kDataPipe) {
     if (!data.data_pipe_getter_)
       return nullptr;
@@ -93,8 +94,8 @@ StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
 }
 
 // static
-base::Time
-StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
+base::Time StructTraits<blink::mojom::FetchAPIDataElementDataView,
+                        blink::FormDataElement>::
     expected_modification_time(const blink::FormDataElement& data) {
   if (data.type_ == blink::FormDataElement::kEncodedFile)
     return base::Time::FromDoubleT(data.expected_file_modification_time_);
@@ -102,8 +103,9 @@ StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
 }
 
 // static
-bool StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
-    Read(network::mojom::DataElementDataView data,
+bool StructTraits<blink::mojom::FetchAPIDataElementDataView,
+                  blink::FormDataElement>::
+    Read(blink::mojom::FetchAPIDataElementDataView data,
          blink::FormDataElement* out) {
   network::mojom::DataElementType data_type;
   if (!data.ReadType(&data_type)) {

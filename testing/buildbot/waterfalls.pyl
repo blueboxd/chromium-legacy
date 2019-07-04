@@ -2614,6 +2614,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'isolated_scripts': 'gpu_blink_web_tests',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         }
       },
@@ -2626,7 +2627,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_blink_web_tests_and_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
@@ -2701,7 +2702,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_blink_web_tests',
+          'isolated_scripts': 'gpu_blink_web_tests_skia_renderer',
           'gpu_telemetry_tests': 'gpu_skia_renderer_telemetry_tests',
         },
       },

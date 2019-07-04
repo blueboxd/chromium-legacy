@@ -4184,9 +4184,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)bookmarkPage {
   [self initializeBookmarkInteractionController];
   [_bookmarkInteractionController
-      presentBookmarkEditorForWebState:self.currentWebState
-                   currentlyBookmarked:[self.helper isWebStateBookmarkedByUser:
-                                                        self.currentWebState]];
+      presentBookmarkEditorForTab:self.tabModel.currentTab
+              currentlyBookmarked:[self.helper isWebStateBookmarkedByUser:
+                                                   self.currentWebState]];
 }
 
 - (void)addToReadingList:(ReadingListAddCommand*)command {

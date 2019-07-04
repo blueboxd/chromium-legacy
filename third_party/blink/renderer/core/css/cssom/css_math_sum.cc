@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_math_sum.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_negate.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -99,17 +99,17 @@ base::Optional<CSSNumericSumValue> CSSMathSum::SumValue() const {
   return sum;
 }
 
-CSSCalcExpressionNode* CSSMathSum::ToCalcExpressionNode() const {
+CSSMathExpressionNode* CSSMathSum::ToCalcExpressionNode() const {
   // TODO(crbug.com/782103): Handle the single value case correctly.
   if (NumericValues().size() == 1)
     return NumericValues()[0]->ToCalcExpressionNode();
 
-  CSSCalcExpressionNode* node = CSSCalcBinaryOperation::Create(
+  CSSMathExpressionNode* node = CSSMathExpressionBinaryOperation::Create(
       NumericValues()[0]->ToCalcExpressionNode(),
       NumericValues()[1]->ToCalcExpressionNode(), CSSMathOperator::kAdd);
 
   for (wtf_size_t i = 2; i < NumericValues().size(); i++) {
-    node = CSSCalcBinaryOperation::Create(
+    node = CSSMathExpressionBinaryOperation::Create(
         node, NumericValues()[i]->ToCalcExpressionNode(),
         CSSMathOperator::kAdd);
   }

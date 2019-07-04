@@ -6,7 +6,6 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/base64.h"
 #import "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #include "base/json/string_escape.h"
@@ -15,7 +14,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "crypto/symmetric_key.h"
 #import "ios/web/browsing_data/browsing_data_remover.h"
 #import "ios/web/browsing_data/browsing_data_remover_observer.h"
 #import "ios/web/common/crw_web_view_content_view.h"
@@ -26,7 +24,6 @@
 #include "ios/web/history_state_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
-#import "ios/web/js_messaging/web_frame_impl.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/navigation/crw_js_navigation_handler.h"
@@ -62,7 +59,6 @@
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_view/content_type_util.h"
-#import "ios/web/web_view/wk_security_origin_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -91,11 +87,6 @@ NSString* const kIsMainFrame = @"isMainFrame";
 
 // URL scheme for messages sent from javascript for asynchronous processing.
 NSString* const kScriptMessageName = @"crwebinvoke";
-
-// Message command sent when a frame becomes available.
-NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
-// Message command sent when a frame is unloading.
-NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
 }  // namespace
 
@@ -254,10 +245,6 @@ NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
-// Handles frame became available message.
-- (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message;
-// Handles frame became unavailable message.
-- (void)frameBecameUnavailableWithMessage:(WKScriptMessage*)message;
 
 // Restores the state for this page from session history.
 - (void)restoreStateFromHistory;
@@ -429,11 +416,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   DCHECK_NE(_webView, webView);
 
   // Unwind the old web view.
-  // TODO(crbug.com/543374): Remove CRWWKScriptMessageRouter once
-  // crbug.com/543374 is fixed.
   CRWWKScriptMessageRouter* messageRouter =
       [self webViewConfigurationProvider].GetScriptMessageRouter();
+  web::WebFramesManagerImpl::FromWebState(self.webStateImpl)
+      ->OnWebViewUpdated(_webView, webView, messageRouter);
   if (_webView) {
+    // TODO(crbug.com/956516): Use removeScriptMessageHandlerForName:webView:
+    // for |kScriptMessageName| and let CRWContextMenuController unregister its
+    // own callback.
     [messageRouter removeAllScriptMessageHandlersForWebView:_webView];
   }
   [_webView setNavigationDelegate:nil];
@@ -442,32 +432,19 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [_webView removeObserver:self forKeyPath:keyPath];
   }
 
+  // Set up the new web view.
   _webView = webView;
 
-  // Set up the new web view.
-  if (webView) {
+  if (_webView) {
     __weak CRWWebController* weakSelf = self;
     [messageRouter
         setScriptMessageHandler:^(WKScriptMessage* message) {
           [weakSelf didReceiveScriptMessage:message];
         }
                            name:kScriptMessageName
-                        webView:webView];
-
-    [messageRouter
-        setScriptMessageHandler:^(WKScriptMessage* message) {
-          [weakSelf frameBecameAvailableWithMessage:message];
-        }
-                           name:kFrameBecameAvailableMessageName
-                        webView:webView];
-    [messageRouter
-        setScriptMessageHandler:^(WKScriptMessage* message) {
-          [weakSelf frameBecameUnavailableWithMessage:message];
-        }
-                           name:kFrameBecameUnavailableMessageName
-                        webView:webView];
+                        webView:_webView];
   }
-  [_jsInjector setWebView:webView];
+  [_jsInjector setWebView:_webView];
   [_webView setNavigationDelegate:self.navigationHandler];
   [_webView setUIDelegate:self.UIHandler];
   for (NSString* keyPath in self.WKWebViewObservers) {
@@ -1433,72 +1410,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // Page is reset as a precaution.
   DLOG(WARNING) << "Unexpected message received: " << command;
   return NO;
-}
-
-#pragma mark - Web frames management
-
-- (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message {
-  // Validate all expected message components because any frame could falsify
-  // this message.
-  // TODO(crbug.com/881816): Create a WebFrame even if key is empty.
-  if (_isBeingDestroyed || ![message.body isKindOfClass:[NSDictionary class]] ||
-      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]]) {
-    // WebController is being destroyed or the message is invalid.
-    return;
-  }
-
-  std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
-  web::WebFramesManagerImpl* framesManager =
-      web::WebFramesManagerImpl::FromWebState([self webState]);
-  if (!framesManager->GetFrameWithId(frameID)) {
-    GURL messageFrameOrigin =
-        web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
-
-    std::unique_ptr<crypto::SymmetricKey> frameKey;
-    if ([message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] &&
-        [message.body[@"crwFrameKey"] length] > 0) {
-      std::string decodedFrameKeyString;
-      std::string encodedFrameKeyString =
-          base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
-      base::Base64Decode(encodedFrameKeyString, &decodedFrameKeyString);
-      frameKey = crypto::SymmetricKey::Import(
-          crypto::SymmetricKey::Algorithm::AES, decodedFrameKeyString);
-    }
-
-    auto newFrame = std::make_unique<web::WebFrameImpl>(
-        frameID, message.frameInfo.mainFrame, messageFrameOrigin,
-        self.webState);
-    if (frameKey) {
-      newFrame->SetEncryptionKey(std::move(frameKey));
-    }
-
-    NSNumber* lastSentMessageID =
-        message.body[@"crwFrameLastReceivedMessageId"];
-    if ([lastSentMessageID isKindOfClass:[NSNumber class]]) {
-      int nextMessageID = std::max(0, lastSentMessageID.intValue + 1);
-      newFrame->SetNextMessageId(nextMessageID);
-    }
-
-    framesManager->AddFrame(std::move(newFrame));
-    self.webStateImpl->OnWebFrameAvailable(
-        framesManager->GetFrameWithId(frameID));
-  }
-}
-
-- (void)frameBecameUnavailableWithMessage:(WKScriptMessage*)message {
-  if (_isBeingDestroyed || ![message.body isKindOfClass:[NSString class]]) {
-    // WebController is being destroyed or message is invalid.
-    return;
-  }
-  std::string frameID = base::SysNSStringToUTF8(message.body);
-  web::WebFramesManagerImpl* framesManager =
-      web::WebFramesManagerImpl::FromWebState([self webState]);
-
-  if (framesManager->GetFrameWithId(frameID)) {
-    self.webStateImpl->OnWebFrameUnavailable(
-        framesManager->GetFrameWithId(frameID));
-    framesManager->RemoveFrameWithId(frameID);
-  }
 }
 
 #pragma mark - WebUI

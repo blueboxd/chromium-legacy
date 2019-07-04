@@ -5,16 +5,14 @@
 #include "components/signin/core/browser/account_investigator.h"
 
 #include <map>
-#include <string>
-#include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/timer/timer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_util.h"

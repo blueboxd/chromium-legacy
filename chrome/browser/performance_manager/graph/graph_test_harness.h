@@ -92,8 +92,10 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
   static std::unique_ptr<PageNodeImpl> Create(
       GraphImpl* graph,
       const WebContentsProxy& wc_proxy = WebContentsProxy(),
-      bool is_visible = false) {
-    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible);
+      bool is_visible = false,
+      bool is_audible = false) {
+    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible,
+                                          is_audible);
   }
 };
 

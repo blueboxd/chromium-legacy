@@ -110,6 +110,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
@@ -1495,8 +1496,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)prepareTabSwitcher {
-  web::WebState* currentWebState =
-      self.currentBVC.tabModel.webStateList->GetActiveWebState();
+  web::WebState* currentWebState = self.currentBVC.tabModel.currentTab.webState;
   if (currentWebState) {
     BOOL loading = currentWebState->IsLoading();
     SnapshotTabHelper::FromWebState(currentWebState)
@@ -2171,8 +2171,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // Removing browsing data triggers session restore in navigation manager. If
   // there is an in-progress session restore, wait for it to finish before
   // attempting to clear browsing data again.
-  web::WebState* webState =
-      self.currentBVC.tabModel.webStateList->GetActiveWebState();
+  web::WebState* webState = [[[self.currentBVC tabModel] currentTab] webState];
   if (webState && webState->GetNavigationManager()) {
     webState->GetNavigationManager()->AddRestoreCompletionCallback(
         base::BindOnce(^{
@@ -2263,13 +2262,15 @@ enum class EnterTabSwitcherSnapshotResult {
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion {
   BrowserViewController* targetBVC =
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
-  web::WebState* currentWebState =
-      targetBVC.tabModel.webStateList->GetActiveWebState();
+  TabModel* targetTabModel = targetBVC.tabModel;
+
+  Tab* currentTabInTargetBVC = [targetTabModel currentTab];
 
   // Don't call loadWithParams for chrome://newtab when it's already loaded.
   // Note that it's safe to use -GetVisibleURL here, as it doesn't matter if the
   // NTP hasn't finished loading.
-  if (currentWebState && IsURLNtp(currentWebState->GetVisibleURL()) &&
+  if (currentTabInTargetBVC.webState &&
+      IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()) &&
       IsURLNtp(urlLoadParams.web_params.url)) {
     if (tabOpenedCompletion) {
       tabOpenedCompletion();
@@ -2286,7 +2287,8 @@ enum class EnterTabSwitcherSnapshotResult {
   // If the current tab isn't an NTP, open a new tab.  Be sure to use
   // -GetLastCommittedURL incase the NTP is still loading.
   if (alwaysInsertNewTab ||
-      !(currentWebState && IsURLNtp(currentWebState->GetVisibleURL()))) {
+      !(currentTabInTargetBVC.webState &&
+        IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
     UrlLoadParams newTabParams = urlLoadParams;
     newTabParams.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -2588,8 +2590,7 @@ enum class EnterTabSwitcherSnapshotResult {
 - (NSString*)currentPageDisplayURL {
   if (_tabSwitcherIsActive)
     return nil;
-  web::WebState* webState =
-      self.currentTabModel.webStateList->GetActiveWebState();
+  web::WebState* webState = [[[self currentTabModel] currentTab] webState];
   if (!webState)
     return nil;
   // Returns URL of browser tab that is currently showing.

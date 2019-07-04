@@ -37,6 +37,14 @@ class PageNode : public Node {
   // See PageNodeObserver::OnIsVisibleChanged.
   virtual bool IsVisible() const = 0;
 
+  // Returns the time since the last visibility change. It is always well
+  // defined as the visibility property is set at node creation.
+  virtual base::TimeDelta GetTimeSinceLastVisibilityChange() const = 0;
+
+  // Returns true if this page is currently audible, false otherwise.
+  // See PageNodeObserver::OnIsAudibleChanged.
+  virtual bool IsAudible() const = 0;
+
   // Returns true if this page is currently loading, false otherwise.
   // See PageNodeObserver::OnIsLoadingChanged.
   virtual bool IsLoading() const = 0;
@@ -55,6 +63,10 @@ class PageNode : public Node {
   // event for the main frame of this page.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual int64_t GetNavigationID() const = 0;
+
+  // Returns "zero" if no navigation has happened, otherwise returns the time
+  // since the last navigation commit.
+  virtual base::TimeDelta GetTimeSinceLastNavigation() const = 0;
 
   // Returns the current main frame node (if there is one), otherwise returns
   // any of the potentially multiple main frames that currently exist. If there
@@ -88,6 +100,9 @@ class PageNodeObserver {
 
   // Invoked when the |is_visible| property changes.
   virtual void OnIsVisibleChanged(const PageNode* page_node) = 0;
+
+  // Invoked when the |is_audible| property changes.
+  virtual void OnIsAudibleChanged(const PageNode* page_node) = 0;
 
   // Invoked when the |is_loading| property changes.
   virtual void OnIsLoadingChanged(const PageNode* page_node) = 0;
@@ -131,6 +146,7 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnPageNodeAdded(const PageNode* page_node) override {}
   void OnBeforePageNodeRemoved(const PageNode* page_node) override {}
   void OnIsVisibleChanged(const PageNode* page_node) override {}
+  void OnIsAudibleChanged(const PageNode* page_node) override {}
   void OnIsLoadingChanged(const PageNode* page_node) override {}
   void OnUkmSourceIdChanged(const PageNode* page_node) override {}
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {}

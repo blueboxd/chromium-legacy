@@ -33,7 +33,7 @@
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_token_service_test_util.h"
+#include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -201,7 +201,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   policy::DevicePolicyBuilder device_policy_;
   std::unique_ptr<DeviceOAuth2TokenService, TokenServiceDeleter>
       oauth2_service_;
-  TestingOAuth2TokenServiceConsumer consumer_;
+  TestingOAuth2AccessTokenManagerConsumer consumer_;
 };
 
 void DeviceOAuth2TokenServiceTest::ReturnOAuthUrlFetchResults(

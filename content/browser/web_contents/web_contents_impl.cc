@@ -4327,6 +4327,8 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     display_cutout_host_impl_->DidFinishNavigation(navigation_handle);
 
   if (navigation_handle->HasCommitted()) {
+    // TODO(domfarolino, dmazzoni): Do this using WebContentsObserver. See
+    // https://crbug.com/981271.
     BrowserAccessibilityManager* manager =
         static_cast<RenderFrameHostImpl*>(
             navigation_handle->GetRenderFrameHost())
@@ -5819,8 +5821,8 @@ void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,
 
   // Notify accessibility that the user is navigating away from the
   // current document.
-  //
-  // TODO(dmazzoni): do this using a WebContentsObserver.
+  // TODO(domfarolino, dmazzoni): Do this using WebContentsObserver. See
+  // https://crbug.com/981271.
   BrowserAccessibilityManager* manager =
       frame_tree_node->current_frame_host()->browser_accessibility_manager();
   if (manager)

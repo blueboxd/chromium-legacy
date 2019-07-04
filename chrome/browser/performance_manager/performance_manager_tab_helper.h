@@ -48,6 +48,7 @@ class PerformanceManagerTabHelper
   void DidStartLoading() override;
   void DidStopLoading() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
+  void OnAudioStateChanged(bool audible) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry) override;

@@ -146,6 +146,7 @@ void GraphImpl::RemoveSystemNodeObserver(SystemNodeObserver* observer) {
 }
 
 void GraphImpl::PassToGraph(std::unique_ptr<GraphOwned> graph_owned) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* raw = graph_owned.get();
   DCHECK(!base::Contains(graph_owned_, raw));
   graph_owned_.insert(std::make_pair(raw, std::move(graph_owned)));
@@ -153,6 +154,7 @@ void GraphImpl::PassToGraph(std::unique_ptr<GraphOwned> graph_owned) {
 }
 
 std::unique_ptr<GraphOwned> GraphImpl::TakeFromGraph(GraphOwned* graph_owned) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<GraphOwned> object;
   auto it = graph_owned_.find(graph_owned);
   if (it != graph_owned_.end()) {
@@ -166,18 +168,22 @@ std::unique_ptr<GraphOwned> GraphImpl::TakeFromGraph(GraphOwned* graph_owned) {
 }
 
 const SystemNode* GraphImpl::FindOrCreateSystemNode() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return FindOrCreateSystemNodeImpl();
 }
 
 std::vector<const ProcessNode*> GraphImpl::GetAllProcessNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetAllNodesOfType<ProcessNodeImpl, const ProcessNode*>();
 }
 
 std::vector<const FrameNode*> GraphImpl::GetAllFrameNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetAllNodesOfType<FrameNodeImpl, const FrameNode*>();
 }
 
 std::vector<const PageNode*> GraphImpl::GetAllPageNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetAllNodesOfType<PageNodeImpl, const PageNode*>();
 }
 
@@ -193,6 +199,11 @@ void GraphImpl::UnregisterObserver(GraphImplObserver* observer) {
   RemoveObserverImpl(&observers_, observer);
   observer->OnUnregistered();
   observer->SetGraph(nullptr);
+}
+
+ukm::UkmRecorder* GraphImpl::GetUkmRecorder() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return ukm_recorder();
 }
 
 uintptr_t GraphImpl::GetImplType() const {

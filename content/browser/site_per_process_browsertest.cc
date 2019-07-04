@@ -1631,13 +1631,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
       filter.get());
 
-  InputEventAckWaiter ack_observer(
-      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureScrollEnd);
-
   GURL site_url(embedded_test_server()->GetURL(
       "b.com", "/frame_tree/page_with_positioned_frame.html"));
   NavigateFrameToURL(parent_iframe_node, site_url);
+
+  InputEventAckWaiter ack_observer(
+      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollEnd);
 
   // Navigate the nested frame to a page large enough to have scrollbars.
   FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);

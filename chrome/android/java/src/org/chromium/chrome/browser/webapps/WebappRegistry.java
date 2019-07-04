@@ -330,7 +330,7 @@ public class WebappRegistry {
         // TODO(peconn): Don't open general WebappRegistry preferences when we just need the
         // TrustedWebActivityPermissionStore.
         // This is required to fix https://crbug.com/952841.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return ContextUtils.getApplicationContext().getSharedPreferences(
                     REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
         }

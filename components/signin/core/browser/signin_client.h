@@ -72,9 +72,6 @@ class SigninClient : public KeyedService {
   // For iOS, cookies should be cleaned up.
   virtual void PreGaiaLogout(base::OnceClosure callback);
 
-  virtual bool IsFirstRun() const = 0;
-  virtual base::Time GetInstallDate() = 0;
-
   // Returns true if GAIA cookies are allowed in the content area.
   virtual bool AreSigninCookiesAllowed() = 0;
 

@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
-
-// TODO(xiaochengh): Rename to css_math_expression_node_test.cc
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -51,7 +49,7 @@ namespace {
 
 void TestAccumulatePixelsAndPercent(
     const CSSToLengthConversionData& conversion_data,
-    CSSCalcExpressionNode* expression,
+    CSSMathExpressionNode* expression,
     float expected_pixels,
     float expected_percent) {
   PixelsAndPercent value(0, 0);
@@ -88,7 +86,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSCalcPrimitiveValue::Create(
+      CSSMathExpressionNumericLiteral::Create(
           CSSNumericLiteralValue::Create(10,
                                          CSSPrimitiveValue::UnitType::kPixels),
           true),
@@ -96,12 +94,12 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSCalcBinaryOperation::Create(
-          CSSCalcPrimitiveValue::Create(
+      CSSMathExpressionBinaryOperation::Create(
+          CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
                   10, CSSPrimitiveValue::UnitType::kPixels),
               true),
-          CSSCalcPrimitiveValue::Create(
+          CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
                   20, CSSPrimitiveValue::UnitType::kPixels),
               true),
@@ -110,12 +108,12 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSCalcBinaryOperation::Create(
-          CSSCalcPrimitiveValue::Create(
+      CSSMathExpressionBinaryOperation::Create(
+          CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
                   1, CSSPrimitiveValue::UnitType::kInches),
               true),
-          CSSCalcPrimitiveValue::Create(
+          CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
                   2, CSSPrimitiveValue::UnitType::kNumber),
               true),
@@ -124,23 +122,23 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSCalcBinaryOperation::Create(
-          CSSCalcBinaryOperation::Create(
-              CSSCalcPrimitiveValue::Create(
+      CSSMathExpressionBinaryOperation::Create(
+          CSSMathExpressionBinaryOperation::Create(
+              CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
                       50, CSSPrimitiveValue::UnitType::kPixels),
                   true),
-              CSSCalcPrimitiveValue::Create(
+              CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
                       0.25, CSSPrimitiveValue::UnitType::kNumber),
                   false),
               CSSMathOperator::kMultiply),
-          CSSCalcBinaryOperation::Create(
-              CSSCalcPrimitiveValue::Create(
+          CSSMathExpressionBinaryOperation::Create(
+              CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
                       20, CSSPrimitiveValue::UnitType::kPixels),
                   true),
-              CSSCalcPrimitiveValue::Create(
+              CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
                       40, CSSPrimitiveValue::UnitType::kPercentage),
                   false),

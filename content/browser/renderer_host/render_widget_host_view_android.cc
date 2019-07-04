@@ -1851,8 +1851,9 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterChildGestureEvent(
 }
 
 BrowserAccessibilityManager*
-    RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
-        BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
+    BrowserAccessibilityDelegate* delegate,
+    bool for_root_frame) {
   return new BrowserAccessibilityManagerAndroid(
       BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
       for_root_frame && host() ? GetWebContentsAccessibilityAndroid() : nullptr,

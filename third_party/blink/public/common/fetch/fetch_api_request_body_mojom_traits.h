@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace mojo {
@@ -41,6 +42,57 @@ struct StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
 
   static bool Read(blink::mojom::FetchAPIRequestBodyDataView data,
                    scoped_refptr<network::ResourceRequestBody>* out);
+};
+
+template <>
+struct StructTraits<blink::mojom::FetchAPIDataElementDataView,
+                    network::DataElement> {
+  static const network::mojom::DataElementType& type(
+      const network::DataElement& element) {
+    return element.type_;
+  }
+  static std::vector<uint8_t> buf(const network::DataElement& element) {
+    if (element.bytes_) {
+      return std::vector<uint8_t>(element.bytes_,
+                                  element.bytes_ + element.length_);
+    }
+    return std::move(element.buf_);
+  }
+  static const base::FilePath& path(const network::DataElement& element) {
+    return element.path_;
+  }
+  static base::File file(const network::DataElement& element) {
+    return std::move(const_cast<network::DataElement&>(element).file_);
+  }
+  static const std::string& blob_uuid(const network::DataElement& element) {
+    return element.blob_uuid_;
+  }
+  static network::mojom::DataPipeGetterPtrInfo data_pipe_getter(
+      const network::DataElement& element) {
+    if (element.type_ != network::mojom::DataElementType::kDataPipe)
+      return nullptr;
+    return element.CloneDataPipeGetter().PassInterface();
+  }
+  static network::mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter(
+      const network::DataElement& element) {
+    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
+      return nullptr;
+    return const_cast<network::DataElement&>(element)
+        .ReleaseChunkedDataPipeGetter();
+  }
+  static uint64_t offset(const network::DataElement& element) {
+    return element.offset_;
+  }
+  static uint64_t length(const network::DataElement& element) {
+    return element.length_;
+  }
+  static const base::Time& expected_modification_time(
+      const network::DataElement& element) {
+    return element.expected_modification_time_;
+  }
+
+  static bool Read(blink::mojom::FetchAPIDataElementDataView data,
+                   network::DataElement* out);
 };
 
 }  // namespace mojo

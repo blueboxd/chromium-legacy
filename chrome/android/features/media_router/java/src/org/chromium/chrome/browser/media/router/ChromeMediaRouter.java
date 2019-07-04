@@ -110,7 +110,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
 
         // Some manufacturers have an implementation that causes StrictMode
         // violations. See https://crbug.com/818325.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             // Pre-MR1 versions of JB do not have the complete MediaRouter APIs,
             // so getting the MediaRouter instance will throw an exception.
             return MediaRouter.getInstance(ContextUtils.getApplicationContext());

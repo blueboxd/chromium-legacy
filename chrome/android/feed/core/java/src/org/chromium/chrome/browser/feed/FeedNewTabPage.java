@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -258,7 +259,7 @@ public class FeedNewTabPage extends NewTabPage {
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      */
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
-            TabModelSelector tabModelSelector) {
+            TabModelSelector tabModelSelector, SigninManager signinManager) {
         super(activity, nativePageHost, tabModelSelector);
 
         Resources resources = activity.getResources();
@@ -271,7 +272,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         // Mediator should be created before any Stream changes.
         mMediator = new FeedNewTabPageMediator(
-                this, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout));
+                this, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout), signinManager);
 
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.

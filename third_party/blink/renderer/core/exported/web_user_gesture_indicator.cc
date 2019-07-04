@@ -71,8 +71,4 @@ WebUserGestureToken WebUserGestureIndicator::CurrentUserGestureToken() {
   return WebUserGestureToken(UserGestureIndicator::CurrentTokenThreadSafe());
 }
 
-void WebUserGestureIndicator::ExtendTimeout() {
-  UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kOutOfProcess);
-}
-
 }  // namespace blink

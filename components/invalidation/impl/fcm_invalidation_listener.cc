@@ -191,6 +191,19 @@ void FCMInvalidationListener::StopForTest() {
   Stop();
 }
 
+void FCMInvalidationListener::StartForTest(Delegate* delegate) {
+  delegate_ = delegate;
+}
+
+void FCMInvalidationListener::EmitStateChangeForTest(InvalidatorState state) {
+  delegate_->OnInvalidatorStateChange(state);
+}
+
+void FCMInvalidationListener::EmitSavedInvalidationsForTest(
+    const TopicInvalidationMap& to_emit) {
+  EmitSavedInvalidations(to_emit);
+}
+
 Topics FCMInvalidationListener::GetRegisteredIdsForTest() const {
   return registered_topics_;
 }

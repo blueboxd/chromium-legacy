@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
@@ -100,7 +101,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mRecentlyClosedTabManager = sRecentlyClosedTabManagerForTests != null
                 ? sRecentlyClosedTabManagerForTests
                 : new RecentlyClosedBridge(profile);
-        mSignInManager = SigninManager.get();
+        mSignInManager = IdentityServicesProvider.getSigninManager();
         mContext = context;
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
@@ -369,7 +370,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     @PromoState
     int getPromoType() {
         if (!ChromeSigninController.get().isSignedIn()) {
-            if (!SigninManager.get().isSignInAllowed()) {
+            if (!mSignInManager.isSignInAllowed()) {
                 return PromoState.PROMO_NONE;
             }
             return PromoState.PROMO_SIGNIN_PERSONALIZED;

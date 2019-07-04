@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sharing/ack_message_handler.h"
 
+AckMessageHandler::AckMessageHandler() = default;
+
 void AckMessageHandler::OnMessage(
     const chrome_browser_sharing::SharingMessage& message) {
   // TODO

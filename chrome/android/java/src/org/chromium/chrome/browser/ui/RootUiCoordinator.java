@@ -123,7 +123,7 @@ public class RootUiCoordinator
     // MenuOrKeyboardActionHandler implementation
 
     @Override
-    public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
+    public boolean handleMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.show_menu && mAppMenuCoordinator != null) {
             mAppMenuCoordinator.showAppMenuForKeyboardEvent();
             return true;

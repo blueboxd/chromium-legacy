@@ -40,11 +40,6 @@ void IOSChromeSigninClient::Shutdown() {
   network_callback_helper_.reset();
 }
 
-base::Time IOSChromeSigninClient::GetInstallDate() {
-  return base::Time::FromTimeT(
-      GetApplicationContext()->GetMetricsService()->GetInstallDate());
-}
-
 // Returns a string describing the chrome version environment. Version format:
 // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
 // If version information is unavailable, returns "invalid."
@@ -66,10 +61,6 @@ network::mojom::CookieManager* IOSChromeSigninClient::GetCookieManager() {
 }
 
 void IOSChromeSigninClient::DoFinalInit() {}
-
-bool IOSChromeSigninClient::IsFirstRun() const {
-  return false;
-}
 
 bool IOSChromeSigninClient::AreSigninCookiesAllowed() {
   return signin::SettingsAllowSigninCookies(cookie_settings_.get());

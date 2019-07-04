@@ -120,7 +120,7 @@ bool TegraV4L2Device::ClearDevicePollInterrupt() {
 }
 
 bool TegraV4L2Device::Initialize() {
-  VLOGF(2);
+  DVLOGF(3);
   static bool initialized = []() {
     if (!dlopen("/usr/lib/libtegrav4l2.so",
                 RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) {
@@ -153,7 +153,7 @@ bool TegraV4L2Device::Initialize() {
 }
 
 bool TegraV4L2Device::Open(Type type, uint32_t /* v4l2_pixfmt */) {
-  VLOGF(2);
+  DVLOGF(3);
   return OpenInternal(type);
 }
 
@@ -184,7 +184,7 @@ bool TegraV4L2Device::OpenInternal(Type type) {
 }
 
 void TegraV4L2Device::Close() {
-  VLOGF(2) << "device_fd= " << device_fd_;
+  DVLOGF(3) << "device_fd= " << device_fd_;
   if (device_fd_ != -1) {
     TegraV4L2_Close(device_fd_);
     device_fd_ = -1;
@@ -195,7 +195,7 @@ std::vector<base::ScopedFD> TegraV4L2Device::GetDmabufsForV4L2Buffer(
     int /* index */,
     size_t num_planes,
     enum v4l2_buf_type /* buf_type */) {
-  VLOGF(2);
+  DVLOGF(3);
   std::vector<base::ScopedFD> dmabuf_fds;
   // Tegra does not actually provide dmabuf fds currently. Fill the vector with
   // invalid descriptors to prevent the caller from failing on an empty vector

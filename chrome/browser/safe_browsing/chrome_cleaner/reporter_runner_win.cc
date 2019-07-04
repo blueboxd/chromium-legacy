@@ -803,7 +803,7 @@ class ReporterRunner {
       return;
     }
 
-    if (!IsInSRTPromptFieldTrialGroups()) {
+    if (!IsSRTPromptFeatureEnabled()) {
       // Knowing about disabled field trial is more important than reporter not
       // finding anything to remove, so check this case first.
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_FIELD_TRIAL);
@@ -944,7 +944,7 @@ class ReporterRunner {
           chrome_cleaner::kEnableCrashReportingSwitch);
     }
 
-    const std::string group_name = GetSRTFieldTrialGroupName();
+    const std::string group_name = GetSRTPromptGroupName();
     if (!group_name.empty()) {
       invocation->mutable_command_line().AppendSwitchASCII(
           chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);

@@ -426,8 +426,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
     if (input_handler_proxy_.compositor_event_queue_)
       input_handler_proxy_.compositor_event_queue_ =
           std::make_unique<CompositorThreadEventQueue>();
-    input_handler_proxy_.scroll_predictor_ =
-        std::make_unique<ScrollPredictor>(true /* enable_resampling */);
+    SetScrollPredictionEnabled(true);
   }
 
   ~InputHandlerProxyEventQueueTest() = default;
@@ -481,6 +480,11 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   void SetInputHandlerProxyTickClockForTesting(
       const base::TickClock* tick_clock) {
     input_handler_proxy_.SetTickClockForTesting(tick_clock);
+  }
+
+  void SetScrollPredictionEnabled(bool enabled) {
+    input_handler_proxy_.scroll_predictor_ =
+        enabled ? std::make_unique<ScrollPredictor>() : nullptr;
   }
 
   bool GestureScrollEventPredictionAvailable(

@@ -664,6 +664,7 @@ modules_dictionary_idl_files =
           "native_file_system/file_system_get_directory_options.idl",
           "native_file_system/file_system_get_file_options.idl",
           "native_file_system/file_system_handle_permission_descriptor.idl",
+          "native_file_system/file_system_remove_options.idl",
           "native_file_system/get_system_directory_options.idl",
           "native_file_system/native_file_system_directory_iterator_entry.idl",
           "nfc/ndef_message.idl",

@@ -2376,6 +2376,7 @@ if (enable_java_templates) {
                                "package_name",
                                "package_name_to_id_mapping",
                                "png_to_webp",
+                               "r_java_root_package_name",
                                "resource_blacklist_exceptions",
                                "resource_blacklist_regex",
                                "resources_config_path",
@@ -2427,6 +2428,7 @@ if (enable_java_templates) {
         # Set the arsc package name to match the apk_under_test package name
         # So that test resources can references under_test resources via
         # @type/name syntax.
+        r_java_root_package_name = "test"
         arsc_package_name =
             "@FileArg($_rebased_build_config:resources:arsc_package_name)"
 
@@ -3316,6 +3318,7 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_jar_path",
+                               "r_java_root_package_name",
                                "resource_blacklist_exceptions",
                                "resource_blacklist_regex",
                                "resource_ids_provider_dep",

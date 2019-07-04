@@ -73,7 +73,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     }
 
     private Dialog createDialog() {
-        String domain = SigninManager.get().getManagementDomain();
+        String domain = IdentityServicesProvider.getSigninManager().getManagementDomain();
         String message = domain == null
                 ? getString(R.string.signout_message_without_remove_local_data)
                 : getString(R.string.signout_managed_account_message, domain);
@@ -91,7 +91,7 @@ public class SignOutDialogFragment extends DialogFragment implements
         LayoutInflater inflater = LayoutInflater.from(builder.getContext());
         View body = inflater.inflate(R.layout.signout_wipe_storage_dialog, null);
 
-        String domain = SigninManager.get().getManagementDomain();
+        String domain = IdentityServicesProvider.getSigninManager().getManagementDomain();
         TextView message = body.findViewById(android.R.id.message);
         mWipeUserData = body.findViewById(R.id.remove_local_data);
 
@@ -116,7 +116,7 @@ public class SignOutDialogFragment extends DialogFragment implements
 
             mSignOutClicked = true;
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFER_WIPE_DATA_ON_SIGNOUT)
-                    && SigninManager.get().getManagementDomain() == null) {
+                    && IdentityServicesProvider.getSigninManager().getManagementDomain() == null) {
                 RecordHistogram.recordBooleanHistogram(
                         "Signin.UserRequestedWipeDataOnSignout", mWipeUserData.isChecked());
             }

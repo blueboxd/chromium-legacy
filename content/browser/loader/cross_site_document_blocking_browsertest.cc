@@ -540,7 +540,12 @@ class CrossSiteDocumentBlockingTest
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingTest);
 };
 
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
+#if defined(OS_ANDROID)
+#define MAYBE_BlockImages DISABLED_BlockImages
+#else
+#define MAYBE_BlockImages BlockImages
+#endif
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, MAYBE_BlockImages) {
   embedded_test_server()->StartAcceptingConnections();
 
   // The following are files under content/test/data/site_isolation. All

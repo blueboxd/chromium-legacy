@@ -197,7 +197,8 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'on_instance': v8_utilities.on_instance(interface, attribute),
         'on_interface': v8_utilities.on_interface(interface, attribute),
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(attribute, runtime_features),  # [OriginTrialEnabled]
+        'origin_trial_feature_name':
+            v8_utilities.origin_trial_feature_name(attribute, runtime_features),  # [RuntimeEnabled] for origin trial
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'measure_as': measure_as,
         'name': attribute.name,
@@ -206,7 +207,8 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
         'reflect_missing': extended_attributes.get('ReflectMissing'),
         'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
-        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(attribute, runtime_features),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name':
+            v8_utilities.runtime_enabled_feature_name(attribute, runtime_features),  # [RuntimeEnabled] if not in origin trial
         'secure_context_test': v8_utilities.secure_context(attribute, interface),  # [SecureContext]
         'cached_accessor_name': '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
         'world_suffixes': (

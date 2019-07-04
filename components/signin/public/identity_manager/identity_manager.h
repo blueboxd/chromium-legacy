@@ -15,14 +15,18 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
-#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/scope_set.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #endif
+
+namespace gaia {
+enum class GaiaSource;
+struct ListedAccount;
+}  // namespace gaia
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -43,6 +47,7 @@ namespace identity {
 
 class AccountsMutator;
 class AccountsCookieMutator;
+struct AccountsInCookieJarInfo;
 class IdentityManagerTest;
 class IdentityTestEnvironment;
 class DiagnosticsProvider;

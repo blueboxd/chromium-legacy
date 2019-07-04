@@ -58,6 +58,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "key_already_registered") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kKeyAlreadyRegistered);
+    } else if (name == "internal_unrecognized_error") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kErrorInternalUnrecognized);
     } else if (name == "ble_power_on_manual") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePowerOnManual);
@@ -189,6 +192,11 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_key_not_registered) {
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_key_already_registered) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_internal_unrecognized_error) {
   ShowAndVerifyUi();
 }
 

@@ -156,6 +156,9 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kStorageFull:
       weak_dialog_model_->OnAuthenticatorStorageFull();
       break;
+    case InterestingFailureReason::kUserConsentDenied:
+      weak_dialog_model_->OnUserConsentDenied();
+      break;
   }
   return true;
 }

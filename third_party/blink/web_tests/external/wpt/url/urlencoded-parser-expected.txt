@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 90 tests; 73 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 90 tests; 88 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URLSearchParams constructed with: test
 PASS request.formData() with input: test
 PASS response.formData() with input: test
@@ -9,24 +9,24 @@ FAIL response.formData() with input: ﻿test=﻿ assert_array_equals: property 0
 PASS URLSearchParams constructed with: %EF%BB%BFtest=%EF%BB%BF
 PASS request.formData() with input: %EF%BB%BFtest=%EF%BB%BF
 PASS response.formData() with input: %EF%BB%BFtest=%EF%BB%BF
-FAIL URLSearchParams constructed with: %FE%FF assert_array_equals: property 0, expected "\ufffd\ufffd" but got "þÿ"
-FAIL request.formData() with input: %FE%FF assert_array_equals: property 0, expected "\ufffd\ufffd" but got "þÿ"
-FAIL response.formData() with input: %FE%FF assert_array_equals: property 0, expected "\ufffd\ufffd" but got "þÿ"
-FAIL URLSearchParams constructed with: %FF%FE assert_array_equals: property 0, expected "\ufffd\ufffd" but got "ÿþ"
-FAIL request.formData() with input: %FF%FE assert_array_equals: property 0, expected "\ufffd\ufffd" but got "ÿþ"
-FAIL response.formData() with input: %FF%FE assert_array_equals: property 0, expected "\ufffd\ufffd" but got "ÿþ"
+PASS URLSearchParams constructed with: %FE%FF
+PASS request.formData() with input: %FE%FF
+PASS response.formData() with input: %FE%FF
+PASS URLSearchParams constructed with: %FF%FE
+PASS request.formData() with input: %FF%FE
+PASS response.formData() with input: %FF%FE
 PASS URLSearchParams constructed with: †&†=x
 PASS request.formData() with input: †&†=x
 PASS response.formData() with input: †&†=x
-FAIL URLSearchParams constructed with: %C2 assert_array_equals: property 0, expected "\ufffd" but got "Â"
-FAIL request.formData() with input: %C2 assert_array_equals: property 0, expected "\ufffd" but got "Â"
-FAIL response.formData() with input: %C2 assert_array_equals: property 0, expected "\ufffd" but got "Â"
-FAIL URLSearchParams constructed with: %C2x assert_array_equals: property 0, expected "\ufffdx" but got "Âx"
-FAIL request.formData() with input: %C2x assert_array_equals: property 0, expected "\ufffdx" but got "Âx"
-FAIL response.formData() with input: %C2x assert_array_equals: property 0, expected "\ufffdx" but got "Âx"
-FAIL URLSearchParams constructed with: _charset_=windows-1252&test=%C2x assert_array_equals: property 1, expected "\ufffdx" but got "Âx"
-FAIL request.formData() with input: _charset_=windows-1252&test=%C2x assert_array_equals: property 1, expected "\ufffdx" but got "Âx"
-FAIL response.formData() with input: _charset_=windows-1252&test=%C2x assert_array_equals: property 1, expected "\ufffdx" but got "Âx"
+PASS URLSearchParams constructed with: %C2
+PASS request.formData() with input: %C2
+PASS response.formData() with input: %C2
+PASS URLSearchParams constructed with: %C2x
+PASS request.formData() with input: %C2x
+PASS response.formData() with input: %C2x
+PASS URLSearchParams constructed with: _charset_=windows-1252&test=%C2x
+PASS request.formData() with input: _charset_=windows-1252&test=%C2x
+PASS response.formData() with input: _charset_=windows-1252&test=%C2x
 PASS URLSearchParams constructed with: 
 PASS request.formData() with input: 
 PASS response.formData() with input: 

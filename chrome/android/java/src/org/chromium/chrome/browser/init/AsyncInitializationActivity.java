@@ -311,7 +311,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         }
 
         // Some Samsung devices load fonts from disk, crbug.com/691706.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
         }
         mOnCreateTimestampMs = SystemClock.elapsedRealtime();

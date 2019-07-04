@@ -96,8 +96,9 @@
       <!-- Fingerprint images. -->
       <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_ICON_ANIMATION" file="fingerprint/fingerprint.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_ENROLLMENT_COMPLETE_ANIMATION" file="fingerprint/tick.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION" file="fingerprint/fingerprint_scanner.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION" file="fingerprint/fingerprint_scanner_laptop.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_POWER_BUTTON_ANIMATION" file="fingerprint/fingerprint_scanner_tablet_power_button.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION" file="fingerprint/fingerprint_scanner_laptop_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION" file="fingerprint/fingerprint_scanner_laptop_top_right.png" />
 
     </structures>
   </release>

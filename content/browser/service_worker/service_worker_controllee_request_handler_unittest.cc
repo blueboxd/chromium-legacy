@@ -56,14 +56,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
           handler_(new ServiceWorkerControlleeRequestHandler(
               test->context()->AsWeakPtr(),
               test->provider_host_,
-              request_mode,
-              network::mojom::CredentialsMode::kOmit,
-              network::mojom::RedirectMode::kFollow,
-              std::string() /* integrity */,
-              false /* keepalive */,
-              type,
-              blink::mojom::RequestContextType::HYPERLINK,
-              scoped_refptr<network::ResourceRequestBody>())) {}
+              type)) {}
 
     ServiceWorkerNavigationLoader* MaybeCreateLoader() {
       network::ResourceRequest resource_request;

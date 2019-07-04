@@ -40,7 +40,7 @@ public class NativeBrowserTest {
         if (file == null) return true;
 
         File[] children;
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             children = file.listFiles();
         }
         if (children != null) {
@@ -50,7 +50,7 @@ public class NativeBrowserTest {
                 }
             }
         }
-        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             return file.delete();
         }
     }

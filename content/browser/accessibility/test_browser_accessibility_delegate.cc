@@ -46,6 +46,10 @@ gfx::NativeViewAccessible TestBrowserAccessibilityDelegate::
   return nullptr;
 }
 
+WebContents* TestBrowserAccessibilityDelegate::AccessibilityWebContents() {
+  return nullptr;
+}
+
 bool TestBrowserAccessibilityDelegate::AccessibilityIsMainFrame() const {
   return is_root_frame_;
 }

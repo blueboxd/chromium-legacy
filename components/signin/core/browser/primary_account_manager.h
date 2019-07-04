@@ -36,7 +36,7 @@ class PrimaryAccountPolicyManager;
 class ProfileOAuth2TokenService;
 
 namespace signin_metrics {
-enum ProfileSignout;
+enum ProfileSignout : int;
 enum class SignoutDelete;
 }  // namespace signin_metrics
 

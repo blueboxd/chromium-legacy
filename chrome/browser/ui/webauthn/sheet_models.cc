@@ -376,6 +376,20 @@ void AuthenticatorAlreadyRegisteredErrorModel::OnAccept() {
 
 // AuthenticatorInternalUnrecognizedErrorSheetModel
 // -----------------------------------
+bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsAcceptButtonVisible()
+    const {
+  return true;
+}
+
+bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsAcceptButtonEnabled()
+    const {
+  return true;
+}
+
+base::string16
+AuthenticatorInternalUnrecognizedErrorSheetModel::GetAcceptButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RETRY);
+}
 
 const gfx::VectorIcon&
 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepIllustration(
@@ -394,6 +408,14 @@ base::string16
 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_ERROR_INTERNAL_UNRECOGNIZED_DESCRIPTION);
+}
+
+void AuthenticatorInternalUnrecognizedErrorSheetModel::OnBack() {
+  dialog_model()->StartOver();
+}
+
+void AuthenticatorInternalUnrecognizedErrorSheetModel::OnAccept() {
+  dialog_model()->StartOver();
 }
 
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------

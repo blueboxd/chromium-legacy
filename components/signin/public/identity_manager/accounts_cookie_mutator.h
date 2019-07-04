@@ -9,13 +9,14 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace signin {
 enum class SetAccountsInCookieResult;
 }
+
+struct CoreAccountId;
+class GoogleServiceAuthError;
 
 namespace identity {
 

@@ -21,6 +21,7 @@
 
 namespace identity {
 class AccessTokenFetcher;
+struct AccessTokenInfo;
 }
 
 class ProfileDownloaderDelegate;

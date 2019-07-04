@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/testing/internals.h"
 
-#include <deque>
 #include <memory>
 
 #include "base/macros.h"

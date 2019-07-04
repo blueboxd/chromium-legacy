@@ -765,10 +765,8 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_EV_CERT,
             page_info()->site_identity_status());
   EXPECT_EQ(base::UTF8ToUTF16("Google Inc"), page_info()->organization_name());
-  EXPECT_EQ(
-      base::UTF8ToUTF16(
-          "This page has been identified as being owned by Google Inc [US]."),
-      page_info()->site_details_message());
+  EXPECT_EQ(base::UTF8ToUTF16("Issued to: Google Inc [US]"),
+            page_info()->site_details_message());
 }
 
 TEST_F(PageInfoTest, HTTPSRevocationError) {

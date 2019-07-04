@@ -2702,6 +2702,13 @@ void RenderWidgetHostImpl::OnTouchEventAck(
 
   auto* input_event_router =
       delegate() ? delegate()->GetInputEventRouter() : nullptr;
+
+  auto it = touch_event_acks_to_ignore_.find(event.event.unique_touch_event_id);
+  if (it != touch_event_acks_to_ignore_.end()) {
+    touch_event_acks_to_ignore_.erase(it);
+    return;
+  }
+
   // With portals, if a touch event triggers an activation, it is possible to
   // receive a touch ack after activation. The view is destroyed on activation
   // and any pending events in the touch ack queue have already been cleared, so
@@ -3129,6 +3136,12 @@ RenderWidgetHostImpl::CollectSurfaceIdsForEviction() {
   if (!rvh)
     return {};
   return rvh->CollectSurfaceIdsForEviction();
+}
+
+void RenderWidgetHostImpl::IgnoreTouchEventAcks(
+    const std::unordered_set<uint32_t>& acks_to_ignore) {
+  touch_event_acks_to_ignore_.insert(acks_to_ignore.begin(),
+                                     acks_to_ignore.end());
 }
 
 std::unique_ptr<RenderWidgetHostIterator>

@@ -22,10 +22,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
-namespace network {
-class ResourceRequestBody;
-}
-
 namespace content {
 
 class ServiceWorkerContextCore;
@@ -43,14 +39,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      network::mojom::RequestMode request_mode,
-      network::mojom::CredentialsMode credentials_mode,
-      network::mojom::RedirectMode redirect_mode,
-      const std::string& integrity,
-      bool keepalive,
-      ResourceType resource_type,
-      blink::mojom::RequestContextType request_context_type,
-      scoped_refptr<network::ResourceRequestBody> body);
+      ResourceType resource_type);
   ~ServiceWorkerControlleeRequestHandler() override;
 
   // NavigationLoaderInterceptor overrides:
@@ -124,13 +113,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   const base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   const ResourceType resource_type_;
   std::unique_ptr<ServiceWorkerNavigationLoaderWrapper> loader_wrapper_;
-  network::mojom::RequestMode request_mode_;
-  network::mojom::CredentialsMode credentials_mode_;
-  network::mojom::RedirectMode redirect_mode_;
-  std::string integrity_;
-  const bool keepalive_;
-  blink::mojom::RequestContextType request_context_type_;
-  scoped_refptr<network::ResourceRequestBody> body_;
   ResourceContext* resource_context_;
   GURL stripped_url_;
   bool force_update_started_;

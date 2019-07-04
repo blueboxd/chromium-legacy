@@ -363,7 +363,7 @@ void GCMDriver::OnMessageEncrypted(const std::string& fcm_token,
     case GCMEncryptionResult::INVALID_SHARED_SECRET:
     case GCMEncryptionResult::ENCRYPTION_FAILED: {
       LOG(ERROR) << "Webpush message encryption failed";
-      std::move(callback).Run(message.id, false);
+      std::move(callback).Run(base::nullopt);
       return;
     }
     case GCMEncryptionResult::ENUM_SIZE:

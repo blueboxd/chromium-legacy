@@ -44,25 +44,24 @@ SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
 void SkiaOutputDeviceX11::Reshape(const gfx::Size& size,
                                   float device_scale_factor,
                                   const gfx::ColorSpace& color_space,
-                                  bool has_alpha) {
+                                  bool has_alpha,
+                                  gfx::OverlayTransform transform) {
   SkiaOutputDeviceOffscreen::Reshape(size, device_scale_factor, color_space,
-                                     has_alpha);
+                                     has_alpha, transform);
   auto ii =
       SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
   pixels_.reserve(ii.computeMinByteSize());
 }
 
 gfx::SwapResponse SkiaOutputDeviceX11::SwapBuffers(
-    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   return PostSubBuffer(
-      gfx::Rect(0, 0, draw_surface_->width(), draw_surface_->height()),
-      semaphore, std::move(feedback));
+      gfx::Rect(0, 0, sk_surface_->width(), sk_surface_->height()),
+      std::move(feedback));
 }
 
 gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(
     const gfx::Rect& rect,
-    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   StartSwapBuffers(std::move(feedback));
 
@@ -70,7 +69,7 @@ gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(
       SkImageInfo::MakeN32(rect.width(), rect.height(), kOpaque_SkAlphaType);
   DCHECK_GE(pixels_.capacity(), ii.computeMinByteSize());
   SkPixmap sk_pixmap(ii, pixels_.data(), ii.minRowBytes());
-  bool result = draw_surface_->readPixels(sk_pixmap, rect.x(), rect.y());
+  bool result = sk_surface_->readPixels(sk_pixmap, rect.x(), rect.y());
   LOG_IF(FATAL, !result) << "Failed to read pixels from offscreen SkSurface.";
 
   if (bpp_ == 32 || bpp_ == 16) {
@@ -131,7 +130,9 @@ gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(
     NOTIMPLEMENTED();
   }
   XFlush(display_);
-  return FinishSwapBuffers(gfx::SwapResult::SWAP_ACK);
+  return FinishSwapBuffers(
+      gfx::SwapResult::SWAP_ACK,
+      gfx::Size(sk_surface_->width(), sk_surface_->height()));
 }
 
 }  // namespace viz

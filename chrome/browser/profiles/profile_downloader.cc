@@ -25,6 +25,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"

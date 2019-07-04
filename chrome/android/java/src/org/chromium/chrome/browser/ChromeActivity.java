@@ -19,6 +19,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.Process;
 import android.os.SystemClock;
@@ -61,6 +62,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -80,6 +82,7 @@ import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsMod
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.directactions.DirectActionInitializer;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerUIUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -187,6 +190,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * A {@link AsyncInitializationActivity} that builds and manages a {@link CompositorViewHolder}
@@ -299,6 +303,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             ManualFillingComponentFactory.createComponent();
 
     private AssistStatusHandler mAssistStatusHandler;
+
+    @Nullable
+    protected DirectActionInitializer mDirectActionInitializer;
 
     // A set of views obscuring all tabs. When this set is nonempty,
     // all tab content will be hidden from the accessibility tree.
@@ -1226,6 +1233,29 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
     }
 
+    // TODO(crbug.com/973781): Once Chromium is built against Android Q SDK, replace
+    // @SuppressWarnings with @Override
+    @SuppressWarnings("MissingOverride")
+    @TargetApi(29)
+    public void onPerformDirectAction(String actionId, Bundle arguments,
+            CancellationSignal cancellationSignal, Consumer<Bundle> callback) {
+        if (mDirectActionInitializer == null) return;
+
+        mDirectActionInitializer.getCoordinator().onPerformDirectAction(
+                actionId, arguments, callback);
+    }
+
+    // TODO(crbug.com/973781): Once Chromium is built against Android Q SDK:
+    //  - replace @SuppressWarnings with @Override
+    //  - replace Consumer with Consumer<List<DirectAction>>
+    @SuppressWarnings("MissingOverride")
+    @TargetApi(29)
+    public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer callback) {
+        if (mDirectActionInitializer == null) return;
+
+        mDirectActionInitializer.getCoordinator().onGetDirectActions(callback);
+    }
+
     @Override
     public long getOnCreateTimestampMs() {
         return super.getOnCreateTimestampMs();
@@ -1420,7 +1450,26 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // TODO(yusufo): Unify initialization.
             initializeBottomSheet(true);
         }
+
+        // TODO(crbug.com/959841): Once crrev.com/c/1669360 is submitted, make the code below
+        // conditional on ChromeFeatureList.isEnabled(ChromeFeatureList.DIRECT_ACTIONS)
+        mDirectActionInitializer = DirectActionInitializer.create(mTabModelSelector);
+        if (mDirectActionInitializer != null) {
+            registerDirectActions();
+        }
+
         AppHooks.get().startSystemSettingsObserver();
+    }
+
+    /**
+     * Register direct actions to {@link #mDirectActionInitializer}, guaranteed to be non-null.
+     *
+     * <p>Subclasses should override this method and either extend the set of direct actions or
+     * suppress registration of default direct actions.
+     */
+    protected void registerDirectActions() {
+        mDirectActionInitializer.registerCommonChromeActions(this, getActivityType(), this,
+                this::onBackPressed, mTabModelSelector, mBottomSheetController, mScrimView);
     }
 
     /**
@@ -1443,7 +1492,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return Whether this Activity should initialize the BottomSheet and BottomSheetController.
      */
     protected boolean shouldInitializeBottomSheet() {
-        return false;
+        return AutofillAssistantFacade.areDirectActionsAvailable(getActivityType());
     }
 
     /**
@@ -2069,10 +2118,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @param fromMenu Whether this was triggered from the menu.
      * @return Whether the action was handled.
      */
+    @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         for (MenuOrKeyboardActionController.MenuOrKeyboardActionHandler handler :
                 mMenuActionHandlers) {
-            if (handler.onMenuOrKeyboardAction(id, fromMenu)) return true;
+            if (handler.handleMenuOrKeyboardAction(id, fromMenu)) return true;
         }
 
         if (id == R.id.preferences_id) {

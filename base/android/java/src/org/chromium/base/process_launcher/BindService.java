@@ -29,7 +29,7 @@ final class BindService {
     static {
         Method bindMethod = null;
         Method updateServiceGroupMethod = null;
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             if (BuildInfo.isAtLeastQ()) {
                 Class<?> clazz =
                         Class.forName("org.chromium.base.process_launcher.BindServiceInternal");

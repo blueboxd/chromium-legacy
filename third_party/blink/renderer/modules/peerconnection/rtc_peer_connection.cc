@@ -32,7 +32,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 
@@ -1066,8 +1065,9 @@ void RTCPeerConnection::MaybeWarnAboutUnsafeSdp(
   }
 }
 
-std::set<RTCIceTransport*> RTCPeerConnection::ActiveIceTransports() const {
-  std::set<RTCIceTransport*> active_transports;
+HeapHashSet<Member<RTCIceTransport>> RTCPeerConnection::ActiveIceTransports()
+    const {
+  HeapHashSet<Member<RTCIceTransport>> active_transports;
   for (auto transceiver : transceivers_) {
     auto* sender = transceiver->sender();
     if (sender) {
@@ -3097,7 +3097,7 @@ RTCPeerConnection::ComputeIceConnectionState() {
 }
 
 bool RTCPeerConnection::HasAnyFailedIceTransport() const {
-  for (auto* transport : ActiveIceTransports()) {
+  for (auto& transport : ActiveIceTransports()) {
     if (transport->GetState() == webrtc::IceTransportState::kFailed)
       return true;
   }
@@ -3105,7 +3105,7 @@ bool RTCPeerConnection::HasAnyFailedIceTransport() const {
 }
 
 bool RTCPeerConnection::HasAnyDisconnectedIceTransport() const {
-  for (auto* transport : ActiveIceTransports()) {
+  for (auto& transport : ActiveIceTransports()) {
     if (transport->GetState() == webrtc::IceTransportState::kDisconnected)
       return true;
   }
@@ -3113,7 +3113,7 @@ bool RTCPeerConnection::HasAnyDisconnectedIceTransport() const {
 }
 
 bool RTCPeerConnection::HasAllNewOrClosedIceTransports() const {
-  for (auto* transport : ActiveIceTransports()) {
+  for (auto& transport : ActiveIceTransports()) {
     if (transport->GetState() != webrtc::IceTransportState::kNew &&
         transport->GetState() != webrtc::IceTransportState::kClosed)
       return false;
@@ -3122,7 +3122,7 @@ bool RTCPeerConnection::HasAllNewOrClosedIceTransports() const {
 }
 
 bool RTCPeerConnection::HasAnyNewOrCheckingIceTransport() const {
-  for (auto* transport : ActiveIceTransports()) {
+  for (auto& transport : ActiveIceTransports()) {
     if (transport->GetState() == webrtc::IceTransportState::kNew ||
         transport->GetState() == webrtc::IceTransportState::kChecking)
       return true;
@@ -3131,7 +3131,7 @@ bool RTCPeerConnection::HasAnyNewOrCheckingIceTransport() const {
 }
 
 bool RTCPeerConnection::HasAllCompletedOrClosedIceTransports() const {
-  for (auto* transport : ActiveIceTransports()) {
+  for (auto& transport : ActiveIceTransports()) {
     if (transport->GetState() != webrtc::IceTransportState::kCompleted &&
         transport->GetState() != webrtc::IceTransportState::kClosed)
       return false;
@@ -3140,7 +3140,7 @@ bool RTCPeerConnection::HasAllCompletedOrClosedIceTransports() const {
 }
 
 bool RTCPeerConnection::HasAllConnectedCompletedOrClosedIceTransports() const {
-  for (auto* transport : ActiveIceTransports()) {
+  for (auto& transport : ActiveIceTransports()) {
     if (transport->GetState() != webrtc::IceTransportState::kConnected &&
         transport->GetState() != webrtc::IceTransportState::kCompleted &&
         transport->GetState() != webrtc::IceTransportState::kClosed)

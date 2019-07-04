@@ -69,6 +69,7 @@ class GraphImplObserver {
 
   // PageNodeObserver analogs:
   virtual void OnIsVisibleChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnIsAudibleChanged(PageNodeImpl* page_node) = 0;
   virtual void OnIsLoadingChanged(PageNodeImpl* page_node) = 0;
   virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) = 0;
   virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) = 0;
@@ -112,6 +113,7 @@ class GraphImplObserverDefaultImpl : public GraphImplObserver {
 
   // PageNodeImplObserver implementation:
   void OnIsVisibleChanged(PageNodeImpl* page_node) override {}
+  void OnIsAudibleChanged(PageNodeImpl* page_node) override {}
   void OnIsLoadingChanged(PageNodeImpl* page_node) override {}
   void OnUkmSourceIdChanged(PageNodeImpl* page_node) override {}
   void OnLifecycleStateChanged(PageNodeImpl* page_node) override {}

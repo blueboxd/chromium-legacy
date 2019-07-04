@@ -516,6 +516,8 @@ void FrameTreeNode::DidStopLoading() {
 
   // Notify accessibility that the user is no longer trying to load or
   // reload a page.
+  // TODO(domfarolino): Remove this in favor of notifying via the delegate's
+  // DidStopLoading() above.
   BrowserAccessibilityManager* manager =
       current_frame_host()->browser_accessibility_manager();
   if (manager)

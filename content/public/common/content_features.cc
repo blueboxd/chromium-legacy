@@ -40,14 +40,8 @@ const base::Feature kAppCacheIncludePaddingInQuota{
     "AppCacheIncludePaddingInQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Creates audio output and input streams using the audio service.
-const base::Feature kAudioServiceAudioStreams{
-  "AudioServiceAudioStreams",
-#if defined(OS_WIN)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kAudioServiceAudioStreams{"AudioServiceAudioStreams",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Launches the audio service on the browser startup.
 const base::Feature kAudioServiceLaunchOnStartup{

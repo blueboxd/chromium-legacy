@@ -710,7 +710,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference.
      */
     public int readInt(String key) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getInt(key, 0);
         }
     }
@@ -747,7 +747,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public long readLong(String key, long defaultValue) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getLong(key, defaultValue);
         }
     }
@@ -772,7 +772,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public boolean readBoolean(String key, boolean defaultValue) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getBoolean(key, defaultValue);
         }
     }
@@ -797,7 +797,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public String readString(String key, @Nullable String defaultValue) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getString(key, defaultValue);
         }
     }

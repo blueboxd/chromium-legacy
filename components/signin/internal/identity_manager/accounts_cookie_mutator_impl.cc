@@ -4,10 +4,12 @@
 
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
 
-#include <vector>
+#include <utility>
 
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace identity {
 

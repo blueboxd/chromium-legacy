@@ -18,10 +18,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace web {
-class WebState;
-}
-
 class WebStateList;
 
 // The BookmarkInteractionController abstracts the management of the various
@@ -39,8 +35,8 @@ class WebStateList;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Presents the bookmark UI for a single bookmark.
-- (void)presentBookmarkEditorForWebState:(web::WebState*)webState
-                     currentlyBookmarked:(BOOL)bookmarked;
+- (void)presentBookmarkEditorForTab:(Tab*)tab
+                currentlyBookmarked:(BOOL)bookmarked;
 
 // Presents the bookmarks browser modally.
 - (void)presentBookmarks;

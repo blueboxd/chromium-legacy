@@ -160,7 +160,7 @@ public class LazySubscriptionsManager {
      * Returns whether the subscription with the |appId| and |senderId| is lazy.
      */
     public static boolean isSubscriptionLazy(final String subscriptionId) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             Context context = ContextUtils.getApplicationContext();
             SharedPreferences sharedPrefs =
                     context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
@@ -175,7 +175,7 @@ public class LazySubscriptionsManager {
      * @return Set of subscriptions ids.
      */
     public static Set<String> getLazySubscriptionIds() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             Context context = ContextUtils.getApplicationContext();
             SharedPreferences sharedPrefs =
                     context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);

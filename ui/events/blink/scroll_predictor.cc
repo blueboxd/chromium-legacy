@@ -30,16 +30,9 @@ constexpr char kScrollPredictorLinearSecond[] = "linearSecond";
 
 }  // namespace
 
-ScrollPredictor::ScrollPredictor(bool enable_resampling)
-    : enable_resampling_(enable_resampling) {
-  // When resampling is enabled, set predictor type by resampling flag params;
-  // otherwise, get predictor type parameters from kPredictorTypeChoice flag.
-  std::string predictor_type =
-      enable_resampling_
-          ? GetFieldTrialParamValueByFeature(features::kResamplingScrollEvents,
-                                             kPredictor)
-          : GetFieldTrialParamValueByFeature(
-                features::kScrollPredictorTypeChoice, kPredictor);
+ScrollPredictor::ScrollPredictor() {
+  std::string predictor_type = GetFieldTrialParamValueByFeature(
+      features::kResamplingScrollEvents, kPredictor);
 
   if (predictor_type == kScrollPredictorTypeLsq)
     predictor_ = std::make_unique<LeastSquaresPredictor>();
@@ -97,7 +90,7 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     for (auto& coalesced_event : original_events)
       UpdatePrediction(coalesced_event.event_, frame_time);
 
-    if (enable_resampling_ && should_resample_scroll_events_)
+    if (should_resample_scroll_events_)
       ResampleEvent(frame_time, event_with_callback->event_pointer(),
                     event_with_callback->mutable_latency_info());
 

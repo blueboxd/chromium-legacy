@@ -51,11 +51,31 @@ namespace offline_pages {
 
 namespace {
 
-void OnProfileCreated(PrefetchServiceImpl* service, Profile* profile) {
+image_fetcher::ImageFetcher* GetImageFetcher(
+    ProfileKey* key,
+    image_fetcher::ImageFetcherConfig config) {
+  image_fetcher::ImageFetcherService* image_fetcher_service =
+      ImageFetcherServiceFactory::GetForKey(key);
+  DCHECK(image_fetcher_service);
+  return image_fetcher_service->GetImageFetcher(config);
+}
+
+void SwitchToFullBrowserImageFetcher(PrefetchServiceImpl* prefetch_service,
+                                     ProfileKey* key) {
+  // We don't need to switch the image_fetcher if it isn't created.
+  if (!prefetch_service->GetImageFetcher())
+    return;
+
+  DCHECK(base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions));
+  prefetch_service->ReplaceImageFetcher(
+      GetImageFetcher(key, image_fetcher::ImageFetcherConfig::kDiskCacheOnly));
+}
+
+void OnProfileCreated(PrefetchServiceImpl* prefetch_service, Profile* profile) {
   auto gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>(
       std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
                                                 profile));
-  service->SetPrefetchGCMHandler(std::move(gcm_app_handler));
+  prefetch_service->SetPrefetchGCMHandler(std::move(gcm_app_handler));
   if (IsPrefetchingOfflinePagesEnabled()) {
     // Trigger an update of the cached GCM token. This needs to be post tasked
     // because otherwise leads to circular dependency between
@@ -67,8 +87,10 @@ void OnProfileCreated(PrefetchServiceImpl* service, Profile* profile) {
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&PrefetchServiceImpl::RefreshGCMToken,
-                       service->GetWeakPtr()));
+                       prefetch_service->GetWeakPtr()));
   }
+
+  SwitchToFullBrowserImageFetcher(prefetch_service, profile->GetProfileKey());
 }
 
 }  // namespace
@@ -142,11 +164,8 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
     suggested_articles_observer = std::make_unique<SuggestedArticlesObserver>();
     thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
   } else {
-    image_fetcher::ImageFetcherService* image_fetcher_service =
-        ImageFetcherServiceFactory::GetForKey(profile_key);
-    DCHECK(image_fetcher_service);
-    image_fetcher = image_fetcher_service->GetImageFetcher(
-        image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
+    image_fetcher = GetImageFetcher(
+        profile_key, image_fetcher::ImageFetcherConfig::kReducedMode);
   }
 
   auto prefetch_downloader = std::make_unique<PrefetchDownloaderImpl>(

@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/signin/core/browser/about_signin_internals.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"

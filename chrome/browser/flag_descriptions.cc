@@ -3418,6 +3418,11 @@ const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
 const char kDirectManipulationStylusDescription[] =
     "If enabled, Chrome will scroll web pages on stylus drag.";
 
+const char kAnimatedAvatarButtonName[] = "Animated avatar button";
+const char kAnimatedAvatarButtonDescription[] =
+    "If enabled, Chrome will animate a pill with identity information around "
+    "the avatar button on start-up and on sign-in.";
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)

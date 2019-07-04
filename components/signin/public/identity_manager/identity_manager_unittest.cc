@@ -4,9 +4,7 @@
 
 #include "components/signin/public/identity_manager/identity_manager.h"
 
-#include <memory>
 #include <set>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -32,6 +30,7 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"

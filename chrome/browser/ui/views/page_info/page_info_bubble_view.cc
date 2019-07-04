@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
@@ -58,8 +60,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
@@ -108,55 +112,16 @@ void AddColumnWithSideMargin(views::GridLayout* layout, int margin, int id) {
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize, margin);
 }
 
-// Formats strings and returns the |gfx::Range| of the newly inserted string.
-gfx::Range GetRangeForFormatString(int string_id,
-                                   const base::string16& insert_string,
-                                   base::string16* final_string) {
-  size_t offset;
-  *final_string = l10n_util::GetStringFUTF16(string_id, insert_string, &offset);
-  return gfx::Range(offset, offset + insert_string.length());
-}
-
-// Creates a button that formats the string given by |title_resource_id| with
-// |secondary_text| and displays the latter part in the secondary text color.
-std::unique_ptr<HoverButton> CreateMoreInfoButton(
-    views::ButtonListener* listener,
-    const gfx::ImageSkia& image_icon,
-    int title_resource_id,
-    const base::string16& secondary_text,
-    int click_target_id,
-    const base::string16& tooltip_text) {
-  auto icon = std::make_unique<NonAccessibleImageView>();
-  icon->SetImage(image_icon);
-  auto button = std::make_unique<HoverButton>(
-      listener, std::move(icon), base::string16(), base::string16());
-
-  if (secondary_text.empty()) {
-    button->SetTitleTextWithHintRange(
-        l10n_util::GetStringUTF16(title_resource_id),
-        gfx::Range::InvalidRange());
-  } else {
-    base::string16 title_text;
-    gfx::Range secondary_text_range =
-        GetRangeForFormatString(title_resource_id, secondary_text, &title_text);
-    button->SetTitleTextWithHintRange(title_text, secondary_text_range);
-  }
-
-  button->SetID(click_target_id);
-  button->SetTooltipText(tooltip_text);
-  return button;
-}
-
 std::unique_ptr<views::View> CreateSiteSettingsLink(
     const int side_margin,
     PageInfoBubbleView* listener) {
   const base::string16& tooltip =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_SETTINGS_TOOLTIP);
-  return CreateMoreInfoButton(
+  return std::make_unique<PageInfoHoverButton>(
       listener, PageInfoUI::GetSiteSettingsIcon(GetRelatedTextColor()),
       IDS_PAGE_INFO_SITE_SETTINGS_LINK, base::string16(),
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
-      tooltip);
+      tooltip, base::string16());
 }
 
 }  // namespace
@@ -258,15 +223,6 @@ BubbleHeaderView::BubbleHeaderView(
                       views::GridLayout::FILL, views::GridLayout::LEADING);
 
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
-  auto ev_certificate_label_container = std::make_unique<views::View>();
-  ev_certificate_label_container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal));
-  ev_certificate_label_container_ =
-      layout->AddView(std::move(ev_certificate_label_container), 1.0, 1.0,
-                      views::GridLayout::FILL, views::GridLayout::LEADING);
-
-  layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
   auto reset_decisions_label_container = std::make_unique<views::View>();
   reset_decisions_label_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
@@ -300,32 +256,6 @@ void BubbleHeaderView::SetDetails(const base::string16& details_text) {
   link_style.disable_line_wrapping = false;
 
   security_details_label_->AddStyleRange(details_range, link_style);
-}
-
-void BubbleHeaderView::AddEvCertificateDetailsLabel(
-    const PageInfoBubbleView::IdentityInfo& identity_info) {
-  DCHECK(identity_info.certificate);
-  DCHECK(ev_certificate_label_container_);
-  if (!ev_certificate_label_container_->children().empty()) {
-    // Ensure all old content is removed from the container before re-adding it.
-    ev_certificate_label_container_->RemoveAllChildViews(true);
-  }
-
-  auto ev_certificate_label = std::make_unique<views::Label>(
-      base::UTF8ToUTF16(identity_info.identity_status_description));
-  ev_certificate_label->SetID(
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS);
-  ev_certificate_label->SetMultiLine(true);
-  ev_certificate_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-  ev_certificate_label->SizeToFit(0);  // Fit to occupy available width.
-  ev_certificate_label_container_->AddChildView(
-      std::move(ev_certificate_label));
-
-  // Now that it contains a label, the container needs padding at the top.
-  ev_certificate_label_container_->SetBorder(views::CreateEmptyBorder(
-      8, views::GridLayout::kFixedSize, views::GridLayout::kFixedSize, 0));
-
-  InvalidateLayout();
 }
 
 void BubbleHeaderView::AddResetDecisionsLabel() {
@@ -696,18 +626,17 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
 
     cookie_button_ =
-        CreateMoreInfoButton(
+        std::make_unique<PageInfoHoverButton>(
             this, icon, IDS_PAGE_INFO_COOKIES_BUTTON_TEXT, num_cookies_text,
-            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG, tooltip)
+            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG, tooltip,
+            base::string16())
             .release();
     site_settings_view_->AddChildView(cookie_button_);
   }
 
   // Update the text displaying the number of allowed cookies.
-  base::string16 button_text;
-  gfx::Range styled_range = GetRangeForFormatString(
-      IDS_PAGE_INFO_COOKIES_BUTTON_TEXT, num_cookies_text, &button_text);
-  cookie_button_->SetTitleTextWithHintRange(button_text, styled_range);
+  cookie_button_->SetTitleText(IDS_PAGE_INFO_COOKIES_BUTTON_TEXT,
+                               num_cookies_text);
 
   Layout();
   SizeToContents();
@@ -828,17 +757,6 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
       header_->AddResetDecisionsLabel();
     }
 
-    if (base::FeatureList::IsEnabled(features::kEvDetailsInPageInfo)) {
-      // Only show the EV certificate details if there are no errors or mixed
-      // content.
-      if (identity_info.identity_status ==
-              PageInfo::SITE_IDENTITY_STATUS_EV_CERT &&
-          identity_info.connection_status ==
-              PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED) {
-        header_->AddEvCertificateDetailsLabel(identity_info);
-      }
-    }
-
     // Show information about the page's certificate.
     // The text of link to the Certificate Viewer varies depending on the
     // validity of the Certificate.
@@ -861,22 +779,33 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
         valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED
                        : IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
 
+    base::string16 subtitle_text;
+    if (base::FeatureList::IsEnabled(features::kEvDetailsInPageInfo)) {
+      // Only show the EV certificate details if there are no errors or mixed
+      // content.
+      if (identity_info.identity_status ==
+              PageInfo::SITE_IDENTITY_STATUS_EV_CERT &&
+          identity_info.connection_status ==
+              PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED) {
+        subtitle_text =
+            base::UTF8ToUTF16(identity_info.identity_status_description);
+      }
+    }
+
     // If the certificate button has been added previously, remove the old one
     // before recreating it. Re-adding it bumps it to the bottom of the
     // container, but its unlikely that the user will notice, since other things
     // are changing too.
     if (certificate_button_) {
       site_settings_view_->RemoveChildView(certificate_button_);
-      auto to_delete = std::make_unique<HoverButton*>(certificate_button_);
+      auto to_delete = std::make_unique<views::View*>(certificate_button_);
     }
-
-    certificate_button_ =
-        CreateMoreInfoButton(
+    certificate_button_ = site_settings_view_->AddChildView(
+        std::make_unique<PageInfoHoverButton>(
             this, icon, IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
-            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip)
-            .release();
-    certificate_button_->set_auto_compute_tooltip(false);
-    site_settings_view_->AddChildView(certificate_button_);
+            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip,
+            subtitle_text)
+            .release());
   }
 
   if (identity_info.show_change_password_buttons) {

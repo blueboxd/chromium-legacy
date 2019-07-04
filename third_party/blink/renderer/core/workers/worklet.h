@@ -27,12 +27,12 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
                             public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Worklet);
-  // Eager finalization is needed to notify parent object destruction of the
-  // GC-managed messaging proxy and to initiate worklet termination.
-  EAGERLY_FINALIZE();
+  USING_PRE_FINALIZER(Worklet, Dispose);
 
  public:
   ~Worklet() override;
+
+  void Dispose();
 
   // Worklet.idl
   // addModule() imports ES6 module scripts.

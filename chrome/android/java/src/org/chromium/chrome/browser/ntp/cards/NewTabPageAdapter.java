@@ -26,6 +26,8 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
@@ -79,13 +81,33 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     public NewTabPageAdapter(SuggestionsUiDelegate uiDelegate, @Nullable View aboveTheFoldView,
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
             ContextMenuManager contextMenuManager) {
+        this(uiDelegate, aboveTheFoldView, uiConfig, offlinePageBridge, contextMenuManager,
+                IdentityServicesProvider.getSigninManager());
+    }
+
+    /**
+     * Creates the adapter that will manage all the cards to display on the NTP.
+     * As above, but with the possibility to inject SigninManager for tests.
+     * @param uiDelegate used to interact with the rest of the system.
+     * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
+     *         (logo, search box, most visited tiles), or null if only suggestions should
+     *         be displayed.
+     * @param uiConfig the NTP UI configuration, to be passed to created views.
+     * @param offlinePageBridge used to determine if articles are available.
+     * @param contextMenuManager used to build context menus.
+     * @param signinManager used by SectionList for SignInPromo.
+     */
+    @VisibleForTesting
+    public NewTabPageAdapter(SuggestionsUiDelegate uiDelegate, @Nullable View aboveTheFoldView,
+            UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
+            ContextMenuManager contextMenuManager, SigninManager signinManager) {
         mUiDelegate = uiDelegate;
         mContextMenuManager = contextMenuManager;
 
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
         mRoot = new InnerNode<>();
-        mSections = new SectionList(mUiDelegate, offlinePageBridge);
+        mSections = new SectionList(mUiDelegate, offlinePageBridge, signinManager);
 
         if (mAboveTheFoldView != null) mRoot.addChildren(new AboveTheFoldItem());
         mFooter = new Footer();

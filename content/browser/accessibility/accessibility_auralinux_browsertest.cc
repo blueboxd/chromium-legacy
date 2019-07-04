@@ -677,12 +677,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
   atk_text_set_caret_offset(ATK_TEXT(target3), 0);
   waiter3.WaitForNotification();
 
-  // Same as above, make sure the node is roughly centered.
-  int width, height;
-  atk_component_get_extents(ATK_COMPONENT(target3), &x, &y, &width, &height,
-                            ATK_XY_SCREEN);
-  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
-  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+  // The text area should be scrolled to somewhere near the bottom of the
+  // screen. We check that it is in the bottom quarter of the screen here,
+  // but still fully onscreen.
+  int height;
+  atk_component_get_extents(ATK_COMPONENT(target3), nullptr, &y, nullptr,
+                            &height, ATK_XY_SCREEN);
+
+  int doc_bottom = doc_y + doc_height;
+  int bottom_third = doc_bottom - (float{doc_height} / 3.0);
+  EXPECT_GT(y, bottom_third);
+  EXPECT_LT(y, doc_bottom - height + 1);
 
   g_object_unref(target);
   g_object_unref(target2);

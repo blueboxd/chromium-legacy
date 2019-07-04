@@ -18,7 +18,6 @@ class GCMDriver;
 }
 
 class SharingMessageHandler;
-
 class SharingFCMSender;
 
 // SharingFCMHandler is responsible for receiving SharingMessage from GCMDriver
@@ -46,7 +45,6 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
 
   // GCMAppHandler overrides.
   void ShutdownHandler() override;
-
   void OnStoreReset() override;
 
   // Responsible for delegating the message to the registered
@@ -65,15 +63,18 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
 
  private:
   // Ack message sent back to the original sender of message.
-  bool SendAckMessage(const std::string& original_sender_guid,
-                      const std::string& original_message_id) const;
+  void SendAckMessage(const std::string& original_sender_guid,
+                      const std::string& original_message_id);
+
+  void OnAckMessageSent(const std::string& original_message_id,
+                        base::Optional<std::string> message_id);
 
   gcm::GCMDriver* const gcm_driver_;
-
   SharingFCMSender* sharing_fcm_sender_;
 
   std::map<SharingMessage::PayloadCase, SharingMessageHandler*>
       sharing_handlers_;
+  bool is_listening_ = false;
 
   base::WeakPtrFactory<SharingFCMHandler> weak_ptr_factory_;
 

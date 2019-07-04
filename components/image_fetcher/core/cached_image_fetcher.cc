@@ -144,8 +144,10 @@ void CachedImageFetcher::OnImageFetchedFromCache(
                                              ImageFetcherEvent::kCacheHit);
 
     // Only continue with decoding if the user actually asked for an image, or
-    // the image hasn't been transcoded yet.
-    if (!image_callback.is_null() || cache_result_needs_transcoding) {
+    // the image hadn't been transcoded yet and NOT loaded in the reduced mode.
+    if (!image_callback.is_null() ||
+        (cache_result_needs_transcoding &&
+         !request.params.allow_needs_transcoding_file())) {
       GetImageDecoder()->DecodeImage(
           image_data, gfx::Size(),
           base::BindOnce(&CachedImageFetcher::OnImageDecodedFromCache,
@@ -182,6 +184,7 @@ void CachedImageFetcher::OnImageDecodedFromCache(
     // again to replace the image data already on disk with the transcoded data.
     if (cache_result_needs_transcoding) {
       EncodeAndStoreData(/* cache_result_needs_transcoding */ true,
+                         /* is_image_data_transcoded */ true,
                          std::move(request), image);
       ImageFetcherMetricsReporter::ReportEvent(
           request.params.uma_client_name(),
@@ -247,7 +250,8 @@ void CachedImageFetcher::OnImageFetchedWithoutTranscoding(
                                              ImageFetcherEvent::kTotalFailure);
   }
 
-  StoreData(/* cache_result_needs_transcoding */ false, std::move(request),
+  StoreData(/* cache_result_needs_transcoding */ false,
+            /* is_image_data_transcoded */ false, std::move(request),
             image_data);
 }
 
@@ -268,10 +272,12 @@ void CachedImageFetcher::OnImageFetchedForTranscoding(
   }
 
   EncodeAndStoreData(/* cache_result_needs_transcoding */ false,
-                     std::move(request), image);
+                     /* is_image_data_transcoded */ true, std::move(request),
+                     image);
 }
 
 void CachedImageFetcher::EncodeAndStoreData(bool cache_result_needs_transcoding,
+                                            bool is_image_data_transcoded,
                                             CachedImageFetcherRequest request,
                                             const gfx::Image& image) {
   // Copy the image data out and store it on disk.
@@ -290,11 +296,13 @@ void CachedImageFetcher::EncodeAndStoreData(bool cache_result_needs_transcoding,
         base::BindOnce(&EncodeSkBitmapToPNG, uma_client_name, *bitmap),
         base::BindOnce(&CachedImageFetcher::StoreData,
                        weak_ptr_factory_.GetWeakPtr(),
-                       cache_result_needs_transcoding, std::move(request)));
+                       cache_result_needs_transcoding, is_image_data_transcoded,
+                       std::move(request)));
   }
 }
 
 void CachedImageFetcher::StoreData(bool cache_result_needs_transcoding,
+                                   bool is_image_data_transcoded,
                                    CachedImageFetcherRequest request,
                                    std::string image_data) {
   std::string url = request.url.spec();
@@ -309,10 +317,17 @@ void CachedImageFetcher::StoreData(bool cache_result_needs_transcoding,
       ImageFetcherMetricsReporter::ReportEvent(
           request.params.uma_client_name(),
           ImageFetcherEvent::kImageQueuedForTranscodingStoredBack);
+      if (!is_image_data_transcoded)
+        return;
     }
 
+    // |needs_transcoding| is only true when the image to save isn't transcoded
+    // and |allow_needs_transcoding_file()| is true (set by
+    // ReducedModeImageFetcher).
+    bool needs_transcoding = !is_image_data_transcoded &&
+                             request.params.allow_needs_transcoding_file();
     image_cache_->SaveImage(std::move(url), std::move(image_data),
-                            /* needs_transcoding */ false);
+                            /* needs_transcoding */ needs_transcoding);
   }
 }
 

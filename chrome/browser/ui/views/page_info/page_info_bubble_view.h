@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
+#include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "components/security_state/core/security_state.h"
@@ -182,10 +183,10 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   views::View* site_settings_view_ = nullptr;
 
   // The button that opens the "Cookies" dialog.
-  HoverButton* cookie_button_ = nullptr;
+  PageInfoHoverButton* cookie_button_ = nullptr;
 
   // The button that opens the "Certificate" dialog.
-  HoverButton* certificate_button_ = nullptr;
+  PageInfoHoverButton* certificate_button_ = nullptr;
 
   // The view that contains the "Permissions" table of the bubble.
   views::View* permissions_view_ = nullptr;

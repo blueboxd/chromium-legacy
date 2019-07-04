@@ -91,24 +91,10 @@ class ServiceWorkerControlleeRequestHandler::
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    network::mojom::RequestMode request_mode,
-    network::mojom::CredentialsMode credentials_mode,
-    network::mojom::RedirectMode redirect_mode,
-    const std::string& integrity,
-    bool keepalive,
-    ResourceType resource_type,
-    blink::mojom::RequestContextType request_context_type,
-    scoped_refptr<network::ResourceRequestBody> body)
+    ResourceType resource_type)
     : context_(std::move(context)),
       provider_host_(std::move(provider_host)),
       resource_type_(resource_type),
-      request_mode_(request_mode),
-      credentials_mode_(credentials_mode),
-      redirect_mode_(redirect_mode),
-      integrity_(integrity),
-      keepalive_(keepalive),
-      request_context_type_(request_context_type),
-      body_(std::move(body)),
       force_update_started_(false),
       weak_factory_(this) {
   DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));

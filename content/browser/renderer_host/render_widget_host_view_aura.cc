@@ -1122,7 +1122,8 @@ InputEventAckState RenderWidgetHostViewAura::FilterChildGestureEvent(
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+    BrowserAccessibilityDelegate* delegate,
+    bool for_root_frame) {
   BrowserAccessibilityManager* manager = nullptr;
 #if defined(OS_WIN)
   manager = new BrowserAccessibilityManagerWin(

@@ -289,7 +289,6 @@ public class NewTabPageAdapterTest {
         // Set up test account and initialize the sign in state. We will be signed in by default
         // in the tests.
         NewTabPageTestUtils.setUpTestAccount();
-        SigninManager.setInstanceForTesting(mMockSigninManager);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
 
@@ -311,7 +310,6 @@ public class NewTabPageAdapterTest {
     @After
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
-        SigninManager.setInstanceForTesting(null);
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
         ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
@@ -1189,7 +1187,8 @@ public class NewTabPageAdapterTest {
     private void reloadNtp() {
         mSource.removeObservers();
         mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), /* logoView = */
-                makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class)
+                makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class),
+                mMockSigninManager
                 /* tileGroupDelegate = */);
         mAdapter.refreshSuggestions();
     }

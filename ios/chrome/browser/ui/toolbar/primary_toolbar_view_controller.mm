@@ -209,10 +209,13 @@
 
 - (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
-  [animator addAnimations:^{
-    [self updateForFullscreenProgress:finalProgress];
-    [self.view layoutIfNeeded];
-  }];
+  // Using the animator doesn't work as the animation doesn't trigger a relayout
+  // of the constraints (see crbug.com/978462, crbug.com/950994).
+  [UIView animateWithDuration:animator.duration
+                   animations:^{
+                     [self updateForFullscreenProgress:finalProgress];
+                     [self.view layoutIfNeeded];
+                   }];
 }
 
 #pragma mark - ToolbarAnimatee

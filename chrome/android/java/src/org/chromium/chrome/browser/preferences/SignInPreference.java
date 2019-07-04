@@ -19,10 +19,10 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
-import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
@@ -86,7 +86,7 @@ public class SignInPreference
      */
     public void registerForUpdates() {
         AccountManagerFacade.get().addObserver(this);
-        SigninManager.get().addSignInAllowedObserver(this);
+        IdentityServicesProvider.getSigninManager().addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
         AndroidSyncSettings.get().registerObserver(this);
@@ -105,7 +105,7 @@ public class SignInPreference
      */
     public void unregisterForUpdates() {
         AccountManagerFacade.get().removeObserver(this);
-        SigninManager.get().removeSignInAllowedObserver(this);
+        IdentityServicesProvider.getSigninManager().removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);
         AndroidSyncSettings.get().unregisterObserver(this);
         ProfileSyncService syncService = ProfileSyncService.get();
@@ -154,7 +154,7 @@ public class SignInPreference
 
     /** Updates the title, summary, and image based on the current sign-in state. */
     private void update() {
-        if (SigninManager.get().isSigninDisabledByPolicy()) {
+        if (IdentityServicesProvider.getSigninManager().isSigninDisabledByPolicy()) {
             setupSigninDisabled();
             return;
         }

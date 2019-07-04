@@ -42,7 +42,7 @@ public class SiteSettingsHelper {
                 SingleWebsitePreferences.class.getName(),
                 SingleWebsitePreferences.createFragmentArgsForSite(fullUrl));
         // Disabling StrictMode to avoid violations (https://crbug.com/819410).
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             context.startActivity(preferencesIntent);
         }
     }

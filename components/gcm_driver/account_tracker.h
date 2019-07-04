@@ -18,6 +18,10 @@
 
 class GoogleServiceAuthError;
 
+namespace identity {
+struct AccessTokenInfo;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }

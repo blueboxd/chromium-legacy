@@ -58,8 +58,9 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
      * @return {@code true} if sign in has been allowed.
      */
     public static boolean startIfAllowed(Context context, @AccessPoint int accessPoint) {
-        if (!SigninManager.get().isSignInAllowed()) {
-            if (SigninManager.get().isSigninDisabledByPolicy()) {
+        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        if (!signinManager.isSignInAllowed()) {
+            if (signinManager.isSigninDisabledByPolicy()) {
                 ManagedPreferencesUtils.showManagedByAdministratorToast(context);
             }
             return false;
@@ -180,7 +181,7 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
         }
 
         final Context context = this;
-        SigninManager.get().signIn(accountName, this, new SignInCallback() {
+        IdentityServicesProvider.getSigninManager().signIn(accountName, this, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 if (settingsClicked) {

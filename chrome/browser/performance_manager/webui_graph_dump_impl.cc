@@ -223,6 +223,10 @@ void WebUIGraphDumpImpl::OnIsVisibleChanged(PageNodeImpl* page_node) {
   SendPageNotification(page_node, false);
 }
 
+void WebUIGraphDumpImpl::OnIsAudibleChanged(PageNodeImpl* page_node) {
+  SendPageNotification(page_node, false);
+}
+
 void WebUIGraphDumpImpl::OnIsLoadingChanged(PageNodeImpl* page_node) {
   SendPageNotification(page_node, false);
 }

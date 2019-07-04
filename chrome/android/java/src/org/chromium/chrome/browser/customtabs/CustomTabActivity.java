@@ -635,6 +635,13 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
+    public void registerDirectActions() {
+        super.registerDirectActions();
+        mDirectActionInitializer.allowMenuActions(
+                this, getTabModelSelector(), R.id.bookmark_this_page_id, R.id.preferences_id);
+    }
+
+    @Override
     public int getBaseStatusBarColor() {
         return mCustomTabStatusBarColorProvider
                 .getBaseStatusBarColor(super.getBaseStatusBarColor());
@@ -777,7 +784,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     protected boolean shouldInitializeBottomSheet() {
-        return isAutofillAssistantEnabled();
+        return super.shouldInitializeBottomSheet() || isAutofillAssistantEnabled();
     }
 
     private boolean isAutofillAssistantEnabled() {

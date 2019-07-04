@@ -14,13 +14,6 @@ namespace features {
 COMPONENT_EXPORT(BLINK_FEATURES)
 extern const base::Feature kResamplingScrollEvents;
 
-// This flag is used to set field parameters to choose predictor we use when
-// resampling is disabled. It's used for gatherig accuracy metrics on finch
-// without enabling resampling. It does not have any effect when the resampling
-// flag is enabled.
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kScrollPredictorTypeChoice;
-
 // This feature allows native ET_MOUSE_EXIT events to be passed
 // through to blink as mouse leave events. Traditionally these events were
 // converted to mouse move events due to a number of inconsistencies on

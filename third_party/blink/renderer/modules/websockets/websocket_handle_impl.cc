@@ -35,19 +35,13 @@ WebSocketHandleImpl::~WebSocketHandleImpl() {
     websocket_->StartClosingHandshake(kAbnormalShutdownOpCode, g_empty_string);
 }
 
-void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
+void WebSocketHandleImpl::Connect(mojom::blink::WebSocketConnectorPtr connector,
                                   const KURL& url,
                                   const Vector<String>& protocols,
                                   const KURL& site_for_cookies,
                                   const String& user_agent_override,
                                   WebSocketChannelImpl* channel,
                                   base::SingleThreadTaskRunner* task_runner) {
-  DCHECK(!websocket_);
-  websocket_ = std::move(websocket);
-  // We intentionally ignore errors on |websocket_| in favour of catching them
-  // on |client_binding_|, which gives more reliable ordering semantics.
-  DCHECK(websocket_);
-
   NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ")";
 
   DCHECK(!channel_);
@@ -56,10 +50,6 @@ void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
 
   network::mojom::blink::WebSocketHandshakeClientPtr handshake_client_proxy;
   Vector<network::mojom::blink::HttpHeaderPtr> additional_headers;
-  if (!user_agent_override.IsNull()) {
-    additional_headers.push_back(network::mojom::blink::HttpHeader::New(
-        http_names::kUserAgent, user_agent_override));
-  }
   handshake_client_binding_.Bind(
       mojo::MakeRequest(&handshake_client_proxy, task_runner), task_runner);
   network::mojom::blink::WebSocketClientPtr client_proxy;
@@ -68,9 +58,9 @@ void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
   client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
       &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
 
-  websocket_->AddChannelRequest(
-      url, protocols, site_for_cookies, std::move(additional_headers),
-      std::move(handshake_client_proxy), std::move(client_proxy));
+  connector->Connect(url, protocols, site_for_cookies, user_agent_override,
+                     std::move(handshake_client_proxy),
+                     std::move(client_proxy));
 }
 
 void WebSocketHandleImpl::Send(bool fin,
@@ -167,6 +157,7 @@ void WebSocketHandleImpl::OnResponseReceived(
 }
 
 void WebSocketHandleImpl::OnConnectionEstablished(
+    network::mojom::blink::WebSocketPtr websocket,
     const String& protocol,
     const String& extensions,
     uint64_t receive_quota_threshold) {
@@ -176,6 +167,8 @@ void WebSocketHandleImpl::OnConnectionEstablished(
   if (!channel_)
     return;
 
+  DCHECK(!websocket_);
+  websocket_ = std::move(websocket);
   channel_->DidConnect(this, protocol, extensions, receive_quota_threshold);
   // |this| can be deleted here.
 }

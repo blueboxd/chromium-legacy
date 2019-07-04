@@ -984,9 +984,6 @@ gboolean SetCaretOffset(AtkText* atk_text, gint offset) {
   if (!obj->SetCaretOffset(offset))
     return FALSE;
 
-  // Orca expects atk_text_set_caret_offset to scroll to the target element.
-  obj->ScrollToNode(AXPlatformNodeBase::ScrollType::Anywhere);
-
   // Orca expects atk_text_set_caret_offset to either focus the target element
   // or set the sequential focus navigation starting point there.
   int utf16_offset = obj->UnicodeToUTF16OffsetInText(offset);

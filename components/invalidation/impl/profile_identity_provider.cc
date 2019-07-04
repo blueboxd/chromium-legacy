@@ -5,6 +5,7 @@
 #include "components/invalidation/impl/profile_identity_provider.h"
 
 #include "base/bind.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 
 namespace invalidation {
 

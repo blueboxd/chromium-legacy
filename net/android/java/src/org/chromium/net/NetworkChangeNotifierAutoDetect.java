@@ -317,7 +317,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             Socket s = new Socket();
             // Disable detectUntaggedSockets StrictMode policy to avoid false positives, as |s|
             // isn't used to send or receive traffic. https://crbug.com/946531
-            try (StrictModeContext unused = StrictModeContext.allowAllVmPolicies()) {
+            try (StrictModeContext ignored = StrictModeContext.allowAllVmPolicies()) {
                 // Avoid using network.getSocketFactory().createSocket() because it leaks.
                 // https://crbug.com/805424
                 network.bindSocket(s);

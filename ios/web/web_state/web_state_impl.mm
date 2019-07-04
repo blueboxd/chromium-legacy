@@ -113,8 +113,8 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
 }
 
 WebStateImpl::~WebStateImpl() {
-  [web_controller_ close];
   is_being_destroyed_ = true;
+  [web_controller_ close];
 
   // WebUI depends on web state so it must be destroyed first in case any WebUI
   // implementations depends on accessing web state during destruction.

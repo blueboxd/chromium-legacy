@@ -92,25 +92,32 @@ WebSocketFactory::WebSocketFactory(NetworkContext* context)
 WebSocketFactory::~WebSocketFactory() {}
 
 void WebSocketFactory::CreateWebSocket(
-    mojom::WebSocketRequest request,
-    mojom::AuthenticationHandlerPtr auth_handler,
-    mojom::TrustedHeaderClientPtr header_client,
+    const GURL& url,
+    const std::vector<std::string>& requested_protocols,
+    const GURL& site_for_cookies,
+    std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
     int32_t render_frame_id,
     const url::Origin& origin,
-    uint32_t options) {
+    uint32_t options,
+    mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojom::WebSocketClientPtr client,
+    mojom::AuthenticationHandlerPtr auth_handler,
+    mojom::TrustedHeaderClientPtr header_client) {
   if (throttler_.HasTooManyPendingConnections(process_id)) {
     // Too many websockets!
-    request.ResetWithReason(
+    handshake_client.ResetWithReason(
         mojom::WebSocket::kInsufficientResources,
         "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
     return;
   }
   connections_.insert(std::make_unique<WebSocket>(
-      std::make_unique<Delegate>(this, process_id), std::move(request),
-      std::move(auth_handler), std::move(header_client),
-      throttler_.IssuePendingConnectionTracker(process_id), process_id,
-      render_frame_id, origin, options, throttler_.CalculateDelay(process_id)));
+      std::make_unique<Delegate>(this, process_id), url, requested_protocols,
+      site_for_cookies, std::move(additional_headers), process_id,
+      render_frame_id, origin, options, std::move(handshake_client),
+      std::move(client), std::move(auth_handler), std::move(header_client),
+      throttler_.IssuePendingConnectionTracker(process_id),
+      throttler_.CalculateDelay(process_id)));
 }
 
 void WebSocketFactory::OnLostConnectionToClient(WebSocket* impl) {

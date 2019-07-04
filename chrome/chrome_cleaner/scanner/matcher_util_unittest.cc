@@ -39,7 +39,7 @@ constexpr base::char16 kFileName4[] = L"File4";
 constexpr char kFileContent1[] = "This is the file content.";
 constexpr char kFileContent2[] = "Hi!";
 constexpr char kFileContent3[] = "Hello World!";
-constexpr char kFileContent4[] = "Ho!";
+constexpr char kFileContent4[] = "Ha!";
 
 constexpr char kFileContent[] = "This is the file content.";
 

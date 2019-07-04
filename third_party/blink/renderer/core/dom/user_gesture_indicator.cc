@@ -16,9 +16,6 @@ namespace blink {
 // User gestures timeout in 1 second.
 const double kUserGestureTimeout = 1.0;
 
-// For out of process tokens we allow a 10 second delay.
-const double kUserGestureOutOfProcessTimeout = 10.0;
-
 UserGestureToken::UserGestureToken(Status status)
     : consumable_gestures_(0),
       clock_(base::DefaultClock::GetInstance()),
@@ -48,7 +45,7 @@ bool UserGestureToken::ConsumeGesture() {
 }
 
 void UserGestureToken::SetTimeoutPolicy(TimeoutPolicy policy) {
-  if (!HasTimedOut() && HasGestures() && policy > timeout_policy_)
+  if (HasGestures() && policy > timeout_policy_)
     timeout_policy_ = policy;
 }
 
@@ -59,10 +56,7 @@ void UserGestureToken::ResetTimestamp() {
 bool UserGestureToken::HasTimedOut() const {
   if (timeout_policy_ == kHasPaused)
     return false;
-  double timeout = timeout_policy_ == kOutOfProcess
-                       ? kUserGestureOutOfProcessTimeout
-                       : kUserGestureTimeout;
-  return clock_->Now().ToDoubleT() - timestamp_ > timeout;
+  return clock_->Now().ToDoubleT() - timestamp_ > kUserGestureTimeout;
 }
 
 bool UserGestureToken::WasForwardedCrossProcess() const {

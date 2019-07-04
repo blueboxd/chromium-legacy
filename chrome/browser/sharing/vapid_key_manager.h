@@ -23,14 +23,14 @@ class SharingSyncPreference;
 class VapidKeyManager {
  public:
   explicit VapidKeyManager(SharingSyncPreference* sharing_sync_preference);
-  ~VapidKeyManager();
+  virtual ~VapidKeyManager();
 
   // Returns the shared VAPID key stored in SharingSyncPreference. If no key is
   // found in preferences, it generates a new key and stores in
   // SharingSyncPreference before returning this new key. Conflicts between
   // different devices generating the shared VAPID key is resolved based on
   // creation time.
-  crypto::ECPrivateKey* GetOrCreateKey();
+  virtual crypto::ECPrivateKey* GetOrCreateKey();
 
  private:
   // Used for storing and fetching VAPID key from preferences.

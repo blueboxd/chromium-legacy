@@ -4834,6 +4834,7 @@ interface PointerEvent : MouseEvent
     getter width
     method constructor
     method getCoalescedEvents
+    method getPredictedEvents
 interface PopStateEvent : Event
     attribute @@toStringTag
     getter state

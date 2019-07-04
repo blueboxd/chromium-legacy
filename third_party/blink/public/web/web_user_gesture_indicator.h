@@ -65,8 +65,6 @@ class WebUserGestureIndicator {
   // continue processing the user gesture later on using a
   // WebScopedUserGesture.
   BLINK_EXPORT static WebUserGestureToken CurrentUserGestureToken();
-
-  BLINK_EXPORT static void ExtendTimeout();
 };
 
 }  // namespace blink

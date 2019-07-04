@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
@@ -21,10 +22,8 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -53,8 +52,8 @@ const CGFloat kResizeFactor = 4;
 - (void)finishPan;
 // Is the current card is an edge card based on swipe direction.
 - (BOOL)isEdgeSwipe;
-// Initialize card based on model_'s webstatelist index.
-- (void)setupCard:(SwipeView*)card withIndex:(int)index;
+// Initialize card based on model_ index.
+- (void)setupCard:(SwipeView*)card withIndex:(NSInteger)index;
 // Build a |kResizeFactor| sized greyscaled version of |image|.
 - (UIImage*)smallGreyImage:(UIImage*)image;
 
@@ -138,11 +137,11 @@ const CGFloat kResizeFactor = 4;
   return CGRectGetWidth(self.bounds);
 }
 
-// Set up left and right card views depending on current WebState and swipe
+// Set up left and right card views depending on current tab and swipe
 // direction.
 - (void)updateViewsForDirection:(UISwipeGestureRecognizerDirection)direction {
   _direction = direction;
-  int currentIndex = model_.webStateList->active_index();
+  NSUInteger currentIndex = [model_ indexOfTab:model_.currentTab];
   CGFloat offset = UseRTLLayout() ? -1 : 1;
   if (_direction == UISwipeGestureRecognizerDirectionRight) {
     [self setupCard:_rightCard withIndex:currentIndex];
@@ -165,20 +164,20 @@ const CGFloat kResizeFactor = 4;
   return greyImage;
 }
 
-// Create card view based on TabModel's WebStateList index.
-- (void)setupCard:(SwipeView*)card withIndex:(int)index {
+// Create card view based on TabModel index.
+- (void)setupCard:(SwipeView*)card withIndex:(NSInteger)index {
   if (index < 0 || index >= (NSInteger)[model_ count]) {
     [card setHidden:YES];
     return;
   }
   [card setHidden:NO];
 
-  web::WebState* webState = model_.webStateList->GetWebStateAt(index);
+  Tab* tab = [model_ tabAtIndex:index];
   UIImage* topToolbarSnapshot = [self.topToolbarSnapshotProvider
-      toolbarSideSwipeSnapshotForWebState:webState];
+      toolbarSideSwipeSnapshotForWebState:tab.webState];
   [card setTopToolbarImage:topToolbarSnapshot];
   UIImage* bottomToolbarSnapshot = [self.bottomToolbarSnapshotProvider
-      toolbarSideSwipeSnapshotForWebState:webState];
+      toolbarSideSwipeSnapshotForWebState:tab.webState];
   [card setBottomToolbarImage:bottomToolbarSnapshot];
 
   // Converting snapshotted images to grey takes too much time for single core
@@ -186,9 +185,9 @@ const CGFloat kResizeFactor = 4;
   // grey image for multi core devices.
   dispatch_queue_t priorityQueue =
       dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0ul);
-  SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
-      ^(UIImage* image) {
-        if (PagePlaceholderTabHelper::FromWebState(webState)
+  SnapshotTabHelper::FromWebState(tab.webState)
+      ->RetrieveColorSnapshot(^(UIImage* image) {
+        if (PagePlaceholderTabHelper::FromWebState(tab.webState)
                 ->will_add_placeholder_for_next_navigation() &&
             !ios::device_util::IsSingleCoreDevice()) {
           [card setImage:nil];
@@ -260,26 +259,24 @@ const CGFloat kResizeFactor = 4;
 }
 
 - (BOOL)isEdgeSwipe {
-  int currentIndex = model_.webStateList->active_index();
+  NSUInteger currentIndex = [model_ indexOfTab:model_.currentTab];
   return (IsSwipingBack(_direction) && currentIndex == 0) ||
-         (IsSwipingForward(_direction) &&
-          currentIndex == model_.webStateList->count() - 1);
+         (IsSwipingForward(_direction) && currentIndex == [model_ count] - 1);
 }
 
-// Update the current WebState and animate the proper card view if the
+// Update the current tab and animate the proper card view if the
 // |currentPoint_| is past the center of |bounds|.
 - (void)finishPan {
-  WebStateList* webStateList = model_.webStateList;
-  int currentIndex = webStateList->active_index();
-  // Something happened and now there is not active WebState.  End card side let
-  // swipe and BVC show no tabs UI.
-  if (currentIndex == WebStateList::kInvalidIndex)
+  NSUInteger currentIndex = [model_ indexOfTab:model_.currentTab];
+  // Something happened and now currentTab is gone.  End card side swipe and let
+  // BVC show no tabs UI.
+  if (currentIndex == NSNotFound)
     return [_delegate sideSwipeViewDismissAnimationDidEnd:self];
 
   CGFloat width = [self cardWidth];
   CGAffineTransform rightTransform, leftTransform;
   SwipeView* dominantCard;
-  int destinationWebStateIndex = currentIndex;
+  Tab* destinationTab = model_.currentTab;
   CGFloat offset = UseRTLLayout() ? -1 : 1;
   if (_direction == UISwipeGestureRecognizerDirectionRight) {
     // If swipe is right and |currentPoint_.x| is over the first 1/3, move left.
@@ -287,7 +284,7 @@ const CGFloat kResizeFactor = 4;
       rightTransform =
           CGAffineTransformMakeTranslation(width + kCardHorizontalSpacing, 0);
       leftTransform = CGAffineTransformIdentity;
-      destinationWebStateIndex = currentIndex - offset;
+      destinationTab = [model_ tabAtIndex:currentIndex - offset];
       dominantCard = _leftCard;
       base::RecordAction(UserMetricsAction("MobileStackSwipeCompleted"));
     } else {
@@ -303,7 +300,7 @@ const CGFloat kResizeFactor = 4;
       leftTransform =
           CGAffineTransformMakeTranslation(-width - kCardHorizontalSpacing, 0);
       rightTransform = CGAffineTransformIdentity;
-      destinationWebStateIndex = currentIndex + offset;
+      destinationTab = [model_ tabAtIndex:currentIndex + offset];
       dominantCard = _rightCard;
       base::RecordAction(UserMetricsAction("MobileStackSwipeCompleted"));
     } else {
@@ -315,10 +312,10 @@ const CGFloat kResizeFactor = 4;
     }
   }
 
-  if (destinationWebStateIndex != currentIndex) {
-    // The old webstate is now hidden. The new WebState will be inserted once
-    // the animation is complete.
-    webStateList->GetActiveWebState()->WasHidden();
+  if (destinationTab != model_.currentTab) {
+    // The old tab is now hidden. The new tab will be inserted once the
+    // animation is complete.
+    model_.currentTab.webState->WasHidden();
   }
 
   // Make sure the dominant card animates on top.
@@ -337,12 +334,12 @@ const CGFloat kResizeFactor = 4;
         [_leftCard setBottomToolbarImage:nil];
         [_rightCard setBottomToolbarImage:nil];
         [_delegate sideSwipeViewDismissAnimationDidEnd:self];
-        // Changing the model even when the webstate is the same at the end of
-        // the animation allows the UI to recover.  This call must come last,
-        // because ActivateWebStateAt triggers behavior that depends on the view
+        // Changing the model even when the tab is the same at the end of the
+        // animation allows the UI to recover.  This call must come last,
+        // because setCurrentTab triggers behavior that depends on the view
         // hierarchy being reassembled, which happens in
         // sideSwipeViewDismissAnimationDidEnd.
-        webStateList->ActivateWebStateAt(destinationWebStateIndex);
+        [model_ setCurrentTab:destinationTab];
       }];
 }
 

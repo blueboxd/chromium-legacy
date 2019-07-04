@@ -26,19 +26,20 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override;
-  gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
-                                BufferPresentedCallback feedback) override;
+               bool has_alpha,
+               gfx::OverlayTransform transform) override;
+  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
-                                  const GrBackendSemaphore& semaphore,
-
                                   BufferPresentedCallback feedback) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
+  SkSurface* BeginPaint() override;
+  void EndPaint(const GrBackendSemaphore& semaphore) override;
 
  protected:
   GrContext* const gr_context_;
   const bool has_alpha_;
+  sk_sp<SkSurface> sk_surface_;
 
  private:
   SkImageInfo image_info_;

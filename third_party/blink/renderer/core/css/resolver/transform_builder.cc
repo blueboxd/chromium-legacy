@@ -30,8 +30,8 @@
 
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -109,17 +109,9 @@ bool TransformBuilder::HasRelativeLengths(const CSSValueList& value_list) {
 
     for (const CSSValue* item : *transform_value) {
       const auto& primitive_value = To<CSSPrimitiveValue>(*item);
-
-      if (primitive_value.IsCalculated()) {
-        // TODO(xiaochengh): Get type from CSSMathFunctionValue directly.
-        CSSPrimitiveValue::UnitType resolved_type =
-            To<CSSMathFunctionValue>(primitive_value)
-                .ExpressionNode()
-                ->TypeWithCalcResolved();
-        if (CSSPrimitiveValue::IsRelativeUnit(resolved_type) ||
-            resolved_type == CSSPrimitiveValue::UnitType::kUnknown) {
-          return true;
-        }
+      if (primitive_value.IsCalculated() &&
+          To<CSSMathFunctionValue>(primitive_value).MayHaveRelativeUnit()) {
+        return true;
       }
 
       if (CSSPrimitiveValue::IsRelativeUnit(

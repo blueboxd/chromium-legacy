@@ -16,7 +16,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/ozone/platform/x11/x11_cursor_ozone.h"
@@ -24,16 +23,6 @@
 
 namespace ui {
 
-namespace {
-
-XID FindXEventTarget(const XEvent& xev) {
-  XID target = xev.xany.window;
-  if (xev.type == GenericEvent)
-    target = static_cast<XIDeviceEvent*>(xev.xcookie.data)->event;
-  return target;
-}
-
-}  // namespace
 X11WindowOzone::X11WindowOzone(X11WindowManagerOzone* window_manager,
                                PlatformWindowDelegate* delegate,
                                const gfx::Rect& bounds)
@@ -47,13 +36,7 @@ X11WindowOzone::X11WindowOzone(X11WindowManagerOzone* window_manager,
       state_(PlatformWindowState::kUnknown) {
   DCHECK(delegate_);
   DCHECK(window_manager_);
-
   Create();
-  pointer_barriers_.fill(x11::None);
-
-  auto* event_source = X11EventSourceLibevent::GetInstance();
-  if (event_source)
-    event_source->AddXEventDispatcher(this);
 }
 
 X11WindowOzone::~X11WindowOzone() {
@@ -80,9 +63,12 @@ void X11WindowOzone::Create() {
   DCHECK_NE(xdisplay_, nullptr);
 
   XID xwindow = CreateXWindow();
-  DCHECK(xwindow);
+  DCHECK_NE(xwindow, x11::None);
 
   SetXWindow(xwindow);
+
+  DCHECK(X11EventSourceLibevent::GetInstance());
+  X11EventSourceLibevent::GetInstance()->AddXEventDispatcher(this);
 }
 
 XID X11WindowOzone::CreateXWindow() {
@@ -225,6 +211,7 @@ gfx::Rect X11WindowOzone::GetBounds() {
 void X11WindowOzone::SetTitle(const base::string16& title) {
   if (window_title_ == title)
     return;
+
   window_title_ = title;
   std::string utf8str = base::UTF16ToUTF8(title);
   XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_NAME"),
@@ -253,12 +240,13 @@ bool X11WindowOzone::HasCapture() const {
 }
 
 void X11WindowOzone::ToggleFullscreen() {
-  ui::SetWMSpecState(xwindow_, !IsFullscreen(),
+  bool is_fullscreen = state_ == PlatformWindowState::kFullScreen;
+  ui::SetWMSpecState(xwindow_, !is_fullscreen,
                      gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"), x11::None);
 }
 
 void X11WindowOzone::Maximize() {
-  if (IsFullscreen())
+  if (state_ == PlatformWindowState::kFullScreen)
     ToggleFullscreen();
 
   ui::SetWMSpecState(xwindow_, true,
@@ -271,10 +259,10 @@ void X11WindowOzone::Minimize() {
 }
 
 void X11WindowOzone::Restore() {
-  if (IsFullscreen())
+  if (state_ == PlatformWindowState::kFullScreen)
     ToggleFullscreen();
 
-  if (IsMaximized()) {
+  if (state_ == PlatformWindowState::kMaximized) {
     ui::SetWMSpecState(xwindow_, false,
                        gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                        gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
@@ -341,9 +329,8 @@ void X11WindowOzone::UnconfineCursor() {
 }
 
 void X11WindowOzone::PrepareForShutdown() {
-  auto* event_source = X11EventSourceLibevent::GetInstance();
-  if (event_source)
-    event_source->RemoveXEventDispatcher(this);
+  DCHECK(X11EventSourceLibevent::GetInstance());
+  X11EventSourceLibevent::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 void X11WindowOzone::SetCursor(PlatformCursor cursor) {
@@ -351,8 +338,13 @@ void X11WindowOzone::SetCursor(PlatformCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor_ozone->xcursor());
 }
 
+// CheckCanDispatchNextPlatformEvent is called by X11EventSourceLibevent to
+// determine whether X11WindowOzone instance (XEventDispatcher implementation)
+// is able to process next translated event sent by it. So, it's done through
+// |handle_next_event_| internal flag, used in subsequent CanDispatchEvent
+// call.
 void X11WindowOzone::CheckCanDispatchNextPlatformEvent(XEvent* xev) {
-  handle_next_event_ = xwindow_ == x11::None ? false : IsEventForXWindow(*xev);
+  handle_next_event_ = xwindow_ != x11::None && IsEventForXWindow(*xev);
 }
 
 void X11WindowOzone::PlatformEventDispatchFinished() {
@@ -372,10 +364,12 @@ bool X11WindowOzone::DispatchXEvent(XEvent* xev) {
 }
 
 bool X11WindowOzone::CanDispatchEvent(const PlatformEvent& event) {
+  DCHECK_NE(xwindow_, x11::None);
   return handle_next_event_;
 }
 
 uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& event) {
+  DCHECK_NE(xwindow_, x11::None);
   if (!window_manager_->event_grabber() ||
       window_manager_->event_grabber() == this) {
     // This is unfortunately needed otherwise events that depend on global state
@@ -400,8 +394,6 @@ void X11WindowOzone::OnLostCapture() {
   delegate_->OnLostCapture();
 }
 
-// Private methods
-
 void X11WindowOzone::SetXWindow(XID xid) {
   xwindow_ = xid;
 
@@ -415,7 +407,10 @@ void X11WindowOzone::SetXWindow(XID xid) {
 }
 
 bool X11WindowOzone::IsEventForXWindow(const XEvent& xev) const {
-  return xwindow_ != x11::None && FindXEventTarget(xev) == xwindow_;
+  XID target_window = (xev.type == GenericEvent)
+                          ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
+                          : xev.xany.window;
+  return target_window == xwindow_;
 }
 
 void X11WindowOzone::ProcessXWindowEvent(XEvent* xev) {
@@ -512,14 +507,6 @@ void X11WindowOzone::OnWMStateUpdated() {
 
   if (old_state != state_)
     delegate_->OnWindowStateChanged(state_);
-}
-
-bool X11WindowOzone::IsMaximized() const {
-  return state_ == PlatformWindowState::kMaximized;
-}
-
-bool X11WindowOzone::IsFullscreen() const {
-  return state_ == PlatformWindowState::kFullScreen;
 }
 
 }  // namespace ui

@@ -20,13 +20,17 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
+#include "components/signin/core/browser/primary_account_policy_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_CHROMEOS)
+#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
+#endif
 
 class PrimaryAccountManagerTest : public testing::Test {
  public:
@@ -73,13 +77,19 @@ class PrimaryAccountManagerTest : public testing::Test {
     return account_tracker_.PickAccountIdForAccount(gaia_id, email);
   }
 
-  // Create a naked primary account manager if integration with PKSs is not
-  // needed.
   void CreatePrimaryAccountManager() {
     DCHECK(!manager_);
-    auto policy_manager =
+    // Supply the primary account manager with a policy manager to reflect
+    // production usage: null on ChromeOS, a PrimaryAccountPolicyManagerImpl on
+    // other platforms.
+    std::unique_ptr<PrimaryAccountPolicyManager> policy_manager;
+#if !defined(OS_CHROMEOS)
+    policy_manager =
         std::make_unique<PrimaryAccountPolicyManagerImpl>(&test_signin_client_);
-    policy_manager_ = policy_manager.get();
+    policy_manager_ =
+        static_cast<PrimaryAccountPolicyManagerImpl*>(policy_manager.get());
+#endif
+
     manager_ = std::make_unique<PrimaryAccountManager>(
         &test_signin_client_, &token_service_, &account_tracker_,
         account_consistency_, std::move(policy_manager));
@@ -90,8 +100,10 @@ class PrimaryAccountManagerTest : public testing::Test {
     manager_->SetGoogleSigninSucceededCallback(
         base::BindRepeating(&PrimaryAccountManagerTest::GoogleSigninSucceeded,
                             base::Unretained(this)));
+#if !defined(OS_CHROMEOS)
     manager_->SetGoogleSignedOutCallback(base::BindRepeating(
         &PrimaryAccountManagerTest::GoogleSignedOut, base::Unretained(this)));
+#endif
   }
 
   // Shuts down |manager_|.
@@ -125,7 +137,9 @@ class PrimaryAccountManagerTest : public testing::Test {
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   AccountFetcherService account_fetcher_;
+#if !defined(OS_CHROMEOS)
   PrimaryAccountPolicyManagerImpl* policy_manager_;
+#endif
   std::unique_ptr<PrimaryAccountManager> manager_;
   std::vector<std::string> oauth_tokens_fetched_;
   std::vector<std::string> cookies_;
@@ -134,6 +148,7 @@ class PrimaryAccountManagerTest : public testing::Test {
   int num_signouts_;
 };
 
+#if !defined(OS_CHROMEOS)
 TEST_F(PrimaryAccountManagerTest, SignOut) {
   CreatePrimaryAccountManager();
   CoreAccountId main_account_id =
@@ -242,29 +257,6 @@ TEST_F(PrimaryAccountManagerTest, SignOutWhileProhibited) {
   EXPECT_FALSE(manager_->IsAuthenticated());
 }
 
-TEST_F(PrimaryAccountManagerTest, Prohibited) {
-  local_state_.SetString(prefs::kGoogleServicesUsernamePattern,
-                         ".*@google.com");
-  CreatePrimaryAccountManager();
-  EXPECT_TRUE(policy_manager_->IsAllowedUsername("test@google.com"));
-  EXPECT_TRUE(policy_manager_->IsAllowedUsername("happy@google.com"));
-  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@invalid.com"));
-  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@notgoogle.com"));
-  EXPECT_FALSE(policy_manager_->IsAllowedUsername(std::string()));
-}
-
-TEST_F(PrimaryAccountManagerTest, TestAlternateWildcard) {
-  // Test to make sure we accept "*@google.com" as a pattern (treat it as if
-  // the admin entered ".*@google.com").
-  local_state_.SetString(prefs::kGoogleServicesUsernamePattern, "*@google.com");
-  CreatePrimaryAccountManager();
-  EXPECT_TRUE(policy_manager_->IsAllowedUsername("test@google.com"));
-  EXPECT_TRUE(policy_manager_->IsAllowedUsername("happy@google.com"));
-  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@invalid.com"));
-  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@notgoogle.com"));
-  EXPECT_FALSE(policy_manager_->IsAllowedUsername(std::string()));
-}
-
 TEST_F(PrimaryAccountManagerTest, ProhibitedAtStartup) {
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   user_prefs_.SetString(prefs::kGoogleServicesAccountId, account_id);
@@ -288,6 +280,7 @@ TEST_F(PrimaryAccountManagerTest, ProhibitedAfterStartup) {
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
+#endif
 
 TEST_F(PrimaryAccountManagerTest, ExternalSignIn) {
   CreatePrimaryAccountManager();
@@ -321,6 +314,7 @@ TEST_F(PrimaryAccountManagerTest,
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(PrimaryAccountManagerTest, SigninNotAllowed) {
   std::string user("user@google.com");
   std::string account_id = AddToAccountTracker("gaia_id", user);
@@ -331,6 +325,7 @@ TEST_F(PrimaryAccountManagerTest, SigninNotAllowed) {
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
+#endif
 
 TEST_F(PrimaryAccountManagerTest, UpgradeToNewPrefs) {
   user_prefs_.SetString(prefs::kGoogleServicesUsername, "user@gmail.com");

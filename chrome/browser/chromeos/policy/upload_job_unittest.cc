@@ -63,18 +63,15 @@ class RepeatingMimeBoundaryGenerator
   DISALLOW_COPY_AND_ASSIGN(RepeatingMimeBoundaryGenerator);
 };
 
-// TODO(https://crbug.com/967598): Change this to be a mock
-// OAuth2AccessTokenManager class (marking the necessary methods of
-// OAuth2AccessTokenManager virtual) as part of changing
-// OAuth2AccessTokenManager::{StartRequestForClientWithContext(),
-// InvalidateAccessToken()} to directly call the methods being overridden here
-// rather than calling through to OAuth2TokenService.
-class MockOAuth2TokenService : public FakeOAuth2TokenService {
+class FakeOAuth2AccessTokenManagerWithCaching
+    : public FakeOAuth2AccessTokenManager {
  public:
-  MockOAuth2TokenService();
-  ~MockOAuth2TokenService() override;
+  FakeOAuth2AccessTokenManagerWithCaching(
+      OAuth2TokenService* token_service,
+      OAuth2AccessTokenManager::Delegate* delegate);
+  ~FakeOAuth2AccessTokenManagerWithCaching() override;
 
-  // OAuth2TokenService:
+  // FakeOAuth2AccessTokenManager:
   void FetchOAuth2Token(
       OAuth2AccessTokenManager::RequestImpl* request,
       const CoreAccountId& account_id,
@@ -82,8 +79,6 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
       const std::string& client_id,
       const std::string& client_secret,
       const OAuth2AccessTokenManager::ScopeSet& scopes) override;
-
-  // OAuth2TokenService:
   void InvalidateAccessTokenImpl(
       const CoreAccountId& account_id,
       const std::string& client_id,
@@ -99,16 +94,19 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
   base::queue<std::string> token_replies_;
   std::set<std::string> valid_tokens_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockOAuth2TokenService);
+  DISALLOW_COPY_AND_ASSIGN(FakeOAuth2AccessTokenManagerWithCaching);
 };
 
-MockOAuth2TokenService::MockOAuth2TokenService() {
-}
+FakeOAuth2AccessTokenManagerWithCaching::
+    FakeOAuth2AccessTokenManagerWithCaching(
+        OAuth2TokenService* token_service,
+        OAuth2AccessTokenManager::Delegate* delegate)
+    : FakeOAuth2AccessTokenManager(token_service, delegate) {}
 
-MockOAuth2TokenService::~MockOAuth2TokenService() {
-}
+FakeOAuth2AccessTokenManagerWithCaching::
+    ~FakeOAuth2AccessTokenManagerWithCaching() = default;
 
-void MockOAuth2TokenService::FetchOAuth2Token(
+void FakeOAuth2AccessTokenManagerWithCaching::FetchOAuth2Token(
     OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -132,23 +130,27 @@ void MockOAuth2TokenService::FetchOAuth2Token(
                      request->AsWeakPtr(), response_error, token_response));
 }
 
-void MockOAuth2TokenService::AddTokenToQueue(const std::string& token) {
+void FakeOAuth2AccessTokenManagerWithCaching::AddTokenToQueue(
+    const std::string& token) {
   token_replies_.push(token);
 }
 
-bool MockOAuth2TokenService::IsTokenValid(const std::string& token) const {
+bool FakeOAuth2AccessTokenManagerWithCaching::IsTokenValid(
+    const std::string& token) const {
   return valid_tokens_.find(token) != valid_tokens_.end();
 }
 
-void MockOAuth2TokenService::SetTokenValid(const std::string& token) {
+void FakeOAuth2AccessTokenManagerWithCaching::SetTokenValid(
+    const std::string& token) {
   valid_tokens_.insert(token);
 }
 
-void MockOAuth2TokenService::SetTokenInvalid(const std::string& token) {
+void FakeOAuth2AccessTokenManagerWithCaching::SetTokenInvalid(
+    const std::string& token) {
   valid_tokens_.erase(token);
 }
 
-void MockOAuth2TokenService::InvalidateAccessTokenImpl(
+void FakeOAuth2AccessTokenManagerWithCaching::InvalidateAccessTokenImpl(
     const CoreAccountId& account_id,
     const std::string& client_id,
     const OAuth2AccessTokenManager::ScopeSet& scopes,
@@ -162,7 +164,15 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
  public:
   UploadJobTestBase()
       : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {
+    oauth2_service_.OverrideAccessTokenManagerForTesting(
+        std::make_unique<FakeOAuth2AccessTokenManagerWithCaching>(
+            &oauth2_service_ /* OAuth2TokenService* */,
+            &oauth2_service_ /* OAuth2AccessTokenManager::Delegate* */));
+    access_token_manager_ =
+        static_cast<FakeOAuth2AccessTokenManagerWithCaching*>(
+            oauth2_service_.GetAccessTokenManager());
+  }
 
   // policy::UploadJob::Delegate:
   void OnSuccess() override {
@@ -227,7 +237,8 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   base::RunLoop run_loop_;
   net::EmbeddedTestServer test_server_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  MockOAuth2TokenService oauth2_service_;
+  FakeOAuth2TokenService oauth2_service_;
+  FakeOAuth2AccessTokenManagerWithCaching* access_token_manager_;
 
   std::unique_ptr<UploadJob::ErrorCode> expected_error_;
 };
@@ -265,7 +276,7 @@ class UploadFlowTest : public UploadJobTestBase {
     }
 
     const std::string token = authorization_header.substr(pos + 1);
-    response->set_code(oauth2_service_.IsTokenValid(token)
+    response->set_code(access_token_manager_->IsTokenValid(token)
                            ? default_status_code_
                            : net::HTTP_UNAUTHORIZED);
     return std::move(response);
@@ -277,8 +288,8 @@ class UploadFlowTest : public UploadJobTestBase {
 };
 
 TEST_F(UploadFlowTest, SuccessfulUpload) {
-  oauth2_service_.SetTokenValid(kTokenValid);
-  oauth2_service_.AddTokenToQueue(kTokenValid);
+  access_token_manager_->SetTokenValid(kTokenValid);
+  access_token_manager_->AddTokenToQueue(kTokenValid);
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
@@ -287,9 +298,9 @@ TEST_F(UploadFlowTest, SuccessfulUpload) {
 }
 
 TEST_F(UploadFlowTest, TokenExpired) {
-  oauth2_service_.SetTokenValid(kTokenValid);
-  oauth2_service_.AddTokenToQueue(kTokenExpired);
-  oauth2_service_.AddTokenToQueue(kTokenValid);
+  access_token_manager_->SetTokenValid(kTokenValid);
+  access_token_manager_->AddTokenToQueue(kTokenExpired);
+  access_token_manager_->AddTokenToQueue(kTokenValid);
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
@@ -298,10 +309,10 @@ TEST_F(UploadFlowTest, TokenExpired) {
 }
 
 TEST_F(UploadFlowTest, TokenInvalid) {
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
+  access_token_manager_->AddTokenToQueue(kTokenInvalid);
+  access_token_manager_->AddTokenToQueue(kTokenInvalid);
+  access_token_manager_->AddTokenToQueue(kTokenInvalid);
+  access_token_manager_->AddTokenToQueue(kTokenInvalid);
   SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
       new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
 
@@ -313,10 +324,10 @@ TEST_F(UploadFlowTest, TokenInvalid) {
 }
 
 TEST_F(UploadFlowTest, TokenMultipleTries) {
-  oauth2_service_.SetTokenValid(kTokenValid);
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  oauth2_service_.AddTokenToQueue(kTokenValid);
+  access_token_manager_->SetTokenValid(kTokenValid);
+  access_token_manager_->AddTokenToQueue(kTokenInvalid);
+  access_token_manager_->AddTokenToQueue(kTokenInvalid);
+  access_token_manager_->AddTokenToQueue(kTokenValid);
 
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
@@ -339,8 +350,8 @@ TEST_F(UploadFlowTest, TokenFetchFailure) {
 
 TEST_F(UploadFlowTest, InternalServerError) {
   SetResponseDefaultStatusCode(net::HTTP_INTERNAL_SERVER_ERROR);
-  oauth2_service_.SetTokenValid(kTokenValid);
-  oauth2_service_.AddTokenToQueue(kTokenValid);
+  access_token_manager_->SetTokenValid(kTokenValid);
+  access_token_manager_->AddTokenToQueue(kTokenValid);
 
   SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
       new UploadJob::ErrorCode(UploadJob::SERVER_ERROR)));
@@ -382,8 +393,8 @@ class UploadRequestTest : public UploadJobTestBase {
 };
 
 TEST_F(UploadRequestTest, TestRequestStructure) {
-  oauth2_service_.SetTokenValid(kTokenValid);
-  oauth2_service_.AddTokenToQueue(kTokenValid);
+  access_token_manager_->SetTokenValid(kTokenValid);
+  access_token_manager_->AddTokenToQueue(kTokenValid);
   std::unique_ptr<UploadJob> upload_job =
       PrepareUploadJob(std::make_unique<RepeatingMimeBoundaryGenerator>('A'));
   SetExpectedRequestContent(

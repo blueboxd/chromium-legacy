@@ -137,7 +137,7 @@ class BidiTestRunner {
 
   size_t tests_run_;
   size_t tests_skipped_;
-  std::set<UChar> skipped_code_points_;
+  HashSet<UChar> skipped_code_points_;
   size_t ignored_char_failures_;
   size_t level_failures_;
   size_t order_failures_;
@@ -174,9 +174,9 @@ void BidiTestRunner::RunTest(const std::basic_string<UChar>& input,
                              bidi_test::ParagraphDirection paragraph_direction,
                              const std::string& line,
                              size_t line_number) {
-  if (!skipped_code_points_.empty()) {
+  if (!skipped_code_points_.IsEmpty()) {
     for (size_t i = 0; i < input.size(); i++) {
-      if (skipped_code_points_.count(input[i])) {
+      if (skipped_code_points_.Contains(input[i])) {
         tests_skipped_++;
         return;
       }

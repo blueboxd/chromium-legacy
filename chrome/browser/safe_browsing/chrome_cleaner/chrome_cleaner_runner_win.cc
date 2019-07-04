@@ -140,7 +140,7 @@ ChromeCleanerRunner::ChromeCleanerRunner(
         chrome_cleaner::kEnableCrashReportingSwitch);
   }
 
-  const std::string group_name = GetSRTFieldTrialGroupName();
+  const std::string group_name = GetSRTPromptGroupName();
   if (!group_name.empty()) {
     cleaner_command_line_.AppendSwitchASCII(
         chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);

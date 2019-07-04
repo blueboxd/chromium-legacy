@@ -18,9 +18,6 @@ class TimeTicks;
 namespace ios {
 class ChromeBrowserState;
 }
-namespace web {
-class WebState;
-}
 
 // Notification sent when the first run ends, right before dimissing the Terms
 // of Service modal view.
@@ -48,7 +45,7 @@ void WriteFirstRunSentinelAndRecordMetrics(
 
 // Methods for writing sentinel and recording metrics and posting notifications
 void FinishFirstRun(ios::ChromeBrowserState* browserState,
-                    web::WebState* web_state,
+                    Tab* tab,
                     FirstRunConfiguration* config,
                     id<SyncPresenter> presenter);
 

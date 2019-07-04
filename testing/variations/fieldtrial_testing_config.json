@@ -556,29 +556,7 @@
     "AudioService": [
         {
             "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioProcess_APM",
-                    "params": {
-                        "teardown_timeout_s": "900",
-                        "timeout_seconds": "180"
-                    },
-                    "enable_features": [
-                        "AudioServiceAudioStreams",
-                        "AudioServiceOutOfProcess",
-                        "AudioServiceOutOfProcessKillAtHang",
-                        "AudioServiceSandbox",
-                        "WebRtcApmInAudioService"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AudioServiceOutOfProcessSandboxApmMac": [
-        {
-            "platforms": [
+                "windows",
                 "mac"
             ],
             "experiments": [
@@ -5122,26 +5100,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SyncUSSAutofillProfile"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncUSSAutofillWalletMetadata": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncUSSAutofillWalletMetadata"
                     ]
                 }
             ]

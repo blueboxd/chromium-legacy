@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 
 #include "third_party/blink/renderer/core/animation/length_property_functions.h"
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
@@ -179,7 +179,7 @@ const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
     const CSSSyntaxComponent* match) const {
   if (IsValueOutOfRangeForProperty(property_id, value_, unit_, match)) {
     // Wrap out of range values with a calc.
-    CSSCalcExpressionNode* node = ToCalcExpressionNode();
+    CSSMathExpressionNode* node = ToCalcExpressionNode();
     node->SetIsNestedCalc();
     return CSSMathFunctionValue::Create(node);
   }
@@ -187,8 +187,8 @@ const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
   return CSSNumericLiteralValue::Create(value_, unit_);
 }
 
-CSSCalcExpressionNode* CSSUnitValue::ToCalcExpressionNode() const {
-  return CSSCalcPrimitiveValue::Create(
+CSSMathExpressionNode* CSSUnitValue::ToCalcExpressionNode() const {
+  return CSSMathExpressionNumericLiteral::Create(
       CSSNumericLiteralValue::Create(value_, unit_));
 }
 

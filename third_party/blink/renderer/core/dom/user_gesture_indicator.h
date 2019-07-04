@@ -28,24 +28,22 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 
  public:
   enum Status { kNewGesture, kPossiblyExistingGesture };
-  enum TimeoutPolicy { kDefault, kOutOfProcess, kHasPaused };
+  enum TimeoutPolicy { kDefault, kHasPaused };
 
   ~UserGestureToken() = default;
-
-  // TODO(mustaq): The only user of this method is PepperPluginInstanceImpl.  We
-  // need to investigate the usecase closely.
-  bool HasGestures() const;
 
   void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
   void ResetTimestampForTesting() { ResetTimestamp(); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(UserGestureIndicatorTest, Timeouts);
   UserGestureToken(Status);
 
   void TransferGestureTo(UserGestureToken*);
   bool ConsumeGesture();
   void SetTimeoutPolicy(TimeoutPolicy);
   void ResetTimestamp();
+  bool HasGestures() const;
   bool HasTimedOut() const;
   bool WasForwardedCrossProcess() const;
   void SetWasForwardedCrossProcess();

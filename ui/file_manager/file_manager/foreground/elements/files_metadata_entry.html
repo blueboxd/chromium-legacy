@@ -23,14 +23,11 @@
         display: none;
       }
 
-      #padding {
-        width: 32px;
-      }
-
       #key {
         color: white;
         font-weight: 500;
         margin-inline-end: 16px;
+        margin-inline-start: 32px;
         overflow-wrap: break-word;
         vertical-align: bottom;
         width: 96px;
@@ -62,14 +59,12 @@
       }
 
       @media only screen and (max-width: 720px) {
-        #padding {
-          width: 12px;
-        }
         #box {
           width: 240px;
         }
         #key {
           margin-inline-end: 8px;
+          margin-inline-start: 12px;
           width: 80px;
         }
         #value {
@@ -78,9 +73,6 @@
       }
     </style>
     <div id="box" hidden="[[!value]]">
-      <!--TODO(crbug.com/965370): remove this useless <div>. If we want padding
-         before #key, use CSS start margin or padding to do that. -->
-      <div id="padding"></div>
       <div id="key">[[key]]</div>
       <div id="value" loading$="{{loading}}">
         <div hidden="[[loading]]">[[value]]</div>

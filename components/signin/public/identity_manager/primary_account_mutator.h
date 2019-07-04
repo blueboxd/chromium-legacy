@@ -7,8 +7,12 @@
 
 #include <string>
 
-#include "components/signin/core/browser/signin_metrics.h"
-#include "google_apis/gaia/core_account_id.h"
+namespace signin_metrics {
+enum ProfileSignout : int;
+enum class SignoutDelete;
+}  // namespace signin_metrics
+
+struct CoreAccountId;
 
 namespace identity {
 

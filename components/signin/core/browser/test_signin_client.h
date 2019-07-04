@@ -80,9 +80,6 @@ class TestSigninClient : public SigninClient {
   // executed immediately.
   void SetNetworkCallsDelayed(bool value);
 
-  // SigninClient overrides:
-  bool IsFirstRun() const override;
-  base::Time GetInstallDate() override;
   bool AreSigninCookiesAllowed() override;
   bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(

@@ -170,10 +170,10 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
                                 using_gpu_compositing,
                                 requested_attributes,
                                 context_type) {
-  supported_internal_formats_storage_.insert(
-      kSupportedInternalFormatsStorage,
-      kSupportedInternalFormatsStorage +
-          base::size(kSupportedInternalFormatsStorage));
+  for (size_t i = 0; i < base::size(kSupportedInternalFormatsStorage); ++i) {
+    supported_internal_formats_storage_.insert(
+        kSupportedInternalFormatsStorage[i]);
+  }
 }
 
 void WebGL2RenderingContextBase::DestroyContext() {

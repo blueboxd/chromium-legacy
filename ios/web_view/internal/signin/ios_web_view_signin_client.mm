@@ -40,11 +40,6 @@ std::string IOSWebViewSigninClient::GetProductVersion() {
   return "";
 }
 
-base::Time IOSWebViewSigninClient::GetInstallDate() {
-  // TODO(crbug.com/768689): Implement this method with appropriate values.
-  return base::Time::FromTimeT(0);
-}
-
 PrefService* IOSWebViewSigninClient::GetPrefs() {
   return pref_service_;
 }
@@ -59,10 +54,6 @@ network::mojom::CookieManager* IOSWebViewSigninClient::GetCookieManager() {
 }
 
 void IOSWebViewSigninClient::DoFinalInit() {}
-
-bool IOSWebViewSigninClient::IsFirstRun() const {
-  return false;
-}
 
 bool IOSWebViewSigninClient::AreSigninCookiesAllowed() {
   return signin::SettingsAllowSigninCookies(cookie_settings_.get());

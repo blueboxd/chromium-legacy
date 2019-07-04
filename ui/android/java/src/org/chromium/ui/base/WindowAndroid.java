@@ -279,7 +279,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) recomputeSupportedRefreshRates();
 
         // Temporary solution for flaky tests, see https://crbug.com/767624 for context
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             mVSyncMonitor =
                     new VSyncMonitor(context, mVSyncListener, mDisplayAndroid.getRefreshRate());
             mAccessibilityManager =

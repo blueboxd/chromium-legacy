@@ -6,7 +6,14 @@ import("//build/config/ios/asset_catalog.gni")
 
 group("resources") {
   deps = [
+    ":solid_button_text_color",
     ":tint_color",
+  ]
+}
+
+colorset("solid_button_text_color") {
+  sources = [
+    "solid_button_text_color.colorset/Contents.json",
   ]
 }
 

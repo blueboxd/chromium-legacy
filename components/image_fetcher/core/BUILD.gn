@@ -20,6 +20,8 @@ static_library("core") {
     "image_fetcher_service.cc",
     "image_fetcher_service.h",
     "image_fetcher_types.h",
+    "reduced_mode_image_fetcher.cc",
+    "reduced_mode_image_fetcher.h",
     "request_metadata.cc",
     "request_metadata.h",
   ]
@@ -74,6 +76,7 @@ source_set("unit_tests") {
     "image_data_fetcher_unittest.cc",
     "image_fetcher_impl_unittest.cc",
     "image_fetcher_metrics_reporter_unittest.cc",
+    "reduced_mode_image_fetcher_unittest.cc",
     "request_metadata_unittest.cc",
   ]
   deps = [

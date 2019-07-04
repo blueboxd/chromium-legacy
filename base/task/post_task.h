@@ -80,6 +80,10 @@ namespace base {
 
 // Equivalent to calling PostTask with default TaskTraits.
 BASE_EXPORT bool PostTask(const Location& from_here, OnceClosure task);
+inline bool PostTask(OnceClosure task,
+                     const Location& from_here = Location::Current()) {
+  return PostTask(from_here, std::move(task));
+}
 
 // Equivalent to calling PostDelayedTask with default TaskTraits.
 //

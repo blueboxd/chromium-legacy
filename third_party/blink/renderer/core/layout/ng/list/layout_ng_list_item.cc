@@ -338,17 +338,23 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
   } else {
     // Create a LayoutText in it.
     LayoutText* text = nullptr;
+    // |text_style| should be as same as style propagated in
+    // |LayoutObject::PropagateStyleToAnonymousChildren()| to avoid unexpected
+    // full layout due by style difference. See http://crbug.com/980399
+    scoped_refptr<ComputedStyle> text_style =
+        ComputedStyle::CreateAnonymousStyleWithDisplay(
+            marker_->StyleRef(), marker_->StyleRef().Display());
     if (child) {
       if (child->IsText()) {
         text = ToLayoutText(child);
-        text->SetStyle(marker_->Style());
+        text->SetStyle(text_style);
       } else {
         child->Destroy();
         child = nullptr;
       }
     }
     if (!child) {
-      text = LayoutText::CreateEmptyAnonymous(GetDocument(), marker_->Style(),
+      text = LayoutText::CreateEmptyAnonymous(GetDocument(), text_style,
                                               LegacyLayout::kAuto);
       marker_->AddChild(text);
       is_marker_text_updated_ = false;

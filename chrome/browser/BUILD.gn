@@ -1508,6 +1508,8 @@ jumbo_split_static_library("browser") {
     "sharing/fcm_constants.h",
     "sharing/features.cc",
     "sharing/features.h",
+    "sharing/ping_message_handler.cc",
+    "sharing/ping_message_handler.h",
     "sharing/sharing_device_info.cc",
     "sharing/sharing_device_info.h",
     "sharing/sharing_device_registration.cc",
@@ -4963,7 +4965,7 @@ jumbo_split_static_library("browser") {
       allow_circular_includes_from += [ "android/vr:vr_android" ]
     }
 
-    if (!is_android) {
+    if (is_win) {
       sources += [
         "vr/service/xr_session_request_consent_manager_impl.cc",
         "vr/service/xr_session_request_consent_manager_impl.h",

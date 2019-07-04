@@ -12,11 +12,12 @@
 #include "base/scoped_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/scope_set.h"
 
+class GoogleServiceAuthError;
+
 namespace identity {
+struct AccessTokenInfo;
 
 // Helper class to ease the task of obtaining an OAuth2 access token for the
 // authenticated account. This handles various special cases, e.g. when the

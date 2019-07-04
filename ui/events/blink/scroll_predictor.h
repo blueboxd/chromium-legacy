@@ -24,9 +24,8 @@ class ScrollPredictorTest;
 class ScrollPredictor {
  public:
   // Select the predictor type from field trial params and initialize the
-  // predictor. enable_resampling is true when kResamplingScrollEvents is
-  // enabled.
-  explicit ScrollPredictor(bool enable_resampling);
+  // predictor.
+  explicit ScrollPredictor();
   ~ScrollPredictor();
 
   // Reset the predictors on each GSB.
@@ -68,11 +67,7 @@ class ScrollPredictor {
   // the aggregated event.
   gfx::PointF last_accumulated_delta_;
 
-  // Whether resampling is enabled by feature flag.
-  bool enable_resampling_ = false;
-
-  // Whether current scroll event should be resampled. This only valid when
-  // enable_resampling_ is true.
+  // Whether current scroll event should be resampled.
   bool should_resample_scroll_events_ = false;
 
   // Records the timestamp for last event added to predictor. Use for

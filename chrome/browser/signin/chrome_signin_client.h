@@ -51,8 +51,6 @@ class ChromeSigninClient
       signin_metrics::ProfileSignout signout_source_metric) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
-  bool IsFirstRun() const override;
-  base::Time GetInstallDate() override;
   bool AreSigninCookiesAllowed() override;
   bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(

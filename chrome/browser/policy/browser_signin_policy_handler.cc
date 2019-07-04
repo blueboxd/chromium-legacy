@@ -6,8 +6,9 @@
 
 #include <memory>
 
-#include "base/values.h"
 #include "base/syslog_logging.h"
+#include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -38,7 +39,9 @@ void BrowserSigninPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     }
     switch (static_cast<BrowserSigninMode>(int_value)) {
       case BrowserSigninMode::kForced:
+#if !defined(OS_LINUX)
         prefs->SetValue(prefs::kForceBrowserSignin, base::Value(true));
+#endif
         FALLTHROUGH;
       case BrowserSigninMode::kEnabled:
         prefs->SetValue(

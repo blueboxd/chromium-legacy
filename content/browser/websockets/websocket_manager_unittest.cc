@@ -23,40 +23,30 @@ class TestWebSocketImpl : public network::WebSocket {
  public:
   TestWebSocketImpl(
       std::unique_ptr<Delegate> delegate,
-      network::mojom::WebSocketRequest request,
-      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
-
-      int process_id,
-      int frame_id,
-      url::Origin origin,
-      uint32_t options,
-      base::TimeDelta delay)
+      network::mojom::WebSocketHandshakeClientPtr handshake_client,
+      network::mojom::WebSocketClientPtr websocket_client,
+      network::WebSocketThrottler::PendingConnection pending_connection_tracker)
       : network::WebSocket(std::move(delegate),
-                           std::move(request),
+                           GURL(),
+                           std::vector<std::string>(),
+                           GURL(),
+                           std::vector<network::mojom::HttpHeaderPtr>(),
+                           kMagicRenderProcessId,
+                           MSG_ROUTING_NONE,
+                           url::Origin(),
+                           network::mojom::kWebSocketOptionNone,
+                           std::move(handshake_client),
+                           std::move(websocket_client),
                            nullptr,
                            nullptr,
                            std::move(pending_connection_tracker),
-                           process_id,
-                           frame_id,
-                           std::move(origin),
-                           options,
-                           delay) {}
-
-  base::TimeDelta delay() const { return delay_; }
-
-  void SimulateConnectionError() {
-    OnConnectionError();
-  }
+                           base::TimeDelta::FromSeconds(1)) {}
 };
 
 class TestWebSocketManager : public WebSocketManager {
  public:
   TestWebSocketManager()
       : WebSocketManager(kMagicRenderProcessId, nullptr) {}
-
-  const std::vector<TestWebSocketImpl*>& sockets() const {
-    return sockets_;
-  }
 
   int64_t num_pending_connections() const {
     return throttler_.num_pending_connections();
@@ -74,41 +64,42 @@ class TestWebSocketManager : public WebSocketManager {
     return throttler_.num_previous_failed_connections();
   }
 
-  void DoCreateWebSocket(network::mojom::WebSocketRequest request) {
-    WebSocketManager::DoCreateWebSocket(MSG_ROUTING_NONE, url::Origin(),
-                                        network::mojom::kWebSocketOptionNone,
-                                        std::move(request));
+  void DoCreateWebSocket() {
+    network::mojom::WebSocketHandshakeClientPtr handshake_client;
+    network::mojom::WebSocketClientPtr websocket_client;
+
+    handshake_client_requests_.push_back(mojo::MakeRequest(&handshake_client));
+    websocket_client_requests_.push_back(mojo::MakeRequest(&websocket_client));
+
+    WebSocketManager::DoCreateWebSocket(
+        GURL(), std::vector<std::string>(), GURL(), base::nullopt,
+        MSG_ROUTING_NONE, url::Origin(), network::mojom::kWebSocketOptionNone,
+        handshake_client.PassInterface(), websocket_client.PassInterface());
   }
 
  private:
   std::unique_ptr<network::WebSocket> DoCreateWebSocketInternal(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
-      network::mojom::WebSocketRequest request,
-      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
-      int process_id,
-      int frame_id,
-      url::Origin origin,
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      const base::Optional<std::string>& user_agent,
+      int32_t frame_id,
+      const url::Origin& origin,
       uint32_t options,
+      network::mojom::WebSocketHandshakeClientPtr handshake_client,
+      network::mojom::WebSocketClientPtr websocket_client,
+      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
       base::TimeDelta delay) override {
-    auto impl = std::make_unique<TestWebSocketImpl>(
-        std::move(delegate), std::move(request),
-        std::move(pending_connection_tracker), process_id, frame_id,
-        std::move(origin), options, delay);
-    // We keep a vector of sockets here to track their creation order.
-    sockets_.push_back(impl.get());
-    return impl;
+    return std::make_unique<TestWebSocketImpl>(
+        std::move(delegate), std::move(handshake_client),
+        std::move(websocket_client), std::move(pending_connection_tracker));
   }
 
-  void OnLostConnectionToClient(network::WebSocket* impl) override {
-    auto it = std::find(sockets_.begin(), sockets_.end(),
-                        static_cast<TestWebSocketImpl*>(impl));
-    ASSERT_TRUE(it != sockets_.end());
-    sockets_.erase(it);
-
-    WebSocketManager::OnLostConnectionToClient(impl);
-  }
-
-  std::vector<TestWebSocketImpl*> sockets_;
+  std::vector<network::mojom::WebSocketHandshakeClientRequest>
+      handshake_client_requests_;
+  std::vector<network::mojom::WebSocketClientRequest>
+      websocket_client_requests_;
 };
 
 class WebSocketManagerTest : public ::testing::Test {
@@ -116,21 +107,6 @@ class WebSocketManagerTest : public ::testing::Test {
   WebSocketManagerTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     websocket_manager_.reset(new TestWebSocketManager());
-  }
-
-  void AddMultipleChannels(int number_of_channels) {
-    for (int i = 0; i < number_of_channels; ++i) {
-      network::mojom::WebSocketPtr websocket;
-      websocket_manager_->DoCreateWebSocket(mojo::MakeRequest(&websocket));
-    }
-  }
-
-  void AddAndCancelMultipleChannels(int number_of_channels) {
-    for (int i = 0; i < number_of_channels; ++i) {
-      network::mojom::WebSocketPtr websocket;
-      websocket_manager_->DoCreateWebSocket(mojo::MakeRequest(&websocket));
-      websocket_manager_->sockets().back()->SimulateConnectionError();
-    }
   }
 
   TestWebSocketManager* websocket_manager() { return websocket_manager_.get(); }
@@ -147,25 +123,17 @@ TEST_F(WebSocketManagerTest, Construct) {
 TEST_F(WebSocketManagerTest, CreateWebSocket) {
   network::mojom::WebSocketPtr websocket;
 
-  websocket_manager()->DoCreateWebSocket(mojo::MakeRequest(&websocket));
+  websocket_manager()->DoCreateWebSocket();
 
-  EXPECT_EQ(1U, websocket_manager()->sockets().size());
-}
-
-TEST_F(WebSocketManagerTest, SendFrameButNotConnectedYet) {
-  network::mojom::WebSocketPtr websocket;
-
-  websocket_manager()->DoCreateWebSocket(mojo::MakeRequest(&websocket));
-
-  // This should not crash.
-  std::vector<uint8_t> data;
-  websocket->SendFrame(true, network::mojom::WebSocketMessageType::TEXT, data);
+  EXPECT_EQ(1U, websocket_manager()->num_sockets());
 }
 
 // The 256th connection is rejected by per-renderer WebSocket throttling.
 // This is not counted as a failure.
 TEST_F(WebSocketManagerTest, Rejects256thPendingConnection) {
-  AddMultipleChannels(256);
+  for (int i = 0; i < 256; ++i) {
+    websocket_manager()->DoCreateWebSocket();
+  }
 
   EXPECT_EQ(255, websocket_manager()->num_pending_connections());
   EXPECT_EQ(0, websocket_manager()->num_current_succeeded_connections());
@@ -173,7 +141,7 @@ TEST_F(WebSocketManagerTest, Rejects256thPendingConnection) {
   EXPECT_EQ(0, websocket_manager()->num_current_failed_connections());
   EXPECT_EQ(0, websocket_manager()->num_previous_failed_connections());
 
-  ASSERT_EQ(255U, websocket_manager()->sockets().size());
+  EXPECT_EQ(255U, websocket_manager()->num_sockets());
 }
 
 }  // namespace

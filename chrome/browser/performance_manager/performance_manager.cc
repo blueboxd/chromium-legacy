@@ -114,9 +114,10 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
     const WebContentsProxy& contents_proxy,
-    bool is_visible) {
+    bool is_visible,
+    bool is_audible) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
-                                      contents_proxy, is_visible);
+                                      contents_proxy, is_visible, is_audible);
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
@@ -267,9 +268,7 @@ void PerformanceManager::OnStartImpl(
   graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
   graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
   graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
-
-  // Register new |GraphImplObserver| implementations here.
-  RegisterObserver(std::make_unique<MetricsCollector>());
+  graph_.PassToGraph(std::make_unique<MetricsCollector>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))

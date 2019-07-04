@@ -48,12 +48,6 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       const std::string& client_secret,
       const OAuth2AccessTokenManager::ScopeSet& scopes) override;
 
-  void InvalidateAccessTokenImpl(
-      const CoreAccountId& account_id,
-      const std::string& client_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      const std::string& access_token) override {}
-
  private:
   FakeOAuth2AccessTokenManager* GetFakeAccessTokenManager();
 

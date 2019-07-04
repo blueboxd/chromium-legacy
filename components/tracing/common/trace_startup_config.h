@@ -89,7 +89,9 @@ class TRACING_EXPORT TraceStartupConfig {
     kDevToolsTracingHandler,
     // The background tracing config set in application preferences on the
     // previous session, for current session.
-    kBackgroundTracing
+    kBackgroundTracing,
+    // We expect the System tracing to take over.
+    kSystemTracing
   };
 
   static TraceStartupConfig* GetInstance();

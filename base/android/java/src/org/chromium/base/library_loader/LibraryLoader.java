@@ -310,7 +310,7 @@ public class LibraryLoader {
      *         setReachedCodeProfilerEnabledOnNextRuns()).
      */
     private static boolean isReachedCodeProfilerEnabled() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return ContextUtils.getAppSharedPreferences().getBoolean(
                     REACHED_CODE_PROFILER_ENABLED_KEY, false);
         }

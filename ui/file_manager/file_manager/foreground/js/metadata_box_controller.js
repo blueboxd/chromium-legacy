@@ -65,11 +65,13 @@ function MetadataBoxController(
 
 /**
  * Initialize the controller with quick view which will be lazily loaded.
+ *
+ * TODO(oka): store quickViewModel_.metadataBoxActive state to persistent
+ * storage using FilesApp window.appState?
+ *
  * @param{!FilesQuickView} quickView
  */
 MetadataBoxController.prototype.init = function(quickView) {
-  // TODO(oka): Add storage to persist the value of
-  // quickViewModel_.metadataBoxActive.
   this.fileMetadataFormatter_.addEventListener(
       'date-time-format-changed', this.updateView_.bind(this));
 

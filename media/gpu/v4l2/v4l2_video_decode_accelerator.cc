@@ -243,7 +243,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
                                                 bool* result,
                                                 base::WaitableEvent* done) {
-  VLOGF(2);
+  DVLOGF(3);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(result, nullptr);
   DCHECK_NE(done, nullptr);
@@ -655,8 +655,8 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     // the decoder state. The client may adjust the coded width. We don't have
     // the final coded size in AssignPictureBuffers yet. Use the adjusted coded
     // width to create the image processor.
-    VLOGF(2) << "Original egl_image_size=" << egl_image_size_.ToString()
-             << ", adjusted coded width=" << adjusted_coded_width;
+    DVLOGF(3) << "Original egl_image_size=" << egl_image_size_.ToString()
+              << ", adjusted coded width=" << adjusted_coded_width;
     DCHECK_GE(adjusted_coded_width, egl_image_size_.width());
     egl_image_size_.set_width(adjusted_coded_width);
     if (!CreateImageProcessor())
@@ -2210,10 +2210,10 @@ gfx::Size V4L2VideoDecodeAccelerator::GetVisibleSize(
   selection_arg.target = V4L2_SEL_TGT_COMPOSE;
 
   if (device_->Ioctl(VIDIOC_G_SELECTION, &selection_arg) == 0) {
-    VLOGF(2) << "VIDIOC_G_SELECTION is supported";
+    DVLOGF(3) << "VIDIOC_G_SELECTION is supported";
     visible_rect = &selection_arg.r;
   } else {
-    VLOGF(2) << "Fallback to VIDIOC_G_CROP";
+    DVLOGF(3) << "Fallback to VIDIOC_G_CROP";
     struct v4l2_crop crop_arg;
     memset(&crop_arg, 0, sizeof(crop_arg));
     crop_arg.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -2227,7 +2227,7 @@ gfx::Size V4L2VideoDecodeAccelerator::GetVisibleSize(
 
   gfx::Rect rect(visible_rect->left, visible_rect->top, visible_rect->width,
                  visible_rect->height);
-  VLOGF(2) << "visible rectangle is " << rect.ToString();
+  DVLOGF(3) << "visible rectangle is " << rect.ToString();
   if (!gfx::Rect(coded_size).Contains(rect)) {
     DVLOGF(3) << "visible rectangle " << rect.ToString()
               << " is not inside coded size " << coded_size.ToString();
@@ -2369,7 +2369,7 @@ uint32_t V4L2VideoDecodeAccelerator::FindImageProcessorInputFormat() {
     if (std::find(processor_input_formats.begin(),
                   processor_input_formats.end(),
                   fmtdesc.pixelformat) != processor_input_formats.end()) {
-      VLOGF(2) << "Image processor input format=" << fmtdesc.description;
+      DVLOGF(3) << "Image processor input format=" << fmtdesc.description;
       return fmtdesc.pixelformat;
     }
     ++fmtdesc.index;
@@ -2400,7 +2400,7 @@ uint32_t V4L2VideoDecodeAccelerator::FindImageProcessorOutputFormat() {
 
   for (uint32_t processor_output_format : processor_output_formats) {
     if (device_->CanCreateEGLImageFrom(processor_output_format)) {
-      VLOGF(2) << "Image processor output format=" << processor_output_format;
+      DVLOGF(3) << "Image processor output format=" << processor_output_format;
       return processor_output_format;
     }
   }
@@ -2482,8 +2482,6 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
-  VLOGF(2) << "image_processor_->output_layout().coded_size()="
-           << image_processor_->output_layout().coded_size().ToString();
   DCHECK(image_processor_->output_layout().coded_size() == egl_image_size_);
   if (image_processor_->input_layout().coded_size() != coded_size_) {
     VLOGF(1) << "Image processor should be able to take the output coded "

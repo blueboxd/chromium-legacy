@@ -173,8 +173,10 @@ def member_context(_, member, component_info):
         'is_string_type': idl_type.preprocessed_type.is_string_type,
         'is_required': member.is_required,
         'name': member.name,
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(member, runtime_features),  # [OriginTrialEnabled]
-        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(member, runtime_features),  # [RuntimeEnabled]
+        'origin_trial_feature_name':
+            v8_utilities.origin_trial_feature_name(member, runtime_features),  # [RuntimeEnabled] for origin trial
+        'runtime_enabled_feature_name':
+            v8_utilities.runtime_enabled_feature_name(member, runtime_features),  # [RuntimeEnabled] if not in origin trial
         'setter_name': setter_name_for_dictionary_member(member),
         'has_value_or_default': has_value_or_default,
         'null_setter_name': null_setter_name_for_dictionary_member(member),

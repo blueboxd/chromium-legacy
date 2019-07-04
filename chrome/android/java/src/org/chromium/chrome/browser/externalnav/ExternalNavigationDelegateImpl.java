@@ -345,7 +345,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         Context context = ContextUtils.getApplicationContext();
         // On certain Samsung devices, queryIntentActivities can trigger a
         // StrictModeDiskReadViolation (https://crbug.com/894160).
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()){
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
             return getSpecializedHandlersWithFilter(handlers, packageName).size() > 0;

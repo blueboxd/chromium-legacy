@@ -23,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/re2/src/re2/re2.h"

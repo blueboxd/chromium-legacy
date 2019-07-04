@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.net.NetworkChangeNotifier;
@@ -44,13 +46,22 @@ public class SectionList extends InnerNode<NewTabPageViewHolder, PartialBindCall
     private final Set<Integer> mBlacklistedCategories = new HashSet<>();
     private final SuggestionsUiDelegate mUiDelegate;
     private final OfflinePageBridge mOfflinePageBridge;
+    private final SigninManager mSigninManager;
 
     public SectionList(SuggestionsUiDelegate uiDelegate, OfflinePageBridge offlinePageBridge) {
+        this(uiDelegate, offlinePageBridge, IdentityServicesProvider.getSigninManager());
+    }
+
+    @VisibleForTesting
+    public SectionList(SuggestionsUiDelegate uiDelegate, OfflinePageBridge offlinePageBridge,
+            SigninManager signinManager) {
         mUiDelegate = uiDelegate;
         mUiDelegate.getSuggestionsSource().addObserver(this);
         mOfflinePageBridge = offlinePageBridge;
 
         mUiDelegate.addDestructionObserver(this::removeAllSections);
+
+        mSigninManager = signinManager;
     }
 
     /**
@@ -118,7 +129,7 @@ public class SectionList extends InnerNode<NewTabPageViewHolder, PartialBindCall
         if (section == null) {
             SuggestionsRanker suggestionsRanker = mUiDelegate.getSuggestionsRanker();
             section = new SuggestionsSection(
-                    this, mUiDelegate, suggestionsRanker, mOfflinePageBridge, info);
+                    this, mUiDelegate, suggestionsRanker, mOfflinePageBridge, info, mSigninManager);
             mSections.put(category, section);
             suggestionsRanker.registerCategory(category);
             addChildren(section);

@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MATH_FUNCTION_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MATH_FUNCTION_VALUE_H_
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 namespace blink {
@@ -16,12 +16,12 @@ namespace blink {
 class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
  public:
   static CSSMathFunctionValue* Create(const Length&, float zoom);
-  static CSSMathFunctionValue* Create(CSSCalcExpressionNode*,
+  static CSSMathFunctionValue* Create(CSSMathExpressionNode*,
                                       ValueRange = kValueRangeAll);
 
-  CSSMathFunctionValue(CSSCalcExpressionNode* expression, ValueRange range);
+  CSSMathFunctionValue(CSSMathExpressionNode* expression, ValueRange range);
 
-  CSSCalcExpressionNode* ExpressionNode() const { return expression_; }
+  CSSMathExpressionNode* ExpressionNode() const { return expression_; }
 
   scoped_refptr<CalculationValue> ToCalcValue(
       const CSSToLengthConversionData& conversion_data) const {
@@ -32,6 +32,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   }
 
   UnitType TypeWithMathFunctionResolved() const;
+  bool MayHaveRelativeUnit() const;
 
   CalculationCategory Category() const { return expression_->Category(); }
   bool IsInt() const { return expression_->IsInteger(); }
@@ -61,7 +62,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
  private:
   double ClampToPermittedRange(double) const;
 
-  Member<CSSCalcExpressionNode> expression_;
+  Member<CSSMathExpressionNode> expression_;
 
   // TODO(crbug.com/979895): Move this flag to CSSValue for better packing.
   bool non_negative_;

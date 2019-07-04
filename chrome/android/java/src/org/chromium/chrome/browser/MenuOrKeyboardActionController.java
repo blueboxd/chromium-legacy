@@ -6,7 +6,7 @@ package org.chromium.chrome.browser;
 
 /**
  * A controller to register/unregister {@link MenuOrKeyboardActionHandler} for menu or keyboard
- * actions.
+ * actions and execute them.
  */
 public interface MenuOrKeyboardActionController {
     /**
@@ -22,7 +22,7 @@ public interface MenuOrKeyboardActionController {
          * @param fromMenu Whether this was triggered from the menu.
          * @return Whether the action was handled.
          */
-        boolean onMenuOrKeyboardAction(int id, boolean fromMenu);
+        boolean handleMenuOrKeyboardAction(int id, boolean fromMenu);
     }
 
     /**
@@ -34,4 +34,14 @@ public interface MenuOrKeyboardActionController {
      * @param handler A {@link MenuOrKeyboardActionHandler} to unregister.
      */
     void unregisterMenuOrKeyboardActionHandler(MenuOrKeyboardActionHandler handler);
+
+    /**
+     * Performs the specified action.
+     *
+     * @param id The ID of the selected menu item (defined in main_menu.xml) or keyboard
+     *           shortcut (defined in values.xml).
+     * @param fromMenu Whether this was triggered from the menu.
+     * @return Whether the action was handled.
+     */
+    boolean onMenuOrKeyboardAction(int id, boolean fromMenu);
 }

@@ -1382,8 +1382,9 @@ void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
 }
 
 BrowserAccessibilityManager*
-    RenderWidgetHostViewMac::CreateBrowserAccessibilityManager(
-        BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+RenderWidgetHostViewMac::CreateBrowserAccessibilityManager(
+    BrowserAccessibilityDelegate* delegate,
+    bool for_root_frame) {
   return new BrowserAccessibilityManagerMac(
       BrowserAccessibilityManagerMac::GetEmptyDocument(), delegate);
 }

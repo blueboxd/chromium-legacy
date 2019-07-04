@@ -50,7 +50,7 @@ public class ClearDataDialogResultRecorder {
             String key = triggeredByUninstall ? TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL
                                               : TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA;
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                 mPrefsManager.get().writeInt(key, mPrefsManager.get().readInt(key) + 1);
             }
         }
@@ -60,7 +60,7 @@ public class ClearDataDialogResultRecorder {
      * Make recordings that were deferred in order to not load native.
      */
     public void makeDeferredRecordings() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             recordDismissals(TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL, true);
             recordDismissals(TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA, false);
         }

@@ -49,7 +49,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.SignInPreference;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
@@ -477,8 +477,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (mCurrentSyncError == SyncError.OTHER_ERRORS) {
             final Account account = ChromeSigninController.get().getSignedInUser();
             // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
-            SigninManager.get().signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
-                    () -> SigninManager.get().signIn(account, null, null));
+            IdentityServicesProvider.getSigninManager().signOut(
+                    SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
+                    () -> IdentityServicesProvider.getSigninManager().signIn(account, null, null));
             return;
         }
 
@@ -588,7 +589,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     private void cancelSync() {
         RecordUserAction.record("Signin_Signin_CancelAdvancedSyncSettings");
-        SigninManager.get().signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
+        IdentityServicesProvider.getSigninManager().signOut(
+                SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
         getActivity().finish();
     }
 

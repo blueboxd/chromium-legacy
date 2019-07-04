@@ -196,19 +196,16 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
           net::GetTestCertsDirectory(), kGoodCertificateFile);
     } else if (name == kEvSecure) {
       // Generate a valid mock EV HTTPS identity, with an EV certificate. Must
-      // match conditions in PageInfoBubbleView::SetIdentityInfo() for calling
-      // AddEvCertificateDetailsLabel().
+      // match conditions in PageInfoBubbleView::SetIdentityInfo() for setting
+      // the certificate button subtitle.
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_EV_CERT;
       identity.connection_status = PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED;
-      identity.identity_status_description =
-          "This page has been identified as being owned by Thawte Inc [US].";
+      identity.identity_status_description = "Issued to: Thawte Inc [US]";
       scoped_refptr<net::X509Certificate> ev_cert =
           net::X509Certificate::CreateFromBytes(
               reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der));
       ASSERT_TRUE(ev_cert);
       identity.certificate = ev_cert;
-      expected_identifiers_.push_back(
-          PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS);
     } else if (name == kMalware) {
       identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
     } else if (name == kDeceptive) {

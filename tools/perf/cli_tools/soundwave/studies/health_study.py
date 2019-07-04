@@ -56,7 +56,7 @@ def IterTestPaths():
     browser = GetBrowserFromBot(bot)
     series = STARTUP_BY_BROWSER[browser].copy()
     series['bot'] = bot
-    yield timeseries.Key(**series)
+    yield timeseries.Key.FromDict(series)
 
     if bot == 'ChromiumPerf:android-pixel2_webview-perf':
       # The pixel2 webview bot incorrectly reports memory as if coming from
@@ -69,4 +69,9 @@ def IterTestPaths():
       series['measurement'] = series['measurement'].format(browser=browser)
       for test_case in test_cases:
         series['test_case'] = test_case
-        yield timeseries.Key(**series)
+        yield timeseries.Key.FromDict(series)
+
+  # TODO(crbug.com/981283): Switch to timeseries.Key when bug is resolved.
+  yield ('ChromiumPerf/android-builder-perf/'
+         'resource_sizes (MonochromePublic.minimal.apks)/'
+         'Specifics/normalized apk size')

@@ -21,7 +21,7 @@
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/websockets/websocket_manager.h"
+#include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -31,6 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -83,9 +84,10 @@ class RendererInterfaceBinders {
  private:
   void InitializeParameterizedBinderRegistry();
 
-  static void CreateWebSocket(network::mojom::WebSocketRequest request,
-                              RenderProcessHost* host,
-                              const url::Origin& origin);
+  static void CreateWebSocketConnector(
+      blink::mojom::WebSocketConnectorRequest request,
+      RenderProcessHost* host,
+      const url::Origin& origin);
 
   service_manager::BinderRegistryWithArgs<RenderProcessHost*,
                                           const url::Origin&>
@@ -131,7 +133,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   // TODO(nhiroki): Consider moving this into SharedWorkerHost and
   // ServiceWorkerProviderHost.
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(CreateWebSocket));
+      base::BindRepeating(CreateWebSocketConnector));
 
   parameterized_binder_registry_.AddInterface(
       base::Bind([](payments::mojom::PaymentManagerRequest request,
@@ -226,15 +228,15 @@ RendererInterfaceBinders& GetRendererInterfaceBinders() {
   return *binders;
 }
 
-void RendererInterfaceBinders::CreateWebSocket(
-    network::mojom::WebSocketRequest request,
+void RendererInterfaceBinders::CreateWebSocketConnector(
+    blink::mojom::WebSocketConnectorRequest request,
     RenderProcessHost* host,
     const url::Origin& origin) {
   // TODO(jam): is it ok to not send extraHeaders for sockets created from
   // shared and service workers?
-  WebSocketManager::CreateWebSocket(host->GetID(), MSG_ROUTING_NONE, origin,
-                                    network::mojom::kWebSocketOptionNone,
-                                    nullptr, nullptr, std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<WebSocketConnectorImpl>(
+                              host->GetID(), MSG_ROUTING_NONE, origin),
+                          std::move(request));
 }
 
 }  // namespace

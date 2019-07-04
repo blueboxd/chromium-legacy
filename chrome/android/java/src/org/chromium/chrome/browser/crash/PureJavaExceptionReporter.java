@@ -81,7 +81,7 @@ public class PureJavaExceptionReporter {
     @VisibleForTesting
     void createAndUploadReport(Throwable javaException) {
         // It is OK to do IO in main thread when we know there is a crash happens.
-        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             createReport(javaException);
             flushToFile();
             uploadReport();

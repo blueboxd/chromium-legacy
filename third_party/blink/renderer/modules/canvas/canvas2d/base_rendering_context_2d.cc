@@ -235,8 +235,6 @@ void BaseRenderingContext2D::setFillStyle(
     if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean()) {
       SetOriginTaintedByContent();
     }
-    if (canvas_pattern->GetPattern()->IsTextureBacked())
-      DisableDeferral(kDisableDeferralReasonUsingTextureBackedPattern);
     canvas_style = CanvasStyle::CreateFromPattern(canvas_pattern);
   }
 

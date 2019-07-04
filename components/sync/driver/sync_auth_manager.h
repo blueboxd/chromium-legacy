@@ -24,6 +24,7 @@
 
 namespace identity {
 class AccessTokenFetcher;
+struct AccessTokenInfo;
 }
 
 namespace syncer {

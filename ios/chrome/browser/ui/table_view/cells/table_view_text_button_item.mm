@@ -15,8 +15,6 @@
 #endif
 
 namespace {
-// Default Button title Color.
-const CGFloat kDefaultButtonTitleColor = 0xFFFFFF;
 // Alpha value for the disabled action button.
 const CGFloat kDisabledButtonAlpha = 0.5;
 // Vertical spacing between stackView and cell contentView.
@@ -115,7 +113,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
 
     // Create button.
     self.button = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self.button setTitleColor:UIColorFromRGB(kDefaultButtonTitleColor)
+    [self.button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                       forState:UIControlStateNormal];
     self.button.translatesAutoresizingMaskIntoConstraints = NO;
     [self.button.titleLabel
@@ -181,7 +179,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  [self.button setTitleColor:UIColorFromRGB(kDefaultButtonTitleColor)
+  [self.button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                     forState:UIControlStateNormal];
   self.textLabel.textAlignment = kDefaultTextAlignment;
   [self disableButtonIntrinsicWidth:NO];

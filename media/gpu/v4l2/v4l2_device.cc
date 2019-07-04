@@ -168,7 +168,7 @@ size_t V4L2Buffer::GetMemoryUsage() const {
 scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
   auto layout = V4L2Device::V4L2FormatToVideoFrameLayout(format_);
   if (!layout) {
-    DVLOG(1) << "Cannot create frame layout for V4L2 buffers";
+    VLOGF(1) << "Cannot create frame layout for V4L2 buffers";
     return nullptr;
   }
 
@@ -189,7 +189,7 @@ scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
 scoped_refptr<VideoFrame> V4L2Buffer::GetVideoFrame() {
   // We can create the VideoFrame only when using MMAP buffers.
   if (v4l2_buffer_.memory != V4L2_MEMORY_MMAP) {
-    DVLOGF(1) << "Cannot create video frame from non-MMAP buffer";
+    VLOGF(1) << "Cannot create video frame from non-MMAP buffer";
     // video_frame_ should be null since that's its default value.
     DCHECK_EQ(video_frame_, nullptr);
     return video_frame_;
@@ -979,7 +979,7 @@ void V4L2Device::OnQueueDestroyed(v4l2_buf_type buf_type) {
 
 // static
 scoped_refptr<V4L2Device> V4L2Device::Create() {
-  VLOGF(2);
+  DVLOGF(3);
 
   scoped_refptr<V4L2Device> device;
 
@@ -1442,10 +1442,10 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     return base::nullopt;
   }
   if (num_buffers > num_color_planes) {
-    VLOG(1) << "pix_mp.num_planes: " << num_buffers
-            << " should not be larger than NumPlanes("
-            << VideoPixelFormatToString(video_format)
-            << "): " << num_color_planes;
+    VLOGF(1) << "pix_mp.num_planes: " << num_buffers
+             << " should not be larger than NumPlanes("
+             << VideoPixelFormatToString(video_format)
+             << "): " << num_color_planes;
     return base::nullopt;
   }
   // Reserve capacity in advance to prevent unnecessary vector reallocation.

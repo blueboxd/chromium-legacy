@@ -217,7 +217,7 @@ public class SysUtils {
     }
 
     private static boolean detectHighEndDiskDevice() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             StatFs dataStats = new StatFs(Environment.getDataDirectory().getAbsolutePath());
             long totalGBytes = dataStats.getTotalBytes() / BYTES_PER_GIGABYTE;
             return totalGBytes >= HIGH_END_DEVICE_DISK_CAPACITY_GB;

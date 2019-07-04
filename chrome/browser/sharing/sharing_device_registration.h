@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -55,6 +56,9 @@ class SharingDeviceRegistration {
   void RegisterDevice(RegistrationCallback callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
+                           RegisterDeviceTest_Success);
+
   // Callback function responsible for validating FCM registration token and
   // retrieving public encryption key and authentication secret associated with
   // FCM App ID of Sharing. Also responsible for calling |callback| with

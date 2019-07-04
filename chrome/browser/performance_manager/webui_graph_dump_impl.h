@@ -47,6 +47,7 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
 
   // Page node functions.
   void OnIsVisibleChanged(PageNodeImpl* page_node) override;
+  void OnIsAudibleChanged(PageNodeImpl* page_node) override;
   void OnIsLoadingChanged(PageNodeImpl* page_node) override;
   void OnUkmSourceIdChanged(PageNodeImpl* page_node) override;
   void OnLifecycleStateChanged(PageNodeImpl* page_node) override;

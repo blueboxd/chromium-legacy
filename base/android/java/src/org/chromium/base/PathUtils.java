@@ -70,7 +70,7 @@ public abstract class PathUtils {
             // already finished.
             if (sDirPathFetchTask.cancel(false)) {
                 // Allow disk access here because we have no other choice.
-                try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+                try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                     // sDirPathFetchTask did not complete. We have to run the code it was supposed
                     // to be responsible for synchronously on the UI thread.
                     return PathUtils.setPrivateDataDirectorySuffixInternal();
@@ -204,7 +204,7 @@ public abstract class PathUtils {
     @CalledByNative
     private static String getDownloadsDirectory() {
         // TODO(crbug.com/508615): Temporarily allowing disk access until more permanent fix is in.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             if (BuildInfo.isAtLeastQ()) {
                 // https://developer.android.com/preview/privacy/scoped-storage
                 // In Q+, Android has bugun sandboxing external storage. Chrome may not have
@@ -227,7 +227,7 @@ public abstract class PathUtils {
     public static String[] getAllPrivateDownloadsDirectories() {
         File[] files;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 files = ContextUtils.getApplicationContext().getExternalFilesDirs(
                         Environment.DIRECTORY_DOWNLOADS);
             }

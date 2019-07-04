@@ -36,10 +36,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
-namespace network {
-class ResourceRequestBody;
-}
-
 namespace service_worker_object_host_unittest {
 class ServiceWorkerObjectHostTest;
 }
@@ -295,14 +291,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Returns an interceptor for a main resource request. May return nullptr if
   // the request doesn't require interception.
   std::unique_ptr<NavigationLoaderInterceptor> CreateLoaderInterceptor(
-      network::mojom::RequestMode request_mode,
-      network::mojom::CredentialsMode credentials_mode,
-      network::mojom::RedirectMode redirect_mode,
-      const std::string& integrity,
-      bool keepalive,
       ResourceType resource_type,
-      blink::mojom::RequestContextType request_context_type,
-      scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
   // Returns an object info representing |registration|. The object info holds a

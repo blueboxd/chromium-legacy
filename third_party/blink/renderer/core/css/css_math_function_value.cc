@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -22,7 +22,7 @@ void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSPrimitiveValue::TraceAfterDispatch(visitor);
 }
 
-CSSMathFunctionValue::CSSMathFunctionValue(CSSCalcExpressionNode* expression,
+CSSMathFunctionValue::CSSMathFunctionValue(CSSMathExpressionNode* expression,
                                            ValueRange range)
     : CSSPrimitiveValue(UnitType::kCalc, kMathFunctionClass),
       expression_(expression),
@@ -30,7 +30,7 @@ CSSMathFunctionValue::CSSMathFunctionValue(CSSCalcExpressionNode* expression,
 
 // static
 CSSMathFunctionValue* CSSMathFunctionValue::Create(
-    CSSCalcExpressionNode* expression,
+    CSSMathExpressionNode* expression,
     ValueRange range) {
   if (!expression)
     return nullptr;
@@ -41,7 +41,7 @@ CSSMathFunctionValue* CSSMathFunctionValue::Create(
 CSSMathFunctionValue* CSSMathFunctionValue::Create(const Length& length,
                                                    float zoom) {
   const CalculationValue& calc = length.GetCalculationValue();
-  return Create(CSSCalcExpressionNode::CreateFromPixelsAndPercent(
+  return Create(CSSMathExpressionNode::CreateFromPixelsAndPercent(
                     calc.Pixels() / zoom, calc.Percent()),
                 calc.GetValueRange());
 }
@@ -75,6 +75,11 @@ CSSPrimitiveValue::UnitType CSSMathFunctionValue::TypeWithMathFunctionResolved()
   return UnitType::kUnknown;
 }
 
+bool CSSMathFunctionValue::MayHaveRelativeUnit() const {
+  UnitType resolved_type = expression_->ResolvedUnitType();
+  return IsRelativeUnit(resolved_type) || resolved_type == UnitType::kUnknown;
+}
+
 double CSSMathFunctionValue::DoubleValue() const {
   // TODO(crbug.com/979895): Make sure this function is called only when
   // applicable.
@@ -83,7 +88,7 @@ double CSSMathFunctionValue::DoubleValue() const {
 
 double CSSMathFunctionValue::ComputeSeconds() const {
   DCHECK_EQ(kCalcTime, expression_->Category());
-  UnitType current_type = expression_->TypeWithCalcResolved();
+  UnitType current_type = expression_->ResolvedUnitType();
   if (current_type == UnitType::kSeconds)
     return GetDoubleValue();
   if (current_type == UnitType::kMilliseconds)
@@ -94,7 +99,7 @@ double CSSMathFunctionValue::ComputeSeconds() const {
 
 double CSSMathFunctionValue::ComputeDegrees() const {
   DCHECK_EQ(kCalcAngle, expression_->Category());
-  UnitType current_type = expression_->TypeWithCalcResolved();
+  UnitType current_type = expression_->ResolvedUnitType();
   switch (current_type) {
     case UnitType::kDegrees:
       return GetDoubleValue();

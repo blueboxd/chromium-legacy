@@ -17,8 +17,8 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
+#include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -28,20 +28,21 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // A testing consumer that retries on error.
-class RetryingTestingOAuth2TokenServiceConsumer
-    : public TestingOAuth2TokenServiceConsumer {
+class RetryingTestingOAuth2AccessTokenManagerConsumer
+    : public TestingOAuth2AccessTokenManagerConsumer {
  public:
-  RetryingTestingOAuth2TokenServiceConsumer(OAuth2TokenService* oauth2_service,
-                                            const CoreAccountId& account_id)
+  RetryingTestingOAuth2AccessTokenManagerConsumer(
+      OAuth2TokenService* oauth2_service,
+      const CoreAccountId& account_id)
       : oauth2_service_(oauth2_service), account_id_(account_id) {}
-  ~RetryingTestingOAuth2TokenServiceConsumer() override {}
+  ~RetryingTestingOAuth2AccessTokenManagerConsumer() override {}
 
   void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override {
     if (retry_counter_ <= 0)
       return;
     retry_counter_--;
-    TestingOAuth2TokenServiceConsumer::OnGetTokenFailure(request, error);
+    TestingOAuth2AccessTokenManagerConsumer::OnGetTokenFailure(request, error);
     request_ = oauth2_service_->StartRequest(
         account_id_, OAuth2AccessTokenManager::ScopeSet(), this);
   }
@@ -135,7 +136,7 @@ class OAuth2TokenServiceTest : public testing::Test {
   FakeOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
   std::unique_ptr<TestOAuth2TokenService> oauth2_service_;
   CoreAccountId account_id_;
-  TestingOAuth2TokenServiceConsumer consumer_;
+  TestingOAuth2AccessTokenManagerConsumer consumer_;
 };
 
 TEST_F(OAuth2TokenServiceTest, NoOAuth2RefreshToken) {
@@ -418,7 +419,7 @@ TEST_F(OAuth2TokenServiceTest,
 
   // A 2nd request (using the new refresh token) that occurs and completes
   // while the 1st request is in flight is successful.
-  TestingOAuth2TokenServiceConsumer consumer2;
+  TestingOAuth2AccessTokenManagerConsumer consumer2;
   std::unique_ptr<OAuth2AccessTokenManager::Request> request2(
       oauth2_service_->StartRequest(account_id_, scopes1, &consumer2));
   base::RunLoop().RunUntilIdle();
@@ -446,7 +447,7 @@ TEST_F(OAuth2TokenServiceTest,
 
 TEST_F(OAuth2TokenServiceTest, StartRequestForMultiloginDesktop) {
   class MockOAuth2AccessTokenConsumer
-      : public TestingOAuth2TokenServiceConsumer {
+      : public TestingOAuth2AccessTokenManagerConsumer {
    public:
     MockOAuth2AccessTokenConsumer() = default;
     ~MockOAuth2AccessTokenConsumer() = default;
@@ -539,8 +540,8 @@ TEST_F(OAuth2TokenServiceTest, ServiceShutDownBeforeFetchComplete) {
 TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
       account_id_, "refreshToken");
-  RetryingTestingOAuth2TokenServiceConsumer consumer(oauth2_service_.get(),
-      account_id_);
+  RetryingTestingOAuth2AccessTokenManagerConsumer consumer(
+      oauth2_service_.get(), account_id_);
   std::unique_ptr<OAuth2AccessTokenManager::Request> request(
       oauth2_service_->StartRequest(
           account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer));

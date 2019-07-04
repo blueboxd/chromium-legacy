@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "base/gtest_prod_util.h"

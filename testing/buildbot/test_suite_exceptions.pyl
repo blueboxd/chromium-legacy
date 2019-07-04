@@ -26,9 +26,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
-      # chromium.clang.json
-      'ToTAndroid',
-      'ToTAndroidCFI',
       # chromium.fyi.json
       'android-code-coverage',
       # chromium.memory.json
@@ -1338,6 +1335,9 @@
       # chromium.gpu.fyi
       'Win10 FYI Debug (NVIDIA)',
       'Win7 FYI Debug (AMD)',
+      # Disabled due to dbus crashes crbug.com/927465
+      'Linux FYI Experimental Release (Intel HD 630)',
+      'Linux FYI Experimental Release (NVIDIA)',
     ],
   },
   'telemetry_perf_unittests': {

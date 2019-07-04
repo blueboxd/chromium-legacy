@@ -756,12 +756,24 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
   return false;
 }
 
-void ContentBrowserClient::WillCreateWebSocket(
+bool ContentBrowserClient::WillInterceptWebSocket(RenderFrameHost*) {
+  return false;
+}
+
+uint32_t ContentBrowserClient::GetWebSocketOptions(RenderFrameHost* frame) {
+  return network::mojom::kWebSocketOptionNone;
+}
+
+void ContentBrowserClient::CreateWebSocket(
     RenderFrameHost* frame,
-    network::mojom::WebSocketRequest* request,
-    network::mojom::AuthenticationHandlerPtr* auth_handler,
-    network::mojom::TrustedHeaderClientPtr* header_client,
-    uint32_t* options) {}
+    WebSocketFactory factory,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<std::string>& user_agent,
+    network::mojom::WebSocketHandshakeClientPtr handshake_client) {
+  // NOTREACHED because WillInterceptWebSocket returns false.
+  NOTREACHED();
+}
 
 void ContentBrowserClient::WillCreateRestrictedCookieManager(
     const url::Origin& origin,

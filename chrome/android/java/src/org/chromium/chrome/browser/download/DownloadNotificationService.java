@@ -485,7 +485,7 @@ public class DownloadNotificationService {
     void updateNotification(int id, Notification notification) {
         // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
         // Disabling StrictMode to avoid violations (crbug.com/789134).
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             mNotificationManager.notify(id, notification);
         }
     }

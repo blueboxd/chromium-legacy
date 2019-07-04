@@ -70,6 +70,9 @@ class INVALIDATION_EXPORT TopicInvalidationMap {
 TopicInvalidationMap ConvertObjectIdInvalidationMapToTopicInvalidationMap(
     ObjectIdInvalidationMap object_ids_map);
 
+ObjectIdInvalidationMap ConvertTopicInvalidationMapToObjectIdInvalidationMap(
+    const TopicInvalidationMap& topics_map);
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_INVALIDATION_PUBLIC_TOPIC_INVALIDATION_MAP_H_

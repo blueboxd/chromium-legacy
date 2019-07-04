@@ -82,6 +82,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -308,6 +309,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
+  WebContents* AccessibilityWebContents() override;
   bool AccessibilityIsMainFrame() const override;
 
   // RenderProcessHostObserver implementation.
@@ -1389,7 +1391,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
 
-  void CreateWebSocket(network::mojom::WebSocketRequest request);
+  void CreateWebSocketConnector(
+      blink::mojom::WebSocketConnectorRequest request);
 
   void CreateDedicatedWorkerHostFactory(
       blink::mojom::DedicatedWorkerHostFactoryRequest request);

@@ -40,7 +40,6 @@ namespace blink {
 
 TEST(WebUserGestureTokenTest, Basic) {
   WebUserGestureToken token;
-  EXPECT_FALSE(token.HasGestures());
 
   {
     WebScopedUserGesture indicator(token);
@@ -55,7 +54,6 @@ TEST(WebUserGestureTokenTest, Basic) {
     token = WebUserGestureIndicator::CurrentUserGestureToken();
   }
 
-  EXPECT_TRUE(token.HasGestures());
   EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
 
   {
@@ -64,8 +62,6 @@ TEST(WebUserGestureTokenTest, Basic) {
     WebUserGestureIndicator::ConsumeUserGesture(nullptr);
     EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
   }
-
-  EXPECT_FALSE(token.HasGestures());
 
   {
     WebScopedUserGesture indicator(token);

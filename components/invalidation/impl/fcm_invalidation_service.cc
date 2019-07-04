@@ -12,7 +12,7 @@
 #include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/invalidation/impl/fcm_invalidator.h"
+#include "components/invalidation/impl/fcm_invalidation_listener.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
@@ -103,13 +103,16 @@ void FCMInvalidationService::RegisterPrefs(PrefRegistrySimple* registry) {
       invalidation::prefs::kInvalidationClientIDCache);
 }
 
-void FCMInvalidationService::InitForTest(syncer::Invalidator* invalidator) {
+void FCMInvalidationService::InitForTest(
+    std::unique_ptr<syncer::FCMInvalidationListener> invalidation_listener) {
   // Here we perform the equivalent of Init() and StartInvalidator(), but with
   // some minor changes to account for the fact that we're injecting the
-  // invalidator.
-  invalidator_.reset(invalidator);
+  // invalidation_listener.
 
-  invalidator_->RegisterHandler(this);
+  // StartInvalidator initializes the invalidation_listener and starts it.
+  invalidation_listener_ = std::move(invalidation_listener);
+  invalidation_listener_->StartForTest(this);
+
   DoUpdateRegisteredIdsIfNeeded();
 }
 
@@ -147,10 +150,10 @@ void FCMInvalidationService::UnregisterInvalidationHandler(
 
 syncer::InvalidatorState FCMInvalidationService::GetInvalidatorState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (invalidator_) {
+  if (invalidation_listener_) {
     DVLOG(2) << "GetInvalidatorState returning "
-             << invalidator_->GetInvalidatorState();
-    return invalidator_->GetInvalidatorState();
+             << invalidator_registrar_.GetInvalidatorState();
+    return invalidator_registrar_.GetInvalidatorState();
   }
   DVLOG(2) << "Invalidator currently stopped";
   return syncer::STOPPED;
@@ -173,7 +176,7 @@ void FCMInvalidationService::RequestDetailedStatus(
     identity_provider_->RequestDetailedStatus(return_callback);
   }
   if (IsStarted()) {
-    invalidator_->RequestDetailedStatus(return_callback);
+    invalidation_listener_->RequestDetailedStatus(return_callback);
   }
 }
 
@@ -209,26 +212,19 @@ void FCMInvalidationService::OnActiveAccountLogout() {
   }
 }
 
+void FCMInvalidationService::OnInvalidate(
+    const syncer::TopicInvalidationMap& invalidation_map) {
+  invalidator_registrar_.DispatchInvalidationsToHandlers(invalidation_map);
+
+  logger_.OnInvalidation(
+      ConvertTopicInvalidationMapToObjectIdInvalidationMap(invalidation_map));
+}
+
 void FCMInvalidationService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   ReportInvalidatorState(state);
   invalidator_registrar_.UpdateInvalidatorState(state);
   logger_.OnStateChange(state);
-}
-
-void FCMInvalidationService::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  invalidator_registrar_.DispatchInvalidationsToHandlers(
-      ConvertObjectIdInvalidationMapToTopicInvalidationMap(invalidation_map));
-
-  logger_.OnInvalidation(invalidation_map);
-}
-
-std::string FCMInvalidationService::GetOwnerName() const {
-  if (sender_id_ == kInvalidationGCMSenderId) {
-    return "FCM";
-  }
-  return "FCM" + sender_id_;
 }
 
 bool FCMInvalidationService::IsReadyToStart() {
@@ -257,12 +253,12 @@ bool FCMInvalidationService::IsReadyToStart() {
 }
 
 bool FCMInvalidationService::IsStarted() const {
-  return invalidator_ != nullptr;
+  return invalidation_listener_ != nullptr;
 }
 
 void FCMInvalidationService::StartInvalidator() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!invalidator_);
+  DCHECK(!invalidation_listener_);
   DCHECK(IsReadyToStart());
   diagnostic_info_.service_was_started = base::Time::Now();
   auto network = std::make_unique<syncer::FCMNetworkHandler>(
@@ -271,23 +267,26 @@ void FCMInvalidationService::StartInvalidator() {
   // We should start listening before requesting the id, because
   // valid id is only generated, once there is an app handler
   // for the app. StartListening registers the app handler.
-  // We should create invalidator first, because it registers the handler
-  // for the incoming messages, which is crutial on Android, because on the
-  // startup cached messages might exists.
-  invalidator_ = std::make_unique<syncer::FCMInvalidator>(
-      std::move(network), identity_provider_, pref_service_, loader_factory_,
-      parse_json_, sender_id_, sender_id_ == kInvalidationGCMSenderId);
+  // We should create InvalidationListener first, because it registers the
+  // handler for the incoming messages, which is crutial on Android, because on
+  // the startup cached messages might exists.
+  invalidation_listener_ =
+      std::make_unique<syncer::FCMInvalidationListener>(std::move(network));
+  auto registration_manager =
+      std::make_unique<syncer::PerUserTopicRegistrationManager>(
+          identity_provider_, pref_service_, loader_factory_, parse_json_,
+          sender_id_, sender_id_ == kInvalidationGCMSenderId);
+  invalidation_listener_->Start(this, std::move(registration_manager));
+
   PopulateClientID();
-  invalidator_->RegisterHandler(this);
   DoUpdateRegisteredIdsIfNeeded();
 }
 
 void FCMInvalidationService::StopInvalidator() {
-  DCHECK(invalidator_);
+  DCHECK(invalidation_listener_);
   diagnostic_info_.service_was_stopped = base::Time::Now();
   // TODO(melandory): reset the network.
-  invalidator_->UnregisterHandler(this);
-  invalidator_.reset();
+  invalidation_listener_.reset();
 }
 
 void FCMInvalidationService::PopulateClientID() {
@@ -331,10 +330,10 @@ void FCMInvalidationService::OnDeleteIDCompleted(
 }
 
 void FCMInvalidationService::DoUpdateRegisteredIdsIfNeeded() {
-  if (!invalidator_ || !update_was_requested_)
+  if (!invalidation_listener_ || !update_was_requested_)
     return;
   auto registered_ids = invalidator_registrar_.GetAllRegisteredIds();
-  CHECK(invalidator_->UpdateRegisteredIds(this, registered_ids));
+  invalidation_listener_->UpdateRegisteredTopics(registered_ids);
   update_was_requested_ = false;
 }
 

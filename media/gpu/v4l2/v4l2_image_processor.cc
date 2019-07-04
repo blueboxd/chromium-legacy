@@ -344,7 +344,9 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
                                          uint32_t output_pixelformat,
                                          gfx::Size* size,
                                          size_t* num_planes) {
-  VLOGF(2) << "size=" << size->ToString();
+  DVLOGF(3) << "input=" << FourccToString(input_pixelformat)
+            << " output=" << FourccToString(output_pixelformat)
+            << " size=" << size->ToString();
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device ||
       !device->Open(V4L2Device::Type::kImageProcessor, input_pixelformat))
@@ -361,8 +363,8 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
 
   *num_planes = format.fmt.pix_mp.num_planes;
   *size = V4L2Device::AllocatedSizeFromV4L2Format(format);
-  VLOGF(2) << "adjusted output coded size=" << size->ToString()
-           << ", num_planes=" << *num_planes;
+  DVLOGF(3) << "adjusted output coded size=" << size->ToString()
+            << ", num_planes=" << *num_planes;
   return true;
 }
 

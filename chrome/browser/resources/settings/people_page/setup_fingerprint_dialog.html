@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -20,14 +21,19 @@
         width: 500px;
       }
 
-      .fingerprint-scanner-tablet {
+      .fingerprint-scanner-tablet-power-button {
         background:
-            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION);
+            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_POWER_BUTTON_ANIMATION);
       }
 
-      .fingerprint-scanner-laptop {
+      .fingerprint-scanner-laptop-bottom-right {
         background:
-            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION);
+            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION);
+      }
+
+      .fingerprint-scanner-laptop-top-right {
+        background:
+            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION);
       }
 
       #scannerLocation {
@@ -62,7 +68,7 @@
           <span>[[getInstructionMessage_(step_, problemMessage_)]]</span>
         </div>
         <div id="scannerLocation" hidden="[[!showScannerLocation_(step_)]]"
-            class$="[[getFingerprintScannerAnimationClass_()]]"
+            class$="[[fingerprintScannerAnimationClass_]]"
             aria-label="$i18n{configureFingerprintScannerStepAriaLabel}"
             aria-live="polite" >
         </div>

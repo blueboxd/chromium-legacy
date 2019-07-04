@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/mojom/account.mojom.h"
 

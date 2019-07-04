@@ -159,7 +159,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
+      BrowserAccessibilityDelegate* delegate,
+      bool for_root_frame) override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;

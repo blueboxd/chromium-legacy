@@ -71,8 +71,6 @@ class X11WindowOzone : public PlatformWindow,
   void Destroy();
   XID CreateXWindow();
   void SetXWindow(XID xwindow);
-  bool IsMaximized() const;
-  bool IsFullscreen() const;
   bool IsEventForXWindow(const XEvent& xev) const;
   void ProcessXWindowEvent(XEvent* xev);
   void OnWMStateUpdated();

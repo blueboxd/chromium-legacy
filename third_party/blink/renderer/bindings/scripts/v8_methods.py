@@ -240,11 +240,13 @@ def method_context(interface, method, component_info, is_visible=True):
         'on_instance': v8_utilities.on_instance(interface, method),
         'on_interface': v8_utilities.on_interface(interface, method),
         'on_prototype': v8_utilities.on_prototype(interface, method),
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(method, runtime_features),  # [OriginTrialEnabled]
+        'origin_trial_feature_name':
+            v8_utilities.origin_trial_feature_name(method, runtime_features),  # [RuntimeEnabled] for origin trial
         'property_attributes': property_attributes(interface, method),
         'returns_promise': method.returns_promise,
         'runtime_call_stats': runtime_call_stats_context(interface, method),
-        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(method, runtime_features),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name':
+            v8_utilities.runtime_enabled_feature_name(method, runtime_features),  # [RuntimeEnabled] if not in origin trial
         'secure_context_test': v8_utilities.secure_context(method, interface),  # [SecureContext]
         'side_effect_type': side_effect_type,  # [Affects]
         'snake_case_name': NameStyleConverter(name).to_snake_case(),

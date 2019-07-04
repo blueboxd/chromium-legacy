@@ -8,18 +8,30 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "chrome/browser/performance_manager/public/graph/graph_operations.h"
+#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace performance_manager {
 
-// Delay the metrics report from GRC to UMA/UKM for 5 minutes from when the main
-// frame navigation is committed.
+class MetricsReportRecordHolder
+    : public ExternalNodeAttachedDataImpl<MetricsReportRecordHolder> {
+ public:
+  explicit MetricsReportRecordHolder(const PageNode* unused_page_node) {}
+  ~MetricsReportRecordHolder() override = default;
+  MetricsCollector::MetricsReportRecord metrics_report_record;
+};
+
+class UkmCollectionStateHolder
+    : public ExternalNodeAttachedDataImpl<UkmCollectionStateHolder> {
+ public:
+  explicit UkmCollectionStateHolder(const PageNode* unused_page_node) {}
+  ~UkmCollectionStateHolder() override = default;
+  MetricsCollector::UkmCollectionState ukm_collection_state;
+};
+
+// Delay the metrics report from for 5 minutes from when the main frame
+// navigation is committed.
 const base::TimeDelta kMetricsReportDelayTimeout =
     base::TimeDelta::FromMinutes(5);
 
@@ -33,144 +45,139 @@ const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
 
 const int kDefaultFrequencyUkmEQTReported = 5u;
 
-// Gets the number of tabs that are co-resident in all of the render processes
-// associated with a PageNode.
-size_t GetNumCoresidentTabs(const PageNodeImpl* page_node) {
-  std::set<NodeBase*> coresident_tabs;
-  auto process_nodes =
-      GraphImplOperations::GetAssociatedProcessNodes(page_node);
-  for (auto* process_node : process_nodes) {
-    auto page_nodes = GraphImplOperations::GetAssociatedPageNodes(process_node);
-    for (auto* associated_page_node : page_nodes) {
-      coresident_tabs.insert(associated_page_node);
-    }
-  }
-  // A tab cannot be co-resident with itself.
-  return coresident_tabs.size() - 1;
-}
-
 MetricsCollector::MetricsCollector() {
   UpdateWithFieldTrialParams();
 }
 
 MetricsCollector::~MetricsCollector() = default;
 
-bool MetricsCollector::ShouldObserve(const NodeBase* node) {
-  return node->type() == FrameNodeImpl::Type() ||
-         node->type() == PageNodeImpl::Type() ||
-         node->type() == ProcessNodeImpl::Type();
-}
-
-void MetricsCollector::OnNodeAdded(NodeBase* node) {
-  if (node->type() == PageNodeImpl::Type()) {
-    PageNodeImpl* page_node = PageNodeImpl::FromNodeBase(node);
-    metrics_report_record_map_.emplace(page_node, MetricsReportRecord());
-  }
-}
-
-void MetricsCollector::OnBeforeNodeRemoved(NodeBase* node) {
-  if (node->type() == PageNodeImpl::Type()) {
-    PageNodeImpl* page_node = PageNodeImpl::FromNodeBase(node);
-    metrics_report_record_map_.erase(page_node);
-    ukm_collection_state_map_.erase(page_node);
-  }
-}
-
 void MetricsCollector::OnNonPersistentNotificationCreated(
-    FrameNodeImpl* frame_node) {
+    const FrameNode* frame_node) {
   // Only record metrics while a page is backgrounded.
-  auto* page_node = frame_node->page_node();
-  if (page_node->is_visible() || !ShouldReportMetrics(page_node))
+  auto* page_node = frame_node->GetPageNode();
+  if (page_node->IsVisible() || !ShouldReportMetrics(page_node))
     return;
 
-  MetricsReportRecord& record =
-      metrics_report_record_map_.find(page_node)->second;
-  record.first_non_persistent_notification_created.OnSignalReceived(
-      frame_node->IsMainFrame(), page_node->TimeSinceLastVisibilityChange(),
-      graph()->ukm_recorder());
+  auto* record = GetMetricsReportRecord(page_node);
+  record->first_non_persistent_notification_created.OnSignalReceived(
+      frame_node->IsMainFrame(), page_node->GetTimeSinceLastVisibilityChange(),
+      graph_->GetUkmRecorder());
 }
 
-void MetricsCollector::OnIsVisibleChanged(PageNodeImpl* page_node) {
+void MetricsCollector::OnPassedToGraph(Graph* graph) {
+  graph_ = graph;
+  RegisterObservers(graph);
+}
+
+void MetricsCollector::OnTakenFromGraph(Graph* graph) {
+  UnregisterObservers(graph);
+  graph_ = nullptr;
+}
+
+void MetricsCollector::OnIsVisibleChanged(const PageNode* page_node) {
   // The page becomes visible again, clear all records in order to
   // report metrics when page becomes invisible next time.
-  if (page_node->is_visible())
+  if (page_node->IsVisible())
     ResetMetricsReportRecord(page_node);
 }
 
-void MetricsCollector::OnUkmSourceIdChanged(PageNodeImpl* page_node) {
-  ukm::SourceId ukm_source_id = page_node->ukm_source_id();
+void MetricsCollector::OnUkmSourceIdChanged(const PageNode* page_node) {
+  ukm::SourceId ukm_source_id = page_node->GetUkmSourceID();
   UpdateUkmSourceIdForPage(page_node, ukm_source_id);
-  MetricsReportRecord& record =
-      metrics_report_record_map_.find(page_node)->second;
-  record.UpdateUkmSourceID(ukm_source_id);
+  auto* record = GetMetricsReportRecord(page_node);
+  record->UpdateUkmSourceID(ukm_source_id);
 }
 
-void MetricsCollector::OnFaviconUpdated(PageNodeImpl* page_node) {
+void MetricsCollector::OnFaviconUpdated(const PageNode* page_node) {
   // Only record metrics while it is backgrounded.
-  if (page_node->is_visible() || !ShouldReportMetrics(page_node))
+  if (page_node->IsVisible() || !ShouldReportMetrics(page_node))
     return;
-  MetricsReportRecord& record =
-      metrics_report_record_map_.find(page_node)->second;
-  record.first_favicon_updated.OnSignalReceived(
-      true, page_node->TimeSinceLastVisibilityChange(),
-      graph()->ukm_recorder());
+  auto* record = GetMetricsReportRecord(page_node);
+  record->first_favicon_updated.OnSignalReceived(
+      true, page_node->GetTimeSinceLastVisibilityChange(),
+      graph_->GetUkmRecorder());
 }
 
-void MetricsCollector::OnTitleUpdated(PageNodeImpl* page_node) {
+void MetricsCollector::OnTitleUpdated(const PageNode* page_node) {
   // Only record metrics while it is backgrounded.
-  if (page_node->is_visible() || !ShouldReportMetrics(page_node))
+  if (page_node->IsVisible() || !ShouldReportMetrics(page_node))
     return;
-  MetricsReportRecord& record =
-      metrics_report_record_map_.find(page_node)->second;
-  record.first_title_updated.OnSignalReceived(
-      true, page_node->TimeSinceLastVisibilityChange(),
-      graph()->ukm_recorder());
+  auto* record = GetMetricsReportRecord(page_node);
+  record->first_title_updated.OnSignalReceived(
+      true, page_node->GetTimeSinceLastVisibilityChange(),
+      graph_->GetUkmRecorder());
 }
 
 void MetricsCollector::OnExpectedTaskQueueingDurationSample(
-    ProcessNodeImpl* process_node) {
+    const ProcessNode* process_node) {
   // Report this measurement to all pages that are hosting a main frame in
   // the process that was sampled.
   const base::TimeDelta& sample =
-      process_node->expected_task_queueing_duration();
-  for (auto* frame_node : process_node->frame_nodes()) {
+      process_node->GetExpectedTaskQueueingDuration();
+  for (const auto* frame_node : process_node->GetFrameNodes()) {
     if (!frame_node->IsMainFrame())
       continue;
-    auto* page_node = frame_node->page_node();
+    auto* page_node = frame_node->GetPageNode();
     if (!IsCollectingExpectedQueueingTimeForUkm(page_node))
       continue;
     RecordExpectedQueueingTimeForUkm(page_node, sample);
   }
 }
 
-bool MetricsCollector::ShouldReportMetrics(const PageNodeImpl* page_node) {
-  return page_node->TimeSinceLastNavigation() > kMetricsReportDelayTimeout;
+// static
+MetricsCollector::MetricsReportRecord* MetricsCollector::GetMetricsReportRecord(
+    const PageNode* page_node) {
+  auto* holder = MetricsReportRecordHolder::GetOrCreate(page_node);
+  return &holder->metrics_report_record;
+}
+
+// static
+MetricsCollector::UkmCollectionState* MetricsCollector::GetUkmCollectionState(
+    const PageNode* page_node) {
+  auto* holder = UkmCollectionStateHolder::GetOrCreate(page_node);
+  return &holder->ukm_collection_state;
+}
+
+void MetricsCollector::RegisterObservers(Graph* graph) {
+  graph->AddFrameNodeObserver(this);
+  graph->AddPageNodeObserver(this);
+  graph->AddProcessNodeObserver(this);
+}
+
+void MetricsCollector::UnregisterObservers(Graph* graph) {
+  graph->RemoveFrameNodeObserver(this);
+  graph->RemovePageNodeObserver(this);
+  graph->RemoveProcessNodeObserver(this);
+}
+
+bool MetricsCollector::ShouldReportMetrics(const PageNode* page_node) {
+  return page_node->GetTimeSinceLastNavigation() > kMetricsReportDelayTimeout;
 }
 
 bool MetricsCollector::IsCollectingExpectedQueueingTimeForUkm(
-    PageNodeImpl* page_node) {
-  UkmCollectionState& state = ukm_collection_state_map_[page_node];
-  return state.ukm_source_id != ukm::kInvalidSourceId &&
-         ++state.num_unreported_eqt_measurements >= frequency_ukm_eqt_reported_;
+    const PageNode* page_node) {
+  auto* state = GetUkmCollectionState(page_node);
+  return state->ukm_source_id != ukm::kInvalidSourceId &&
+         ++state->num_unreported_eqt_measurements >=
+             frequency_ukm_eqt_reported_;
 }
 
 void MetricsCollector::RecordExpectedQueueingTimeForUkm(
-    PageNodeImpl* page_node,
+    const PageNode* page_node,
     const base::TimeDelta& expected_queueing_time) {
-  UkmCollectionState& state = ukm_collection_state_map_[page_node];
-  state.num_unreported_eqt_measurements = 0u;
-  ukm::builders::ResponsivenessMeasurement(state.ukm_source_id)
+  auto* state = GetUkmCollectionState(page_node);
+  state->num_unreported_eqt_measurements = 0u;
+  ukm::builders::ResponsivenessMeasurement(state->ukm_source_id)
       .SetExpectedTaskQueueingDuration(expected_queueing_time.InMilliseconds())
-      .Record(graph()->ukm_recorder());
+      .Record(graph_->GetUkmRecorder());
 }
 
-void MetricsCollector::UpdateUkmSourceIdForPage(PageNodeImpl* page_node,
+void MetricsCollector::UpdateUkmSourceIdForPage(const PageNode* page_node,
                                                 ukm::SourceId ukm_source_id) {
-  UkmCollectionState& state = ukm_collection_state_map_[page_node];
-
-  state.ukm_source_id = ukm_source_id;
+  auto* state = GetUkmCollectionState(page_node);
+  state->ukm_source_id = ukm_source_id;
   // Updating the |ukm_source_id| restarts usage collection.
-  state.num_unreported_eqt_measurements = 0u;
+  state->num_unreported_eqt_measurements = 0u;
 }
 
 void MetricsCollector::UpdateWithFieldTrialParams() {
@@ -179,10 +186,9 @@ void MetricsCollector::UpdateWithFieldTrialParams() {
       kDefaultFrequencyUkmEQTReported);
 }
 
-void MetricsCollector::ResetMetricsReportRecord(PageNodeImpl* page_node) {
-  DCHECK(metrics_report_record_map_.find(page_node) !=
-         metrics_report_record_map_.end());
-  metrics_report_record_map_.find(page_node)->second.Reset();
+void MetricsCollector::ResetMetricsReportRecord(const PageNode* page_node) {
+  auto* record = GetMetricsReportRecord(page_node);
+  record->Reset();
 }
 
 MetricsCollector::MetricsReportRecord::MetricsReportRecord() = default;

@@ -104,7 +104,7 @@ class GCMDriver {
   using GetGCMStatisticsCallback =
       base::Callback<void(const GCMClient::GCMStatistics& stats)>;
   using SendWebPushMessageCallback =
-      base::OnceCallback<void(const std::string& message_id, bool result)>;
+      base::OnceCallback<void(base::Optional<std::string>)>;
 
   // Enumeration to be used with GetGCMStatistics() for indicating whether the
   // existing logs should be cleared or kept.
@@ -175,15 +175,16 @@ class GCMDriver {
   // |vapid_key|: Private key to sign Voluntary Application Server
   // Identification for Web Push header.
   // |message|: WebPushMessage to be sent.
-  // |callback|: To be called once the asynchronous operation is done.
-  void SendWebPushMessage(const std::string& app_id,
-                          const std::string& authorized_entity,
-                          const std::string& p256dh,
-                          const std::string& auth_secret,
-                          const std::string& fcm_token,
-                          crypto::ECPrivateKey* vapid_key,
-                          WebPushMessage message,
-                          SendWebPushMessageCallback callback);
+  // |callback|: To be invoked with message_id if asynchronous operation
+  // succeeded, or base::nullopt if operation failed.
+  virtual void SendWebPushMessage(const std::string& app_id,
+                                  const std::string& authorized_entity,
+                                  const std::string& p256dh,
+                                  const std::string& auth_secret,
+                                  const std::string& fcm_token,
+                                  crypto::ECPrivateKey* vapid_key,
+                                  WebPushMessage message,
+                                  SendWebPushMessageCallback callback);
 
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be

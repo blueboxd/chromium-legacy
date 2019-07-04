@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_names.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
 

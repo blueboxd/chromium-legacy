@@ -33,7 +33,7 @@ public class ClientAppDataRegister {
 
     /** Creates a ClientAppDataRegister. */
     public ClientAppDataRegister() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             mPreferences = ContextUtils.getApplicationContext()
                     .getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
         }
@@ -77,7 +77,7 @@ public class ClientAppDataRegister {
     private Set<String> getUids() {
         // We try to ensure that this is loaded on a background thread before it is needed (see
         // constructor), but if the load hasn't completed, disable StrictMode so we don't crash.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return new HashSet<>(mPreferences.getStringSet(UIDS_KEY, Collections.emptySet()));
         }
     }

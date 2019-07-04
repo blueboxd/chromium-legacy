@@ -78,11 +78,14 @@ class FCMInvalidationListener : public InvalidationListener,
 
   void DoRegistrationUpdate();
 
-  void RequestDetailedStatus(
+  virtual void RequestDetailedStatus(
       const base::RepeatingCallback<void(const base::DictionaryValue&)>&
           callback) const;
 
   void StopForTest();
+  void StartForTest(Delegate* delegate);
+  void EmitStateChangeForTest(InvalidatorState state);
+  void EmitSavedInvalidationsForTest(const TopicInvalidationMap& to_emit);
 
   Topics GetRegisteredIdsForTest() const;
 

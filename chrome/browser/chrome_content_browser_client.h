@@ -496,12 +496,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int frame_tree_node_id,
       const scoped_refptr<network::SharedURLLoaderFactory>&
           network_loader_factory) override;
-  void WillCreateWebSocket(
+  bool WillInterceptWebSocket(content::RenderFrameHost* frame) override;
+  void CreateWebSocket(
       content::RenderFrameHost* frame,
-      network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* auth_handler,
-      network::mojom::TrustedHeaderClientPtr* header_client,
-      uint32_t* options) override;
+      WebSocketFactory factory,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<std::string>& user_agent,
+      network::mojom::WebSocketHandshakeClientPtr handshake_client) override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(

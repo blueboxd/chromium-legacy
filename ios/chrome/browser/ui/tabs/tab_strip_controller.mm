@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
+#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
@@ -778,9 +779,10 @@ UIColor* BackgroundColor() {
 
   // Install the dimming view, hide the new tab button, and select the tab so it
   // appears highlighted.
+  Tab* tab = [_tabModel tabAtIndex:index];
   self.highlightsSelectedTab = YES;
   _buttonNewTab.hidden = YES;
-  _tabModel.webStateList->ActivateWebStateAt(index);
+  [_tabModel setCurrentTab:tab];
 
   // Set up initial drag state.
   _lastDragLocation = [gesture locationInView:[_tabStripView superview]];
@@ -840,14 +842,15 @@ UIColor* BackgroundColor() {
     return;
   }
 
+  Tab* tab = [_tabModel tabAtIndex:fromIndex];
   NSUInteger toIndex = _placeholderGapModelIndex;
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(toIndex));
   DCHECK_LT(toIndex, [_tabModel count]);
 
   // Reset drag state variables before notifying the model that the tab moved.
   [self resetDragState];
-  _tabModel.webStateList->MoveWebStateAt(static_cast<int>(fromIndex),
-                                         static_cast<int>(toIndex));
+
+  [_tabModel moveTab:tab toIndex:toIndex];
   [self setNeedsLayoutWithAnimation];
 }
 
@@ -1467,8 +1470,7 @@ UIColor* BackgroundColor() {
                                              : [self tabStripVisibleSpace];
 
   // The array and model indexes of the selected tab.
-  NSUInteger selectedModelIndex =
-      static_cast<NSUInteger>(_tabModel.webStateList->active_index());
+  NSUInteger selectedModelIndex = [_tabModel indexOfTab:[_tabModel currentTab]];
   NSUInteger selectedArrayIndex = [self indexForModelIndex:selectedModelIndex];
 
   // This method lays out tabs in two coordinate systems.  The first, the

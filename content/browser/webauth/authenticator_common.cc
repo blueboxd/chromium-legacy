@@ -1056,10 +1056,9 @@ void AuthenticatorCommon::OnRegisterResponse(
       NOTREACHED();
       return;
     case device::FidoReturnCode::kUserConsentDenied:
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
-          Focus::kDoCheck);
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kUserConsentDenied);
       return;
     case device::FidoReturnCode::kSoftPINBlock:
       SignalFailureToRequestDelegate(
@@ -1263,9 +1262,9 @@ void AuthenticatorCommon::OnSignResponse(
       NOTREACHED();
       return;
     case device::FidoReturnCode::kUserConsentDenied:
-      InvokeCallbackAndCleanup(
-          std::move(get_assertion_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kUserConsentDenied);
       return;
     case device::FidoReturnCode::kSoftPINBlock:
       SignalFailureToRequestDelegate(
@@ -1391,6 +1390,10 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
       break;
     case AuthenticatorRequestClientDelegate::InterestingFailureReason::
         kStorageFull:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+      break;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kUserConsentDenied:
       status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
       break;
   }

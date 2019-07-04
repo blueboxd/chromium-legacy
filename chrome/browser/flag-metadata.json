@@ -98,6 +98,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "animated-avatar-button",
+    "owners": ["jkrcal"],
+    "expiry_milestone": 78
+  },
+  {
     "name": "app-management",
     "owners": [ "//chrome/browser/resources/app_management/OWNERS" ],
     "expiry_milestone": 76

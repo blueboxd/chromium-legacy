@@ -77,7 +77,7 @@ public class WebApkVersionManager {
         }
 
         // Disable VM detectLeakedClosableObjects due to Android SDK bug: https://crbug.com/750196
-        try (StrictModeContext unused = StrictModeContext.allowAllVmPolicies()) {
+        try (StrictModeContext ignored = StrictModeContext.allowAllVmPolicies()) {
             if (!DexOptimizer.optimize(dexFile)) {
                 return;
             }

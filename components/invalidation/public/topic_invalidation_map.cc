@@ -121,4 +121,15 @@ TopicInvalidationMap ConvertObjectIdInvalidationMapToTopicInvalidationMap(
   return topics_map;
 }
 
+ObjectIdInvalidationMap ConvertTopicInvalidationMapToObjectIdInvalidationMap(
+    const TopicInvalidationMap& topics_map) {
+  ObjectIdInvalidationMap object_ids_map;
+  std::vector<Invalidation> invalidations;
+  topics_map.GetAllInvalidations(&invalidations);
+  for (const auto& invalidation : invalidations) {
+    object_ids_map.Insert(invalidation);
+  }
+  return object_ids_map;
+}
+
 }  // namespace syncer

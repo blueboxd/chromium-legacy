@@ -20,6 +20,7 @@ class ListValue;
 }
 
 namespace identity {
+struct AccessTokenInfo;
 class PrimaryAccountAccessTokenFetcher;
 }
 

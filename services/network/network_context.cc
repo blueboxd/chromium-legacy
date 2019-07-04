@@ -1266,19 +1266,25 @@ void NetworkContext::ClearBadProxiesCache(
 }
 
 void NetworkContext::CreateWebSocket(
-    mojom::WebSocketRequest request,
+    const GURL& url,
+    const std::vector<std::string>& requested_protocols,
+    const GURL& site_for_cookies,
+    std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
     int32_t render_frame_id,
     const url::Origin& origin,
     uint32_t options,
+    mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojom::WebSocketClientPtr client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
   websocket_factory_->CreateWebSocket(
-      std::move(request), std::move(auth_handler), std::move(header_client),
-      process_id, render_frame_id, origin, options);
+      url, requested_protocols, site_for_cookies, std::move(additional_headers),
+      process_id, render_frame_id, origin, options, std::move(handshake_client),
+      std::move(client), std::move(auth_handler), std::move(header_client));
 #endif  // !defined(OS_IOS)
 }
 

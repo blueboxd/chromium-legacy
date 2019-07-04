@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
-#include "components/signin/public/identity_manager/access_token_info.h"
-#include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -21,9 +21,11 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+class GoogleServiceAuthError;
 class OAuth2TokenService;
 
 namespace identity {
+struct AccessTokenInfo;
 
 // Helper class to ease the task of obtaining an OAuth2 access token for a
 // given account.

@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -495,7 +496,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void MaybeWarnAboutUnsafeSdp(
       const RTCSessionDescriptionInit* session_description_init) const;
 
-  std::set<RTCIceTransport*> ActiveIceTransports() const;
+  HeapHashSet<Member<RTCIceTransport>> ActiveIceTransports() const;
 
   webrtc::PeerConnectionInterface::SignalingState signaling_state_;
   webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state_;

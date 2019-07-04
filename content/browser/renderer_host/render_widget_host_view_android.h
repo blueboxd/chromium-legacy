@@ -149,7 +149,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
+      BrowserAccessibilityDelegate* delegate,
+      bool for_root_frame) override;
   bool LockMouse() override;
   void UnlockMouse() override;
   void DidCreateNewRendererCompositorFrameSink(

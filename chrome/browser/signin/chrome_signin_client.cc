@@ -139,23 +139,6 @@ std::string ChromeSigninClient::GetProductVersion() {
   return chrome::GetVersionString();
 }
 
-bool ChromeSigninClient::IsFirstRun() const {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  return first_run::IsChromeFirstRun();
-#endif
-}
-
-base::Time ChromeSigninClient::GetInstallDate() {
-  // metrics service might be nullptr in tests. TestingBrowserProcess returns
-  // nullptr for metrics_service().
-  return base::Time::FromTimeT(
-      g_browser_process->metrics_service()
-          ? g_browser_process->metrics_service()->GetInstallDate()
-          : 0);
-}
-
 bool ChromeSigninClient::AreSigninCookiesAllowed() {
   return ProfileAllowsSigninCookies(profile_);
 }

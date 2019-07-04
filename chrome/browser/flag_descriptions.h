@@ -2059,6 +2059,9 @@ extern const char kWebGL2ComputeContextDescription[];
 extern const char kDirectManipulationStylusName[];
 extern const char kDirectManipulationStylusDescription[];
 
+extern const char kAnimatedAvatarButtonName[];
+extern const char kAnimatedAvatarButtonDescription[];
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)

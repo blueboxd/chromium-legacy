@@ -613,7 +613,7 @@ const base::Feature kSysInternals{"SysInternals",
 
 // Enables or disables the System Web App manager.
 const base::Feature kSystemWebApps{"SystemWebApps",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the App Management UI.
 const base::Feature kAppManagement{"AppManagement",

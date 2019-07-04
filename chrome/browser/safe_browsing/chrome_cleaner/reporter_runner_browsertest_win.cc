@@ -42,7 +42,6 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/variations/variations_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -193,18 +192,16 @@ class ReporterRunnerTest
         GetParam();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    variations::testing::VariationParamsManager::AppendVariationParams(
-        kSRTPromptTrial, kSRTPromptGroup, {{"Seed", incoming_seed_}},
-        command_line);
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     SetSwReporterTestingDelegate(this);
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
+
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kChromeCleanupInBrowserPromptFeature,
+        {{"Seed", incoming_seed_}, {"Group", kSRTPromptGroup}});
 
     switch (policy_state_) {
       case PolicyState::kNoLogs:

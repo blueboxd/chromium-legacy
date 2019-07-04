@@ -11,6 +11,7 @@
 namespace blink {
 class FileSystemGetDirectoryOptions;
 class FileSystemGetFileOptions;
+class FileSystemRemoveOptions;
 class GetSystemDirectoryOptions;
 
 class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
@@ -30,7 +31,9 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
                              const String& name,
                              const FileSystemGetDirectoryOptions*);
   ScriptValue getEntries(ScriptState*);
-  ScriptPromise removeRecursively(ScriptState*);
+  ScriptPromise removeEntry(ScriptState*,
+                            const String& name,
+                            const FileSystemRemoveOptions*);
 
   static ScriptPromise getSystemDirectory(ScriptState*,
                                           const GetSystemDirectoryOptions*);
@@ -42,9 +45,6 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
   }
 
  private:
-  void RemoveImpl(
-      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)>)
-      override;
   void QueryPermissionImpl(
       bool writable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;

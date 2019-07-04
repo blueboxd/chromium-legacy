@@ -48,6 +48,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     // kStorageFull indicates that a resident credential could not be created
     // because the authenticator has insufficient storage.
     kStorageFull,
+    kUserConsentDenied,
   };
 
   AuthenticatorRequestClientDelegate();

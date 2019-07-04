@@ -4,7 +4,12 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/chunked_data_pipe_getter.mojom";
+import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
@@ -108,6 +113,29 @@ struct FetchAPIRequestHeaders {
   map<string, string> headers;
 };
 
+// Represents part of an upload body. This could be either one of bytes, file or
+// a data pipe.
+struct FetchAPIDataElement {
+  // The type of the internal contents of network::DataElement.
+  network.mojom.DataElementType type;
+  // For kBytes.
+  array<uint8> buf;
+  // For kFile and kRawFile
+  mojo_base.mojom.FilePath path;
+  // For kRawFile
+  mojo_base.mojom.File? file;
+  // For kBlob
+  string? blob_uuid;
+  // For kDataPipe
+  network.mojom.DataPipeGetter? data_pipe_getter;
+  // For kChunkedDataPipe
+  network.mojom.ChunkedDataPipeGetter? chunked_data_pipe_getter;
+
+  uint64 offset;
+  uint64 length;
+  mojo_base.mojom.Time expected_modification_time;
+};
+
 // Struct representing a Body for a Request:
 // https://fetch.spec.whatwg.org/#body
 // This has the same members definition with network.mojom.URLRequestBody, which
@@ -119,7 +147,7 @@ struct FetchAPIRequestHeaders {
 // scoped_refptr<blink::EncodedFormData>.
 struct FetchAPIRequestBody {
   // Store upload bodies
-  array<network.mojom.DataElement> elements;
+  array<FetchAPIDataElement> elements;
 
   // Identifies a particular upload instance, which is used by the cache to
   // formulate a cache key.

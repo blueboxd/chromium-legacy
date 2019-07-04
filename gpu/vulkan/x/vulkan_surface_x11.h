@@ -24,7 +24,8 @@ class VulkanSurfaceX11 : public VulkanSurface {
   ~VulkanSurfaceX11() override;
 
   // VulkanSurface:
-  bool SetSize(const gfx::Size& size) override;
+  bool Reshape(const gfx::Size& size,
+               gfx::OverlayTransform pre_transform) override;
 
  private:
   class ExposeEventForwarder;

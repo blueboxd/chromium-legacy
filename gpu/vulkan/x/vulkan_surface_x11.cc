@@ -128,9 +128,12 @@ VulkanSurfaceX11::VulkanSurfaceX11(VkInstance vk_instance,
 VulkanSurfaceX11::~VulkanSurfaceX11() {}
 
 // VulkanSurface:
-bool VulkanSurfaceX11::SetSize(const gfx::Size& size) {
+bool VulkanSurfaceX11::Reshape(const gfx::Size& size,
+                               gfx::OverlayTransform pre_transform) {
+  DCHECK_EQ(pre_transform, gfx::OVERLAY_TRANSFORM_NONE);
+
   XResizeWindow(gfx::GetXDisplay(), window_, size.width(), size.height());
-  return VulkanSurface::SetSize(size);
+  return VulkanSurface::Reshape(size, pre_transform);
 }
 
 bool VulkanSurfaceX11::CanDispatchXEvent(const XEvent* event) {

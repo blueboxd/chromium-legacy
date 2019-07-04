@@ -8,7 +8,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace identity {
 

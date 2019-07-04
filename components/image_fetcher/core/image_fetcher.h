@@ -19,6 +19,7 @@
 namespace image_fetcher {
 
 class ImageDecoder;
+class ReducedModeImageFetcher;
 
 // Encapsulates image fetching customization options.
 // (required)
@@ -31,9 +32,13 @@ class ImageDecoder;
 //   that's closest to the given size (only useful for .icos). Does NOT resize
 //   the downloaded image to the given dimensions.
 class ImageFetcherParams {
-  // Only allow the bridge to access the private function set_skip_transcoding
+  // Allows the bridge to access the private function set_skip_transcoding
   // used for gif download.
   friend class ImageFetcherBridge;
+  // Allows ReducedModeImageFetcher to access the private
+  // function set_skip_transcoding and set_allow_needs_transcoding_file because
+  // it ignores the ImageFetcherCallback.
+  friend class ReducedModeImageFetcher;
 
  public:
   // Sets the UMA client name to report feature-specific metrics. Make sure
@@ -68,6 +73,10 @@ class ImageFetcherParams {
 
   bool skip_transcoding() const { return skip_transcoding_; }
 
+  bool allow_needs_transcoding_file() const {
+    return allow_needs_transcoding_file_;
+  }
+
   // Only to be used in unittests.
   void set_skip_transcoding_for_testing(bool skip_transcoding) {
     skip_transcoding_ = skip_transcoding;
@@ -84,6 +93,10 @@ class ImageFetcherParams {
     skip_transcoding_ = skip_transcoding;
   }
 
+  void set_allow_needs_transcoding_file(bool allow_needs_transcoding_file) {
+    allow_needs_transcoding_file_ = allow_needs_transcoding_file;
+  }
+
   const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag_;
 
   base::Optional<int64_t> max_download_bytes_;
@@ -97,6 +110,9 @@ class ImageFetcherParams {
   // True if the disk cache should be skipped because it was already checked in
   // java.
   bool skip_disk_cache_read_;
+  // True if allowing images that need transcoding to be stored with a prefix in
+  // file names.
+  bool allow_needs_transcoding_file_;
 };
 
 // A class used to fetch server images. It can be called from any thread and the

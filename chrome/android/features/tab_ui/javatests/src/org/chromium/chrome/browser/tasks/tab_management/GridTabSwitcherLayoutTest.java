@@ -33,6 +33,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -266,6 +267,7 @@ public class GridTabSwitcherLayoutTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @DisabledTest(message = "crbug.com/981341")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
         prepareTabs(2, mUrl);
         testGridToTab(true, false);

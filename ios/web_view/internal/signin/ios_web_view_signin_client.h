@@ -34,12 +34,10 @@ class IOSWebViewSigninClient : public SigninClient {
 
   // SigninClient implementation.
   std::string GetProductVersion() override;
-  base::Time GetInstallDate() override;
   PrefService* GetPrefs() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
   void DoFinalInit() override;
-  bool IsFirstRun() const override;
   bool AreSigninCookiesAllowed() override;
   bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(

@@ -5,24 +5,29 @@
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/values.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/invalidation/impl/fcm_fake_invalidator.h"
+#include "components/invalidation/impl/fcm_invalidation_listener.h"
+#include "components/invalidation/impl/fcm_sync_network_channel.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_service_test_template.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -39,6 +44,44 @@ using testing::_;
 using testing::StrictMock;
 
 namespace invalidation {
+
+namespace {
+
+class TestFCMSyncNetworkChannel : public syncer::FCMSyncNetworkChannel {
+ public:
+  void StartListening() override {}
+  void StopListening() override {}
+};
+
+// TODO: Make FCMInvalidationListener class abstract and explicitly make all the
+// methods virtual. Provide FCMInvalidationListenerImpl and
+// FakeFCMInvalidationListener classes that will inherit from
+// FCMInvalidationListener. The reason for such a change is that
+// FCMInvalidationService relies of FCMInvalidationListener class.
+class FakeFCMInvalidationListener : public syncer::FCMInvalidationListener {
+ public:
+  FakeFCMInvalidationListener(
+      std::unique_ptr<syncer::FCMSyncNetworkChannel> network_channel);
+  ~FakeFCMInvalidationListener() override;
+
+  void RequestDetailedStatus(
+      const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+          callback) const override;
+};
+
+FakeFCMInvalidationListener::FakeFCMInvalidationListener(
+    std::unique_ptr<syncer::FCMSyncNetworkChannel> network_channel)
+    : syncer::FCMInvalidationListener(std::move(network_channel)) {}
+
+FakeFCMInvalidationListener::~FakeFCMInvalidationListener() {}
+
+void FakeFCMInvalidationListener::RequestDetailedStatus(
+    const base::RepeatingCallback<void(const base::DictionaryValue&)>& callback)
+    const {
+  callback.Run(base::DictionaryValue());
+}
+
+}  // namespace
 
 const char kApplicationName[] = "com.google.chrome.fcm.invalidations";
 
@@ -138,8 +181,9 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   void InitializeInvalidationService() {
-    fake_invalidator_ = new syncer::FCMFakeInvalidator();
-    invalidation_service_->InitForTest(fake_invalidator_);
+    fake_listener_ = new FakeFCMInvalidationListener(
+        std::make_unique<TestFCMSyncNetworkChannel>());
+    invalidation_service_->InitForTest(base::WrapUnique(fake_listener_));
   }
 
   InvalidationService* GetInvalidationService() {
@@ -149,12 +193,13 @@ class FCMInvalidationServiceTestDelegate {
   void DestroyInvalidationService() { invalidation_service_.reset(); }
 
   void TriggerOnInvalidatorStateChange(syncer::InvalidatorState state) {
-    fake_invalidator_->EmitOnInvalidatorStateChange(state);
+    fake_listener_->EmitStateChangeForTest(state);
   }
 
   void TriggerOnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) {
-    fake_invalidator_->EmitOnIncomingInvalidation(invalidation_map);
+    fake_listener_->EmitSavedInvalidationsForTest(
+        ConvertObjectIdInvalidationMapToTopicInvalidationMap(invalidation_map));
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -164,7 +209,7 @@ class FCMInvalidationServiceTestDelegate {
   std::unique_ptr<MockInstanceID> mock_instance_id_;
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
-  syncer::FCMFakeInvalidator* fake_invalidator_;  // Owned by the service.
+  syncer::FCMInvalidationListener* fake_listener_;  // Owned by the service.
   network::TestURLLoaderFactory url_loader_factory_;
   TestingPrefServiceSimple pref_service_;
 

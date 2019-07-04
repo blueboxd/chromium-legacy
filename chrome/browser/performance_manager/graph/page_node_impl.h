@@ -32,7 +32,8 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   PageNodeImpl(GraphImpl* graph,
                const WebContentsProxy& contents_proxy,
-               bool is_visible);
+               bool is_visible,
+               bool is_audible);
   ~PageNodeImpl() override;
 
   // Returns the web contents associated with this page node. It is valid to
@@ -42,6 +43,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   void SetIsLoading(bool is_loading);
   void SetIsVisible(bool is_visible);
+  void SetIsAudible(bool is_audible);
   void SetUkmSourceId(ukm::SourceId ukm_source_id);
   void OnFaviconUpdated();
   void OnTitleUpdated();
@@ -72,6 +74,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   // Accessors.
   bool is_visible() const;
+  bool is_audible() const;
   bool is_loading() const;
   ukm::SourceId ukm_source_id() const;
   LifecycleState lifecycle_state() const;
@@ -134,10 +137,13 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // PageNode implementation:
   bool IsPageAlmostIdle() const override;
   bool IsVisible() const override;
+  base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
+  bool IsAudible() const override;
   bool IsLoading() const override;
   ukm::SourceId GetUkmSourceID() const override;
   LifecycleState GetLifecycleState() const override;
   int64_t GetNavigationID() const override;
+  base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
   const GURL& GetMainFrameUrl() const override;
 
@@ -173,11 +179,14 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // pending navigation will coexist with the existing main frame until it's
   // committed.
   base::flat_set<FrameNodeImpl*> main_frame_nodes_;
+
   // The total count of frames that tally up to this page.
   size_t frame_node_count_ = 0;
 
+  // The last time at which the page visibility changed.
   base::TimeTicks visibility_change_time_;
-  // Main frame navigation committed time.
+
+  // The last time at which a main frame navigation was committed.
   base::TimeTicks navigation_committed_time_;
 
   // The time the most recent resource usage estimate applies to.
@@ -190,6 +199,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // from a given process between measurements, the entire cost to that frame
   // will be mis-attributed to other frames hosted in that process.
   base::TimeDelta cumulative_cpu_usage_estimate_;
+
   // The most current memory footprint estimate.
   uint64_t private_footprint_kb_estimate_ = 0;
 
@@ -235,6 +245,13 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
       &GraphImplObserver::OnIsVisibleChanged,
       &PageNodeObserver::OnIsVisibleChanged>
       is_visible_{false};
+  // Whether or not the page is audible. Driven by browser instrumentation.
+  // Initialized on construction.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &GraphImplObserver::OnIsAudibleChanged,
+      &PageNodeObserver::OnIsAudibleChanged>
+      is_audible_{false};
   // The loading state. This is driven by instrumentation in the browser
   // process.
   ObservedProperty::NotifiesOnlyOnChanges<

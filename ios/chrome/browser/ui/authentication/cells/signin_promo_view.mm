@@ -114,7 +114,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     _primaryButton = primaryButton;
     DCHECK(_primaryButton);
     _primaryButton.accessibilityIdentifier = kSigninPromoPrimaryButtonId;
-    [_primaryButton setTitleColor:[UIColor whiteColor]
+    [_primaryButton setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                          forState:UIControlStateNormal];
     _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
     _primaryButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;

@@ -615,8 +615,16 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
 
 // Test for https://crbug.com/866549#c2. It verifies that about:blank does not
 // commit in the error page process when it is redirected to.
+// Flaky on Linux. See https://crbug.com/981295.
+#if defined(OS_LINUX)
+#define MAYBE_RedirectErrorPageReloadToAboutBlank \
+  DISABLED_RedirectErrorPageReloadToAboutBlank
+#else
+#define MAYBE_RedirectErrorPageReloadToAboutBlank \
+  RedirectErrorPageReloadToAboutBlank
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
-                       RedirectErrorPageReloadToAboutBlank) {
+                       MAYBE_RedirectErrorPageReloadToAboutBlank) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));

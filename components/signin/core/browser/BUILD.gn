@@ -286,6 +286,7 @@ source_set("unit_tests") {
     "oauth_multilogin_helper_unittest.cc",
     "oauth_multilogin_token_fetcher_unittest.cc",
     "primary_account_manager_unittest.cc",
+    "primary_account_policy_manager_impl_unittest.cc",
     "profile_oauth2_token_service_delegate_chromeos_unittest.cc",
     "signin_error_controller_unittest.cc",
     "signin_header_helper_unittest.cc",
@@ -321,7 +322,7 @@ source_set("unit_tests") {
   if (is_chromeos) {
     sources -= [
       "account_investigator_unittest.cc",
-      "primary_account_manager_unittest.cc",
+      "primary_account_policy_manager_impl_unittest.cc",
       "signin_status_metrics_provider_unittest.cc",
     ]
 

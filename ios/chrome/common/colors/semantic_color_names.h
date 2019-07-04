@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+extern NSString* const kSolidButtonTextColor;
 extern NSString* const kTintColor;
 
 #endif  // IOS_CHROME_COMMON_COLORS_SEMANTIC_COLOR_NAMES_H_

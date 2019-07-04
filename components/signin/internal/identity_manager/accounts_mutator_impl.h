@@ -8,13 +8,15 @@
 #include <string>
 
 #include "base/macros.h"
-#include "build/buildflag.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
-#include "google_apis/gaia/core_account_id.h"
+
+namespace signin_metrics {
+enum class SourceForRefreshTokenOperation;
+}
 
 class AccountTrackerService;
+struct CoreAccountId;
 class PrefService;
 class PrimaryAccountManager;
 class ProfileOAuth2TokenService;
@@ -64,6 +66,7 @@ class AccountsMutatorImpl : public AccountsMutator {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   PrefService* pref_service_;
 #endif
+
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorImpl);
 };
 

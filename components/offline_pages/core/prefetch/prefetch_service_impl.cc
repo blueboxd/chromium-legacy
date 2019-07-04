@@ -215,6 +215,13 @@ void PrefetchServiceImpl::Shutdown() {
   prefetch_gcm_handler_.reset();
   suggested_articles_observer_.reset();
   prefetch_downloader_.reset();
+  image_fetcher_ = nullptr;
+}
+
+void PrefetchServiceImpl::ReplaceImageFetcher(
+    image_fetcher::ImageFetcher* image_fetcher) {
+  DCHECK(image_fetcher_);
+  image_fetcher_ = image_fetcher;
 }
 
 }  // namespace offline_pages

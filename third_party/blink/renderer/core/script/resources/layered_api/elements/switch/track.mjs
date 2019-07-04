@@ -52,7 +52,7 @@ export class SwitchTrack {
     this[_trackElement].part.add('track');
     this[_fillElement] = factory.createElement('span');
     this[_fillElement].id = 'trackFill';
-    this[_fillElement].part.add('trackFill');
+    this[_fillElement].part.add('track-fill');
     this[_trackElement].appendChild(this[_fillElement]);
     this[_slotElement] = factory.createElement('slot');
     this._addSlot();

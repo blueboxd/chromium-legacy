@@ -37,7 +37,8 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
       weak_factory_(this) {
   page_node_ = performance_manager_->CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
-      web_contents->GetVisibility() == content::Visibility::VISIBLE);
+      web_contents->GetVisibility() == content::Visibility::VISIBLE,
+      web_contents->IsCurrentlyAudible());
 
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
@@ -210,6 +211,11 @@ void PerformanceManagerTabHelper::OnVisibilityChanged(
   const bool is_visible = visibility == content::Visibility::VISIBLE;
   PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
               is_visible);
+}
+
+void PerformanceManagerTabHelper::OnAudioStateChanged(bool audible) {
+  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsAudible, page_node_.get(),
+              audible);
 }
 
 void PerformanceManagerTabHelper::DidFinishNavigation(

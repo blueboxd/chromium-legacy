@@ -54,7 +54,7 @@ public class GridTabSwitcherCoordinator
             .MenuOrKeyboardActionHandler mGridTabSwitcherMenuActionHandler =
             new MenuOrKeyboardActionController.MenuOrKeyboardActionHandler() {
                 @Override
-                public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
+                public boolean handleMenuOrKeyboardAction(int id, boolean fromMenu) {
                     if (id == R.id.menu_group_tabs) {
                         mTabSelectionEditorCoordinator.getController().show();
                         RecordUserAction.record("MobileMenuGroupTabs");

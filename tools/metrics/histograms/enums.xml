@@ -36100,6 +36100,7 @@ from previous Chrome versions.
   <int value="1620369597" label="enable-unsafe-webgpu"/>
   <int value="1621298798" label="VrBrowserKeyboard:enabled"/>
   <int value="1622131033" label="ozone-test-single-overlay-support"/>
+  <int value="1624443254" label="AnimatedAvatarButton:disabled"/>
   <int value="1626824478" label="ExperimentalAppBanners:disabled"/>
   <int value="1628831121" label="SafeBrowsingUseLocalBlacklistsV2:enabled"/>
   <int value="1630988998" label="VrBrowsingExperimentalRendering:disabled"/>
@@ -36292,6 +36293,7 @@ from previous Chrome versions.
   <int value="1896527497" label="ImmersiveUiMode:enabled"/>
   <int value="1898231011" label="enable-native-notifications"/>
   <int value="1900529524" label="disable-touch-drag-drop"/>
+  <int value="1903290829" label="AnimatedAvatarButton:enabled"/>
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1910240042" label="enable-experimental-fullscreen-exit-ui"/>
@@ -48352,7 +48354,11 @@ Called by update_net_trust_anchors.py.-->
     cancelled.
   </int>
   <int value="5" label="Dice web signout">
-    The user signed out on the web, and Chrome signout was prohibited.
+    Deprecated. The user signed out on the web, and Chrome signout was
+    prohibited.
+  </int>
+  <int value="6" label="Primary account is not allowed.">
+    The primary account is a managed account and is no longer allowed by policy.
   </int>
 </enum>
 

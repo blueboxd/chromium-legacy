@@ -128,7 +128,6 @@ enum AccelerationHint {
 enum DisableDeferralReason {
   kDisableDeferralReasonUnknown =
       0,  // Should not appear in production histograms
-  kDisableDeferralReasonUsingTextureBackedPattern = 2,
   kDisableDeferralReasonLowEndDevice = 7,
   kDisableDeferralReasonCount,
 };

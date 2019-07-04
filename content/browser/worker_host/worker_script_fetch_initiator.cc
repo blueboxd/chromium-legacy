@@ -4,6 +4,9 @@
 
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -222,9 +225,9 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
 
     // TODO(crbug.com/955476): Populate the network isolation key.
     RenderProcessHost::FromID(process_id)
-        ->CreateURLLoaderFactory(kSafeOrigin, net::NetworkIsolationKey(),
-                                 nullptr /* header_client */,
-                                 mojo::MakeRequest(&default_factory));
+        ->CreateURLLoaderFactory(
+            kSafeOrigin, nullptr /* preferences */, net::NetworkIsolationKey(),
+            nullptr /* header_client */, mojo::MakeRequest(&default_factory));
     factory_bundle->default_factory_info() = default_factory.PassInterface();
   }
 

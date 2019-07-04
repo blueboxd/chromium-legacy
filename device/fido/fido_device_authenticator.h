@@ -82,6 +82,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetModality(BioEnrollmentCallback callback) override;
   void GetSensorInfo(BioEnrollmentCallback callback) override;
   void BioEnrollFingerprint(const pin::TokenResponse&,
+                            BioEnrollmentSampleCallback,
                             BioEnrollmentCallback) override;
   void BioEnrollCancel(BioEnrollmentCallback) override;
   void BioEnrollEnumerate(const pin::TokenResponse&,
@@ -150,7 +151,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       base::Optional<EnumerateCredentialsResponse> response);
 
   void OnBioEnroll(pin::TokenResponse,
-                   BioEnrollmentCallback callback,
+                   BioEnrollmentSampleCallback sample_callback,
+                   BioEnrollmentCallback completion_callback,
                    base::Optional<std::vector<uint8_t>> current_template_id,
                    CtapDeviceResponseCode,
                    base::Optional<BioEnrollmentResponse>);

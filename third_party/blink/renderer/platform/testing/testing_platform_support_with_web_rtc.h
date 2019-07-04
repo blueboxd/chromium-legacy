@@ -83,7 +83,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
  private:
   class DummyWebRTCRtpTransceiver;
 
-  std::vector<std::unique_ptr<DummyWebRTCRtpTransceiver>> transceivers_;
+  Vector<std::unique_ptr<DummyWebRTCRtpTransceiver>> transceivers_;
 };
 
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {

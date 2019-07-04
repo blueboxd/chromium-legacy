@@ -10,7 +10,6 @@
 #include <vulkan/vulkan.h>
 
 #include "base/logging.h"
-#include "base/optional.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
@@ -28,7 +27,6 @@ class VULKAN_EXPORT VulkanSwapChain {
     explicit ScopedWrite(VulkanSwapChain* swap_chain);
     ~ScopedWrite();
 
-    bool success() const { return success_; }
     VkImage image() const { return image_; }
     uint32_t image_index() const { return image_index_; }
     VkImageLayout image_layout() const { return image_layout_; }
@@ -44,7 +42,6 @@ class VULKAN_EXPORT VulkanSwapChain {
 
    private:
     VulkanSwapChain* const swap_chain_;
-    bool success_ = false;
     VkImage image_ = VK_NULL_HANDLE;
     uint32_t image_index_ = 0;
     VkImageLayout image_layout_ = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -64,11 +61,10 @@ class VULKAN_EXPORT VulkanSwapChain {
                   std::unique_ptr<VulkanSwapChain> old_swap_chain);
   // Destroy() should be called when all related GPU tasks have been finished.
   void Destroy();
-
-  // Present the current buffer.
-  gfx::SwapResult PresentBuffer();
+  gfx::SwapResult SwapBuffers();
 
   uint32_t num_images() const { return static_cast<uint32_t>(images_.size()); }
+  uint32_t current_image() const { return current_image_; }
   const gfx::Size& size() const { return size_; }
 
  private:
@@ -81,7 +77,7 @@ class VULKAN_EXPORT VulkanSwapChain {
   bool InitializeSwapImages(const VkSurfaceCapabilitiesKHR& surface_caps,
                             const VkSurfaceFormatKHR& surface_format);
   void DestroySwapImages();
-  bool BeginWriteCurrentImage(VkImage* image,
+  void BeginWriteCurrentImage(VkImage* image,
                               uint32_t* image_index,
                               VkImageLayout* layout,
                               VkSemaphore* semaphore);
@@ -106,10 +102,9 @@ class VULKAN_EXPORT VulkanSwapChain {
     std::unique_ptr<VulkanCommandBuffer> command_buffer;
   };
   std::vector<ImageData> images_;
-
-  // Acquired image index.
-  base::Optional<uint32_t> acquired_image_;
+  uint32_t current_image_ = 0;
   bool is_writing_ = false;
+  VkSemaphore begin_write_semaphore_ = VK_NULL_HANDLE;
   VkSemaphore end_write_semaphore_ = VK_NULL_HANDLE;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSwapChain);

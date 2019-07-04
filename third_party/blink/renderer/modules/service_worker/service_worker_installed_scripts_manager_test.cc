@@ -57,12 +57,12 @@ class BrowserSideSender
     manager_->TransferInstalledScript(std::move(script_info));
   }
 
-  void PushBody(const std::string& data) {
-    PushDataPipe(data, body_handle_.get());
+  void PushBody(const String& data) {
+    PushDataPipe(data.Utf8(), body_handle_.get());
   }
 
-  void PushMetaData(const std::string& data) {
-    PushDataPipe(data, meta_data_handle_.get());
+  void PushMetaData(const String& data) {
+    PushDataPipe(data.Utf8(), meta_data_handle_.get());
   }
 
   void FinishTransferBody() { body_handle_.reset(); }
@@ -221,8 +221,8 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    const std::string kExpectedBody = "This is a script body.";
-    const std::string kExpectedMetaData = "This is a meta data.";
+    const String kExpectedBody = "This is a script body.";
+    const String kExpectedMetaData = "This is a meta data.";
     const String kScriptInfoEncoding("utf8");
     const HashMap<String, String> kScriptInfoHeaders(
         {{"Cache-Control", "no-cache"}, {"User-Agent", "Chrome"}});
@@ -231,9 +231,9 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script. +1 for null terminator.
-    sender.TransferInstalledScript(kScriptUrl, kScriptInfoEncoding,
-                                   kScriptInfoHeaders, kExpectedBody.size() + 1,
-                                   kExpectedMetaData.size() + 1);
+    sender.TransferInstalledScript(
+        kScriptUrl, kScriptInfoEncoding, kScriptInfoHeaders,
+        kExpectedBody.length() + 1, kExpectedMetaData.length() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
     // GetRawScriptData should be blocked until body and meta data transfer are
@@ -247,12 +247,12 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
     EXPECT_TRUE(script_data);
     Vector<uint8_t> script_text = script_data->TakeScriptText();
     Vector<uint8_t> meta_data = script_data->TakeMetaData();
-    ASSERT_EQ(kExpectedBody.size() + 1, script_text.size());
-    EXPECT_STREQ(kExpectedBody.data(),
-                 reinterpret_cast<const char*>(script_text.data()));
-    ASSERT_EQ(kExpectedMetaData.size() + 1, meta_data.size());
-    EXPECT_STREQ(kExpectedMetaData.data(),
-                 reinterpret_cast<const char*>(meta_data.data()));
+    ASSERT_EQ(kExpectedBody.length() + 1, script_text.size());
+    EXPECT_EQ(kExpectedBody,
+              String(reinterpret_cast<const char*>(script_text.data())));
+    ASSERT_EQ(kExpectedMetaData.length() + 1, meta_data.size());
+    EXPECT_EQ(kExpectedMetaData,
+              String(reinterpret_cast<const char*>(meta_data.data())));
     EXPECT_EQ(kScriptInfoEncoding, script_data->Encoding());
     EXPECT_EQ(ToCrossThreadHTTPHeaderMapData(kScriptInfoHeaders),
               *(script_data->TakeHeaders()));
@@ -260,8 +260,8 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    const std::string kExpectedBody = "This is another script body.";
-    const std::string kExpectedMetaData = "This is another meta data.";
+    const String kExpectedBody = "This is another script body.";
+    const String kExpectedMetaData = "This is another meta data.";
     const String kScriptInfoEncoding("ASCII");
     const HashMap<String, String> kScriptInfoHeaders(
         {{"Connection", "keep-alive"}, {"Content-Length", "512"}});
@@ -274,9 +274,9 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
     sender.WaitForRequestInstalledScript(kScriptUrl);
 
     // Start transferring the script. +1 for null terminator.
-    sender.TransferInstalledScript(kScriptUrl, kScriptInfoEncoding,
-                                   kScriptInfoHeaders, kExpectedBody.size() + 1,
-                                   kExpectedMetaData.size() + 1);
+    sender.TransferInstalledScript(
+        kScriptUrl, kScriptInfoEncoding, kScriptInfoHeaders,
+        kExpectedBody.length() + 1, kExpectedMetaData.length() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
     // GetRawScriptData should be blocked until body and meta data transfer are
@@ -290,12 +290,12 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
     EXPECT_TRUE(script_data);
     Vector<uint8_t> script_text = script_data->TakeScriptText();
     Vector<uint8_t> meta_data = script_data->TakeMetaData();
-    ASSERT_EQ(kExpectedBody.size() + 1, script_text.size());
-    EXPECT_STREQ(kExpectedBody.data(),
-                 reinterpret_cast<const char*>(script_text.data()));
-    ASSERT_EQ(kExpectedMetaData.size() + 1, meta_data.size());
-    EXPECT_STREQ(kExpectedMetaData.data(),
-                 reinterpret_cast<const char*>(meta_data.data()));
+    ASSERT_EQ(kExpectedBody.length() + 1, script_text.size());
+    EXPECT_EQ(kExpectedBody,
+              String(reinterpret_cast<const char*>(script_text.data())));
+    ASSERT_EQ(kExpectedMetaData.length() + 1, meta_data.size());
+    EXPECT_EQ(kExpectedMetaData,
+              String(reinterpret_cast<const char*>(meta_data.data())));
     EXPECT_EQ(kScriptInfoEncoding, script_data->Encoding());
     EXPECT_EQ(ToCrossThreadHTTPHeaderMapData(kScriptInfoHeaders),
               *(script_data->TakeHeaders()));
@@ -311,18 +311,18 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionBody) {
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    const std::string kExpectedBody = "This is a script body.";
-    const std::string kExpectedMetaData = "This is a meta data.";
+    const String kExpectedBody = "This is a script body.";
+    const String kExpectedMetaData = "This is a meta data.";
     base::WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script.
     // Body is expected to be 100 bytes larger than kExpectedBody, but sender
-    // only sends kExpectedBody and a null byte (kExpectedBody.size() + 1 bytes
-    // in total).
+    // only sends kExpectedBody and a null byte (kExpectedBody.length() + 1
+    // bytes in total).
     sender.TransferInstalledScript(
         kScriptUrl, String::FromUTF8("utf8"), HashMap<String, String>(),
-        kExpectedBody.size() + 100, kExpectedMetaData.size() + 1);
+        kExpectedBody.length() + 100, kExpectedMetaData.length() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
     // GetRawScriptData should be blocked until body and meta data transfer are
@@ -356,18 +356,18 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionMetaData) {
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    const std::string kExpectedBody = "This is a script body.";
-    const std::string kExpectedMetaData = "This is a meta data.";
+    const String kExpectedBody = "This is a script body.";
+    const String kExpectedMetaData = "This is a meta data.";
     base::WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script.
     // Meta data is expected to be 100 bytes larger than kExpectedMetaData, but
     // sender only sends kExpectedMetaData and a null byte
-    // (kExpectedMetaData.size() + 1 bytes in total).
+    // (kExpectedMetaData.length() + 1 bytes in total).
     sender.TransferInstalledScript(
         kScriptUrl, String::FromUTF8("utf8"), HashMap<String, String>(),
-        kExpectedBody.size() + 1, kExpectedMetaData.size() + 100);
+        kExpectedBody.length() + 1, kExpectedMetaData.length() + 100);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
     // GetRawScriptData should be blocked until body and meta data transfer are

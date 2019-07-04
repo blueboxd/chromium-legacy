@@ -9,6 +9,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/user_manager.h"
 #endif  // OS_CHROMEOS
 
 namespace web_app {
@@ -32,7 +33,14 @@ bool AreWebAppsEnabled(Profile* profile) {
       chromeos::ProfileHelper::IsLockScreenAppProfile(original_profile)) {
     return false;
   }
-#endif
+  // Disable Web Apps if running any kiosk app.
+  auto* user_manager = user_manager::UserManager::Get();
+  if (user_manager && (user_manager->IsLoggedInAsKioskApp() ||
+                       user_manager->IsLoggedInAsArcKioskApp())) {
+    return false;
+  }
+#endif  // OS_CHROMEOS
+
   return true;
 }
 

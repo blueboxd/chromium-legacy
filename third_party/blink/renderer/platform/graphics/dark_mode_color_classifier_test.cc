@@ -49,5 +49,28 @@ TEST(DarkModeColorClassifierTest, ApplyFilterToDarkTextOnly) {
                 GetColorWithBrightness(settings.text_brightness_threshold)));
 }
 
+TEST(DarkModeColorClassifierTest, ApplyFilterToLightBackgroundElementsOnly) {
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kSimpleInvertForTesting;
+  settings.background_brightness_threshold = 200;
+  auto classifier =
+      DarkModeColorClassifier::MakeBackgroundColorClassifier(settings);
+
+  EXPECT_EQ(DarkModeClassification::kApplyFilter,
+            classifier->ShouldInvertColor(Color::kWhite));
+  EXPECT_EQ(DarkModeClassification::kDoNotApplyFilter,
+            classifier->ShouldInvertColor(Color::kBlack));
+
+  EXPECT_EQ(DarkModeClassification::kApplyFilter,
+            classifier->ShouldInvertColor(GetColorWithBrightness(
+                settings.background_brightness_threshold + 5)));
+  EXPECT_EQ(DarkModeClassification::kDoNotApplyFilter,
+            classifier->ShouldInvertColor(GetColorWithBrightness(
+                settings.background_brightness_threshold)));
+  EXPECT_EQ(DarkModeClassification::kDoNotApplyFilter,
+            classifier->ShouldInvertColor(GetColorWithBrightness(
+                settings.background_brightness_threshold - 5)));
+}
+
 }  // namespace
 }  // namespace blink

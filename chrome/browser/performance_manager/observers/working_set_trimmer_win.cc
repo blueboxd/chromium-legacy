@@ -46,15 +46,26 @@ void EmptyWorkingSet(const base::Process& process,
 WorkingSetTrimmer::WorkingSetTrimmer() = default;
 WorkingSetTrimmer::~WorkingSetTrimmer() = default;
 
-bool WorkingSetTrimmer::ShouldObserve(const NodeBase* node) {
-  return node->type() == ProcessNodeImpl::Type();
+void WorkingSetTrimmer::OnPassedToGraph(Graph* graph) {
+  RegisterObservers(graph);
+}
+
+void WorkingSetTrimmer::OnTakenFromGraph(Graph* graph) {
+  UnregisterObservers(graph);
 }
 
 void WorkingSetTrimmer::OnAllFramesInProcessFrozen(
-    ProcessNodeImpl* process_node) {
-  if (process_node->process().IsValid()) {
-    EmptyWorkingSet(process_node->process(), process_node->launch_time());
-  }
+    const ProcessNode* process_node) {
+  if (process_node->GetProcess().IsValid())
+    EmptyWorkingSet(process_node->GetProcess(), process_node->GetLaunchTime());
+}
+
+void WorkingSetTrimmer::RegisterObservers(Graph* graph) {
+  graph->AddProcessNodeObserver(this);
+}
+
+void WorkingSetTrimmer::UnregisterObservers(Graph* graph) {
+  graph->RemoveProcessNodeObserver(this);
 }
 
 }  // namespace performance_manager

@@ -806,45 +806,43 @@ void PaintArtifactCompositor::DecompositeTransforms(
             const TransformPaintPropertyNode* transform_node) {
           DCHECK(transform_node);
           while (transform_node && !transform_node->IsRoot()) {
-            if (!can_be_decomposited.Contains(transform_node)) {
-              can_be_decomposited.insert(transform_node, false);
-            } else {
-              if (!can_be_decomposited.at(transform_node))
+            auto result = can_be_decomposited.insert(transform_node, false);
+            if (!result.is_new_entry) {
+              if (!result.stored_value->value)
                 break;
-              can_be_decomposited.Set(transform_node, false);
+              result.stored_value->value = false;
             }
-            transform_node = SafeUnalias(transform_node->Parent());
+            transform_node = &transform_node->Parent()->Unalias();
           }
         };
 
     // Add the transform and all transform parents to the map.
     for (const auto* node = &property_state.Transform().Unalias();
-         node && !can_be_decomposited.Contains(node);
-         node = SafeUnalias(node->Parent())) {
-      can_be_decomposited.insert(node, !node->IsRoot());
+         !node->IsRoot() && !can_be_decomposited.Contains(node);
+         node = &node->Parent()->Unalias()) {
       if (!node->IsIdentityOr2DTranslation() || node->ScrollNode() ||
           node->IsAffectedByOuterViewportBoundsDelta() ||
           node->HasDirectCompositingReasonsOtherThan3dTransform() ||
           !node->FlattensInheritedTransformSameAsParent() ||
           !node->BackfaceVisibilitySameAsParent()) {
         mark_not_decompositable(node);
+        break;
       }
+      can_be_decomposited.insert(node, true);
     }
 
     // Add clips and effects, and their parents, that we haven't already seen.
     for (const auto* node = &property_state.Clip().Unalias();
-         node && !clips_and_effects_seen.Contains(node);
-         node = SafeUnalias(node->Parent())) {
+         !node->IsRoot() && !clips_and_effects_seen.Contains(node);
+         node = &node->Parent()->Unalias()) {
       clips_and_effects_seen.insert(node);
-      if (!node->IsRoot())
-        mark_not_decompositable(&node->LocalTransformSpace());
+      mark_not_decompositable(&node->LocalTransformSpace());
     }
     for (const auto* node = &property_state.Effect().Unalias();
-         node && !clips_and_effects_seen.Contains(node);
-         node = SafeUnalias(node->Parent())) {
+         !node->IsRoot() && !clips_and_effects_seen.Contains(node);
+         node = &node->Parent()->Unalias()) {
       clips_and_effects_seen.insert(node);
-      if (!node->IsRoot())
-        mark_not_decompositable(&node->LocalTransformSpace());
+      mark_not_decompositable(&node->LocalTransformSpace());
     }
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {

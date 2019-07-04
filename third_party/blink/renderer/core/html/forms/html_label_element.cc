@@ -71,7 +71,7 @@ HTMLElement* HTMLLabelElement::control() const {
     return nullptr;
 
   if (Element* element = GetTreeScope().getElementById(control_id)) {
-    if (auto* html_element = ToHTMLElementOrNull(*element)) {
+    if (auto* html_element = DynamicTo<HTMLElement>(*element)) {
       if (html_element->IsLabelable()) {
         if (!html_element->IsFormControlElement()) {
           UseCounter::Count(

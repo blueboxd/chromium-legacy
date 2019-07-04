@@ -12,27 +12,17 @@
 <script>
 let testName = "WebXR InputSource's gamepad properly registers input";
 
-let fakeDeviceInitParams = { supportsImmersive:true };
+let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
 let requestSessionModes = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
-  // Need to have a valid pose or input events don't process.
-  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
-      eye:"left",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }, {
-      eye:"right",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }]);
 
   // There should only be one input source change event, which is from adding
   // the input source at the start of the test.
   let inputChangeEvents = 0;
   function onInputSourcesChange(event) {
-    assert_equals(inputChangeEvents, 0, 
+    assert_equals(inputChangeEvents, 0,
       "Gamepad button or input axis value changes should not fire an input source change event.");
     inputChangeEvents++;
   }

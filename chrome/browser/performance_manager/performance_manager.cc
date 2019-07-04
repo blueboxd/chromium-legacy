@@ -273,7 +273,7 @@ void PerformanceManager::OnStartImpl(
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
-    RegisterObserver(std::make_unique<WorkingSetTrimmer>());
+    graph_.PassToGraph(std::make_unique<WorkingSetTrimmer>());
 #endif
 
   interface_registry_.AddInterface(base::BindRepeating(

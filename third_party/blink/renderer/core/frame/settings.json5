@@ -919,6 +919,12 @@
       invalidate: "Paint",
     },
     {
+      name: "darkModeBackgroundBrightnessThreshold",
+      initial: "0",
+      type: "int",
+      invalidate: "Paint",
+    },
+    {
       name: "darkModeImageGrayscale",
       initial: "0.0",
       type: "float",

@@ -176,6 +176,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/web_preferences.h"
 #include "device/gamepad/gamepad_haptics_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
@@ -219,6 +220,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
+#include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/java_interfaces.h"
@@ -2430,13 +2432,14 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
   // Since this function is about to get deprecated (crbug.com/891872), it
   // should be fine to not add support for network isolation thus sending empty
   // key.
-  CreateURLLoaderFactory(request_initiator_site_lock,
+  CreateURLLoaderFactory(request_initiator_site_lock, nullptr /* preferences */,
                          net::NetworkIsolationKey(),
                          nullptr /* header_client */, std::move(request));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
+    const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
@@ -2475,8 +2478,23 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
     params->network_isolation_key = network_isolation_key;
-    SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
     params->header_client = std::move(header_client);
+
+    if (params->disable_web_security) {
+      // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
+      params->is_corb_enabled = false;
+    } else if (preferences &&
+               preferences->allow_universal_access_from_file_urls &&
+               origin.has_value() && origin->scheme() == url::kFileScheme) {
+      // allow_universal_access_from_file_urls disables CORB (via
+      // |is_corb_enabled|) and CORS (via |disable_web_security|) for requests
+      // made from a file: |origin|.
+      params->is_corb_enabled = false;
+      params->disable_web_security = true;
+    } else {
+      params->is_corb_enabled = true;
+    }
+
     network_context->CreateURLLoaderFactory(std::move(request),
                                             std::move(params));
   }

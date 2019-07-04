@@ -113,9 +113,9 @@ void CreateHTMLAudioElementCapturer(
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = track_id;
-  capabilities.echo_cancellation = std::vector<bool>({false});
-  capabilities.auto_gain_control = std::vector<bool>({false});
-  capabilities.noise_suppression = std::vector<bool>({false});
+  capabilities.echo_cancellation.emplace_back(false);
+  capabilities.auto_gain_control.emplace_back(false);
+  capabilities.noise_suppression.emplace_back(false);
   capabilities.sample_size = {
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max

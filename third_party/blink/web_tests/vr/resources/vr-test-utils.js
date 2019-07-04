@@ -53,7 +53,7 @@ function vr_test(func, vrDisplays, name, properties) {
   let firstDeviceController;
   vrDisplays.forEach(display => {
     return chain.then(
-        XRTest
+        navigator.vr.test
             .simulateDeviceConnection(
                 {supportsImmersive: display.capabilities.canPresent})
             .then((deviceController) => {

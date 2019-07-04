@@ -2737,6 +2737,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "safety-tips",
+    "owners": [ "jdeblasio", "estark", "meacer" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
     "expiry_milestone": 83

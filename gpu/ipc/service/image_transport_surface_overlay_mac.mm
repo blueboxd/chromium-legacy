@@ -238,6 +238,7 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
   const ui::CARendererLayerParams overlay_as_calayer_params(
       false,        // is_clipped
       gfx::Rect(),  // clip_rect
+      0,            // clip_rect_corner_radius
       0,            // sorting_context_id
       gfx::Transform(), image,
       crop_rect,            // contents_rect

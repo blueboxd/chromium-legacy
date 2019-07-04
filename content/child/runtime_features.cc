@@ -404,6 +404,10 @@ void SetIndividualRuntimeFeatures(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyImageLoading,
           "restrict-lazy-load-images-to-data-saver-only", false));
+  WebRuntimeFeatures::EnableLazyImageLoadingMetadataFetch(
+      base::GetFieldTrialParamByFeatureAsBool(
+          features::kLazyImageLoading, "enable-lazy-load-images-metadata-fetch",
+          true));
 
   WebRuntimeFeatures::EnablePictureInPicture(
       base::FeatureList::IsEnabled(media::kPictureInPicture));

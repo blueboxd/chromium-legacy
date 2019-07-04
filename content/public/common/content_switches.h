@@ -267,10 +267,6 @@ CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 #endif
 
-#if defined(OS_CHROMEOS)
-CONTENT_EXPORT extern const char kDisablePanelFitting[];
-#endif
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];
 #endif

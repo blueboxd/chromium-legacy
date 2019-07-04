@@ -113,13 +113,12 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
 
 void VulkanSurface::Destroy() {
   swap_chain_->Destroy();
-  swap_chain_ = nullptr;
   vkDestroySurfaceKHR(vk_instance_, surface_, nullptr);
   surface_ = VK_NULL_HANDLE;
 }
 
 gfx::SwapResult VulkanSurface::SwapBuffers() {
-  return swap_chain_->PresentBuffer();
+  return swap_chain_->SwapBuffers();
 }
 
 VulkanSwapChain* VulkanSurface::GetSwapChain() {
@@ -134,7 +133,7 @@ bool VulkanSurface::SetSize(const gfx::Size& size) {
   return CreateSwapChain(size);
 }
 
-bool VulkanSurface::CreateSwapChain(const gfx::Size& new_size) {
+bool VulkanSurface::CreateSwapChain(const gfx::Size& size) {
   // Get Surface Information.
   VkSurfaceCapabilitiesKHR surface_caps;
   VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -145,19 +144,19 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& new_size) {
     return false;
   }
 
-  // For Android, the current vulkan surface size may not match the new_size
-  // (the current window size), in that case, we will create a swapchain with
-  // the requested new_size, and vulkan surface size should match the swapchain
-  // images size soon.
-  if (!new_size.IsEmpty()) {
-    DLOG_IF(ERROR,
-            base::checked_cast<int>(surface_caps.currentExtent.width) !=
-                    new_size.width() ||
-                base::checked_cast<int>(surface_caps.currentExtent.height) !=
-                    new_size.height())
-        << "Requested new size doesn't match vulkan surface size.";
-    surface_caps.currentExtent.width = new_size.width();
-    surface_caps.currentExtent.height = new_size.height();
+  // If width and height of the surface are 0xFFFFFFFF, it means the surface
+  // size will be determined by the extent of a swapchain targeting the surface.
+  // In that case, we will use the |size| which is the window size for the
+  // swapchain. Otherwise, we just use the current surface size for the
+  // swapchian.
+  const uint32_t kUndefinedExtent = 0xFFFFFFFF;
+  if (surface_caps.currentExtent.width == kUndefinedExtent &&
+      surface_caps.currentExtent.height == kUndefinedExtent) {
+    surface_caps.currentExtent.width = std::max(
+        surface_caps.minImageExtent.width, static_cast<uint32_t>(size.width()));
+    surface_caps.currentExtent.height =
+        std::max(surface_caps.minImageExtent.height,
+                 static_cast<uint32_t>(size.height()));
   }
 
   DCHECK_GE(surface_caps.currentExtent.width,
@@ -171,12 +170,14 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& new_size) {
   DCHECK_GT(surface_caps.currentExtent.width, 0u);
   DCHECK_GT(surface_caps.currentExtent.height, 0u);
 
+  gfx::Size new_size(
+      base::checked_cast<int>(surface_caps.currentExtent.width),
+      base::checked_cast<int>(surface_caps.currentExtent.height));
   if (size_ == new_size)
     return true;
 
   size_ = new_size;
   auto swap_chain = std::make_unique<VulkanSwapChain>();
-
   // Create Swapchain.
   if (!swap_chain->Initialize(device_queue_, surface_, surface_caps,
                               surface_format_, std::move(swap_chain_))) {
@@ -184,7 +185,6 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& new_size) {
   }
 
   swap_chain_ = std::move(swap_chain);
-  ++swap_chain_generation_;
   return true;
 }
 

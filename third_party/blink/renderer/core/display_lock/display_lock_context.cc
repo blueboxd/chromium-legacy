@@ -930,10 +930,10 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
   // non-atomic inline-level box, layout containment has no effect.
   // (Note we're allowing display:none for display locked elements, and a bit
   // more restrictive on ruby - banning <ruby> elements entirely).
+  auto* html_element = DynamicTo<HTMLElement>(element_.Get());
   if ((style->IsDisplayTableType() &&
        style->Display() != EDisplay::kTableCell) ||
-      (!element_->IsHTMLElement() ||
-       IsHTMLRubyElement(ToHTMLElement(element_))) ||
+      (!html_element || IsHTMLRubyElement(html_element)) ||
       (style->IsDisplayInlineType() && !style->IsDisplayReplacedType())) {
     return rejection_names::kContainmentNotSatisfied;
   }

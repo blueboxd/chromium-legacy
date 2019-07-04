@@ -2722,6 +2722,15 @@ crbug.com/v8/8742 http/tests/devtools/console/console-xpath.js [ Failure Pass ]
 crbug.com/v8/8742 http/tests/devtools/sources/debugger/rethrow-error-from-bindings-crash.js [ Failure Pass ]
 crbug.com/v8/8742 virtual/mouseevent_fractional/fast/events/window-onerror-11.html [ Failure Pass ]
 crbug.com/v8/8742 virtual/mouseevent_fractional/fast/events/window-onerror-12.html [ Failure Pass ]
+# Also stack trace layout. The following web tests now include 'eval' in the stack trace.
+# Can be renabled when the corresponding V8 CL lands.
+crbug.com/v8/8742 http/tests/devtools/console/console-error-on-call-frame.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/console/console-trace-in-eval.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/console/console-uncaught-exception-in-eval.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/sources/debugger-async/async-callstack.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused-throws.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/inspector-protocol/network/navigation-long-async-stack.js [ Failure Pass ]
+crbug.com/v8/8742 inspector-protocol/runtime/runtime-console-basic-functions-paused.js [ Failure Pass ]
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
@@ -3203,6 +3212,7 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
 crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-003.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-004.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-005.html [ Failure ]
@@ -6244,6 +6254,11 @@ crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-wor
 crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
 crbug.com/980924 [ Linux Win Debug ] external/wpt/html/cross-origin/null.tentative.html [ Pass Failure ]
 crbug.com/980283 [ Mac ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
+crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-lossy.html [ Pass Failure ]
+crbug.com/981210 [ Linux ] external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
+
+# Sheriff 2019-07-04
+crbug.com/981249 [ Linux Win ] fast/forms/form-submission-create-crash.xhtml [ Pass Failure ]
 
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]

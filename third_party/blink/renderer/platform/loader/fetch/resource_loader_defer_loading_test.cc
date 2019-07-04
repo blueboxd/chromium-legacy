@@ -66,10 +66,9 @@ class ResourceLoaderDefersLoadingTest::TestCodeCacheLoader
   ~TestCodeCacheLoader() override = default;
 
   // CodeCacheLoader methods:
-  void FetchFromCodeCacheSynchronously(
-      const GURL& url,
-      base::Time* response_time_out,
-      std::vector<uint8_t>* data_out) override {}
+  void FetchFromCodeCacheSynchronously(const GURL& url,
+                                       base::Time* response_time_out,
+                                       WebVector<uint8_t>* data_out) override {}
   void FetchFromCodeCache(
       blink::mojom::CodeCacheType cache_type,
       const GURL& url,
@@ -182,8 +181,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchCheckDefers) {
   // After code cache fetch it should have deferred WebURLLoader.
   DCHECK(web_url_loader_defers_);
   DCHECK(resource);
-  std::move(code_cache_response_callback_)
-      .Run(base::Time(), std::vector<uint8_t>());
+  std::move(code_cache_response_callback_).Run(base::Time(), {});
   // Once the response is received it should be reset.
   DCHECK(!web_url_loader_defers_);
 }
@@ -191,7 +189,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchCheckDefers) {
 TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
   platform_->SetCodeCacheProcessFunction(
       base::BindRepeating([](CodeCacheLoader::FetchCodeCacheCallback callback) {
-        std::move(callback).Run(base::Time(), std::vector<uint8_t>());
+        std::move(callback).Run(base::Time(), {});
       }));
 
   auto* fetcher = CreateFetcher();
@@ -240,8 +238,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
   loader->SetDefersLoading(true);
   DCHECK(web_url_loader_defers_);
 
-  std::move(code_cache_response_callback_)
-      .Run(base::Time(), std::vector<uint8_t>());
+  std::move(code_cache_response_callback_).Run(base::Time(), {});
   // Since it was requested to be deferred, it should be reset to the
   // correct value.
   DCHECK(web_url_loader_defers_);
@@ -265,8 +262,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersMultipleTimes) {
   loader->SetDefersLoading(false);
   DCHECK(web_url_loader_defers_);
 
-  std::move(code_cache_response_callback_)
-      .Run(base::Time(), std::vector<uint8_t>());
+  std::move(code_cache_response_callback_).Run(base::Time(), {});
   DCHECK(!web_url_loader_defers_);
 }
 

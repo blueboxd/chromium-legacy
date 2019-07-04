@@ -398,6 +398,13 @@ void TabContentManager::SendThumbnailToJava(
   RunObjectCallbackAndroid(j_callback, j_bitmap);
 }
 
+void TabContentManager::SetCaptureMinRequestTimeForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint timeMs) {
+  thumbnail_cache_->SetCaptureMinRequestTimeForTesting(timeMs);
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

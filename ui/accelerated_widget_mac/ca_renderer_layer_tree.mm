@@ -331,10 +331,12 @@ CARendererLayerTree::RootLayer::~RootLayer() {
 CARendererLayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
     bool is_clipped,
     gfx::Rect clip_rect,
+    float clip_rect_corner_radius,
     unsigned sorting_context_id,
     bool is_singleton_sorting_context)
     : is_clipped(is_clipped),
       clip_rect(clip_rect),
+      clip_rect_corner_radius(clip_rect_corner_radius),
       sorting_context_id(sorting_context_id),
       is_singleton_sorting_context(is_singleton_sorting_context) {}
 
@@ -343,6 +345,7 @@ CARendererLayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
     : transform_layers(std::move(layer.transform_layers)),
       is_clipped(layer.is_clipped),
       clip_rect(layer.clip_rect),
+      clip_rect_corner_radius(layer.clip_rect_corner_radius),
       sorting_context_id(layer.sorting_context_id),
       is_singleton_sorting_context(layer.is_singleton_sorting_context),
       ca_layer(layer.ca_layer) {
@@ -506,7 +509,9 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
     if (params.sorting_context_id &&
         current_layer.sorting_context_id == params.sorting_context_id &&
         (current_layer.is_clipped != params.is_clipped ||
-         current_layer.clip_rect != params.clip_rect)) {
+         current_layer.clip_rect != params.clip_rect ||
+         current_layer.clip_rect_corner_radius !=
+             params.clip_rect_corner_radius)) {
       DLOG(ERROR) << "CALayer changed clip inside non-zero sorting context.";
       return false;
     }
@@ -514,14 +519,16 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
         !current_layer.is_singleton_sorting_context &&
         current_layer.is_clipped == params.is_clipped &&
         current_layer.clip_rect == params.clip_rect &&
+        current_layer.clip_rect_corner_radius ==
+            params.clip_rect_corner_radius &&
         current_layer.sorting_context_id == params.sorting_context_id) {
       needs_new_clip_and_sorting_layer = false;
     }
   }
   if (needs_new_clip_and_sorting_layer) {
     clip_and_sorting_layers.push_back(ClipAndSortingLayer(
-        params.is_clipped, params.clip_rect, params.sorting_context_id,
-        is_singleton_sorting_context));
+        params.is_clipped, params.clip_rect, params.clip_rect_corner_radius,
+        params.sorting_context_id, is_singleton_sorting_context));
   }
   clip_and_sorting_layers.back().AddContentLayer(tree, params);
   return true;
@@ -617,11 +624,15 @@ void CARendererLayerTree::ClipAndSortingLayer::CommitToCA(
     float scale_factor) {
   bool update_is_clipped = true;
   bool update_clip_rect = true;
+  bool update_corner_radius = true;
   if (old_layer) {
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
     update_is_clipped = old_layer->is_clipped != is_clipped;
     update_clip_rect = update_is_clipped || old_layer->clip_rect != clip_rect;
+    update_corner_radius =
+        update_is_clipped ||
+        old_layer->clip_rect_corner_radius != clip_rect_corner_radius;
   } else {
     ca_layer.reset([[CALayer alloc] init]);
     [ca_layer setAnchorPoint:CGPointZero];
@@ -650,6 +661,9 @@ void CARendererLayerTree::ClipAndSortingLayer::CommitToCA(
       [ca_layer setSublayerTransform:CATransform3DIdentity];
     }
   }
+
+  if (update_corner_radius)
+    [ca_layer setCornerRadius:clip_rect_corner_radius];
 
   for (size_t i = 0; i < transform_layers.size(); ++i) {
     TransformLayer* old_transform_layer = nullptr;

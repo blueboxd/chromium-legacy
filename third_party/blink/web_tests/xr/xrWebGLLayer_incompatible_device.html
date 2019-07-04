@@ -4,6 +4,7 @@
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
@@ -12,7 +13,7 @@
 
 promise_test( (t) => {
   webglCanvasSetup();
-  return XRTest.simulateDeviceConnection({ supportsImmersive:true })
+  return navigator.xr.test.simulateDeviceConnection(TRACKED_IMMERSIVE_DEVICE)
     .then( (controller) => new Promise((resolve) => {
       runWithUserGesture( () => {
         resolve(navigator.xr.requestSession('immersive-vr')

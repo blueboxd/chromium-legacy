@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
@@ -82,9 +81,8 @@ bool HyphenationMinikin::OpenDictionary(base::File file) {
   return true;
 }
 
-std::vector<uint8_t> HyphenationMinikin::Hyphenate(
-    const StringView& text) const {
-  std::vector<uint8_t> result;
+Vector<uint8_t> HyphenationMinikin::Hyphenate(const StringView& text) const {
+  Vector<uint8_t> result;
   if (text.Is8Bit()) {
     String text16_bit = text.ToString();
     text16_bit.Ensure16Bit();
@@ -110,7 +108,7 @@ wtf_size_t HyphenationMinikin::LastHyphenLocation(
       before_index <= kMinimumPrefixLength)
     return 0;
 
-  std::vector<uint8_t> result = Hyphenate(word);
+  Vector<uint8_t> result = Hyphenate(word);
   CHECK_LE(before_index, result.size());
   CHECK_GE(before_index, 1u);
   static_assert(kMinimumPrefixLength >= 1, "|beforeIndex - 1| can underflow");
@@ -130,7 +128,7 @@ Vector<wtf_size_t, 8> HyphenationMinikin::HyphenLocations(
   if (word.length() < kMinimumPrefixLength + kMinimumSuffixLength)
     return hyphen_locations;
 
-  std::vector<uint8_t> result = Hyphenate(word);
+  Vector<uint8_t> result = Hyphenate(word);
   static_assert(kMinimumPrefixLength >= 1,
                 "Change the 'if' above if this fails");
   for (wtf_size_t i = word.length() - kMinimumSuffixLength - 1;

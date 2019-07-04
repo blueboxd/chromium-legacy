@@ -29,7 +29,7 @@ class AudioTrackEncoder : public WTF::ThreadSafeRefCounted<AudioTrackEncoder> {
  public:
   using OnEncodedAudioCB =
       base::RepeatingCallback<void(const media::AudioParameters& params,
-                                   std::unique_ptr<std::string> encoded_data,
+                                   std::string encoded_data,
                                    base::TimeTicks capture_time)>;
 
   explicit AudioTrackEncoder(OnEncodedAudioCB on_encoded_audio_cb);

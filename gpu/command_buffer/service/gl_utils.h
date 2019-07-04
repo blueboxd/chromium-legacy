@@ -56,6 +56,7 @@ struct CALayerSharedState {
   float opacity;
   bool is_clipped;
   gfx::Rect clip_rect;
+  float clip_rect_corner_radius;
   int sorting_context_id;
   gfx::Transform transform;
 };

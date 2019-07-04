@@ -82,6 +82,7 @@ source_set("components") {
     "//components/favicon/content",
     "//components/keyed_service/content",
     "//components/pref_registry",
+    "//components/user_manager:user_manager",
     "//content/public/browser",
     "//extensions/common:common_constants",
     "//skia",
@@ -100,6 +101,7 @@ source_set("unit_tests") {
     "web_app_install_utils_unittest.cc",
     "web_app_shortcut_mac_unittest.mm",
     "web_app_shortcut_unittest.cc",
+    "web_app_utils_unittest.cc",
   ]
 
   if (is_desktop_linux) {
@@ -119,6 +121,10 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chrome/browser/chromeos" ]
+  }
 }
 
 source_set("browser_tests") {

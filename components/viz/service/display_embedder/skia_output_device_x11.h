@@ -27,8 +27,10 @@ class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
-  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
+  gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
+                                BufferPresentedCallback feedback) override;
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
+                                  const GrBackendSemaphore& semaphore,
                                   BufferPresentedCallback feedback) override;
 
  private:

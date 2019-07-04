@@ -252,7 +252,7 @@ void ChromotingClient::OnSignalStrategyStateChange(
     VLOG(1) << "Signaling connection closed.";
     mouse_input_scaler_.set_input_stub(nullptr);
     connection_.reset();
-    user_interface_->OnConnectionState(protocol::ConnectionToHost::CLOSED,
+    user_interface_->OnConnectionState(protocol::ConnectionToHost::FAILED,
                                        protocol::SIGNALING_ERROR);
   }
 }

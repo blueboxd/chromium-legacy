@@ -14,8 +14,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -28,8 +32,10 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -258,6 +264,43 @@ IN_PROC_BROWSER_TEST_P(CorsFileOriginBrowserTest, AccessToAnotherFileUrl) {
           target_file_url().c_str(), "unused", "unused"))));
 
   EXPECT_EQ(fail_string(), watcher->WaitAndGetTitle());
+}
+
+// TODO(lukasza, nasko): https://crbug.com/981018: Enable this test on Macs
+// after understanding what makes it flakily fail on the mac-rel trybot.
+#if defined(OS_MACOSX)
+#define MAYBE_UniversalAccessFromFileUrls DISABLED_UniversalAccessFromFileUrls
+#else
+#define MAYBE_UniversalAccessFromFileUrls UniversalAccessFromFileUrls
+#endif
+IN_PROC_BROWSER_TEST_P(CorsFileOriginBrowserTest,
+                       MAYBE_UniversalAccessFromFileUrls) {
+  const char* kScript = R"(
+    fetch($1)
+      .then(response => response.text())
+      .then(text => "SUCCESS: " + text)
+      .catch(error => "ERROR: " + error)
+  )";
+  std::string script =
+      JsReplace(kScript, embedded_test_server()->GetURL("/title2.html"));
+
+  // Activate the preference to allow universal access from file URLs.
+  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
+  WebPreferences prefs = rvh->GetWebkitPreferences();
+  prefs.allow_universal_access_from_file_urls = true;
+  rvh->UpdateWebkitPreferences(prefs);
+
+  // Navigate to a file: test page.
+  GURL page_url = GetTestUrl(nullptr, "title1.html");
+  EXPECT_EQ(url::kFileScheme, page_url.scheme());
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+
+  // Fetching http resources should be allowed by CORS when
+  // universal access from file URLs is requested.
+  std::string fetch_result = EvalJs(shell(), script).ExtractString();
+  fetch_result = TrimWhitespaceASCII(fetch_result, base::TRIM_ALL).as_string();
+  EXPECT_THAT(fetch_result, ::testing::HasSubstr("SUCCESS:"));
+  EXPECT_THAT(fetch_result, ::testing::HasSubstr("This page has a title"));
 }
 
 IN_PROC_BROWSER_TEST_P(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,

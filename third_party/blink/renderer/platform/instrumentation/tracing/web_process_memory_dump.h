@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -163,8 +162,7 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
       memory_allocator_dumps_;
 
   // Stores SkTraceMemoryDump for the current ProcessMemoryDump.
-  std::vector<std::unique_ptr<skia::SkiaTraceMemoryDumpImpl>>
-      sk_trace_dump_list_;
+  Vector<std::unique_ptr<skia::SkiaTraceMemoryDumpImpl>> sk_trace_dump_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebProcessMemoryDump);
 };

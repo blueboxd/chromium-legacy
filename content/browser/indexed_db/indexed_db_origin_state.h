@@ -18,10 +18,6 @@
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/common/content_export.h"
 
-namespace base {
-struct Feature;
-}
-
 namespace content {
 class IndexedDBBackingStore;
 class IndexedDBDatabase;
@@ -31,9 +27,6 @@ class IndexedDBPreCloseTaskQueue;
 namespace indexed_db {
 class LevelDBFactory;
 }  // namespace indexed_db
-
-CONTENT_EXPORT extern const base::Feature kIDBTombstoneStatistics;
-CONTENT_EXPORT extern const base::Feature kIDBTombstoneDeletion;
 
 constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 

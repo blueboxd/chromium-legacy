@@ -337,7 +337,7 @@ std::pair<ContainerNode*, PlainTextRange> PlainTextRangeForEphemeralRange(
 }
 
 int ComputeAutocapitalizeFlags(const Element* element) {
-  const HTMLElement* const html_element = ToHTMLElementOrNull(element);
+  const auto* const html_element = DynamicTo<HTMLElement>(element);
   if (!html_element)
     return 0;
 

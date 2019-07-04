@@ -520,6 +520,10 @@ void WebRuntimeFeatures::EnableRestrictAutomaticLazyImageLoadingToDataSaver(
       SetRestrictAutomaticLazyImageLoadingToDataSaverEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableLazyImageLoadingMetadataFetch(bool enable) {
+  RuntimeEnabledFeatures::SetLazyImageLoadingMetadataFetchEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(bool enable) {
   RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled(enable);
 }

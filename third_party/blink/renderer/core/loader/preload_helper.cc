@@ -526,6 +526,8 @@ void PreloadHelper::LoadLinksFromHeader(
           alternate_resource_info->FindMatchingEntry(url);
       if (alternative_resource &&
           alternative_resource->alternative_url().IsValid()) {
+        UseCounter::Count(document,
+                          WebFeature::kSignedExchangeSubresourcePrefetch);
         params.href = alternative_resource->alternative_url();
         // Change the rel to "prefetch" to trigger the prefetch logic. This
         // request will be handled by a PrefetchURLLoader in the browser

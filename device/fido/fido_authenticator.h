@@ -73,6 +73,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using BioEnrollmentCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<BioEnrollmentResponse>)>;
+  using BioEnrollmentSampleCallback =
+      base::RepeatingCallback<void(BioEnrollmentSampleStatus, uint8_t)>;
 
   FidoAuthenticator() = default;
   virtual ~FidoAuthenticator() = default;
@@ -173,6 +175,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void GetModality(BioEnrollmentCallback callback);
   virtual void GetSensorInfo(BioEnrollmentCallback callback);
   virtual void BioEnrollFingerprint(const pin::TokenResponse&,
+                                    BioEnrollmentSampleCallback,
                                     BioEnrollmentCallback);
   virtual void BioEnrollCancel(BioEnrollmentCallback);
   virtual void BioEnrollEnumerate(const pin::TokenResponse&,

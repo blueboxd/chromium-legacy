@@ -21,10 +21,11 @@ SkiaOutputDevice::~SkiaOutputDevice() = default;
 
 gfx::SwapResponse SkiaOutputDevice::PostSubBuffer(
     const gfx::Rect& rect,
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   NOTREACHED();
   StartSwapBuffers(std::move(feedback));
-  return FinishSwapBuffers(gfx::SwapResult::SWAP_FAILED, gfx::Size());
+  return FinishSwapBuffers(gfx::SwapResult::SWAP_FAILED);
 }
 
 void SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
@@ -40,13 +41,13 @@ void SkiaOutputDevice::StartSwapBuffers(
   params_->swap_response.timings.swap_start = base::TimeTicks::Now();
 }
 
-gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result,
-                                                      const gfx::Size& size) {
+gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result) {
   DCHECK(params_);
 
   params_->swap_response.result = result;
   params_->swap_response.timings.swap_end = base::TimeTicks::Now();
-  did_swap_buffer_complete_callback_.Run(*params_, size);
+  did_swap_buffer_complete_callback_.Run(
+      *params_, gfx::Size(draw_surface_->width(), draw_surface_->height()));
 
   if (feedback_) {
     std::move(*feedback_)

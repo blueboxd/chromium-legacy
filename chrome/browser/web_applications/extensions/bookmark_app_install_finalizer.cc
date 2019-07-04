@@ -56,6 +56,12 @@ void OnExtensionInstalled(
 
   const Extension* extension = crx_installer->extension();
   DCHECK(extension);
+  if (extension !=
+      GetExtensionById(crx_installer->profile(), extension->id())) {
+    std::move(callback).Run(web_app::AppId(),
+                            web_app::InstallResultCode::kWebAppDisabled);
+    return;
+  }
 
   DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(extension), app_url);
 

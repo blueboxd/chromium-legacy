@@ -185,44 +185,6 @@ void ReportPrintDocumentTypeAndSizeHistograms(PrintDocumentTypeBuckets doctype,
   }
 }
 
-bool ReportPageCountHistogram(UserActionBuckets user_action, int page_count) {
-  switch (user_action) {
-    case PRINT_TO_PRINTER:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToPrinter",
-                              page_count);
-      return true;
-    case PRINT_TO_PDF:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToPDF", page_count);
-      return true;
-    case FALLBACK_TO_ADVANCED_SETTINGS_DIALOG:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.SystemDialog",
-                              page_count);
-      return true;
-    case PRINT_WITH_CLOUD_PRINT:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToCloudPrint",
-                              page_count);
-      return true;
-    case PRINT_WITH_PRIVET:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintWithPrivet",
-                              page_count);
-      return true;
-    case PRINT_WITH_EXTENSION:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintWithExtension",
-                              page_count);
-      return true;
-    case OPEN_IN_MAC_PREVIEW:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.OpenInMacPreview",
-                              page_count);
-      return true;
-    case PRINT_TO_GOOGLE_DRIVE:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToGoogleDrive",
-                              page_count);
-      return true;
-    default:
-      return false;
-  }
-}
-
 PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
   switch (user_action) {
     case PRINT_WITH_PRIVET:
@@ -808,10 +770,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     ReportPrintDocumentTypeAndSizeHistograms(doc_type, average_page_size_in_kb);
   }
   ReportUserActionHistogram(user_action);
-  if (!ReportPageCountHistogram(user_action, page_count)) {
-    NOTREACHED();
-    return;
-  }
 
   if (user_action == PRINT_WITH_CLOUD_PRINT ||
       user_action == PRINT_TO_GOOGLE_DRIVE) {

@@ -10,17 +10,16 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
-#include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -40,7 +39,6 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::CreateForNavigation(
     const GURL& url,
-    ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,
     const NavigationRequestInfo& request_info,
     base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host) {

@@ -74,7 +74,6 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
       ModuleRecordProduceCacheData* produce_cache_data);
 
   const TextPosition& StartPosition() const { return start_position_; }
-  void RunScriptOnWorker(WorkerGlobalScope&) override;
   String InlineSourceTextForCSP() const override;
 
   // For CSP check.

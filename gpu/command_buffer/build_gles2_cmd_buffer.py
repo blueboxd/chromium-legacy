@@ -3905,7 +3905,8 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'cmd_args': 'GLfloat opacity, GLboolean is_clipped, '
-                'GLint sorting_context_id, GLuint shm_id, GLuint shm_offset',
+                'GLfloat clip_rect_corner_radius, GLint sorting_context_id, '
+                'GLuint shm_id, GLuint shm_offset',
     'extension': 'CHROMIUM_schedule_ca_layer',
   },
   'ScheduleCALayerCHROMIUM': {

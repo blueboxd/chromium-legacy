@@ -854,6 +854,10 @@
       status: "experimental",
     },
     {
+      name: "LazyImageLoadingMetadataFetch",
+      depends_on: ["LazyImageLoading"],
+    },
+    {
       name: "LazyImageVisibleLoadTimeMetrics",
     },
     {

@@ -3519,7 +3519,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // Ensure that document hosted on file: URL can successfully execute pushState
 // with arbitrary origin, when universal access setting is enabled.
 // TODO(nasko): The test is disabled on Mac, since universal access from file
-// scheme behaves differently.
+// scheme behaves differently.  See also https://crbug.com/981018.
 #if defined(OS_MACOSX)
 #define MAYBE_EnsureUniversalAccessFromFileSchemeSucceeds \
   DISABLED_EnsureUniversalAccessFromFileSchemeSucceeds
@@ -5565,7 +5565,7 @@ class AssertForegroundHelper {
 // TODO(nasko): Consider moving this into RenderProcessHostWatcher.
 class RenderProcessReadyObserver : public RenderProcessHostObserver {
  public:
-  RenderProcessReadyObserver(RenderProcessHost* render_process_host)
+  explicit RenderProcessReadyObserver(RenderProcessHost* render_process_host)
       : render_process_host_(render_process_host),
         quit_closure_(run_loop_.QuitClosure()) {
     render_process_host_->AddObserver(this);

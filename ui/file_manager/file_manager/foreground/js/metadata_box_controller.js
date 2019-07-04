@@ -233,6 +233,10 @@ MetadataBoxController.prototype.updateModificationTime_ = function(
 
 /**
  * Set a current directory's size in metadata box.
+ *
+ * A loading animation is shown while fetching the directory size. However, it
+ * won't show if there is no size value. Use a dummy value ' ' in that case.
+ *
  * If previous getDirectorySize is still running, next getDirectorySize is not
  * called at the time. After the previous callback is finished, getDirectorySize
  * that corresponds to the last setDirectorySize_ is called.
@@ -246,6 +250,10 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
     entry, isSameEntry) {
   if (!entry.isDirectory) {
     return;
+  }
+
+  if (this.metadataBox_.size === '') {
+    this.metadataBox_.size = ' ';  // Provide a dummy size value.
   }
 
   if (this.isDirectorySizeLoading_) {
@@ -262,9 +270,11 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
 
   // false if the entry is same. true if the entry is changed.
   this.metadataBox_.isSizeLoading = !isSameEntry;
+
   this.isDirectorySizeLoading_ = true;
   chrome.fileManagerPrivate.getDirectorySize(entry, size => {
     this.isDirectorySizeLoading_ = false;
+
     if (this.onDirectorySizeLoaded_) {
       setTimeout(this.onDirectorySizeLoaded_.bind(null, entry));
       this.onDirectorySizeLoaded_ = null;
@@ -279,7 +289,7 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
       return;
     }
 
-    this.metadataBox_.isSizeLoading = false;
     this.metadataBox_.size = this.fileMetadataFormatter_.formatSize(size, true);
+    this.metadataBox_.isSizeLoading = false;
   });
 };

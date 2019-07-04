@@ -10,7 +10,7 @@ function xr_session_promise_test(
 
   promise_test((t) => {
     let fakeDeviceController;
-    return XRTest.simulateDeviceConnection(deviceOptions)
+    return navigator.xr.test.simulateDeviceConnection(deviceOptions)
         .then((controller) => {
           fakeDeviceController = controller;
           if (gl) {
@@ -51,7 +51,6 @@ function xr_session_promise_test(
                     // already ended is not defined by the spec. This
                     // should be defined or removed.
                     testSession.end().catch(() => {});
-                    fakeDeviceController.setXRPresentationFrameData(null);
                   })
                   .then(() => nextSessionTest(++i))
                   .catch((err) => {

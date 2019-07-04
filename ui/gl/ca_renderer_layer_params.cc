@@ -8,6 +8,7 @@ namespace ui {
 
 CARendererLayerParams::CARendererLayerParams(bool is_clipped,
                                              const gfx::Rect clip_rect,
+                                             float clip_rect_corner_radius,
                                              unsigned sorting_context_id,
                                              const gfx::Transform& transform,
                                              gl::GLImage* image,
@@ -19,6 +20,7 @@ CARendererLayerParams::CARendererLayerParams(bool is_clipped,
                                              unsigned filter)
     : is_clipped(is_clipped),
       clip_rect(clip_rect),
+      clip_rect_corner_radius(clip_rect_corner_radius),
       sorting_context_id(sorting_context_id),
       transform(transform),
       image(image),

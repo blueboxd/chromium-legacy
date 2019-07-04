@@ -55,6 +55,8 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
   dark_mode_settings.image_policy = frame_settings.GetDarkModeImagePolicy();
   dark_mode_settings.text_brightness_threshold =
       frame_settings.GetDarkModeTextBrightnessThreshold();
+  dark_mode_settings.background_brightness_threshold =
+      frame_settings.GetDarkModeBackgroundBrightnessThreshold();
   dark_mode_settings.image_grayscale_percent =
       frame_settings.GetDarkModeImageGrayscale();
   return dark_mode_settings;

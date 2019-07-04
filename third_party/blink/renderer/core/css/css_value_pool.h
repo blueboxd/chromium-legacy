@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
-#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -82,25 +82,28 @@ class CORE_EXPORT CSSValuePool
                                               CSSIdentifierValue* css_value) {
     return identifier_value_cache_[static_cast<int>(ident)] = css_value;
   }
-  CSSPrimitiveValue* PixelCacheValue(int int_value) {
+  CSSNumericLiteralValue* PixelCacheValue(int int_value) {
     return pixel_value_cache_[int_value];
   }
-  CSSPrimitiveValue* SetPixelCacheValue(int int_value,
-                                        CSSPrimitiveValue* css_value) {
+  CSSNumericLiteralValue* SetPixelCacheValue(
+      int int_value,
+      CSSNumericLiteralValue* css_value) {
     return pixel_value_cache_[int_value] = css_value;
   }
-  CSSPrimitiveValue* PercentCacheValue(int int_value) {
+  CSSNumericLiteralValue* PercentCacheValue(int int_value) {
     return percent_value_cache_[int_value];
   }
-  CSSPrimitiveValue* SetPercentCacheValue(int int_value,
-                                          CSSPrimitiveValue* css_value) {
+  CSSNumericLiteralValue* SetPercentCacheValue(
+      int int_value,
+      CSSNumericLiteralValue* css_value) {
     return percent_value_cache_[int_value] = css_value;
   }
-  CSSPrimitiveValue* NumberCacheValue(int int_value) {
+  CSSNumericLiteralValue* NumberCacheValue(int int_value) {
     return number_value_cache_[int_value];
   }
-  CSSPrimitiveValue* SetNumberCacheValue(int int_value,
-                                         CSSPrimitiveValue* css_value) {
+  CSSNumericLiteralValue* SetNumberCacheValue(
+      int int_value,
+      CSSNumericLiteralValue* css_value) {
     return number_value_cache_[int_value] = css_value;
   }
 
@@ -138,11 +141,11 @@ class CORE_EXPORT CSSValuePool
   // Vector caches.
   HeapVector<Member<CSSIdentifierValue>, numCSSValueKeywords>
       identifier_value_cache_;
-  HeapVector<Member<CSSPrimitiveValue>, kMaximumCacheableIntegerValue + 1>
+  HeapVector<Member<CSSNumericLiteralValue>, kMaximumCacheableIntegerValue + 1>
       pixel_value_cache_;
-  HeapVector<Member<CSSPrimitiveValue>, kMaximumCacheableIntegerValue + 1>
+  HeapVector<Member<CSSNumericLiteralValue>, kMaximumCacheableIntegerValue + 1>
       percent_value_cache_;
-  HeapVector<Member<CSSPrimitiveValue>, kMaximumCacheableIntegerValue + 1>
+  HeapVector<Member<CSSNumericLiteralValue>, kMaximumCacheableIntegerValue + 1>
       number_value_cache_;
 
   // Hash map caches.

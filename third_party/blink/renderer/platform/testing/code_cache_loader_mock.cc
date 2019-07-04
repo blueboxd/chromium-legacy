@@ -9,9 +9,9 @@ namespace blink {
 void CodeCacheLoaderMock::FetchFromCodeCacheSynchronously(
     const GURL& url,
     base::Time* response_time_out,
-    std::vector<uint8_t>* data_out) {
+    WebVector<uint8_t>* data_out) {
   *response_time_out = base::Time();
-  *data_out = std::vector<uint8_t>();
+  *data_out = WebVector<uint8_t>();
 }
 
 void CodeCacheLoaderMock::FetchFromCodeCache(

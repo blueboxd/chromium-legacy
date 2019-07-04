@@ -779,6 +779,7 @@ GL_APICALL void GL_APIENTRY
 glScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                      GLboolean is_clipped,
                                      const GLfloat* clip_rect,
+                                     GLfloat clip_rect_corner_radius,
                                      GLint sorting_context_id,
                                      const GLfloat* transform);
 GL_APICALL void GL_APIENTRY
@@ -795,6 +796,7 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERSHAREDSTATECHROMIUMPROC)(
     GLfloat opacity,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
+    GLfloat clip_rect_corner_radius,
     GLint sorting_context_id,
     const GLfloat* transform);
 typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(

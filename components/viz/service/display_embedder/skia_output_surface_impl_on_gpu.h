@@ -175,7 +175,7 @@ class SkiaOutputSurfaceImplOnGpu {
   bool is_using_vulkan() const { return !!vulkan_context_provider_; }
 
   SkSurface* output_sk_surface() const {
-    return scoped_output_device_paint_->sk_surface();
+    return output_device_->draw_surface();
   }
 
   void CreateFallbackImage(ImageContext* context);
@@ -187,9 +187,9 @@ class SkiaOutputSurfaceImplOnGpu {
       shared_image_representation_factory_;
   VulkanContextProvider* const vulkan_context_provider_;
   const RendererSettings renderer_settings_;
-  const DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
-  const BufferPresentedCallback buffer_presented_callback_;
-  const ContextLostCallback context_lost_callback_;
+  DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
+  BufferPresentedCallback buffer_presented_callback_;
+  ContextLostCallback context_lost_callback_;
 
 #if defined(USE_OZONE)
   // This should outlive gl_surface_ and vulkan_surface_.
@@ -205,7 +205,9 @@ class SkiaOutputSurfaceImplOnGpu {
   size_t max_resource_cache_bytes_ = 0u;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
-  base::Optional<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
+
+  // Semaphore for SkiaOutputDevice::SwapBuffers() to wait on.
+  GrBackendSemaphore swap_buffers_semaphore_;
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.

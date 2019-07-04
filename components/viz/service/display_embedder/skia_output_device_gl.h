@@ -53,14 +53,14 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
-  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
+  gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
+                                BufferPresentedCallback feedback) override;
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
+                                  const GrBackendSemaphore& semaphore,
                                   BufferPresentedCallback feedback) override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  SkSurface* BeginPaint() override;
-  void EndPaint(const GrBackendSemaphore& semaphore) override;
 
   // gpu::ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -81,8 +81,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
 
   scoped_refptr<gl::GLSurface> gl_surface_;
   GrContext* gr_context_ = nullptr;
-
-  sk_sp<SkSurface> sk_surface_;
 
   bool supports_alpha_ = false;
 

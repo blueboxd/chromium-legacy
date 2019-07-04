@@ -13,7 +13,7 @@
 <script>
 
 let testName = "Inline session ends if magic window data provider disconnects.";
-let fakeDeviceInitParams = { supportsImmersive: false };
+let fakeDeviceInitParams = VALID_NON_IMMERSIVE_DEVICE;
 let requestSessionModes = ['inline'];
 
 let testFunction = function(session, t, fakeDeviceController) {

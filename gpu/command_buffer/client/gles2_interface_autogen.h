@@ -828,6 +828,7 @@ virtual void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 virtual void ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                                 GLboolean is_clipped,
                                                 const GLfloat* clip_rect,
+                                                GLfloat clip_rect_corner_radius,
                                                 GLint sorting_context_id,
                                                 const GLfloat* transform) = 0;
 virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,

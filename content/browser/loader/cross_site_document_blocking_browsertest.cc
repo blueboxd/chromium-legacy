@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -18,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/loader/cross_site_document_resource_handler.h"
 #include "content/browser/site_instance_impl.h"
@@ -171,6 +174,15 @@ void InspectHistograms(
                                static_cast<int>(expected_action), 1);
 }
 
+// Gets contents of a file at //content/test/data/<dir>/<file>.
+std::string GetTestFileContents(const char* dir, const char* file) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  base::FilePath path = GetTestFilePath(dir, file);
+  std::string result;
+  EXPECT_TRUE(ReadFileToString(path, &result));
+  return result;
+}
+
 // Helper for intercepting a resource request to the given URL and capturing the
 // response headers and body.
 //
@@ -236,7 +248,8 @@ class RequestInterceptor {
     return body_;
   }
 
-  void Verify(CorbExpectations expectations) {
+  void Verify(CorbExpectations expectations,
+              const std::string& expected_resource_body) {
     if (0 != (expectations & kShouldBeBlocked)) {
       ASSERT_EQ(net::OK, completion_status().error_code);
 
@@ -253,7 +266,9 @@ class RequestInterceptor {
       // Verify that the console message would have been printed.
       EXPECT_TRUE(completion_status().should_report_corb_blocking);
     } else {
+      ASSERT_EQ(net::OK, completion_status().error_code);
       EXPECT_FALSE(completion_status().should_report_corb_blocking);
+      EXPECT_EQ(expected_resource_body, response_body());
     }
   }
 
@@ -452,13 +467,28 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
   }
 
   void VerifyImgRequest(std::string resource, CorbExpectations expectations) {
-    SCOPED_TRACE("... while testing via <img> tag");
+    // Test from a http: origin.
+    VerifyImgRequest(resource, expectations,
+                     GURL("http://foo.com/title1.html"));
 
-    // Navigate to the test page while request interceptor is active.
+    // Test from a file: origin.
+    VerifyImgRequest(resource, expectations,
+                     GetTestUrl(nullptr, "title1.html"));
+  }
+
+  void VerifyImgRequest(std::string resource,
+                        CorbExpectations expectations,
+                        GURL page_url) {
     GURL resource_url(
         std::string("http://cross-origin.com/site_isolation/" + resource));
+    SCOPED_TRACE(
+        base::StringPrintf("... while testing via <img src='%s'> from %s",
+                           resource_url.spec().c_str(),
+                           url::Origin::Create(page_url).Serialize().c_str()));
+
+    // Navigate to the test page while request interceptor is active.
     RequestInterceptor interceptor(resource_url);
-    EXPECT_TRUE(NavigateToURL(shell(), GURL("http://foo.com/title1.html")));
+    EXPECT_TRUE(NavigateToURL(shell(), page_url));
 
     // Make sure that base::HistogramTester below starts with a clean slate.
     FetchHistogramsFromChildProcesses();
@@ -474,7 +504,8 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
 
     // Verify...
     InspectHistograms(histograms, expectations, resource, ResourceType::kImage);
-    interceptor.Verify(expectations);
+    interceptor.Verify(expectations,
+                       GetTestFileContents("site_isolation", resource.c_str()));
   }
 
  private:
@@ -536,10 +567,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
                                      "json-prefixed-4.js",
                                      "nosniff.json.js",
                                      "nosniff.json-prefixed.js"};
-  for (const char* resource : blocked_resources) {
-    SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
+  for (const char* resource : blocked_resources)
     VerifyImgRequest(resource, kShouldBeSniffedAndBlocked);
-  }
 
   // These files should be disallowed without sniffing.
   //   nosniff.*   - Won't sniff correctly, but blocked because of nosniff.
@@ -551,10 +580,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
   // ChromeContentBrowserClient::OnNetworkServiceCreated.
   const char* nosniff_blocked_resources[] = {
       "nosniff.html", "nosniff.xml", "nosniff.json", "nosniff.txt", "fake.zip"};
-  for (const char* resource : nosniff_blocked_resources) {
-    SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
+  for (const char* resource : nosniff_blocked_resources)
     VerifyImgRequest(resource, kShouldBeBlockedWithoutSniffing);
-  }
 
   // These files are allowed for XHR under the document blocking policy because
   // the sniffing logic determines they are not actually documents.
@@ -581,10 +608,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
                                            "nosniff.json-list.js",
                                            "js-html-polyglot.html",
                                            "js-html-polyglot2.html"};
-  for (const char* resource : sniff_allowed_resources) {
-    SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
+  for (const char* resource : sniff_allowed_resources)
     VerifyImgRequest(resource, kShouldBeSniffedAndAllowed);
-  }
 }
 
 // This test covers an aspect of Cross-Origin-Resource-Policy (CORP, different
@@ -828,7 +853,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
 
   // Verify that the response completed successfully, was blocked and was logged
   // as having initially a non-empty body.
-  interceptor.Verify(kShouldBeBlockedWithoutSniffing);
+  interceptor.Verify(kShouldBeBlockedWithoutSniffing,
+                     "no resource body needed for blocking verification");
 
   // Verify that most response headers have been removed by CORB.
   const std::string& headers =
@@ -918,7 +944,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   // only possible when NetworkService is enabled).
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     interceptor.WaitForRequestCompletion();
-    interceptor.Verify(kShouldBeBlockedWithoutSniffing);
+    interceptor.Verify(kShouldBeBlockedWithoutSniffing,
+                       "no resource body needed for blocking verification");
   }
 
   // Wait for fetch result (really needed only without NetworkService, if no
@@ -1007,7 +1034,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
                       "nosniff.json", ResourceType::kImage,
                       special_request_initiator_origin_lock_check_for_appcache);
-    interceptor.Verify(kShouldBeBlockedWithoutSniffing);
+    interceptor.Verify(kShouldBeBlockedWithoutSniffing,
+                       "no resource body needed for blocking verification");
   }
 }
 
@@ -1322,10 +1350,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
       // NetworkService enforices |request_initiator_site_lock| for CORB,
       // which means that legitimate fetches from HTML Imported scripts may get
       // incorrectly blocked.
-      interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing);
+      interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing,
+                         "no resource body needed for blocking verification");
     } else {
       // Without |request_initiator_site_lock| no CORB blocking is expected.
-      interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+      interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing,
+                         GetTestFileContents("site_isolation", "nosniff.json"));
     }
   }
 }
@@ -1389,7 +1419,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 
     // |request_initiator| is same-origin (foo.com), and so the fetch should not
     // be blocked by CORB.
-    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing,
+                       GetTestFileContents("site_isolation", "nosniff.json"));
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));
@@ -1455,7 +1486,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 
     // |request_initiator| is same-origin (foo.com), and so the fetch should not
     // be blocked by CORB.
-    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing,
+                       GetTestFileContents("site_isolation", "nosniff.json"));
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));

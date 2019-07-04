@@ -43,7 +43,9 @@ enum class InstallResultCode {
   // Store, where the user still needs to accept the Play installation prompt to
   // install.
   kIntentToPlayStore = 11,
-  kMaxValue = kIntentToPlayStore
+  // A web app has been disabled by device policy or by other reasons.
+  kWebAppDisabled = 12,
+  kMaxValue = kWebAppDisabled
 };
 
 // Where an app was installed from. This affects what flags will be used when

@@ -368,11 +368,11 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
 void VideoTrackRecorder::Encoder::OnFrameEncodeCompleted(
     const OnEncodedVideoInternalCB& on_encoded_video_cb,
     const media::WebmMuxer::VideoParameters& params,
-    std::unique_ptr<std::string> data,
-    std::unique_ptr<std::string> alpha_data,
+    std::string data,
+    std::string alpha_data,
     base::TimeTicks capture_timestamp,
     bool keyframe) {
-  DVLOG(1) << (keyframe ? "" : "non ") << "keyframe " << data->length() << "B, "
+  DVLOG(1) << (keyframe ? "" : "non ") << "keyframe " << data.length() << "B, "
            << capture_timestamp << " ms";
   on_encoded_video_cb.Run(params, std::move(data), std::move(alpha_data),
                           capture_timestamp, keyframe);

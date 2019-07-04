@@ -94,8 +94,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         base::UnguessableToken::Create() /* devtools_frame_token */);
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
         ServiceWorkerRequestHandler::CreateForNavigation(
-            GURL(url), nullptr /* resource_context */,
-            navigation_handle_core.get(), request_info,
+            GURL(url), navigation_handle_core.get(), request_info,
             &service_worker_provider_host);
     EXPECT_EQ(expected_handler_created, !!interceptor.get());
   }

@@ -42,7 +42,6 @@ class VULKAN_EXPORT VulkanSurface {
   gfx::SwapResult SwapBuffers();
 
   VulkanSwapChain* GetSwapChain();
-  uint32_t swap_chain_generation() const { return swap_chain_generation_; }
 
   void Finish();
 
@@ -52,17 +51,13 @@ class VULKAN_EXPORT VulkanSurface {
   VkSurfaceFormatKHR surface_format() const { return surface_format_; }
 
  private:
-  bool CreateSwapChain(const gfx::Size& new_size);
+  bool CreateSwapChain(const gfx::Size& size);
 
   const VkInstance vk_instance_;
   gfx::Size size_;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSurfaceFormatKHR surface_format_ = {};
   VulkanDeviceQueue* device_queue_ = nullptr;
-
-  // The generation of |swap_chain_|, it will be increasted if a new
-  // |swap_chain_| is created due to resizing, etec.
-  uint32_t swap_chain_generation_ = 0u;
   std::unique_ptr<VulkanSwapChain> swap_chain_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurface);

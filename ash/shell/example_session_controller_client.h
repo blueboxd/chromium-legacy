@@ -19,7 +19,8 @@ namespace shell {
 
 class ExampleSessionControllerClient : public TestSessionControllerClient {
  public:
-  explicit ExampleSessionControllerClient(SessionControllerImpl* controller);
+  ExampleSessionControllerClient(SessionControllerImpl* controller,
+                                 TestPrefServiceProvider* prefs_provider);
   ~ExampleSessionControllerClient() override;
 
   static ExampleSessionControllerClient* Get();

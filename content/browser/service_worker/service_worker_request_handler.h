@@ -7,17 +7,19 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/resource_type.h"
+
+class GURL;
+
+namespace network {
+struct ResourceRequest;
+}  // namespace network
 
 namespace content {
 
-class ResourceContext;
 class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
 struct NavigationRequestInfo;
@@ -32,7 +34,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
   // if the navigation cannot use service workers.
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigation(
       const GURL& url,
-      ResourceContext* resource_context,
       ServiceWorkerNavigationHandleCore* navigation_handle_core,
       const NavigationRequestInfo& request_info,
       base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host);

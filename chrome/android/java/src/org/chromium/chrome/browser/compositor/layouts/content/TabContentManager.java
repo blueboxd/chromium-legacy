@@ -19,6 +19,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.AsyncTask;
@@ -423,7 +424,6 @@ public class TabContentManager {
         invalidateIfChanged(id, url);
     }
 
-
     /**
      * Update the priority-ordered list of visible tabs.
      * @param priority The list of tab ids ordered in terms of priority.
@@ -443,7 +443,6 @@ public class TabContentManager {
         }
     }
 
-
     /**
      * Removes a thumbnail of the tab whose id is |tabId|.
      * @param tabId The Id of the tab whose thumbnail is being removed.
@@ -452,6 +451,11 @@ public class TabContentManager {
         if (mNativeTabContentManager != 0) {
             nativeRemoveTabThumbnail(mNativeTabContentManager, tabId);
         }
+    }
+
+    @VisibleForTesting
+    public void setCaptureMinRequestTimeForTesting(int timeMs) {
+        nativeSetCaptureMinRequestTimeForTesting(mNativeTabContentManager, timeMs);
     }
 
     @CalledByNative
@@ -483,5 +487,7 @@ public class TabContentManager {
     private native void nativeRemoveTabThumbnail(long nativeTabContentManager, int tabId);
     private native void nativeGetEtc1TabThumbnail(
             long nativeTabContentManager, int tabId, Callback<Bitmap> callback);
+    private native void nativeSetCaptureMinRequestTimeForTesting(
+            long nativeTabContentManager, int timeMs);
     private static native void nativeDestroy(long nativeTabContentManager);
 }

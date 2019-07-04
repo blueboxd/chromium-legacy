@@ -58,7 +58,7 @@ class IsolationContext;
 class RenderProcessHostObserver;
 class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
-
+struct WebPreferences;
 #if defined(OS_ANDROID)
 enum class ChildProcessImportance;
 #endif
@@ -402,6 +402,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // When NetworkService is not enabled, |request| will be bound with a
   // URLLoaderFactory which routes requests to ResourceDispatcherHost.
   //
+  // |preferences| is an optional argument that might be used to control some
+  // aspects of the URLLoaderFactory (e.g. via
+  // allow_universal_access_from_file_urls).
+  //
   // |header_client| will be used in URLLoaderFactoryParams when creating the
   // factory.
   //
@@ -413,6 +417,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // TODO(lukasza, nasko): https://crbug.com/888079: Make |origin| mandatory.
   virtual void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) = 0;

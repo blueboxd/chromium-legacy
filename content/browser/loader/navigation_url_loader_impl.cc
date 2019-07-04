@@ -720,9 +720,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (service_worker_navigation_handle_core) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           ServiceWorkerRequestHandler::CreateForNavigation(
-              resource_request_->url, resource_context_,
-              service_worker_navigation_handle_core, *request_info,
-              &service_worker_provider_host_);
+              resource_request_->url, service_worker_navigation_handle_core,
+              *request_info, &service_worker_provider_host_);
       // The interceptor for service worker may not be created for some
       // reasons (e.g. the origin is not secure).
       if (service_worker_interceptor)
@@ -1164,15 +1163,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!head.intercepted_by_plugin && !must_download && !known_mime_type) {
       // No plugin throttles intercepted the response. Ask if the plugin
       // registered to PluginService wants to handle the request.
-      // TODO(http://crbug.com/824840): Convert PluginService to run on UI.
-      RunOrPostTaskIfNecessary(
-          FROM_HERE, BrowserThread::IO,
-          base::BindOnce(&URLLoaderRequestController::
-                             CheckPluginAndContinueOnReceiveResponse,
-                         weak_factory_.GetWeakPtr(), head,
-                         std::move(url_loader_client_endpoints),
-                         true /* is_download_if_not_handled_by_plugin */,
-                         std::vector<WebPluginInfo>()));
+      CheckPluginAndContinueOnReceiveResponse(
+          head, std::move(url_loader_client_endpoints),
+          true /* is_download_if_not_handled_by_plugin */,
+          std::vector<WebPluginInfo>());
       return;
     }
 #endif

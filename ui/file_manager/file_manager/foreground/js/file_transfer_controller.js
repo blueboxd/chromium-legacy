@@ -1360,6 +1360,13 @@ class FileTransferController {
       return false;
     }
 
+    const sourceUrls = (clipboardData.getData('fs/sources') || '').split('\n');
+    // If the destination is sub-tree of any of the sources paste isn't allowed.
+    const destinationUrl = destinationEntry.toURL();
+    if (sourceUrls.some(source => destinationUrl.startsWith(source))) {
+      return false;
+    }
+
     // Destination entry needs the 'canAddChildren' permission.
     const metadata =
         this.metadataModel_.getCache([destinationEntry], ['canAddChildren']);

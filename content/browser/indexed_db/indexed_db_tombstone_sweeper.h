@@ -76,16 +76,9 @@ class WrappingIterator {
 class CONTENT_EXPORT IndexedDBTombstoneSweeper
     : public IndexedDBPreCloseTaskQueue::PreCloseTask {
  public:
-  enum class Mode {
-    // Gathers statistics and doesn't modify the database.
-    STATISTICS,
-    // Deletes the tombstones that are encountered.
-    DELETION
-  };
 
   // The |database| must outlive this instance.
-  IndexedDBTombstoneSweeper(Mode mode,
-                            int round_iterations,
+  IndexedDBTombstoneSweeper(int round_iterations,
                             int max_iterations,
                             leveldb::DB* database);
   ~IndexedDBTombstoneSweeper() override;
@@ -173,7 +166,6 @@ class CONTENT_EXPORT IndexedDBTombstoneSweeper
                     leveldb::Status* leveldb_status,
                     int* round_iterations);
 
-  const Mode mode_;
   int num_iterations_ = 0;
   const int max_round_iterations_;
   const int max_iterations_;

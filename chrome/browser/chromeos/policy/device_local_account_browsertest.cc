@@ -90,6 +90,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -2798,5 +2799,20 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
 INSTANTIATE_TEST_SUITE_P(TermsOfServiceDownloadTestInstance,
                          TermsOfServiceDownloadTest,
                          testing::Bool());
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, WebAppsInPublicSession) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  // Add an account with DeviceLocalAccount::Type::TYPE_PUBLIC_SESSION.
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  StartLogin(std::string(), std::string());
+  WaitForSessionStart();
+
+  // WebAppProvider should be enabled for TYPE_PUBLIC_SESSION user account.
+  Profile* profile = GetProfileForTest();
+  ASSERT_TRUE(profile);
+  EXPECT_TRUE(web_app::WebAppProvider::Get(profile));
+}
 
 }  // namespace policy

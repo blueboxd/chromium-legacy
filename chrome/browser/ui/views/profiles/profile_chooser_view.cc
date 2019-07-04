@@ -85,10 +85,14 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
 
 void NavigateToGoogleAccountPage(Profile* profile, const std::string& email) {
   // Create a URL so that the account chooser is shown if the account with
-  // |email| is not signed into the web.
+  // |email| is not signed into the web. Include a UTM parameter to signal the
+  // source of the navigation.
+  GURL google_account = net::AppendQueryParameter(
+      GURL(chrome::kGoogleAccountURL), "utm_source", "chrome-profile-chooser");
+
   GURL url(chrome::kGoogleAccountChooserURL);
   url = net::AppendQueryParameter(url, "Email", email);
-  url = net::AppendQueryParameter(url, "continue", chrome::kGoogleAccountURL);
+  url = net::AppendQueryParameter(url, "continue", google_account.spec());
 
   NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;

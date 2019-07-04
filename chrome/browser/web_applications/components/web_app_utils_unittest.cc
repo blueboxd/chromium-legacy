@@ -4,16 +4,21 @@
 
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif  // OS_CHROMEOS
 
 namespace web_app {
@@ -49,6 +54,27 @@ TEST_F(WebAppUtilsTest, AreWebAppsEnabled) {
   EXPECT_FALSE(AreWebAppsEnabled(lock_screen_profile));
   EXPECT_FALSE(
       AreWebAppsEnabled(lock_screen_profile->GetOffTheRecordProfile()));
+
+  using MockUserManager = testing::NiceMock<chromeos::MockUserManager>;
+  {
+    auto user_manager = std::make_unique<MockUserManager>();
+    user_manager::ScopedUserManager enabler(std::move(user_manager));
+    EXPECT_TRUE(AreWebAppsEnabled(regular_profile));
+  }
+  {
+    auto user_manager = std::make_unique<MockUserManager>();
+    EXPECT_CALL(*user_manager, IsLoggedInAsKioskApp())
+        .WillOnce(testing::Return(true));
+    user_manager::ScopedUserManager enabler(std::move(user_manager));
+    EXPECT_FALSE(AreWebAppsEnabled(regular_profile));
+  }
+  {
+    auto user_manager = std::make_unique<MockUserManager>();
+    EXPECT_CALL(*user_manager, IsLoggedInAsArcKioskApp())
+        .WillOnce(testing::Return(true));
+    user_manager::ScopedUserManager enabler(std::move(user_manager));
+    EXPECT_FALSE(AreWebAppsEnabled(regular_profile));
+  }
 #endif
 }
 

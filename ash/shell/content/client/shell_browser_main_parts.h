@@ -24,8 +24,9 @@ class WMState;
 }
 
 namespace ash {
-namespace shell {
+class TestPrefServiceProvider;
 
+namespace shell {
 class ExampleAppListClient;
 class ExampleSessionControllerClient;
 class WindowWatcher;
@@ -55,6 +56,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<ExampleSessionControllerClient>
       example_session_controller_client_;
   std::unique_ptr<ExampleAppListClient> example_app_list_client_;
+  std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

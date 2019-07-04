@@ -531,6 +531,7 @@ test("gpu_unittests") {
     "config/gpu_control_list_version_unittest.cc",
     "config/gpu_driver_bug_list_unittest.cc",
     "config/gpu_info_collector_unittest.cc",
+    "config/gpu_info_unittest.cc",
     "config/gpu_preferences_unittest.cc",
     "config/gpu_test_config_unittest.cc",
     "config/gpu_test_expectations_parser_unittest.cc",

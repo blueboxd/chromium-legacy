@@ -129,8 +129,8 @@ class BidiTestRunner {
   }
 
   void RunTest(const std::basic_string<UChar>& input,
-               const std::vector<int>& reorder,
-               const std::vector<int>& levels,
+               const Vector<int>& reorder,
+               const Vector<int>& levels,
                bidi_test::ParagraphDirection,
                const std::string& line,
                size_t line_number);
@@ -156,8 +156,7 @@ static bool IsNonRenderedCodePoint(UChar c) {
   // But it seems to expect LRI, etc. to be rendered!?
 }
 
-std::string DiffString(const std::vector<int>& actual,
-                       const std::vector<int>& expected) {
+std::string DiffString(const Vector<int>& actual, const Vector<int>& expected) {
   std::ostringstream diff;
   diff << "actual: ";
   // This is the magical way to print a vector to a stream, clear, right?
@@ -170,8 +169,8 @@ std::string DiffString(const std::vector<int>& actual,
 }
 
 void BidiTestRunner::RunTest(const std::basic_string<UChar>& input,
-                             const std::vector<int>& expected_order,
-                             const std::vector<int>& expected_levels,
+                             const Vector<int>& expected_order,
+                             const Vector<int>& expected_levels,
                              bidi_test::ParagraphDirection paragraph_direction,
                              const std::string& line,
                              size_t line_number) {
@@ -213,9 +212,9 @@ void BidiTestRunner::RunTest(const std::basic_string<UChar>& input,
   error_context << " context: "
                 << bidi_test::NameFromParagraphDirection(paragraph_direction);
 
-  std::vector<int> actual_order;
-  std::vector<int> actual_levels;
-  actual_levels.assign(input.size(), -1);
+  Vector<int> actual_order;
+  Vector<int> actual_levels;
+  actual_levels.Fill(-1, input.size());
   BidiCharacterRun* run = runs.FirstRun();
   while (run) {
     // Blink's UBA just makes runs, the actual ordering of the display of

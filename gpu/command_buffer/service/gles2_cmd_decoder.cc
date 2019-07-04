@@ -13527,6 +13527,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerSharedStateCHROMIUM(
   ca_layer_shared_state_->opacity = c.opacity;
   ca_layer_shared_state_->is_clipped = c.is_clipped ? true : false;
   ca_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(clip_rect);
+  ca_layer_shared_state_->clip_rect_corner_radius = c.clip_rect_corner_radius;
   ca_layer_shared_state_->sorting_context_id = c.sorting_context_id;
   ca_layer_shared_state_->transform = transform;
   return error::kNoError;
@@ -13581,6 +13582,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
 
   ui::CARendererLayerParams params = ui::CARendererLayerParams(
       ca_layer_shared_state_->is_clipped, ca_layer_shared_state_->clip_rect,
+      ca_layer_shared_state_->clip_rect_corner_radius,
       ca_layer_shared_state_->sorting_context_id,
       ca_layer_shared_state_->transform, image, contents_rect,
       gfx::ToEnclosingRect(bounds_rect), c.background_color, c.edge_aa_mask,

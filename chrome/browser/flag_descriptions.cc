@@ -1595,6 +1595,12 @@ const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =
     "verdicts from Safe Browsing. These will provide stronger protections "
     "from files Safe Browsing is unsure about.";
 
+const char kSafetyTipName[] =
+    "Show Safety Tip UI when visiting low-reputation websites";
+const char kSafetyTipDescription[] =
+    "If enabled, a Safety Tip UI may be displayed when visiting or interacting "
+    "with a site Chrome believes may be suspicious.";
+
 const char kSameSiteByDefaultCookiesName[] = "SameSite by default cookies";
 const char kSameSiteByDefaultCookiesDescription[] =
     "Treat cookies that don't specify a SameSite attribute as if they were "

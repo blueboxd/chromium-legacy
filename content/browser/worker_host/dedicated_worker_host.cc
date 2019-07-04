@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -224,7 +225,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     // TODO(crbug.com/955476): Create network_isolation_key cache key using
     // worker script's origin.
     process->CreateURLLoaderFactory(
-        origin_, net::NetworkIsolationKey() /* network_isolation_key */,
+        origin_, nullptr /* preferences */, net::NetworkIsolationKey(),
         std::move(no_header_client), std::move(request));
   }
 

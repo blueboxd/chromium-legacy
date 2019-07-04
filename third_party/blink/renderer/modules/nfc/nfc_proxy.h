@@ -49,6 +49,8 @@ class MODULES_EXPORT NFCProxy final
   void Push(device::mojom::blink::NDEFMessagePtr message,
             device::mojom::blink::NFCPushOptionsPtr options,
             device::mojom::blink::NFC::PushCallback cb);
+  void CancelPush(const String& target,
+                  device::mojom::blink::NFC::CancelPushCallback callback);
 
   // Implementation of PageVisibilityObserver.
   void PageVisibilityChanged() override;

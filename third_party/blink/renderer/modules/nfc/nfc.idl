@@ -9,8 +9,8 @@ typedef (DOMString or ArrayBuffer or NDEFMessage) NDEFMessageSource;
 // https://w3c.github.io/web-nfc/#the-nfc-interface
 
 [
-  RuntimeEnabled=WebNFC,
-  SecureContext
+    RuntimeEnabled=WebNFC,
+    SecureContext
 ] interface NFC {
     [CallWith=ScriptState, MeasureAs=WebNFCPush] Promise<void> push (NDEFMessageSource message, optional NFCPushOptions options);
     [CallWith=ScriptState, MeasureAs=WebNFCCancelPush] Promise<void> cancelPush (optional NFCPushTarget target = "any");

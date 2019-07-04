@@ -273,34 +273,8 @@ TEST_F(IndexedDBFactoryTest, ImmediateClose) {
   EXPECT_EQ(0ul, factory()->GetOpenOrigins().size());
 }
 
-TEST_F(IndexedDBFactoryTestWithMockTime, CloseWithoutSweeping) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {}, {kIDBTombstoneDeletion, kIDBTombstoneStatistics});
-  SetupContext();
-
-  const Origin origin = Origin::Create(GURL("http://localhost:81"));
-
-  IndexedDBOriginStateHandle origin_state_handle;
-  leveldb::Status s;
-
-  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
-  EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
-  origin_state_handle.Release();
-
-  EXPECT_TRUE(factory()->GetOriginFactory(origin));
-  EXPECT_TRUE(factory()->GetOriginFactory(origin)->IsClosing());
-
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(2));
-
-  EXPECT_FALSE(factory()->GetOriginFactory(origin));
-}
-
 TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({kIDBTombstoneDeletion},
-                                {kIDBTombstoneStatistics});
   base::SimpleTestClock clock;
   clock.SetNow(base::Time::Now());
   SetupContextWithFactories(indexed_db::LevelDBFactory::Get(), &clock);

@@ -54,6 +54,7 @@ class PLATFORM_EXPORT DarkModeFilter {
   bool ShouldApplyToColor(const Color& color, ElementRole role);
 
   std::unique_ptr<DarkModeColorClassifier> text_classifier_;
+  std::unique_ptr<DarkModeColorClassifier> background_classifier_;
   std::unique_ptr<DarkModeColorFilter> color_filter_;
   sk_sp<SkColorFilter> image_filter_;
 };

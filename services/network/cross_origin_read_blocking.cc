@@ -693,12 +693,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   if (!IsBlockableScheme(target_origin.GetURL()))
     return kAllow;
 
-  // Allow requests from file:// URLs for now.
-  // TODO(creis): Limit this to when the allow_universal_access_from_file_urls
-  // preference is set.  See https://crbug.com/789781.
-  if (initiator.scheme() == url::kFileScheme)
-    return kAllow;
-
   // Allow the response through if this is a CORS request and the response has
   // valid CORS headers.
   switch (request_mode) {

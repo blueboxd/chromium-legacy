@@ -63,6 +63,24 @@ class InvertLowBrightnessColorsClassifier : public DarkModeColorClassifier {
   int brightness_threshold_;
 };
 
+class InvertHighBrightnessColorsClassifier : public DarkModeColorClassifier {
+ public:
+  InvertHighBrightnessColorsClassifier(int brightness_threshold)
+      : brightness_threshold_(brightness_threshold) {
+    DCHECK_GT(brightness_threshold_, 0);
+    DCHECK_LT(brightness_threshold_, 256);
+  }
+
+  DarkModeClassification ShouldInvertColor(const Color& color) override {
+    if (CalculateColorBrightness(color) > brightness_threshold_)
+      return DarkModeClassification::kApplyFilter;
+    return DarkModeClassification::kDoNotApplyFilter;
+  }
+
+ private:
+  int brightness_threshold_;
+};
+
 }  // namespace
 
 // Values below which a color is considered sufficiently transparent that a
@@ -101,6 +119,23 @@ DarkModeColorClassifier::MakeTextColorClassifier(
 
   return std::make_unique<InvertLowBrightnessColorsClassifier>(
       settings.text_brightness_threshold);
+}
+
+std::unique_ptr<DarkModeColorClassifier>
+DarkModeColorClassifier::MakeBackgroundColorClassifier(
+    const DarkModeSettings& settings) {
+  DCHECK_LE(settings.background_brightness_threshold, 256);
+  DCHECK_GE(settings.background_brightness_threshold, 0);
+
+  // The value should be between 0 and 256, but check for values outside that
+  // range here to preserve correct behavior in non-debug builds.
+  if (settings.background_brightness_threshold >= 256)
+    return SimpleColorClassifier::NeverInvert();
+  if (settings.background_brightness_threshold <= 0)
+    return SimpleColorClassifier::AlwaysInvert();
+
+  return std::make_unique<InvertHighBrightnessColorsClassifier>(
+      settings.background_brightness_threshold);
 }
 
 DarkModeColorClassifier::~DarkModeColorClassifier() {}

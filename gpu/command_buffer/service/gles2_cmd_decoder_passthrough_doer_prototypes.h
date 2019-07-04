@@ -895,11 +895,13 @@ error::Error DoScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                             GLfloat uv_width,
                                             GLfloat uv_height,
                                             GLuint gpu_fence_id);
-error::Error DoScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
-                                                  GLboolean is_clipped,
-                                                  const GLfloat* clip_rect,
-                                                  GLint sorting_context_id,
-                                                  const GLfloat* transform);
+error::Error DoScheduleCALayerSharedStateCHROMIUM(
+    GLfloat opacity,
+    GLboolean is_clipped,
+    const GLfloat* clip_rect,
+    GLfloat clip_rect_corner_radius,
+    GLint sorting_context_id,
+    const GLfloat* transform);
 error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                        const GLfloat* contents_rect,
                                        GLuint background_color,

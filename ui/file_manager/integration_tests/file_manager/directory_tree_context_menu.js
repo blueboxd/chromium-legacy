@@ -717,6 +717,58 @@
   /**
    * Tests context menu for MyFiles, Downloads and sub-folder.
    */
+  testcase.dirContextMenuMyFilesWithPaste = async () => {
+    const myFilesMenus = [
+      ['#share-with-linux', true],
+      ['#new-folder', true],
+    ];
+    const downloadsMenus = [
+      ['#cut', false],
+      ['#copy', true],
+      ['#paste-into-folder', true],
+      ['#share-with-linux', true],
+      ['#delete', false],
+      ['#new-folder', true],
+    ];
+    const photosMenus = [
+      ['#cut', true],
+      ['#copy', true],
+      ['#paste-into-folder', false],
+      ['#share-with-linux', true],
+      ['#rename', true],
+      ['#delete', true],
+      ['#new-folder', true],
+    ];
+    // Open Files app on local Downloads.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.photos, ENTRIES.hello],
+        []);
+
+    // Select and copy hello.txt into the clipboard to test paste-into-folder
+    // command.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
+        'selectFile failed');
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
+        'execCommand failed');
+
+    // Check the context menu is on desired state for MyFiles.
+    await checkContextMenu(
+        appId, '/My files', myFilesMenus, false /* rootMenu */);
+
+    // Check the context menu for MyFiles>Downloads.
+    await checkContextMenu(
+        appId, '/My files/Downloads', downloadsMenus, false /* rootMenu */);
+
+    // Check the context menu for MyFiles>Downloads>photos.
+    await checkContextMenu(
+        appId, '/My files/Downloads/photos', photosMenus, false /* rootMenu */);
+  };
+
+  /**
+   * Tests context menu for MyFiles, Downloads and sub-folder.
+   */
   testcase.dirContextMenuMyFiles = async () => {
     const myFilesMenus = [
       ['#share-with-linux', true],

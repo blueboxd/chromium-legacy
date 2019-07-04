@@ -572,6 +572,12 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     return false;
   }
 
+  // Pre-NetworkService allows all requests from file: URLs (mostly as a crude
+  // way to account for WebPreferences::allow_universal_access_from_file_urls).
+  if (request()->initiator().has_value() &&
+      request()->initiator()->scheme() == url::kFileScheme)
+    return false;
+
   return true;
 }
 

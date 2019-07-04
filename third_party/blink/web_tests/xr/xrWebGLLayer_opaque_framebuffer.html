@@ -4,13 +4,14 @@
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
 let testName = "Ensure that the framebuffer given by the WebGL layer is opaque";
 
-let fakeDeviceInitParams = { supportsImmersive: true };
+let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
 let requestSessionModes = [
   'immersive-vr',

@@ -535,6 +535,10 @@ const base::Feature kRemoveSupervisedUsersOnStartup{
 const base::Feature kLoadBrokenImagesFromContextMenu{
     "LoadBrokenImagesFromContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to show Safety Tip warnings on low-reputation sites.
+const base::Feature kSafetyTipUI{"SafetyTip",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -609,7 +613,7 @@ const base::Feature kSysInternals{"SysInternals",
 
 // Enables or disables the System Web App manager.
 const base::Feature kSystemWebApps{"SystemWebApps",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the App Management UI.
 const base::Feature kAppManagement{"AppManagement",

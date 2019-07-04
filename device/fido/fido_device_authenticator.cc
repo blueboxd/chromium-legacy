@@ -518,13 +518,14 @@ void FidoDeviceAuthenticator::GetSensorInfo(BioEnrollmentCallback callback) {
 
 void FidoDeviceAuthenticator::BioEnrollFingerprint(
     const pin::TokenResponse& response,
-    BioEnrollmentCallback callback) {
+    BioEnrollmentSampleCallback sample_callback,
+    BioEnrollmentCallback completion_callback) {
   RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
       BioEnrollmentRequest::ForEnrollBegin(
           GetBioEnrollmentRequestVersion(*Options()), response),
       base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
                      weak_factory_.GetWeakPtr(), std::move(response),
-                     std::move(callback),
+                     std::move(sample_callback), std::move(completion_callback),
                      /*current_template_id=*/base::nullopt),
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
@@ -554,24 +555,28 @@ void FidoDeviceAuthenticator::BioEnrollDelete(
 
 void FidoDeviceAuthenticator::OnBioEnroll(
     pin::TokenResponse response,
-    BioEnrollmentCallback callback,
+    BioEnrollmentSampleCallback sample_callback,
+    BioEnrollmentCallback completion_callback,
     base::Optional<std::vector<uint8_t>> current_template_id,
     CtapDeviceResponseCode code,
     base::Optional<BioEnrollmentResponse> bio) {
-  if (code != CtapDeviceResponseCode::kSuccess || bio->remaining_samples == 0) {
-    std::move(callback).Run(code, std::move(bio));
+  if (code != CtapDeviceResponseCode::kSuccess || !bio->last_status ||
+      !bio->remaining_samples || bio->remaining_samples == 0) {
+    std::move(completion_callback).Run(code, std::move(bio));
     return;
   }
   if (!current_template_id) {
     if (!bio->template_id) {
       // The templateId response field is required in the first response of each
       // enrollment.
-      std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                              base::nullopt);
+      std::move(completion_callback)
+          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       return;
     }
     current_template_id = *bio->template_id;
   }
+
+  sample_callback.Run(*bio->last_status, *bio->remaining_samples);
 
   auto request = BioEnrollmentRequest::ForEnrollNextSample(
       GetBioEnrollmentRequestVersion(*Options()), response,
@@ -581,7 +586,8 @@ void FidoDeviceAuthenticator::OnBioEnroll(
       std::move(request),
       base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
                      weak_factory_.GetWeakPtr(), std::move(response),
-                     std::move(callback), std::move(current_template_id)),
+                     std::move(sample_callback), std::move(completion_callback),
+                     std::move(current_template_id)),
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 

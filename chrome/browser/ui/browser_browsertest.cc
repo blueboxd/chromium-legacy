@@ -82,6 +82,7 @@
 #include "components/sessions/core/base_session_service_test_helper.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/interstitial_page.h"
@@ -102,6 +103,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -624,6 +626,84 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
   // A cross-site navigation should force the dialog to close.
   GURL url2("http://www.example.com/empty.html");
   ui_test_utils::NavigateToURL(browser(), url2);
+  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
+
+  // Make sure input events still work in the renderer process.
+  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IsBlocked());
+}
+
+// Similar to CrossProcessNavCancelsDialogs, with a renderer-initiated main
+// frame navigation with user gesture.
+IN_PROC_BROWSER_TEST_F(BrowserTest, RendererCrossProcessNavCancelsDialogs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // A cross-site renderer-initiated navigation with user gesture (started
+  // before the dialog is shown) should force the dialog to close. (ExecJS sends
+  // a user gesture by default.)
+  GURL url2("http://www.example.com/empty.html");
+  content::TestNavigationManager manager(contents, url2);
+  EXPECT_TRUE(content::ExecJs(contents, "location = '" + url2.spec() + "';"));
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  content::ExecuteScriptAsync(contents, "alert('dialog')");
+  dialog_wait.Run();
+  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
+
+  // Let the navigation to url2 finish and dismiss the dialog.
+  manager.WaitForNavigationFinished();
+  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
+
+  // Make sure input events still work in the renderer process.
+  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IsBlocked());
+}
+
+// Ensures that a download can complete while a dialog is showing, because it
+// poses no risk of dismissing the dialog.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DownloadDoesntDismissDialog) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // A renderer-initiated navigation without a user gesture would normally be
+  // deferred until the dialog is dismissed.  If the navigation turns out to be
+  // a download at response time (e.g., because download-test3.gif has a
+  // Content-Disposition: attachment response header), then the download should
+  // not be deferred or dismiss the dialog.
+  std::unique_ptr<content::DownloadTestObserver> download_waiter(
+      new content::DownloadTestObserverTerminal(
+          content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  GURL url2(embedded_test_server()->GetURL("/download-test3.gif"));
+  content::TestNavigationManager manager(contents, url2);
+  EXPECT_TRUE(content::ExecJs(contents, "location = '" + url2.spec() + "';",
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // Show a dialog while we're waiting for the url2 response.
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  content::ExecuteScriptAsync(contents, "alert('dialog')");
+  dialog_wait.Run();
+  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
+
+  // Let the url2 response finish and become a download, without dismissing the
+  // dialog.
+  manager.WaitForNavigationFinished();
+  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
+  download_waiter->WaitForFinished();
+
+  // Close the dialog after the download finishes, to clean up.
+  js_helper->ClickDialogButtonForTesting(true, base::string16());
   EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 
   // Make sure input events still work in the renderer process.

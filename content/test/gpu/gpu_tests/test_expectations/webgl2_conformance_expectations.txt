@@ -1,8 +1,10 @@
 # tags: [ d3d11 no-angle vulkan opengl ]
 # tags: [ win win7 highsierra mac linux sierra android mojave ]
 # tags: [ passthrough no-passthrough ]
-# tags: [ intel amd-0x699f nvidia-0x1cb3 amd-0x6613 amd
-#         qualcomm nvidia-0xfe9 nvidia nvidia-0xf02 intel-0xa2e ]
+# tags: [ intel intel-0xa2e
+#         amd amd-0x6613 amd-0x699f
+#         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3
+#         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
 # tags: [ intel_lt_25.20.100.6444 mesa_lt_17.3.9 mesa_lt_17.1.6 ]
 # results: [ Failure RetryOnFailure Skip ]
@@ -746,6 +748,7 @@ crbug.com/906737 [ android qualcomm ] conformance/extensions/webgl-compressed-te
 # crbug.com/906739 [ android qualcomm ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 crbug.com/906742 [ android qualcomm ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
 crbug.com/906735 [ android qualcomm ] conformance2/textures/video/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Failure ]
+crbug.com/981216 [ android qualcomm-adreno-(tm)-540 ] deqp/functional/gles3/fbocolorbuffer/tex2d_01.html [ RetryOnFailure ]
 crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]
 
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)

@@ -1,11 +1,15 @@
-typedef (DOMString or ArrayBuffer or NDEFMessage) NDEFMessageSource;
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/web-nfc/#the-nfcreader-and-nfcwriter-objects
 
 [
-  RuntimeEnabled=WebNFC,
-  SecureContext,
-  Constructor(),
-  ConstructorCallWith=ExecutionContext,
-  Exposed=Window
+    RuntimeEnabled=WebNFC,
+    SecureContext,
+    Constructor(),
+    ConstructorCallWith=ExecutionContext,
+    Exposed=Window
 ] interface NFCWriter {
-  [CallWith=ScriptState] Promise<void> push (NDEFMessageSource message, optional NFCPushOptions options);
+    [CallWith=ScriptState] Promise<void> push (NDEFMessageSource message, optional NFCPushOptions options);
 };

@@ -67,6 +67,7 @@ class CORE_EXPORT ModuleScript : public Script {
     return mojom::ScriptType::kModule;
   }
   void RunScript(LocalFrame*, const SecurityOrigin*) override;
+  void RunScriptOnWorker(WorkerGlobalScope&) override;
 
   friend class ModuleTreeLinkerTestModulator;
 

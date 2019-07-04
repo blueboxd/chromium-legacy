@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/testing/fuzzed_data_provider.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -17,8 +18,8 @@ String FuzzedDataProvider::ConsumeRandomLengthString(size_t max_length) {
 }
 
 std::string FuzzedDataProvider::ConsumeRemainingBytes() {
-  std::vector<char> bytes = provider_.ConsumeRemainingBytes<char>();
-  return std::string(bytes.data(), bytes.size());
+  WebVector<char> bytes = provider_.ConsumeRemainingBytes<char>();
+  return std::string(bytes.Data(), bytes.size());
 }
 
 }  // namespace blink

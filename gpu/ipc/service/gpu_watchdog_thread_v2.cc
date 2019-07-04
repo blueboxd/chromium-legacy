@@ -32,6 +32,7 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2()
       weak_factory_(this) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
   weak_ptr_ = weak_factory_.GetWeakPtr();
+  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
   Arm();
   watchdog_start_time_ = base::TimeTicks::Now();
 }
@@ -42,6 +43,7 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
 
   base::MessageLoopCurrent::Get()->RemoveTaskObserver(this);
   base::PowerMonitor::RemoveObserver(this);
+  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogEnd);
 }
 
 // static
@@ -223,8 +225,16 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&in_power_suspension_);
   base::debug::Alias(&is_backgrounded_);
 
+  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
+
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0xdeadface;
+}
+
+void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(
+    GpuWatchdogThreadEvent thread_event) {
+  UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event.V2", thread_event);
+  UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event", thread_event);
 }
 
 }  // namespace gpu

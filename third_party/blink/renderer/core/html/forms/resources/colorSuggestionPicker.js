@@ -46,7 +46,7 @@ function initialize(args) {
     main.textContent = 'Internal error: ' + errorString;
     resizeWindow(main.offsetWidth, main.offsetHeight);
   } else
-    new ColorPicker(main, args);
+    new ColorSuggestionPicker(main, args);
 }
 
 // The DefaultColorPalette is used when the list of values are empty.
@@ -74,7 +74,7 @@ function validateArguments(args) {
   return null;
 }
 
-function ColorPicker(element, config) {
+function ColorSuggestionPicker(element, config) {
   Picker.call(this, element, config);
   this._config = config;
   if (this._config.values.length === 0)
@@ -85,14 +85,14 @@ function ColorPicker(element, config) {
   this._element.addEventListener('mousemove', this._handleMouseMove.bind(this));
   this._element.addEventListener('mousedown', this._handleMouseDown.bind(this));
 }
-ColorPicker.prototype = Object.create(Picker.prototype);
+ColorSuggestionPicker.prototype = Object.create(Picker.prototype);
 
 var SwatchBorderBoxWidth = 24;   // keep in sync with CSS
 var SwatchBorderBoxHeight = 24;  // keep in sync with CSS
 var SwatchesPerRow = 5;
 var SwatchesMaxRow = 4;
 
-ColorPicker.prototype._layout = function() {
+ColorSuggestionPicker.prototype._layout = function() {
   var container = createElement('div', 'color-swatch-container');
   container.addEventListener('click', this._handleSwatchClick.bind(this), false);
   for (var i = 0; i < this._config.values.length; ++i) {
@@ -119,23 +119,23 @@ ColorPicker.prototype._layout = function() {
   resizeWindow(elementWidth, elementHeight);
 };
 
-ColorPicker.prototype.selectColorAtIndex = function(index) {
+ColorSuggestionPicker.prototype.selectColorAtIndex = function(index) {
   index = Math.max(Math.min(this._container.childNodes.length - 1, index), 0);
   this._container.childNodes[index].focus();
 };
 
-ColorPicker.prototype._handleMouseMove = function(event) {
+ColorSuggestionPicker.prototype._handleMouseMove = function(event) {
   if (event.target.classList.contains('color-swatch'))
     event.target.focus();
 };
 
-ColorPicker.prototype._handleMouseDown = function(event) {
+ColorSuggestionPicker.prototype._handleMouseDown = function(event) {
   // Prevent blur.
   if (event.target.classList.contains('color-swatch'))
     event.preventDefault();
 };
 
-ColorPicker.prototype._handleKeyDown = function(event) {
+ColorSuggestionPicker.prototype._handleKeyDown = function(event) {
   var key = event.key;
   if (key === 'Escape')
     this.handleCancel();
@@ -172,7 +172,7 @@ ColorPicker.prototype._handleKeyDown = function(event) {
   event.preventDefault();
 };
 
-ColorPicker.prototype._handleSwatchClick = function(event) {
+ColorSuggestionPicker.prototype._handleSwatchClick = function(event) {
   if (event.target.classList.contains('color-swatch'))
     this.submitValue(event.target.dataset.value);
 };

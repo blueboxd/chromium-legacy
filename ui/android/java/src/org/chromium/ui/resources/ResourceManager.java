@@ -149,6 +149,8 @@ public class ResourceManager implements ResourceLoaderCallback {
         if (resType != AndroidResourceType.DYNAMIC_BITMAP && resType != AndroidResourceType.DYNAMIC)
             return;
 
+        if (mNativeResourceManagerPtr == 0) return;
+
         nativeRemoveResource(mNativeResourceManagerPtr, resType, resId);
     }
 

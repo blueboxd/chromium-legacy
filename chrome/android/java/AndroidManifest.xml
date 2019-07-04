@@ -865,6 +865,8 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
+                <data android:mimeType="multipart/related" />
+                <data android:mimeType="message/rfc822" />
             </intent-filter>
           </activity>
 

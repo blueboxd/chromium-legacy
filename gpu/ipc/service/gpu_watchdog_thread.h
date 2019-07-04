@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -25,6 +26,15 @@
 #endif                           // defined(USE_X11)
 
 namespace gpu {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GpuWatchdogThreadEvent {
+  kGpuWatchdogStart,
+  kGpuWatchdogKill,
+  kGpuWatchdogEnd,
+  kMaxValue = kGpuWatchdogEnd,
+};
 
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
@@ -48,6 +58,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   // once init is complete, before executing tasks.
   virtual void OnInitComplete() = 0;
 
+  virtual void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) = 0;
+
  protected:
   GpuWatchdogThread();
 
@@ -68,6 +80,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnBackgrounded() override;
   void OnForegrounded() override;
   void OnInitComplete() override {}
+  void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
 
   // gl::ProgressReporter implementation:
   void ReportProgress() override;

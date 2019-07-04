@@ -65,9 +65,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Called when the tab corresponding to |this| instance is deactivated.
   void OnTabDeactivated();
 
-  // Called when the tab corresponding to |this| instance is closing.
-  void OnTabClosing();
-
   SearchIPCRouter& ipc_router_for_testing() { return ipc_router_; }
 
  private:

@@ -57,6 +57,7 @@
 #include "content/public/common/content_switches.h"
 #include "device/fido/features.h"
 #include "media/base/media_switches.h"
+#include "net/base/url_util.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -2108,7 +2109,13 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddString("activityControlsUrl",
                          chrome::kGoogleAccountActivityControlsURL);
 
-  html_source->AddString("googleAccountUrl", chrome::kGoogleAccountURL);
+  // Add Google Account URL and include UTM parameter to signal the source of
+  // the navigation.
+  html_source->AddString(
+      "googleAccountUrl",
+      net::AppendQueryParameter(GURL(chrome::kGoogleAccountURL), "utm_source",
+                                "chrome-settings")
+          .spec());
 
   html_source->AddBoolean("profileShortcutsEnabled",
                           ProfileShortcutManager::IsFeatureEnabled());

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -25,7 +26,7 @@ class CodeCacheLoader {
   virtual void FetchFromCodeCacheSynchronously(
       const GURL& url,
       base::Time* response_time_out,
-      std::vector<uint8_t>* data_out) = 0;
+      WebVector<uint8_t>* data_out) = 0;
   virtual void FetchFromCodeCache(blink::mojom::CodeCacheType cache_type,
                                   const GURL& url,
                                   FetchCodeCacheCallback) = 0;

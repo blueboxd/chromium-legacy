@@ -34,10 +34,14 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
     void NotifyRun(MockClient* client) { client_order_.push_back(client); }
 
     // The call order that hte clients ran in.
-    const std::vector<MockClient*>& client_order() { return client_order_; }
+    const HeapVector<Member<MockClient>>& client_order() {
+      return client_order_;
+    }
+
+    void Trace(blink::Visitor* visitor) { visitor->Trace(client_order_); }
 
    private:
-    std::vector<MockClient*> client_order_;
+    HeapVector<Member<MockClient>> client_order_;
   };
 
   ~MockClient() = default;
@@ -448,7 +452,7 @@ TEST_F(ResourceLoadSchedulerTest, AllowedRequestsRunInPriorityOrder) {
   EXPECT_TRUE(client2->WasRun());
 
   // Verify high priority request ran first.
-  std::vector<MockClient*> order = delegate.client_order();
+  auto& order = delegate.client_order();
   EXPECT_EQ(order[0], client2);
   EXPECT_EQ(order[1], client1);
 

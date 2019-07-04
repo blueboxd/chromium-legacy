@@ -88,6 +88,7 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
   SetupXServer();
 #endif
   base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer_);
+  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
 }
 
 // static
@@ -126,6 +127,11 @@ void GpuWatchdogThreadImplV1::OnForegrounded() {
       FROM_HERE,
       base::BindOnce(&GpuWatchdogThreadImplV1::OnForegroundedOnWatchdogThread,
                      base::Unretained(this)));
+}
+
+void GpuWatchdogThreadImplV1::GpuWatchdogHistogram(
+    GpuWatchdogThreadEvent thread_event) {
+  UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event", thread_event);
 }
 
 void GpuWatchdogThreadImplV1::Init() {
@@ -229,6 +235,7 @@ GpuWatchdogThreadImplV1::~GpuWatchdogThreadImplV1() {
 #endif
 
   base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer_);
+  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogEnd);
 }
 
 void GpuWatchdogThreadImplV1::OnAcknowledge() {
@@ -485,6 +492,8 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
     OnAcknowledge();
     return;
   }
+
+  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0x1337;

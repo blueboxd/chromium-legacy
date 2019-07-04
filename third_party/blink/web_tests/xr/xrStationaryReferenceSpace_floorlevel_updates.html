@@ -13,7 +13,7 @@
 let testName =
   "'floor-level' XRStationaryReferenceSpace updates properly when the transform changes";
 
-let fakeDeviceInitParams = { supportsImmersive:true };
+let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
 let requestSessionModes = [
   'inline',
@@ -27,16 +27,9 @@ let testFunction = function(session, t, fakeDeviceController) {
         compositionDisabled: session.mode == 'inline' })
   });
 
+  // TODO(981003): Because the device gets re-used we have to ensure that the
+  //stage transform is cleared here, it shouldn't be set from the initial device.
   fakeDeviceController.setStageTransform(null);
-  fakeDeviceController.setXRPresentationFrameData(ORIGIN_POSE, [{
-      eye:"left",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }, {
-      eye:"right",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }]);
 
   // Don't need to request a frame/allow the stage updates to propagate before
   // requesting local-floor because if the stage transform is set it just won't

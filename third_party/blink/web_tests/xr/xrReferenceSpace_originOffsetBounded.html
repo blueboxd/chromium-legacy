@@ -14,25 +14,43 @@
 // Can't go in external WPT tests because this test uses MockXRInputSource which
 // is not available there.
 const testName = "Updating XRBoundedReferenceSpace origin offset updates view, input matrices, and bounds geometry.";
-const fakeDeviceInitParams = { supportsImmersive: true };
+
+const INITIAL_VIEW_OFFSET = {
+  position: [1, 2, 3],
+  orientation: [0,0,0,1]
+};
+
+const VIEWS_WITH_OFFSET = [{
+    eye:"left",
+    projectionMatrix: VALID_PROJECTION_MATRIX,
+    viewOffset: INITIAL_VIEW_OFFSET,
+    resolution: VALID_RESOLUTION
+  }, {
+    eye:"right",
+    projectionMatrix: VALID_PROJECTION_MATRIX,
+    viewOffset: INITIAL_VIEW_OFFSET,
+    resolution: VALID_RESOLUTION
+}];
+
+const fakeDeviceInitParams = {
+  supportsImmersive: true,
+  views: VIEWS_WITH_OFFSET,
+  viewerOrigin: IDENTITY_TRANSFORM
+};
 const requestSessionModes = ['immersive-vr'];
 
 function testFunction(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-  const INITIAL_VIEW_MATRIX = [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    1, 2, 3, 1,
-  ];
+
   const INITIAL_GRIP_MATRIX = [
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
     1, 2, 3, 1,
   ];
+
   const LOCAL_POINTER_OFFSET = [
     1,    0,    0,    0,
     0,    1,    0,    0,
@@ -49,15 +67,6 @@ function testFunction(session, t, fakeDeviceController) {
 
   fakeDeviceController.setStageTransform(STAGE_TRANSFORM);
   fakeDeviceController.setStageSize(2.0, 3.0);
-  fakeDeviceController.setXRPresentationFrameData(IDENTITY_MATRIX, [{
-      eye:"left",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: INITIAL_VIEW_MATRIX,
-    }, {
-      eye:"right",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: INITIAL_VIEW_MATRIX,
-  }]);
 
   let input_source = new MockXRInputSource();
   input_source.targetRayMode = "tracked-pointer";
@@ -79,29 +88,31 @@ function testFunction(session, t, fakeDeviceController) {
           expected_ray_matrix,
           expected_bounds_geometry
         ) {
-          let pose = frame.getViewerPose(reference_space);
-          let grip_pose = frame.getPose(input_source.gripSpace, reference_space);
-          let input_pose = frame.getPose(input_source.targetRaySpace, reference_space);
+          t.step(() => {
+            let pose = frame.getViewerPose(reference_space);
+            let grip_pose = frame.getPose(input_source.gripSpace, reference_space);
+            let input_pose = frame.getPose(input_source.targetRaySpace, reference_space);
 
-          let view_matrix = pose.views[0].transform.inverse.matrix;
-          let grip_matrix = grip_pose.transform.matrix;
-          let ray_matrix = input_pose.transform.matrix;
+            let view_matrix = pose.views[0].transform.inverse.matrix;
+            let grip_matrix = grip_pose.transform.matrix;
+            let ray_matrix = input_pose.transform.matrix;
 
-          assert_matrices_approx_equal(expected_view_matrix, view_matrix);
-          assert_matrices_approx_equal(expected_grip_matrix, grip_matrix);
-          assert_matrices_approx_equal(expected_ray_matrix, ray_matrix);
+            assert_matrices_approx_equal(expected_view_matrix, view_matrix);
+            assert_matrices_approx_equal(expected_grip_matrix, grip_matrix);
+            assert_matrices_approx_equal(expected_ray_matrix, ray_matrix);
 
-          assert_equals(reference_space.boundsGeometry.length, expected_bounds_geometry.length);
-          for (var i = 0; i < reference_space.boundsGeometry.length; ++i) {
-            assert_points_approx_equal(reference_space.boundsGeometry[i], expected_bounds_geometry[i]);
-          }
+            assert_equals(reference_space.boundsGeometry.length, expected_bounds_geometry.length);
+            for (var i = 0; i < reference_space.boundsGeometry.length; ++i) {
+              assert_points_approx_equal(reference_space.boundsGeometry[i], expected_bounds_geometry[i]);
+            }
+          });
         }
 
         const EXPECTED_VIEW_MATRIX_1 = [
            1,    0,    0,   0,
            0,    1,    0,   0,
            0,    0,    1,   0,
-          -0.1, -0.2, -0.3, 1,
+          -1.1, -2.2, -3.3, 1,
         ];
         const EXPECTED_GRIP_MATRIX_1 = [
           1,   0,   0,   0,
@@ -152,7 +163,7 @@ function testFunction(session, t, fakeDeviceController) {
           1,    0,   0,   0,
           0,    0,   1,   0,
           0,   -1,   0,   0,
-          9.9, -3.2, 4.7, 1,
+          8.9, -5.2, 1.7, 1,
         ];
         const EXPECTED_GRIP_MATRIX_2 = [
            1,    0,    0,   0,
@@ -201,7 +212,7 @@ function testFunction(session, t, fakeDeviceController) {
            0,    1,   0,   0,
            0,    0,   1,   0,
            1,    0,   0,   0,
-          14.9, -3.2, 6.7, 1,
+          13.9, -5.2, 3.7, 1,
         ];
         const EXPECTED_GRIP_MATRIX_3 = [
           0,    0,     1,   0,

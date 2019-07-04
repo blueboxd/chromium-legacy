@@ -16,7 +16,7 @@ let testName = "Ensures that an XRInputSources primary input being pressed and "
 
 let watcherDone = new Event("watcherdone");
 
-let fakeDeviceInitParams = { supportsImmersive:true };
+let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
 let requestSessionModes = ['immersive-vr'];
 
@@ -25,17 +25,6 @@ let testFunction = function(session, t, fakeDeviceController) {
     t, session, ["selectstart", "selectend", "select", "watcherdone"]);
   let eventPromise = eventWatcher.wait_for(
     ["selectstart", "selectend", "select", "watcherdone"]);
-
-  // Need to have a valid pose or input event's don't process.
-  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
-      eye:"left",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }, {
-      eye:"right",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }]);
 
   function onSessionSelectStart(event) {
     t.step( () => {

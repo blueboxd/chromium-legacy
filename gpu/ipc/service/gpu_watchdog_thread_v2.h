@@ -22,6 +22,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnBackgrounded() override;
   void OnForegrounded() override;
   void OnInitComplete() override;
+  void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
 
   // Implements base::Thread.
   void Init() override;

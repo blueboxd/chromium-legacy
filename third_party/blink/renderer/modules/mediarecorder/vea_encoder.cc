@@ -135,9 +135,9 @@ void VEAEncoder::BitstreamBufferReady(
 
   base::SharedMemory* output_buffer =
       output_buffers_[bitstream_buffer_id].get();
-  std::unique_ptr<std::string> data(new std::string);
-  data->append(static_cast<char*>(output_buffer->memory()),
-               metadata.payload_size_bytes);
+  std::string data;
+  data.append(static_cast<char*>(output_buffer->memory()),
+              metadata.payload_size_bytes);
 
   const auto front_frame = frames_in_encode_.TakeFirst();
   PostCrossThreadTask(
@@ -145,7 +145,7 @@ void VEAEncoder::BitstreamBufferReady(
       CrossThreadBindOnce(
           OnFrameEncodeCompleted,
           WTF::Passed(CrossThreadBindRepeating(on_encoded_video_callback_)),
-          front_frame.first, std::move(data), nullptr, front_frame.second,
+          front_frame.first, std::move(data), std::string(), front_frame.second,
           metadata.key_frame));
 
   UseOutputBitstreamBufferId(bitstream_buffer_id);

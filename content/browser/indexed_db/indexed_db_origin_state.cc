@@ -64,12 +64,6 @@ base::Time GenerateNextGlobalSweepTime(base::Time now) {
 
 }  // namespace
 
-const base::Feature kIDBTombstoneStatistics{"IDBTombstoneStatistics",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kIDBTombstoneDeletion{"IDBTombstoneDeletion",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 constexpr const base::TimeDelta
     IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow;
 constexpr const base::TimeDelta
@@ -276,15 +270,6 @@ void IndexedDBOriginState::StartPreCloseTasks() {
   if (*earliest_global_sweep_time_ > now)
     return;
 
-  bool tombstone_stats_enabled =
-      base::FeatureList::IsEnabled(kIDBTombstoneStatistics);
-  bool tombstone_deletion_enabled =
-      base::FeatureList::IsEnabled(kIDBTombstoneDeletion);
-
-  // After this check, exactly one of the flags must be true.
-  if (tombstone_stats_enabled == tombstone_deletion_enabled)
-    return;
-
   base::Time origin_earliest_sweep;
   leveldb::Status s = indexed_db::GetEarliestSweepTime(backing_store_->db(),
                                                        &origin_earliest_sweep);
@@ -308,11 +293,8 @@ void IndexedDBOriginState::StartPreCloseTasks() {
     return;
 
   std::list<std::unique_ptr<IndexedDBPreCloseTaskQueue::PreCloseTask>> tasks;
-  IndexedDBTombstoneSweeper::Mode mode =
-      tombstone_stats_enabled ? IndexedDBTombstoneSweeper::Mode::STATISTICS
-                              : IndexedDBTombstoneSweeper::Mode::DELETION;
   tasks.push_back(std::make_unique<IndexedDBTombstoneSweeper>(
-      mode, kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
+      kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
       backing_store_->db()->db()));
   // TODO(dmurph): Add compaction task that compacts all indexes if we have
   // more than X deletions.

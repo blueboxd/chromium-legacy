@@ -21,7 +21,7 @@ CodeCacheLoaderImpl::~CodeCacheLoaderImpl() = default;
 void CodeCacheLoaderImpl::FetchFromCodeCacheSynchronously(
     const GURL& url,
     base::Time* response_time_out,
-    std::vector<uint8_t>* data_out) {
+    blink::WebVector<uint8_t>* data_out) {
   base::WaitableEvent fetch_code_cache_event(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);

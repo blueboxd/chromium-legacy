@@ -404,7 +404,7 @@ _CONFIG = [
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
              'Use WTF::Bind or WTF::BindRepeating.'),
-            ('std::(map)',
+            ('std::(map|vector)',
              'Use WTF containers like WTF::HashMap instead of the banned std containers.'),
         ],
     },

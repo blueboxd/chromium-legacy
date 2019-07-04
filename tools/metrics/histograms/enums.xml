@@ -6832,6 +6832,8 @@ Unknown properties are collapsed to zero. -->
   <int value="22" label="RenderPassDrawQuad has a sorting context id."/>
   <int value="23" label="Too many RenderPassDrawQuads."/>
   <int value="24" label="Unsupported rounded corner rect."/>
+  <int value="25" label="Rounded rect doesn't match clip rect."/>
+  <int value="26" label="Rounded rect doesn't have uniform corner radii."/>
 </enum>
 
 <enum name="CanMakePaymentUsage">
@@ -23820,6 +23822,7 @@ Called by update_net_error_codes.py.-->
   <int value="2950" label="CredentialManagerCreateSuccessWithUVM"/>
   <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
   <int value="2952" label="DiscardInputEventToMovingIframe"/>
+  <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -28716,6 +28719,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Ignored"/>
   <int value="1" label="Reloaded"/>
   <int value="2" label="Closed without action"/>
+</enum>
+
+<enum name="GpuWatchdogThreadEvent">
+  <int value="0" label="Watchdog Start"/>
+  <int value="1" label="Watchdog Kill"/>
+  <int value="2" label="Watchdog End"/>
 </enum>
 
 <enum name="GPUWebGraphicsContext3D_Init_CanLoseContext">
@@ -34631,6 +34640,7 @@ from previous Chrome versions.
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
   <int value="-540150399" label="TapVisualizerApp:enabled"/>
   <int value="-539105193" label="SendTabToSelfBroadcast:disabled"/>
+  <int value="-538141684" label="SafetyTip:enabled"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
   <int value="-536230323" label="SingleClickAutofill:disabled"/>
   <int value="-535662704" label="BundledConnectionHelp:enabled"/>
@@ -36430,6 +36440,7 @@ from previous Chrome versions.
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
+  <int value="2106798283" label="SafetyTip:disabled"/>
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
@@ -60074,6 +60085,7 @@ Full version information for the fingerprint enum values:
   <int value="9" label="WindowOpened"/>
   <int value="10" label="NotValidManifestForWebApp"/>
   <int value="11" label="IntentToPlayStore"/>
+  <int value="12" label="WebAppDisabled"/>
 </enum>
 
 <enum name="WebAppInstallSource">

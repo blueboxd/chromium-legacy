@@ -1814,65 +1814,31 @@ bool AXObject::AriaCheckedIsPresent() const {
 
 bool AXObject::SupportsARIAExpanded() const {
   switch (RoleValue()) {
-    case ax::mojom::Role::kAlertDialog:
-    case ax::mojom::Role::kAlert:
-    case ax::mojom::Role::kArticle:
-    case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kApplication:
     case ax::mojom::Role::kButton:
-    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kColumnHeader:
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kComboBoxMenuButton:
-    case ax::mojom::Role::kComplementary:
-    case ax::mojom::Role::kContentInfo:
-    case ax::mojom::Role::kDefinition:
-    case ax::mojom::Role::kDialog:
-    case ax::mojom::Role::kDirectory:
     case ax::mojom::Role::kDisclosureTriangle:
-    case ax::mojom::Role::kDocument:
-    case ax::mojom::Role::kFeed:
-    case ax::mojom::Role::kFigure:
-    case ax::mojom::Role::kForm:
-    case ax::mojom::Role::kGrid:
-    case ax::mojom::Role::kGroup:
-    case ax::mojom::Role::kHeading:
-    case ax::mojom::Role::kImage:
-    case ax::mojom::Role::kLayoutTable:
-    case ax::mojom::Role::kList:
     case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kListItem:
     case ax::mojom::Role::kLink:
-    case ax::mojom::Role::kLog:
-    case ax::mojom::Role::kMain:
-    case ax::mojom::Role::kMarquee:
-    case ax::mojom::Role::kMath:
-    case ax::mojom::Role::kMenu:
-    case ax::mojom::Role::kMenuBar:
     case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:
-    case ax::mojom::Role::kNavigation:
-    case ax::mojom::Role::kNote:
-    case ax::mojom::Role::kProgressIndicator:
-    case ax::mojom::Role::kRadioGroup:
-    case ax::mojom::Role::kRegion:
     case ax::mojom::Role::kRow:
     case ax::mojom::Role::kRowHeader:
-    case ax::mojom::Role::kSearch:
-    case ax::mojom::Role::kStatus:
+    case ax::mojom::Role::kSwitch:
     case ax::mojom::Role::kTab:
-    case ax::mojom::Role::kTable:
-    case ax::mojom::Role::kTabPanel:
-    case ax::mojom::Role::kTerm:
     case ax::mojom::Role::kTextFieldWithComboBox:
-    case ax::mojom::Role::kTimer:
-    case ax::mojom::Role::kToolbar:
-    case ax::mojom::Role::kTooltip:
-    case ax::mojom::Role::kTree:
-    case ax::mojom::Role::kTreeGrid:
     case ax::mojom::Role::kTreeItem:
+      return true;
+    case ax::mojom::Role::kCell:
+      // TODO(Accessibility): aria-expanded is supported on grid cells but not
+      // on cells inside a static table. Consider creating separate internal
+      // roles so that we can easily distinguish these two types. See also
+      // IsSubWidget().
       return true;
     default:
       return false;

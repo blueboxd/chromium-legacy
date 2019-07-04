@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include <utility>
-#include <vector>
 
 namespace blink {
 

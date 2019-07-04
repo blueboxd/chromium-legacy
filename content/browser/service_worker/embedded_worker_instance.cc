@@ -996,12 +996,12 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
   // script's origin.
   if (GetNetworkFactoryCallbackForTest().is_null()) {
     rph->CreateURLLoaderFactory(
-        origin, net::NetworkIsolationKey() /* network_isolation_key */,
+        origin, nullptr /* preferences */, net::NetworkIsolationKey(),
         std::move(default_header_client), std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     rph->CreateURLLoaderFactory(
-        origin, net::NetworkIsolationKey() /* network_isolation_key */,
+        origin, nullptr /* preferences */, net::NetworkIsolationKey(),
         std::move(default_header_client), mojo::MakeRequest(&original_factory));
     GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_request),
                                            rph->GetID(),

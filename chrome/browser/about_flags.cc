@@ -4059,6 +4059,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(spellcheck::kWinUseBrowserSpellChecker)},
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
 
+    {"safety-tips", flag_descriptions::kSafetyTipName,
+     flag_descriptions::kSafetyTipDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSafetyTipUI)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

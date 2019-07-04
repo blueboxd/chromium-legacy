@@ -353,6 +353,7 @@ class QuicStreamFactory::Job {
 
   void OnResolveHostComplete(int rv);
   void OnConnectComplete(int rv);
+  void OnSessionClosed(QuicChromiumClientSession* session);
 
   const QuicSessionAliasKey& key() const { return key_; }
 
@@ -593,6 +594,20 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
     }
   } while (io_state_ != STATE_NONE && rv != ERR_IO_PENDING);
   return rv;
+}
+
+void QuicStreamFactory::Job::OnSessionClosed(
+    QuicChromiumClientSession* session) {
+  // When dns racing experiment is on, the job needs to know that the stale
+  // session is closed so that it will start the fresh session without matching
+  // dns results.
+  if (io_state_ == STATE_HOST_VALIDATION && session_ == session) {
+    DCHECK(race_stale_dns_on_connection_);
+    DCHECK(fresh_resolve_host_request_);
+    resolve_host_request_ = std::move(fresh_resolve_host_request_);
+    session_ = nullptr;
+    io_state_ = STATE_RESOLVE_HOST_COMPLETE;
+  }
 }
 
 void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
@@ -1508,6 +1523,12 @@ void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
 void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
   DCHECK_EQ(0u, session->GetNumActiveStreams());
   OnSessionGoingAway(session);
+
+  for (const auto& iter : active_jobs_) {
+    if (iter.first == session->quic_session_key()) {
+      iter.second->OnSessionClosed(session);
+    }
+  }
   delete session;
   all_sessions_.erase(session);
 }

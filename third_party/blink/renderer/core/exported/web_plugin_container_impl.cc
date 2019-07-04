@@ -966,8 +966,7 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
 WebCoalescedInputEvent WebPluginContainerImpl::TransformCoalescedTouchEvent(
     const WebCoalescedInputEvent& coalesced_event) {
   WebCoalescedInputEvent transformed_event(
-      TransformTouchEvent(coalesced_event.Event()),
-      std::vector<const WebInputEvent*>(), std::vector<const WebInputEvent*>());
+      TransformTouchEvent(coalesced_event.Event()), {}, {});
   for (size_t i = 0; i < coalesced_event.CoalescedEventSize(); ++i) {
     transformed_event.AddCoalescedEvent(
         TransformTouchEvent(coalesced_event.CoalescedEvent(i)));

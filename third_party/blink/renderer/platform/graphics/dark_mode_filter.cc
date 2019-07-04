@@ -103,6 +103,8 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
 
   text_classifier_ =
       DarkModeColorClassifier::MakeTextColorClassifier(settings_);
+  background_classifier_ =
+      DarkModeColorClassifier::MakeBackgroundColorClassifier(settings_);
 }
 
 Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
@@ -151,8 +153,11 @@ bool DarkModeFilter::IsDarkModeActive() const {
 // perform some other logic in between confirming dark mode is active and
 // checking the color classifiers.
 bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
-  if (role == ElementRole::kBackground)
-    return true;
+  if (role == ElementRole::kBackground) {
+    DCHECK_NE(background_classifier_, nullptr);
+    return background_classifier_->ShouldInvertColor(color) ==
+           DarkModeClassification::kApplyFilter;
+  }
 
   DCHECK_EQ(role, ElementRole::kText);
   DCHECK_NE(text_classifier_, nullptr);

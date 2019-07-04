@@ -270,7 +270,7 @@ void AXRelationCache::TextChanged(AXObject* object) {
 }
 
 void AXRelationCache::LabelChanged(Node* node) {
-  const AtomicString& id = ToHTMLElement(node)->FastGetAttribute(kForAttr);
+  const auto& id = To<HTMLElement>(node)->FastGetAttribute(kForAttr);
   if (!id.IsEmpty()) {
     all_previously_seen_label_target_ids_.insert(id);
     if (HTMLElement* control = ToHTMLLabelElement(node)->control())

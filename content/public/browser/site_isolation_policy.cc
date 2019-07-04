@@ -25,7 +25,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -68,19 +67,6 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   // group - such assignment should be final.
   return GetContentClient() &&
          GetContentClient()->browser()->ShouldEnableStrictSiteIsolation();
-}
-
-// static
-void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
-    network::mojom::URLLoaderFactoryParams* params) {
-  // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity)) {
-    params->is_corb_enabled = false;
-    return;
-  }
-
-  params->is_corb_enabled = true;
 }
 
 // static

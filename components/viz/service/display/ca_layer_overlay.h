@@ -28,9 +28,11 @@ class VIZ_SERVICE_EXPORT CALayerOverlaySharedState
   // Layers in a non-zero sorting context exist in the same 3D space and should
   // intersect.
   unsigned sorting_context_id = 0;
-  // If |is_clipped| is true, then clip to |clip_rect| in the target space.
+  // If |is_clipped| is true, then clip to |clip_rect| in the target space, and
+  // |clip_rect_corner_radius| represents the corner radius of the clip rect.
   bool is_clipped = false;
   gfx::RectF clip_rect;
+  float clip_rect_corner_radius = 0;
   // The opacity property for the CAayer.
   float opacity = 1;
   // The transform to apply to the CALayer.

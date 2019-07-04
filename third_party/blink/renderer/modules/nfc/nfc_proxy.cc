@@ -8,6 +8,7 @@
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_writer.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
@@ -64,6 +65,7 @@ void NFCProxy::AddReader(NFCReader* reader) {
 void NFCProxy::RemoveReader(NFCReader* reader) {
   auto iter = readers_.find(reader);
   if (iter != readers_.end()) {
+    DCHECK(nfc_);
     nfc_->CancelWatch(iter->value,
                       WTF::Bind(&NFCProxy::OnCancelWatch, WrapPersistent(this),
                                 WrapPersistent(reader)));
@@ -81,6 +83,13 @@ void NFCProxy::Push(device::mojom::blink::NDEFMessagePtr message,
                     device::mojom::blink::NFC::PushCallback cb) {
   EnsureMojoConnection();
   nfc_->Push(std::move(message), std::move(options), std::move(cb));
+}
+
+void NFCProxy::CancelPush(
+    const String& target,
+    device::mojom::blink::NFC::CancelPushCallback callback) {
+  DCHECK(nfc_);
+  nfc_->CancelPush(StringToNFCPushTarget(target), std::move(callback));
 }
 
 void NFCProxy::PageVisibilityChanged() {

@@ -18,9 +18,9 @@ bool PLATFORM_EXPORT IsLight(const Color& color);
 
 class PLATFORM_EXPORT DarkModeColorClassifier {
  public:
-  // TODO(https://crbug.com/968340): Add methods to create classifiers for other
-  // types of elements/shapes.
   static std::unique_ptr<DarkModeColorClassifier> MakeTextColorClassifier(
+      const DarkModeSettings& settings);
+  static std::unique_ptr<DarkModeColorClassifier> MakeBackgroundColorClassifier(
       const DarkModeSettings& settings);
 
   virtual ~DarkModeColorClassifier();

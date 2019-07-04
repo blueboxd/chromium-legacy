@@ -353,7 +353,7 @@ cca.views.camera.VideoConstraintsPreferrer.prototype.getSortedCandidates =
     },
   });
 
-  return this.deviceResolutions_[deviceId]
+  return [...this.deviceResolutions_[deviceId]]
       .sort(sortPrefResol)
       .flatMap(getFpses)
       .map(([width, height, fps]) => ([
@@ -493,7 +493,8 @@ cca.views.camera.PhotoResolPreferrer.prototype.getSortedCandidates = function(
               (captureR, r) => (r[0] > captureR[0] ? r : captureR), [0, -1]);
         }
 
-        const candidates = previewRs.sort(([w, h], [w2, h2]) => w2 - w)
+        const candidates = [...previewRs]
+                               .sort(([w, h], [w2, h2]) => w2 - w)
                                .map(([width, height]) => ({
                                       audio: false,
                                       video: {

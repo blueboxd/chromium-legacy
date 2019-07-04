@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
@@ -218,9 +219,11 @@ ScreenOrientationController::ScreenOrientationController()
       user_rotation_(display::Display::ROTATE_0),
       current_rotation_(display::Display::ROTATE_0) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
@@ -415,6 +418,14 @@ void ScreenOrientationController::OnTabletModeEnded() {
   UnlockAll();
 }
 
+void ScreenOrientationController::OnSplitViewModeStarted() {
+  ApplyLockForActiveWindow();
+}
+
+void ScreenOrientationController::OnSplitViewModeEnded() {
+  ApplyLockForActiveWindow();
+}
+
 void ScreenOrientationController::SetDisplayRotation(
     display::Display::Rotation rotation,
     display::Display::RotationSource source,
@@ -589,6 +600,13 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
     return;
 
   Shell* shell = Shell::Get();
+
+  if (shell->split_view_controller()->InTabletSplitViewMode()) {
+    // While split view is enabled, ignore rotation lock set by windows.
+    LockRotationToOrientation(user_locked_orientation_);
+    return;
+  }
+
   MruWindowTracker::WindowList mru_windows(
       shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
 

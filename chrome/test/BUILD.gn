@@ -1698,7 +1698,6 @@ if (!is_android) {
         "../browser/ui/views/extensions/extension_dialog_browsertest.cc",
         "../browser/ui/web_applications/test/bookmark_app_navigation_browsertest.cc",
         "../browser/ui/web_applications/test/bookmark_app_navigation_browsertest.h",
-        "../browser/ui/webui/media_router/media_router_dialog_controller_webui_impl_browsertest.cc",
       ]
 
       if (enable_background_mode) {
@@ -3849,11 +3848,6 @@ test("unit_tests") {
       "../browser/ui/toolbar/media_router_contextual_menu_unittest.cc",
       "../browser/ui/toolbar/mock_media_router_action_controller.cc",
       "../browser/ui/toolbar/mock_media_router_action_controller.h",
-      "../browser/ui/webui/media_router/media_router_dialog_controller_webui_impl_unittest.cc",
-      "../browser/ui/webui/media_router/media_router_ui_unittest.cc",
-      "../browser/ui/webui/media_router/media_router_web_ui_test.cc",
-      "../browser/ui/webui/media_router/media_router_web_ui_test.h",
-      "../browser/ui/webui/media_router/media_router_webui_message_handler_unittest.cc",
       "../common/media_router/discovery/media_sink_internal_unittest.cc",
       "../common/media_router/discovery/media_sink_service_base_unittest.cc",
       "../common/media_router/mojo/media_router_struct_traits_unittest.cc",

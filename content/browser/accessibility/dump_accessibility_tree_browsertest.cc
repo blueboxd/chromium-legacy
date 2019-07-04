@@ -490,6 +490,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaExpanded) {
   RunAriaTest(FILE_PATH_LITERAL("aria-expanded.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaExpandedRolesSupported) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-expanded-roles-supported.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaFeed) {
   RunAriaTest(FILE_PATH_LITERAL("aria-feed.html"));
 }

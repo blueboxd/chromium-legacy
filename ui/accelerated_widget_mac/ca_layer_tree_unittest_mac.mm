@@ -27,6 +27,7 @@ struct CALayerProperties {
 
   bool is_clipped = true;
   gfx::Rect clip_rect;
+  float clip_rect_corner_radius = 0;
   int sorting_context_id = 0;
   gfx::Transform transform;
   gfx::RectF contents_rect = gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f);
@@ -65,10 +66,10 @@ bool ScheduleCALayer(ui::CARendererLayerTree* tree,
                      CALayerProperties* properties) {
   return tree->ScheduleCALayer(ui::CARendererLayerParams(
       properties->is_clipped, properties->clip_rect,
-      properties->sorting_context_id, properties->transform,
-      properties->gl_image.get(), properties->contents_rect, properties->rect,
-      properties->background_color, properties->edge_aa_mask,
-      properties->opacity, properties->filter));
+      properties->clip_rect_corner_radius, properties->sorting_context_id,
+      properties->transform, properties->gl_image.get(),
+      properties->contents_rect, properties->rect, properties->background_color,
+      properties->edge_aa_mask, properties->opacity, properties->filter));
 }
 
 void UpdateCALayerTree(std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
@@ -103,6 +104,7 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
     CALayerProperties properties;
     properties.allow_solid_color_layers = allow_solid_color_layers;
     properties.clip_rect = gfx::Rect(2, 4, 8, 16);
+    properties.clip_rect_corner_radius = 13;
     properties.transform.Translate(10, 20);
     properties.contents_rect = gfx::RectF(0.0f, 0.25f, 0.5f, 0.75f);
     properties.rect = gfx::Rect(16, 32, 64, 128);
@@ -139,6 +141,8 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
       EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
       EXPECT_EQ(gfx::Rect(properties.clip_rect.size()),
                 gfx::Rect([clip_and_sorting_layer bounds]));
+      EXPECT_EQ(properties.clip_rect_corner_radius,
+                [clip_and_sorting_layer cornerRadius]);
       EXPECT_EQ(properties.clip_rect.origin(),
                 gfx::Point([clip_and_sorting_layer position]));
       EXPECT_EQ(-properties.clip_rect.origin().x(),

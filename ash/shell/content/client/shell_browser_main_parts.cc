@@ -9,6 +9,7 @@
 
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
+#include "ash/session/test_pref_service_provider.h"
 #include "ash/shell.h"
 #include "ash/shell/content/embedded_browser.h"
 #include "ash/shell/example_app_list_client.h"
@@ -18,6 +19,7 @@
 #include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -90,11 +92,13 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
   ash::Shell::CreateInstance(std::move(init_params));
 
+  prefs_provider_ = std::make_unique<TestPrefServiceProvider>();
+
   // Initialize session controller client and create fake user sessions. The
   // fake user sessions makes ash into the logged in state.
   example_session_controller_client_ =
       std::make_unique<ExampleSessionControllerClient>(
-          Shell::Get()->session_controller());
+          Shell::Get()->session_controller(), prefs_provider_.get());
   example_session_controller_client_->Initialize();
 
   window_watcher_ = std::make_unique<WindowWatcher>();
@@ -109,6 +113,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   example_app_list_client_ = std::make_unique<ExampleAppListClient>(
       Shell::Get()->app_list_controller());
+
+  ash::Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 

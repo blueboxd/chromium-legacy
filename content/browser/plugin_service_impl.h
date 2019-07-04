@@ -147,7 +147,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
 
   int max_ppapi_processes_per_profile_ = kDefaultMaxPpapiProcessesPerProfile;
 
-  // Weak pointer; outlives us.
+  // Weak pointer; set during the startup on UI thread and must outlive us.
   PluginServiceFilter* filter_;
 
   // Used to load plugins from disk.

@@ -84,6 +84,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_contents/javascript_dialog_navigation_deferrer.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/generic_handler.h"
@@ -5365,6 +5366,10 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
   if (delegate_)
     dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
 
+  // While a JS message dialog is showing, defer commits in this WebContents.
+  javascript_dialog_navigation_deferrer_ =
+      std::make_unique<JavaScriptDialogNavigationDeferrer>();
+
   // Suppress JavaScript dialogs when requested. Also suppress messages when
   // showing an interstitial as it's shown over the previous page and we don't
   // want the hidden page's dialogs to interfere with the interstitial.
@@ -5441,6 +5446,11 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
   if (delegate_)
     dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
+
+  // While a JS beforeunload dialog is showing, defer commits in this
+  // WebContents.
+  javascript_dialog_navigation_deferrer_ =
+      std::make_unique<JavaScriptDialogNavigationDeferrer>();
 
   bool should_suppress = ShowingInterstitialPage() || !rfhi->is_active() ||
                          (delegate_ && delegate_->ShouldSuppressDialogs(this));
@@ -5881,8 +5891,22 @@ void WebContentsImpl::DidChangeLoadProgress() {
 std::vector<std::unique_ptr<NavigationThrottle>>
 WebContentsImpl::CreateThrottlesForNavigation(
     NavigationHandle* navigation_handle) {
-  return GetContentClient()->browser()->CreateThrottlesForNavigation(
+  auto throttles = GetContentClient()->browser()->CreateThrottlesForNavigation(
       navigation_handle);
+
+  // This is not a normal place to be adding a throttle. However, in the case
+  // javascript dialogs, related logic is present in the web_contents/ layer,
+  // and the purpose of the throttle is to ensure that navigation commits are
+  // deferred for the entire WebContents. Most throttles are either added by
+  // the embederrer outside of content/, or are per-frame and added by
+  // NavigationThrottleRunner.
+  std::unique_ptr<content::NavigationThrottle> dialog_throttle =
+      JavaScriptDialogNavigationThrottle::MaybeCreateThrottleFor(
+          navigation_handle);
+  if (dialog_throttle)
+    throttles.push_back(std::move(dialog_throttle));
+
+  return throttles;
 }
 
 std::unique_ptr<NavigationUIData> WebContentsImpl::GetNavigationUIData(
@@ -6594,6 +6618,8 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
   RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(render_process_id,
                                                          render_frame_id);
   last_dialog_suppressed_ = dialog_was_suppressed;
+
+  javascript_dialog_navigation_deferrer_.reset();
 
   if (is_showing_before_unload_dialog_ && !success) {
     // It is possible for the current RenderFrameHost to have changed in the

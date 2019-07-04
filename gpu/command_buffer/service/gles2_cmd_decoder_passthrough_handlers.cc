@@ -2059,6 +2059,8 @@ GLES2DecoderPassthroughImpl::HandleScheduleCALayerSharedStateCHROMIUM(
           cmd_data);
   GLfloat opacity = static_cast<GLfloat>(c.opacity);
   GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
+  GLfloat clip_rect_corner_radius =
+      static_cast<GLfloat>(c.clip_rect_corner_radius);
   GLint sorting_context_id = static_cast<GLint>(c.sorting_context_id);
   uint32_t shm_id = c.shm_id;
   uint32_t shm_offset = c.shm_offset;
@@ -2071,6 +2073,7 @@ GLES2DecoderPassthroughImpl::HandleScheduleCALayerSharedStateCHROMIUM(
   const GLfloat* clip_rect = mem + 0;
   const GLfloat* transform = mem + 4;
   return DoScheduleCALayerSharedStateCHROMIUM(opacity, is_clipped, clip_rect,
+                                              clip_rect_corner_radius,
                                               sorting_context_id, transform);
 }
 

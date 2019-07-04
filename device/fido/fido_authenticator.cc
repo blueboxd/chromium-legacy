@@ -92,6 +92,7 @@ void FidoAuthenticator::GetSensorInfo(BioEnrollmentCallback) {
 }
 
 void FidoAuthenticator::BioEnrollFingerprint(const pin::TokenResponse&,
+                                             BioEnrollmentSampleCallback,
                                              BioEnrollmentCallback) {
   NOTREACHED();
 }

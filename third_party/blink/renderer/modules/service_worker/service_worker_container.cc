@@ -599,11 +599,11 @@ ServiceWorkerContainer::CreateReadyProperty() {
 void ServiceWorkerContainer::EnableClientMessageQueue() {
   dom_content_loaded_observer_ = nullptr;
   if (is_client_message_queue_enabled_) {
-    DCHECK(queued_messages_.empty());
+    DCHECK(queued_messages_.IsEmpty());
     return;
   }
   is_client_message_queue_enabled_ = true;
-  std::vector<std::unique_ptr<MessageFromServiceWorker>> messages;
+  Vector<std::unique_ptr<MessageFromServiceWorker>> messages;
   messages.swap(queued_messages_);
   for (auto& message : messages) {
     DispatchMessageEvent(std::move(message->source),

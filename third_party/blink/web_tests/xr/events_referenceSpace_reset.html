@@ -15,7 +15,7 @@ let testName =
 
 let watcherDone = new Event("watcherdone");
 
-let fakeDeviceInitParams = { supportsImmersive:true };
+let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
 let requestSessionModes = [
   'inline',
@@ -23,6 +23,9 @@ let requestSessionModes = [
 ];
 
 let testFunction = function(session, t, fakeDeviceController) {
+  // TODO(981003): Because the device gets re-used we have to ensure that the
+  // resetPose bit is cleared.
+  fakeDeviceController.setResetPose(false);
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({
     baseLayer: new XRWebGLLayer(session, gl, {
@@ -40,16 +43,6 @@ let testFunction = function(session, t, fakeDeviceController) {
     return eventWatcher.wait_for(["reset", "watcherdone"]);
   });
 
-  // Need to have a valid pose or input events don't process.
-  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
-      eye:"left",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }, {
-      eye:"right",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }]);
   fakeDeviceController.setResetPose(true);
 
   // Trigger the reset pose.

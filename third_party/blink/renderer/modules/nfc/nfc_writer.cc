@@ -8,6 +8,7 @@
 
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
@@ -31,7 +32,7 @@ void NFCWriter::Trace(blink::Visitor* visitor) {
 }
 
 // https://w3c.github.io/web-nfc/#writing-or-pushing-content
-// https://w3c.github.io/web-nfc/#dom-nfc-push
+// https://w3c.github.io/web-nfc/#the-push-method
 ScriptPromise NFCWriter::push(ScriptState* script_state,
                               const NDEFMessageSource& push_message,
                               const NFCPushOptions* options) {
@@ -45,12 +46,19 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
                                            kNfcAccessInNonTopFrame));
   }
 
+  if (options->hasSignal() && options->signal()->aborted()) {
+    // If signal’s aborted flag is set, then reject p with an "AbortError"
+    // DOMException and return p.
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kAbortError, kNfcCancelled));
+  }
+
   ScriptPromise is_valid_message =
       RejectIfInvalidNDEFMessageSource(script_state, push_message);
   if (!is_valid_message.IsEmpty())
     return is_valid_message;
 
-  // https://w3c.github.io/web-nfc/#dom-nfc-push
   // 9. If timeout value is NaN or negative, reject promise with "TypeError"
   // and abort these steps.
   if (options->hasTimeout() &&
@@ -84,10 +92,17 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
+  InitNfcProxyIfNeeded();
+
+  // If signal is not null, then add the abort steps to signal.
+  if (options->hasSignal() && !options->signal()->aborted()) {
+    options->signal()->AddAlgorithm(
+        WTF::Bind(&NFCWriter::Abort, WrapPersistent(this), options->target(),
+                  WrapPersistent(resolver)));
+  }
+
   auto callback = WTF::Bind(&NFCWriter::OnRequestCompleted,
                             WrapPersistent(this), WrapPersistent(resolver));
-
-  InitNfcProxyIfNeeded();
   nfc_proxy_->Push(std::move(message),
                    device::mojom::blink::NFCPushOptions::From(options),
                    std::move(callback));
@@ -120,9 +135,22 @@ void NFCWriter::InitNfcProxyIfNeeded() {
   nfc_proxy_->AddWriter(this);
 }
 
+void NFCWriter::Abort(const String& target, ScriptPromiseResolver* resolver) {
+  // |nfc_proxy_| could be null on Mojo connection failure, simply ignore the
+  // abort request in this case.
+  if (!nfc_proxy_)
+    return;
+
+  // OnRequestCompleted() should always be called whether the push operation is
+  // cancelled successfully or not. So do nothing for the cancelled callback.
+  nfc_proxy_->CancelPush(target,
+                         device::mojom::blink::NFC::CancelPushCallback());
+}
+
 void NFCWriter::OnRequestCompleted(ScriptPromiseResolver* resolver,
                                    device::mojom::blink::NFCErrorPtr error) {
   DCHECK(requests_.Contains(resolver));
+
   requests_.erase(resolver);
 
   if (error.is_null())

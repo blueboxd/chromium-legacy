@@ -44,7 +44,6 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using Status = ::leveldb::Status;
 using Slice = ::leveldb::Slice;
-using Mode = IndexedDBTombstoneSweeper::Mode;
 
 constexpr int kRoundIterations = 11;
 constexpr int kMaxIterations = 100;
@@ -80,7 +79,7 @@ class MockTickClock : public base::TickClock {
   MOCK_CONST_METHOD0(NowTicks, base::TimeTicks());
 };
 
-class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
+class IndexedDBTombstoneSweeperTest : public testing::Test {
  public:
   IndexedDBTombstoneSweeperTest() {}
   ~IndexedDBTombstoneSweeperTest() {}
@@ -132,7 +131,7 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
 
   void SetupMockDB() {
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
-        GetParam(), kRoundIterations, kMaxIterations, &mock_db_);
+        kRoundIterations, kMaxIterations, &mock_db_);
     sweeper_->SetStartSeedsForTesting(0, 0, 0);
   }
 
@@ -148,7 +147,7 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
         std::move(level_db_state), indexed_db::LevelDBFactory::Get(), nullptr,
         LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
-        GetParam(), kRoundIterations, kMaxIterations, in_memory_db_->db());
+        kRoundIterations, kMaxIterations, in_memory_db_->db());
     sweeper_->SetStartSeedsForTesting(0, 0, 0);
   }
 
@@ -167,34 +166,18 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
 
   void ExpectUmaTombstones(int num, int size, bool reached_max = false) {
     std::string category = reached_max ? "MaxIterations" : "Complete";
-    if (GetParam() == Mode::STATISTICS) {
-      histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper.NumTombstones." + category, num,
-          1);
-      histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper.TombstonesSize." + category, size,
-          1);
-    } else {
-      histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper.NumDeletedTombstones." + category,
-          num, 1);
-      histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper.DeletedTombstonesSize." +
-              category,
-          size, 1);
-    }
+    histogram_tester_.ExpectUniqueSample(
+        "WebCore.IndexedDB.TombstoneSweeper.NumDeletedTombstones." + category,
+        num, 1);
+    histogram_tester_.ExpectUniqueSample(
+        "WebCore.IndexedDB.TombstoneSweeper.DeletedTombstonesSize." + category,
+        size, 1);
   }
 
   void ExpectTaskTimeRecorded() {
-    if (GetParam() == Mode::STATISTICS) {
-      histogram_tester_.ExpectTimeBucketCount(
-          "WebCore.IndexedDB.TombstoneSweeper.StatsTotalTime.Complete",
-          base::TimeDelta::FromSeconds(1), 1);
-    } else {
-      histogram_tester_.ExpectTimeBucketCount(
-          "WebCore.IndexedDB.TombstoneSweeper.DeletionTotalTime.Complete",
-          base::TimeDelta::FromSeconds(1), 1);
-    }
+    histogram_tester_.ExpectTimeBucketCount(
+        "WebCore.IndexedDB.TombstoneSweeper.DeletionTotalTime.Complete",
+        base::TimeDelta::FromSeconds(1), 1);
   }
 
   void ExpectIndexEntry(leveldb::MockIterator& iterator,
@@ -257,7 +240,7 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_P(IndexedDBTombstoneSweeperTest, EmptyDB) {
+TEST_F(IndexedDBTombstoneSweeperTest, EmptyDB) {
   SetupMockDB();
   sweeper_->SetMetadata(&metadata_);
   EXPECT_TRUE(sweeper_->RunRound());
@@ -266,7 +249,7 @@ TEST_P(IndexedDBTombstoneSweeperTest, EmptyDB) {
       histogram_tester_.GetTotalCountsForPrefix("WebCore.IndexedDB.").empty());
 }
 
-TEST_P(IndexedDBTombstoneSweeperTest, NoTombstonesComplexDB) {
+TEST_F(IndexedDBTombstoneSweeperTest, NoTombstonesComplexDB) {
   SetupMockDB();
   PopulateMultiDBMetdata();
   sweeper_->SetMetadata(&metadata_);
@@ -342,7 +325,7 @@ TEST_P(IndexedDBTombstoneSweeperTest, NoTombstonesComplexDB) {
       "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent", 20, 1);
 }
 
-TEST_P(IndexedDBTombstoneSweeperTest, AllTombstonesComplexDB) {
+TEST_F(IndexedDBTombstoneSweeperTest, AllTombstonesComplexDB) {
   SetupMockDB();
   PopulateMultiDBMetdata();
   sweeper_->SetMetadata(&metadata_);
@@ -411,8 +394,7 @@ TEST_P(IndexedDBTombstoneSweeperTest, AllTombstonesComplexDB) {
     EXPECT_CALL(*mock_iterator, Valid()).WillOnce(Return(false));
   }
 
-  if (GetParam() == Mode::DELETION)
-    EXPECT_CALL(mock_db_, Write(_, _));
+  EXPECT_CALL(mock_db_, Write(_, _));
 
   ASSERT_TRUE(sweeper_->RunRound());
   ExpectTaskTimeRecorded();
@@ -421,7 +403,7 @@ TEST_P(IndexedDBTombstoneSweeperTest, AllTombstonesComplexDB) {
       "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent", 20, 1);
 }
 
-TEST_P(IndexedDBTombstoneSweeperTest, SimpleRealDBNoTombstones) {
+TEST_F(IndexedDBTombstoneSweeperTest, SimpleRealDBNoTombstones) {
   PopulateSingleIndexDBMetadata();
   SetupRealDB();
   sweeper_->SetMetadata(&metadata_);
@@ -454,7 +436,7 @@ TEST_P(IndexedDBTombstoneSweeperTest, SimpleRealDBNoTombstones) {
       "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent", 20, 1);
 }
 
-TEST_P(IndexedDBTombstoneSweeperTest, SimpleRealDBWithTombstones) {
+TEST_F(IndexedDBTombstoneSweeperTest, SimpleRealDBWithTombstones) {
   PopulateSingleIndexDBMetadata();
   SetupRealDB();
   sweeper_->SetMetadata(&metadata_);
@@ -500,12 +482,12 @@ TEST_P(IndexedDBTombstoneSweeperTest, SimpleRealDBWithTombstones) {
                                                  primary_key),
                             &out, &found)
                       .ok());
-      EXPECT_TRUE(GetParam() == Mode::STATISTICS || !found);
+      EXPECT_TRUE(!found);
     }
   }
 }
 
-TEST_P(IndexedDBTombstoneSweeperTest, HitMaxIters) {
+TEST_F(IndexedDBTombstoneSweeperTest, HitMaxIters) {
   PopulateSingleIndexDBMetadata();
   SetupRealDB();
   sweeper_->SetMetadata(&metadata_);
@@ -537,7 +519,7 @@ TEST_P(IndexedDBTombstoneSweeperTest, HitMaxIters) {
       "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent", 0, 1);
 }
 
-TEST_P(IndexedDBTombstoneSweeperTest, LevelDBError) {
+TEST_F(IndexedDBTombstoneSweeperTest, LevelDBError) {
   SetupMockDB();
   PopulateMultiDBMetdata();
   sweeper_->SetMetadata(&metadata_);
@@ -596,10 +578,6 @@ TEST_P(IndexedDBTombstoneSweeperTest, LevelDBError) {
   histogram_tester_.ExpectUniqueSample(
       "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent", 1 * 20 / 3, 1);
 }
-
-INSTANTIATE_TEST_SUITE_P(/* No prefix needed */,
-                         IndexedDBTombstoneSweeperTest,
-                         testing::Values(Mode::STATISTICS, Mode::DELETION));
 
 }  // namespace indexed_db_tombstone_sweeper_unittest
 }  // namespace content

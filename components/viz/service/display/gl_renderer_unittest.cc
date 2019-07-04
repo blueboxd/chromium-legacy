@@ -3093,10 +3093,11 @@ class CALayerValidator : public OverlayCandidateValidator {
 
 class MockCALayerGLES2Interface : public TestGLES2Interface {
  public:
-  MOCK_METHOD5(ScheduleCALayerSharedStateCHROMIUM,
+  MOCK_METHOD6(ScheduleCALayerSharedStateCHROMIUM,
                void(GLfloat opacity,
                     GLboolean is_clipped,
                     const GLfloat* clip_rect,
+                    GLfloat clip_rect_corner_radius,
                     GLint sorting_context_id,
                     const GLfloat* transform));
   MOCK_METHOD6(ScheduleCALayerCHROMIUM,
@@ -3196,7 +3197,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
   // CALayer.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3242,13 +3243,61 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
   // RenderPassDrawQuad is emitted.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _));
   }
   DrawFrame(&renderer(), viewport_size);
   Mock::VerifyAndClearExpectations(&gl());
 
   renderer().SwapBuffers(std::vector<ui::LatencyInfo>());
+}
+
+TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
+  gfx::Size viewport_size(10, 10);
+
+  for (size_t subtest = 0; subtest < 3; ++subtest) {
+    RenderPassId root_pass_id = 1;
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    auto* quad = cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorRED);
+    SharedQuadState* sqs =
+        const_cast<SharedQuadState*>(quad->shared_quad_state);
+
+    sqs->is_clipped = true;
+    sqs->clip_rect = gfx::Rect(2, 2, 6, 6);
+    const float radius = 2;
+    sqs->rounded_corner_bounds =
+        gfx::RRectF(gfx::RectF(sqs->clip_rect), radius);
+
+    switch (subtest) {
+      case 0:
+        // Subtest 0 is a simple round rect that matches the clip rect, and
+        // should be handled by CALayers.
+        EXPECT_CALL(gl(),
+                    ScheduleCALayerSharedStateCHROMIUM(_, _, _, radius, _, _))
+            .Times(1);
+        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(1);
+        break;
+      case 1:
+        // Subtest 1 doesn't match clip and rounded rect, so no CALayers should
+        // be scheduled.
+        sqs->clip_rect = gfx::Rect(3, 3, 4, 4);
+        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(0);
+        break;
+      case 2:
+        // Subtest 2 has a non-simple rounded rect.
+        sqs->rounded_corner_bounds.SetCornerRadii(
+            gfx::RRectF::Corner::kUpperLeft, 1, 1);
+        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(0);
+        break;
+    }
+
+    renderer().DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    DrawFrame(&renderer(), viewport_size);
+    Mock::VerifyAndClearExpectations(&gl());
+  }
 }
 
 TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
@@ -3280,7 +3329,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
   uint32_t saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3333,7 +3382,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
   // is still in use.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3381,7 +3430,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
   // an existing 256x256 texture, we can reuse that.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3432,7 +3481,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
   uint32_t saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3483,7 +3532,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
   // is still in use.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3530,7 +3579,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
   // existing 256x256 texture, but it's too large for us to reuse it.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3577,7 +3626,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
   uint32_t saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3617,7 +3666,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
   uint32_t second_saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3664,7 +3713,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
   // verify that happened.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3710,7 +3759,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3771,7 +3820,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(Invoke([&](GLuint contents_texture_id,
                              const GLfloat* contents_rect,
@@ -3835,7 +3884,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3884,7 +3933,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _));
     DrawFrame(&renderer(), viewport_size);
     Mock::VerifyAndClearExpectations(&gl());
@@ -3915,7 +3964,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
 
   InSequence sequence;
-  EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+  EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
   EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
       .WillOnce(Invoke([&](GLuint contents_texture_id,
                            const GLfloat* contents_rect,

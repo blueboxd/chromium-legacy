@@ -278,9 +278,9 @@ WebURLResponse::SecurityDetailsForTesting() {
       resource_response_->GetSecurityDetails();
   if (!security_details.has_value())
     return base::nullopt;
-  std::vector<SignedCertificateTimestamp> sct_list;
+  SignedCertificateTimestampList sct_list;
   for (const auto& iter : security_details->sct_list) {
-    sct_list.push_back(SignedCertificateTimestamp(
+    sct_list.emplace_back(SignedCertificateTimestamp(
         iter.status_, iter.origin_, iter.log_description_, iter.log_id_,
         iter.timestamp_, iter.hash_algorithm_, iter.signature_algorithm_,
         iter.signature_data_));
@@ -291,7 +291,7 @@ WebURLResponse::SecurityDetailsForTesting() {
       security_details->mac, security_details->subject_name,
       security_details->san_list, security_details->issuer,
       security_details->valid_from, security_details->valid_to,
-      security_details->certificate, SignedCertificateTimestampList(sct_list));
+      security_details->certificate, sct_list);
 }
 
 const ResourceResponse& WebURLResponse::ToResourceResponse() const {

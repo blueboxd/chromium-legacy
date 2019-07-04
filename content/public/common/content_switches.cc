@@ -955,11 +955,6 @@ const char kEnableAggressiveDOMStorageFlushing[] =
 // Enable indication that browser is controlled by automation.
 const char kEnableAutomation[] = "enable-automation";
 
-#if defined(OS_CHROMEOS)
-// Disables panel fitting (used for mirror mode).
-const char kDisablePanelFitting[]           = "disable-panel-fitting";
-#endif
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Allows sending text-to-speech requests to speech-dispatcher, a common
 // Linux speech service. Because it's buggy, the user must explicitly

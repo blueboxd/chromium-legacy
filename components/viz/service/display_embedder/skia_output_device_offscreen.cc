@@ -35,40 +35,40 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
       SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
                         has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType,
                         color_space.ToSkColorSpace());
-  sk_surface_ = SkSurface::MakeRenderTarget(
+  draw_surface_ = SkSurface::MakeRenderTarget(
       gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
       capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
                                            : kBottomLeft_GrSurfaceOrigin,
       nullptr /* surfaceProps */);
-  DCHECK(!!sk_surface_);
+  DCHECK(!!draw_surface_);
 
   // Initialize alpha channel to opaque.
   if (!has_alpha_) {
-    auto* canvas = sk_surface_->getCanvas();
+    auto* canvas = draw_surface_->getCanvas();
     canvas->clear(SkColorSetARGB(255, 0, 0, 0));
   }
 }
 
-gfx::SwapResponse SkiaOutputDeviceOffscreen::SwapBuffers(
-    BufferPresentedCallback feedback) {
-  // Reshape should have been called first.
-  DCHECK(sk_surface_);
-
-  StartSwapBuffers(std::move(feedback));
-  return FinishSwapBuffers(
-      gfx::SwapResult::SWAP_ACK,
-      gfx::Size(sk_surface_->width(), sk_surface_->height()));
-}
-
 gfx::SwapResponse SkiaOutputDeviceOffscreen::PostSubBuffer(
     const gfx::Rect& rect,
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
-  return SwapBuffers(std::move(feedback));
+  return SwapBuffers(semaphore, std::move(feedback));
+}
+
+gfx::SwapResponse SkiaOutputDeviceOffscreen::SwapBuffers(
+    const GrBackendSemaphore& semaphore,
+    BufferPresentedCallback feedback) {
+  // Reshape should have been called first.
+  DCHECK(draw_surface_);
+
+  StartSwapBuffers(std::move(feedback));
+  return FinishSwapBuffers(gfx::SwapResult::SWAP_ACK);
 }
 
 void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
-  if (!image_info_.isEmpty() && !sk_surface_) {
-    sk_surface_ = SkSurface::MakeRenderTarget(
+  if (!image_info_.isEmpty() && !draw_surface_) {
+    draw_surface_ = SkSurface::MakeRenderTarget(
         gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
         capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
                                              : kBottomLeft_GrSurfaceOrigin,
@@ -77,13 +77,7 @@ void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
 }
 
 void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
-  sk_surface_.reset();
+  draw_surface_.reset();
 }
-
-SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
-  return sk_surface_.get();
-}
-
-void SkiaOutputDeviceOffscreen::EndPaint(const GrBackendSemaphore& semaphore) {}
 
 }  // namespace viz

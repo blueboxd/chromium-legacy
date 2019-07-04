@@ -669,7 +669,7 @@ bool ListedElement::IsElementInternals() const {
 }
 
 ListedElement* ListedElement::From(Element& element) {
-  auto* html_element = ToHTMLElementOrNull(element);
+  auto* html_element = DynamicTo<HTMLElement>(element);
   if (!html_element)
     return nullptr;
   if (auto* form_control_element = DynamicTo<HTMLFormControlElement>(element))

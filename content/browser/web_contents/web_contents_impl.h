@@ -88,6 +88,7 @@ class DisplayCutoutHostImpl;
 class FindRequestManager;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
+class JavaScriptDialogNavigationDeferrer;
 class LoaderIOThreadNotifier;
 class ManifestManagerHost;
 class MediaWebContentsObserver;
@@ -1056,6 +1057,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // call this directly.
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
 
+  JavaScriptDialogNavigationDeferrer* GetJavaScriptDialogNavigationDeferrer() {
+    return javascript_dialog_navigation_deferrer_.get();
+  }
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1906,6 +1911,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // user gesture is properly propagated. This is a temporary fix for history
   // intervention to be disabled for pdfs (crbug.com/965434).
   bool had_inner_webcontents_;
+
+  // Prevents navigations in this contents while a javascript modal dialog is
+  // showing.
+  std::unique_ptr<JavaScriptDialogNavigationDeferrer>
+      javascript_dialog_navigation_deferrer_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

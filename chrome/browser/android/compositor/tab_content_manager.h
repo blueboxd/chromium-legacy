@@ -111,6 +111,10 @@ class TabContentManager : public ThumbnailCacheObserver {
       const base::android::JavaParamRef<jobject>& obj,
       jint tab_id,
       const base::android::JavaParamRef<jobject>& j_callback);
+  void SetCaptureMinRequestTimeForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint timeMs);
 
   // ThumbnailCacheObserver implementation;
   void OnFinishedThumbnailRead(TabId tab_id) override;

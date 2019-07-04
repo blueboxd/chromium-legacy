@@ -40,10 +40,8 @@ CSSNumericLiteralValue* CSSNumericLiteralValue::Create(double value,
   if (value != int_value)
     return MakeGarbageCollected<CSSNumericLiteralValue>(value, type);
 
-  // TODO(xiaochengh): Make |CSSValuePool| cache |CSSNumericLiteralValue| to
-  // avoid type casting.
   CSSValuePool& pool = CssValuePool();
-  CSSPrimitiveValue* result = nullptr;
+  CSSNumericLiteralValue* result = nullptr;
   switch (type) {
     case CSSPrimitiveValue::UnitType::kPixels:
       result = pool.PixelCacheValue(int_value);
@@ -52,7 +50,7 @@ CSSNumericLiteralValue* CSSNumericLiteralValue::Create(double value,
             int_value,
             MakeGarbageCollected<CSSNumericLiteralValue>(value, type));
       }
-      return To<CSSNumericLiteralValue>(result);
+      return result;
     case CSSPrimitiveValue::UnitType::kPercentage:
       result = pool.PercentCacheValue(int_value);
       if (!result) {
@@ -60,7 +58,7 @@ CSSNumericLiteralValue* CSSNumericLiteralValue::Create(double value,
             int_value,
             MakeGarbageCollected<CSSNumericLiteralValue>(value, type));
       }
-      return To<CSSNumericLiteralValue>(result);
+      return result;
     case CSSPrimitiveValue::UnitType::kNumber:
     case CSSPrimitiveValue::UnitType::kInteger:
       result = pool.NumberCacheValue(int_value);
@@ -69,7 +67,7 @@ CSSNumericLiteralValue* CSSNumericLiteralValue::Create(double value,
             int_value, MakeGarbageCollected<CSSNumericLiteralValue>(
                            value, CSSPrimitiveValue::UnitType::kInteger));
       }
-      return To<CSSNumericLiteralValue>(result);
+      return result;
     default:
       return MakeGarbageCollected<CSSNumericLiteralValue>(value, type);
   }

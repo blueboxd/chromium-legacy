@@ -324,6 +324,11 @@ class TokenPreloadScanner::StartTagScanner {
         }
         break;
     }
+    // Do not preload if lazyload is possible but metadata fetch is disabled.
+    if (is_lazy_load_image_enabled &&
+        !RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled()) {
+      return nullptr;
+    }
     // LazyLoad: Do not preload if absolute dimensions are mentioned in width
     // and height attributes or in the inline style, and the dimensions are not
     // small enough.

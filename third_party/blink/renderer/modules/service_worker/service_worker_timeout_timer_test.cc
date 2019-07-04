@@ -48,13 +48,12 @@ base::RepeatingClosure CreateReceiverWithCalledFlag(bool* out_is_called) {
                             WTF::Unretained(out_is_called));
 }
 
-base::OnceClosure CreateDispatchingEventTask(
-    ServiceWorkerTimeoutTimer* timer,
-    std::string tag,
-    std::vector<std::string>* out_tags) {
+base::OnceClosure CreateDispatchingEventTask(ServiceWorkerTimeoutTimer* timer,
+                                             String tag,
+                                             Vector<String>* out_tags) {
   return WTF::Bind(
-      [](ServiceWorkerTimeoutTimer* timer, std::string tag,
-         std::vector<std::string>* out_tags) {
+      [](ServiceWorkerTimeoutTimer* timer, String tag,
+         Vector<String>* out_tags) {
         // Event dispatched inside of pending task should run successfully.
         MockEvent event;
         const int event_id = timer->StartEvent(event.CreateAbortCallback());
@@ -332,7 +331,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, RunPendingTasksWithZeroIdleTimerDelay) {
   timer.SetIdleTimerDelayToZero();
   EXPECT_TRUE(timer.did_idle_timeout());
 
-  std::vector<std::string> handled_tasks;
+  Vector<String> handled_tasks;
   timer.PushPendingTask(
       CreateDispatchingEventTask(&timer, "1", &handled_tasks));
   timer.PushPendingTask(

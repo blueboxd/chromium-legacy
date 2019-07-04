@@ -47,6 +47,13 @@ struct DarkModeSettings {
   // above it will be left as in the original, non-dark-mode page.  Set to 256
   // to always invert text color or to 0 to never invert text color.
   int text_brightness_threshold = 256;
+
+  // Background elements with brightness above this threshold will be inverted,
+  // and below it will be left as in the original, non-dark-mode page.  Set to
+  // 256 to never invert the color or to 0 to always invert it.
+  //
+  // Warning: This behavior is the opposite of text_brightness_threshold!
+  int background_brightness_threshold = 0;
 };
 
 }  // namespace blink

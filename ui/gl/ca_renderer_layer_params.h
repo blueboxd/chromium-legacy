@@ -23,6 +23,7 @@ namespace ui {
 struct GL_EXPORT CARendererLayerParams {
   CARendererLayerParams(bool is_clipped,
                         const gfx::Rect clip_rect,
+                        float clip_rect_corner_radius,
                         unsigned sorting_context_id,
                         const gfx::Transform& transform,
                         gl::GLImage* image,
@@ -37,6 +38,7 @@ struct GL_EXPORT CARendererLayerParams {
 
   bool is_clipped;
   const gfx::Rect clip_rect;
+  float clip_rect_corner_radius;
   unsigned sorting_context_id;
   const gfx::Transform transform;
   gl::GLImage* image;

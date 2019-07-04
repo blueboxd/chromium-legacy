@@ -31,8 +31,10 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/web_preferences.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -139,9 +141,11 @@ ContentTranslateDriver::CreateURLLoaderFactory() {
 
   // TODO(crbug.com/940068): Since this factory will be removed, sending an
   // empty network isolation key for now.
-  process->CreateURLLoaderFactory(origin, net::NetworkIsolationKey(),
-                                  std::move(null_header_client),
-                                  mojo::MakeRequest(&factory));
+  content::WebPreferences preferences =
+      web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  process->CreateURLLoaderFactory(
+      origin, &preferences, net::NetworkIsolationKey(),
+      std::move(null_header_client), mojo::MakeRequest(&factory));
   return factory;
 }
 

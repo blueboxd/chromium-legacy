@@ -11,7 +11,7 @@
 <script>
 let testName = "XRViewport attributes are valid";
 
-let fakeDeviceInitParams = { supportsImmersive:true };
+let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
 let requestSessionModes = ['immersive-vr'];
 
@@ -19,17 +19,6 @@ let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
   session.updateRenderState({ baseLayer: webglLayer });
-
-  // Need to have a valid pose or input event's don't process.
-  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
-      eye:"left",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }, {
-      eye:"right",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }]);
 
   return session.requestReferenceSpace('local')
     .then((referenceSpace) => new Promise((resolve) =>{

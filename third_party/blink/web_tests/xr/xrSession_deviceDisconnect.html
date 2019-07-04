@@ -129,7 +129,7 @@ let validateDeviceDisconnectPromise = function() {
       "Immersive should not be supported once device is disconnected", "NotSupportedError"));
 
     // Force the device disconnect, which should cause the promises to resolve.
-    XRTest.getService().closeDevice();
+    navigator.xr.test.getService().closeDevice();
 
     // Call this after we close the device, because we don't expect this to rely
     // on (or request) the presence of a device.

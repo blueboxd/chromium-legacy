@@ -10,5 +10,6 @@ dictionary NFCPushOptions {
     NFCPushTarget target = "any";
     unrestricted double timeout; // in ms
     boolean ignoreRead = true;
+    AbortSignal? signal;
     NDEFCompatibility compatibility = "nfc-forum";
 };

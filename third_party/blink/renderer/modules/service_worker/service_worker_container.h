@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_CONTAINER_H_
 
 #include <memory>
-#include <vector>
 
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -50,6 +49,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -157,7 +157,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   // queue using this flag since the task runner is shared with other task
   // sources.
   bool is_client_message_queue_enabled_ = false;
-  std::vector<std::unique_ptr<MessageFromServiceWorker>> queued_messages_;
+  Vector<std::unique_ptr<MessageFromServiceWorker>> queued_messages_;
   Member<DomContentLoadedListener> dom_content_loaded_observer_;
 };
 

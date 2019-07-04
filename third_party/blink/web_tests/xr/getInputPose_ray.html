@@ -13,7 +13,7 @@
 
 let testName = "XRInputSources produce valid target rays";
 
-let fakeDeviceInitParams = { supportsImmersive: true };
+let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
 let requestSessionModes =  ['immersive-vr'];
 
@@ -21,17 +21,6 @@ let testFunction =
   (session, t, fakeDeviceController) => new Promise((resolve) => {
     // Session must have a baseLayer or frame requests will be ignored.
     session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-
-    // Need to have a valid pose or input events don't process.
-    fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
-        eye:"left",
-        projectionMatrix: VALID_PROJECTION_MATRIX,
-        viewMatrix: VALID_VIEW_MATRIX
-      }, {
-        eye:"right",
-        projectionMatrix: VALID_PROJECTION_MATRIX,
-        viewMatrix: VALID_VIEW_MATRIX
-      }]);
 
     let input_source = new MockXRInputSource();
     input_source.targetRayMode = "tracked-pointer";

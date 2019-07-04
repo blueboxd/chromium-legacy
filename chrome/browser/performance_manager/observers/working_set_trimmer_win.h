@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_WIN_H_
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 
@@ -26,14 +27,25 @@ namespace performance_manager {
 //   to be compressed and/or written to disk preemptively, which makes more
 //   memory available quickly for foreground processes and improves global
 //   browser performance.
-class WorkingSetTrimmer : public GraphImplObserverDefaultImpl {
+class WorkingSetTrimmer : public GraphOwned,
+                          public ProcessNode::ObserverDefaultImpl {
  public:
   WorkingSetTrimmer();
   ~WorkingSetTrimmer() override;
 
-  // GraphObserver:
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override;
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
+
+  // ProcessNodeObserver:
+  void OnAllFramesInProcessFrozen(const ProcessNode* process_node) override;
+
+ protected:
+  // (Un)registers the various node observer flavors of this object with the
+  // graph. These are invoked by OnPassedToGraph and OnTakenFromGraph, but
+  // hoisted to their own functions for testing.
+  void RegisterObservers(Graph* graph);
+  void UnregisterObservers(Graph* graph);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkingSetTrimmer);

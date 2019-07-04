@@ -406,12 +406,18 @@ body.mode-switching:not(.streaming) #camera-mode {
 
 #options-group {
   --option-item-vpadding: 12px;
-  bottom: calc(var(--bottom-line) + (var(--big-icon) / 2) + 32px - var(--option-item-vpadding));
+  --switch-device-gap: 32px;
+  bottom: calc(var(--bottom-line) + (var(--big-icon) / 2) + var(--switch-device-gap) - var(--option-item-vpadding));
   flex-direction: column-reverse;
 }
 
 body:not(.multi-camera) #options-group {
   bottom: calc(var(--bottom-line) - var(--option-item-vpadding) - (var(--small-icon) / 2));
+}
+
+body.max-wnd #options-group {
+  --option-item-vpadding: 18px;
+  --switch-device-gap: 48px;
 }
 
 #options-group input {
@@ -548,6 +554,10 @@ body.videoresolutionsettings #resolutionsettings {
   --modes-gradient-padding: 16px;
   --modes-height: 140px;
   --small-icon: 40px;
+}
+
+body.max-wnd #camera {
+  --bottom-line: 56px;
 }
 
 @media screen and (min-height: 800px) {

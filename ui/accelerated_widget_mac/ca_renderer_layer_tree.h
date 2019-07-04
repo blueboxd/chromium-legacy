@@ -107,6 +107,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   struct ClipAndSortingLayer {
     ClipAndSortingLayer(bool is_clipped,
                         gfx::Rect clip_rect,
+                        float clip_rect_corner_radius,
                         unsigned sorting_context_id,
                         bool is_singleton_sorting_context);
     ClipAndSortingLayer(ClipAndSortingLayer&& layer);
@@ -123,6 +124,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     std::vector<TransformLayer> transform_layers;
     bool is_clipped = false;
     gfx::Rect clip_rect;
+    float clip_rect_corner_radius = 0;
     unsigned sorting_context_id = 0;
     bool is_singleton_sorting_context = false;
     base::scoped_nsobject<CALayer> ca_layer;

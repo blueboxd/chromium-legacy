@@ -12,7 +12,24 @@
 
 let testName = "XRFrame contains the expected views";
 
-let fakeDeviceInitParams = { supportsImmersive:true };
+const fakeViews = [{
+        eye:"left",
+        projectionMatrix: VALID_PROJECTION_MATRIX,
+        viewOffset: LEFT_OFFSET,
+        resolution: VALID_RESOLUTION
+    }, {
+        eye:"right",
+        projectionMatrix: VALID_PROJECTION_MATRIX,
+        viewOffset: RIGHT_OFFSET,
+        resolution: VALID_RESOLUTION
+    },
+];
+
+let fakeDeviceInitParams = {
+    supportsImmersive: true,
+    views: fakeViews,
+    viewerOrigin: IDENTITY_TRANSFORM
+};
 
 let requestSessionModes = ['immersive-vr'];
 
@@ -20,17 +37,6 @@ let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
   session.updateRenderState({ baseLayer: webglLayer });
-
-  // Need to have a valid pose or input event's don't process.
-  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
-      eye:"left",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }, {
-      eye:"right",
-      projectionMatrix: VALID_PROJECTION_MATRIX,
-      viewMatrix: VALID_VIEW_MATRIX
-    }]);
 
   return session.requestReferenceSpace('viewer').then(function(viewerSpace) {
     return session.requestReferenceSpace('local').then((referenceSpace) => new Promise((resolve) => {

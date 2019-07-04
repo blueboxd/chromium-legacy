@@ -562,6 +562,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     return session_key_.server_id();
   }
 
+  const QuicSessionKey& quic_session_key() const { return session_key_; }
+
   // Attempts to migrate session when |writer| encounters a write error.
   // If |writer| is no longer actively used, abort migration.
   void MigrateSessionOnWriteError(int error_code,

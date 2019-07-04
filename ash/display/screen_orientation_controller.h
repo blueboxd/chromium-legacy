@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -55,7 +56,8 @@ class ASH_EXPORT ScreenOrientationController
       public aura::WindowObserver,
       public AccelerometerReader::Observer,
       public WindowTreeHostManager::Observer,
-      public TabletModeObserver {
+      public TabletModeObserver,
+      public ShellObserver {
  public:
   // Observer that reports changes to the state of ScreenOrientationProvider's
   // rotation lock.
@@ -151,6 +153,10 @@ class ASH_EXPORT ScreenOrientationController
   void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
   void OnTabletModeEnded() override;
+
+  // ShellObserver:
+  void OnSplitViewModeStarted() override;
+  void OnSplitViewModeEnded() override;
 
  private:
   friend class ScreenOrientationControllerTestApi;

@@ -4,6 +4,7 @@
 
 // https://html.spec.whatwg.org/C/custom-elements.html#customelementregistry
 
+[Exposed=Window]
 interface CustomElementRegistry {
     [CallWith=ScriptState, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=CustomElementRegistryDefine] void define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions options);
     any get(DOMString name);

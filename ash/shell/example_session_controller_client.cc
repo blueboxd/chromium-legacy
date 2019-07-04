@@ -18,8 +18,9 @@ ExampleSessionControllerClient* instance = nullptr;
 }  // namespace
 
 ExampleSessionControllerClient::ExampleSessionControllerClient(
-    SessionControllerImpl* controller)
-    : TestSessionControllerClient(controller, /*prefs_provider=*/nullptr) {
+    SessionControllerImpl* controller,
+    TestPrefServiceProvider* prefs_provider)
+    : TestSessionControllerClient(controller, prefs_provider) {
   DCHECK_EQ(instance, nullptr);
   DCHECK(controller);
   instance = this;

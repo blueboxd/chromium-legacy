@@ -230,7 +230,7 @@ static const String ComputeUniqueSelector(Node* anchor_node) {
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
       "Layout.ScrollAnchor.TimeToComputeAnchorNodeSelector");
 
-  std::vector<String> selector_list;
+  Vector<String> selector_list;
   for (Element* element = ElementTraversal::FirstAncestorOrSelf(*anchor_node);
        element; element = ElementTraversal::FirstAncestor(*element)) {
     selector_list.push_back(UniqueSimpleSelectorAmongSiblings(element));

@@ -232,7 +232,7 @@ class ResourceLoader::CodeCacheRequest {
   std::unique_ptr<CodeCacheLoader> code_cache_loader_;
   const GURL gurl_;
   bool defers_loading_ = false;
-  std::vector<uint8_t> cached_code_;
+  Vector<uint8_t> cached_code_;
   base::Time cached_code_response_time_;
   base::Time resource_response_time_;
   bool use_isolated_code_cache_ = false;
@@ -270,10 +270,11 @@ bool ResourceLoader::CodeCacheRequest::FetchFromCodeCacheSynchronously(
   status_ = kPendingResponse;
 
   base::Time response_time;
-  std::vector<uint8_t> data;
+  WebVector<uint8_t> data;
   code_cache_loader_->FetchFromCodeCacheSynchronously(gurl_, &response_time,
                                                       &data);
-  ProcessCodeCacheResponse(response_time, data, resource_loader);
+  ProcessCodeCacheResponse(response_time, data.ReleaseVector(),
+                           resource_loader);
   return true;
 }
 
@@ -325,7 +326,8 @@ void ResourceLoader::CodeCacheRequest::ProcessCodeCacheResponse(
     // Wait for the response before we can send the cached code.
     // TODO(crbug.com/866889): Pass this as a handle to avoid the overhead of
     // copying this data.
-    cached_code_.assign(data.begin(), data.end());
+    cached_code_.clear();
+    cached_code_.AppendRange(data.begin(), data.end());
     return;
   }
 

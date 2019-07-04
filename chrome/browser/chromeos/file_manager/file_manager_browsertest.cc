@@ -611,6 +611,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 #endif
         TestCase("dirContextMenuRecent"),
         TestCase("dirContextMenuMyFiles").EnableMyFilesVolume(),
+        TestCase("dirContextMenuMyFilesWithPaste").EnableMyFilesVolume(),
         TestCase("dirContextMenuCrostini"),
         TestCase("dirContextMenuPlayFiles"),
         TestCase("dirContextMenuUsbs"),
